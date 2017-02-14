@@ -12,16 +12,18 @@ def all_html_files_in_tree(root_dir):
                 yield filepath
 
 def html2rst(html):
-    p = subprocess.Popen(['pandoc', '-f',  'html', '-t', 'html'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    p = subprocess.Popen(['pandoc', '-f',  'html', '-t', 'rst'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     return p.communicate(html.encode('utf-8'))[0]
 
-def getfilepath(filepath):
+def getdir(filepath):
     path, file = os.path.split(filepath)
     path, lastdir = os.path.split(path)
     return '.' + '/' + lastdir
 
 def getfilename(filepath):
-    return os.path.basename(os.path.splitext(filepath)[0]) + '.rst'
+    filename = os.path.split(filepath)[1]
+    filename_no_ext = os.path.splitext(filename)[0]
+    return filename_no_ext + '.rst'
 
 def main(path):
     for filepath in all_html_files_in_tree(path):
@@ -30,12 +32,15 @@ def main(path):
             html = input.read()
             rst = html2rst(html).decode('utf-8')
 
-        # ToDo: Need to make the dir, if it does not exist
-        # At top level i.e. Paramore.Brighter root, we don't want to make a sub-dir i.e. grabbing last element of path fails for subdir here.
-        # We need to understand layout of sphinx docs files, to understand how to build rst structure anyway.
-        output_filename = getfilepath(filepath) + '/' + getfilename(filepath)
+        directory = getdir(filepath)
+        lowercase_dir = directory.lower()
+        output_filename = lowercase_dir  + '/' + getfilename(filepath)
         print(output_filename)
-        print(rst)
+
+        if not os.path.exists(lowercase_dir):
+            os.makedirs(lowercase_dir)
+
+        print("Writing: {}".format(output_filename))
         with open(output_filename,'tw+', encoding='utf-8') as output:
             output.write(rst + '\n')
 
