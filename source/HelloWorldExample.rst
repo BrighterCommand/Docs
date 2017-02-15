@@ -253,7 +253,7 @@ zero or more handlers (usually an event has zero or more handlers)
 ::
 
     commandProcessor.Send(new GreetingCommand("Ian"));
-            
+
 
 Step Six
 ~~~~~~~~
@@ -336,6 +336,6 @@ That is a brief introduction in how to get a command processor working.
 We explore how to work with a Task Queue in the `Greetings
 Example <GreetingsExample.html>`__
 
-.. |image0| image:: images/HelloWorld-Step1-ConsoleProject.png
-.. |image1| image:: images/NuGet-Brighter.png
+.. |image0| image:: _static/images/HelloWorld-Step1-ConsoleProject.png
+.. |image1| image:: _static/images/NuGet-Brighter.png
 
