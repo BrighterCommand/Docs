@@ -1,8 +1,4 @@
-`Next <PolicyFallback.html>`__
-
-`Prev <UsingTheContextBag.html>`__
-
-Supporting Retry, and Circuit Breaker
+Supporting Retry and Circuit Breaker
 -------------------------------------
 
 Brighter is a `Command
@@ -31,6 +27,8 @@ By adding the **UsePolicy** attribute, you instruct the Command
 Processor to insert a handler (filter) into the pipeline that runs all
 later steps using that Polly policy.
 
+.. highlight:: csharp
+
 ::
 
     internal class MyQoSProtectedHandler : RequestHandler<MyCommand>
@@ -46,28 +44,31 @@ later steps using that Polly policy.
             /*Do work that could throw error because of distributed computing reliability*/
         }
     }
-            
+
 
 To configure the Polly policy you use the PolicyRegistry to register the
 Polly Policy with a name. At runtime we look up that Policy by name.
+
+.. highlight:: csharp
 
 ::
 
     var policyRegistry = new PolicyRegistry();
 
     var policy = Policy
-    .Handle<Exception>()
-    .WaitAndRetry(new[]
-    {
-        1.Seconds(),
-        2.Seconds(),
-        3.Seconds()
-    }, (exception, timeSpan) =>
-    {
-        s_retryCount++;
-    });
+        .Handle<Exception>()
+        .WaitAndRetry(new[]
+        {
+            1.Seconds(),
+            2.Seconds(),
+            3.Seconds()
+        }, (exception, timeSpan) =>
+        {
+            s_retryCount++;
+        });
+
     policyRegistry.Add("MyExceptionPolicy", policy);
-            
+
 
 When creating policies, refer to the
 `Polly <https://github.com/michael-wolfenden/Polly>`__ documentation.
@@ -107,9 +108,10 @@ We provide the Timeout attribute for that circumstance. You can apply it
 to a Handler to force that Handler into a thread which we will timeout,
 if it does not complete within the required time period.
 
+.. highlight:: csharp
+
 ::
 
-            
     public class EditTaskCommandHandler : RequestHandler<EditTaskCommand>
     {
         private readonly ITasksDAO _tasksDAO;

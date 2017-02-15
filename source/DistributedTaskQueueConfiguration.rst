@@ -1,9 +1,5 @@
-`Next <RabbitMQConfiguration.html>`__
-
-`Prev <Routing.html>`__
-
-How Brighter configures Task Queues
------------------------------------
+Distributed Task Queue Configuration
+------------------------------------
 
 In order to use the distributed task queue you need to configure the
 Dispatcher.
@@ -65,6 +61,8 @@ You create a **Message Mapper** by deriving from
 **IAmAMessageMapper<TaskReminderCommand>** and implementing the
 **MapToMessage()** and **MapToRequest** methods.
 
+.. highlight:: csharp
+
 ::
 
     public class TaskReminderCommandMessageMapper : IAmAMessageMapper<TaskReminderCommand>
@@ -82,20 +80,22 @@ You create a **Message Mapper** by deriving from
             return JsonConvert.DeserializeObject<TaskReminderCommand>(message.Body.Value);
         }
     }
-            
+
 
 You then need to register your Message Mapper so that we can find it,
 using a class that derives from **IAmAMessageMapperRegistry**. We
 recommend using **MessageMapperRegistry** unless you have more specific
 requirements.
 
+.. highlight:: csharp
+
 ::
 
     var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory)
     {
-        {typeof(GreetingCommand), typeof(GreetingCommandMessageMapper)}
+        { typeof(GreetingCommand), typeof(GreetingCommandMessageMapper) }
     };
-            
+
 
 Channel Factory
 ~~~~~~~~~~~~~~~
@@ -128,12 +128,14 @@ What you do care about is the shape of the configuration entries. In
 your configuration file you first need to ensure that you have the
 Configuration Section Handler for Service Activator registered
 
+.. highlight:: xml
+
 ::
 
     <configSections>
-    <section name="rmqMessagingGateway" type="paramore.brighter.commandprocessor.messaginggateway.rmq.MessagingGatewayConfiguration.RMQMessagingGatewayConfigurationSection, paramore.brighter.commandprocessor.messaginggateway.rmq" allowLocation="true" allowDefinition="Everywhere" />
+        <section name="rmqMessagingGateway" type="paramore.brighter.commandprocessor.messaginggateway.rmq.MessagingGatewayConfiguration.RMQMessagingGatewayConfigurationSection, paramore.brighter.commandprocessor.messaginggateway.rmq" allowLocation="true" allowDefinition="Everywhere" />
     </configSections>
-            
+
 
 And then you need to configure your channels. The important part is the
 **routing key**. This must be the same as the topic you set in the
@@ -147,40 +149,42 @@ long we wait for a message before timing out. Note that after a timeout
 we will wait for messages on the channel again, following a delay. This
 just allows us to yield to receive control messages on the message pump.
 
+.. highlight:: csharp
+
 ::
 
     <serviceActivatorConnections>
-    <connections>
-    <add connectionName="paramore.example.greeting" channelName="greeting.command" routingKey="greeting.command" dataType="Greetings.Ports.Commands.GreetingCommand" timeOutInMilliseconds="200" />
-    </connections>
+        <connections>
+            <add connectionName="paramore.example.greeting" channelName="greeting.command" routingKey="greeting.command" dataType="Greetings.Ports.Commands.GreetingCommand" timeOutInMilliseconds="200" />
+        </connections>
     </serviceActivatorConnections>
-            
+
 
 Creating a Bulder
 ~~~~~~~~~~~~~~~~~
 
 This code fragment shows putting the whole thing together
 
+.. highlight:: csharp
+
 ::
 
     //create message mappers
     var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory)
     {
-        {typeof(GreetingCommand), typeof(GreetingCommandMessageMapper)}
+        { typeof(GreetingCommand), typeof(GreetingCommandMessageMapper) }
     };
 
     //create the gateway
     var rmqMessageConsumerFactory = new RmqMessageConsumerFactory(logger);
-    var builder = DispatchBuilder
-        .With()
+    _dispatcher = DispatchBuilder.With()
         .CommandProcessor(CommandProcessorBuilder.With()
             .Handlers(new HandlerConfiguration(subscriberRegistry, handlerFactory))
             .Policies(policyRegistry)
             .NoTaskQueues()
             .RequestContextFactory(new InMemoryRequestContextFactory())
-            .Build()
-        )
+            .Build())
         .MessageMappers(messageMapperRegistry)
         .ChannelFactory(new InputChannelFactory(rmqMessageConsumerFactory))
-        .ConnectionsFromConfiguration();
-    _dispatcher = builder.Build();
+        .ConnectionsFromConfiguration()
+        .Build();

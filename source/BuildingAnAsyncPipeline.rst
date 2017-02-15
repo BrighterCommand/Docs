@@ -1,7 +1,3 @@
-`Next <Monitoring.html>`__
-
-`Prev <ImplementingAsyncHandler.html>`__
-
 Building a Pipeline of Async Request Handlers
 ---------------------------------------------
 
@@ -36,6 +32,8 @@ Let us assume that we want to log all requests travelling through the
 pipeline. (We provide this for you in the
 Paramore.Brighter.CommandProcessor packages so this for illustration
 only). We could implement a generic handler as follows:
+
+.. highlight:: csharp
 
 ::
 
@@ -84,6 +82,8 @@ We now need to tell our pipeline to call this orthogonal handler before
 our target handler. To do this we use attributes. The code we want to
 write looks like this:
 
+.. highlight:: csharp
+
 ::
 
     internal class GreetingCommandRequestHandlerAsync : RequestHandlerAsync<GreetingCommand>
@@ -109,6 +109,8 @@ we have multiple orthogonal handlers i.e. attributes (**step: 1**).
 
 We implement the **UseCommandSourcingAsyncAttribute** by creating our
 own Attribute class, derived from **RequestHandlerAttribute**.
+
+.. highlight:: csharp
 
 ::
 

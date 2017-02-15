@@ -1,7 +1,3 @@
-`Next <UsingTheContextBag.html>`__
-
-`Prev <DispatchingARequest.html>`__
-
 Building a Pipeline of Request Handlers
 ---------------------------------------
 
@@ -36,7 +32,7 @@ our case this is provided by the **IHandleRequests<TRequest>** interface
 which has a method **IHandleRequests&ltTRequest> Successor** that allows
 us to chain filters together.
 
-|image0|
+|PipesAndFilters|
 
 The sink handler is handler that is the receiver you wish to invoke the
 action on. The pump is the **Command Dispatcher**. We occasionally use
@@ -57,7 +53,7 @@ pattern <https://msdn.microsoft.com/en-us/library/dn589788.aspx>`__
 style is that each filter in the pipeline is called within the scope of
 a previous filter in the pipeline.
 
-|image1|
+|RussianDoll|
 
 This is significant because you may desire to act before and after a
 subsequent filter step. One particular use case is exception handling: a
@@ -98,6 +94,8 @@ pipeline. (We provide this for you in the
 Paramore.Brighter.CommandProcessor packages so this for illustration
 only). We could implement a generic handler as follows:
 
+.. highlight:: csharp
+
 ::
 
     using System;
@@ -134,7 +132,7 @@ only). We could implement a generic handler as follows:
             }
         }
     }
-            
+
 
 Our Handle method is the method which will be called by the pipeline to
 service the request. After we log we call **return
@@ -155,6 +153,8 @@ We now need to tell our pipeline to call this orthogonal handler before
 our target handler. To do this we use attributes. The code we want to
 write looks like this:
 
+.. highlight:: csharp
+
 ::
 
     class GreetingCommandHandler : RequestHandler<GreetingCommand>
@@ -166,7 +166,7 @@ write looks like this:
             return base.Handle(command);
         }
     }
-            
+
 
 The **RequestLogging** Attribute tells the Command Processor to insert a
 Logging handler into the request handling pipeline before
@@ -176,6 +176,8 @@ have multiple orthogonal handlers i.e. attributes (**step: 1**).
 
 We implement the **RequestLoggingAttribute** by creating our own
 Attribute class, derived from **RequestHandlerAttribute**.
+
+.. highlight:: csharp
 
 ::
 
@@ -195,7 +197,7 @@ Attribute class, derived from **RequestHandlerAttribute**.
             return typeof(RequestLoggingHandler<>);
         }
     }
-            
+
 
 The most important part of this implementation is the GetHandlerType()
 method, where we return the type of our handler. At runtime the Command
@@ -267,16 +269,18 @@ pipeline. When we lookup the Handler for the Command in the
 SubscriberRegistry we will call it's Handle method. It can execute your
 code, and then call it's Successor (using the Russian Doll approach).
 
+.. highlight:: csharp
+
 ::
 
-            var myCommandHandler = new MyCommandHandler();
-            var myLoggingHandler = new MyLoggingHandler(log);
+    var myCommandHandler = new MyCommandHandler();
+    var myLoggingHandler = new MyLoggingHandler(log);
 
-            myLoggingHandler.Successor = myCommandHandler;
+    myLoggingHandler.Successor = myCommandHandler;
 
-            var subscriberRegistry = new SubscriberRegistry();
-            subscriberRegistry.Register<MyCommand, MyLoggingHandler>();
-            
+    var subscriberRegistry = new SubscriberRegistry();
+    subscriberRegistry.Register<MyCommand, MyLoggingHandler>();
+
 
 It is worth noting that as you control the HandlerFactory, you could
 also register the sink handler, but when instantiating an instance of it
@@ -286,6 +290,6 @@ We think it is easier to use attributes, but there may be circumstances
 where that approach does not work, and so this option is supported as
 well.
 
-.. |image0| image:: images/PipesAndFilters.png
-.. |image1| image:: images/RussianDoll.png
+.. |PipesAndFilters| image:: _static/images/PipesAndFilters.png
+.. |RussianDoll| image:: _static/images/RussianDoll.png
 

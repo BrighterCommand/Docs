@@ -1,7 +1,3 @@
-`Next <AsyncDispatchARequest.html>`__
-
-`Prev <RunningUnderAWSSQSInfrastructure.html>`__
-
 AWS SQS Configuration
 ---------------------
 
@@ -12,6 +8,8 @@ section in your configuration file and ensure that an instance of
 
 Here's an example of an App.config file:
 
+.. highlight:: xml
+
 ::
 
     <?xml version="1.0" encoding="utf-8"?>
@@ -21,13 +19,15 @@ Here's an example of an App.config file:
         </configSections>
         <aws profileName="brigter.sqs.test" region="eu-west-1" />
     </configuration>
-             
+
 
 Brightor will not generate the SQS queues on fly. It is required to
 create them before hand and define their url in service activator
 configuration section.
 
 Here's an example of service activator configuration:
+
+.. highlight:: xml
 
 ::
 

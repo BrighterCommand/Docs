@@ -1,7 +1,3 @@
-`Next <EventSourcing.html>`__
-
-`Prev <PolicyRetryAndCircuitBreaker.html>`__
-
 Failure and Fallback
 --------------------
 
@@ -63,6 +59,8 @@ a **Fallback Policy** which catches a **Broken Circuit Exception**
 (raised when the Circuit Breaker is tripped) and initiates the Fallback
 chain.
 
+.. highlight:: csharp
+
 ::
 
     public class MyFallbackProtectedHandler: RequestHandler<MyCommand>
@@ -83,5 +81,4 @@ chain.
             }
             return base.Fallback(command);
         }
-
     }

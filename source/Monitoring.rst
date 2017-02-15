@@ -1,7 +1,3 @@
-`Next <ImplementingDistributedTaskQueue.html>`__
-
-`Prev <PolicyFallback.html>`__
-
 Monitoring
 ----------
 
@@ -20,13 +16,17 @@ Config file
 Monitoring requires a new section to be added to the application config
 file:
 
+.. highlight:: xml
+
 ::
 
     <configSections>
-    <section name="monitoring" type ="paramore.brighter.commandprocessor.monitoring.Configuration.MonitoringConfigurationSection, paramore.brighter.commandprocessor" allowLocation ="true" allowDefinition="Everywhere"/>
+        <section name="monitoring" type ="paramore.brighter.commandprocessor.monitoring.Configuration.MonitoringConfigurationSection, paramore.brighter.commandprocessor" allowLocation ="true" allowDefinition="Everywhere"/>
     </configSections>
 
 The monitoring config can then be speicified later in the file:
+
+.. highlight:: xml
 
 ::
 
@@ -56,6 +56,8 @@ Attribute
 The following attribute must be added to the Handle method in the
 handler, TRequestHandler:
 
+.. highlight:: csharp
+
 ::
 
     [Monitor(step:1, timing:HandlerTiming.Before, handlerType:typeof(TRequestHandler))]
@@ -69,6 +71,8 @@ Container registration
 The following additional handler must be registered in the application
 container (where ``MonitorHandler<T>`` is a built-in Brighter handler):
 
+.. highlight:: csharp
+
 ::
 
     container.Register<TRequest, MonitorHandler<TRequest>>
@@ -79,10 +83,12 @@ Monitor message format
 A message is emitted from the Control Bus on Handler Entry and Handler
 Exit. The following is the form of the message:
 
+.. highlight:: javascript
+
 ::
 
     {
-        "Exception": null or Exception message,
+        "Exception": null, // or Exception message
         "EventType": "EnterHandler or ExitHandler",
         "EventTime": "2016-06-21T15:48:26.1390192Z",
         "TimeElapsedMs": 0 or Duration,

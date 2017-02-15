@@ -1,9 +1,5 @@
-`Next <ImplementingDistributedTaskQueue.html>`__
-
-`Prev <PolicyFallback.html>`__
-
-Configuration
--------------
+Basic Configuration
+-------------------
 
 We want to support using Brighter in your project with the minimum of
 dependencies on other packages. Specifically we want to avoid a
@@ -43,13 +39,17 @@ The Command Dispatcher needs to be able to map **Command**\ s or
 and only one **Request Handlers** for an event we expect many. Register
 your handlers with the **Subscriber Registry**
 
+.. highlight:: csharp
+
 ::
 
     var registry = new SubscriberRegistry();
     registry.Register<GreetingCommand, GreetingCommandHandler>();
-            
+
 
 We also support an initializer syntax
+
+.. highlight:: csharp
 
 ::
 
@@ -57,7 +57,7 @@ We also support an initializer syntax
     {
         {typeof(GreetingCommand), typeof(GreetingCommandHandler)}
     }
-            
+
 
 Handler Factory
 ~~~~~~~~~~~~~~~
@@ -79,6 +79,8 @@ container but switched to user defined factories as per Mark's blog.
 
 You can implement the Handler Factory using an IoC container, in your
 own code. For example:
+
+.. highlight:: csharp
 
 ::
 
@@ -105,7 +107,7 @@ own code. For example:
             }
         }
     }
-            
+
 
 Policy Registry
 ~~~~~~~~~~~~~~~
@@ -118,12 +120,14 @@ Registration requires a string as a key, that you will use in your
 [UsePolicy] attribute to choose the policy. We provide two keys:
 CommandProcessor. and C
 
+.. highlight:: csharp
+
 ::
 
     var retryPolicy = Policy.Handle<Exception>().WaitAndRetry(new[] { TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(150) });
     var circuitBreakerPolicy = Policy.Handle<Exception>().CircuitBreaker(1, TimeSpan.FromMilliseconds(500));
     var policyRegistry = new PolicyRegistry() { { CommandProcessor.RETRYPOLICY, retryPolicy }, { CommandProcessor.CIRCUITBREAKER, circuitBreakerPolicy } };
-            
+
 
 #
 
@@ -145,7 +149,7 @@ which you can then use in code like this
 
         return base.Handle(command);
     }
-            
+
 
 Request Context Factory
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -162,16 +166,17 @@ Builder** to help build a **Command Processor**. This has a fluent
 interface to help guide you when configuring Brighter. The result looks
 like this:
 
+.. highlight:: csharp
+
 ::
 
-    var commandProcessor =
-    CommandProcessorBuilder.With()
+    var commandProcessor = CommandProcessorBuilder.With()
         .Handlers(new HandlerConfiguration(subscriberRegistry, handlerFactory))
         .Policies(policyRegistry)
         .NoTaskQueues()
         .RequestContextFactory(new InMemoryRequestContextFactory())
         .Build();
-            
+
 
 We discuss `Task Queues <DistributedTaskQueueConfiguration.html>`__
 later.

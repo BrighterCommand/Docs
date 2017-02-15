@@ -1,7 +1,3 @@
-`Next <BasicConfiguration.html>`__
-
-`Prev <PolicyFallback.html>`__
-
 Event Sourcing
 --------------
 
@@ -88,6 +84,8 @@ will not run, meaning that your Store reflects your application state.
 
 The following code shows a handler marked up for Command Sourcing
 
+.. highlight:: csharp
+
 ::
 
      internal class GreetingCommandHandler : RequestHandler<GreetingCommand>
@@ -99,7 +97,7 @@ The following code shows a handler marked up for Command Sourcing
             return base.Handle(command);
         }
      }
-     
+
 
 Inerrnally the `Monitor
 Handler <https://github.com/iancooper/Paramore/blob/master/Brighter/paramore.brighter.commandprocessor/monitoring/Handlers/MonitorHandler.cs>`__
@@ -109,6 +107,8 @@ provide an implementation at runtime when you provide instances of the
 Handler from your Handler Factory implementation. The example code
 relies on the TinyIoC Inversion of Control container to hookup the
 Handler and Command Store.
+
+.. highlight:: csharp
 
 ::
 

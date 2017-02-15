@@ -1,7 +1,3 @@
-`Next <BuildingAnAsyncPipeline.html>`__
-
-`Prev <AsyncDispatchARequest.html>`__
-
 How to Implement an Asynchronous Request Handler
 ------------------------------------------------
 
@@ -14,9 +10,11 @@ handling for the Command or Event.
 For example, assume that you want to handle the **Command**
 GreetingCommand
 
+.. highlight:: csharp
+
 ::
 
-    class GreetingCommand : IRequest
+    public class GreetingCommand : IRequest
     {
         public GreetingCommand(string name)
         {
@@ -27,7 +25,7 @@ GreetingCommand
         public Guid Id { get; set; }
         public string Name { get; private set; }
     }
-            
+
 
 Then derive your handler from **RequestHandlerAsync<GreetingCommand>**
 and accept a parameter of that type on the overriden **HandleAsync()**
@@ -40,9 +38,11 @@ next handler in the chain, by awaiting the base class **HandleAsync()**.
 (Because the next element in the pipeline should also be async, you
 should always await the result of this call.)
 
+.. highlight:: csharp
+
 ::
 
-    class GreetingCommandRequestHandlerAsync : RequestHandlerAsync
+    public class GreetingCommandRequestHandlerAsync : RequestHandlerAsync
     {
         public override async Task HandleAsync(GreetingCommand command, CancellationToken? ct = null)
         {

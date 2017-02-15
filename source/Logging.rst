@@ -1,8 +1,5 @@
-
-`Next <HelloWorldExample.html>`__
-
-Introduction
-============
+Supporting Logging
+==================
 
 Logger
 ~~~~~~
@@ -29,9 +26,10 @@ explicitly takes an instance of Brighter's ILog to allow you to provide
 an `Test Double <https://en.wikipedia.org/wiki/Test_double>`__ of that
 ILog implementation.
 
+.. highlight:: csharp
+
 ::
 
-            
     [Subject(typeof(PipelineBuilder<>))]
     public class When_Building_A_Handler_For_A_Command
     {
@@ -55,24 +53,25 @@ ILog implementation.
         private It _should_have_set_the_context_on_the_handler = () => s_chain_Of_Responsibility.Context.ShouldNotBeNull();
         private It _should_use_the_context_that_we_passed_in = () => s_chain_Of_Responsibility.Context.ShouldBeTheSameAs(s_request_context);
     }
-            
-            
+
+
 
 However, outside of testing, you rarely need to provide the instance of
 ILog. This is because in the base class **RequestHandler&ltT>** the
 default constructor simply grabs the current logger from LibLog.
 
+.. highlight:: csharp
+
 ::
 
-                
-    /// 
+    ///
     /// Initializes a new instance of the  class.
-    /// 
+    ///
     protected RequestHandler()
     : this(LogProvider.GetCurrentClassLogger())
     {}
-            
-            
+
+
 
 The only time you might want to change this, is if you intend to call a
 more derived constructor in your own code, that contains the ILog used
@@ -80,15 +79,16 @@ by testing. In this case, you can still keep ILog out of your code, by
 providing the call to LibLog yourself
 (**LogProvider.GetCurrentClassLogger()**)
 
+.. highlight:: csharp
+
 ::
 
-                
     public MailTaskReminderHandler(IAmAMailGateway mailGateway, IAmACommandProcessor commandProcessor)
         : this(mailGateway, commandProcessor, LogProvider.GetCurrentClassLogger())
     {}
 
     public MailTaskReminderHandler(IAmAMailGateway mailGateway, IAmACommandProcessor commandProcessor, ILog logger)
-        :base(logger)
+        : base(logger)
     {
         _mailGateway = mailGateway;
         _commandProcessor = commandProcessor;

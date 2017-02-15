@@ -1,7 +1,3 @@
-`Next <ImplementingAsyncHandler.html>`__
-
-`Prev <AWSSQSConfiguration.html>`__
-
 Dispatching Requests Asynchronously
 -----------------------------------
 
@@ -37,6 +33,8 @@ instead of **CommandProcessor.Send()**.
 Note also that we have a **SimpleHandlerFactoryAsync** as this factory
 needs to return handlers that implement **IHandleRequestsAsync** not
 **IHandleRequests**.
+
+.. highlight:: csharp
 
 ::
 
@@ -74,11 +72,13 @@ The **Subscriber Registry** is where you register your Handlers.
 The **SubscriberRegistry.RegisterAsync()** expects a handler that
 implements **IHandleRequestsAsync**
 
+.. highlight:: csharp
+
 ::
 
     var registry = new SubscriberRegistry();
     registry.RegisterAsync<GreetingCommand, GreetingCommandRequestHandlerAsync>();
-        
+
 
 Pipelines Must be Homogeneous
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -101,9 +101,11 @@ them. To do that you simply use the **CommandProcessor.SendAsync()** (or
 **CommandProcessor.PublishAsync()**) method passing in an instance of
 your command.
 
+.. highlight:: csharp
+
 ::
 
-        await commandProcessor.SendAsync(new GreetingCommand("Ian"));
+    await commandProcessor.SendAsync(new GreetingCommand("Ian"));
 
 Cancellation
 ^^^^^^^^^^^^
@@ -179,6 +181,8 @@ When awaiting it is possible to configure how the continuation runs - on
 the SyncronizationContext or using the Task Scheduler, overriding the
 default behaviour, which is to capture the SynchronizationContext.
 
+.. highlight:: csharp
+
 ::
 
     await MethodAsync(value, ct).ConfigureAwait(true);
@@ -191,6 +195,8 @@ want if your handler needs to run in the context of the original thread.
 As a result we let you pass in a parameter on the **\*Async** calls to
 change the behaviour throughout your pipeline.
 
+.. highlight:: csharp
+
 ::
 
     await commandProcessor.SendAsync(new GreetingCommand("Ian"), continueOnCapturedContext: true);
@@ -200,6 +206,8 @@ A handler exposes the parameter you supply to the call to **SendAsync**,
 **ContinueOnCapturedContext**. That property is true if we want to use
 the SynchronizationContext and not the Task Scheduler to run our
 continuation.
+
+.. highlight:: csharp
 
 ::
 

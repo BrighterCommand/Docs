@@ -1,8 +1,3 @@
-
-`Next <DistributedTaskQueueConfiguration.html>`__
-
-`Prev <ImplementingDistributedTaskQueue.html>`__
-
 Routing
 -------
 
@@ -17,9 +12,9 @@ topic. A producer sends messages with a key or topic to a broker, and
 the broker sends a copy of that message to every subscribing consumer.
 
 In messaging we sometimes refer to the list of subscribers as a
-`Recipient List <>`__, and because consumers can register their interest
-at runtime instead of build we sometimes calls this a `Dynamic Recipient
-List <>`__.
+**Recipient List**, and because consumers can register their interest
+at runtime instead of build we sometimes calls this a **Dynamic Recipient
+List**.
 
 The publish subscribe model works particularly well with an
 **Event-Driven Architecture** (EDA). In an EDA one process, the
@@ -28,7 +23,7 @@ happened within the process, such as an order being raised or a new
 customer being added, and subscribers who receive that message can act
 upon it. Processes can communicate back and forth with one process
 publishing an **Event** and another system reacting and publishing its
-**Event** message in turn. A `correlation id <>`__, a unique identifier
+**Event** message in turn. A **correlation id**, a unique identifier
 shared by the messages allows the original producer to correlate events
 raised by other producers to its message.
 
@@ -48,6 +43,8 @@ typename of the event for the Producer.
 When implementing an **IAmAMessageMapper<T>** you set the **Topic** in
 the **MessageHeader** when serializing your **Command** or **Event** to
 disk. In the following example we set the **Topic** to *Task.Completed*.
+
+.. highlight:: csharp
 
 ::
 
@@ -79,18 +76,29 @@ To configure a consumer using a configuration file we use the service
 activator configuration section, which needs to be added to the
 **<configSections>** element of your configuration file.
 
+.. highlight:: xml
+
 ::
 
-    <section name="serviceActivatorConnections" type="paramore.brighter.serviceactivator.ServiceActivatorConfiguration.ServiceActivatorConfigurationSection, paramore.brighter.serviceactivator" allowLocation="true" allowDefinition="Everywhere" />
+    <section name="serviceActivatorConnections"
+             type="paramore.brighter.serviceactivator.ServiceActivatorConfiguration.ServiceActivatorConfigurationSection, paramore.brighter.serviceactivator"
+             allowLocation="true"
+             allowDefinition="Everywhere" />
 
 To configure individual consumers we need to add elements to the
 **<serviceActivatorConnections>** element.
 
+.. highlight:: xml
+
 ::
 
     <serviceActivatorConnections>
-        C<connections>
-            <add connectionName="paramore.example.greeting" channelName="greeting.command" routingKey="greeting.command" dataType="Greetings.Ports.Commands.GreetingCommand" timeOutInMilliseconds="200" />
+        <connections>
+            <add connectionName="paramore.example.greeting"
+                 channelName="greeting.command"
+                 routingKey="greeting.command"
+                 dataType="Greetings.Ports.Commands.GreetingCommand"
+                 timeOutInMilliseconds="200" />
         </connections>
     </serviceActivatorConnections>
 
@@ -163,6 +171,8 @@ respond with status information.
 
 Note also the correlation id that is added to the **ReplyAddress**.
 
+.. highlight:: csharp
+
 ::
 
     public class ReplyAddress
@@ -181,8 +191,7 @@ Note also the correlation id that is added to the **ReplyAddress**.
     {
         public ReplyAddress ReplyAddress { get; private set; }
 
-        public Request(ReplyAddress replyAddress)
-        : base(Guid.NewGuid())
+        public Request(ReplyAddress replyAddress) : base(Guid.NewGuid())
         {
             ReplyAddress = replyAddress;
         }
@@ -190,8 +199,7 @@ Note also the correlation id that is added to the **ReplyAddress**.
 
     public class HeartbeatRequest : Request
     {
-        public HeartbeatRequest(ReplyAddress sendersAddress)
-        : base(sendersAddress)
+        public HeartbeatRequest(ReplyAddress sendersAddress) : base(sendersAddress)
         {
         }
     }
@@ -206,8 +214,9 @@ In the following code we also serialize the message back to a
 serialize back to a **Command** we set the **ReplyAddress** with the
 Topic and Correlation Id.
 
-::
+.. highlight:: csharp
 
+::
 
     public class HeartbeatRequestCommandMessageMapper : IAmAMessageMapper<HeartbeatRequest>
     {
@@ -244,14 +253,15 @@ reply-to address. We set this from the **Command** in our response. In
 this code our response to the **HeartbeatRequest** is to respond with a
 list of running consumers in the service.
 
+.. highlight:: csharp
+
 ::
 
     public class Reply : Command
     {
-    public ReplyAddress SendersAddress { get; private set; }
+        public ReplyAddress SendersAddress { get; private set; }
 
-        public Reply(ReplyAddress sendersAddress)
-        : base(Guid.NewGuid())
+        public Reply(ReplyAddress sendersAddress) : base(Guid.NewGuid())
         {
             SendersAddress = sendersAddress;
         }
@@ -259,8 +269,7 @@ list of running consumers in the service.
 
     public class HeartbeatReply : Reply
     {
-        public HeartbeatReply(string hostName, ReplyAddress sendersAddress)
-        :base(sendersAddress)
+        public HeartbeatReply(string hostName, ReplyAddress sendersAddress) : base(sendersAddress)
         {
             HostName = hostName;
             Consumers = new List<RunningConsumer>();
@@ -286,9 +295,11 @@ Again the key to responding is the **IAmAMessageMapper** implementation
 which uses the **ReplyAddress** to route the **Message** via its
 **MessageHeader** back to the caller.
 
+.. highlight:: csharp
+
 ::
 
-    class HeartbeatReplyCommandMessageMapper : IAmAMessageMapper<HeartbeatReply>
+    internal class HeartbeatReplyCommandMessageMapper : IAmAMessageMapper<HeartbeatReply>
     {
         public Message MapToMessage(HeartbeatReply request)
         {

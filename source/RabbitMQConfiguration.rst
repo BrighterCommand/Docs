@@ -1,8 +1,3 @@
-`Next <RunningUnderAWSSQSInfrastructure.html>`__
-
-`Prev <DistributedTaskQueueConfiguration.html>`__
-
-
 RabbitMQ Configuration
 ----------------------
 
@@ -55,9 +50,11 @@ The available configuration options are:
 
 Here's an example of an App.config file:
 
+.. highlight:: xml
+
 ::
 
-     <?xml version="1.0" encoding="utf-8"?>
+    <?xml version="1.0" encoding="utf-8"?>
     <configuration>
         <configSections>
             <section name="rmqMessagingGateway" type="paramore.brighter.commandprocessor.messaginggateway.rmq.MessagingGatewayConfiguration.RMQMessagingGatewayConfigurationSection, paramore.brighter.commandprocessor.messaginggateway.rmq" />

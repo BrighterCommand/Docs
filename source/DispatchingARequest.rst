@@ -1,7 +1,3 @@
-`Next <BuildingAPipeline.html>`__
-
-`Prev <ImplementingAHandler.html>`__
-
 Dispatching Requests
 --------------------
 
@@ -18,11 +14,13 @@ that **Command** or **Event** and your Handler.
 
 The **Subscriber Registry** is where you register your Handlers.
 
+.. highlight:: csharp
+
 ::
 
-        var subscriberRegistry = new SubscriberRegistry();
-        subscriberRegistry.Register<GreetingCommand, GreetingCommandHandler>();
-        
+    var subscriberRegistry = new SubscriberRegistry();
+    subscriberRegistry.Register<GreetingCommand, GreetingCommandHandler>();
+
 
 Dispatching Requests
 ~~~~~~~~~~~~~~~~~~~~
@@ -31,10 +29,12 @@ Once you have registered your Handlers, you can dispatch requests to
 them. To do that you simply use the **CommandProcessor.Send()** method
 passing in an instance of your command.
 
+.. highlight:: csharp
+
 ::
 
-        commandProcessor.Send(new GreetingCommand("Ian"));
-        
+    commandProcessor.Send(new GreetingCommand("Ian"));
+
 
 Building a Command Dispatcher
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -43,6 +43,8 @@ We associate a **Subscriber Registry** with a **Command Processor** by
 passing it into the constructor of the **Command Processor**. For
 convenience, we provide a **Commmand Processor Builder** that helps you
 configure new instances of **Command Processor**.
+
+.. highlight:: csharp
 
 ::
 
@@ -62,7 +64,7 @@ configure new instances of **Command Processor**.
         .RequestContextFactory(new InMemoryRequestContextFactory());
 
     var commandProcessor = builder.Build();
-        
+
 
 We cover `configuration of a **Command
 Processor** <BasicConfiguration.html>`__ in more detail later.
@@ -145,6 +147,8 @@ determine the type to use with the cool as the concrete type.
 
 If you try this:
 
+.. highlight:: csharp
+
 ::
 
     ICommand command = new GreetingCommand("Ian");
@@ -158,6 +162,8 @@ exactly one handler.""*
 Now, you don't see this issue if you pass the concrete type in, so the
 compiler can correctly resolve the run-time type.
 
+.. highlight:: csharp
+
 ::
 
     commandProcessor.Send(new GreetingCommand("Ian"));
@@ -169,11 +175,13 @@ The workaround is to use the dynamic keyword. Using the dynamic keyword
 means that the type will be evaluated using RTTI, which will
 successfully pick up the type that you need.
 
+.. highlight:: csharp
+
 ::
 
     ICommand command = new GreetingCommand("Ian");
     commandProcessor.Send((dynamic)command);
-     
+
 
 See `this
 discussion <https://github.com/iancooper/Paramore/issues/116>`__ for

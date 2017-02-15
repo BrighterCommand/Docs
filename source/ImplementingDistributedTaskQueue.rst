@@ -1,9 +1,5 @@
-`Next <Routing.html>`__
-
-`Prev <BasicConfiguration.html>`__
-
-Task Queues
------------
+Implementing a Distributed Task Queue
+-------------------------------------
 
 Brighter provides support for a `distributed task
 queue <http://parlab.eecs.berkeley.edu/wiki/_media/patterns/taskqueue.pdf>`__.
@@ -105,7 +101,7 @@ approach by having multiple consumers read from the same
 `Channel <http://www.enterpriseintegrationpatterns.com/MessageChannel.html>`__
 to allow us to scale out to meet load.
 
-|image0|
+|TaskQueues|
 
 Do I have to use a Broker, what about MSMQ?
 -------------------------------------------
@@ -155,26 +151,27 @@ What does this look like in code
 Instead of using **CommandProcessor.Send()** you use
 **CommandProcessor.Post()** to send the message
 
+.. highlight:: csharp
+
 ::
 
-            
     var reminderCommand = new TaskReminderCommand(
          taskName: reminder.TaskName,
          dueDate: DateTime.Parse(reminder.DueDate),
          recipient: reminder.Recipient,
-         copyTo: reminder.CopyTo
-         );
+         copyTo: reminder.CopyTo);
 
      _commandProcessor.Post(reminderCommand);
-            
-            
+
+
 
 You add a message mapper to tell Brighter how to serialize the message
 for sending to your consumers.
 
+.. highlight:: csharp
+
 ::
 
-            
     public class TaskReminderCommandMessageMapper : IAmAMessageMapper<TaskReminderCommand>
     {
         public Message MapToMessage(TaskReminderCommand request)
@@ -190,8 +187,8 @@ for sending to your consumers.
             return JsonConvert.DeserializeObject<TaskReminderCommand>(message.Body.Value);
         }
     }
-            
-            
+
+
 
 One option is to use a *Core* assembly that contains your domain model,
 handlers, message mappers etc. and then pull that assembly into
@@ -212,9 +209,10 @@ case you \*\*must\*\* implement the mapper on both sides.
 
 Then you write a handler as normal.
 
+.. highlight:: csharp
+
 ::
 
-            
     public class MailTaskReminderHandler : RequestHandler<TaskReminderCommand>
     {
         private readonly IAmAMailGateway _mailGateway;
@@ -243,8 +241,8 @@ Then you write a handler as normal.
             return base.Handle(command);
         }
     }
-            
-            
+
+
 
 The Dispatcher
 --------------
@@ -271,9 +269,10 @@ message pumps and **Dispatcher.End()** to shut them.
 We do allow you to start and stop individual channels, but this is an
 advanced feature for operating the services.
 
+.. highlight:: csharp
+
 ::
 
-            
     internal class GreetingService : ServiceControl
     {
         private Dispatcher _dispatcher;
@@ -303,8 +302,8 @@ advanced feature for operating the services.
             return;
         }
     }
-            
-            
+
+
 
 Configuration
 -------------
@@ -314,5 +313,5 @@ is the framework uses configuration that your provide to do that.
 Configuration is the subject of this documentation
 `here <DistributedTaskQueueConfiguration.html>`__.
 
-.. |image0| image:: images/Task%20Queues.png
+.. |TaskQueues| image:: _static/images/TaskQueues.png
 

@@ -1,7 +1,3 @@
-`Next <AWSSQSConfiguration.html>`__
-
-`Prev <RabbitMQConfiguration.html>`__
-
 Running Brighter under AWS SQS Infrastructure
 ---------------------------------------------
 
@@ -20,11 +16,13 @@ in the application configuration file. Here, we will create a profile
 using `AWS Toolkit on Visual
 Studio <http://aws.amazon.com/visualstudio/>`__:
 
-| Click to add profile button on AWS Explorer window.
-| |image0|
+Click to add profile button on AWS Explorer window.
 
-| Then fill the form to create your profile.
-| |image1|
+|AWSToolkitOverview|
+
+Then fill the form to create your profile.
+
+|AWSToolkitCreateAccount|
 
 You can find more information about profiles and credentials
 `here <http://docs.aws.amazon.com/AWSSdkDocsNET/latest/DeveloperGuide/net-dg-config-creds.html>`__.
@@ -32,13 +30,15 @@ You can find more information about profiles and credentials
 Creating queues
 ~~~~~~~~~~~~~~~
 
-| Unfortunately, brighter will not be creating the queues on request for
+Unfortunately, brighter will not be creating the queues on request for
 you; you need to create them manually. To create queues, you should go
 to your AWS Console.
-| |image2|
 
-| Then create the queue by filling the form below.
-| |image3|
+|AWSConsoleList|
+
+Then create the queue by filling the form below.
+
+|AWSConsoleCreateQueue|
 
 -  **Default Visibility Timeout:** The length of time that a message
    received from a queue will be invisible to other receiving
@@ -58,16 +58,18 @@ configuration file.
 Posting messages
 ~~~~~~~~~~~~~~~~
 
-| Instead of posting messages directly to the queues, Brighter posts
+Instead of posting messages directly to the queues, Brighter posts
 them to a topic so that any queue can listen or stop listening messages
 without changing any code. AWS SNS is used for that purpose.
-| |image4|
 
-You can create a topic by clicking on create topic link |image5|
+|AWSConsoleTopics|
 
-| After that, simply go back to your queue list, select a queue and
+You can create a topic by clicking on create topic link |AWSConsoleCreateTopic|
+
+After that, simply go back to your queue list, select a queue and
 click on Subscribe Queue to SNS Topic link at Queue Actions menu.
-| |image6|
+
+|AWSConsoleLinkToSNS|
 
 Select your SNS queue and now your queue will get the messages which are
 sent to the SNS topic.
@@ -77,11 +79,11 @@ to use AWS SQS:
 
 `AWS SQS Configuration <AWSSQSConfiguration.html>`__
 
-.. |image0| image:: images/AWSToolkitOverview.png
-.. |image1| image:: images/AWSToolkitCreateAccount.png
-.. |image2| image:: images/AWSConsoleList.png
-.. |image3| image:: images/AWSConsoleCreateQueue.png
-.. |image4| image:: images/AWSConsoleTopics.png
-.. |image5| image:: images/AWSConsoleCreateTopic.png
-.. |image6| image:: images/AWSConsoleLinkToSNS.png
+.. |AWSToolkitOverview| image:: _static/images/AWSToolkitOverview.png
+.. |AWSToolkitCreateAccount| image:: _static/images/AWSToolkitCreateAccount.png
+.. |AWSConsoleList| image:: _static/images/AWSConsoleList.png
+.. |AWSConsoleCreateQueue| image:: _static/images/AWSConsoleCreateQueue.png
+.. |AWSConsoleTopics| image:: _static/images/AWSConsoleTopics.png
+.. |AWSConsoleCreateTopic| image:: _static/images/AWSConsoleCreateTopic.png
+.. |AWSConsoleLinkToSNS| image:: _static/images/AWSConsoleLinkToSNS.png
 

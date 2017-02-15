@@ -1,7 +1,3 @@
-`Next <PolicyRetryAndCircuitBreaker.html>`__
-
-`Prev <BuildingAPipeline.html>`__
-
 Passing information between Handlers in the Pipeline
 ----------------------------------------------------
 
@@ -28,13 +24,12 @@ need to take responsibility for freeing any unmanaged resources you
 place into the **Context Bag** for example when code called after the
 Handler that inserts the resource into the Bag returns to the Handler).
 
+.. highlight:: csharp
+
 ::
 
     public class MyContextAwareCommandHandler : RequestHandler<MyCommand>
     {
-        public MyContextAwareCommandHandler(ILog logger) : base(logger)
-        { }
-
         public static string TestString { get; set; }
 
         public override MyCommand Handle(MyCommand command)
@@ -49,7 +44,7 @@ Handler that inserts the resource into the Bag returns to the Handler).
             Context.Bag["MyContextAwareCommandHandler"] = "I was called and set the context";
         }
     }
-        
+
 
 Internally we use the **Context Bag** in a number of the Quality of
 Service supporting Attributes we provide. See

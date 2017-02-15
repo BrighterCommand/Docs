@@ -1,7 +1,3 @@
-`Next <DispatchingARequest.html>`__
-
-`Prev <CommandsCommandDispatcherandProcessor.html>`__
-
 How to Implement a Request Handler
 ----------------------------------
 
@@ -13,9 +9,11 @@ the Command or Event.
 For example, assume that you want to handle the **Command**
 GreetingCommand
 
+.. highlight:: csharp
+
 ::
 
-    clasclass GreetingCommand : IRequest
+    public class GreetingCommand : IRequest
     {
         public GreetingCommand(string name)
         {
@@ -26,14 +24,16 @@ GreetingCommand
         public Guid Id { get; set; }
         public string Name { get; private set; }
     }
-            
+
 
 Then derive your handler from **RequestHandler<GreetingCommand>** and
 accept a parameter of that type on the overriden **Handle()** method.
 
+.. highlight:: csharp
+
 ::
 
-    clasGreetingCommandHandler : RequestHandler<GreetingCommand>
+    public class GreetingCommandHandler : RequestHandler<GreetingCommand>
     {
         public override GreetingCommand Handle(GreetingCommand command)
         {
@@ -41,7 +41,7 @@ accept a parameter of that type on the overriden **Handle()** method.
             return base.Handle(command);
         }
     }
-            
+
 
 What is the difference between a Command and an Event?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
