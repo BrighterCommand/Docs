@@ -1,28 +1,6 @@
-Paramore
-========
-
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues
-
-`View the Project on GitHub
-iancooper/Paramore <https://github.com/iancooper/Paramore>`__
-
--  `Download **ZIP
-   File** <https://github.com/iancooper/Paramore/zipball/master>`__
--  `Download **TAR
-   Ball** <https://github.com/iancooper/Paramore/tarball/master>`__
--  `View On **GitHub** <https://github.com/iancooper/Paramore>`__
-
-`Paramore Home <../index.html>`__
-
-`Brighter Home <Brighter.html>`__
-
 `Next <PolicyRetryAndCircuitBreaker.html>`__
 
 `Prev <BuildingAPipeline.html>`__
-
-Brighter
-========
 
 Passing information between Handlers in the Pipeline
 ----------------------------------------------------
@@ -76,10 +54,3 @@ Handler that inserts the resource into the Bag returns to the Handler).
 Internally we use the **Context Bag** in a number of the Quality of
 Service supporting Attributes we provide. See
 `Fallback <PolicyFallback.html>`__ for example.
-
-This project is maintained by
-`iancooper <https://github.com/iancooper>`__
-
-Hosted on GitHub Pages — Theme by
-`orderedlist <https://github.com/orderedlist>`__
-

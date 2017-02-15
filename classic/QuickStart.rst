@@ -1,27 +1,5 @@
-Paramore
-========
-
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues
-
-`View the Project on GitHub
-iancooper/Paramore <https://github.com/iancooper/Paramore>`__
-
--  `Download **ZIP
-   File** <https://github.com/iancooper/Paramore/zipball/master>`__
--  `Download **TAR
-   Ball** <https://github.com/iancooper/Paramore/tarball/master>`__
--  `View On **GitHub** <https://github.com/iancooper/Paramore>`__
-
-`Paramore Home <../index.html>`__
-
-`Brighter Home <Brighter.html>`__
-
-Brighter
-========
-
 Getting Started
----------------
+===============
 
 Brighter is intended to be a library and not a framework, so you can use
 it with ASP.NET MVC or WebAPI, Nancy, OpenRasta, Topshelf etc. You use
@@ -137,10 +115,3 @@ As ever with this kind of library, configuration is one of the most
 painful parts. We try to ease the pain through a fluent interface
 
 -  `Configuration <BasicConfiguration.html>`__
-
-This project is maintained by
-`iancooper <https://github.com/iancooper>`__
-
-Hosted on GitHub Pages — Theme by
-`orderedlist <https://github.com/orderedlist>`__
-

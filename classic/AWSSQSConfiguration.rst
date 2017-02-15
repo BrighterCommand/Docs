@@ -1,28 +1,6 @@
-Paramore
-========
-
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues
-
-`View the Project on GitHub
-iancooper/Paramore <https://github.com/iancooper/Paramore>`__
-
--  `Download **ZIP
-   File** <https://github.com/iancooper/Paramore/zipball/master>`__
--  `Download **TAR
-   Ball** <https://github.com/iancooper/Paramore/tarball/master>`__
--  `View On **GitHub** <https://github.com/iancooper/Paramore>`__
-
-`Paramore Home <../index.html>`__
-
-`Brighter Home <Brighter.html>`__
-
 `Next <AsyncDispatchARequest.html>`__
 
 `Prev <RunningUnderAWSSQSInfrastructure.html>`__
-
-Brighter
-========
 
 AWS SQS Configuration
 ---------------------
@@ -60,11 +38,3 @@ Here's an example of service activator configuration:
             <add connectionName="paramore.example.documentsandfolders.foldercreateddevent" channelName="https://sqs.eu-west-1.amazonaws.com/027649620536/FolderCreatedEvent" routingKey="FolderCreatedEvent" dataType="DocumentsAndFolders.Sqs.Ports.Events.FolderCreatedEvent" timeOutInMilliseconds="5000" requeueDelayInMilliseconds="5000" noOfPerformers="10" />
         </connections>
     </serviceActivatorConnections>
-             
-
-This project is maintained by
-`iancooper <https://github.com/iancooper>`__
-
-Hosted on GitHub Pages — Theme by
-`orderedlist <https://github.com/orderedlist>`__
-

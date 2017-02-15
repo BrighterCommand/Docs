@@ -1,28 +1,6 @@
-Paramore
-========
-
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues
-
-`View the Project on GitHub
-iancooper/Paramore <https://github.com/iancooper/Paramore>`__
-
--  `Download **ZIP
-   File** <https://github.com/iancooper/Paramore/zipball/master>`__
--  `Download **TAR
-   Ball** <https://github.com/iancooper/Paramore/tarball/master>`__
--  `View On **GitHub** <https://github.com/iancooper/Paramore>`__
-
-`Paramore Home <../index.html>`__
-
-`Brighter Home <Brighter.html>`__
-
 `Next <Implementing%20Ports%20and%20Adapters.html>`__
 
 `Prev <TasksExample.html>`__
-
-Brighter
-========
 
 Control Bus
 -----------
@@ -112,12 +90,6 @@ Factory, referring to the Connection configured, in this case
     .Create(new InMemoryMessageStore(), new RmqMessageProducer("monitoring")));
 
 A Control Bus is now active and ready to transmit monitoring messages.
-
-This project is maintained by
-`iancooper <https://github.com/iancooper>`__
-
-Hosted on GitHub Pages — Theme by
-`orderedlist <https://github.com/orderedlist>`__
 
 .. |image0| image:: http://www.enterpriseintegrationpatterns.com/img/ControlBus.gif
 

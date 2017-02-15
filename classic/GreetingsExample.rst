@@ -1,31 +1,5 @@
-Paramore
-========
-
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues
-
-`View the Project on GitHub
-iancooper/Paramore <https://github.com/iancooper/Paramore>`__
-
--  `Download **ZIP
-   File** <https://github.com/iancooper/Paramore/zipball/master>`__
--  `Download **TAR
-   Ball** <https://github.com/iancooper/Paramore/tarball/master>`__
--  `View On **GitHub** <https://github.com/iancooper/Paramore>`__
-
-`Paramore Home <../index.html>`__
-
-`Brighter Home <Brighter.html>`__
-
-`Next <TasksExample.html>`__
-
-`Prev <HelloWorldExample.html>`__
-
-Brighter
-========
-
-Tutorial
---------
+Greetings Example
+=================
 
 This tutorial takes you building the Greetings project, which is Hello
 World via a Task Queue. The walkthrough will build the example availabe
@@ -671,12 +645,6 @@ Next Steps
 The `Tasks Example <TasksExample.html>`__ contains a full example of a
 distributed application, that contains a user-agent client, a REST API,
 and a Windows Service that consumes work from a Task Queue
-
-This project is maintained by
-`iancooper <https://github.com/iancooper>`__
-
-Hosted on GitHub Pages — Theme by
-`orderedlist <https://github.com/orderedlist>`__
 
 .. |image0| image:: images/Greetings-Step1-ConsoleProject.png
 .. |image1| image:: images/Nuget-ServiceActivator.png

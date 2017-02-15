@@ -1,28 +1,6 @@
-Paramore
-========
-
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues
-
-`View the Project on GitHub
-iancooper/Paramore <https://github.com/iancooper/Paramore>`__
-
--  `Download **ZIP
-   File** <https://github.com/iancooper/Paramore/zipball/master>`__
--  `Download **TAR
-   Ball** <https://github.com/iancooper/Paramore/tarball/master>`__
--  `View On **GitHub** <https://github.com/iancooper/Paramore>`__
-
-`Paramore Home <../index.html>`__
-
-`Brighter Home <Brighter.html>`__
-
 `Next <ImplementingAsyncHandler.html>`__
 
 `Prev <AWSSQSConfiguration.html>`__
-
-Brighter
-========
 
 Dispatching Requests Asynchronously
 -----------------------------------
@@ -268,10 +246,3 @@ queue. You may choose to define your own thresholds but we recommend
 that operations that take longer than 200ms to complete be handed-off.
 We also recommend that operations that are CPU bound be handed-off as
 they diminish the throughput of your application.
-
-This project is maintained by
-`iancooper <https://github.com/iancooper>`__
-
-Hosted on GitHub Pages — Theme by
-`orderedlist <https://github.com/orderedlist>`__
-

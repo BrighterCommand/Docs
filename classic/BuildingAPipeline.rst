@@ -1,28 +1,6 @@
-Paramore
-========
-
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues
-
-`View the Project on GitHub
-iancooper/Paramore <https://github.com/iancooper/Paramore>`__
-
--  `Download **ZIP
-   File** <https://github.com/iancooper/Paramore/zipball/master>`__
--  `Download **TAR
-   Ball** <https://github.com/iancooper/Paramore/tarball/master>`__
--  `View On **GitHub** <https://github.com/iancooper/Paramore>`__
-
-`Paramore Home <../index.html>`__
-
-`Brighter Home <Brighter.html>`__
-
 `Next <UsingTheContextBag.html>`__
 
 `Prev <DispatchingARequest.html>`__
-
-Brighter
-========
 
 Building a Pipeline of Request Handlers
 ---------------------------------------
@@ -307,12 +285,6 @@ on request, build the pipeline of handlers yourself.
 We think it is easier to use attributes, but there may be circumstances
 where that approach does not work, and so this option is supported as
 well.
-
-This project is maintained by
-`iancooper <https://github.com/iancooper>`__
-
-Hosted on GitHub Pages — Theme by
-`orderedlist <https://github.com/orderedlist>`__
 
 .. |image0| image:: images/PipesAndFilters.png
 .. |image1| image:: images/RussianDoll.png

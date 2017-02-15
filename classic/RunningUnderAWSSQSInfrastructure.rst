@@ -1,28 +1,6 @@
-Paramore
-========
-
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues
-
-`View the Project on GitHub
-iancooper/Paramore <https://github.com/iancooper/Paramore>`__
-
--  `Download **ZIP
-   File** <https://github.com/iancooper/Paramore/zipball/master>`__
--  `Download **TAR
-   Ball** <https://github.com/iancooper/Paramore/tarball/master>`__
--  `View On **GitHub** <https://github.com/iancooper/Paramore>`__
-
-`Paramore Home <../index.html>`__
-
-`Brighter Home <Brighter.html>`__
-
 `Next <AWSSQSConfiguration.html>`__
 
 `Prev <RabbitMQConfiguration.html>`__
-
-Brighter
-========
 
 Running Brighter under AWS SQS Infrastructure
 ---------------------------------------------
@@ -98,12 +76,6 @@ Please follow the link below to see an example application configuration
 to use AWS SQS:
 
 `AWS SQS Configuration <AWSSQSConfiguration.html>`__
-
-This project is maintained by
-`iancooper <https://github.com/iancooper>`__
-
-Hosted on GitHub Pages — Theme by
-`orderedlist <https://github.com/orderedlist>`__
 
 .. |image0| image:: images/AWSToolkitOverview.png
 .. |image1| image:: images/AWSToolkitCreateAccount.png

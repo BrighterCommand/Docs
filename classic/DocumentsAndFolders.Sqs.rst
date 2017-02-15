@@ -1,28 +1,5 @@
-Paramore
-========
-
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues
-
-`View the Project on GitHub
-iancooper/Paramore <https://github.com/iancooper/Paramore>`__
-
--  `Download **ZIP
-   File** <https://github.com/iancooper/Paramore/zipball/master>`__
--  `Download **TAR
-   Ball** <https://github.com/iancooper/Paramore/tarball/master>`__
--  `View On **GitHub** <https://github.com/iancooper/Paramore>`__
-
-`Paramore Home <../index.html>`__
-
-`Brighter Home <Brighter.html>`__
-
-`Next <PortsAndAdapters.html>`__
-
-`Prev <GreetingsExample.html>`__
-
-Tutorial
---------
+Documents and Folders
+=====================
 
 This project has been created to be an example how to use Brighter under
 AWS SQS Infrastructure. This project is a service which listens 3
@@ -111,16 +88,10 @@ Example:
 ::
 
     ./.DocumentsAndFolders.Sqs.EventsGenerator.exe -eventType "DocumentCreatedEvent" -eventCount 1000 -firstEventId 1 -documentPerFolder: 10 -firstFolderId: 1
-            
+
 
 This should genereate 1000 DocumentCreatedEvents with DocumentIds 1-1000
 and FolderIds 1-100 in DocumentCreated Queue.
-
-This project is maintained by
-`iancooper <https://github.com/iancooper>`__
-
-Hosted on GitHub Pages — Theme by
-`orderedlist <https://github.com/orderedlist>`__
 
 .. |image0| image:: images/AWSConsoleSNSList.png
 .. |image1| image:: images/AWSConsoleQueueList.png

@@ -1,28 +1,5 @@
-Paramore
-========
-
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues
-
-`View the Project on GitHub
-iancooper/Paramore <https://github.com/iancooper/Paramore>`__
-
--  `Download **ZIP
-   File** <https://github.com/iancooper/Paramore/zipball/master>`__
--  `Download **TAR
-   Ball** <https://github.com/iancooper/Paramore/tarball/master>`__
--  `View On **GitHub** <https://github.com/iancooper/Paramore>`__
-
-`Paramore Home <../index.html>`__
-
-`Brighter Home <Brighter.html>`__
-
-`Next <PortsAndAdapters.html>`__
-
-`Prev <GreetingsExample.html>`__
-
-Tutorial
---------
+Tasks Example
+=============
 
 This tutorial takes you through buiding the TaskList project, which is
 ToDo MVC and Reminder Mail Service via a Task Queue. The application
@@ -516,12 +493,6 @@ email:
 
 The resulting functionality is exposed as a 'ToDo MVC' clone. The real
 value is understanding the Paramore concepts at play. |image0|
-
-This project is maintained by
-`iancooper <https://github.com/iancooper>`__
-
-Hosted on GitHub Pages — Theme by
-`orderedlist <https://github.com/orderedlist>`__
 
 .. |image0| image:: images/todo.png
 

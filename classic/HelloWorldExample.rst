@@ -1,31 +1,5 @@
-Paramore
-========
-
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues
-
-`View the Project on GitHub
-iancooper/Paramore <https://github.com/iancooper/Paramore>`__
-
--  `Download **ZIP
-   File** <https://github.com/iancooper/Paramore/zipball/master>`__
--  `Download **TAR
-   Ball** <https://github.com/iancooper/Paramore/tarball/master>`__
--  `View On **GitHub** <https://github.com/iancooper/Paramore>`__
-
-`Paramore Home <../index.html>`__
-
-`Brighter Home <Brighter.html>`__
-
-`Next <GreetingsExample.html>`__
-
-`Prev <Introduction.html>`__
-
-Brighter
-========
-
-Tutorial
---------
+Hello World Example
+===================
 
 This tutorial takes you building a Hello World project. The walkthrough
 will build the example availabe in the Examples folder of Brighter
@@ -70,7 +44,7 @@ Add the following code to the Main class:
         .RequestContextFactory(new InMemoryRequestContextFactory());
 
     var commandProcessor = builder.Build();
-             
+
 
 Requests and Request Handlers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -149,7 +123,7 @@ file.
         {
         }
     }
-            
+
 
 When we create a command processor we need the registry of subscribers
 to message types, and the factory for creating those handlers, that we
@@ -196,7 +170,7 @@ following code:
         public Guid Id { get; set; }
         public string Name { get; private set; }
      }
-             
+
 
 Our First Handler
 ^^^^^^^^^^^^^^^^^
@@ -220,7 +194,7 @@ enter the following code:
             return base.Handle(command);
         }
      }
-             
+
 
 You could directly implement the base class, but as we provide useful
 functionality to make sure that your handler participates in the handler
@@ -253,7 +227,7 @@ Main as follows:
 
     var registry = new SubscriberRegistry();
     registry.Register<GreetingCommand, GreetingCommandHandler>();
-            
+
 
 We also need to tell the handler factory how to build an instance of
 this class on request. We go for a simple implementation here, just to
@@ -266,7 +240,7 @@ TODO in the Handler Factory above with the following code
     {
         return new GreetingCommandHandler();
     }
-            
+
 
 Step Five
 ~~~~~~~~~
@@ -347,7 +321,7 @@ fuss
             return base.Handle(command);
         }
     }
-            
+
 
 Step Seven
 ~~~~~~~~~~
@@ -361,12 +335,6 @@ Next Steps
 That is a brief introduction in how to get a command processor working.
 We explore how to work with a Task Queue in the `Greetings
 Example <GreetingsExample.html>`__
-
-This project is maintained by
-`iancooper <https://github.com/iancooper>`__
-
-Hosted on GitHub Pages — Theme by
-`orderedlist <https://github.com/orderedlist>`__
 
 .. |image0| image:: images/HelloWorld-Step1-ConsoleProject.png
 .. |image1| image:: images/NuGet-Brighter.png

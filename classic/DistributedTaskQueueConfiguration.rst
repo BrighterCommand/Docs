@@ -1,28 +1,6 @@
-Paramore
-========
-
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues
-
-`View the Project on GitHub
-iancooper/Paramore <https://github.com/iancooper/Paramore>`__
-
--  `Download **ZIP
-   File** <https://github.com/iancooper/Paramore/zipball/master>`__
--  `Download **TAR
-   Ball** <https://github.com/iancooper/Paramore/tarball/master>`__
--  `View On **GitHub** <https://github.com/iancooper/Paramore>`__
-
-`Paramore Home <../index.html>`__
-
-`Brighter Home <Brighter.html>`__
-
 `Next <RabbitMQConfiguration.html>`__
 
 `Prev <Routing.html>`__
-
-Brighter
-========
 
 How Brighter configures Task Queues
 -----------------------------------
@@ -206,16 +184,3 @@ This code fragment shows putting the whole thing together
         .ChannelFactory(new InputChannelFactory(rmqMessageConsumerFactory))
         .ConnectionsFromConfiguration();
     _dispatcher = builder.Build();
-            
-
-::
-
-
-            
-
-This project is maintained by
-`iancooper <https://github.com/iancooper>`__
-
-Hosted on GitHub Pages — Theme by
-`orderedlist <https://github.com/orderedlist>`__
-

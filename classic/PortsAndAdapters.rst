@@ -1,28 +1,6 @@
-Paramore
-========
-
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues
-
-`View the Project on GitHub
-iancooper/Paramore <https://github.com/iancooper/Paramore>`__
-
--  `Download **ZIP
-   File** <https://github.com/iancooper/Paramore/zipball/master>`__
--  `Download **TAR
-   Ball** <https://github.com/iancooper/Paramore/tarball/master>`__
--  `View On **GitHub** <https://github.com/iancooper/Paramore>`__
-
-`Paramore Home <../index.html>`__
-
-`Brighter Home <Brighter.html>`__
-
 `Next <Implementing%20Ports%20and%20Adapters.html>`__
 
 `Prev <TasksExample.html>`__
-
-Brighter
-========
 
 Ports & Adapters
 ----------------
@@ -102,12 +80,6 @@ around the components and connectors within that architectural style.
 `Bob Martin <http://blog.8thlight.com/uncle-bob/archive.html>`__ clubs
 these together under the heading `Clean
 Architecture <http://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html>`__
-
-This project is maintained by
-`iancooper <https://github.com/iancooper>`__
-
-Hosted on GitHub Pages — Theme by
-`orderedlist <https://github.com/orderedlist>`__
 
 .. |image0| image:: images/Hexagonal%20Architecture.png
 
