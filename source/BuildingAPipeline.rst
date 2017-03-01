@@ -85,9 +85,9 @@ The limitation here is that you can only make assumptions about the type
 you receive into the pipeline from the constraints on the generic type.
 
 Although it is possible to implement the
-`IHandleRequests <https://github.com/iancooper/Paramore/blob/master/Brighter/paramore.brighter.commandprocessor/IHandleRequests.cs>`__
+`IHandleRequests <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/Brighter/paramore.brighter.commandprocessor/IHandleRequests.cs>`__
 interface directly, we recommend deriving your handler from
-`RequestHandler<T> <https://github.com/iancooper/Paramore/blob/master/Brighter/paramore.brighter.commandprocessor/RequestHandler.cs>`__.
+`RequestHandler<T> <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/Brighter/paramore.brighter.commandprocessor/RequestHandler.cs>`__.
 
 Let us assume that we want to log all requests travelling through the
 pipeline. (We provide this for you in the
@@ -254,7 +254,7 @@ pipeline.
 
 This is possible, we just don't provide any help out-of-the-box.
 Although see this
-`issue <https://github.com/iancooper/Paramore/issues/4>`__ for a
+`issue <https://github.com/BrighterCommand/Paramore.Brighter/issues/4>`__ for a
 placeholder to fix that.
 
 The trick is to remember that any handler that derives from

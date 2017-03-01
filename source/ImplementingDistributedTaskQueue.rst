@@ -126,7 +126,7 @@ For this reason we don't support a point-to-point approach like MSMQ or
 sending directly to a service via HTTP.
 
 (We do have an experimental implementation of an `HTTP-based
-broker <https://github.com/iancooper/Paramore/tree/master/Renegade>`__
+broker <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/Renegade>`__
 using the RESTMS specification but it is not production-grade, and only
 in-memory as of today).
 
@@ -198,7 +198,7 @@ handler. It also means you don't end up writing two versions of the
 mapper one on the consumer side and one on the sender side.
 
 The `Tasks
-Example <https://github.com/iancooper/Paramore/tree/master/Brighter/Examples>`__
+Example <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/Brighter/Examples>`__
 uses this strategy.
 
 This model only works if your library is shared between components that

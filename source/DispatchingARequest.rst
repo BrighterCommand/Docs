@@ -184,5 +184,5 @@ successfully pick up the type that you need.
 
 
 See `this
-discussion <https://github.com/iancooper/Paramore/issues/116>`__ for
+discussion <https://github.com/BrighterCommand/Paramore.Brighter/issues/116>`__ for
 more.

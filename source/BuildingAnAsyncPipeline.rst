@@ -24,9 +24,9 @@ The limitation here is that you can only make assumptions about the type
 you receive into the pipeline from the constraints on the generic type.
 
 Although it is possible to implement the
-`IHandleRequestsAsync <https://github.com/iancooper/Paramore/blob/master/Brighter/paramore.brighter.commandprocessor/IHandleRequestsAsync.cs>`__
+`IHandleRequestsAsync <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/Brighter/paramore.brighter.commandprocessor/IHandleRequestsAsync.cs>`__
 interface directly, we recommend deriving your handler from
-`RequestHandlerAsync<T> <https://github.com/iancooper/Paramore/blob/master/Brighter/paramore.brighter.commandprocessor/RequestHandlerAsync.cs>`__.
+`RequestHandlerAsync<T> <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/Brighter/paramore.brighter.commandprocessor/RequestHandlerAsync.cs>`__.
 
 Let us assume that we want to log all requests travelling through the
 pipeline. (We provide this for you in the

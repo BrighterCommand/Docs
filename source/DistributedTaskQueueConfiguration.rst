@@ -107,7 +107,7 @@ factory is used to create channels that wrap the underlying
 Message-Oriented Middleware that you are using.
 
 For production use we support RabbitMQ
-` <https://github.com/iancooper/Paramore/tree/master/Brighter/paramore.brighter.commandprocessor.messaginggateway.rmq>`__
+` <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/Brighter/paramore.brighter.commandprocessor.messaginggateway.rmq>`__
 as a Broker. We are actively working on other implementations.
 
 You can see the code for this in the full builder snipped below.
