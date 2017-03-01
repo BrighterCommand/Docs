@@ -2,12 +2,12 @@ Implementing a Distributed Task Queue
 -------------------------------------
 
 Brighter provides support for a `distributed task
-queue <http://parlab.eecs.berkeley.edu/wiki/_media/patterns/taskqueue.pdf>`__.
+queue <https://parlab.eecs.berkeley.edu/wiki/_media/patterns/taskqueue.pdf>`__.
 Instead of handling a command or event, synchronously and in-process,
 work can be dispatched to a distributed task queue to be handled
 asynchronously and out-of-process. The trade-off here is between the
 cost of distribution (see `The Fallacies of Distributed
-Computing <http://en.wikipedia.org/wiki/Fallacies_of_distributed_computing>`__)
+Computing <https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing>`__)
 against performance.
 
 For example you might have an HTTP API a rule that any given request to
@@ -51,7 +51,7 @@ In addition use of a distributed task queue allows you to throttle
 requests - you can hand work off from the web server to a queue that
 only needs to consume at the rate you have resources to support. This
 allows you to scale to meet unexpected demand, at the price of `eventual
-consistency. <http://en.wikipedia.org/wiki/Eventual_consistency>`__
+consistency. <https://en.wikipedia.org/wiki/Eventual_consistency>`__
 
 Brighter's Task Queue Architecture
 ----------------------------------
@@ -126,7 +126,7 @@ For this reason we don't support a point-to-point approach like MSMQ or
 sending directly to a service via HTTP.
 
 (We do have an experimental implementation of an `HTTP-based
-broker <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/Renegade>`__
+broker <https://github.com/BrighterCommand/Paramore.Contrib/tree/master/Renegade>`__
 using the RESTMS specification but it is not production-grade, and only
 in-memory as of today).
 
@@ -198,7 +198,7 @@ handler. It also means you don't end up writing two versions of the
 mapper one on the consumer side and one on the sender side.
 
 The `Tasks
-Example <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/Brighter/Examples>`__
+Example <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/Examples>`__
 uses this strategy.
 
 This model only works if your library is shared between components that

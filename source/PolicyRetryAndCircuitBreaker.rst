@@ -14,7 +14,7 @@ Even if you don't believe that you are writing a distributed system that
 needs this protection, consider that as soon as you have multiple
 processes, such as a database server, you are.
 
-Brighter uses `Polly <https://github.com/michael-wolfenden/Polly>`__ to
+Brighter uses `Polly <https://github.com/App-vNext/Polly>`__ to
 support Retry and Circuit-Breaker. Through our `Russian Doll
 Model <BuildingAPipeline.html>`__ we are able to run the target handler
 in the context of a Policy Handler, that catches exceptions, and applies
@@ -71,9 +71,9 @@ Polly Policy with a name. At runtime we look up that Policy by name.
 
 
 When creating policies, refer to the
-`Polly <https://github.com/michael-wolfenden/Polly>`__ documentation.
+`Polly <https://github.com/App-vNext/Polly>`__ documentation.
 
-Whilst `**Polly** <https://github.com/michael-wolfenden/Polly>`__ does
+Whilst `**Polly** <https://github.com/App-vNext/Polly>`__ does
 not support a Policy that is both Circuit Breaker and Retry i.e. retry n
 times with an interval between each retry, and then break circuit, to
 implement that simply put a Circuit Breaker UsePolicy attribute as an

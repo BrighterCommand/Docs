@@ -73,7 +73,7 @@ Returning results to the caller.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We use `Command-Query
-separation <http://martinfowler.com/bliki/CommandQuerySeparation.html>`__
+separation <https://martinfowler.com/bliki/CommandQuerySeparation.html>`__
 so a Command does not have return value and **CommandDispatcher.Send()**
 does not return anything.
 
@@ -97,7 +97,7 @@ If we don't allow return values, what do you do on failure?
    terminate the request handling pipeline.
 -  If you want to support `Retry, and Circuit
    Breaker <PolicyRetryAndCircuitBreaker.html>`__ you can use our
-   support for `Polly <https://github.com/michael-wolfenden/Polly>`__
+   support for `Polly <https://github.com/App-vNext/Polly>`__
    Policies
 -  You can also build your own exception handling into your
    `Pipeline <BuildingAPipeline.html>`__.

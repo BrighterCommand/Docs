@@ -123,7 +123,7 @@ cancellation had been signalled.
 
 The ability of the **\*Async** methods to take a cancellation token can
 be particularly useful with ASP.NET AsyncTimeout see `here for
-more. <http://dotnetcodr.com/2013/01/04/timeout-exceptions-with-asyncawait-in-net4-5-mvc4-with-c/>`__
+more. <https://dotnetcodr.com/2013/01/04/timeout-exceptions-with-asyncawait-in-net4-5-mvc4-with-c/>`__
 
 Do Not Block When Calling \*Async Methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -151,7 +151,7 @@ understand that it can use re-use thread to service other requests, thus
 improving throughput and call back to your continuation when done.
 
 For example ASP.NET Controllers `support
-async <http://www.asp.net/mvc/overview/performance/using-asynchronous-methods-in-aspnet-mvc-4>`__
+async <https://www.asp.net/mvc/overview/performance/using-asynchronous-methods-in-aspnet-mvc-4>`__
 can be used to call the **\*Async methods** without blocking. This
 allows ASP.NET to release a thread from the thread pool to service
 another request whilst the asynchronous operation completes, allowing
@@ -175,7 +175,7 @@ have access to those variables.
 A Windows UI for example is single-threaded via a message pump and
 interacting with the UI requires you to be on that thread. See `this
 article for
-more. <http://blogs.msdn.com/b/pfxteam/archive/2012/01/20/10259049.aspx>`__
+more. <https://blogs.msdn.com/b/pfxteam/archive/2012/01/20/10259049.aspx>`__
 
 When awaiting it is possible to configure how the continuation runs - on
 the SyncronizationContext or using the Task Scheduler, overriding the

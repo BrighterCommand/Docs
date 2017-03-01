@@ -24,9 +24,9 @@ The limitation here is that you can only make assumptions about the type
 you receive into the pipeline from the constraints on the generic type.
 
 Although it is possible to implement the
-`IHandleRequestsAsync <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/Brighter/paramore.brighter.commandprocessor/IHandleRequestsAsync.cs>`__
+`IHandleRequestsAsync <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/paramore.brighter.commandprocessor/IHandleRequestsAsync.cs>`__
 interface directly, we recommend deriving your handler from
-`RequestHandlerAsync<T> <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/Brighter/paramore.brighter.commandprocessor/RequestHandlerAsync.cs>`__.
+`RequestHandlerAsync<T> <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/paramore.brighter.commandprocessor/RequestHandlerAsync.cs>`__.
 
 Let us assume that we want to log all requests travelling through the
 pipeline. (We provide this for you in the
@@ -170,6 +170,6 @@ initialization, not just attribute constructor or property values, but
 you are constrained to what you can access from the context of the
 Attribute at run time. It can be tempting to set retrieve global state
 via the `Service
-Locator <http://en.wikipedia.org/wiki/Service_locator_pattern>`__
+Locator <https://en.wikipedia.org/wiki/Service_locator_pattern>`__
 pattern at this point. Avoid that temptation as it creates coupling
 between your Attribute and global state reducing modifiability.

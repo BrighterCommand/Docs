@@ -8,7 +8,7 @@ options:
    terminate the request handling pipeline.
 -  If you want to support `Retry, and Circuit
    Breaker <PolicyRetryAndCircuitBreaker.html>`__ you can use our
-   support for `Polly <https://github.com/michael-wolfenden/Polly>`__
+   support for `Polly <https://github.com/App-vNext/Polly>`__
    Policies
 -  You can also build your own exception handling into your
    `Pipeline <BuildingAPipeline.html>`__.

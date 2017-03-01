@@ -23,7 +23,7 @@ So if we stored these to a Command Store it could be much easier to
 slice and dice the data, and to extract it for replay.
 
 In his bliki on `Event
-Sourcing <http://martinfowler.com/eaaDev/EventSourcing.html>`__ Martin
+Sourcing <https://martinfowler.com/eaaDev/EventSourcing.html>`__ Martin
 Fowler describes using an architecture that "guarantee[s] that all
 changes to the domain objects are initiated by the event objects" and
 one implementation approach is that an event processor sequentially logs
@@ -60,13 +60,13 @@ help for that approach.
 
 For clarity we will use the term Command Sourcing for Brighter's support
 for Martin Fowler's description of `Event
-Sourcing <http://martinfowler.com/eaaDev/EventSourcing.html>`__
+Sourcing <https://martinfowler.com/eaaDev/EventSourcing.html>`__
 
 Command Sourcing in Brighter
 ----------------------------
 
 The
-`EventSourcing <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/Brighter/Examples/EventSourcing>`__
+`EventSourcing <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/Examples/EventSourcing>`__
 example in Brighter shows a version of the simple
 `HelloWorld <HelloWorldExample.html>`__ application that shows how to
 use Command Sourcing.
@@ -76,7 +76,7 @@ Brighter supports Command Sourcing through the use of its
 you gain support for logging that **Command** to a **Command Store** A
 Command Store needs to implement **IAmACommandStore** and we provide an
 `MSSQL Command
-Store <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/Brighter/paramore.brighter.commandprocessor.commandstore.mssql>`__
+Store <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/paramore.brighter.commandprocessor.commandstore.mssql>`__
 implementation. You can choose to persist the Command to the Store
 before or after the handler. We recommend Before as this gives you the
 assurance that if writing the Command to the Store fails, the Handler
@@ -100,7 +100,7 @@ The following code shows a handler marked up for Command Sourcing
 
 
 Inerrnally the `Monitor
-Handler <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/Brighter/paramore.brighter.commandprocessor/monitoring/Handlers/MonitorHandler.cs>`__
+Handler <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/paramore.brighter.commandprocessor/monitoring/Handlers/MonitorHandler.cs>`__
 that Brighter uses to write to the Command Store takes a reference to an
 **IAmACommandStore**, so you also need to configure your application to
 provide an implementation at runtime when you provide instances of the

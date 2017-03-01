@@ -107,7 +107,7 @@ factory is used to create channels that wrap the underlying
 Message-Oriented Middleware that you are using.
 
 For production use we support RabbitMQ
-` <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/Brighter/paramore.brighter.commandprocessor.messaginggateway.rmq>`__
+` <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/paramore.brighter.commandprocessor.messaginggateway.rmq>`__
 as a Broker. We are actively working on other implementations.
 
 You can see the code for this in the full builder snipped below.
@@ -149,7 +149,7 @@ long we wait for a message before timing out. Note that after a timeout
 we will wait for messages on the channel again, following a delay. This
 just allows us to yield to receive control messages on the message pump.
 
-.. highlight:: csharp
+.. highlight:: xml
 
 ::
 

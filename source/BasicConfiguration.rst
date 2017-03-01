@@ -27,7 +27,7 @@ What you need to provide
    **Request Handlers**.
 -  You need to provide a **Handler Factory** to create your Handlers
 -  You need to provide a **Policy Registry** if you intend to use
-   `Polly <https://github.com/michael-wolfenden/Polly>`__ to support
+   `Polly <https://github.com/App-vNext/Polly>`__ to support
    Retry and Circuit-Breaker.
 -  You need to provide a **Request Context Factory**
 
@@ -113,7 +113,7 @@ Policy Registry
 ~~~~~~~~~~~~~~~
 
 If you intend to use a
-`Polly <https://github.com/michael-wolfenden/Polly>`__ Policy to support
+`Polly <https://github.com/App-vNext/Polly>`__ Policy to support
 `Retry and Circuit-Breaker <PolicyRetryAndCircuitBreaker.html>`__ then
 you will need to register the Policies in the **Policy Registry**.
 Registration requires a string as a key, that you will use in your
@@ -132,6 +132,8 @@ CommandProcessor. and C
 #
 
 which you can then use in code like this
+
+.. highlight:: csharp
 
 ::
 

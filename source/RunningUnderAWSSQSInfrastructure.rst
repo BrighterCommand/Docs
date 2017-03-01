@@ -8,13 +8,13 @@ manually.
 First, you should have your AWS Access Key ID and Secret Access Key
 ready to be used by AWSSDK. You can check out the AWS documentation on
 how to create an account
-`here <http://docs.aws.amazon.com/AWSSdkDocsNET/latest/DeveloperGuide/net-dg-setup.html#net-dg-signup>`__
+`here <https://docs.aws.amazon.com/AWSSdkDocsNET/latest/DeveloperGuide/net-dg-setup.html#net-dg-signup>`__
 
 After setting up your credentials, you can either create a profile in
 your local computer or you can use the access and secret keys directly
 in the application configuration file. Here, we will create a profile
 using `AWS Toolkit on Visual
-Studio <http://aws.amazon.com/visualstudio/>`__:
+Studio <https://aws.amazon.com/visualstudio/>`__:
 
 Click to add profile button on AWS Explorer window.
 
@@ -25,7 +25,7 @@ Then fill the form to create your profile.
 |AWSToolkitCreateAccount|
 
 You can find more information about profiles and credentials
-`here <http://docs.aws.amazon.com/AWSSdkDocsNET/latest/DeveloperGuide/net-dg-config-creds.html>`__.
+`here <https://docs.aws.amazon.com/AWSSdkDocsNET/latest/DeveloperGuide/net-dg-config-creds.html>`__.
 
 Creating queues
 ~~~~~~~~~~~~~~~

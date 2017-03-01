@@ -46,7 +46,7 @@ calling the handler pipeline, a context bag for the pipeline, and
 support fo generating a request path description out-of-the-box.
 
 The *Russian Doll Model* is names for the
-`Matryoshka <http://en.wikipedia.org/wiki/Matryoshka_doll>`__ wooden
+`Matryoshka <https://en.wikipedia.org/wiki/Matryoshka_doll>`__ wooden
 dolls, in which dolls of decreasing sizes are nested one inside another.
 The importance of this for a `pipes and filters
 pattern <https://msdn.microsoft.com/en-us/library/dn589788.aspx>`__
@@ -60,7 +60,7 @@ subsequent filter step. One particular use case is exception handling: a
 try-catch block that wraps the call to a subsequent step can react to
 exceptions raised by subsequent steps. This allows us to create policy
 decisions around exceptions using a library such as
-`Polly <https://github.com/michael-wolfenden/Polly>`__ and thus support
+`Polly <https://github.com/App-vNext/Polly>`__ and thus support
 `Retry <https://msdn.microsoft.com/en-us/library/dn589788.aspx>`__ and
 `Circuit
 Breaker <https://msdn.microsoft.com/en-gb/library/dn589784.aspx?f=255&MSPPError=-2147217396>`__
@@ -85,9 +85,9 @@ The limitation here is that you can only make assumptions about the type
 you receive into the pipeline from the constraints on the generic type.
 
 Although it is possible to implement the
-`IHandleRequests <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/Brighter/paramore.brighter.commandprocessor/IHandleRequests.cs>`__
+`IHandleRequests <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/paramore.brighter.commandprocessor/IHandleRequests.cs>`__
 interface directly, we recommend deriving your handler from
-`RequestHandler<T> <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/Brighter/paramore.brighter.commandprocessor/RequestHandler.cs>`__.
+`RequestHandler<T> <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/paramore.brighter.commandprocessor/RequestHandler.cs>`__.
 
 Let us assume that we want to log all requests travelling through the
 pipeline. (We provide this for you in the
@@ -241,7 +241,7 @@ initialization, not just attribute constructor or property values, but
 you are constrained to what you can access from the context of the
 Attribute at run time. it can be tempting to set retrieve global state
 via the `Service
-Locator <http://en.wikipedia.org/wiki/Service_locator_pattern>`__
+Locator <https://en.wikipedia.org/wiki/Service_locator_pattern>`__
 pattern at this point. Avoid that temptation as it creates coupling
 between your Attribute and global state reducing modifiability.
 
