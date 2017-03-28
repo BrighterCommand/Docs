@@ -118,46 +118,37 @@ simplicity.
 Connection List
 ~~~~~~~~~~~~~~~
 
-The preferred way to get a connection list is via configuration. You can
-pass it in directly. This is mainly intended to support our Control Bus
-or testing and we don't cover that here.
+Brighter supports configuration of a service activator via code. A   
+Service Activator supports one or more connections.
 
-Again, you can see the code for this in the full builder snippet below.
-
-What you do care about is the shape of the configuration entries. In
-your configuration file you first need to ensure that you have the
-Configuration Section Handler for Service Activator registered
-
-.. highlight:: xml
-
-::
-
-    <configSections>
-        <section name="rmqMessagingGateway" type="Brighter.commandprocessor.messaginggateway.rmq.MessagingGatewayConfiguration.RMQMessagingGatewayConfigurationSection, Brighter.commandprocessor.messaginggateway.rmq" allowLocation="true" allowDefinition="Everywhere" />
-    </configSections>
-
-
-And then you need to configure your channels. The important part is the
+The most important part of a connection to understand is the
 **routing key**. This must be the same as the topic you set in the
 **Message Header** when sending. In addition the **dataType** should be
 the name of the **Command** or **Event** derived type that you want to
-deserialize into.
+deserialize into i.e. we will use reflection to create an instance of this type.
 
 You must set the **connectionName** and **channelName**. The naming
-scheme is at your discretion. The **timeOutInMilliseconds** sets how
-long we wait for a message before timing out. Note that after a timeout
-we will wait for messages on the channel again, following a delay. This
-just allows us to yield to receive control messages on the message pump.
+scheme is at your discretion. We often use the namespace of the producer's type
+that serializes into the message on the wire 
 
-.. highlight:: xml
+The **timeOutInMilliseconds** sets how long we wait for a message before timing out. 
+Note that after a timeout we will wait for messages on the channel again, 
+following a delay. This just allows us to yield to receive control messages on the message pump.
+
+.. highlight:: csharp
 
 ::
 
-    <serviceActivatorConnections>
-        <connections>
-            <add connectionName="paramore.example.greeting" channelName="greeting.command" routingKey="greeting.command" dataType="Greetings.Ports.Commands.GreetingCommand" timeOutInMilliseconds="200" />
-        </connections>
-    </serviceActivatorConnections>
+        var connections = new List<Connection>
+        {
+            new Connection(
+                new ConnectionName("paramore.example.greeting"),
+                new InputChannelFactory(rmqMessageConsumerFactory, rmqMessageProducerFactory),
+                typeof(GreetingEvent),
+                new ChannelName("greeting.event"),
+                "greeting.event",
+                timeoutInMilliseconds: 200)
+        };
 
 
 Creating a Bulder
@@ -186,5 +177,5 @@ This code fragment shows putting the whole thing together
             .Build())
         .MessageMappers(messageMapperRegistry)
         .ChannelFactory(new InputChannelFactory(rmqMessageConsumerFactory))
-        .ConnectionsFromConfiguration()
+        .Connections(connections)
         .Build();
