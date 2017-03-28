@@ -2,9 +2,9 @@ Building a Pipeline of Async Request Handlers
 ---------------------------------------------
 
 Once you are using the features of Brighter to act as a `command
-dispatcher <CommandsCommandDispatcherandProcessor.html>`__ and send or
+dispatcher <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ and send or
 publish messages to a target handler, you may want to use its `command
-processor <CommandsCommandDispatcherandProcessor.html>`__ features to
+processor <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ features to
 handle orthogonal operations.
 
 Implementing a Pipeline
@@ -24,13 +24,13 @@ The limitation here is that you can only make assumptions about the type
 you receive into the pipeline from the constraints on the generic type.
 
 Although it is possible to implement the
-`IHandleRequestsAsync <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/paramore.brighter.commandprocessor/IHandleRequestsAsync.cs>`__
+`IHandleRequestsAsync <https://github.com/BrighterCommand/Brighter/blob/master/Brighter.commandprocessor/IHandleRequestsAsync.cs>`__
 interface directly, we recommend deriving your handler from
-`RequestHandlerAsync<T> <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/paramore.brighter.commandprocessor/RequestHandlerAsync.cs>`__.
+`RequestHandlerAsync<T> <https://github.com/BrighterCommand/Brighter/blob/master/Brighter.commandprocessor/RequestHandlerAsync.cs>`__.
 
 Let us assume that we want to log all requests travelling through the
 pipeline. (We provide this for you in the
-Paramore.Brighter.CommandProcessor packages so this for illustration
+Brighter.CommandProcessor packages so this for illustration
 only). We could implement a generic handler as follows:
 
 .. highlight:: csharp

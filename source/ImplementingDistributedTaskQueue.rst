@@ -198,7 +198,7 @@ handler. It also means you don't end up writing two versions of the
 mapper one on the consumer side and one on the sender side.
 
 The `Tasks
-Example <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/Examples>`__
+Example https://github.com/BrighterCommand/Brighter/tree/master/samples>`__
 uses this strategy.
 
 This model only works if your library is shared between components that

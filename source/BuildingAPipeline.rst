@@ -2,9 +2,9 @@ Building a Pipeline of Request Handlers
 ---------------------------------------
 
 Once you are using the features of Brighter to act as a `command
-dispatcher <CommandsCommandDispatcherandProcessor.html>`__ and send or
+dispatcher <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ and send or
 publish messages to a target handler, you may want to use its `command
-processor <CommandsCommandDispatcherandProcessor.html>`__ features to
+processor <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ features to
 handle orthogonal operations.
 
 Common examples of orthogonal operations include:
@@ -24,7 +24,7 @@ The Pipes and Filters Architectural Style
 -----------------------------------------
 
 To handle these orthogonal concerns our `command
-processor <CommandsCommandDispatcherandProcessor.html>`__ uses a pipes
+processor <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ uses a pipes
 and filters architectural style: the filters are where processing
 occurs, they do not share state with other filters, nor do they know
 about adjacent filters. The pipe is the connector between the filters in
@@ -85,13 +85,13 @@ The limitation here is that you can only make assumptions about the type
 you receive into the pipeline from the constraints on the generic type.
 
 Although it is possible to implement the
-`IHandleRequests <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/paramore.brighter.commandprocessor/IHandleRequests.cs>`__
+`IHandleRequests <https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/IHandleRequests.cs>`__
 interface directly, we recommend deriving your handler from
-`RequestHandler<T> <https://github.com/BrighterCommand/Paramore.Brighter/blob/master/paramore.brighter.commandprocessor/RequestHandler.cs>`__.
+`RequestHandler<T> <https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/RequestHandler.cs>`__.
 
 Let us assume that we want to log all requests travelling through the
 pipeline. (We provide this for you in the
-Paramore.Brighter.CommandProcessor packages so this for illustration
+Brighter.CommandProcessor packages so this for illustration
 only). We could implement a generic handler as follows:
 
 .. highlight:: csharp
@@ -100,9 +100,9 @@ only). We could implement a generic handler as follows:
 
     using System;
     using Newtonsoft.Json;
-    using paramore.brighter.commandprocessor.Logging;
+    using Brighter.commandprocessor.Logging;
 
-    namespace paramore.brighter.commandprocessor
+    namespace Brighter.commandprocessor
     {
         public class RequestLoggingHandler<TRequest>
             : RequestHandler<TRequest> where TRequest : class, IRequest
@@ -254,7 +254,7 @@ pipeline.
 
 This is possible, we just don't provide any help out-of-the-box.
 Although see this
-`issue <https://github.com/BrighterCommand/Paramore.Brighter/issues/4>`__ for a
+`issue <https://github.com/BrighterCommand/Brighter/issues/4>`__ for a
 placeholder to fix that.
 
 The trick is to remember that any handler that derives from

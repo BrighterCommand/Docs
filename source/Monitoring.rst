@@ -2,12 +2,12 @@ Monitoring
 ----------
 
 Brighter emits monitoring information from Task Queues using a
-configured `Control Bus <ControlBus.html>`__
+configured `Control Bus <https://brightercommand.github.io/Brighter/ControlBus.html>`__
 
 Configuring Monitoring
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Firstly `configure a Control Bus <ControlBus.html#configure>`__ in the
+Firstly `configure a Control Bus <https://brightercommand.github.io/Brighter/ControlBus.html#configure>`__ in the
 brighter application to emit monitoring messages
 
 Config file
@@ -21,7 +21,7 @@ file:
 ::
 
     <configSections>
-        <section name="monitoring" type ="paramore.brighter.commandprocessor.monitoring.Configuration.MonitoringConfigurationSection, paramore.brighter.commandprocessor" allowLocation ="true" allowDefinition="Everywhere"/>
+        <section name="monitoring" type ="paramore.brighter.commandprocessor.monitoring.Configuration.MonitoringConfigurationSection, Brighter.commandprocessor" allowLocation ="true" allowDefinition="Everywhere"/>
     </configSections>
 
 The monitoring config can then be speicified later in the file:

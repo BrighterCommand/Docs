@@ -107,7 +107,7 @@ factory is used to create channels that wrap the underlying
 Message-Oriented Middleware that you are using.
 
 For production use we support RabbitMQ
-` <https://github.com/BrighterCommand/Paramore.Brighter/tree/master/paramore.brighter.commandprocessor.messaginggateway.rmq>`__
+` <https://github.com/BrighterCommand/Brighter/tree/master/src/Paramore.Brighter.MessagingGateway.RMQ>`__
 as a Broker. We are actively working on other implementations.
 
 You can see the code for this in the full builder snipped below.
@@ -133,7 +133,7 @@ Configuration Section Handler for Service Activator registered
 ::
 
     <configSections>
-        <section name="rmqMessagingGateway" type="paramore.brighter.commandprocessor.messaginggateway.rmq.MessagingGatewayConfiguration.RMQMessagingGatewayConfigurationSection, paramore.brighter.commandprocessor.messaginggateway.rmq" allowLocation="true" allowDefinition="Everywhere" />
+        <section name="rmqMessagingGateway" type="Brighter.commandprocessor.messaginggateway.rmq.MessagingGatewayConfiguration.RMQMessagingGatewayConfigurationSection, Brighter.commandprocessor.messaginggateway.rmq" allowLocation="true" allowDefinition="Everywhere" />
     </configSections>
 
 

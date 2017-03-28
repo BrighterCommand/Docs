@@ -2,7 +2,7 @@ Dispatching Requests Asynchronously
 -----------------------------------
 
 Brighter supports an asynchronous `Command Dispatcher and Command
-Processor <CommandsCommandDispatcherandProcessor.html>`__.
+Processor <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__.
 
 Using an asynchronous approach to dispatch can be valuable when the work
 done by a handler can be done concurrently with other work. Instead of

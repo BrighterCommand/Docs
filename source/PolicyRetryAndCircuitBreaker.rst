@@ -2,7 +2,7 @@ Supporting Retry and Circuit Breaker
 -------------------------------------
 
 Brighter is a `Command
-Processor <CommandsCommandDispatcherandProcessor.html>`__ and supports a
+Processor <https://brightercommand.github.io/Brighter/ControlBus.html`__ and supports a
 `pipeline of Handlers to handle orthogonal
 requests <BuildingAPipeline.html>`__.
 

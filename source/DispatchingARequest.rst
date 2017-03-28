@@ -156,7 +156,7 @@ If you try this:
 
 Then you will get this error: *"ArgumentException "No command handler
 was found for the typeof command
-paramore.brighter.commandprocessor.ICommand - a command should have
+Brighter.commandprocessor.ICommand - a command should have
 exactly one handler.""*
 
 Now, you don't see this issue if you pass the concrete type in, so the
@@ -184,5 +184,5 @@ successfully pick up the type that you need.
 
 
 See `this
-discussion <https://github.com/BrighterCommand/Paramore.Brighter/issues/116>`__ for
+discussion <https://github.com/BrighterCommand/Brighter/issues/116>`__ for
 more.

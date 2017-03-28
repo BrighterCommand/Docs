@@ -50,10 +50,10 @@ We use the term **Request** for a data object containing parameters that
 you want to dispatch to a handler. Brighter uses the interface
 **IRequest** for this concept. Confusingly, both **Command** or
 **Event** which implement **IRequest** are examples of the `Command
-Pattern <CommandsCommandDispatcherandProcessor.html>`__. It is easiest
+Pattern <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__. It is easiest
 to say that within Brighter **IRequest** si the abstraction that
 represents the Command from the `Command
-Pattern <CommandsCommandDispatcherandProcessor.html>`__.
+Pattern <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__.
 
 Why have both **Command** and **Event**? The difference is in how the
 **Command Dispatcher** dispatches them to handlers.
