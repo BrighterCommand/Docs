@@ -51,7 +51,7 @@ you want to dispatch to a handler. Brighter uses the interface
 **IRequest** for this concept. Confusingly, both **Command** or
 **Event** which implement **IRequest** are examples of the `Command
 Pattern <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__. It is easiest
-to say that within Brighter **IRequest** si the abstraction that
+to say that within Brighter **IRequest** is the abstraction that
 represents the Command from the `Command
 Pattern <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__.
 
@@ -69,7 +69,7 @@ The difference is best explained by the following analogy. If I say
 instruction. My expectation is that Bob will make me coffee. If Bob does
 not, then we have a failure condition (and I am thirsty and cranky). If
 I say "I could do with a cup of coffee," then I am indicating a state of
-thirst and caffeine-withdrawal. if Bob or Alice make me a coffee I will
+thirst and caffeine-withdrawal. If Bob or Alice make me a coffee I will
 be very grateful, but there is no expectation that they will.
 
 So choosing between **Command** or **Event** effects how the **Command
