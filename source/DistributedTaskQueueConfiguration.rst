@@ -151,7 +151,7 @@ following a delay. This just allows us to yield to receive control messages on t
         };
 
 
-Creating a Bulder
+Creating a Builder
 ~~~~~~~~~~~~~~~~~
 
 This code fragment shows putting the whole thing together

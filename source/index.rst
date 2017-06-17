@@ -31,4 +31,5 @@ Brighter
   ImplementingAsyncHandler
   BuildingAnAsyncPipeline
   Monitoring
+  faq
 
