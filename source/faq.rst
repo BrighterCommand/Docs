@@ -20,7 +20,7 @@ This approach liberates you from boilerplate code for each message mapper. It is
 
 Is Brighter a Framework or a Library?
 ------------------------------------
-The most common way to distinguish between a library and a Framework is that your code calls a library, whereas a library calls your code.
+The most common way to distinguish between a library and a Framework is that your code calls a library, whereas a framework calls your code.
 
 Under this definition Brighter is a library: you create the command dispatcher, and call it, in order to route messages. Although the command processor calls your handler pipeline, and thus calls your factories and handlers, this is just user initiated routing.
 
