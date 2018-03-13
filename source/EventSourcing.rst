@@ -65,12 +65,6 @@ Sourcing <https://martinfowler.com/eaaDev/EventSourcing.html>`__
 Command Sourcing in Brighter
 ----------------------------
 
-The
-`EventSourcing <https://github.com/BrighterCommand/Brighter/tree/master/Examples/EventSourcing>`__
-example in Brighter shows a version of the simple
-`HelloWorld <HelloWorldExample.html>`__ application that shows how to
-use Command Sourcing.
-
 Brighter supports Command Sourcing through the use of its
 **UseCommandSourcingAttribute**. By adding the attribute to a handler
 you gain support for logging that **Command** to a **Command Store** A
