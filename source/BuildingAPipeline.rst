@@ -43,7 +43,7 @@ The Russian Doll Model
 
 Our pipes and filters approach supports the *Russian Doll Model* of
 calling the handler pipeline, a context bag for the pipeline, and
-support fo generating a request path description out-of-the-box.
+support for generating a request path description out-of-the-box.
 
 The *Russian Doll Model* is names for the
 `Matryoshka <https://en.wikipedia.org/wiki/Matryoshka_doll>`__ wooden
