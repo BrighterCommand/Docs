@@ -106,8 +106,7 @@ passing it an implementation of **IAmAChannelFactory**. The channel
 factory is used to create channels that wrap the underlying
 Message-Oriented Middleware that you are using.
 
-For production use we support RabbitMQ
-` <https://github.com/BrighterCommand/Brighter/tree/master/src/Paramore.Brighter.MessagingGateway.RMQ>`__
+For production use we support `RabbitMQ <https://github.com/BrighterCommand/Brighter/tree/master/src/Paramore.Brighter.MessagingGateway.RMQ>`_
 as a Broker. We are actively working on other implementations.
 
 You can see the code for this in the full builder snipped below.
