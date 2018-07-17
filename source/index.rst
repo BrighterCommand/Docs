@@ -31,5 +31,6 @@ Brighter
   ImplementingAsyncHandler
   BuildingAnAsyncPipeline
   Monitoring
+  FeatureSwitches
   faq
 
