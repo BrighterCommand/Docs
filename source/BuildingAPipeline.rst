@@ -29,7 +29,7 @@ and filters architectural style: the filters are where processing
 occurs, they do not share state with other filters, nor do they know
 about adjacent filters. The pipe is the connector between the filters in
 our case this is provided by the **IHandleRequests<TRequest>** interface
-which has a method **IHandleRequests&ltTRequest> Successor** that allows
+which has a method **IHandleRequests<TRequest> Successor** that allows
 us to chain filters together.
 
 |PipesAndFilters|
@@ -43,7 +43,7 @@ The Russian Doll Model
 
 Our pipes and filters approach supports the *Russian Doll Model* of
 calling the handler pipeline, a context bag for the pipeline, and
-support fo generating a request path description out-of-the-box.
+support for generating a request path description out-of-the-box.
 
 The *Russian Doll Model* is names for the
 `Matryoshka <https://en.wikipedia.org/wiki/Matryoshka_doll>`__ wooden
@@ -76,10 +76,9 @@ orthogonal operation in our pipeline. Let us assume that we want to do
 basic request logging.
 
 Because you do not want to write an orthogonal handler for every Command
-or Event type, these handlers should remain generic types. At runtime
-the framework will request HandlerFactory creates an instance of the
-generic type specialized for the type parameter of the Command or Event
-being passed along the pipeline.
+or Event type, these handlers should remain generic types. At runtime the 
+HandlerFactory creates an instance of the generic type specialized for the 
+type parameter of the Command or Event being passed along the pipeline.
 
 The limitation here is that you can only make assumptions about the type
 you receive into the pipeline from the constraints on the generic type.
@@ -207,7 +206,7 @@ handler and requests an instance of that type from the user-supplied
 
 Your Handler Factory needs to respond to requests for instances of a
 **RequestHandler<T>** specialized for a concrete type. For example, if
-You create a\ **RequestLoggingHandler<TRequest>** we will ask you for a
+you create a\  **RequestLoggingHandler<TRequest>** we will ask you for a
 **RequestLoggingHandler<MyCommand>** etc. Depending on your
 implementation of HandlerFactory, you may need to register an
 implementation for every concrete instance of your handler with your
