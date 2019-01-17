@@ -98,7 +98,7 @@ Dispatching Requests
 Once you have registered your Handlers, you can dispatch requests to
 them. To do that you simply use the **CommandProcessor.SendAsync()** (or
 **CommandProcessor.PublishAsync()** or
-**CommandProcessor.PublishAsync()**) method passing in an instance of
+**CommandProcessor.PostAsync()**) method passing in an instance of
 your command.
 
 .. highlight:: csharp
