@@ -70,7 +70,7 @@ Brighter supports Command Sourcing through the use of its
 you gain support for logging that **Command** to a **Command Store** A
 Command Store needs to implement **IAmACommandStore** and we provide an
 `MSSQL Command
-Store <https://github.com/BrighterCommand/Brighter/tree/master/Brighter.commandprocessor.commandstore.mssql>`__
+Store <https://github.com/BrighterCommand/Brighter/tree/master/Brighter.commandprocessor.commandstore.mssql>`__     // failing link
 implementation. You can choose to persist the Command to the Store
 before or after the handler. We recommend Before as this gives you the
 assurance that if writing the Command to the Store fails, the Handler
@@ -99,7 +99,7 @@ that Brighter uses to write to the Command Store takes a reference to an
 **IAmACommandStore**, so you also need to configure your application to
 provide an implementation at runtime when you provide instances of the
 Handler from your Handler Factory implementation. The example code
-relies on the TinyIoC Inversion of Control container to hookup the
+relies on the TinyIoC Inversion of Control container to hookup the     // should we use TinyIoC for the example??
 Handler and Command Store.
 
 .. highlight:: csharp

@@ -2,13 +2,13 @@ Supporting Retry and Circuit Breaker
 -------------------------------------
 
 Brighter is a `Command
-Processor <https://brightercommand.github.io/Brighter/ControlBus.html`__ and supports a
+Processor <https://brightercommand.github.io/Brighter/ControlBus.html>`__ and supports a // failing link
 `pipeline of Handlers to handle orthogonal
 requests <BuildingAPipeline.html>`__.
 
 Amongst the valuable uses of orthogonal requests is patterns to support
 Quality of Service in a distributed environment: `Timeout, Retry, and
-Circuit Breaker <QualityOfServicePatterns.html>`__.
+Circuit Breaker <QualityOfServicePatterns.html>`__.                     // failing link
 
 Even if you don't believe that you are writing a distributed system that
 needs this protection, consider that as soon as you have multiple
@@ -73,7 +73,7 @@ Polly Policy with a name. At runtime we look up that Policy by name.
 When creating policies, refer to the
 `Polly <https://github.com/App-vNext/Polly>`__ documentation.
 
-Whilst `**Polly** <https://github.com/App-vNext/Polly>`__ does
+Whilst `Polly <https://github.com/App-vNext/Polly>`__ does
 not support a Policy that is both Circuit Breaker and Retry i.e. retry n
 times with an interval between each retry, and then break circuit, to
 implement that simply put a Circuit Breaker UsePolicy attribute as an
@@ -94,7 +94,7 @@ Timeout
 
 You should not allow a handler that calls out to another process (e.g. a
 call to a Database, queue, or an API) to run without a
-`timeout <QualityOfServicePatterns.html>`__. If the process has failed,
+`timeout <QualityOfServicePatterns.html>`__. If the process has failed, // failing link
 you will consumer a resource in your application polling that resource.
 This can cause your application to fail because another process failed.
 

@@ -3,7 +3,7 @@ Basic Configuration
 
 We want to support using Brighter in your project with the minimum of
 dependencies on other packages. Specifically we want to avoid a
-dependency on Inversion Of Control (IoC)framework, or logging framework
+dependency on Inversion Of Control (IoC) framework, or logging framework
 to give you freedom over the libraries you chose for your project.
 
 Mark Seeman's blogs on a `DI Friendly
@@ -80,6 +80,8 @@ container but switched to user defined factories as per Mark's blog.
 You can implement the Handler Factory using an IoC container, in your
 own code. For example:
 
+// TinyIoC should be used in the examples?
+
 .. highlight:: csharp
 
 ::
@@ -129,7 +131,6 @@ CommandProcessor. and C
     var policyRegistry = new PolicyRegistry() { { CommandProcessor.RETRYPOLICY, retryPolicy }, { CommandProcessor.CIRCUITBREAKER, circuitBreakerPolicy } };
 
 
-#
 
 which you can then use in code like this
 

@@ -66,8 +66,8 @@ configure new instances of **Command Processor**.
     var commandProcessor = builder.Build();
 
 
-We cover `configuration of a **Command
-Processor** <BasicConfiguration.html>`__ in more detail later.
+We cover `configuration of a Command
+Processor <BasicConfiguration.html>`__ in more detail later.
 
 Returning results to the caller.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
