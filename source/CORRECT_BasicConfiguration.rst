@@ -80,7 +80,7 @@ container but switched to user defined factories as per Mark's blog.
 You can implement the Handler Factory using an IoC container, in your
 own code. For example:
 
-// TinyIoC should be used in the examples?
+// Avoid use of tinyIOC container, change it for the .NET Core default factory
 
 .. highlight:: csharp
 
@@ -120,7 +120,7 @@ If you intend to use a
 you will need to register the Policies in the **Policy Registry**.
 Registration requires a string as a key, that you will use in your
 [UsePolicy] attribute to choose the policy. We provide two keys:
-CommandProcessor. and C
+CommandProcessor.RETRYPOLICY and CommandProcessor.CIRCUITBREAKER.
 
 .. highlight:: csharp
 
@@ -132,7 +132,7 @@ CommandProcessor. and C
 
 
 
-which you can then use in code like this
+Which you can then use in code like this:
 
 .. highlight:: csharp
 

@@ -2,7 +2,7 @@ Implementing a Distributed Task Queue
 -------------------------------------
 
 Brighter provides support for a `distributed task
-queue <https://parlab.eecs.berkeley.edu/wiki/_media/patterns/taskqueue.pdf>`__.
+queue <https://parlab.eecs.berkeley.edu/wiki/_media/patterns/taskqueue.pdf>`__.     \\ broken link
 Instead of handling a command or event, synchronously and in-process,
 work can be dispatched to a distributed task queue to be handled
 asynchronously and out-of-process. The trade-off here is between the
@@ -16,7 +16,7 @@ key POST or PUT operation to your API you find that you exceed this
 value. Upon realizing that much of your time is spent I/O you consider
 two options:
 
--  Use the TPL to perform the work concurrently
+-  Use the TPL (Task parallel library) to perform the work concurrently
 -  Offload the work to a distributed task queue, ack the message, and
    allow the work to complete asynchronously
 
@@ -118,7 +118,7 @@ High Availability (HA) solution to queueing. We want to be able to send
 a message to the Broker cluster and rely on the Broker to deliver it,
 eventually.
 
-Without a Broker, using a point-ot-point solution we have to provide a
+Without a Broker, using a point-to-point solution we have to provide a
 lot of this infrastructure ourselves, such as routing and distribution
 and how to do so in a way that is HA.
 
@@ -198,7 +198,7 @@ handler. It also means you don't end up writing two versions of the
 mapper one on the consumer side and one on the sender side.
 
 The `Tasks
-Example https://github.com/BrighterCommand/Brighter/tree/master/samples>`__
+Example <https://github.com/BrighterCommand/Brighter/tree/master/samples>`__
 uses this strategy.
 
 This model only works if your library is shared between components that
@@ -255,7 +255,7 @@ message pump for each channel, and allocates a thread to run that
 message pump. The pump consumes messages from the channel, using the
 **Message Mapper** to translate them into a **Message** and from there a
 **Command** or **Event**. It then dispatches those to handlers (using
-the Brighter **Command Processor**.
+the Brighter **Command Processor**).
 
 To use the Dispatcher you need to host it in a consumer application.
 Usually a console application or Windows Service is appropriate. We

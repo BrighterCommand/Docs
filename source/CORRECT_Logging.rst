@@ -1,10 +1,12 @@
 Supporting Logging
 ==================
 
+// Has the logger changed? is there a default .net one??
+
 Logger
 ~~~~~~
 
-We use `LibLog <https://github.com/damianh/LibLog>`__ so that we do not
+We use `LibLog <https://github.com/damianh/LibLog>`__ so that we do not     
 have to depend on a given logging library. You will want to add a
 logger, supported by LibLog to your project (as per the instructions for
 LibLog) if you want to see log output from Brighter.
@@ -57,7 +59,7 @@ ILog implementation.
 
 
 However, outside of testing, you rarely need to provide the instance of
-ILog. This is because in the base class **RequestHandler&ltT>** the
+ILog. This is because in the base class **RequestHandler<T>** the
 default constructor simply grabs the current logger from LibLog.
 
 .. highlight:: csharp
