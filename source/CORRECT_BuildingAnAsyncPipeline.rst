@@ -2,9 +2,9 @@ Building a Pipeline of Async Request Handlers
 ---------------------------------------------
 
 Once you are using the features of Brighter to act as a `command
-dispatcher <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ and send or
+dispatcher <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ and send or   // Failing link
 publish messages to a target handler, you may want to use its `command
-processor <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ features to
+processor <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ features to    // Failing Link
 handle orthogonal operations.
 
 Implementing a Pipeline

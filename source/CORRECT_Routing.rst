@@ -76,6 +76,8 @@ To configure a consumer using a configuration file we use the service
 activator configuration section, which needs to be added to the
 **<configSections>** element of your configuration file.
 
+// We no longer use XML for configuration, change this section with a code config example
+
 .. highlight:: xml
 
 ::

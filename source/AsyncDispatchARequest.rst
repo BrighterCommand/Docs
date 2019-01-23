@@ -2,14 +2,14 @@ Dispatching Requests Asynchronously
 -----------------------------------
 
 Brighter supports an asynchronous `Command Dispatcher and Command
-Processor <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__.
+Processor <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__.   // Failing Link
 
 Using an asynchronous approach to dispatch can be valuable when the work
 done by a handler can be done concurrently with other work. Instead of
 blocking on the call to **Send** or **Publish** the calling thread can
 continue to do work, with a continuation executing once the operation
 completes. See the MSDN article `Asynchronous Programming with Async and
-Await <https://msdn.microsoft.com/en-us/library/hh191443.aspx>`__
+Await <https://docs.microsoft.com/en-us/dotnet/csharp/async>`__
 
 Brighter supports using the async...await pattern in .NET to allow your
 code to avoid blocking. We provide asynchronous versions of the
@@ -25,7 +25,7 @@ processor, and then use that command processor to send a command to the
 handler asynchronously.
 
 Note that this code is the same as the equivalent code for calling the
-command processor synchonously - apart from the use of async
+command processor synchronously - apart from the use of async
 alternatives i.e. **SubscriberRegistry.RegisterAsync()** instead of
 **SubscriberRegistry.Register()** and **CommandProcessor.SendAsync()**
 instead of **CommandProcessor.Send()**.
@@ -141,7 +141,7 @@ Therefore you should only call **SendAsync**, **PublishAsync**, or
 otherwise you will block, and there will be no value to having used an
 async method.
 
-In `Ports & Adapters Architecture <PortsAndAdapters.html>`__ terms you
+In `Ports & Adapters Architecture <PortsAndAdapters.html>`__ terms you      // failing link!!! replace it
 should use an **Adapter** layer that supports async when calling the
 **Ports** layer represented by your handlers.
 

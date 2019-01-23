@@ -40,7 +40,7 @@ You need to consider the following when configuring the Dispatcher
 -  Connection List
 
 Of these **Logging** and the **Command Processor** are covered in
-**Basic Configuration**.
+`Basic Configuration<BasicConfiguration.html>`__.
 
 Message Mappers
 ~~~~~~~~~~~~~~~
