@@ -24,9 +24,9 @@ The limitation here is that you can only make assumptions about the type
 you receive into the pipeline from the constraints on the generic type.
 
 Although it is possible to implement the
-`IHandleRequestsAsync <https://github.com/BrighterCommand/Brighter/blob/master/Brighter.commandprocessor/IHandleRequestsAsync.cs>`__
+`IHandleRequestsAsync <https://github.com/BrighterCommand/Brighter/blob/master/Brighter.commandprocessor/IHandleRequestsAsync.cs>`__    // failing link
 interface directly, we recommend deriving your handler from
-`RequestHandlerAsync<T> <https://github.com/BrighterCommand/Brighter/blob/master/Brighter.commandprocessor/RequestHandlerAsync.cs>`__.
+`RequestHandlerAsync<T> <https://github.com/BrighterCommand/Brighter/blob/master/Brighter.commandprocessor/RequestHandlerAsync.cs>`__.  // failing link
 
 Let us assume that we want to log all requests travelling through the
 pipeline. (We provide this for you in the
@@ -103,7 +103,7 @@ write looks like this:
 
 The **UseCommandSourcingAsync** Attribute tells the Command Processor to
 insert a Logging handler into the request handling pipeline
-before(\ **HandlerTiming.Before**) we run the target handler. It tells
+before (\ **HandlerTiming.Before**) we run the target handler. It tells
 the Command Processor that we want it to be the first handler to run if
 we have multiple orthogonal handlers i.e. attributes (**step: 1**).
 
@@ -136,7 +136,7 @@ handler and requests an instance of that type from the user-supplied
 
 Your Handler Factory needs to respond to requests for instances of a
 **RequestHandlerAsync<T>** specialized for a concrete type. For example,
-if you create a\ **CommandSourcingHandlerAsync<TRequest>** we will ask
+if you create a \ **CommandSourcingHandlerAsync<TRequest>** we will ask
 you for a **CommandSourcingHandlerAsync<MyCommand>** etc. Depending on
 your implementation of HandlerFactory, you may need to register an
 implementation for every concrete instance of your handler with your
