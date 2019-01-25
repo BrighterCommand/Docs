@@ -7,6 +7,8 @@ No, of course not. Brighter is intended as a library, not a framework, (see else
 However, many people implement a factory by wrapping their IoC container of choice. (We do this in the samples, wrapping TinyIOC in a number of them).
 Here is a common approach:
 
+// TinyIOC???
+
 - Implement the HandlerFactory and MessageMapperFactory using your IOC container.
 - Use reflection to scan your assemblies for message mappers and request handlers
 - Register them with your IOC container
@@ -20,10 +22,10 @@ This approach liberates you from boilerplate code for each message mapper. It is
 
 Is Brighter a Framework or a Library?
 ------------------------------------
-The most common way to distinguish between a library and a Framework is that your code calls a library, whereas a library calls your code.
+The most common way to distinguish between a library and a Framework, is that your code calls a library, whereas a framework calls your code.
 
 Under this definition Brighter is a library: you create the command dispatcher, and call it, in order to route messages. Although the command processor calls your handler pipeline, and thus calls your factories and handlers, this is just user initiated routing.
 
 However, Service Activator would be considered a Framework because the dispatcher is the application, and whilst you must initiate it in the host, Brighter then runs your code, dispatching requests from queues to your handlers.
 
-Moving away from this technical definition of the difference though, our objective is to have a low footprint, that does not dictate choices in your app
+Moving away from this technical definition of the difference though, our objective is to have a low footprint, that does not dictate choices in your app.
