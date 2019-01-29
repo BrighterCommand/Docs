@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>AWS SQS Configuration &mdash; Paramore 7.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Dispatching Requests Asynchronously" href="AsyncDispatchARequest.html" />
+    <link rel="prev" title="Running Brighter under AWS SQS Infrastructure" href="RunningUnderAWSSQSInfrastructure.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Paramore
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ImplementingAHandler.html">How to Implement a Request Handler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DispatchingARequest.html">Dispatching Requests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html">Building a Pipeline of Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-pipes-and-filters-architectural-style">The Pipes and Filters Architectural Style</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-russian-doll-model">The Russian Doll Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#using-a-manual-approach">Using a Manual Approach</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UsingTheContextBag.html">Passing information between Handlers in the Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html">Supporting Retry and Circuit Breaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html#using-brighter-s-usepolicy-attribute">Using Brighter’s UsePolicy Attribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html#timeout">Timeout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyFallback.html">Failure and Fallback</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html">Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-or-event-sourcing">Command or Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-sourcing-in-brighter">Command Sourcing in Brighter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html">Basic Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html#what-you-need-to-provide">What you need to provide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">Supporting Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html">Implementing a Distributed Task Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#brighter-s-task-queue-architecture">Brighter’s Task Queue Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#do-i-have-to-use-a-broker-what-about-msmq">Do I have to use a Broker, what about MSMQ?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#what-happens-when-the-consumer-receives-the-message">What happens when the consumer receives the message?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#what-does-this-look-like-in-code">What does this look like in code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#the-dispatcher">The Dispatcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#configuration">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Routing.html">Routing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html">Distributed Task Queue Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html#configuring-the-dispatcher-in-code">Configuring the Dispatcher in Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RabbitMQConfiguration.html">RabbitMQ Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RunningUnderAWSSQSInfrastructure.html">Running Brighter under AWS SQS Infrastructure</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">AWS SQS Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AsyncDispatchARequest.html">Dispatching Requests Asynchronously</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingAsyncHandler.html">How to Implement an Asynchronous Request Handler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html">Building a Pipeline of Async Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Monitoring.html">Monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FeatureSwitches.html">Feature Switches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frquently Asked Questions</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Paramore</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>AWS SQS Configuration</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/AWSSQSConfiguration.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="aws-sqs-configuration">
+<h1>AWS SQS Configuration<a class="headerlink" href="#aws-sqs-configuration" title="Permalink to this headline">¶</a></h1>
+<p>Getting your application to interact with SQS using Brighter is a
+trivial task. Simply add your AWS Credential information in <em>&lt;aws/&gt;</em>
+section in your configuration file and ensure that an instance of
+<em>SqsMessageProducer</em> is being used when building the command processor.</p>
+<p>Here’s an example of an App.config file:</p>
+<p>// We no longer use XML, change it to in code examples</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</span>
+<span class="nt">&lt;configuration&gt;</span>
+    <span class="nt">&lt;configSections&gt;</span>
+        <span class="nt">&lt;section</span> <span class="na">name=</span><span class="s">&quot;aws&quot;</span> <span class="na">type=</span><span class="s">&quot;Amazon.AWSSection, AWSSDK&quot;</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/configSections&gt;</span>
+    <span class="nt">&lt;aws</span> <span class="na">profileName=</span><span class="s">&quot;brigter.sqs.test&quot;</span> <span class="na">region=</span><span class="s">&quot;eu-west-1&quot;</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/configuration&gt;</span>
+</pre></div>
+</div>
+<p>Brightor will not generate the SQS queues on fly. It is required to
+create them before hand and define their url in service activator
+configuration section.</p>
+<p>Here’s an example of service activator configuration:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;serviceActivatorConnections&gt;</span>
+    <span class="nt">&lt;connections&gt;</span>
+        <span class="nt">&lt;add</span> <span class="na">connectionName=</span><span class="s">&quot;paramore.example.documentsandfolders.documentcreatedevent&quot;</span> <span class="na">channelName=</span><span class="s">&quot;https://sqs.eu-west-1.amazonaws.com/027649620536/DocumentCreatedEvent&quot;</span> <span class="na">routingKey=</span><span class="s">&quot;DocumentCreatedEvent&quot;</span> <span class="na">dataType=</span><span class="s">&quot;DocumentsAndFolders.Sqs.Ports.Events.DocumentCreatedEvent&quot;</span> <span class="na">timeOutInMilliseconds=</span><span class="s">&quot;5000&quot;</span> <span class="na">requeueDelayInMilliseconds=</span><span class="s">&quot;5000&quot;</span> <span class="na">noOfPerformers=</span><span class="s">&quot;10&quot;</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;add</span> <span class="na">connectionName=</span><span class="s">&quot;paramore.example.documentsandfolders.documentupdatedevent&quot;</span> <span class="na">channelName=</span><span class="s">&quot;https://sqs.eu-west-1.amazonaws.com/027649620536/DocumentUpdatedEvent&quot;</span> <span class="na">routingKey=</span><span class="s">&quot;DocumentUpdatedEvent&quot;</span> <span class="na">dataType=</span><span class="s">&quot;DocumentsAndFolders.Sqs.Ports.Events.DocumentUpdatedEvent&quot;</span> <span class="na">timeOutInMilliseconds=</span><span class="s">&quot;5000&quot;</span> <span class="na">requeueDelayInMilliseconds=</span><span class="s">&quot;5000&quot;</span> <span class="na">noOfPerformers=</span><span class="s">&quot;10&quot;</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;add</span> <span class="na">connectionName=</span><span class="s">&quot;paramore.example.documentsandfolders.foldercreateddevent&quot;</span> <span class="na">channelName=</span><span class="s">&quot;https://sqs.eu-west-1.amazonaws.com/027649620536/FolderCreatedEvent&quot;</span> <span class="na">routingKey=</span><span class="s">&quot;FolderCreatedEvent&quot;</span> <span class="na">dataType=</span><span class="s">&quot;DocumentsAndFolders.Sqs.Ports.Events.FolderCreatedEvent&quot;</span> <span class="na">timeOutInMilliseconds=</span><span class="s">&quot;5000&quot;</span> <span class="na">requeueDelayInMilliseconds=</span><span class="s">&quot;5000&quot;</span> <span class="na">noOfPerformers=</span><span class="s">&quot;10&quot;</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/connections&gt;</span>
+<span class="nt">&lt;/serviceActivatorConnections&gt;</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="AsyncDispatchARequest.html" class="btn btn-neutral float-right" title="Dispatching Requests Asynchronously" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="RunningUnderAWSSQSInfrastructure.html" class="btn btn-neutral" title="Running Brighter under AWS SQS Infrastructure" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Ian Cooper
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,312 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>How to Implement an Asynchronous Request Handler &mdash; Paramore 7.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Building a Pipeline of Async Request Handlers" href="BuildingAnAsyncPipeline.html" />
+    <link rel="prev" title="Dispatching Requests Asynchronously" href="AsyncDispatchARequest.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Paramore
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ImplementingAHandler.html">How to Implement a Request Handler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DispatchingARequest.html">Dispatching Requests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html">Building a Pipeline of Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-pipes-and-filters-architectural-style">The Pipes and Filters Architectural Style</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-russian-doll-model">The Russian Doll Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#using-a-manual-approach">Using a Manual Approach</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UsingTheContextBag.html">Passing information between Handlers in the Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html">Supporting Retry and Circuit Breaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html#using-brighter-s-usepolicy-attribute">Using Brighter’s UsePolicy Attribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html#timeout">Timeout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyFallback.html">Failure and Fallback</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html">Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-or-event-sourcing">Command or Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-sourcing-in-brighter">Command Sourcing in Brighter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html">Basic Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html#what-you-need-to-provide">What you need to provide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">Supporting Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html">Implementing a Distributed Task Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#brighter-s-task-queue-architecture">Brighter’s Task Queue Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#do-i-have-to-use-a-broker-what-about-msmq">Do I have to use a Broker, what about MSMQ?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#what-happens-when-the-consumer-receives-the-message">What happens when the consumer receives the message?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#what-does-this-look-like-in-code">What does this look like in code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#the-dispatcher">The Dispatcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#configuration">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Routing.html">Routing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html">Distributed Task Queue Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html#configuring-the-dispatcher-in-code">Configuring the Dispatcher in Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RabbitMQConfiguration.html">RabbitMQ Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RunningUnderAWSSQSInfrastructure.html">Running Brighter under AWS SQS Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AWSSQSConfiguration.html">AWS SQS Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AsyncDispatchARequest.html">Dispatching Requests Asynchronously</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">How to Implement an Asynchronous Request Handler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html">Building a Pipeline of Async Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Monitoring.html">Monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FeatureSwitches.html">Feature Switches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frquently Asked Questions</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Paramore</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>How to Implement an Asynchronous Request Handler</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ImplementingAsyncHandler.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="how-to-implement-an-asynchronous-request-handler">
+<h1>How to Implement an Asynchronous Request Handler<a class="headerlink" href="#how-to-implement-an-asynchronous-request-handler" title="Permalink to this headline">¶</a></h1>
+<p>To implement an asynchronous handler, derive from
+<strong>RequestHandlerAsync&lt;T&gt;</strong> where <em>T</em> should be the <strong>Command</strong> or
+<strong>Event</strong> derived type that you wish to handle. Then override the base
+class <strong>RequestHandlerAsync&lt;T&gt;.HandleAsync()</strong> method to implement your
+handling for the Command or Event.</p>
+<p>For example, assume that you want to handle the <strong>Command</strong>
+GreetingCommand</p>
+<div class="highlight-csharp notranslate"><div class="highlight"><pre><span></span><span class="k">public</span> <span class="k">class</span> <span class="nc">GreetingCommand</span> <span class="p">:</span> <span class="n">IRequest</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="nf">GreetingCommand</span><span class="p">(</span><span class="kt">string</span> <span class="n">name</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">Id</span> <span class="p">=</span> <span class="n">Guid</span><span class="p">.</span><span class="n">NewGuid</span><span class="p">();</span>
+        <span class="n">Name</span> <span class="p">=</span> <span class="n">name</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">Guid</span> <span class="n">Id</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">public</span> <span class="kt">string</span> <span class="n">Name</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">private</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Then derive your handler from <strong>RequestHandlerAsync&lt;GreetingCommand&gt;</strong>
+and accept a parameter of that type on the overriden <strong>HandleAsync()</strong>
+method, along with a nullable cancellation token - which you should
+default to null.</p>
+<p>To ensure that the pipeline runs, you should return the result of the
+next handler in the chain, by awaiting the base class <strong>HandleAsync()</strong>.</p>
+<p>(Because the next element in the pipeline should also be async, you
+should always await the result of this call.)</p>
+<div class="highlight-csharp notranslate"><div class="highlight"><pre><span></span><span class="k">public</span> <span class="k">class</span> <span class="nc">GreetingCommandRequestHandlerAsync</span> <span class="p">:</span> <span class="n">RequestHandlerAsync</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">override</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">HandleAsync</span><span class="p">(</span><span class="n">GreetingCommand</span> <span class="n">command</span><span class="p">,</span> <span class="n">CancellationToken</span><span class="p">?</span> <span class="n">ct</span> <span class="p">=</span> <span class="k">null</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">api</span> <span class="p">=</span> <span class="k">new</span> <span class="n">IpFyApi</span><span class="p">(</span><span class="k">new</span> <span class="n">Uri</span><span class="p">(</span><span class="s">&quot;https://api.ipify.org&quot;</span><span class="p">));</span>
+
+        <span class="kt">var</span> <span class="n">result</span> <span class="p">=</span> <span class="k">await</span> <span class="n">api</span><span class="p">.</span><span class="n">GetAsync</span><span class="p">(</span><span class="n">ct</span><span class="p">);</span>
+
+        <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">&quot;Hello {0}&quot;</span><span class="p">,</span> <span class="n">command</span><span class="p">.</span><span class="n">Name</span><span class="p">);</span>
+        <span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">Success</span> <span class="p">?</span> <span class="s">&quot;Your public IP addres is {0}&quot;</span> <span class="p">:</span> <span class="s">&quot;Call to IpFy API failed : {0}&quot;</span><span class="p">,</span>
+        <span class="n">result</span><span class="p">.</span><span class="n">Message</span><span class="p">);</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="k">base</span><span class="p">.</span><span class="n">HandleAsync</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">ct</span><span class="p">).</span><span class="n">ConfigureAwait</span><span class="p">(</span><span class="k">base</span><span class="p">.</span><span class="n">ContinueOnCapturedContext</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Note how we use <strong>ConfigureAwait()</strong> when calling the next handler in
+the chain, and set the value to the
+<strong>RequestHandlerAsync&lt;GreetingCommand&gt;.ContinueOnCapturedContext</strong>
+property. This ensures that we utilize any override of the default
+(which is to use the Task Scheduler) made when the call to
+<strong>SendAsync</strong>, <strong>PublishAsync</strong>, or <strong>PostAsync</strong> was made.</p>
+<p>It is worth noting that although the override forces you to return a
+<strong>Task&lt;T&gt;</strong> it does not force you to add the <strong>async</strong> keyword to the
+method to compile. This risks introducing a subtle bug. You can await a
+method that returns a <strong>Task&lt;T&gt;</strong> but creation of the state machine in
+the caller depends on the presence of the <strong>async</strong> keyword. If your
+handler does not await anything, you will not be forced to add the
+<strong>async</strong> keyword. Your handler will run sychronously in this context,
+which may not be what you expect.</p>
+<p>Remembering to always await the base class <strong>HandleAsync()</strong> mitigates
+against this as even if your handler does not do asynchronous work, you
+will be forced to add <strong>async</strong> to the signature.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="BuildingAnAsyncPipeline.html" class="btn btn-neutral float-right" title="Building a Pipeline of Async Request Handlers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="AsyncDispatchARequest.html" class="btn btn-neutral" title="Dispatching Requests Asynchronously" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Ian Cooper
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

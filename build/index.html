@@ -1,0 +1,367 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Paramore &mdash; Paramore 7.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="How to Implement a Request Handler" href="ImplementingAHandler.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> Paramore
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingAHandler.html">How to Implement a Request Handler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DispatchingARequest.html">Dispatching Requests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html">Building a Pipeline of Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-pipes-and-filters-architectural-style">The Pipes and Filters Architectural Style</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-russian-doll-model">The Russian Doll Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#using-a-manual-approach">Using a Manual Approach</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UsingTheContextBag.html">Passing information between Handlers in the Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html">Supporting Retry and Circuit Breaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html#using-brighter-s-usepolicy-attribute">Using Brighter’s UsePolicy Attribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html#timeout">Timeout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyFallback.html">Failure and Fallback</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html">Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-or-event-sourcing">Command or Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-sourcing-in-brighter">Command Sourcing in Brighter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html">Basic Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html#what-you-need-to-provide">What you need to provide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">Supporting Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html">Implementing a Distributed Task Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#brighter-s-task-queue-architecture">Brighter’s Task Queue Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#do-i-have-to-use-a-broker-what-about-msmq">Do I have to use a Broker, what about MSMQ?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#what-happens-when-the-consumer-receives-the-message">What happens when the consumer receives the message?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#what-does-this-look-like-in-code">What does this look like in code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#the-dispatcher">The Dispatcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#configuration">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Routing.html">Routing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html">Distributed Task Queue Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html#configuring-the-dispatcher-in-code">Configuring the Dispatcher in Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RabbitMQConfiguration.html">RabbitMQ Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RunningUnderAWSSQSInfrastructure.html">Running Brighter under AWS SQS Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AWSSQSConfiguration.html">AWS SQS Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AsyncDispatchARequest.html">Dispatching Requests Asynchronously</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingAsyncHandler.html">How to Implement an Asynchronous Request Handler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html">Building a Pipeline of Async Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Monitoring.html">Monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FeatureSwitches.html">Feature Switches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frquently Asked Questions</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Paramore</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Paramore</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="paramore">
+<h1>Paramore<a class="headerlink" href="#paramore" title="Permalink to this headline">¶</a></h1>
+<p>Libraries and supporting examples for use with the Ports and Adapters
+and CQRS architectural styles for .NET, with support for Task Queues.</p>
+<p><a class="reference external" href="https://github.com/BrighterCommand">View the Project on GitHub</a></p>
+</div>
+<div class="section" id="brighter">
+<h1>Brighter<a class="headerlink" href="#brighter" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingAHandler.html">How to Implement a Request Handler</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ImplementingAHandler.html#what-is-the-difference-between-a-command-and-an-event">What is the difference between a Command and an Event?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="DispatchingARequest.html">Dispatching Requests</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="DispatchingARequest.html#registering-a-handler">Registering a Handler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DispatchingARequest.html#id1">Dispatching Requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DispatchingARequest.html#building-a-command-dispatcher">Building a Command Dispatcher</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DispatchingARequest.html#returning-results-to-the-caller">Returning results to the caller.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DispatchingARequest.html#handling-failure">Handling Failure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DispatchingARequest.html#passing-information-to-the-caller">Passing Information to the Caller</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DispatchingARequest.html#using-the-base-class-when-dispatching-a-message">Using the base class when dispatching a message</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html">Building a Pipeline of Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-pipes-and-filters-architectural-style">The Pipes and Filters Architectural Style</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-russian-doll-model">The Russian Doll Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#using-a-manual-approach">Using a Manual Approach</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UsingTheContextBag.html">Passing information between Handlers in the Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html">Supporting Retry and Circuit Breaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html#using-brighter-s-usepolicy-attribute">Using Brighter’s UsePolicy Attribute</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html#retry-and-circuit-breaker-with-task-queues">Retry and Circuit Breaker with Task Queues</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html#timeout">Timeout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyFallback.html">Failure and Fallback</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="PolicyFallback.html#calling-the-fallback-pipeline">Calling the Fallback Pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PolicyFallback.html#using-the-fallbackpolicy-attribute">Using the FallbackPolicy Attribute</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html">Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-or-event-sourcing">Command or Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-sourcing-in-brighter">Command Sourcing in Brighter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html">Basic Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html#what-you-need-to-provide">What you need to provide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="BasicConfiguration.html#subscriber-registry">Subscriber Registry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BasicConfiguration.html#handler-factory">Handler Factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BasicConfiguration.html#policy-registry">Policy Registry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BasicConfiguration.html#request-context-factory">Request Context Factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BasicConfiguration.html#putting-it-all-together">Putting it all together</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">Supporting Logging</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Logging.html#logger">Logger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Logging.html#testing">Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html">Implementing a Distributed Task Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#brighter-s-task-queue-architecture">Brighter’s Task Queue Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#do-i-have-to-use-a-broker-what-about-msmq">Do I have to use a Broker, what about MSMQ?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#what-happens-when-the-consumer-receives-the-message">What happens when the consumer receives the message?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#what-does-this-look-like-in-code">What does this look like in code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#the-dispatcher">The Dispatcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#configuration">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Routing.html">Routing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Routing.html#publish-subscribe">Publish-Subscribe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Routing.html#direct-messaging">Direct Messaging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Routing.html#summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html">Distributed Task Queue Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="DistributedTaskQueueConfiguration.html#why-the-split">Why the split?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html#configuring-the-dispatcher-in-code">Configuring the Dispatcher in Code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="DistributedTaskQueueConfiguration.html#message-mappers">Message Mappers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DistributedTaskQueueConfiguration.html#channel-factory">Channel Factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DistributedTaskQueueConfiguration.html#connection-list">Connection List</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DistributedTaskQueueConfiguration.html#creating-a-builder">Creating a Builder</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="RabbitMQConfiguration.html">RabbitMQ Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RunningUnderAWSSQSInfrastructure.html">Running Brighter under AWS SQS Infrastructure</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="RunningUnderAWSSQSInfrastructure.html#creating-queues">Creating queues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RunningUnderAWSSQSInfrastructure.html#posting-messages">Posting messages</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="AWSSQSConfiguration.html">AWS SQS Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AsyncDispatchARequest.html">Dispatching Requests Asynchronously</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AsyncDispatchARequest.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AsyncDispatchARequest.html#registering-a-handler">Registering a Handler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AsyncDispatchARequest.html#dispatching-requests">Dispatching Requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AsyncDispatchARequest.html#do-not-block-when-calling-async-methods">Do Not Block When Calling *Async Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AsyncDispatchARequest.html#asynchronous-vs-work-queues">Asynchronous vs. Work Queues</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingAsyncHandler.html">How to Implement an Asynchronous Request Handler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html">Building a Pipeline of Async Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Monitoring.html">Monitoring</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Monitoring.html#configuring-monitoring">Configuring Monitoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Monitoring.html#config-file">Config file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Monitoring.html#handler-confguration">Handler confguration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Monitoring.html#monitor-message-format">Monitor message format</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="FeatureSwitches.html">Feature Switches</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="FeatureSwitches.html#using-the-feature-switch-attribute">Using the Feature Switch Attribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FeatureSwitches.html#building-a-config-for-feature-switches-with-fluentconfigregistrybuilder">Building a config for Feature Switches with FluentConfigRegistryBuilder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FeatureSwitches.html#implementing-a-custom-feature-switch-registry">Implementing a custom Feature Switch Registry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FeatureSwitches.html#setting-feature-switching-registry">Setting Feature Switching Registry</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frquently Asked Questions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#must-i-manually-register-all-my-handlers">Must I manually register all my handlers?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#is-brighter-a-framework-or-a-library">Is Brighter a Framework or a Library?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="ImplementingAHandler.html" class="btn btn-neutral float-right" title="How to Implement a Request Handler" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Ian Cooper
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

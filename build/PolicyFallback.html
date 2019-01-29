@@ -1,0 +1,327 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Failure and Fallback &mdash; Paramore 7.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Event Sourcing" href="EventSourcing.html" />
+    <link rel="prev" title="Supporting Retry and Circuit Breaker" href="PolicyRetryAndCircuitBreaker.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Paramore
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ImplementingAHandler.html">How to Implement a Request Handler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DispatchingARequest.html">Dispatching Requests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html">Building a Pipeline of Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-pipes-and-filters-architectural-style">The Pipes and Filters Architectural Style</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-russian-doll-model">The Russian Doll Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#using-a-manual-approach">Using a Manual Approach</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UsingTheContextBag.html">Passing information between Handlers in the Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html">Supporting Retry and Circuit Breaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html#using-brighter-s-usepolicy-attribute">Using Brighter’s UsePolicy Attribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html#timeout">Timeout</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Failure and Fallback</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#calling-the-fallback-pipeline">Calling the Fallback Pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-fallbackpolicy-attribute">Using the FallbackPolicy Attribute</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html">Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-or-event-sourcing">Command or Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-sourcing-in-brighter">Command Sourcing in Brighter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html">Basic Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html#what-you-need-to-provide">What you need to provide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">Supporting Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html">Implementing a Distributed Task Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#brighter-s-task-queue-architecture">Brighter’s Task Queue Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#do-i-have-to-use-a-broker-what-about-msmq">Do I have to use a Broker, what about MSMQ?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#what-happens-when-the-consumer-receives-the-message">What happens when the consumer receives the message?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#what-does-this-look-like-in-code">What does this look like in code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#the-dispatcher">The Dispatcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#configuration">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Routing.html">Routing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html">Distributed Task Queue Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html#configuring-the-dispatcher-in-code">Configuring the Dispatcher in Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RabbitMQConfiguration.html">RabbitMQ Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RunningUnderAWSSQSInfrastructure.html">Running Brighter under AWS SQS Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AWSSQSConfiguration.html">AWS SQS Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AsyncDispatchARequest.html">Dispatching Requests Asynchronously</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingAsyncHandler.html">How to Implement an Asynchronous Request Handler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html">Building a Pipeline of Async Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Monitoring.html">Monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FeatureSwitches.html">Feature Switches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frquently Asked Questions</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Paramore</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Failure and Fallback</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/PolicyFallback.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="failure-and-fallback">
+<h1>Failure and Fallback<a class="headerlink" href="#failure-and-fallback" title="Permalink to this headline">¶</a></h1>
+<p>If your <strong>RequestHandler.Handle()</strong> call fails you have a number of
+options:</p>
+<ul class="simple">
+<li>The basic failure strategy is to throw an exception. This will
+terminate the request handling pipeline.</li>
+<li>If you want to support <a class="reference external" href="PolicyRetryAndCircuitBreaker.html">Retry, and Circuit
+Breaker</a> you can use our
+support for <a class="reference external" href="https://github.com/App-vNext/Polly">Polly</a>
+Policies</li>
+<li>You can also build your own exception handling into your
+<a class="reference external" href="BuildingAPipeline.html">Pipeline</a>.</li>
+</ul>
+<p>If none of these strategies succeed, you may want some sort of backstop
+exception handler, that allows you to take compensating action, such as
+undoing any partially committed work, issuing a compensating
+transaction, or queuing work for later delivery (perhaps using the <a class="reference external" href="ImplementingDistributedTaskQueue.html">Task
+Queue</a>).</p>
+<p>To support this we provide a <strong>IHandleRequests&lt;TRequest&gt;Fallback</strong>
+method. In the Fallback method you write your code to run in the event
+of failure.</p>
+<div class="section" id="calling-the-fallback-pipeline">
+<h2>Calling the Fallback Pipeline<a class="headerlink" href="#calling-the-fallback-pipeline" title="Permalink to this headline">¶</a></h2>
+<p>We provide a <strong>FallbackPolicy</strong> Attribute that you can use on your
+<strong>IHandleRequests&lt;TRequest&gt;.Handle()</strong> method. The implementation of the
+<strong>Fallback Policy Handler</strong> is straightforward: it creates a backstop
+exception handler by encompassing later requests in the <a class="reference external" href="BuildingAPipeline.html">Request
+Handling Pipeline</a> in a try…catch block.
+You can configure it to catch all exceptions, or just <a class="reference external" href="PolicyRetryAndCircuitBreaker.html">Broken Circuit
+Exceptions</a> when a Circuit Breaker
+has tripped.</p>
+<p>When the <strong>Fallback Policy Handler</strong> catches an exception it calls the
+<strong>IHandleRequests&lt;TRequest&gt;.Fallback()</strong> method of the next Handler in
+the pipeline, as determined by <strong>IHandleRequests&lt;TRequest&gt;.Successor</strong></p>
+<p>The implementation of <strong>RequestHandler&lt;T&gt;.Fallback()</strong> uses the same
+<a class="reference external" href="BuildingAPipeline.html">Russian Doll</a> approach as it uses for
+<strong>RequestHandler&lt;T&gt;.Handle()</strong>. This means that the request to take
+compensating action for failure, flows through the same pipeline as the
+request for service, allowing each Handler in the chain to contribute.</p>
+<p>In addition the <strong>Fallback Policy Handler</strong> makes the originating
+exception available to subsequent Handlers using the <strong>Context Bag</strong>
+with the key: <strong>CAUSE_OF_FALLBACK_EXCEPTION</strong></p>
+</div>
+<div class="section" id="using-the-fallbackpolicy-attribute">
+<h2>Using the FallbackPolicy Attribute<a class="headerlink" href="#using-the-fallbackpolicy-attribute" title="Permalink to this headline">¶</a></h2>
+<p>The following example shows a Handler with <strong>Request Handler
+Attributes</strong> for <a class="reference external" href="PolicyRetryAndCircuitBreaker.html">Retry and Circuit Breaker
+policies</a> that is configured with
+a <strong>Fallback Policy</strong> which catches a <strong>Broken Circuit Exception</strong>
+(raised when the Circuit Breaker is tripped) and initiates the Fallback
+chain.</p>
+<div class="highlight-csharp notranslate"><div class="highlight"><pre><span></span><span class="k">public</span> <span class="k">class</span> <span class="nc">MyFallbackProtectedHandler</span><span class="p">:</span> <span class="n">RequestHandler</span><span class="p">&lt;</span><span class="n">MyCommand</span><span class="p">&gt;</span>
+<span class="p">{</span>
+<span class="na">    [FallbackPolicy(backstop: false, circuitBreaker: true, step: 1)]</span>
+<span class="na">    [UsePolicy(&quot;MyCircuitBreakerStrategy&quot;, step: 2)]</span>
+<span class="na">    [UsePolicy(&quot;MyRetryStrategy&quot;, step: 3)]</span>
+    <span class="k">public</span> <span class="k">override</span> <span class="n">MyCommand</span> <span class="nf">Handle</span><span class="p">(</span><span class="n">MyCommand</span> <span class="n">command</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="cm">/*Do some work that can fail*/</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">override</span> <span class="n">MyCommand</span> <span class="nf">Fallback</span><span class="p">(</span><span class="n">MyCommand</span> <span class="n">command</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">Context</span><span class="p">.</span><span class="n">Bag</span><span class="p">.</span><span class="n">ContainsKey</span><span class="p">(</span><span class="n">FallbackPolicyHandler</span><span class="p">&lt;</span><span class="n">MyCommand</span><span class="p">&gt;.</span><span class="n">CAUSE_OF_FALLBACK_EXCEPTION</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="cm">/*Use fallback information to determine what action to take*/</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="k">base</span><span class="p">.</span><span class="n">Fallback</span><span class="p">(</span><span class="n">command</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="EventSourcing.html" class="btn btn-neutral float-right" title="Event Sourcing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="PolicyRetryAndCircuitBreaker.html" class="btn btn-neutral" title="Supporting Retry and Circuit Breaker" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Ian Cooper
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,371 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Supporting Retry and Circuit Breaker &mdash; Paramore 7.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Failure and Fallback" href="PolicyFallback.html" />
+    <link rel="prev" title="Passing information between Handlers in the Pipeline" href="UsingTheContextBag.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Paramore
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ImplementingAHandler.html">How to Implement a Request Handler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DispatchingARequest.html">Dispatching Requests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html">Building a Pipeline of Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-pipes-and-filters-architectural-style">The Pipes and Filters Architectural Style</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-russian-doll-model">The Russian Doll Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#using-a-manual-approach">Using a Manual Approach</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UsingTheContextBag.html">Passing information between Handlers in the Pipeline</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Supporting Retry and Circuit Breaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#using-brighter-s-usepolicy-attribute">Using Brighter’s UsePolicy Attribute</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#retry-and-circuit-breaker-with-task-queues">Retry and Circuit Breaker with Task Queues</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#timeout">Timeout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyFallback.html">Failure and Fallback</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html">Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-or-event-sourcing">Command or Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-sourcing-in-brighter">Command Sourcing in Brighter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html">Basic Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html#what-you-need-to-provide">What you need to provide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">Supporting Logging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html">Implementing a Distributed Task Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#brighter-s-task-queue-architecture">Brighter’s Task Queue Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#do-i-have-to-use-a-broker-what-about-msmq">Do I have to use a Broker, what about MSMQ?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#what-happens-when-the-consumer-receives-the-message">What happens when the consumer receives the message?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#what-does-this-look-like-in-code">What does this look like in code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#the-dispatcher">The Dispatcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingDistributedTaskQueue.html#configuration">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Routing.html">Routing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html">Distributed Task Queue Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html#configuring-the-dispatcher-in-code">Configuring the Dispatcher in Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RabbitMQConfiguration.html">RabbitMQ Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RunningUnderAWSSQSInfrastructure.html">Running Brighter under AWS SQS Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AWSSQSConfiguration.html">AWS SQS Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AsyncDispatchARequest.html">Dispatching Requests Asynchronously</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingAsyncHandler.html">How to Implement an Asynchronous Request Handler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html">Building a Pipeline of Async Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Monitoring.html">Monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FeatureSwitches.html">Feature Switches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frquently Asked Questions</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Paramore</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Supporting Retry and Circuit Breaker</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/PolicyRetryAndCircuitBreaker.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="supporting-retry-and-circuit-breaker">
+<h1>Supporting Retry and Circuit Breaker<a class="headerlink" href="#supporting-retry-and-circuit-breaker" title="Permalink to this headline">¶</a></h1>
+<p>Brighter is a <a class="reference external" href="https://brightercommand.github.io/Brighter/ControlBus.html">Command
+Processor</a> and supports a // failing link
+<a class="reference external" href="BuildingAPipeline.html">pipeline of Handlers to handle orthogonal
+requests</a>.</p>
+<p>Amongst the valuable uses of orthogonal requests is patterns to support
+Quality of Service in a distributed environment: <a class="reference external" href="QualityOfServicePatterns.html">Timeout, Retry, and
+Circuit Breaker</a>.                     // failing link</p>
+<p>Even if you don’t believe that you are writing a distributed system that
+needs this protection, consider that as soon as you have multiple
+processes, such as a database server, you are.</p>
+<p>Brighter uses <a class="reference external" href="https://github.com/App-vNext/Polly">Polly</a> to
+support Retry and Circuit-Breaker. Through our <a class="reference external" href="BuildingAPipeline.html">Russian Doll
+Model</a> we are able to run the target handler
+in the context of a Policy Handler, that catches exceptions, and applies
+a Policy on how to deal with them.</p>
+</div>
+<div class="section" id="using-brighter-s-usepolicy-attribute">
+<h1>Using Brighter’s UsePolicy Attribute<a class="headerlink" href="#using-brighter-s-usepolicy-attribute" title="Permalink to this headline">¶</a></h1>
+<p>By adding the <strong>UsePolicy</strong> attribute, you instruct the Command
+Processor to insert a handler (filter) into the pipeline that runs all
+later steps using that Polly policy.</p>
+<div class="highlight-csharp notranslate"><div class="highlight"><pre><span></span><span class="k">internal</span> <span class="k">class</span> <span class="nc">MyQoSProtectedHandler</span> <span class="p">:</span> <span class="n">RequestHandler</span><span class="p">&lt;</span><span class="n">MyCommand</span><span class="p">&gt;</span>
+<span class="p">{</span>
+    <span class="k">static</span> <span class="nf">MyQoSProtectedHandler</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="n">ReceivedCommand</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+<span class="na">    [UsePolicy(policy: &quot;MyExceptionPolicy&quot;, step: 1)]</span>
+    <span class="k">public</span> <span class="k">override</span> <span class="n">MyCommand</span> <span class="nf">Handle</span><span class="p">(</span><span class="n">MyCommand</span> <span class="n">command</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="cm">/*Do work that could throw error because of distributed computing reliability*/</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>To configure the Polly policy you use the PolicyRegistry to register the
+Polly Policy with a name. At runtime we look up that Policy by name.</p>
+<div class="highlight-csharp notranslate"><div class="highlight"><pre><span></span><span class="kt">var</span> <span class="n">policyRegistry</span> <span class="p">=</span> <span class="k">new</span> <span class="n">PolicyRegistry</span><span class="p">();</span>
+
+<span class="kt">var</span> <span class="n">policy</span> <span class="p">=</span> <span class="n">Policy</span>
+    <span class="p">.</span><span class="n">Handle</span><span class="p">&lt;</span><span class="n">Exception</span><span class="p">&gt;()</span>
+    <span class="p">.</span><span class="n">WaitAndRetry</span><span class="p">(</span><span class="k">new</span><span class="p">[]</span>
+    <span class="p">{</span>
+        <span class="m">1.</span><span class="n">Seconds</span><span class="p">(),</span>
+        <span class="m">2.</span><span class="n">Seconds</span><span class="p">(),</span>
+        <span class="m">3.</span><span class="n">Seconds</span><span class="p">()</span>
+    <span class="p">},</span> <span class="p">(</span><span class="n">exception</span><span class="p">,</span> <span class="n">timeSpan</span><span class="p">)</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="n">s_retryCount</span><span class="p">++;</span>
+    <span class="p">});</span>
+
+<span class="n">policyRegistry</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="s">&quot;MyExceptionPolicy&quot;</span><span class="p">,</span> <span class="n">policy</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>When creating policies, refer to the
+<a class="reference external" href="https://github.com/App-vNext/Polly">Polly</a> documentation.</p>
+<p>Whilst <a class="reference external" href="https://github.com/App-vNext/Polly">Polly</a> does
+not support a Policy that is both Circuit Breaker and Retry i.e. retry n
+times with an interval between each retry, and then break circuit, to
+implement that simply put a Circuit Breaker UsePolicy attribute as an
+earlier step than the Retry UsePolicy attribute. If retries expire, the
+exception will bubble out to the Circuit Breaker.</p>
+<div class="section" id="retry-and-circuit-breaker-with-task-queues">
+<h2>Retry and Circuit Breaker with Task Queues<a class="headerlink" href="#retry-and-circuit-breaker-with-task-queues" title="Permalink to this headline">¶</a></h2>
+<p>When posting a request to a <a class="reference external" href="ImplementingDistributedTaskQueue.html">Task
+Queue</a> we mandate use of a
+Polly policy to control Retry and Circuit Breaker in case the output
+channel is not available. These are configured using the constants:
+<strong>Paramore.RETRYPOLICY</strong> and <strong>Paramore.CIRCUITBREAKER</strong></p>
+</div>
+</div>
+<div class="section" id="timeout">
+<h1>Timeout<a class="headerlink" href="#timeout" title="Permalink to this headline">¶</a></h1>
+<p>You should not allow a handler that calls out to another process (e.g. a
+call to a Database, queue, or an API) to run without a
+<a class="reference external" href="QualityOfServicePatterns.html">timeout</a>. If the process has failed, // failing link
+you will consumer a resource in your application polling that resource.
+This can cause your application to fail because another process failed.</p>
+<p>Usually the client library you are using will have a timeout value that
+you can set.</p>
+<p>In some scenarios the client library does not provide a timeout, so you
+have no way to abort.</p>
+<p>We provide the Timeout attribute for that circumstance. You can apply it
+to a Handler to force that Handler into a thread which we will timeout,
+if it does not complete within the required time period.</p>
+<div class="highlight-csharp notranslate"><div class="highlight"><pre><span></span><span class="k">public</span> <span class="k">class</span> <span class="nc">EditTaskCommandHandler</span> <span class="p">:</span> <span class="n">RequestHandler</span><span class="p">&lt;</span><span class="n">EditTaskCommand</span><span class="p">&gt;</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">readonly</span> <span class="n">ITasksDAO</span> <span class="n">_tasksDAO</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="nf">EditTaskCommandHandler</span><span class="p">(</span><span class="n">ITasksDAO</span> <span class="n">tasksDAO</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">_tasksDAO</span> <span class="p">=</span> <span class="n">tasksDAO</span><span class="p">;</span>
+    <span class="p">}</span>
+
+<span class="na">    [RequestLogging(step: 1, timing: HandlerTiming.Before)]</span>
+<span class="na">    [Validation(step: 2, timing: HandlerTiming.Before)]</span>
+<span class="na">    [TimeoutPolicy(step: 3, milliseconds: 300)]</span>
+    <span class="k">public</span> <span class="k">override</span> <span class="n">EditTaskCommand</span> <span class="nf">Handle</span><span class="p">(</span><span class="n">EditTaskCommand</span> <span class="n">editTaskCommand</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">using</span> <span class="p">(</span><span class="kt">var</span> <span class="n">scope</span> <span class="p">=</span> <span class="n">_tasksDAO</span><span class="p">.</span><span class="n">BeginTransaction</span><span class="p">())</span>
+        <span class="p">{</span>
+            <span class="n">Task</span> <span class="n">task</span> <span class="p">=</span> <span class="n">_tasksDAO</span><span class="p">.</span><span class="n">FindById</span><span class="p">(</span><span class="n">editTaskCommand</span><span class="p">.</span><span class="n">TaskId</span><span class="p">);</span>
+
+            <span class="n">task</span><span class="p">.</span><span class="n">TaskName</span> <span class="p">=</span> <span class="n">editTaskCommand</span><span class="p">.</span><span class="n">TaskName</span><span class="p">;</span>
+            <span class="n">task</span><span class="p">.</span><span class="n">TaskDescription</span> <span class="p">=</span> <span class="n">editTaskCommand</span><span class="p">.</span><span class="n">TaskDescription</span><span class="p">;</span>
+            <span class="n">task</span><span class="p">.</span><span class="n">DueDate</span> <span class="p">=</span> <span class="n">editTaskCommand</span><span class="p">.</span><span class="n">TaskDueDate</span><span class="p">;</span>
+
+            <span class="n">_tasksDAO</span><span class="p">.</span><span class="n">Update</span><span class="p">(</span><span class="n">task</span><span class="p">);</span>
+            <span class="n">scope</span><span class="p">.</span><span class="n">Commit</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">editTaskCommand</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="PolicyFallback.html" class="btn btn-neutral float-right" title="Failure and Fallback" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="UsingTheContextBag.html" class="btn btn-neutral" title="Passing information between Handlers in the Pipeline" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Ian Cooper
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,508 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Implementing a Distributed Task Queue &mdash; Paramore 7.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Routing" href="Routing.html" />
+    <link rel="prev" title="Supporting Logging" href="Logging.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Paramore
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                7.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ImplementingAHandler.html">How to Implement a Request Handler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DispatchingARequest.html">Dispatching Requests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html">Building a Pipeline of Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-pipes-and-filters-architectural-style">The Pipes and Filters Architectural Style</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#the-russian-doll-model">The Russian Doll Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAPipeline.html#using-a-manual-approach">Using a Manual Approach</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UsingTheContextBag.html">Passing information between Handlers in the Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html">Supporting Retry and Circuit Breaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html#using-brighter-s-usepolicy-attribute">Using Brighter’s UsePolicy Attribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyRetryAndCircuitBreaker.html#timeout">Timeout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PolicyFallback.html">Failure and Fallback</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html">Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-or-event-sourcing">Command or Event Sourcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="EventSourcing.html#command-sourcing-in-brighter">Command Sourcing in Brighter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html">Basic Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BasicConfiguration.html#what-you-need-to-provide">What you need to provide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">Supporting Logging</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Implementing a Distributed Task Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#brighter-s-task-queue-architecture">Brighter’s Task Queue Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#do-i-have-to-use-a-broker-what-about-msmq">Do I have to use a Broker, what about MSMQ?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#what-happens-when-the-consumer-receives-the-message">What happens when the consumer receives the message?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#what-does-this-look-like-in-code">What does this look like in code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#the-dispatcher">The Dispatcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#configuration">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Routing.html">Routing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html">Distributed Task Queue Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DistributedTaskQueueConfiguration.html#configuring-the-dispatcher-in-code">Configuring the Dispatcher in Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RabbitMQConfiguration.html">RabbitMQ Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RunningUnderAWSSQSInfrastructure.html">Running Brighter under AWS SQS Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AWSSQSConfiguration.html">AWS SQS Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AsyncDispatchARequest.html">Dispatching Requests Asynchronously</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ImplementingAsyncHandler.html">How to Implement an Asynchronous Request Handler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html">Building a Pipeline of Async Request Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="BuildingAnAsyncPipeline.html#implementing-a-pipeline">Implementing a Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Monitoring.html">Monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FeatureSwitches.html">Feature Switches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frquently Asked Questions</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Paramore</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Implementing a Distributed Task Queue</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ImplementingDistributedTaskQueue.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="implementing-a-distributed-task-queue">
+<h1>Implementing a Distributed Task Queue<a class="headerlink" href="#implementing-a-distributed-task-queue" title="Permalink to this headline">¶</a></h1>
+<p>Brighter provides support for a <a class="reference external" href="https://parlab.eecs.berkeley.edu/wiki/_media/patterns/taskqueue.pdf">distributed task
+queue</a>.     \ broken link
+Instead of handling a command or event, synchronously and in-process,
+work can be dispatched to a distributed task queue to be handled
+asynchronously and out-of-process. The trade-off here is between the
+cost of distribution (see <a class="reference external" href="https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing">The Fallacies of Distributed
+Computing</a>)
+against performance.</p>
+<p>For example you might have an HTTP API a rule that any given request to
+that API must execute in under 100ms. On measuring the performance of a
+key POST or PUT operation to your API you find that you exceed this
+value. Upon realizing that much of your time is spent I/O you consider
+two options:</p>
+<ul class="simple">
+<li>Use the TPL (Task parallel library) to perform the work concurrently</li>
+<li>Offload the work to a distributed task queue, ack the message, and
+allow the work to complete asynchronously</li>
+</ul>
+<p>A problem with the TPL approach is that your operation can only meet the
+100ms threshold if your work can be parallelised such that no sub-task
+takes longer than 100ms. Your speed is always constrained by the slowest
+operation that you need to parallelize. If you are I/O bound on a
+resource experiencing contention beyond 100ms, you will not meet your
+goal by introducing more threads. Your minimum time is your minimum
+time.</p>
+<p>You might try to fix this by acking (acknowledging) the request, and
+completing the work asynchronously. This option is particularly
+attractive if the work is I/O bound as you can process other requests
+whilst you wait for the I/O to complete.</p>
+<p>The downside of the async approach is that you risk that the work will
+be lost if the server fails prior to completion of the work, or the app
+simply recycles.</p>
+<p>These requirements tend to push you in the direction of <a class="reference external" href="http://www.eaipatterns.com/GuaranteedMessaging.html">Guaranteed
+Delivery</a> to
+ensure that work you ack will eventually be handled.</p>
+<p>A distributed task queue allows you offload work to another process, to
+be handled asynchronously (once you push the work onto the queue, you
+don’t wait) and in parallel (you can use other cores to process the
+work). It also allows you to ensure delivery of the message, eventually
+(the queue will hold the work until a consumer is available to read it).</p>
+<p>In addition use of a distributed task queue allows you to throttle
+requests - you can hand work off from the web server to a queue that
+only needs to consume at the rate you have resources to support. This
+allows you to scale to meet unexpected demand, at the price of <a class="reference external" href="https://en.wikipedia.org/wiki/Eventual_consistency">eventual
+consistency.</a></p>
+</div>
+<div class="section" id="brighter-s-task-queue-architecture">
+<h1>Brighter’s Task Queue Architecture<a class="headerlink" href="#brighter-s-task-queue-architecture" title="Permalink to this headline">¶</a></h1>
+<p>Brighter implements Task Queues using a <a class="reference external" href="http://www.enterpriseintegrationpatterns.com/MessageBroker.html">Message
+Broker</a>.</p>
+<p>The producer sends a <strong>Command</strong> or <strong>Event</strong> to a <a class="reference external" href="http://www.enterpriseintegrationpatterns.com/MessageBroker.html">Message
+Broker</a>
+using <strong>CommandProcessor.Post()</strong>.</p>
+<p>We use an <strong>IAmAMessageMapper</strong> to map the <strong>Command</strong> or <strong>Event</strong> to a
+<strong>Message</strong>. (Usually we just serialize the object to JSON and add to
+the <strong>MessageBody</strong>), but if you want to use higher performance
+serialization approaches, such as
+<a class="reference external" href="https://github.com/mgravell/protobuf-net">protobuf-net</a>, the message
+mapper is agnostic to the way the body is formatted.)</p>
+<p>When we deserialize we set the <strong>MessageHeader</strong> which includes a topic
+(often we use a namespaced name for the <strong>Command</strong> or <strong>Event</strong>).</p>
+<p>We store the created <strong>Message</strong> in a <a class="reference external" href="http://www.enterpriseintegrationpatterns.com/MessageStore.html">Message
+Store</a>
+for use by <strong>CommandProcessor.Repost()</strong> if we need to resend a failed
+message.</p>
+<p>The Message Broker manages a <a class="reference external" href="http://www.enterpriseintegrationpatterns.com/RecipientList.html">Recipient
+List</a>
+of subscribers to a topic. When it receives a <strong>Message</strong> the Broker
+looks at the topic in the <strong>MessageHeader</strong> and dispatches the
+<strong>Message</strong> to the <a class="reference external" href="http://www.enterpriseintegrationpatterns.com/MessageChannel.html">Recipient
+Channels</a>
+identified by the Recipient List.</p>
+<p>The consumer registers a <a class="reference external" href="http://www.enterpriseintegrationpatterns.com/MessageChannel.html">Recipient
+Channel</a>
+to receive messages on a given topic. In other words when the consumer’s
+registered topic matches the producer’s topic, the broker dispatches the
+message to the consumer when it receives it from the producer.</p>
+<p>A <strong>Message</strong> may be delivered to multiple Consumers, all of whom get
+their own copy.</p>
+<p>in addition, we can support a <a class="reference external" href="http://www.enterpriseintegrationpatterns.com/CompetingConsumers.html">Competing
+Consumers</a>
+approach by having multiple consumers read from the same
+<a class="reference external" href="http://www.enterpriseintegrationpatterns.com/MessageChannel.html">Channel</a>
+to allow us to scale out to meet load.</p>
+<p><img alt="TaskQueues" src="_images/TaskQueues.png" /></p>
+</div>
+<div class="section" id="do-i-have-to-use-a-broker-what-about-msmq">
+<h1>Do I have to use a Broker, what about MSMQ?<a class="headerlink" href="#do-i-have-to-use-a-broker-what-about-msmq" title="Permalink to this headline">¶</a></h1>
+<p>Brighter removes some complexity from its implementation by relying on
+the Message Broker to provide a number of services. First the Broker
+provides message routing. The producer does not need to have any idea
+where the consumers are located, only where the broker is located. This
+makes it easy to relocate your consumers, and when then begin
+subscribing the Broker will figure out how to deliver to them. It also
+supports a recipient list when routing messages: one producer can send
+to many consumers. Second we rely on the Broker to provide a clustered
+High Availability (HA) solution to queueing. We want to be able to send
+a message to the Broker cluster and rely on the Broker to deliver it,
+eventually.</p>
+<p>Without a Broker, using a point-to-point solution we have to provide a
+lot of this infrastructure ourselves, such as routing and distribution
+and how to do so in a way that is HA.</p>
+<p>For this reason we don’t support a point-to-point approach like MSMQ or
+sending directly to a service via HTTP.</p>
+<p>(We do have an experimental implementation of an <a class="reference external" href="https://github.com/BrighterCommand/Paramore.Contrib/tree/master/Renegade">HTTP-based
+broker</a>
+using the RESTMS specification but it is not production-grade, and only
+in-memory as of today).</p>
+</div>
+<div class="section" id="what-happens-when-the-consumer-receives-the-message">
+<h1>What happens when the consumer receives the message?<a class="headerlink" href="#what-happens-when-the-consumer-receives-the-message" title="Permalink to this headline">¶</a></h1>
+<p>A consumer reads the <strong>Message</strong> using the <a class="reference external" href="http://www.enterpriseintegrationpatterns.com/MessagingAdapter.html">Service
+Activator</a>
+pattern to map between an <a class="reference external" href="http://www.enterpriseintegrationpatterns.com/EventDrivenConsumer.html">Event Driven
+Consumer</a>
+and a Handler.</p>
+<p>The use of the Service Activator pattern means the complexity of the
+distributed task queue is hidden from you. You just write a handler as
+normal, but call it via post and create a message mapper, the result is
+that your command is handled reliably, asynchronously, and in parallel
+with little cognitive overhead. It just works!</p>
+</div>
+<div class="section" id="what-does-this-look-like-in-code">
+<h1>What does this look like in code<a class="headerlink" href="#what-does-this-look-like-in-code" title="Permalink to this headline">¶</a></h1>
+<p>Instead of using <strong>CommandProcessor.Send()</strong> you use
+<strong>CommandProcessor.Post()</strong> to send the message</p>
+<div class="highlight-csharp notranslate"><div class="highlight"><pre><span></span><span class="kt">var</span> <span class="n">reminderCommand</span> <span class="p">=</span> <span class="k">new</span> <span class="n">TaskReminderCommand</span><span class="p">(</span>
+     <span class="n">taskName</span><span class="p">:</span> <span class="n">reminder</span><span class="p">.</span><span class="n">TaskName</span><span class="p">,</span>
+     <span class="n">dueDate</span><span class="p">:</span> <span class="n">DateTime</span><span class="p">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">reminder</span><span class="p">.</span><span class="n">DueDate</span><span class="p">),</span>
+     <span class="n">recipient</span><span class="p">:</span> <span class="n">reminder</span><span class="p">.</span><span class="n">Recipient</span><span class="p">,</span>
+     <span class="n">copyTo</span><span class="p">:</span> <span class="n">reminder</span><span class="p">.</span><span class="n">CopyTo</span><span class="p">);</span>
+
+ <span class="n">_commandProcessor</span><span class="p">.</span><span class="n">Post</span><span class="p">(</span><span class="n">reminderCommand</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>You add a message mapper to tell Brighter how to serialize the message
+for sending to your consumers.</p>
+<div class="highlight-csharp notranslate"><div class="highlight"><pre><span></span><span class="k">public</span> <span class="k">class</span> <span class="nc">TaskReminderCommandMessageMapper</span> <span class="p">:</span> <span class="n">IAmAMessageMapper</span><span class="p">&lt;</span><span class="n">TaskReminderCommand</span><span class="p">&gt;</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="n">Message</span> <span class="nf">MapToMessage</span><span class="p">(</span><span class="n">TaskReminderCommand</span> <span class="n">request</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">header</span> <span class="p">=</span> <span class="k">new</span> <span class="n">MessageHeader</span><span class="p">(</span><span class="n">messageId</span><span class="p">:</span> <span class="n">request</span><span class="p">.</span><span class="n">Id</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="s">&quot;Task.Reminder&quot;</span><span class="p">,</span> <span class="n">messageType</span><span class="p">:</span> <span class="n">MessageType</span><span class="p">.</span><span class="n">MT_COMMAND</span><span class="p">);</span>
+        <span class="kt">var</span> <span class="n">body</span> <span class="p">=</span> <span class="k">new</span> <span class="n">MessageBody</span><span class="p">(</span><span class="n">JsonConvert</span><span class="p">.</span><span class="n">SerializeObject</span><span class="p">(</span><span class="n">request</span><span class="p">));</span>
+        <span class="kt">var</span> <span class="n">message</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Message</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">body</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">message</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">TaskReminderCommand</span> <span class="nf">MapToRequest</span><span class="p">(</span><span class="n">Message</span> <span class="n">message</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="n">JsonConvert</span><span class="p">.</span><span class="n">DeserializeObject</span><span class="p">&lt;</span><span class="n">TaskReminderCommand</span><span class="p">&gt;(</span><span class="n">message</span><span class="p">.</span><span class="n">Body</span><span class="p">.</span><span class="n">Value</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>One option is to use a <em>Core</em> assembly that contains your domain model,
+handlers, message mappers etc. and then pull that assembly into
+endpoints that consume such as services and web endpoints. This makes it
+easy to move between in-process and out-of-process versions of the
+handler. It also means you don’t end up writing two versions of the
+mapper one on the consumer side and one on the sender side.</p>
+<p>The <a class="reference external" href="https://github.com/BrighterCommand/Brighter/tree/master/samples">Tasks
+Example</a>
+uses this strategy.</p>
+<p>This model only works if your library is shared between components that
+operate on the same bounded context i.e. Continuous Integration that are
+released together. Never share such an assembly between projects that
+should be released autonomously as it is a shared dependency. In that
+case you **must** implement the mapper on both sides.</p>
+<p>Then you write a handler as normal.</p>
+<div class="highlight-csharp notranslate"><div class="highlight"><pre><span></span><span class="k">public</span> <span class="k">class</span> <span class="nc">MailTaskReminderHandler</span> <span class="p">:</span> <span class="n">RequestHandler</span><span class="p">&lt;</span><span class="n">TaskReminderCommand</span><span class="p">&gt;</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">readonly</span> <span class="n">IAmAMailGateway</span> <span class="n">_mailGateway</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="nf">MailTaskReminderHandler</span><span class="p">(</span><span class="n">IAmAMailGateway</span> <span class="n">mailGateway</span><span class="p">,</span> <span class="n">IAmACommandProcessor</span> <span class="n">commandProcessor</span><span class="p">)</span>
+        <span class="p">:</span> <span class="k">this</span><span class="p">(</span><span class="n">mailGateway</span><span class="p">,</span> <span class="n">commandProcessor</span><span class="p">,</span> <span class="n">LogProvider</span><span class="p">.</span><span class="n">GetCurrentClassLogger</span><span class="p">())</span>
+        <span class="p">{}</span>
+
+    <span class="k">public</span> <span class="nf">MailTaskReminderHandler</span><span class="p">(</span><span class="n">IAmAMailGateway</span> <span class="n">mailGateway</span><span class="p">,</span> <span class="n">ILog</span> <span class="n">logger</span><span class="p">)</span> <span class="p">:</span> <span class="k">base</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">_mailGateway</span> <span class="p">=</span> <span class="n">mailGateway</span><span class="p">;</span>
+    <span class="p">}</span>
+
+<span class="na">    [RequestLogging(step: 1, timing: HandlerTiming.Before)]</span>
+<span class="na">    [UsePolicy(CommandProcessor.CIRCUITBREAKER, step: 2)]</span>
+<span class="na">    [UsePolicy(CommandProcessor.RETRYPOLICY, step: 3)]</span>
+    <span class="k">public</span> <span class="k">override</span> <span class="n">TaskReminderCommand</span> <span class="nf">Handle</span><span class="p">(</span><span class="n">TaskReminderCommand</span> <span class="n">command</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">_mailGateway</span><span class="p">.</span><span class="n">Send</span><span class="p">(</span><span class="k">new</span> <span class="n">TaskReminder</span><span class="p">(</span>
+        <span class="n">taskName</span><span class="p">:</span> <span class="k">new</span> <span class="n">TaskName</span><span class="p">(</span><span class="n">command</span><span class="p">.</span><span class="n">TaskName</span><span class="p">),</span>
+        <span class="n">dueDate</span><span class="p">:</span> <span class="n">command</span><span class="p">.</span><span class="n">DueDate</span><span class="p">,</span>
+        <span class="n">reminderTo</span><span class="p">:</span> <span class="k">new</span> <span class="n">EmailAddress</span><span class="p">(</span><span class="n">command</span><span class="p">.</span><span class="n">Recipient</span><span class="p">),</span>
+        <span class="n">copyReminderTo</span><span class="p">:</span> <span class="k">new</span> <span class="n">EmailAddress</span><span class="p">(</span><span class="n">command</span><span class="p">.</span><span class="n">CopyTo</span><span class="p">)</span>
+        <span class="p">));</span>
+
+        <span class="k">return</span> <span class="k">base</span><span class="p">.</span><span class="n">Handle</span><span class="p">(</span><span class="n">command</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="the-dispatcher">
+<h1>The Dispatcher<a class="headerlink" href="#the-dispatcher" title="Permalink to this headline">¶</a></h1>
+<p>To ensure that messages reach the handlers from the queue you have to
+use the <strong>Dispatcher</strong>.</p>
+<p>The Dispatcher reads messages of input channels. Internally it creates a
+message pump for each channel, and allocates a thread to run that
+message pump. The pump consumes messages from the channel, using the
+<strong>Message Mapper</strong> to translate them into a <strong>Message</strong> and from there a
+<strong>Command</strong> or <strong>Event</strong>. It then dispatches those to handlers (using
+the Brighter <strong>Command Processor</strong>).</p>
+<p>To use the Dispatcher you need to host it in a consumer application.
+Usually a console application or Windows Service is appropriate. We
+recommend using <a class="reference external" href="http://topshelf-project.com/">Topshelf</a> to host your
+consumers.</p>
+<p>The following code shows an example of using the <strong>Dispatcher</strong> from
+Topshelf. The key methods are <strong>Dispatcher.Receive()</strong> to start the
+message pumps and <strong>Dispatcher.End()</strong> to shut them.</p>
+<p>We do allow you to start and stop individual channels, but this is an
+advanced feature for operating the services.</p>
+<div class="highlight-csharp notranslate"><div class="highlight"><pre><span></span><span class="k">internal</span> <span class="k">class</span> <span class="nc">GreetingService</span> <span class="p">:</span> <span class="n">ServiceControl</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="n">Dispatcher</span> <span class="n">_dispatcher</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="nf">GreetingService</span><span class="p">()</span>
+    <span class="p">{</span>
+       <span class="cm">/* Configfuration Code Goes here*/</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="kt">bool</span> <span class="nf">Start</span><span class="p">(</span><span class="n">HostControl</span> <span class="n">hostControl</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">_dispatcher</span><span class="p">.</span><span class="n">Receive</span><span class="p">();</span>
+        <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="kt">bool</span> <span class="nf">Stop</span><span class="p">(</span><span class="n">HostControl</span> <span class="n">hostControl</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">_dispatcher</span><span class="p">.</span><span class="n">End</span><span class="p">().</span><span class="n">Wait</span><span class="p">();</span>
+        <span class="n">_dispatcher</span> <span class="p">=</span> <span class="k">null</span><span class="p">;</span>
+        <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">Shutdown</span><span class="p">(</span><span class="n">HostControl</span> <span class="n">hostcontrol</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">_dispatcher</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span>
+            <span class="n">_dispatcher</span><span class="p">.</span><span class="n">End</span><span class="p">();</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<p>So how do we route messages from the channel to the handler? The answer
+is the framework uses configuration that your provide to do that.
+Configuration is the subject of this documentation
+<a class="reference external" href="DistributedTaskQueueConfiguration.html">here</a>.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Routing.html" class="btn btn-neutral float-right" title="Routing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Logging.html" class="btn btn-neutral" title="Supporting Logging" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Ian Cooper
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
