@@ -80,5 +80,29 @@ The Command Dispatcher is a repository of key-value pairs (key., Command Handler
 
 **Client** – registers Commands with the Command Dispatcher.
 
+    |CommandExtendedWorkflow|
 
+A Command Dispatcher can also act as the port layer in a `Ports & Adapters architecture <http://alistair.cockburn.us/Hexagonal+architecture>`__.
+
+Finally, it's worth noting that Martin Fowler calls this component anEvent Processor in his description of `Event Sourcing <https://martinfowler.com/eaaDev/EventSourcing.html>`__ and that this library facilitates the approach outlined there. It should be noted that the design of the Event Sourcing pattern outlined in the bliki, is somewhat different to the form outline by `Greg Young <https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf>`__ which treats events as the storage mechanism and builds the current state from events. A discussion of the trade-offs it outside the scope of this documentation.
+
+Command Processor
+-----------------
+
+Brighter is a .NET implementation of the `Command Processor pattern <https://wiki.hsr.ch/APF/files/CommandProcessor.pdf>`__.
+
+::
+
+    *The Command Processor pattern separates the request for a service from its execution. A Command Processor component manages requests as separate objects, schedules their execution, and provides additional services such as the storing of request objects for later undo.*
+
+
+A Command Dispatcher and a Command Processor are similar in that both divorce the caller of a Command from invoker of that Command. However, the motivation is different. A Dispatcher seeks to decouple the caller from the invoker to allow us to easily extend the system without modification to the caller. Conversely the motivation behind a Command Processor is to allows us to implement orthogonal operations such as logging, or scheduling without forcing the sender or receiver to be aware of them. It does this by giving those responsibilities to the invoker.
+
+Of course as both patterns separate the invoker from sender and receiver, it is possible for us to combine them by having the Command Dispatcher's invoker support executing orthogonal concerns when it invokes the Command.
+
+    |CommandProcessor|
+
+::
+
+        *The central command processor easily allows the addition of services related to command execution. An advanced command processor can log or store commands to a file for later examination or replay. A command processor can queue commands and schedule them at a later time. This is useful if commands should execute at a specified time, if they are handled according to priority, or if they will execute in a separate thread of control. An additional example is a single command processor shared by several concurrent applications that provides a transaction control mechanism with logging and rollback of commands.*
 
