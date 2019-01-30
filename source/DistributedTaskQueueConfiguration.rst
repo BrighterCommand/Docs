@@ -40,7 +40,7 @@ You need to consider the following when configuring the Dispatcher
 -  Connection List
 
 Of these **Logging** and the **Command Processor** are covered in
-`Basic Configuration<BasicConfiguration.html>`__.
+`Basic Configuration <BasicConfiguration.html>`__.
 
 Message Mappers
 ~~~~~~~~~~~~~~~
@@ -151,7 +151,7 @@ following a delay. This just allows us to yield to receive control messages on t
 
 
 Creating a Builder
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 This code fragment shows putting the whole thing together
 
