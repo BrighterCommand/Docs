@@ -106,3 +106,8 @@ Of course as both patterns separate the invoker from sender and receiver, it is 
 
         *The central command processor easily allows the addition of services related to command execution. An advanced command processor can log or store commands to a file for later examination or replay. A command processor can queue commands and schedule them at a later time. This is useful if commands should execute at a specified time, if they are handled according to priority, or if they will execute in a separate thread of control. An additional example is a single command processor shared by several concurrent applications that provides a transaction control mechanism with logging and rollback of commands.*
 
+
+A Command Processor enforces quality of service and maximizes throughput. A Command Processor forms a juncture at which concerns like: `retry, timeout and circuit breaker <PolicyRetryAndCircuitBreaker.html>`__ can be implemented for all commands.
+
+    |CommandProcesorCapitalize|
+
