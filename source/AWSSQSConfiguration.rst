@@ -8,8 +8,6 @@ section in your configuration file and ensure that an instance of
 
 Here's an example of an App.config file:
 
-// We no longer use XML, change it to in code examples
-
 .. highlight:: xml
 
 ::

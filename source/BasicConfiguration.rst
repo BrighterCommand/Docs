@@ -80,33 +80,27 @@ container but switched to user defined factories as per Mark's blog.
 You can implement the Handler Factory using an IoC container, in your
 own code. For example:
 
-// Avoid use of tinyIOC container, change it for the .NET Core default factory
-
 .. highlight:: csharp
 
 ::
 
-    internal class TinyIocHandlerFactory : IAmAHandlerFactory
+    internal class HandlerFactory : IAmAHandlerFactory
     {
-        private readonly TinyIoCContainer _container;
+        private readonly IContainer _container;
 
-        public TinyIocHandlerFactory(TinyIoCContainer container)
+        public HandlerFactory(IContainer container)
         {
             _container = container;
         }
 
         public IHandleRequests Create(Type handlerType)
         {
-            return (IHandleRequests)_container.Resolve(handlerType);
+            return (IHandleRequests)_container.GetInstance(handlerType);
         }
 
         public void Release(IHandleRequests handler)
         {
-            var disposable = handler as IDisposable;
-            if (disposable != null)
-            {
-                disposable.Dispose();
-            }
+            _container.Release(handler);
         }
     }
 

@@ -4,10 +4,8 @@ Frquently Asked Questions
 Must I manually register all my handlers?
 -----------------------------------------
 No, of course not. Brighter is intended as a library, not a framework, (see elsewhere) and as such we avoid holding an opinion about how you will create the factories which we call to create instances of your types, or how you will choose to register them.
-However, many people implement a factory by wrapping their IoC container of choice. (We do this in the samples, wrapping TinyIOC in a number of them).
+However, many people implement a factory by wrapping their IoC container of choice.
 Here is a common approach:
-
-// TinyIOC???
 
 - Implement the HandlerFactory and MessageMapperFactory using your IOC container.
 - Use reflection to scan your assemblies for message mappers and request handlers

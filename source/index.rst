@@ -13,6 +13,7 @@ Brighter
   :maxdepth: 2
 
   ImplementingAHandler
+  CommandsCommandDispatcherAndProcessor
   DispatchingARequest
   BuildingAPipeline
   UsingTheContextBag

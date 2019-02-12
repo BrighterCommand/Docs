@@ -53,8 +53,8 @@ Body**. The header contains metadata about the message. Key properties
 are time **TimeStamp**, **Topic**, and **Id**. The body consists of the
 serialized **IRequest** sent over the Task Queue.
 
-We dispatch a **Message** using either **CommandProcessor.Send()** or
-**CommandProcessor.Publish()** depending on whether the
+We dispatch a **Message** using either **commandProcessor.Send()** or
+**commandProcessor.Publish()** depending on whether the
 **MessageHeader.MessageType** is **MT\_COMMAND** or **MT\_EVENT**.
 
 You create a **Message Mapper** by deriving from
@@ -159,13 +159,13 @@ This code fragment shows putting the whole thing together
 
 ::
 
-    //create message mappers
+    // create message mappers
     var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory)
     {
         { typeof(GreetingCommand), typeof(GreetingCommandMessageMapper) }
     };
 
-    //create the gateway
+    // create the gateway
     var rmqMessageConsumerFactory = new RmqMessageConsumerFactory(logger);
     _dispatcher = DispatchBuilder.With()
         .CommandProcessor(CommandProcessorBuilder.With()

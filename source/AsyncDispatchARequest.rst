@@ -2,20 +2,20 @@ Dispatching Requests Asynchronously
 -----------------------------------
 
 Brighter supports an asynchronous `Command Dispatcher and Command
-Processor <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__.   // Failing Link
+Processor <CommandsCommandDispatcherandProcessor.html>`__.
 
 Using an asynchronous approach to dispatch can be valuable when the work
 done by a handler can be done concurrently with other work. Instead of
 blocking on the call to **Send** or **Publish** the calling thread can
 continue to do work, with a continuation executing once the operation
 completes. See the MSDN article `Asynchronous Programming with Async and
-Await <https://docs.microsoft.com/en-us/dotnet/csharp/async>`__
+Await <https://docs.microsoft.com/en-us/dotnet/csharp/async>`__.
 
 Brighter supports using the async...await pattern in .NET to allow your
 code to avoid blocking. We provide asynchronous versions of the
-**Command Dispatcher** methods i.e. **CommandProcessor.SendAsync()**,
-**CommandProcessor.PublishAsync()**, and
-**CommandProcessor.PostAsync()**.
+**Command Dispatcher** methods i.e. **commandProcessor.SendAsync()**,
+**commandProcessor.PublishAsync()**, and
+**commandProcessor.PostAsync()**.
 
 Usage
 ~~~~~
@@ -26,9 +26,9 @@ handler asynchronously.
 
 Note that this code is the same as the equivalent code for calling the
 command processor synchronously - apart from the use of async
-alternatives i.e. **SubscriberRegistry.RegisterAsync()** instead of
-**SubscriberRegistry.Register()** and **CommandProcessor.SendAsync()**
-instead of **CommandProcessor.Send()**.
+alternatives i.e. **subscriberRegistry.RegisterAsync()** instead of
+**subscriberRegistry.Register()** and **commandProcessor.SendAsync()**
+instead of **commandProcessor.Send()**.
 
 Note also that we have a **SimpleHandlerFactoryAsync** as this factory
 needs to return handlers that implement **IHandleRequestsAsync** not
@@ -69,7 +69,7 @@ that **Command** or **Event** and your Handler.
 
 The **Subscriber Registry** is where you register your Handlers.
 
-The **SubscriberRegistry.RegisterAsync()** expects a handler that
+The **subscriberRegistry.RegisterAsync()** expects a handler that
 implements **IHandleRequestsAsync**
 
 .. highlight:: csharp
@@ -96,9 +96,9 @@ Dispatching Requests
 ~~~~~~~~~~~~~~~~~~~~
 
 Once you have registered your Handlers, you can dispatch requests to
-them. To do that you simply use the **CommandProcessor.SendAsync()** (or
-**CommandProcessor.PublishAsync()** or
-**CommandProcessor.PostAsync()**) method passing in an instance of
+them. To do that you simply use the **commandProcessor.SendAsync()** (or
+**commandProcessor.PublishAsync()** or
+**commandProcessor.PostAsync()**) method passing in an instance of
 your command.
 
 .. highlight:: csharp
@@ -141,7 +141,7 @@ Therefore you should only call **SendAsync**, **PublishAsync**, or
 otherwise you will block, and there will be no value to having used an
 async method.
 
-In `Ports & Adapters Architecture <PortsAndAdapters.html>`__ terms you      // failing link!!! replace it
+In `Ports & Adapters Architecture <https://www.goparamore.io/ports-adapters/>`__ terms you
 should use an **Adapter** layer that supports async when calling the
 **Ports** layer represented by your handlers.
 

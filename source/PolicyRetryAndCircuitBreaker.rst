@@ -2,13 +2,13 @@ Supporting Retry and Circuit Breaker
 -------------------------------------
 
 Brighter is a `Command
-Processor <https://brightercommand.github.io/Brighter/ControlBus.html>`__ and supports a // failing link
+Processor <https://www.goparamore.io/control-bus-and-data-bus/>`__ and supports a
 `pipeline of Handlers to handle orthogonal
 requests <BuildingAPipeline.html>`__.
 
 Amongst the valuable uses of orthogonal requests is patterns to support
 Quality of Service in a distributed environment: `Timeout, Retry, and
-Circuit Breaker <QualityOfServicePatterns.html>`__.                     // failing link
+Circuit Breaker <PolicyRetryAndCircuitBreaker.html#using-brighter-s-usepolicy-attribute>`__.
 
 Even if you don't believe that you are writing a distributed system that
 needs this protection, consider that as soon as you have multiple
@@ -21,7 +21,7 @@ in the context of a Policy Handler, that catches exceptions, and applies
 a Policy on how to deal with them.
 
 Using Brighter's UsePolicy Attribute
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 By adding the **UsePolicy** attribute, you instruct the Command
 Processor to insert a handler (filter) into the pipeline that runs all
@@ -90,11 +90,11 @@ channel is not available. These are configured using the constants:
 **Paramore.RETRYPOLICY** and **Paramore.CIRCUITBREAKER**
 
 Timeout
--------
+~~~~~~~
 
 You should not allow a handler that calls out to another process (e.g. a
 call to a Database, queue, or an API) to run without a
-`timeout <QualityOfServicePatterns.html>`__. If the process has failed, // failing link
+timeout. If the process has failed,
 you will consumer a resource in your application polling that resource.
 This can cause your application to fail because another process failed.
 

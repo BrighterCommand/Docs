@@ -2,9 +2,9 @@ Building a Pipeline of Async Request Handlers
 ---------------------------------------------
 
 Once you are using the features of Brighter to act as a `command
-dispatcher <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ and send or   // Failing link
+dispatcher <CommandsCommandDispatcherAndProcessor.html#command-dispatcher>`__ and send or
 publish messages to a target handler, you may want to use its `command
-processor <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ features to    // Failing Link
+processor <CommandsCommandDispatcherAndProcessor.html#command-processor>`__ features to
 handle orthogonal operations.
 
 Implementing a Pipeline
@@ -24,9 +24,9 @@ The limitation here is that you can only make assumptions about the type
 you receive into the pipeline from the constraints on the generic type.
 
 Although it is possible to implement the
-`IHandleRequestsAsync <https://github.com/BrighterCommand/Brighter/blob/master/Brighter.commandprocessor/IHandleRequestsAsync.cs>`__    // failing link
+`IHandleRequestsAsync <https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/IHandleRequestsAsync.cs>`__
 interface directly, we recommend deriving your handler from
-`RequestHandlerAsync<T> <https://github.com/BrighterCommand/Brighter/blob/master/Brighter.commandprocessor/RequestHandlerAsync.cs>`__.  // failing link
+`RequestHandlerAsync<T> <https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/RequestHandlerAsync.cs>`__.
 
 Let us assume that we want to log all requests travelling through the
 pipeline. (We provide this for you in the
@@ -136,7 +136,7 @@ handler and requests an instance of that type from the user-supplied
 
 Your Handler Factory needs to respond to requests for instances of a
 **RequestHandlerAsync<T>** specialized for a concrete type. For example,
-if you create a \ **CommandSourcingHandlerAsync<TRequest>** we will ask
+if you create a **CommandSourcingHandlerAsync<TRequest>** we will ask
 you for a **CommandSourcingHandlerAsync<MyCommand>** etc. Depending on
 your implementation of HandlerFactory, you may need to register an
 implementation for every concrete instance of your handler with your
@@ -151,7 +151,7 @@ You may wish to pass parameter from your Attribute to the handler.
 Attributes can have constructor parameters or public members that you
 can set when adding the Attribute to a target method. These can only be
 compile time constants, see the documentation
-`here <https://msdn.microsoft.com/en-us/library/aa664615%28v=vs.71%29.aspx>`__.
+`here <https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/attributes>`__.
 After the Command Processor calls your Handler Factory to create an
 instance of your type it calls the
 **RequestHandler.InitializeFromAttributeParams** method on that created
