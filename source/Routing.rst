@@ -59,7 +59,7 @@ disk. In the following example we set the **Topic** to *Task.Completed*.
         }
     }
 
-On the consumer side we configure **Perfomer**\ s to subscribe to
+On the consumer side we configure **Perfomer**\'s to subscribe to
 notifications from a Broker via a **Channel**. That **Channel**
 subscribes to the **Topic**. So in the above example to receive
 **TaskCompletedEvent** the **Channel** would need to subscribe to the
@@ -69,12 +69,14 @@ We can configure consumers with code or configuration.
 
 Configuration is often used to allow us to make run-time changes to
 subscriber lists easily - by changing the configuration file and
-restarting the consumer. (Another alternative is to use the Control Bus
-to configure the consumer at run-time.
+restarting the consumer (another alternative is to use the Control Bus
+to configure the consumer at run-time).
 
 To configure a consumer using a configuration file we use the service
 activator configuration section, which needs to be added to the
 **<configSections>** element of your configuration file.
+
+// We no longer use XML for configuration, change this section with a code config example
 
 .. highlight:: xml
 
@@ -154,7 +156,7 @@ In this case, our requirement is that we receive a response to our
 
 To route this kind of message the Producer needs to send a reply-address
 to the Consumer so that it can send a response back. In our case, that
-reply-address is a topic that the sender subscibes to in order to
+reply-address is a topic that the sender subscribes to, in order to
 receive the response.
 
 Usually the Producer creates a topic for all of its replies, and matches

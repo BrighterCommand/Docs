@@ -70,7 +70,7 @@ Brighter supports Command Sourcing through the use of its
 you gain support for logging that **Command** to a **Command Store** A
 Command Store needs to implement **IAmACommandStore** and we provide an
 `MSSQL Command
-Store <https://github.com/BrighterCommand/Brighter/tree/master/Brighter.commandprocessor.commandstore.mssql>`__
+Store <https://www.nuget.org/packages/Paramore.Brighter.CommandStore.MySql/>`__
 implementation. You can choose to persist the Command to the Store
 before or after the handler. We recommend Before as this gives you the
 assurance that if writing the Command to the Store fails, the Handler
@@ -93,14 +93,13 @@ The following code shows a handler marked up for Command Sourcing
      }
 
 
-Inerrnally the `Monitor
+Internally the `Monitor
 Handler <https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/Monitoring/Handlers/MonitorHandler.cs>`__
 that Brighter uses to write to the Command Store takes a reference to an
 **IAmACommandStore**, so you also need to configure your application to
 provide an implementation at runtime when you provide instances of the
 Handler from your Handler Factory implementation. The example code
-relies on the TinyIoC Inversion of Control container to hookup the
-Handler and Command Store.
+relies on the ASP.NET Core built-in service container, `IServiceProvider <https://docs.microsoft.com/en-us/dotnet/api/system.iserviceprovider?view=netframework-4.7.2>`__.  to hookup the Handler and Command Store.
 
 .. highlight:: csharp
 
@@ -108,9 +107,8 @@ Handler and Command Store.
 
     private static void Main(string[] args)
     {
-        var dbPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().GetName().CodeBase.Substring(8)), "App_Data\\CommandStore.sdf");
-        var connectionString = "DataSource=\"" + dbPath + "\"";
-        var configuration = new MsSqlCommandStoreConfiguration(connectionString, "Commands", MsSqlCommandStoreConfiguration.DatabaseType.SqlCe);
+        var connectionString = "Server=.;Database=ExampleDB;Integrated Security=True";
+        var configuration = new MsSqlCommandStoreConfiguration(connectionString, "Commands");
         var commandStore = new MsSqlCommandStore(configuration);
 
         var registry = new SubscriberRegistry();
@@ -123,7 +121,7 @@ Handler and Command Store.
         var builder = CommandProcessorBuilder.With()
             .Handlers(new HandlerConfiguration(
                 subscriberRegistry: registry,
-                handlerFactory: new TinyIocHandlerFactory(tinyIoCContainer)
+                handlerFactory: new HandlerFactory(container)
             ))
             .DefaultPolicy()
             .NoTaskQueues()

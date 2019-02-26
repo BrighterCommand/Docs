@@ -2,9 +2,9 @@ Building a Pipeline of Request Handlers
 ---------------------------------------
 
 Once you are using the features of Brighter to act as a `command
-dispatcher <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ and send or
+dispatcher <CommandsCommandDispatcherAndProcessor.html#command-dispatcher>`__ and send or
 publish messages to a target handler, you may want to use its `command
-processor <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ features to
+processor <CommandsCommandDispatcherAndProcessor.html#command-processor>`__ features to
 handle orthogonal operations.
 
 Common examples of orthogonal operations include:
@@ -17,14 +17,14 @@ Common examples of orthogonal operations include:
 -  Supporting re-sequencing of messages
 -  Handling exceptions
 -  `Providing Timeout, Retry, and Circuit Breaker
-   support <QualityOfServicePatterns.html>`__
+   support <QualityOfServicePatterns.html>`__ // failing link
 -  Providing undo support, or rollback
 
 The Pipes and Filters Architectural Style
 -----------------------------------------
 
 To handle these orthogonal concerns our `command
-processor <https://brightercommand.github.io/Brighter/CommandsCommandDispatcherandProcessor.html>`__ uses a pipes
+processor <CommandsCommandDispatcherAndProcessor.html#command-processor>`__ uses a pipes
 and filters architectural style: the filters are where processing
 occurs, they do not share state with other filters, nor do they know
 about adjacent filters. The pipe is the connector between the filters in
@@ -221,7 +221,7 @@ You may wish to pass parameter from your Attribute to the handler.
 Attributes can have constructor parameters or public members that you
 can set when adding the Attribute to a target method. These can only be
 compile time constants, see the documentation
-`here <https://msdn.microsoft.com/en-us/library/aa664615%28v=vs.71%29.aspx>`__.
+`here <https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/attributes/>`__.
 After the Command Processor calls your Handler Factory to create an
 instance of your type it calls the
 **RequestHandler.InitializeFromAttributeParams** method on that created

@@ -66,8 +66,8 @@ configure new instances of **Command Processor**.
     var commandProcessor = builder.Build();
 
 
-We cover `configuration of a **Command
-Processor** <BasicConfiguration.html>`__ in more detail later.
+We cover `configuration of a Command
+Processor <BasicConfiguration.html>`__ in more detail later.
 
 Returning results to the caller.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,9 +125,18 @@ In that case add a property to the **Command** that you can initialize
 from the Handler, for example create a **NewEntityIdentity** property in
 your command that you write the new entity's identity to in the Handler,
 and then inspect the property in your **Command** in the calling code
-after the call to **CommandDispatcher.Send()** completes.
+after the call to **commandProcessor.Send(command)** completes.
 
-Note that you cannot use this strategy with **CommandDispatcher.Send()**
+.. highlight:: csharp
+
+::
+
+    var createTaskCommand = new CreateTaskCommand();
+    commandProcessor.Send(createTaskCommand);
+    var newTaskId = createTaskCommand.TaskId;
+
+
+Note that you cannot use this strategy with **commandProcessor.Post(command)**
 as you have no way to update the **Command** in process.
 
 Using the base class when dispatching a message
