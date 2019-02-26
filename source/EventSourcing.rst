@@ -114,10 +114,9 @@ relies on the ASP.NET Core built-in service container, `IServiceProvider <https:
         var registry = new SubscriberRegistry();
         registry.Register<GreetingCommand, GreetingCommandHandler>();
 
-        // ServiceCollection is the IoC from microsoft
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddTransient<IHandleRequests<GreetingCommand>, GreetingCommandHandler>();
-        serviceCollection.AddTransient<IAmACommandStore>(provider => commandStore);
+        var tinyIoCContainer = new TinyIoCContainer();
+        tinyIoCContainer.Register<IHandleRequests<GreetingCommand>, GreetingCommandHandler>();
+        tinyIoCContainer.Register<IAmACommandStore>(commandStore);
 
         var builder = CommandProcessorBuilder.With()
             .Handlers(new HandlerConfiguration(
