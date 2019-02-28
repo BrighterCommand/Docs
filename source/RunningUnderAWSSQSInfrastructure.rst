@@ -1,8 +1,6 @@
 Running Brighter under AWS SQS Infrastructure
 ---------------------------------------------
 
-// Update the pictures
-
 Getting your application to interact with SQS using Brighter is a
 trivial task. But, there are couple of things that needs to be done
 manually.

@@ -79,7 +79,7 @@ container but switched to user defined factories as per Mark's blog.
 
 You can implement the Handler Factory using an IoC container, in your
 own code. We will be using `TinyIoC Container <https://github.com/grumpydev/TinyIoC>`__.
- For example:
+For example:
 
 .. highlight:: csharp
 

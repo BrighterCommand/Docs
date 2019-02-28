@@ -2,12 +2,12 @@ Monitoring
 ----------
 
 Brighter emits monitoring information from Task Queues using a
-configured `Control Bus <https://brightercommand.github.io/Brighter/ControlBus.html>`__     // failing link
+configured `Control Bus <https://brightercommand.github.io/Brighter/ControlBus.html>`__
 
 Configuring Monitoring
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Firstly `configure a Control Bus <https://brightercommand.github.io/Brighter/ControlBus.html#configure>`__ in the   // failing link
+Firstly `configure a Control Bus <https://brightercommand.github.io/Brighter/ControlBus.html#configure>`__ in the
 brighter application to emit monitoring messages
 
 Config file
@@ -15,8 +15,6 @@ Config file
 
 Monitoring requires a new section to be added to the application config
 file:
-
-// config with XML???
 
 .. highlight:: xml
 

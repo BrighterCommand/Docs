@@ -17,7 +17,7 @@ Common examples of orthogonal operations include:
 -  Supporting re-sequencing of messages
 -  Handling exceptions
 -  `Providing Timeout, Retry, and Circuit Breaker
-   support <QualityOfServicePatterns.html>`__ // failing link
+   support <QualityOfServicePatterns.html>`__
 -  Providing undo support, or rollback
 
 The Pipes and Filters Architectural Style

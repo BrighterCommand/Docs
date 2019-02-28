@@ -1,8 +1,6 @@
 Supporting Logging
 ==================
 
-// Has the logger changed? is there a default .net one??
-
 Logger
 ~~~~~~
 
@@ -66,9 +64,7 @@ default constructor simply grabs the current logger from LibLog.
 
 ::
 
-    ///
-    /// Initializes a new instance of the  class.
-    ///
+    // Initializes a new instance of the  class.
     protected RequestHandler()
     : this(LogProvider.GetCurrentClassLogger())
     {}
