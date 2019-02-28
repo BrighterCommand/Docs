@@ -1,8 +1,6 @@
 RabbitMQ Configuration
 ----------------------
 
-// We no longer use XML for configuration
-
 Getting your application to interact with RabbitMQ using Brighter is a
 trivial task. Simply add the *<rmqMessagingGateway/>* section in your
 configuration file and ensure that an instance of *RmqMessageProducer*
@@ -51,8 +49,6 @@ The available configuration options are:
       Default count is 1.
 
 Here's an example of an App.config file:
-
-// Change XML examples for code examples
 
 .. highlight:: xml
 

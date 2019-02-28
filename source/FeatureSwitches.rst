@@ -100,6 +100,7 @@ from the App Settings and return the status for the given type.
         <add key="FeatureSwitch::Namespace.MyIncompleteHandler" value="off"/>
     </appSettings>    
 
+
 .. highlight:: csharp
 
 ::
