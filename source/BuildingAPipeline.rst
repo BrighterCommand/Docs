@@ -21,7 +21,7 @@ Common examples of orthogonal operations include:
 -  Providing undo support, or rollback
 
 The Pipes and Filters Architectural Style
------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To handle these orthogonal concerns our `command
 processor <CommandsCommandDispatcherAndProcessor.html#command-processor>`__ uses a pipes
@@ -39,7 +39,7 @@ action on. The pump is the **Command Dispatcher**. We occasionally use
 *target handler* as a synonym for *sink handler*
 
 The Russian Doll Model
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 Our pipes and filters approach supports the *Russian Doll Model* of
 calling the handler pipeline, a context bag for the pipeline, and
@@ -69,7 +69,7 @@ Our usage of the Russian Doll Model was inspired by
 `FubuMVC <http://codebetter.com/jeremymiller/2011/01/09/fubumvcs-internal-runtime-the-russian-doll-model-and-how-it-compares-to-asp-net-mvc-and-openrasta/>`__
 
 Implementing a Pipeline
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 The first step in building a pipeline is to decide that we want an
 orthogonal operation in our pipeline. Let us assume that we want to do
@@ -245,7 +245,7 @@ pattern at this point. Avoid that temptation as it creates coupling
 between your Attribute and global state reducing modifiability.
 
 Using a Manual Approach
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Using an attribute based approach is not an approach favoured by
 everyone. Some people prefer a more explicit approach to configuring the
