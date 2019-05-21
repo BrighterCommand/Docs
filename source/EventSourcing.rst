@@ -45,7 +45,7 @@ Martin lists some issues to consider: new features, defect fixes, and
 temporal logic. A particular issue is external gateways.
 
 Command or Event Sourcing
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 One complaint about Martin's article is that a Command is the intent to
 change the system, but an event is the result of that change. Because
@@ -63,7 +63,7 @@ for Martin Fowler's description of `Event
 Sourcing <https://martinfowler.com/eaaDev/EventSourcing.html>`__
 
 Command Sourcing in Brighter
-----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Brighter supports Command Sourcing through the use of its
 **UseCommandSourcingAttribute**. By adding the attribute to a handler
