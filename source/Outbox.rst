@@ -1,40 +1,54 @@
 Outbox Pattern Support
 ----------------------
 
+Event Carried State Transfer article first, then seperate this idea out
+
 Producer Correctness
 ~~~~~~~~~~~~~~~~~~~~
+When a microservice changes the state for which it is the system of record, and then signals to subscribers
+via an event that it has changed its state, how do we ensure that subscribers receive the event and are
+then consistent with the producer (even if that consistency is eventual). 
 
-Imagine that I have a Membership service that manages users of my application. We can register, unregister and update the user details through our service. When we perform of these actions we send a message: UserRegistered, UserDeregistered, and UserDetailsUpdated. Although these messages may seem to be events or notifications, we include in them the details of the user, so that both UserRegistered and UserDetailsUpdated act as document messages, with both context and content. 
+When the producing microservice stores its system of a record in its own backing store and then publishes an event 
+there is no guarantee that we will both write to the backing store and send the message. 
 
-Downstream services can choose to react to these messges by creating and updating a local read-only cache of Membership's User record, saving round-trips to the membership service when it needs User information. The records are effectively read-only, because to change Membership, the *system of record* you must use its API.
+- The new record is saved to the backing store, but the event is not raised so subscribing systems become 
+inconsistent. **A lost send**.
 
-It is important in this scenario that the data in Membership and any downstream services are **consistent**, with the provision that it may reach consistency *eventually*. For example, if the user changes their contact details, we want downstream systems to agree on the new User contact details with the upstream Membership system.
+Distributed Transactions may seem like an answer, but possess two issues. First, we are probably using a 
+backing store and message-oriented middleware from different vendors or OSS projects that don't support 
+the same distributed transaction protocol. Second, distributed transactions don't scale well.
 
-In many scenarios that Membership service stores its system of a record in its own database and then posts the message onto the queue with that change. Or vice-versa.
+We might naively try to fix this by sending the  message first, then updating the backing store if that succeeds.
+But this won't necessarily work either, as we might fail to write to the database.
 
-This raises a number of potential failure modes, depending on the order of the operation:
+- The new record is posted to downstream systems, but the local database call is rejected, and so the upstream 
+system is now inconsistent. A phantom send.
 
-- The new Membership User record is saved to the Db, but the event is not raised so downsteam systems become inconsistent. A lost send.
-- The new Membership User record is posted to downstream systems, but the local database call is rejected, and so the upstream system is now inconsistent. A phantom send.
-
+In either solution we might simply decide that the best option is to ensure that we can retry what is hopefully
+a transient error. This may solve the problem in many instances, and is a good first step. But an endless retry
+loop has its own dangers, consuming resources and reducing throughput, and if the app crashes we will still
+only be partially complete. So it cannot guarantee delivery of the message that matches the write.
 
 Solutions
 ~~~~~~~~~
 
-There are a number of solutions to this problem:
+The Outbox Pattern
+------------------
+In the Outbox pattern, we use the ACID properites of an RDBMS. We write not only to the table that stores the entity
+that we are inserting, updating, or deleting, but also we write the message we intend to send to  an 'outbox table' 
+in the same Db. 
 
-- Keep retrying the write to the broker until everything succeeds. This can lead to your application consuming all of the resources on the producer 
-  in a retry loop, you need to timeout eventually at which point you get a lost send.
-- Use a distributed transaction. This requires the ability for both queue and Db to be enlist in a distributed transaction. This scales badly.
+
 - Compensate for failure by reversing already commmitted work. This may involve deleting from the Db or sending a reveral message. This adds complexity.
+
 - Write to a queue, and then use a consumer on that queue to write to the database. This adds eventual consistency to the entity update on the local Db.
+
 - Use a shared append-only log as the messaging and persistence solution, so that consumers can read the entries made by the producer. Note that this risks 
   becoming *shared database* integration and you have to be careful with schema design, think about using weak schema in consumer deserialization etc.
 - Tail the transaction log on the Db and send messages in response to new entries in the transaction log. 
-- The Outbox pattern (http://gistlabs.com/2014/05/the-outbox/). Write the message to an 'outbox' in the Db as part of the same transaction that updates entity 
-  state. Then send it to the queue later, retrying on failure. This allows us to guarantee we can send a consistent message, eventually. This has similarities 
-  to the tail the transaction log approach.     
 
+- 
 
 CommandProcessor.Post
 ~~~~~~~~~~~~~~~~~~~~~

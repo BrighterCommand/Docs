@@ -20,7 +20,14 @@ two options:
 -  Offload the work to a distributed task queue, ack the message, and
    allow the work to complete asynchronously
 
-A problem with the TPL approach is that your operation can only meet the
+Either way you probably return a 202 Accepted to the caller, with a Link header
+that points to an endpoint where the caller can poll for completion and/or monitor
+progress. This might be a resource you are creating that will return a 404 until
+it exists, or a progress indicator that indicates how far through the work you are and
+redirects to the resource once it is complete. (You can store progress in a backing store,
+perhaps using a distributed cache such as Redis).
+
+There is a problem with the TPL approach is that your operation can only meet the
 100ms threshold if your work can be parallelised such that no sub-task
 takes longer than 100ms. Your speed is always constrained by the slowest
 operation that you need to parallelize. If you are I/O bound on a
@@ -122,7 +129,7 @@ Without a Broker, using a point-to-point solution we have to provide a
 lot of this infrastructure ourselves, such as routing and distribution
 and how to do so in a way that is HA.
 
-For this reason we don't support a point-to-point approach like MSMQ or
+For this reason we don't support a point-to-point approach like MSMQ, SQS, or
 sending directly to a service via HTTP.
 
 (We do have an experimental implementation of an `HTTP-based

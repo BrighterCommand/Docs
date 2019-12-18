@@ -1,10 +1,6 @@
 RabbitMQ Configuration
 ----------------------
 
-Getting your application to interact with RabbitMQ using Brighter is a
-trivial task. Simply add the *<rmqMessagingGateway/>* section in your
-configuration file and ensure that an instance of *RmqMessageProducer*
-is being used when building the command processor.
 
 The available configuration options are:
 
@@ -47,21 +43,3 @@ The available configuration options are:
       `"prefetch
       count" <https://www.rabbitmq.com/consumer-prefetch.html>`__).
       Default count is 1.
-
-Here's an example of an App.config file:
-
-.. highlight:: xml
-
-::
-
-    <?xml version="1.0" encoding="utf-8"?>
-    <configuration>
-        <configSections>
-            <section name="rmqMessagingGateway" type="paramore.brighter.commandprocessor.messaginggateway.rmq.MessagingGatewayConfiguration.RMQMessagingGatewayConfigurationSection, paramore.brighter.commandprocessor.messaginggateway.rmq" />
-        </configSections>
-        <rmqMessagingGateway>
-            <amqpUri uri="amqp://guest:guest@localhost:5672/%2f" connectionRetryCount="3" retryWaitInMilliseconds="1000" circuitBreakTimeInMilliseconds="60000" />
-            <exchange name="paramore.brighter.exchange" type="direct" durable="false" />
-            <queues highAvailability="false" qosPrefetchSize="1" />
-        </rmqMessagingGateway>
-    </configuration>

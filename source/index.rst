@@ -16,22 +16,23 @@ Brighter
   CommandsCommandDispatcherAndProcessor
   DispatchingARequest
   BuildingAPipeline
+  ImplementingAsyncHandler
+  AsyncDispatchARequest
+  BuildingAnAsyncPipeline
   UsingTheContextBag
   PolicyRetryAndCircuitBreaker
   PolicyFallback
-  EventSourcing
   BasicConfiguration
   Logging
+  FeatureSwitches
   ImplementingDistributedTaskQueue
   Routing
   DistributedTaskQueueConfiguration
+  EventCarriedStateTransfer
+  OutboxPattern
   RabbitMQConfiguration
   RunningUnderAWSSQSInfrastructure
   AWSSQSConfiguration
-  AsyncDispatchARequest
-  ImplementingAsyncHandler
-  BuildingAnAsyncPipeline
   Monitoring
-  FeatureSwitches
   faq
 
