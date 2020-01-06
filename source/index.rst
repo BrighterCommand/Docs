@@ -28,6 +28,8 @@ Brighter
   ImplementingDistributedTaskQueue
   Routing
   DistributedTaskQueueConfiguration
+  Microservices
+  EventDrivenCollaboration
   EventCarriedStateTransfer
   OutboxPattern
   RabbitMQConfiguration
