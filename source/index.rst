@@ -32,6 +32,7 @@ Brighter
   EventDrivenCollaboration
   EventCarriedStateTransfer
   OutboxPattern
+  BrighterOutboxSupport
   RabbitMQConfiguration
   RunningUnderAWSSQSInfrastructure
   AWSSQSConfiguration

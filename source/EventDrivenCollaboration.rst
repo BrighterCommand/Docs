@@ -130,3 +130,9 @@ In addition, a publisher does not know who it's subscribers are. That is the fun
 message oriented middleware - a broker. The broker routes messages from a publisher to
 subscribers. Because of this, changes to the subscribers don't impact the publisher. The
 publisher remains independently deployable of its subscribers.
+
+So an Event Driven Architecture benefits from a lack of behavioral coupling too.
+
+(Note that if we use commands, and not events, between microservices i.e. the sender knows who
+should receive this instruction, we do not have temporal coupling, but we do have behavioral
+coupling).
