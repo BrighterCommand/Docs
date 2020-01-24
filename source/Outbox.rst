@@ -1,8 +1,6 @@
 Outbox Pattern Support
 ======================
 
-Event Carried State Transfer article first, then seperate this idea out
-
 Producer Correctness
 ~~~~~~~~~~~~~~~~~~~~
 When a microservice changes the state for which it is the system of record, 
@@ -100,3 +98,6 @@ easily exposed transaction log. In this case we publish the message, and then su
 message ourselves, writing the entity to the database when we handle the message. 
 This adds eventual consistency to the entity update on our Db as well as other consumers, 
 but ensures that everyone subscribing has the same entity state.
+
+See `Brighter Outbox Support <BrighterOutboxSupport.html>`__ for more on how
+to ensure Producer-Consumer correctness in Brighter.

@@ -203,3 +203,10 @@ bulkhead is valuable enough to us to use ECST over
 choreography via a pipeline.
 
 .. |HotelMicroservices| image:: _static/images/HotelMicroservices.png
+
+Next
+----
+
+See `Correctness in Brighter <BrighterOutboxSupport.html>`__ for guidance on how
+to use Brighter's support for the Outbox pattern to ensure producer-consumer 
+correctness.

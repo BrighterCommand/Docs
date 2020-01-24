@@ -136,3 +136,10 @@ So an Event Driven Architecture benefits from a lack of behavioral coupling too.
 (Note that if we use commands, and not events, between microservices i.e. the sender knows who
 should receive this instruction, we do not have temporal coupling, but we do have behavioral
 coupling).
+
+Next
+----
+
+See `Event Carried State Transfer <EventCarriedStateTransfer.html>`__ for guidance on how
+to 'join' data between two microservices, when you need data from more than one service
+to carry out an operation.

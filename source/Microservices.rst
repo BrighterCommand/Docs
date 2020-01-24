@@ -89,3 +89,9 @@ that the will use in order to provide interoperability.
 
 
 .. |Microservices| image:: _static/images/Microservices.png
+
+Next
+----
+
+See `Event Driven Collaboration <EventDrivenCollaboration.html>`__ for guidance on how
+to integrate microservices using events.
