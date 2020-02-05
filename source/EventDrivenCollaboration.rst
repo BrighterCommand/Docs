@@ -40,6 +40,8 @@ or gRPC. We refer to this as a Request Driven Architecture
 Let's take an example. In the illustration below we imagine hotel 
 software and the use case of booking a room at the hotel.
 
+|RequestDrivenArchitecture|
+
 When a booking is made by an actor, an HTTP POST is made to our
 Direct Booking microservice with the details in the body of the
 request. The Direct Booking microservice validates the supplied
@@ -67,6 +69,9 @@ other services must also be available.
 A useful metaphor here is a phone call. If we make a phone call, the other
 party must be available i.e. present and not busy with another call.
 
+If the Channel Manager is not available, as in the diagram, does our 
+transaction, the room booking, fail.
+
 Now, we can try to mitigate the risks of a Request Driven Architecture.
 We can call through a proxy that load balances across a pool of upstream
 instances of the service. The proxy can retry failed requests to alleviate
@@ -91,6 +96,8 @@ steps to complete a booking. This means that any change to the sequence,
 to call the new Room Cleaning microservice instead of the housekeeping
 service requires a change to Direct Booking.
 
+|BehavioralCoupling|
+
 This coupling, through knowledge of other services, if a form of behavioral
 coupling. It hampers our goal of independent deployability because downstream
 components are impacted by changes to the partitions of upstream components, or
@@ -111,6 +118,10 @@ This removes temporal coupling - we do not need both services to be available at
 Let's look at the hotel example again. When the direct booking is made, the Payments microservice
 the Housekeeping service and the Channel Manager service can be unavailable. Their subscription
 just queues the message until the service is available.
+
+|EventDrivenArchitecture1|
+
+|EventDrivenArchitecture2|
 
 This allows us to take the booking, even if these services are not available - we have given our
 microservices 'bulkheads' against failure. Our system can keep offering service, even if
@@ -143,3 +154,9 @@ Next
 See `Event Carried State Transfer <EventCarriedStateTransfer.html>`__ for guidance on how
 to 'join' data between two microservices, when you need data from more than one service
 to carry out an operation.
+
+.. |RequestDrivenArchitecture| image:: _static/images/RequestDrivenArchitecture.png
+.. |BehavioralCoupling| image:: _static/images/BehavioralCoupling.png
+.. |EventDrivenArchitecture1| image:: _static/images/EventDrivenArchitecture1.png
+.. |EventDrivenArchitecture2| image:: _static/images/EventDrivenArchitecture2.png
+
