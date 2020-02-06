@@ -9,6 +9,8 @@ Pat Helland classifies data according to whether it exists inside
 a service boundary or outside that boundary. He calls the former 
 Inside Data and the latter Outside Data.
 
+|ReferenceData|
+
 Inside Data is the data inside the service boundary. 
 No one outside the service  boundary can take a dependency 
 on Inside Data. The service is the single writer of this data, 
@@ -43,7 +45,7 @@ Outside Data from the Origin Server that is immutable
 stale (post our GET a subsequent POST may modify the 
 Inside Data our response was built from, perhaps before we
 have even parsed the result, and versioned (use of a
- Last Modified or ETag header allows the Origin Server to
+Last Modified or ETag header allows the Origin Server to
 version the result that it responds with).
 
 Event Carried State Transfer
@@ -59,6 +61,8 @@ downstream can cache those results, thus preventing
 the need to make a request to the origin server to GET
 the current state of the entity. We can think of this 
 as a push based cache instead of a pull based one.
+
+|ECST|
 
 The name given to building a cache upstream of the 
 origin server from events is Event Carried State Transfer 
@@ -102,8 +106,17 @@ where the original request is enriched with the
 required data by the microservices that own that data as a filter step. 
 
 Where no central process controls this pipeline we refer to it 
-as choreography,  and we refer to it as 
-orchestration when a process controls the pipeline.
+as choreography.  
+
+|Choreography|
+
+And we refer to it as orchestration when a process controls the 
+pipeline. Orchestration uses commands, whereas choreography uses events. 
+For this reason we may prefer choreography, as it has lower behavioural
+coupling, unless we need confirmed rollback, or use of the reservation pattern
+which are easier with a Process Manager controlling the workflow.
+
+|Orchestration|
 
 Whilst this could also work for a query, it is less common 
 to take this approach to populating a response 
@@ -171,21 +184,26 @@ Housekeeping: Schedules occupancy, cleaning of the
 room prior to occupancy, during and after.
 Credit Card Payments: Takes a payment from the Account holder.
 
-How does the Credit Card Payments system take the payment,
- when Accounts holds the account holders credit card
-details? We don't want to call a credit card details 
-HTTP directly as this moves us back to a request driven
-architecture.
+How does the Credit Card Payments system take the payment, 
+when Accounts holds the account holders credit card details? 
+We don't want to call a credit card details HTTP directly 
+as this moves us back to a request driven architecture.
 
-We have two options:
+We have two options.
 
-- A pipeline. Accounts listens for DirectBookingMadeOnAccount. 
+A Pipeline
+---------- 
+Accounts listens for DirectBookingMadeOnAccount. 
 It adds the credit card details to the booking
 and raises a DirectBookingMadeOnAccountWithCardDetails message. 
 It is this message that Credit Card Payments listens
 to and then takes the card payment via.
 
-- ECST. Accounts publishes an event whenever an account 
+|Choreography|
+
+ECST
+---- 
+Accounts publishes an event whenever an account 
 holder changes name, address, or credit card details,
 called AccountDetailsChanged. Credit Card Payments subscribes 
 to this event and caches the data in its own backing
@@ -195,6 +213,8 @@ details and take the payment. When we cross-check we can
 see that account details would seem to be a clear
 case of Shared Collection Reference Data and suitable for use in ECST.
 
+|ECST| 
+
 Our preference for the two may depend on the extent to 
 which we want to allow Credit Card Payments to take a 
 payment even if Accounts is down, as Credit Card Payments 
@@ -202,7 +222,6 @@ is working with a cache. we may decide that a
 bulkhead is valuable enough to us to use ECST over 
 choreography via a pipeline.
 
-.. |HotelMicroservices| image:: _static/images/HotelMicroservices.png
 
 Next
 ----
@@ -210,3 +229,10 @@ Next
 See `Correctness in Brighter <BrighterOutboxSupport.html>`__ for guidance on how
 to use Brighter's support for the Outbox pattern to ensure producer-consumer 
 correctness.
+
+.. |ReferenceData| image:: _static/images/ReferenceData.png
+.. |HotelMicroservices| image:: _static/images/HotelMicroservices.png
+.. |ECST| image:: _static/images/EventCarriedStateTransfer.png
+.. |Choreography| image:: _static/images/Choreography.png
+.. |Orchestration| image:: _static/images/Orchestration.png
+

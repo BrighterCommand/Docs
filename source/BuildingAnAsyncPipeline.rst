@@ -42,22 +42,13 @@ only). We could implement a generic handler as follows:
         private readonly IAmACommandStoreAsync _commandStore;
 
         public CommandSourcingHandlerAsync(IAmACommandStoreAsync commandStore)
-            : this(commandStore, LogProvider.GetCurrentClassLogger())
-        { }
-
-
-        public CommandSourcingHandlerAsync(IAmACommandStoreAsync commandStore, ILog logger) : base(logger)
         {
             _commandStore = commandStore;
         }
 
         public override async Task<T> HandleAsync(T command, CancellationToken? ct = null)
         {
-            logger.DebugFormat("Writing command {0} to the Command Store", command.Id);
-
             await _commandStore.AddAsync(command, -1, ct).ConfigureAwait(ContinueOnCapturedContext);
-
-            return await base.HandleAsync(command, ct).ConfigureAwait(ContinueOnCapturedContext);
         }
     }
 
