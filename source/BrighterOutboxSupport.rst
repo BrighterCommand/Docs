@@ -1,14 +1,17 @@
 Correctness in Brighter
 =======================
 
-The Post method on the CommandProcessor in Brighter writes first to 
-the MessageStore and if that succeeds to the message broker. 
+The **Post** method on the CommandProcessor in Brighter writes first to 
+the **Outbox** and if that succeeds to the Message-Oriented Middleware. 
+If you use Post, then your correctness options are **Ignore/Retry** or 
+**Compensation**. You can use **Post** with **Log Tailing** or **Event Change Capture**
+but you have to implement those yourself.
 
-This leaves you with two choices for correctness
+The **DepositPost** and **ClearOutbox** methods allow you to use the **Outbox** pattern 
+instead.
 
-Ignore
-^^^^^^
-
+Ignore/Retry
+^^^^^^^^^^^^
 In this approach you choose to Post a message after your Db transaction 
 writes entity state to the Db. You intend to rely on the *retrying* the
 call to the broker if it fails. You should make sure that you have setup 
@@ -24,7 +27,7 @@ Your **UsePolicy** attribue for the handler needs to explicitly
 catch the Db errors you wish to retry, and not errors Posting 
 to the message queue in this case.
 
-(As an aside, you should generally write Retry policies to catch specific 
+(As an aside, you should generally write Retry policies to catch specific
 errors that you know you can retry, not all errors anyway).
 
 In this case, you might also need to consider using a **Fallback** method 
@@ -46,7 +49,6 @@ the Db in a **Fallback** handler.
 
 Compensation
 ^^^^^^^^^^^^
-
 In this approach, you choose to issue your Post whilst holding open the Db transaction
 which writes the entity. You need to carefully consider the cost of posting a message 
 to your broker, and the likely impact on the duration of your transaction 
@@ -69,20 +71,21 @@ a phantom message. This will cause downstream systems to become inconsistent.
 
 
 Outbox
-~~~~~-
+^^^^^^
 
 Brighter allows the write to the **Outbox** and the write to the Broker to be separated. 
 This form or Brighter allows you to support Producer-Consumer correctness via 
-the Outbox pattern. 
+the **Outbox Pattern**. 
 
-Metaphorically, you can think of this as a post box. 
-You deposit a letter in a post box. Later the postal service 
-clears the post box of letters and delivers them to their recipients. 
+Metaphorically, you can think of this as a post box. You deposit a letter in a post box. 
+Later the postal service clears the post box of letters and delivers them to their 
+recipients. 
 
 Within your database transaction you write the message to the Outbox 
 with **CommandProcessor.DepositPost**. This means that if the entity 
 write succeeds, the corresponding write to the **Outbox** will have taken place. 
 This method returns the Id for that message. 
+
 (Note that we use **CommandProcessor.RETRYPOLICY** on the write, 
 but this will only impact the attempt to write within the transaction, 
 not the success or failure of the overall Db transaction, which is under 
@@ -90,7 +93,7 @@ your control. You can safely ignore Db errors on this policy within this
 approach for this reason.)
 
 You can then call **CommandProcessor.ClearPostBox** to flush one or more 
-messages from the **Outbox* to the broker. We support multiple 
+messages from the **Outbox** to the broker. We support multiple 
 messages as your entity write might possibly involve sending multiple 
 downstream messages, which you want to include in the transaction. 
 Note that you cannnot guarantee that this will succeed, although you can 
