@@ -1,4 +1,4 @@
-Frquently Asked Questions
+Frequently Asked Questions
 =========================
 
 Must I manually register all my handlers?
