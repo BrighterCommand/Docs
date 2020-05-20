@@ -25,6 +25,7 @@ Brighter
   BasicConfiguration
   Logging
   FeatureSwitches
+  HowBrighterWorks
   ImplementingDistributedTaskQueue
   Routing
   DistributedTaskQueueConfiguration
@@ -33,8 +34,8 @@ Brighter
   EventCarriedStateTransfer
   OutboxPattern
   BrighterOutboxSupport
+  HowServiceActivatorWorks
   RabbitMQConfiguration
-  RunningUnderAWSSQSInfrastructure
   AWSSQSConfiguration
   Monitoring
   faq

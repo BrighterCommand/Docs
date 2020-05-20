@@ -1,0 +1,91 @@
+@startuml Brighter SendAsync Pipeline
+
+actor WebUser
+boundary WebController
+control CommandProcessor
+control MyCommand
+control "UseInBoxHandlerAsync<MyCommandHandler>" as Inbox
+control "RequestLoggingAsync<MyCommandHandler>" as Logger
+entity InMemoryRequestContextFactory
+entity RequestContext
+entity PipelineBuilder
+entity Intepreter
+control LifetimeScope
+control SubscriberRegistry
+boundary HandlerFactory
+collections PreAttributesMemento
+collections PostAttributesMemento
+collections PreAttributes
+collections "AsyncPipelines<T>" as HandlerChain
+control MyCommandHandlerAsync
+
+WebUser -> WebController: HTTP POST
+WebController -> MyCommand: new() MyCommand
+return MyCommand
+WebController -> CommandProcessor: SendAsync<MyCommand>(command)
+activate CommandProcessor
+CommandProcessor -> InMemoryRequestContextFactory: Create()
+activate InMemoryRequestContextFactory
+InMemoryRequestContextFactory -> RequestContext: new() RequestContext
+return requestContext
+CommandProcessor -> PipelineBuilder: new() PipelineBuilder<MyCommand>
+return PipelineBuilder
+PipelineBuilder -> LifetimeScope: new() LifeTimeScope
+return LifetimeScope
+PipelineBuilder -> Intepreter: new() Intepreter<MyCommand>
+return Intepreter
+CommandProcessor -> PipelineBuilder: Build()
+PipelineBuilder -> Interpreter: GetHandlers()
+Intepreter -> SubscriberRegistry: Get(command)
+activate SubscriberRegistry
+return handlerType
+Intepreter -> HandlerFactory: Create()
+activate HandlerFactory
+return handler
+PipelineBuilder -> PipelineBuilder: BuildPipeline()
+
+alt Memento Has PreAttributes
+    PipelineBuilder -> PreAttributesMemento: TryGetValue(handlerName)
+    activate PreAttributesMemento
+    return preAttributes
+else No PreAttributes Stored
+    PipelineBuilder -> MyCommandHandlerAsync: FindHandlerMethod
+    PipelineBuilder -> MyCommandHandlerAsync: GetOtherHandlersInPipeline()
+    PipelineBuilder <- MyCommandHandlerAsync: return attributes
+    PipelineBuilder -> PipelineBuilder: AddGlobalInboxAttributesAsync()
+    PipelineBuilder -> PipelineBuilder: HasNoInboxAttributesInPipeline()
+    PipelineBuilder -> PipelineBuilder: HasExistingUseInboxAttributesInPipeline()
+    PipelineBuilder -> PreAttributesMemento: TryAdd(preAttributes)
+    activate PreAttributesMemento
+    return preAttributes
+end
+
+PipelineBuilder -> PipelineBuilder: PushOntoAsyncPipeline()
+PipelineBuilder -> HandlerFactory: CreateAsyncRequestHandler()
+activate HandlerFactory
+return handler
+PipelineBuilder -> Inbox: SetSuccessor()
+activate HandlerFactory
+return handler
+PipelineBuilder -> Logger: SetSuccessor()
+PipelineBuilder -> LifetimeScope: Add()
+deactivate Intepreter
+deactivate LifetimeScope
+return handlerChain
+activate handlerChain
+
+CommandProcessor -> CommandProcessor: AssertValidSendPipeline()
+CommandProcessor -> HandlerChain: First()
+return inboxHandler
+
+@enduml
+
+
+
+
+ 
+
+
+
+
+
