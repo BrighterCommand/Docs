@@ -133,5 +133,10 @@ HandleAsync() method, but as there is no successor we return.
 
 31: SendAsync returns, and we are done.
 
+|SequenceDiagram|
+
+.. |SequenceDiagram| image:: _static/images/BasicHandling.png
+
+
 
 
