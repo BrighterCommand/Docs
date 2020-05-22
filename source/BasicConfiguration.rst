@@ -20,7 +20,7 @@ plugging us into their IoC container, but the loose-coupling from an IoC
 container is on our opinion worth that cost.
 
 What you need to provide
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  You need to provide a **Subscriber Registry** with all of the
    **Command**\ s or **Event**\ s you wish to handle, mapped to their
