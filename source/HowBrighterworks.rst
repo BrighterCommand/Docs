@@ -112,5 +112,26 @@ We don't have any of those here, so we don't show that again this time. This dec
 will handle the Command. For PublishAsync we allow zero or more.
 
 24: Now we call the pipeline by passing our MyCommand to the first handler in the chain, in our case the UseInboxHandlerAsync.
-The UseInboxAsync
- 
+
+25: The UseInboxHanlderAsync has an inbox as a private member, that was passed in via the constructor via the HandlerFactoryAsync. 
+This is a data store specific implementation of IAmAnInbox. if the OnceOnly parameter is set on the attribute then we call the 
+Inbox's ExistsAsync method to determine if we have already processed the command. If the command has not already been processed, 
+we call the base class's HandleAsync method. 
+
+26: The base class's HandleAsync() method we use the successor field (see 19 above) to determine the next handler in the chain 
+and we call it's HandleAsync() method. In this case we call RequestLoggingAsync<>'s HandleAsync method.
+
+27: The  RequestLoggingAsync<>'s HandleAsync method logs the call, and again calls the base class's HandleAsync() method to pass
+the call down the pipeline.
+
+28: Finally, we call MyCommandHandlerAsync whose HandleAsync() command runs our business logic. Again we call the base class's 
+HandleAsync() method, but as there is no successor we return.
+
+29: We return from RequestLoggingAsync<> which has no work left to do.
+
+30: UseInboxHandlerAsync calls IAmAnIbox's AddAsync method to write the command to the Inbox. Then it returns.
+
+31: SendAsync returns, and we are done.
+
+
+

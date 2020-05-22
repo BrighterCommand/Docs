@@ -9,45 +9,48 @@ control "RequestLoggingAsync<MyCommandHandler>" as Logger
 entity InMemoryRequestContextFactory
 entity RequestContext
 entity PipelineBuilder
-entity Intepreter
+entity Interpreter
 control LifetimeScope
 control SubscriberRegistry
 boundary HandlerFactory
 collections PreAttributesMemento
-collections PostAttributesMemento
 collections PreAttributes
 collections "AsyncPipelines<T>" as HandlerChain
 control MyCommandHandlerAsync
+control IAmAnInbox
 
 WebUser -> WebController: HTTP POST
+activate WebController
 WebController -> MyCommand: new() MyCommand
-return MyCommand
+activate MyCommand
 WebController -> CommandProcessor: SendAsync<MyCommand>(command)
 activate CommandProcessor
+activate IAmAnInbox
 CommandProcessor -> InMemoryRequestContextFactory: Create()
 activate InMemoryRequestContextFactory
 InMemoryRequestContextFactory -> RequestContext: new() RequestContext
-return requestContext
+activate RequestContext
 CommandProcessor -> PipelineBuilder: new() PipelineBuilder<MyCommand>
-return PipelineBuilder
+activate PipelineBuilder
 PipelineBuilder -> LifetimeScope: new() LifeTimeScope
-return LifetimeScope
-PipelineBuilder -> Intepreter: new() Intepreter<MyCommand>
-return Intepreter
+activate LifetimeScope
+PipelineBuilder -> Interpreter: new() Interpreter<MyCommand>
+Interpreter -> PipelineBuilder: return interpeter
+activate Interpreter
 CommandProcessor -> PipelineBuilder: Build()
 PipelineBuilder -> Interpreter: GetHandlers()
-Intepreter -> SubscriberRegistry: Get(command)
+Interpreter -> SubscriberRegistry: Get(command)
 activate SubscriberRegistry
-return handlerType
-Intepreter -> HandlerFactory: Create()
+Interpreter -> HandlerFactory: Create()
 activate HandlerFactory
-return handler
+activate MyCommandHandlerAsync
+HandlerFactory -> PipelineBuilder: return handler
 PipelineBuilder -> PipelineBuilder: BuildPipeline()
 
+activate PreAttributesMemento
 alt Memento Has PreAttributes
     PipelineBuilder -> PreAttributesMemento: TryGetValue(handlerName)
-    activate PreAttributesMemento
-    return preAttributes
+    PreAttributesMemento -> PipelineBuilder: return preAttributes
 else No PreAttributes Stored
     PipelineBuilder -> MyCommandHandlerAsync: FindHandlerMethod
     PipelineBuilder -> MyCommandHandlerAsync: GetOtherHandlersInPipeline()
@@ -55,28 +58,58 @@ else No PreAttributes Stored
     PipelineBuilder -> PipelineBuilder: AddGlobalInboxAttributesAsync()
     PipelineBuilder -> PipelineBuilder: HasNoInboxAttributesInPipeline()
     PipelineBuilder -> PipelineBuilder: HasExistingUseInboxAttributesInPipeline()
+    PipelineBuilder -> PreAttributes: new()
     PipelineBuilder -> PreAttributesMemento: TryAdd(preAttributes)
-    activate PreAttributesMemento
-    return preAttributes
+    PreAttributesMemento -> PipelineBuilder: return preAttributes
 end
 
+activate PreAttributes
 PipelineBuilder -> PipelineBuilder: PushOntoAsyncPipeline()
 PipelineBuilder -> HandlerFactory: CreateAsyncRequestHandler()
-activate HandlerFactory
-return handler
+HandlerFactory -> PipelineBuilder: return handler
+activate Inbox
 PipelineBuilder -> Inbox: SetSuccessor()
-activate HandlerFactory
-return handler
+PipelineBuilder -> HandlerFactory: CreateAsyncRequestHandler()
+HandlerFactory -> PipelineBuilder: return handler
+activate Logger
 PipelineBuilder -> Logger: SetSuccessor()
 PipelineBuilder -> LifetimeScope: Add()
-deactivate Intepreter
-deactivate LifetimeScope
-return handlerChain
-activate handlerChain
+deactivate PreAttributes
+deactivate PreAttributesMemento
+deactivate Interpreter
 
+activate HandlerChain
+PipelineBuilder -> CommandProcessor: return handlerChain
 CommandProcessor -> CommandProcessor: AssertValidSendPipeline()
 CommandProcessor -> HandlerChain: First()
-return inboxHandler
+
+CommandProcessor -> Inbox: HandleAsync()
+Inbox ->  IAmAnInbox: ExistsAsync()
+Inbox -> Inbox: base.HandleAsync()
+Inbox -> Logger: HandlerAsync()
+Logger -> Logger: LogCommand()
+Logger->Logger: base.HandleAsync()
+Logger->MyCommandHandlerAsync: HandleAsync()
+MyCommandHandlerAsync->Logger: return
+Logger -> Inbox: return
+Inbox -> IAmAnInbox: AddAsync()
+Inbox -> CommandProcessor: return
+CommandProcessor -> PipelineBuilder: Dispose()
+PipelineBuilder -> LifetimeScope: Dispose()
+LifetimeScope -> HandlerFactory: Release()
+HandlerFactory -> PipelineBuilder: return
+PipelineBuilder -> CommandProcessor: return
+CommandProcessor -> WebController: return
+deactivate Inbox
+deactivate HandlerChain
+deactivate MyCommandHandlerAsync
+deactivate Logger
+deactivate LifetimeScope
+deactivate PipelineBuilder
+deactivate RequestContext
+deactivate MyCommand
+deactivate WebController
+ 
 
 @enduml
 
