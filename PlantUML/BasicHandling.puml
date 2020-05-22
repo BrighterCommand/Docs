@@ -1,4 +1,4 @@
-@startuml Brighter SendAsync Pipeline
+@startuml Brighter_SendAsync_Pipeline
 
 actor WebUser
 boundary WebController

@@ -135,7 +135,7 @@ HandleAsync() method, but as there is no successor we return.
 
 |SequenceDiagram|
 
-.. |SequenceDiagram| image:: _static/images/BasicHandling.png
+.. |SequenceDiagram| image:: _static/images/Brighter_SendAsync_Pipeline.png
 
 
 
