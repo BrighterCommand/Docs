@@ -20,6 +20,8 @@ that you can walk the code if required. We'll show the code looking for a SendAs
 Send() works the same way. Publish() and PublishAsync() are a minor variation in that they may 
 dispatch to multiple handler chains, not just the one.
 
+|SequenceDiagram|
+
 Let's model what happens, if you use Brighter as the Ports layer behind the an ASP.NET Core web controller.
 
 1: The client makes an HTTP POST request to ASP.NET Core which marshalls the parameters and calls your
@@ -133,9 +135,9 @@ HandleAsync() method, but as there is no successor we return.
 
 31: SendAsync returns, and we are done.
 
-|SequenceDiagram|
 
 .. |SequenceDiagram| image:: _static/images/Brighter_SendAsync_Pipeline.png
+
 
 
 
