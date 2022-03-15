@@ -1,14 +1,13 @@
-Building a Pipeline of Async Request Handlers
----------------------------------------------
+# Building a Pipeline of Async Request Handlers
 
-Once you are using the features of Brighter to act as a `command
-dispatcher <CommandsCommandDispatcherAndProcessor.html#command-dispatcher>`__ and send or
-publish messages to a target handler, you may want to use its `command
-processor <CommandsCommandDispatcherAndProcessor.html#command-processor>`__ features to
-handle orthogonal operations.
+Once you are using the features of Brighter to act as a [command
+dispatcher](CommandsCommandDispatcherAndProcessor.html#command-dispatcher)
+and send or publish messages to a target handler, you may want to use
+its [command
+processor](CommandsCommandDispatcherAndProcessor.html#command-processor)
+features to handle orthogonal operations.
 
-Implementing a Pipeline
------------------------
+# Implementing a Pipeline
 
 The first step in building a pipeline is to decide that we want an
 orthogonal operation in our pipeline. Let us assume that we want to do
@@ -24,33 +23,32 @@ The limitation here is that you can only make assumptions about the type
 you receive into the pipeline from the constraints on the generic type.
 
 Although it is possible to implement the
-`IHandleRequestsAsync <https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/IHandleRequestsAsync.cs>`__
+[IHandleRequestsAsync](https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/IHandleRequestsAsync.cs)
 interface directly, we recommend deriving your handler from
-`RequestHandlerAsync<T> <https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/RequestHandlerAsync.cs>`__.
+[RequestHandlerAsync\<T\>
+\<https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/RequestHandlerAsync.cs\>]{.title-ref}\_\_.
 
 Let us assume that we want to log all requests travelling through the
-pipeline. (We provide this for you in the
-Brighter.CommandProcessor packages so this for illustration
-only). We could implement a generic handler as follows:
+pipeline. (We provide this for you in the Brighter.CommandProcessor
+packages so this for illustration only). We could implement a generic
+handler as follows:
 
-.. highlight:: csharp
+``` csharp
+public class CommandSourcingHandlerAsync<T> : RequestHandlerAsync<T> where T : class, IRequest
+{
+    private readonly IAmACommandStoreAsync _commandStore;
 
-::
-
-    public class CommandSourcingHandlerAsync<T> : RequestHandlerAsync<T> where T : class, IRequest
+    public CommandSourcingHandlerAsync(IAmACommandStoreAsync commandStore)
     {
-        private readonly IAmACommandStoreAsync _commandStore;
-
-        public CommandSourcingHandlerAsync(IAmACommandStoreAsync commandStore)
-        {
-            _commandStore = commandStore;
-        }
-
-        public override async Task<T> HandleAsync(T command, CancellationToken? ct = null)
-        {
-            await _commandStore.AddAsync(command, -1, ct).ConfigureAwait(ContinueOnCapturedContext);
-        }
+        _commandStore = commandStore;
     }
+
+    public override async Task<T> HandleAsync(T command, CancellationToken? ct = null)
+    {
+        await _commandStore.AddAsync(command, -1, ct).ConfigureAwait(ContinueOnCapturedContext);
+    }
+}
+```
 
 Our HandleAsync method is the method which will be called by the
 pipeline to service the request. After we log we call **return await
@@ -59,7 +57,7 @@ chain is called.
 
 If we failed to do this, the *target handler* would not be called nor
 any subsequent handlers in the chain. This call to the next item in the
-chain is how we support the 'Russian Doll' model - because the next
+chain is how we support the \'Russian Doll\' model - because the next
 handler is called within the scope of this handler, we can manage when
 it is called handle exceptions, units of work, etc.
 
@@ -73,51 +71,47 @@ We now need to tell our pipeline to call this orthogonal handler before
 our target handler. To do this we use attributes. The code we want to
 write looks like this:
 
-.. highlight:: csharp
-
-::
-
-    internal class GreetingCommandRequestHandlerAsync : RequestHandlerAsync<GreetingCommand>
+``` csharp
+internal class GreetingCommandRequestHandlerAsync : RequestHandlerAsync<GreetingCommand>
+{
+    [UseCommandSourcingAsync(step: 1, timing: HandlerTiming.Before)]
+    public override async Task<GreetingCommand> HandleAsync(GreetingCommand command, CancellationToken? ct = null)
     {
-        [UseCommandSourcingAsync(step: 1, timing: HandlerTiming.Before)]
-        public override async Task<GreetingCommand> HandleAsync(GreetingCommand command, CancellationToken? ct = null)
-        {
-            var api = new IpFyApi(new Uri("https://api.ipify.org"));
+        var api = new IpFyApi(new Uri("https://api.ipify.org"));
 
-            var result = await api.GetAsync(ct);
+        var result = await api.GetAsync(ct);
 
-            Console.WriteLine("Hello {0}", command.Name);
-            Console.WriteLine(result.Success ? "Your public IP addres is {0}" : "Call to IpFy API failed : {0}", result.Message);
-            return await base.HandleAsync(command, ct).ConfigureAwait(base.ContinueOnCapturedContext);
-        }
+        Console.WriteLine("Hello {0}", command.Name);
+        Console.WriteLine(result.Success ? "Your public IP addres is {0}" : "Call to IpFy API failed : {0}", result.Message);
+        return await base.HandleAsync(command, ct).ConfigureAwait(base.ContinueOnCapturedContext);
     }
+}
+```
 
 The **UseCommandSourcingAsync** Attribute tells the Command Processor to
-insert a Logging handler into the request handling pipeline
-before (\ **HandlerTiming.Before**) we run the target handler. It tells
-the Command Processor that we want it to be the first handler to run if
-we have multiple orthogonal handlers i.e. attributes (**step: 1**).
+insert a Logging handler into the request handling pipeline before
+(**HandlerTiming.Before**) we run the target handler. It tells the
+Command Processor that we want it to be the first handler to run if we
+have multiple orthogonal handlers i.e. attributes (**step: 1**).
 
 We implement the **UseCommandSourcingAsyncAttribute** by creating our
 own Attribute class, derived from **RequestHandlerAttribute**.
 
-.. highlight:: csharp
+``` csharp
+public class UseCommandSourcingAsyncAttribute : RequestHandlerAttribute
+{
 
-::
+    public UseCommandSourcingAsyncAttribute(int step, HandlerTiming timing = HandlerTiming.Before)
+        : base(step, timing)
+    { }
 
-    public class UseCommandSourcingAsyncAttribute : RequestHandlerAttribute
+
+    public override Type GetHandlerType()
     {
-
-        public UseCommandSourcingAsyncAttribute(int step, HandlerTiming timing = HandlerTiming.Before)
-            : base(step, timing)
-        { }
-
-
-        public override Type GetHandlerType()
-        {
-            return typeof (CommandSourcingHandlerAsync<>);
-        }
+        return typeof (CommandSourcingHandlerAsync<>);
     }
+}
+```
 
 The most important part of this implementation is the GetHandlerType()
 method, where we return the type of our handler. At runtime the Command
@@ -126,12 +120,12 @@ handler and requests an instance of that type from the user-supplied
 **Handler Factory**.
 
 Your Handler Factory needs to respond to requests for instances of a
-**RequestHandlerAsync<T>** specialized for a concrete type. For example,
-if you create a **CommandSourcingHandlerAsync<TRequest>** we will ask
-you for a **CommandSourcingHandlerAsync<MyCommand>** etc. Depending on
-your implementation of HandlerFactory, you may need to register an
-implementation for every concrete instance of your handler with your
-underlying IoC container etc.
+**RequestHandlerAsync\<T\>** specialized for a concrete type. For
+example, if you create a **CommandSourcingHandlerAsync\<TRequest\>** we
+will ask you for a **CommandSourcingHandlerAsync\<MyCommand\>** etc.
+Depending on your implementation of HandlerFactory, you may need to
+register an implementation for every concrete instance of your handler
+with your underlying IoC container etc.
 
 Note that as we rely on an user supplied implementation of
 **IAmAHandlerFactoryAsync** to instantiate Handlers, you can have any
@@ -142,7 +136,7 @@ You may wish to pass parameter from your Attribute to the handler.
 Attributes can have constructor parameters or public members that you
 can set when adding the Attribute to a target method. These can only be
 compile time constants, see the documentation
-`here <https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/attributes>`__.
+[here](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/attributes).
 After the Command Processor calls your Handler Factory to create an
 instance of your type it calls the
 **RequestHandler.InitializeFromAttributeParams** method on that created
@@ -160,7 +154,7 @@ In fact, you can use this approach to pass any data to the handler on
 initialization, not just attribute constructor or property values, but
 you are constrained to what you can access from the context of the
 Attribute at run time. It can be tempting to set retrieve global state
-via the `Service
-Locator <https://en.wikipedia.org/wiki/Service_locator_pattern>`__
-pattern at this point. Avoid that temptation as it creates coupling
-between your Attribute and global state reducing modifiability.
+via the [Service
+Locator](https://en.wikipedia.org/wiki/Service_locator_pattern) pattern
+at this point. Avoid that temptation as it creates coupling between your
+Attribute and global state reducing modifiability.
