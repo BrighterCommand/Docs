@@ -1,24 +1,22 @@
-Dispatching Requests Asynchronously
------------------------------------
+# Dispatching Requests Asynchronously
 
-Brighter supports an asynchronous `Command Dispatcher and Command
-Processor <CommandsCommandDispatcherandProcessor.html>`__.
+Brighter supports an asynchronous [Command Dispatcher and Command
+Processor](CommandsCommandDispatcherandProcessor.html).
 
 Using an asynchronous approach to dispatch can be valuable when the work
 done by a handler can be done concurrently with other work. Instead of
 blocking on the call to **Send** or **Publish** the calling thread can
 continue to do work, with a continuation executing once the operation
-completes. See the MSDN article `Asynchronous Programming with Async and
-Await <https://docs.microsoft.com/en-us/dotnet/csharp/async>`__.
+completes. See the MSDN article [Asynchronous Programming with Async and
+Await](https://docs.microsoft.com/en-us/dotnet/csharp/async).
 
-Brighter supports using the async...await pattern in .NET to allow your
+Brighter supports using the async\...await pattern in .NET to allow your
 code to avoid blocking. We provide asynchronous versions of the
 **Command Dispatcher** methods i.e. **commandProcessor.SendAsync()**,
 **commandProcessor.PublishAsync()**, and
 **commandProcessor.PostAsync()**.
 
-Usage
-~~~~~
+## Usage
 
 In the following example code we register a handler, create a command
 processor, and then use that command processor to send a command to the
@@ -34,34 +32,31 @@ Note also that we have a **SimpleHandlerFactoryAsync** as this factory
 needs to return handlers that implement **IHandleRequestsAsync** not
 **IHandleRequests**.
 
-.. highlight:: csharp
+``` csharp
+private static async Task MainAsync()
+{
+    var registry = new SubscriberRegistry();
+    registry.RegisterAsync<GreetingCommand, GreetingCommandRequestHandlerAsync>();
 
-::
+    var builder = CommandProcessorBuilder.With()
+    .Handlers(new HandlerConfiguration(registry, new SimpleHandlerFactoryAsync()))
+    .DefaultPolicy()
+    .NoTaskQueues()
+    .RequestContextFactory(new InMemoryRequestContextFactory());
 
-    private static async Task MainAsync()
-    {
-        var registry = new SubscriberRegistry();
-        registry.RegisterAsync<GreetingCommand, GreetingCommandRequestHandlerAsync>();
+    var commandProcessor = builder.Build();
 
-        var builder = CommandProcessorBuilder.With()
-        .Handlers(new HandlerConfiguration(registry, new SimpleHandlerFactoryAsync()))
-        .DefaultPolicy()
-        .NoTaskQueues()
-        .RequestContextFactory(new InMemoryRequestContextFactory());
+    await commandProcessor.SendAsync(new GreetingCommand("Ian"));
 
-        var commandProcessor = builder.Build();
-
-        await commandProcessor.SendAsync(new GreetingCommand("Ian"));
-
-        Console.ReadLine();
-    }
+    Console.ReadLine();
+}
+```
 
 Note that line: **Console.ReadLine()** is a continuation. Control passes
 back to the calling method after the await, and subsequent lines of code
 run after that method returns.
 
-Registering a Handler
-~~~~~~~~~~~~~~~~~~~~~
+## Registering a Handler
 
 In order for a **Command Dispatcher** to find a Handler for your
 **Command** or **Event** you need to register the association between
@@ -72,43 +67,34 @@ The **Subscriber Registry** is where you register your Handlers.
 The **subscriberRegistry.RegisterAsync()** expects a handler that
 implements **IHandleRequestsAsync**
 
-.. highlight:: csharp
+``` csharp
+var registry = new SubscriberRegistry();
+registry.RegisterAsync<GreetingCommand, GreetingCommandRequestHandlerAsync>();
+```
 
-::
-
-    var registry = new SubscriberRegistry();
-    registry.RegisterAsync<GreetingCommand, GreetingCommandRequestHandlerAsync>();
-
-
-Pipelines Must be Homogeneous
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+### Pipelines Must be Homogeneous
 
 Brighter only supports pipelines that are solely
 **IHandleRequestsAsync** or **IHandleRequests**.
 
 This is due to expectation of the caller using an **\*Async** method
 that the code will execute asynchronously - allowing some handlers in
-the chain to block would defy that expectations. The async...await
-pattern is often described as 'viral' because it spreads up the chain of
-callers to be effective. Brighter is no exception in this regard.
+the chain to block would defy that expectations. The async\...await
+pattern is often described as \'viral\' because it spreads up the chain
+of callers to be effective. Brighter is no exception in this regard.
 
-Dispatching Requests
-~~~~~~~~~~~~~~~~~~~~
+## Dispatching Requests
 
 Once you have registered your Handlers, you can dispatch requests to
 them. To do that you simply use the **commandProcessor.SendAsync()** (or
-**commandProcessor.PublishAsync()** or
-**commandProcessor.PostAsync()**) method passing in an instance of
-your command.
+**commandProcessor.PublishAsync()** or **commandProcessor.PostAsync()**)
+method passing in an instance of your command.
 
-.. highlight:: csharp
+``` csharp
+await commandProcessor.SendAsync(new GreetingCommand("Ian"));
+```
 
-::
-
-    await commandProcessor.SendAsync(new GreetingCommand("Ian"));
-
-Cancellation
-^^^^^^^^^^^^
+### Cancellation
 
 Brighter supports the cancellation of asynchronous operations.
 
@@ -122,11 +108,10 @@ individual handlers, which must determine what action to take if
 cancellation had been signalled.
 
 The ability of the **\*Async** methods to take a cancellation token can
-be particularly useful with ASP.NET AsyncTimeout see `here for
-more. <https://dotnetcodr.com/2013/01/04/timeout-exceptions-with-asyncawait-in-net4-5-mvc4-with-c/>`__
+be particularly useful with ASP.NET AsyncTimeout see [here for
+more.](https://dotnetcodr.com/2013/01/04/timeout-exceptions-with-asyncawait-in-net4-5-mvc4-with-c/)
 
-Do Not Block When Calling \*Async Methods
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Do Not Block When Calling \*Async Methods
 
 When calling an asynchronous method you should **await** that method.
 Avoid using **.Wait** or **.Result** on the **Task** returned by the
@@ -141,7 +126,8 @@ Therefore you should only call **SendAsync**, **PublishAsync**, or
 otherwise you will block, and there will be no value to having used an
 async method.
 
-In `Ports & Adapters Architecture <https://www.goparamore.io/ports-adapters/>`__ terms you
+In [Ports & Adapters
+Architecture](https://www.goparamore.io/ports-adapters/) terms you
 should use an **Adapter** layer that supports async when calling the
 **Ports** layer represented by your handlers.
 
@@ -150,21 +136,20 @@ waits? This is normally a responsibility of your framework which has to
 understand that it can use re-use thread to service other requests, thus
 improving throughput and call back to your continuation when done.
 
-For example ASP.NET Controllers `support
-async <https://www.asp.net/mvc/overview/performance/using-asynchronous-methods-in-aspnet-mvc-4>`__
+For example ASP.NET Controllers [support
+async](https://www.asp.net/mvc/overview/performance/using-asynchronous-methods-in-aspnet-mvc-4)
 can be used to call the **\*Async methods** without blocking. This
 allows ASP.NET to release a thread from the thread pool to service
 another request whilst the asynchronous operation completes, allowing
 greater throughput on the server.
 
-Understand Captured Contexts
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+### Understand Captured Contexts
 
 When an awaited method completes, what thread runs any completion code?
-The answer depends on the SynchronizationContext which is 'captured' at
-the point await is called. For ASP.NET or Windows Forms, WPF, or Metro
-apps then the SynchronizationContext means that the thread that was
-running at the point we yielded runs the continuation. Otherwise the
+The answer depends on the SynchronizationContext which is \'captured\'
+at the point await is called. For ASP.NET or Windows Forms, WPF, or
+Metro apps then the SynchronizationContext means that the thread that
+was running at the point we yielded runs the continuation. Otherwise the
 SynchronizationContext is null and the default Task Scheduler runs the
 continuation.
 
@@ -173,19 +158,17 @@ thread local, being called back on the wrong thread means you will not
 have access to those variables.
 
 A Windows UI for example is single-threaded via a message pump and
-interacting with the UI requires you to be on that thread. See `this
+interacting with the UI requires you to be on that thread. See [this
 article for
-more. <https://blogs.msdn.com/b/pfxteam/archive/2012/01/20/10259049.aspx>`__
+more.](https://blogs.msdn.com/b/pfxteam/archive/2012/01/20/10259049.aspx)
 
 When awaiting it is possible to configure how the continuation runs - on
 the SyncronizationContext or using the Task Scheduler, overriding the
 default behaviour, which is to capture the SynchronizationContext.
 
-.. highlight:: csharp
-
-::
-
-    await MethodAsync(value, ct).ConfigureAwait(true);
+``` csharp
+await MethodAsync(value, ct).ConfigureAwait(true);
+```
 
 Library writers are encouraged to default to false i.e. use the Task
 Scheduler instead of the SychronizationContext.
@@ -195,11 +178,9 @@ want if your handler needs to run in the context of the original thread.
 As a result we let you pass in a parameter on the **\*Async** calls to
 change the behaviour throughout your pipeline.
 
-.. highlight:: csharp
-
-::
-
-    await commandProcessor.SendAsync(new GreetingCommand("Ian"), continueOnCapturedContext: true);
+``` csharp
+await commandProcessor.SendAsync(new GreetingCommand("Ian"), continueOnCapturedContext: true);
+```
 
 A handler exposes the parameter you supply to the call to **SendAsync**,
 **PublishAsync**, or **PostAsync** via a property called
@@ -207,17 +188,14 @@ A handler exposes the parameter you supply to the call to **SendAsync**,
 the SynchronizationContext and not the Task Scheduler to run our
 continuation.
 
-.. highlight:: csharp
-
-::
-
-    await base.HandleAsync(command, ct).ConfigureAwait(ContinueOnCapturedContext);
+``` csharp
+await base.HandleAsync(command, ct).ConfigureAwait(ContinueOnCapturedContext);
+```
 
 We recommend explicitly using this parameter when awaiting within your
 own handler, such as when calling the next handler in an async pipeline.
 
-Asynchronous vs. Work Queues
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Asynchronous vs. Work Queues
 
 One obvious question is: when should I use an asynchronous pipeline to
 handle work and when should I use a work queue.
