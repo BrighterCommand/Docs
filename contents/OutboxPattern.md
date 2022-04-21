@@ -39,7 +39,7 @@ throughput, and if the app crashes we will still only be partially
 complete. So it cannot guarantee delivery of the message that matches
 the write.
 
-# Solutions
+## Solutions
 
 ### Ignore
 

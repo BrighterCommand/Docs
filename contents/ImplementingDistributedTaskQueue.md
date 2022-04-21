@@ -1,9 +1,9 @@
-# Implementing a Distributed Task Queue
+# Using a Distributed Task Queue
 
 Brighter provides support for a [distributed task
 queue](https://parlab.eecs.berkeley.edu/wiki/_media/patterns/taskqueue.pdf).
 Instead of handling a command or event, synchronously and in-process,
-work can be dispatched to a distributed task queue to be handled
+work can be dispatched to a distributed queue to be handled
 asynchronously and out-of-process. The trade-off here is between the
 cost of distribution (see [The Fallacies of Distributed
 Computing](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing))

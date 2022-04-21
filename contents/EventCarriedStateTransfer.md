@@ -1,7 +1,6 @@
-Event Carried State Transfer
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
+# Event Carried State Transfer
 
-Outside and Inside Data \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
+## Outside and Inside Data 
 
 In his white paper \"Data on the Outside vs. Data on the Inside\", Pat
 Helland classifies data according to whether it exists inside a service
@@ -37,17 +36,37 @@ resource would be the same if we retrieved it again.
 (It\'s worth noting that data supplied by a client as part of a command
 or request sent to the service is also Outside Data.)
 
-# Caching
+### Reference Data
 
-The above properties make Outside Data make amenable to caching. Indeed
-this is how the web scales, we expose Outside Data from the Origin
-Server that is immutable (changing the response body has no impact on
+Pat Helland uses the term Reference Data to describe the types of data
+suitable for sharing as outside data.
+
+1\. Shared Collections. This is ubiquitous data that everyone needs to
+use to do work, such as a list of users, products, suppliers, brokers
+etc. It is so common for code to need to join this data that it makes
+sense to copy it to each service that needs it.
+
+2\. Operand Data. Constructing requests to other microservices may
+require a service to understand a set of available options such as
+customer billing plans, or product categories. Operand data is where we
+share the range of available options we can use to construct requests.
+
+3\. Snapshots. Where we want to query across multiple microservices we
+can end up with chatty solutions making requests to other microservices
+which we then need to join in the caller. An alternative is to listen to
+events so as to build an model that we can query. This is the model used
+by many Big Data pipelines or by Composite View Models.
+
+### Caching
+
+Outside Data is amenable to caching. Indeed this is how the web scales, we 
+expose Outside Data from the Origin Server that is immutable (changing the response body has no impact on
 Inside Data), stale (post our GET a subsequent POST may modify the
 Inside Data our response was built from, perhaps before we have even
 parsed the result, and versioned (use of a Last Modified or ETag header
 allows the Origin Server to version the result that it responds with).
 
-# Event Carried State Transfer
+## Event Carried State Transfer
 
 It\'s not just HTTP APIs whose results can be cached, we could also
 cache an event from the origin server, raised via AMQP, Kafka, ATOM or
@@ -87,7 +106,7 @@ equivalent to what we would recieve if we queried for it. This is why we
 prefer ECST over simple replication of data between services which would
 couple us to the details.
 
-# Alternatives to Event Carried State Transfer
+### Alternatives to Event Carried State Transfer
 
 We could also meet the constraint that our service needs data from
 another to respond by ensuring that the request has all the data we
@@ -114,36 +133,8 @@ Whilst this could also work for a query, it is less common to take this
 approach to populating a response due to the likely latency of the
 response.
 
-# Reference Data
 
-Pat Helland uses the term Reference Data to describe the types of data
-suitable for sharing via a mechanism like Event Carried State Transfer
-(although he allows for other styles). He calls out three main classes
-of data:
-
-1\. Shared Collections. This is ubiquitous data that everyone needs to
-use to do work, such as a list of users, products, suppliers, brokers
-etc. It is so common for code to need to join this data that it makes
-sense to copy it to each service that needs it.
-
-2\. Operand Data. Constructing requests to other microservices may
-require a service to understand a set of available options such as
-customer billing plans, or product categories. Operand data is where we
-share the range of available options we can use to construct requests.
-
-3\. Snapshots. Where we want to query across multiple microservices we
-can end up with chatty solutions making requests to other microservices
-which we then need to join in the caller. An alternative is to listen to
-events so as to build an model that we can query. This is the model used
-by many Big Data pipelines or by Composite View Models.
-
-When trading off between ECST and passing the required state through a
-pipeline, consider whether the data that you are sharing falls into one
-of these categories. If it does, consider Event Carried State Transfer.
-If not consider whether passing the information via the pipeline is a
-better option.
-
-# Worked Scenario
+## Worked Scenario
 
 Imagine that we are writing software for a hotel. We have identified a
 number of microservices for our hotel:
@@ -174,7 +165,7 @@ driven architecture.
 
 We have two options.
 
-# A Pipeline
+### A Pipeline
 
 Accounts listens for DirectBookingMadeOnAccount. It adds the credit card
 details to the booking and raises a
@@ -184,7 +175,7 @@ via.
 
 ![Choreography](_static/images/Choreography.png)
 
-# ECST
+### ECST
 
 Accounts publishes an event whenever an account holder changes name,
 address, or credit card details, called AccountDetailsChanged. Credit
@@ -203,7 +194,7 @@ as Credit Card Payments is working with a cache. we may decide that a
 bulkhead is valuable enough to us to use ECST over choreography via a
 pipeline.
 
-# Next
+## Next
 
 See [Correctness in Brighter](BrighterOutboxSupport.html) for guidance
 on how to use Brighter\'s support for the Outbox pattern to ensure
