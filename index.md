@@ -77,7 +77,7 @@ and CQRS architectural styles for .NET, with support for Task Queues.
     * [Ignore/Retry](/contents/BrighterOutboxSupport.md#ignoreretry)
     * [Compensation](/contents/BrighterOutboxSupport.md#compensation)
     * [Outbox](/contents/BrighterOutboxSupport.md#outbox)
-    * [Log Tailing]
+    * [Log Tailing](/contents/BrighterOutboxSupport.md#log-tailing)
 * [Basic Configuration](/contents/BasicConfiguration.md)
     * [What you need to provide](/contents/BasicConfiguration.md#what-you-need-to-provide)
     * [Subscriber Registry](/contents/BasicConfiguration.md#subscriber-registry)
