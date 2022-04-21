@@ -55,63 +55,59 @@ and CQRS architectural styles for .NET, with support for Task Queues.
     * [Implementing a custom Feature Switch Registry]()
     * [Setting Feature Switching Registry]()
 * [How The Command Processor Works]()
-
-    The Dispatcher
-Implementing a Distributed Task Queue
-Brighter’s Task Queue Architecture
-Do I have to use a Broker, what about MSMQ?
-What happens when the consumer receives the message?
-What does this look like in code
-The Dispatcher
-Configuration
-Routing
-    Publish-Subscribe
-    Direct Messaging
-    Summary
-Distributed Task Queue Configuration
-    Why the split?
-Configuring the Dispatcher in Code
-    Message Mappers
-    Channel Factory
-    Connection List
-    Creating a Builder
-Microservices
-    Boundaries are explicit
-    Services are autonomous
-    Share Schema not type
-    Compatibility is based on policy
-    Next
-Event Driven Collaboration
-    Messaging
-    Temporal Coupling
-    Behavioral Coupling
-    Event Driven Collaboration
-    Next
-Event Carried State Transfer
-Outside and Inside Data
-Caching
-Event Carried State Transfer
-Alternatives to Event Carried State Transfer
-Reference Data
-Worked Scenario
-A Pipeline
-ECST
-Next
-Outbox Pattern Support
-    Producer Correctness
-Solutions
-Correctness in Brighter
-    Ignore/Retry
-    Compensation
-    Outbox
-RabbitMQ Configuration
-AWS SQS Configuration
-Monitoring
-    Configuring Monitoring
-    Config file
-    Handler confguration
-    Monitor message format
-Frequently Asked Questions
-    Must I manually register all my handlers?
-    Is Brighter a Framework or a Library?
+    * [The Dispatcher]()
+* [Implementing a Distributed Task Queue]()
+* [Brighter’s Task Queue Architecture]()
+* [Do I have to use a Broker, what about MSMQ?]()
+* [What happens when the consumer receives the message?]()
+* [What does this look like in code]()
+* [The Dispatcher]()
+* [Configuration]()
+* [Routing]()
+    * [Publish-Subscribe]()
+    * [Direct Messaging]()
+    * [Summary]()
+* [Distributed Task Queue Configuration]()
+    * [Why the split?]()
+* [Configuring the Dispatcher in Code]()
+    * [Message Mappers]()
+    * [Channel Factory]()
+    * [Connection List]()
+    * [Creating a Builder]()
+* [Microservices]()
+    * [Boundaries are explicit]()
+    * [Services are autonomous]()
+    * [Share Schema not type]()
+    * [Compatibility is based on policy]()
+* [Event Driven Collaboration]()
+    * [Messaging]()
+    * [Temporal Coupling]()
+    * [Behavioral Coupling]()
+    * [Event Driven Collaboration]()
+* [Event Carried State Transfer]()
+    * [Outside and Inside Data]()
+    * [Caching]()
+    * [Event Carried State Transfer]()
+    * [Alternatives to Event Carried State Transfer]()
+    * [Reference Data]()
+    * [Worked Scenario]()
+    * [A Pipeline]()
+    * [ECST]()
+* [Outbox Pattern Support]()
+    * [Producer Correctness]()
+    * [Solutions]()
+    * [Correctness in Brighter]()
+    * [Ignore/Retry]()
+    * [Compensation]()
+    * [Outbox]()
+* [RabbitMQ Configuration]()
+* [AWS SQS Configuration]()
+* [Monitoring]()
+    * [Configuring Monitoring]()
+    * [Config file]()
+    * [Handler confguration]()
+    * [Monitor message format]()
+* [Frequently Asked Questions]()
+    * [Must I manually register all my handlers?]()
+    *(* [Is Brighter a Framework or a Library?]()
 
