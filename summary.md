@@ -1,11 +1,6 @@
-# Paramore
+# Summary
 
-Libraries and supporting examples for use with the Ports and Adapters
-and CQRS architectural styles for .NET, with support for Task Queues.
-
-[View the Project on GitHub](https://github.com/BrighterCommand)
-
-# Brighter
+## Distributed Task Queues
 
 * [Using a Distributed Task Queue](/contents/ImplementingDistributedTaskQueue.md)
     * [Brighter’s Task Queue Architecture](/contents/ImplementingDistributedTaskQueue.md#brighters-task-queue-architecture)
@@ -21,6 +16,9 @@ and CQRS architectural styles for .NET, with support for Task Queues.
     * [Channel Factory](/contents/DistributedTaskQueueConfiguration.md#channel-factory)
     * [Connection List](/contents/DistributedTaskQueueConfiguration.md#connection-list)
     * [Creating a Builder](/contents/DistributedTaskQueueConfiguration.md#creating-a-builder)
+
+## Using Brighter
+
 * [How to Implement a Request Handler](/contents/ImplementingAHandler.md)
     * [What is the difference between a Command and an Event?](/contents/ImplementingAHandler.md#what-is-the-difference-between-a-command-and-an-event)
 * [How to Implement an Async Request Handler](/contents/ImplementingAsyncHandler.md)
@@ -78,6 +76,8 @@ and CQRS architectural styles for .NET, with support for Task Queues.
     * [Compensation](/contents/BrighterOutboxSupport.md#compensation)
     * [Outbox](/contents/BrighterOutboxSupport.md#outbox)
     * [Log Tailing](/contents/BrighterOutboxSupport.md#log-tailing)
+
+## Configuration
 * [Basic Configuration](/contents/BasicConfiguration.md)
     * [What you need to provide](/contents/BasicConfiguration.md#what-you-need-to-provide)
     * [Subscriber Registry](/contents/BasicConfiguration.md#subscriber-registry)
@@ -85,10 +85,21 @@ and CQRS architectural styles for .NET, with support for Task Queues.
     * [Policy Registry](/contents/BasicConfiguration.md#policy-registry)
     * [Request Context Factory](/contents/BasicConfiguration.md#request-context-factory)
     * [Putting it all together](/contents/BasicConfiguration.md#putting-it-all-together)
+* [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)
+* [AWS SQS Configuration](/contents/AWSSQSConfiguration.md)
+* [Monitoring](/contents/Monitoring.md)
+    * [Configuring Monitoring](/contents/Monitoring.md#configuring-monitoring)
+    * [Config file](/contents/Monitoring.md#config-file)
+    * [Handler confguration](/contents/Monitoring.md#handler-confguration)
+    * [Monitor message format](/contents/Monitoring.md#monitor-message-format)
+
+## Under the Hood
+
 * [How The Command Processor Works](/contents/HowBrighterWorks.md)
     * [The Dispatcher](/contents/HowBrighterWorks.md#the-dispatcher)
 * [How Service Activator Works](/contents/HowServiceActivatorWorks)
 
+## Event Driven Architectures
 
 * [Microservices](/contents/Microservices.md)
     * [Boundaries are explicit](/contents/Microservices.md#boundaries-are-explicit)
@@ -111,13 +122,8 @@ and CQRS architectural styles for .NET, with support for Task Queues.
         * [ECST](/contents/EventCarriedStateTransfer.md#ecst)
 
 
-* [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)
-* [AWS SQS Configuration](/contents/AWSSQSConfiguration.md)
-* [Monitoring](/contents/Monitoring.md)
-    * [Configuring Monitoring](/contents/Monitoring.md#configuring-monitoring)
-    * [Config file](/contents/Monitoring.md#config-file)
-    * [Handler confguration](/contents/Monitoring.md#handler-confguration)
-    * [Monitor message format](/contents/Monitoring.md#monitor-message-format)
+## Q&A
+
 * [Frequently Asked Questions](/contents/faq.md)
     * [Must I manually register all my handlers?](/contents/faq.md#must-i-manually-register-all-my-handlers)
     *(* [Is Brighter a Framework or a Library?](/contents/faq.md#is-brighter-a-framework-or-a-library)
