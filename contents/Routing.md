@@ -2,7 +2,7 @@
 
 ## Publish-Subscribe
 
-Brighter has a default Publish-Subscribe to messaging.
+Brighter has a default Publish-Subscribe approach to messaging.
 
 A broker provides an intermediary between the producer of a message and
 a consumer. A consumer registers interest in messages that have a key or
@@ -15,18 +15,18 @@ runtime instead of build we sometimes calls this a **Dynamic Recipient
 List**.
 
 The publish subscribe model works particularly well with an
-**Event-Driven Architecture** (EDA). In an EDA one process, the
-publisher, raises an **Event** to indicate that something of interest
+**Event-Driven Architecture** (EDA). In an EDA one process - the
+publisher - raises an **Event** to indicate that something of interest
 happened within the process, such as an order being raised or a new
 customer being added, and subscribers who receive that message can act
 upon it. Processes can communicate back and forth with one process
 publishing an **Event** and another system reacting and publishing its
-**Event** message in turn. A **correlation id**, a unique identifier
-shared by the messages allows the original producer to correlate events
+**Event** message in turn. A **correlation id** - a unique identifier
+shared by the messages - allows the original producer to correlate events
 raised by other producers to its message.
 
 The advantage of publish-subscribe is coupling. Because producers do not
-need to know about consumers and vice-versa then we can change the list
+need to know about consumers and vice-versa, we can change the list
 of consumers without the producer needing to change, or change the
 producer without the consumer needing to know.
 
@@ -332,6 +332,6 @@ internal class HeartbeatReplyCommandMessageMapper : IAmAMessageMapper<HeartbeatR
 
 ## Summary
 
-The key to understanding routing in Brighter **IAmAMessageMapper**
+The key to understanding routing in Brighter is that the **IAmAMessageMapper**
 implementation provides the point at which you control routing by
 setting the **MessageHeader**.
