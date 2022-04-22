@@ -79,7 +79,7 @@ Brighter only supports pipelines that are solely
 
 This is due to expectation of the caller using an **\*Async** method
 that the code will execute asynchronously - allowing some handlers in
-the chain to block would defy that expectations. The async\...await
+the chain to block would defy that expectation. The async\...await
 pattern is often described as \'viral\' because it spreads up the chain
 of callers to be effective. Brighter is no exception in this regard.
 
@@ -118,8 +118,8 @@ Avoid using **.Wait** or **.Result** on the **Task** returned by the
 method, as this turns it back into a blocking call, which is probably
 not your intent and likely undermines the reason you wanted to use an
 asynchronous approach in the first place. If you find yourself using
-**.Wait** or **.Result** then consider whether you would be better using
-a synchronous pipeline instead.
+**.Wait** or **.Result** then consider whether you would be better off
+using a synchronous pipeline instead.
 
 Therefore you should only call **SendAsync**, **PublishAsync**, or
 **PostAsync** from a method that is itself async and supports await,
@@ -136,8 +136,7 @@ waits? This is normally a responsibility of your framework which has to
 understand that it can use re-use thread to service other requests, thus
 improving throughput and call back to your continuation when done.
 
-For example ASP.NET Controllers [support
-async](https://www.asp.net/mvc/overview/performance/using-asynchronous-methods-in-aspnet-mvc-4)
+For example ASP.NET Controller's [async support](https://www.asp.net/mvc/overview/performance/using-asynchronous-methods-in-aspnet-mvc-4)
 can be used to call the **\*Async methods** without blocking. This
 allows ASP.NET to release a thread from the thread pool to service
 another request whilst the asynchronous operation completes, allowing
@@ -148,7 +147,7 @@ greater throughput on the server.
 When an awaited method completes, what thread runs any completion code?
 The answer depends on the SynchronizationContext which is \'captured\'
 at the point await is called. For ASP.NET or Windows Forms, WPF, or
-Metro apps then the SynchronizationContext means that the thread that
+Metro apps the SynchronizationContext means that the thread that
 was running at the point we yielded runs the continuation. Otherwise the
 SynchronizationContext is null and the default Task Scheduler runs the
 continuation.

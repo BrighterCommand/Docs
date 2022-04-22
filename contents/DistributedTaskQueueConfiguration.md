@@ -12,8 +12,8 @@ Generally we prefer to configure design time options in code because
 that is the easiest to manage and only run-time options in an external
 configuration file.
 
-In essence, anything that you want to configure post-build i.e. when you
-deploy needs to go into external configuration, and anything you can
+In essence, anything that you want to configure post-build (i.e. when you
+deploy) needs to go into external configuration, and anything you can
 configure at build should go into code.
 
 Because you may choose to configure the channels that a service
@@ -36,7 +36,7 @@ You need to consider the following when configuring the Dispatcher
 -   Channel Factory
 -   Connection List
 
-Of these **Logging** and the **Command Processor** are covered in [Basic
+Of these, **Logging** and the **Command Processor** are covered in [Basic
 Configuration](BasicConfiguration.html).
 
 ## Message Mappers
@@ -46,7 +46,7 @@ Queue and a **Message**.
 
 A **Message** consists of two parts, a **Message Header** and **Message
 Body**. The header contains metadata about the message. Key properties
-are time **TimeStamp**, **Topic**, and **Id**. The body consists of the
+are **TimeStamp**, **Topic**, and **Id**. The body consists of the
 serialized **IRequest** sent over the Task Queue.
 
 We dispatch a **Message** using either **commandProcessor.Send()** or
@@ -99,7 +99,7 @@ For production use we support
 [RabbitMQ](https://github.com/BrighterCommand/Brighter/tree/master/src/Paramore.Brighter.MessagingGateway.RMQ)
 as a Broker. We are actively working on other implementations.
 
-You can see the code for this in the full builder snipped below.
+You can see the code for this in the full builder snippet below.
 
 We don\'t cover details of how to implement a Channel Factory here, for
 simplicity.
@@ -118,7 +118,7 @@ this type.
 
 You must set the **connectionName** and **channelName**. The naming
 scheme is at your discretion. We often use the namespace of the
-producer\'s type that serializes into the message on the wire
+producer\'s type that serializes into the message on the wire.
 
 The **timeOutInMilliseconds** sets how long we wait for a message before
 timing out. Note that after a timeout we will wait for messages on the

@@ -9,7 +9,7 @@ cost of distribution (see [The Fallacies of Distributed
 Computing](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing))
 against performance.
 
-For example you might have an HTTP API a rule that any given request to
+For example you might have an HTTP API with a rule that any given request to
 that API must execute in under 100ms. On measuring the performance of a
 key POST or PUT operation to your API you find that you exceed this
 value. Upon realizing that much of your time is spent I/O you consider
@@ -191,7 +191,7 @@ handlers, message mappers etc. and then pull that assembly into
 endpoints that consume such as services and web endpoints. This makes it
 easy to move between in-process and out-of-process versions of the
 handler. It also means you don\'t end up writing two versions of the
-mapper one on the consumer side and one on the sender side.
+mapper - one on the consumer side and one on the sender side.
 
 The [Tasks
 Example](https://github.com/BrighterCommand/Brighter/tree/master/samples)
@@ -295,6 +295,6 @@ internal class GreetingService : ServiceControl
 # Configuration
 
 So how do we route messages from the channel to the handler? The answer
-is the framework uses configuration that your provide to do that.
+is the framework uses configuration that you provide to do that.
 Configuration is the subject of this documentation
 [here](DistributedTaskQueueConfiguration.html).
