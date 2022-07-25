@@ -110,32 +110,6 @@ to allow us to scale out to meet load.
 
 ![TaskQueues](_static/images/TaskQueues.png)
 
-# Do I have to use a Broker, what about MSMQ?
-
-Brighter removes some complexity from its implementation by relying on
-the Message Broker to provide a number of services. First the Broker
-provides message routing. The producer does not need to have any idea
-where the consumers are located, only where the broker is located. This
-makes it easy to relocate your consumers, and when then begin
-subscribing the Broker will figure out how to deliver to them. It also
-supports a recipient list when routing messages: one producer can send
-to many consumers. Second we rely on the Broker to provide a clustered
-High Availability (HA) solution to queueing. We want to be able to send
-a message to the Broker cluster and rely on the Broker to deliver it,
-eventually.
-
-Without a Broker, using a point-to-point solution we have to provide a
-lot of this infrastructure ourselves, such as routing and distribution
-and how to do so in a way that is HA.
-
-For this reason we don\'t support a point-to-point approach like MSMQ,
-SQS, or sending directly to a service via HTTP.
-
-(We do have an experimental implementation of an [HTTP-based
-broker](https://github.com/BrighterCommand/Paramore.Contrib/tree/master/Renegade)
-using the RESTMS specification but it is not production-grade, and only
-in-memory as of today).
-
 # What happens when the consumer receives the message?
 
 A consumer reads the **Message** using the [Service
