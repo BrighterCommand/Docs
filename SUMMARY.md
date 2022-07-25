@@ -1,21 +1,39 @@
 # Summary
 
-## Distributed Task Queues
-
-* [Using a Distributed Task Queue](/contents/ImplementingDistributedTaskQueue.md)
-    * [Brighter’s Task Queue Architecture](/contents/ImplementingDistributedTaskQueue.md#brighters-task-queue-architecture)
-    * [Do I have to use a Broker, what about MSMQ?](/contents/ImplementingDistributedTaskQueue.md#do-i-have-to-use-a-broker-what-about-msmq)
-    * [What happens when the consumer receives the message?](/contents/ImplementingDistributedTaskQueue.md#what-happens-when-the-consumer-receives-the-message)
-    * [What does this look like in code](/contents/ImplementingDistributedTaskQueue.md#what-does-this-look-like-in-code)
-    * [The Dispatcher](/contents/ImplementingDistributedTaskQueue.md#the-dispatcher)
-    * [Configuration](/contents/ImplementingDistributedTaskQueue.md#configuration)
-* [Distributed Task Queue Configuration](/contents/DistributedTaskQueueConfiguration.md)
-    * [Why the split?](/contents/DistributedTaskQueueConfiguration.md#why-the-split)
-    * [Configuring the Dispatcher in Code](/contents/DistributedTaskQueueConfiguration.md#configuring-the-dispatcher-in-code)
-    * [Message Mappers](/contents/DistributedTaskQueueConfiguration.md#message-mappers)
-    * [Channel Factory](/contents/DistributedTaskQueueConfiguration.md#channel-factory)
-    * [Connection List](/contents/DistributedTaskQueueConfiguration.md#connection-list)
-    * [Creating a Builder](/contents/DistributedTaskQueueConfiguration.md#creating-a-builder)
+## Configuration
+* [Basic Configuration](/contents/BasicConfiguration.md)
+    * [Using .NET Core Dependency Injection](/contents/BasicConfiguration.md#using-net-core-dependency-injection)
+    * [Configuring the Command Processor](/contents/BasicConfiguration.md#configuring-the-command-processor)
+        *[Service Collection Extensions](/contents/BasicConfiguration.md#service-collection-extensions)
+            * [Adding Polly Policies](/contents/BasicConfiguration.md#adding-polly-policies)
+            * [Configuring Lifetimes](/contents/BasicConfiguration.md#configuring-lifetimes)
+        * [Brighter Builder Fluent Interface](/contents/BasicConfiguration.md#brighter-builder-fluent-interface)
+            * [Type Registration](/contents/BasicConfiguration.md#type-registration)
+            * [Using an External Bus](/contents/BasicConfiguration.md#using-an-external-bus)
+        * [Putting It All Together](/contents/BasicConfiguration.md#putting-it-all-together)
+    * [Configuring the Service Activator](/contents/BasicConfiguration.md#configuring-the-service-activator)
+* [How Configuration Works](/contents/HowConfigurationWorks.md)
+    * [What you need to provide](/contents/HowConfigurationWorks.md#what-you-need-to-provide)
+    * [Subscriber Registry](/contents/HowConfigurationWorks.md#subscriber-registry)
+    * [Handler Factory](/contents/HowConfigurationWorks.md#handler-factory)
+    * [Policy Registry](/contents/HowConfigurationWorks.md#policy-registry)
+    * [Request Context Factory](/contents/HowConfigurationWorks.md#request-context-factory)
+    * [Putting it all together](/contents/HowConfigurationWorks.md#putting-it-all-together)
+* [How Distributed Task Queue Configuration Works](/contents/HowConfiguringTheDispatcherWorks.md)
+    * [Configuring the Dispatcher](/contents/HowConfiguringTheDispatcherWorks.md#configuring-the-dispatcher)
+    * [Message Mappers](/contents/HowConfiguringTheDispatcherWorks.md#message-mappers)
+    * [Channel Factory](/contents/HowConfiguringTheDispatcherWorks.md#channel-factory)
+    * [Connection List](/contents/HowConfiguringTheDispatcherWorks.md#connection-list)
+    * [Creating a Builder](/contents/HowConfiguringTheDispatcherWorks.md#creating-a-builder)
+    * [The Dispatcher](/contents/HowConfiguringTheDispatcherWorks.md#running-the-dispatcher)
+    * [Configuration]
+* [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)
+* [AWS SQS Configuration](/contents/AWSSQSConfiguration.md)
+* [Monitoring](/contents/Monitoring.md)
+    * [Configuring Monitoring](/contents/Monitoring.md#configuring-monitoring)
+    * [Config file](/contents/Monitoring.md#config-file)
+    * [Handler confguration](/contents/Monitoring.md#handler-confguration)
+    * [Monitor message format](/contents/Monitoring.md#monitor-message-format)
 
 ## Using Brighter
 
@@ -77,25 +95,15 @@
     * [Outbox](/contents/BrighterOutboxSupport.md#outbox)
     * [Log Tailing](/contents/BrighterOutboxSupport.md#log-tailing)
 
-## Configuration
-* [Basic Configuration](/contents/BasicConfiguration.md)
-* [How Configuration Works](/contents/HowConfigurationWorks.md)
-    * [What you need to provide](/contents/HowConfigurationWorks.md#what-you-need-to-provide)
-    * [Subscriber Registry](/contents/HowConfigurationWorks.md#subscriber-registry)
-    * [Handler Factory](/contents/HowConfigurationWorks.md#handler-factory)
-    * [Policy Registry](/contents/HowConfigurationWorks.md#policy-registry)
-    * [Request Context Factory](/contents/HowConfigurationWorks.md#request-context-factory)
-    * [Putting it all together](/contents/HowConfigurationWorks.md#putting-it-all-together)
-* [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)
-* [AWS SQS Configuration](/contents/AWSSQSConfiguration.md)
-* [Monitoring](/contents/Monitoring.md)
-    * [Configuring Monitoring](/contents/Monitoring.md#configuring-monitoring)
-    * [Config file](/contents/Monitoring.md#config-file)
-    * [Handler confguration](/contents/Monitoring.md#handler-confguration)
-    * [Monitor message format](/contents/Monitoring.md#monitor-message-format)
+## Distributed Task Queues
 
-## Under the Hood
+* [Using a Distributed Task Queue](/contents/ImplementingDistributedTaskQueue.md)
+    * [Brighter’s Task Queue Architecture](/contents/ImplementingDistributedTaskQueue.md#brighters-task-queue-architecture)
+    * [Do I have to use a Broker, what about MSMQ?](/contents/ImplementingDistributedTaskQueue.md#do-i-have-to-use-a-broker-what-about-msmq)
+    * [What happens when the consumer receives the message?](/contents/ImplementingDistributedTaskQueue.md#what-happens-when-the-consumer-receives-the-message)
+    * [What does this look like in code](/contents/ImplementingDistributedTaskQueue.md#what-does-this-look-like-in-code)
 
+## Under the Hood 
 * [How The Command Processor Works](/contents/HowBrighterWorks.md)
     * [The Dispatcher](/contents/HowBrighterWorks.md#the-dispatcher)
 * [How Service Activator Works](/contents/HowServiceActivatorWorks)
@@ -121,11 +129,3 @@
     * [Worked Scenario](/contents/EventCarriedStateTransfer.md#worked-scenario)
         * [A Pipeline](/contents/EventCarriedStateTransfer.md#a-pipeline)
         * [ECST](/contents/EventCarriedStateTransfer.md#ecst)
-
-
-## Q&A
-
-* [Frequently Asked Questions](/contents/faq.md)
-    * [Must I manually register all my handlers?](/contents/faq.md#must-i-manually-register-all-my-handlers)
-    *(* [Is Brighter a Framework or a Library?](/contents/faq.md#is-brighter-a-framework-or-a-library)
-

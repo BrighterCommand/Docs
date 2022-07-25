@@ -1,29 +1,12 @@
-# Distributed Task Queue Configuration
+# How Configuring the Dispatcher works
 
-In order to use the distributed task queue you need to configure the
-Dispatcher.
+In order to receive messages from Message Oriented Middleware (MoM) such as RabbitMQ or Kafka you have to configure a *Dispatcher*. The *Dispatcher* works with a *Command Processor* to deliver messages read from a queue or stream to your *Request Handler*. You write a Request Handler as you would for a request sent over an Internal Bus, and hook it up to Message Oriented Middleware via a *Dispatcher*. 
 
-There are two steps. The first is in-code configuration of your options
-and the second is configuration of your files in a configuration file.
+For each message source (queue or stream) that you listen to, the Dispatcher lets you run one or more *Performers*. A *Performer* is a single-threaded message pump. As such, ordering is guaranteed on a *Peformer*. You can run multiple *Peformers* to utilize the [Competing Consumers](https://www.enterpriseintegrationpatterns.com/CompetingConsumers.html) pattern, at the cost of ordering.
 
-## Why the split?
+If you are using .NET Core Dependency Injection, we provide extension methods to **HostBuilder** to help you configure a Dispatcher. This information is then for background only. If you are not using **HostBuilder** you will need to perform the following steps explicitly in your code.
 
-Generally we prefer to configure design time options in code because
-that is the easiest to manage and only run-time options in an external
-configuration file.
-
-In essence, anything that you want to configure post-build (i.e. when you
-deploy) needs to go into external configuration, and anything you can
-configure at build should go into code.
-
-Because you may choose to configure the channels that a service
-processes at runtime we configure them there. An example use case here
-is that you may have busy channels that need more consumers to process a
-backlog. You can add channels to existing services at run-time to help
-share the load, and then remove those channels later once the backlog
-has been worked through.
-
-# Configuring the Dispatcher in Code
+## Configuring the Dispatcher 
 
 We provide a Dispatch Builder that has a progressive interface to assist
 you in configuring a **Dispatcher**
@@ -39,7 +22,7 @@ You need to consider the following when configuring the Dispatcher
 Of these, **Logging** and the **Command Processor** are covered in [Basic
 Configuration](BasicConfiguration.html).
 
-## Message Mappers
+### Message Mappers
 
 We use **IAmAMessageMapper\<T\>** to map between messages in the Task
 Queue and a **Message**.
@@ -87,7 +70,7 @@ var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory)
 };
 ```
 
-## Channel Factory
+### Channel Factory
 
 The Channel Factory is where we take a dependency on a specific Broker.
 We pass the **Dispatcher** an instances of **InputChannelFactory**
@@ -104,10 +87,9 @@ You can see the code for this in the full builder snippet below.
 We don\'t cover details of how to implement a Channel Factory here, for
 simplicity.
 
-## Connection List
+### Connection List
 
-Brighter supports configuration of a service activator via code. A
-Service Activator supports one or more connections.
+Brighter supports one or more connections.
 
 The most important part of a connection to understand is the **routing
 key**. This must be the same as the topic you set in the **Message
@@ -138,7 +120,7 @@ var connections = new List<Connection>
 };
 ```
 
-## Creating a Builder
+### Creating a Builder
 
 This code fragment shows putting the whole thing together
 
@@ -163,3 +145,60 @@ _dispatcher = DispatchBuilder.With()
     .Connections(connections)
     .Build();
 ```
+
+## Running The Dispatcher
+
+To ensure that messages reach the handlers from the queue you have to
+run a **Dispatcher**.
+
+The Dispatcher reads messages of input channels. Internally it creates a
+message pump for each channel, and allocates a thread to run that
+message pump. The pump consumes messages from the channel, using the
+**Message Mapper** to translate them into a **Message** and from there a
+**Command** or **Event**. It then dispatches those to handlers (using
+the Brighter **Command Processor**).
+
+To use the Dispatcher you need to host it in a consumer application.
+Usually a console application or Windows Service is appropriate. 
+
+We recommend using HostBuilder, but if not you will need to use something like [Topshelf](http://topshelf-project.com/) to host your consumers.
+
+The following code shows an example of using the **Dispatcher** from
+Topshelf. The key methods are **Dispatcher.Receive()** to start the
+message pumps and **Dispatcher.End()** to shut them.
+
+We do allow you to start and stop individual channels, but this is an
+advanced feature for operating the services.
+
+``` csharp
+internal class GreetingService : ServiceControl
+{
+    private Dispatcher _dispatcher;
+
+    public GreetingService()
+    {
+       /* Configfuration Code Goes here*/
+    }
+
+    public bool Start(HostControl hostControl)
+    {
+        _dispatcher.Receive();
+        return true;
+    }
+
+    public bool Stop(HostControl hostControl)
+    {
+        _dispatcher.End().Wait();
+        _dispatcher = null;
+        return false;
+    }
+
+    public void Shutdown(HostControl hostcontrol)
+    {
+        if (_dispatcher != null)
+            _dispatcher.End();
+        return;
+    }
+}
+```
+

@@ -1,8 +1,8 @@
-# Basic Configuration
+# **Basic Configuration**
 
 Configuration is the most labor-intensive part of using Brighter.Once you have configured Brighter, using its model of requests and handlers is straightforward
 
-## Using .NET Core Dependency Injection
+## **Using .NET Core Dependency Injection**
 
 This section covers using .NET Core Dependency Injection to configure Brighter. If you want to use an alternative DI container then see the section [How Configuration Works](/contents/HowConfigurationWorks.md) 
 
@@ -11,11 +11,17 @@ We divide configuration into two sections, depending on your requirements:
 * [**Configuring The Command Processor**](#configuring-the-command-processor): This section covers configuring the **Command Processor**. Use this if you want to dispatch requests to handlers, or publish messages from your application on an external bus
 * [**Configuring The Service Activator**](#configuring-the-service-activator): This section covers configuring the **Service Activator**. Use this if you want to read messages from a transport (and then dispatch to handlers).
 
-## Configuring The Command Processor
 
-### Service Collection Extensions 
+## **Configuring The Command Processor**
 
-Brighter's package **Paramore.Brighter.Extensions.DependencyInjection** provides extension methods for **ServiceCollection** that can be used to add Brighter to the .NET Core DI Framework.
+
+### **Service Collection Extensions** 
+
+Brighter's package:
+
+* **Paramore.Brighter.Extensions.DependencyInjection** 
+ 
+ provides extension methods for **ServiceCollection** that can be used to add Brighter to the .NET Core DI Framework.
 
 By adding the package you can call the **AddBrighter()** extension method.
 
@@ -33,7 +39,7 @@ if you are using .NET 6 you can make the call direction on your **HostBuilder**'
 
 The **AddBrighter()** method takes an **`Action<BrighterOptions>`** delegate. The extension method supplies the delegate with a **BrighterOptions** object that allows you to configure how Brighter runs.
 
-The **AddBrighter()** method returns an **IBrighterBuilder** interface. **IBrighterBuilder** is a [fluent interface](https://en.wikipedia.org/wiki/Fluent_interface) that you can use to configure additional Brighter properties (see [IBrighterBuilder Fluent Interface](#ibrighterbuilder-fluent-interface)).
+The **AddBrighter()** method returns an **IBrighterBuilder** interface. **IBrighterBuilder** is a [fluent interface](https://en.wikipedia.org/wiki/Fluent_interface) that you can use to configure additional Brighter properties (see [Brighter Builder Fluent Interface](#brighter-builder-fluent-interface)).
 
 #### **Adding Polly Policies**
 
@@ -121,12 +127,13 @@ public void ConfigureServices(IServiceCollection services)
         options.HandlerLifetime = ServiceLifetime.Scoped;
         options.CommandProcessorLifetime = ServiceLifetime.Scoped;
         options.MapperLifetime = ServiceLifetime.Singleton;
-    )
+    );
 }
 
 ```
 
-### IBrighterBuilder Fluent Interface
+### **Brighter Builder Fluent Interface**
+
 #### **Type Registration**
 The **IBrighterBuilder** fluent interface can scan your assemblies for your *Request Handlers* (inherit from **IHandleRequests<>** or **IHandleRequestsAsync<>**) and *Message Mappers* (inherit from **IAmAMessageMapper<>**) and register then with the **ServiceCollection**. This is the most common way to register your code.
 
@@ -134,7 +141,7 @@ The **IBrighterBuilder** fluent interface can scan your assemblies for your *Req
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddBrighter(...)
-        .AutoFromAssemblies()
+        .AutoFromAssemblies();
 }
 
 ```
@@ -145,7 +152,7 @@ The code scans any loaded assemblies. If you need to register types from assembl
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddBrighter(...)
-        .AutoFromAssemblies(typeof(MyRequestHandlerAsync).Assembly)
+        .AutoFromAssemblies(typeof(MyRequestHandlerAsync).Assembly);
 }
 
 ```
@@ -176,14 +183,15 @@ To use an *External Bus*, you need to supply Brighter with configuration informa
 
 In order to provide Brighter with this information we need to provide it with an implementation of **IAmAProducerRegistry** for the middleware you intend to use for the *External Bus*.
 
-*Transports* are how Brighter supports specific message-oriented-middleware. *Transports* are provided in separate NuGet packages so that you can take a dependency only on the transport that you need. Brighter supports a number of different *transports*. We use the naming convention **Paramore.Brighter.MessagingGateway.*** for *transports* where * is the name of the middleware. 
+*Transports* are how Brighter supports specific message-oriented-middleware. *Transports* are provided in separate NuGet packages so that you can take a dependency only on the transport that you need. Brighter supports a number of different *transports*. We use the naming convention **Paramore.Brighter.MessagingGateway.{TRANSPORT}** for *transports* where {TRANSPORT} is the name of the middleware. 
 
-In this example we will show using an implementation of **IAmAProducerRegistry** for RabbitMQ, provided by the NuGet package: **Paramore.Brighter.MessagingGateway.RMQ**
+In this example we will show using an implementation of **IAmAProducerRegistry** for RabbitMQ, provided by the NuGet package: 
+
+* **Paramore.Brighter.MessagingGateway.RMQ**
 
 See the documentation for detail on specific *transports* on how to configure them for use with Brighter, for now it is enough to know that you need to provide a *Messaging Gateway* which tells us how to reach the middleware and a *Publication* which tells us how to configure the middleware.
 
 *Transports* provide an **IAmAProducerRegistryFactory()** to allow you to create multiple *Publications* connected to the same middleware.
-
 
 ``` csharp
 public void ConfigureServices(IServiceCollection services)
@@ -206,16 +214,93 @@ public void ConfigureServices(IServiceCollection services)
                     }}
                 ).Create()
             )
-}
 
+            ...
+}
 ```
 
 If you intend to use Brighter's *Outbox* support for Transactional Messaging then you need to provide us with details of your *Outbox*.
 
-Brighter provides a number of *Outbox* implementations for common Dbs (and you can write your own for a Db that we do not support).
+Brighter provides a number of *Outbox* implementations for common Dbs (and you can write your own for a Db that we do not support). For this discussion we will look at Brighter's support for working with EF Core. See the documentation for working with specific *Outbox* implementations.
 
+EF Core supports a number of databases and you should pick the packages that match the Dy you want to use with EF Core. In this case we will choose MySQL.
+
+For this we will need the *Outbox* packages for the MySQL *Outbox*.
+
+* **Paramore.Brighter.MySql**
+* **Paramore.Brighter.Outbox.MySql**
+
+For a given backing store the pattern should be Paramore.Brighter.{DATABASE} and Paramore.Brighter.Outbox.{DATABASE} where {DATABASE} is the name of the Db that you are using.
+
+In addition for an ORM you will need to add the package that supports the ORM, in this case EF Core:
+
+* **Paramore.Brighter.MySql.EntityFrameworkCore**
+
+For a given ORM the pattern should be Paramore.Brighter.{ORM}.{DATABASE where {ORM} is the ORM you are choosing and {DATABASE} is the Db you are using with the ORM.
+
+To configure our *Outbox* we then need to use the Use{DATABASE}Outbox method call, where {DATABASE} is the {DATABASE} that we want, passing in the configuration for our Db so that we can access it. In our case this will be **UseMySqlOutbox()**.
+
+As we want to use an ORM, in our case EF Core, we have to tell the Outbox how to access EF Core transactions - as we need to participate in a transaction with the ORM. We call a method for the Db, Use{DATABASE}TransactionConnectionProvider, where {DATABASE} is our Db, so in our case **UseMySqlTransactionConnectionProvider()**.
+
+As a parameter to Use{DATABASE}TransactionConnectionProvider we need to provide a *Transaction Provider* for the ORM we are using, in our case this is *MySqlEntityFrameworkConnectionProvider<>).
+
+Finally, if we want the *Outbox* to use a background thread to clear un-dispatched items from the *Outbox*, and we do in most circumstances, otherwise they will not be dispatched, we need to run an *Outbox Sweeper* to do this work.
+
+This results in:
+
+``` csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddBrighter(...)
+        .UseExternalBus(...)
+        .UseMySqlOutbox(new MySqlConfiguration(DbConnectionString(), _outBoxTableName), typeof(MySqlConnectionProvider), ServiceLifetime.Singleton)
+        .UseMySqTransactionConnectionProvider(typeof(MySqlEntityFrameworkConnectionProvider<GreetingsEntityGateway>), ServiceLifetime.Scoped)
+        .UseOutboxSweeper()
+
+        ...
+}
+
+```
 
 (**UseExternalBus()** has optional parameters for use with Request-Reply support for some transports. We don't cover that here, instead see [Direct Messaging](/contents/Routing.md#direct-messaging) for more).
 
+### **Putting It All Together**
 
-## Configuring The Service Activator
+Putting all this together, a typical configuration might looks as follows:
+
+``` csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddBrighter(options =>
+        {
+            options.HandlerLifetime = ServiceLifetime.Scoped;
+            options.MapperLifetime = ServiceLifetime.Singleton;
+            options.PolicyRegistry = policyRegistry;
+        })
+        .UseExternalBus(new RmqProducerRegistryFactory(
+                new RmqMessagingGatewayConnection
+                {
+                    AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@rabbitmq:5672")),
+                    Exchange = new Exchange("paramore.brighter.exchange"),
+                },
+                new RmqPublication[] {
+                    new RmqPublication
+                    {
+                        Topic = new RoutingKey("GreetingMade"),
+                        MaxOutStandingMessages = 5,
+                        MaxOutStandingCheckIntervalMilliSeconds = 500,
+                        WaitForConfirmsTimeOutInMilliseconds = 1000,
+                        MakeChannels = OnMissingChannel.Create
+                    }}
+            ).Create()
+        )
+        .UseMySqlOutbox(new MySqlConfiguration(DbConnectionString(), _outBoxTableName), typeof(MySqlConnectionProvider), ServiceLifetime.Singleton)
+        .UseMySqTransactionConnectionProvider(typeof(MySqlEntityFrameworkConnectionProvider<GreetingsEntityGateway>), ServiceLifetime.Scoped)
+        .UseOutboxSweeper()
+        .AutoFromAssemblies();
+}
+
+```
+
+
+## **Configuring The Service Activator**

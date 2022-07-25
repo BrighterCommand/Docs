@@ -11,7 +11,7 @@ This means that we can support any approach to DI that you choose, provided you 
 
 For .NET Core`\s DI framework we provide the necessary implementation of these interfaces. We leave implementation for other DI frameworks to you.
 
-This document explains how to support an alternate DI framework.
+This document explains  what you need to do to support an alternate DI framework.
 
 ## What you need to provide
 
