@@ -1,4 +1,4 @@
-# How Configuring the Dispatcher works
+# How Configuring a Dispatcher for an External Bus Works
 
 In order to receive messages from Message Oriented Middleware (MoM) such as RabbitMQ or Kafka you have to configure a *Dispatcher*. The *Dispatcher* works with a *Command Processor* to deliver messages read from a queue or stream to your *Request Handler*. You write a Request Handler as you would for a request sent over an Internal Bus, and hook it up to Message Oriented Middleware via a *Dispatcher*. 
 
@@ -8,8 +8,7 @@ If you are using .NET Core Dependency Injection, we provide extension methods to
 
 ## Configuring the Dispatcher 
 
-We provide a Dispatch Builder that has a progressive interface to assist
-you in configuring a **Dispatcher**
+We provide a Dispatch Builder that has a progressive interface to assist you in configuring a **Dispatcher**
 
 You need to consider the following when configuring the Dispatcher
 
@@ -19,26 +18,18 @@ You need to consider the following when configuring the Dispatcher
 -   Channel Factory
 -   Connection List
 
-Of these, **Logging** and the **Command Processor** are covered in [Basic
-Configuration](BasicConfiguration.html).
+Of these, **Logging** and the **Command Processor** are covered in [Basic Configuration](BasicConfiguration.html).
 
 ### Message Mappers
 
-We use **IAmAMessageMapper\<T\>** to map between messages in the Task
-Queue and a **Message**.
+We use **IAmAMessageMapper\<T\>** to map between messages in the External Bus and a **Message**.
 
-A **Message** consists of two parts, a **Message Header** and **Message
-Body**. The header contains metadata about the message. Key properties
-are **TimeStamp**, **Topic**, and **Id**. The body consists of the
-serialized **IRequest** sent over the Task Queue.
+A **Message** consists of two parts, a **Message Header** and **Message Body**. The header contains metadata about the message. Key properties are **TimeStamp**, **Topic**, and **Id**. The body consists of the
+serialized **IRequest** sent over the External Bus.
 
-We dispatch a **Message** using either **commandProcessor.Send()** or
-**commandProcessor.Publish()** depending on whether the
-**MessageHeader.MessageType** is **MT_COMMAND** or **MT_EVENT**.
+We dispatch a **Message** using either **commandProcessor.Send()** or **commandProcessor.Publish()** depending on whether the **MessageHeader.MessageType** is **MT_COMMAND** or **MT_EVENT**.
 
-You create a **Message Mapper** by deriving from
-**IAmAMessageMapper\<TaskReminderCommand\>** and implementing the
-**MapToMessage()** and **MapToRequest** methods.
+You create a **Message Mapper** by deriving from **IAmAMessageMapper\<TaskReminderCommand\>** and implementing the **MapToMessage()** and **MapToRequest** methods.
 
 ``` csharp
 public class TaskReminderCommandMessageMapper : IAmAMessageMapper<TaskReminderCommand>
@@ -58,9 +49,7 @@ public class TaskReminderCommandMessageMapper : IAmAMessageMapper<TaskReminderCo
 }
 ```
 
-You then need to register your Message Mapper so that we can find it,
-using a class that derives from **IAmAMessageMapperRegistry**. We
-recommend using **MessageMapperRegistry** unless you have more specific
+You then need to register your Message Mapper so that we can find it, using a class that derives from **IAmAMessageMapperRegistry**. We recommend using **MessageMapperRegistry** unless you have more specific
 requirements.
 
 ``` csharp
@@ -72,39 +61,26 @@ var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory)
 
 ### Channel Factory
 
-The Channel Factory is where we take a dependency on a specific Broker.
-We pass the **Dispatcher** an instances of **InputChannelFactory**
-passing it an implementation of **IAmAChannelFactory**. The channel
-factory is used to create channels that wrap the underlying
-Message-Oriented Middleware that you are using.
+The Channel Factory is where we take a dependency on a specific Broker. We pass the **Dispatcher** an instances of **InputChannelFactory** passing it an implementation of **IAmAChannelFactory**. The channel
+factory is used to create channels that wrap the underlying Message-Oriented Middleware that you are using.
 
 For production use we support
-[RabbitMQ](https://github.com/BrighterCommand/Brighter/tree/master/src/Paramore.Brighter.MessagingGateway.RMQ)
-as a Broker. We are actively working on other implementations.
+[RabbitMQ](https://github.com/BrighterCommand/Brighter/tree/master/src/Paramore.Brighter.MessagingGateway.RMQ) as a Broker. We are actively working on other implementations.
 
 You can see the code for this in the full builder snippet below.
 
-We don\'t cover details of how to implement a Channel Factory here, for
-simplicity.
+We don\'t cover details of how to implement a Channel Factory here, for simplicity.
 
 ### Connection List
 
 Brighter supports one or more connections.
 
-The most important part of a connection to understand is the **routing
-key**. This must be the same as the topic you set in the **Message
-Header** when sending. In addition the **dataType** should be the name
-of the **Command** or **Event** derived type that you want to
-deserialize into i.e. we will use reflection to create an instance of
-this type.
+The most important part of a connection to understand is the **routing key**. This must be the same as the topic you set in the **Message Header** when sending. In addition the **dataType** should be the name
+of the **Command** or **Event** derived type that you want to deserialize into i.e. we will use reflection to create an instance of this type.
 
-You must set the **connectionName** and **channelName**. The naming
-scheme is at your discretion. We often use the namespace of the
-producer\'s type that serializes into the message on the wire.
+You must set the **connectionName** and **channelName**. The naming scheme is at your discretion. We often use the namespace of the producer\'s type that serializes into the message on the wire.
 
-The **timeOutInMilliseconds** sets how long we wait for a message before
-timing out. Note that after a timeout we will wait for messages on the
-channel again, following a delay. This just allows us to yield to
+The **timeOutInMilliseconds** sets how long we wait for a message before timing out. Note that after a timeout we will wait for messages on the channel again, following a delay. This just allows us to yield to
 receive control messages on the message pump.
 
 ``` csharp
@@ -148,27 +124,18 @@ _dispatcher = DispatchBuilder.With()
 
 ## Running The Dispatcher
 
-To ensure that messages reach the handlers from the queue you have to
-run a **Dispatcher**.
+To ensure that messages reach the handlers from the queue you have to run a **Dispatcher**.
 
-The Dispatcher reads messages of input channels. Internally it creates a
-message pump for each channel, and allocates a thread to run that
-message pump. The pump consumes messages from the channel, using the
-**Message Mapper** to translate them into a **Message** and from there a
-**Command** or **Event**. It then dispatches those to handlers (using
-the Brighter **Command Processor**).
+The Dispatcher reads messages of input channels. Internally it creates a message pump for each channel, and allocates a thread to run that message pump. The pump consumes messages from the channel, using the
+**Message Mapper** to translate them into a **Message** and from there a **Command** or **Event**. It then dispatches those to handlers (using the Brighter **Command Processor**).
 
-To use the Dispatcher you need to host it in a consumer application.
-Usually a console application or Windows Service is appropriate. 
+To use the Dispatcher you need to host it in a consumer application. Usually a console application or Windows Service is appropriate. 
 
 We recommend using HostBuilder, but if not you will need to use something like [Topshelf](http://topshelf-project.com/) to host your consumers.
 
-The following code shows an example of using the **Dispatcher** from
-Topshelf. The key methods are **Dispatcher.Receive()** to start the
-message pumps and **Dispatcher.End()** to shut them.
+The following code shows an example of using the **Dispatcher** from Topshelf. The key methods are **Dispatcher.Receive()** to start the message pumps and **Dispatcher.End()** to shut them.
 
-We do allow you to start and stop individual channels, but this is an
-advanced feature for operating the services.
+We do allow you to start and stop individual channels, but this is an advanced feature for operating the services.
 
 ``` csharp
 internal class GreetingService : ServiceControl

@@ -2,6 +2,10 @@
 
 ## Overview
 
+* [Show me the code!](/contents/ShowMeTheCode.md)
+    * [Dispatching A Request](/contents/ShowMeTheCode.md#dispatching-a-request)
+    * [Using an External Bus](/contents/ShowMeTheCode.md#using-an-external-bus)
+* [Basic Concepts](/contents/BasicConcepts.md)
 
 ## Configuration
 
@@ -14,6 +18,12 @@
         * [Brighter Builder Fluent Interface](/contents/BasicConfiguration.md#brighter-builder-fluent-interface)
             * [Type Registration](/contents/BasicConfiguration.md#type-registration)
             * [Using an External Bus](/contents/BasicConfiguration.md#using-an-external-bus)
+                * [Publications](/contents/BasicConfiguration.md#publications)
+                * [Transports & Gateways](/contents/BasicConfiguration.md#transports-and-gateways)
+                * [Transport NuGet Packages](/contents/BasicConfiguration.md#transport-nuget-packages)
+                * [Bus Example](/contents/BasicConfiguration.md#bus-example)
+                * [Retry and Circuit Breaker](/contents/BasicConfiguration.md#retry-and-circuit-breaker-with-an-external-bus)
+                * [Outbox Support](/contents/BasicConfiguration.md#outbox-support)
         * [Putting It All Together](/contents/BasicConfiguration.md#putting-it-all-together)
     * [Configuring the Service Activator](/contents/BasicConfiguration.md#configuring-the-service-activator)
 * [How Configuration Works](/contents/HowConfigurationWorks.md)
@@ -23,7 +33,7 @@
     * [Policy Registry](/contents/HowConfigurationWorks.md#policy-registry)
     * [Request Context Factory](/contents/HowConfigurationWorks.md#request-context-factory)
     * [Putting it all together](/contents/HowConfigurationWorks.md#putting-it-all-together)
-* [How Distributed Task Queue Configuration Works](/contents/HowConfiguringTheDispatcherWorks.md)
+* [How Configuring a Dispatcher for an External Event Bus Works](/contents/HowConfiguringTheDispatcherWorks.md)
     * [Configuring the Dispatcher](/contents/HowConfiguringTheDispatcherWorks.md#configuring-the-dispatcher)
     * [Message Mappers](/contents/HowConfiguringTheDispatcherWorks.md#message-mappers)
     * [Channel Factory](/contents/HowConfiguringTheDispatcherWorks.md#channel-factory)
@@ -31,7 +41,9 @@
     * [Creating a Builder](/contents/HowConfiguringTheDispatcherWorks.md#creating-a-builder)
     * [The Dispatcher](/contents/HowConfiguringTheDispatcherWorks.md#running-the-dispatcher)
 * [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)
-* [AWS SQS Configuration](/contents/AWSSQSConfiguration.md)
+* [AWS SNS/SQS Configuration](/contents/AWSSQSConfiguration.md)
+* [Kafka Configuration]()
+* [Azure Service Bus Configuration]()
 
 ## Using Brighter
 
@@ -52,7 +64,11 @@
         * [Pipelines Must be Homogeneous](/contents/AsyncDispatchARequest.md#pipelines-must-be-homogeneous)
     * [Dispatching Requests](/contents/AsyncDispatchARequest.md#dispatching-requests)
     * [Do Not Block When Calling *Async Methods](/contents/AsyncDispatchARequest.md#do-not-block-when-calling-async-methods)
-    * [Asynchronous vs. Work Queues](/contents/AsyncDispatchARequest.md#asynchronous-vs-work-queues)
+    * [Internal Bus & Asynchronous vs. External Bus](/contents/AsyncDispatchARequest.md#internal-bus--asynchronous-vs-external-bus)
+* [Using an External Bus ](/contents/ImplementingExternalBus.md)
+    * [Brighter's External Bus Architecture](/contents/ImplementingExternalBus.md#brighters-external-bus-architecture)
+    * [Sending via the External Bus](/contents/ImplementingExternalBus.md#sending-via-the-external-bus)
+    * [Receiving via the External Bus](/contents/ImplementingExternalBus.md#receiving-via-the-external-bus)
 * [Routing](/contents/Routing.md)
     * [Publish-Subscribe](/contents/Routing.md#publish-subscribe)
     * [Direct Messaging](/contents/Routing.md#direct-messaging)
@@ -65,40 +81,39 @@
 * [Building an Async Pipeline of Request Handlers](/contents/BuildingAnAsyncPipeline.md)
     * [Implementing a Pipeline](/contents/BuildingAnAsyncPipeline.md#implementing-a-pipeline)
 * [Passing information between Handlers in the Pipeline](/contents/UsingTheContextBag.md)
+* [Failure and Dead Letter Queues](/contents/HandlerFailure.md)
+    * [Retry (and Circuit Break) the *Request* on the Internal Bus](/contents/HandlerFailure.md#retry-and-circuit-break-the-request-on-the-internal-bus)
+    * [Retry (with Delay) the *Request* on the External Bus](/contents/HandlerFailure.md#retry-with-delay-the-request-on-the-external-bus)
+    * [Terminate processing of that *Request*](/contents/HandlerFailure.md#terminate-processing-of-that-request)
+    * [Run a Fallback](/contents/HandlerFailure.md#run-a-fallback)
+    * [Use Custom Middleware](/contents/HandlerFailure.md#use-custom-middleware)
 * [Supporting Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md)
     * [Using Brighter’s UsePolicy Attribute](/contents/PolicyRetryAndCircuitBreaker.md#using-brighters-usepolicy-attribute)
-    * [Retry and Circuit Breaker with Task Queues](/contents/PolicyRetryAndCircuitBreaker.md#supporting-retry-and-circuit-breaker)
     * [Timeout](/contents/PolicyRetryAndCircuitBreaker.md#timeout)
-* [Supporting Logging](/contents/Logging.md)
-    * [Logger](/contents/Logging.md#supporting-logging)
-    * [Testing](/contents/Logging.md#testing)
+* [Failure and Fallback](/contents/PolicyFallback.md)
+    * [Calling the Fallback Pipeline](/contents/PolicyFallback.md#calling-the-fallback-pipeline)
+    * [Using the FallbackPolicy Attribute](/contents/PolicyFallback.md#using-the-fallbackpolicy-attribute)
 * [Feature Switches](/contents/FeatureSwitches.md)
     * [Using the Feature Switch Attribute](/contents/FeatureSwitches.md#using-the-feature-switch-attribute)
     * [Building a config for Feature Switches with FluentConfigRegistryBuilder](/contents/FeatureSwitches.md#building-a-config-for-feature-switches-with-fluentconfigregistrybuilder)
     * [Implementing a custom Feature Switch Registry](/contents/FeatureSwitches.md#implementing-a-custom-feature-switch-registry)
     * [Setting Feature Switching Registry](/contents/FeatureSwitches.md#setting-feature-switching-registry)
-* [Failure and Fallback](/contents/PolicyFallback.md)
-    * [Calling the Fallback Pipeline](/contents/PolicyFallback.md#calling-the-fallback-pipeline)
-    * [Using the FallbackPolicy Attribute](/contents/PolicyFallback.md#using-the-fallbackpolicy-attribute)
-* [Outbox Pattern](/contents/OutboxPattern.md)
-    * [Producer Correctness](/contents/OutboxPattern.md#producer-correctness)
-    * [Solutions](/contents/OutboxPattern.md#solutions)
-        * [Ignore](/contents/OutboxPattern.md#ignore)
-        * [Compensate](/contents/OutboxPattern.md#compensate)
-        * [The Outbox Pattern](/contents/OutboxPattern.md#the-outbox-pattern)
-        • [Log Tailing](/contents/OutboxPattern.md#log-tailing)
-    * [Correctness in Brighter](/contents/BrighterOutboxSupport.md)
+
+## Guaranteed, At Least Once
+
+* [Outbox Support](/contents/BrighterOutboxSupport.md)
     * [Ignore/Retry](/contents/BrighterOutboxSupport.md#ignoreretry)
     * [Compensation](/contents/BrighterOutboxSupport.md#compensation)
     * [Outbox](/contents/BrighterOutboxSupport.md#outbox)
     * [Log Tailing](/contents/BrighterOutboxSupport.md#log-tailing)
+* [Inbox Support](/contents/BrighterInboxSupport.md)
 
 ## Monitoring
 
 * [Monitoring](/contents/Monitoring.md)
     * [Configuring Monitoring](/contents/Monitoring.md#configuring-monitoring)
     * [Config file](/contents/Monitoring.md#config-file)
-    * [Handler confguration](/contents/Monitoring.md#handler-confguration)
+    * [Handler configuration](/contents/Monitoring.md#handler-configuration)
     * [Monitor message format](/contents/Monitoring.md#monitor-message-format)
 
 ## Under the Hood 
@@ -106,6 +121,13 @@
 * [How The Command Processor Works](/contents/HowBrighterWorks.md)
     * [The Dispatcher](/contents/HowBrighterWorks.md#the-dispatcher)
 * [How Service Activator Works](/contents/HowServiceActivatorWorks)
+
+## Commands, Processors, & Dispatchers
+
+* [Commands Patterns](/contents/CommandsCommandDispatcherandProcessor.md)
+    * [Command](/contents/CommandsCommandDispatcherandProcessor.md#command)
+    * [Command Dispatcher](/contents/CommandsCommandDispatcherandProcessor.md#command-dispatcher)
+    * [Command Processor](/contents/CommandsCommandDispatcherandProcessor.md#command-processor)
 
 ## Event Driven Architectures
 
@@ -128,10 +150,15 @@
     * [Worked Scenario](/contents/EventCarriedStateTransfer.md#worked-scenario)
         * [A Pipeline](/contents/EventCarriedStateTransfer.md#a-pipeline)
         * [ECST](/contents/EventCarriedStateTransfer.md#ecst)
+* [Outbox Pattern](/contents/OutboxPattern.md)
+    * [Producer Correctness](/contents/OutboxPattern.md#producer-correctness)
+    * [Solutions](/contents/OutboxPattern.md#solutions)
+        * [Ignore](/contents/OutboxPattern.md#ignore)
+        * [Compensate](/contents/OutboxPattern.md#compensate)
+        * [The Outbox Pattern](/contents/OutboxPattern.md#the-outbox-pattern)
+        • [Log Tailing](/contents/OutboxPattern.md#log-tailing)
 
-## Distributed Task Queues
+## Task Queues
 
-* [Using a Distributed Task Queue](/contents/ImplementingDistributedTaskQueue.md)
-    * [Brighter’s Task Queue Architecture](/contents/ImplementingDistributedTaskQueue.md#brighters-task-queue-architecture)
-    * [What happens when the consumer receives the message?](/contents/ImplementingDistributedTaskQueue.md#what-happens-when-the-consumer-receives-the-message)
-    * [What does this look like in code](/contents/ImplementingDistributedTaskQueue.md#what-does-this-look-like-in-code)
+* [Using a Task Queue](/contents/TaskQueuePattern.md)
+    * [Doing Work Asynchronously](/contents/TaskQueuePattern.md#doing-work-asynchronously)

@@ -1,19 +1,15 @@
 # Monitoring
 
-Brighter emits monitoring information from Task Queues using a
-configured [Control
-Bus](https://brightercommand.github.io/Brighter/ControlBus.html)
+Brighter emits monitoring information from an External Bus using a configured [Control Bus](https://brightercommand.github.io/Brighter/ControlBus.html)
 
 ## Configuring Monitoring
 
 Firstly [configure a Control
-Bus](https://brightercommand.github.io/Brighter/ControlBus.html#configure)
-in the brighter application to emit monitoring messages
+Bus](https://brightercommand.github.io/Brighter/ControlBus.html#configure) in the brighter application to emit monitoring messages
 
 ## Config file
 
-Monitoring requires a new section to be added to the application config
-file:
+Monitoring requires a new section to be added to the application config file:
 
 ``` xml
 <configSections>
@@ -29,14 +25,11 @@ The monitoring config can then be speicified later in the file:
 </monitoring>
 ```
 
-This enables runtime changes to enable/disable emitting of monitoring
-messages.
+This enables runtime changes to enable/disable emitting of monitoring messages.
 
-## Handler confguration
+## Handler Configuration
 
-Each handler that requires monitoring must be configured in two stages,
-a Handler attribute and container registration of a MonitorHandler for
-the given request:
+Each handler that requires monitoring must be configured in two stages, a Handler attribute and container registration of a MonitorHandler for the given request:
 
 For example, given:
 
@@ -46,20 +39,17 @@ For example, given:
 
 ### Attribute
 
-The following attribute must be added to the Handle method in the
-handler, TRequestHandler:
+The following attribute must be added to the Handle method in the handler, TRequestHandler:
 
 ``` csharp
 [Monitor(step:1, timing:HandlerTiming.Before, handlerType:typeof(TRequestHandler))]
 ```
 
-Please note the step and timing can vary if monitoring should be after
-another attribute step, or timing should be emitted after.
+Please note the step and timing can vary if monitoring should be after another attribute step, or timing should be emitted after.
 
 ### Container registration
 
-The following additional handler must be registered in the application
-container (where `MonitorHandler<T>` is a built-in Brighter handler):
+The following additional handler must be registered in the application container (where `MonitorHandler<T>` is a built-in Brighter handler):
 
 ``` csharp
 container.Register<TRequest, MonitorHandler<TRequest>>
@@ -67,8 +57,7 @@ container.Register<TRequest, MonitorHandler<TRequest>>
 
 ## Monitor message format
 
-A message is emitted from the Control Bus on Handler Entry and Handler
-Exit. The following is the form of the message:
+A message is emitted from the Control Bus on Handler Entry and Handler Exit. The following is the form of the message:
 
 ``` javascript
 {
@@ -84,7 +73,5 @@ Exit. The following is the form of the message:
 }
 ```
 
-Messages can be processed from the queue and interated with your
-monitoring tool of choice, for example Live python consumers emitting to
-console or logstash consumption to the ELK stack using relevant plugins
+Messages can be processed from the queue and interated with your monitoring tool of choice, for example Live python consumers emitting to console or logstash consumption to the ELK stack using relevant plugins
 to provide performance raditators or dashboards.

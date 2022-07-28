@@ -45,19 +45,13 @@ var registry = new SubscriberRegistry()
 
 ## Handler Factory
 
-We don\'t know how to construct your handler so we call a factory, that
-you provide, to build your handler (and its entire dependency chain). 
+We don\'t know how to construct your handler so we call a factory, that you provide, to build your handler (and its entire dependency chain). 
 
 This factory needs to implement the interface:  **IAmAHandlerFactory**.
 
-Brighter manages the lifetimes of handlers, as we consider the request
-pipeline to be a scope, and we will call your factory again asking to
-release those handlers once we have terminated the pipeline and finished
-processing the request. You should take appropriate action to clear up
-the handler and its dependencies in response to that call
+Brighter manages the lifetimes of handlers, as we consider the request pipeline to be a scope, and we will call your factory again asking to release those handlers once we have terminated the pipeline and finished processing the request. You should take appropriate action to clear up the handler and its dependencies in response to that call
 
-You can implement the Handler Factory using an IoC container, in your
-own code. 
+You can implement the Handler Factory using an IoC container, in your own code. 
 
 For example using [TinyIoC
 Container](https://github.com/grumpydev/TinyIoC):
@@ -128,16 +122,11 @@ public override TaskReminderCommand Handle(TaskReminderCommand command)
 
 ## Request Context Factory
 
-You need to provide a factory to give us instances of a
-[Context](UsingTheContextBag.html). If you have no implementation to
-use, just use the default **InMemoryRequestContextFactory**
+You need to provide a factory to give us instances of a [Context](UsingTheContextBag.html). If you have no implementation to use, just use the default **InMemoryRequestContextFactory**
 
 ## Putting it all together
 
-All these individual elements can be passed to a **Command Processor
-Builder** to help build a **Command Processor**. This has a fluent
-interface to help guide you when configuring Brighter. The result looks
-like this:
+All these individual elements can be passed to a **Command Processor Builder** to help build a **Command Processor**. This has a fluent interface to help guide you when configuring Brighter. The result looks like this:
 
 ``` csharp
 var commandProcessor = CommandProcessorBuilder.With()
@@ -147,5 +136,3 @@ var commandProcessor = CommandProcessorBuilder.With()
     .RequestContextFactory(new InMemoryRequestContextFactory())
     .Build();
 ```
-
-We discuss [Task Queues](DistributedTaskQueueConfiguration.html) later.
