@@ -38,7 +38,6 @@ It then resends those messages. If it sends them, it marks them as dispatched. A
 
 It is possible that the write to the row to update the dispatched status will fail. It is not in a transaction between broker and RDBMS either. If that happens, we may send the message twice.
 
-For this reason, the Outbox pattern offers us **guaranteed, at least once** delivery. Consumers must be prepared for this. Either they can use an Inbox, which records all the messages they have seen recently and
-discards duplicates, or they must be idempotent and the result of processing the message twice has no side-affects.
+For this reason, the Outbox pattern offers us **guaranteed, at least once** delivery. Consumers must be prepared for this. Either they can use an *Inbox*, which records all the messages they have seen recently and discards duplicates, or they must be idempotent and the result of processing the message twice has no side-affects.
 
 See [Brighter Outbox Support](BrighterOutboxSupport.html) for more on how to ensure Producer-Consumer correctness in Brighter.

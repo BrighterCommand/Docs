@@ -1,5 +1,7 @@
 # How Configuring a Dispatcher for an External Bus Works
 
+TODO: Review for V9
+
 In order to receive messages from Message Oriented Middleware (MoM) such as RabbitMQ or Kafka you have to configure a *Dispatcher*. The *Dispatcher* works with a *Command Processor* to deliver messages read from a queue or stream to your *Request Handler*. You write a Request Handler as you would for a request sent over an Internal Bus, and hook it up to Message Oriented Middleware via a *Dispatcher*. 
 
 For each message source (queue or stream) that you listen to, the Dispatcher lets you run one or more *Performers*. A *Performer* is a single-threaded message pump. As such, ordering is guaranteed on a *Peformer*. You can run multiple *Peformers* to utilize the [Competing Consumers](https://www.enterpriseintegrationpatterns.com/CompetingConsumers.html) pattern, at the cost of ordering.
@@ -113,7 +115,7 @@ _dispatcher = DispatchBuilder.With()
     .CommandProcessor(CommandProcessorBuilder.With()
         .Handlers(new HandlerConfiguration(subscriberRegistry, handlerFactory))
         .Policies(policyRegistry)
-        .NoTaskQueues()
+        .NoExternalBus()
         .RequestContextFactory(new InMemoryRequestContextFactory())
         .Build())
     .MessageMappers(messageMapperRegistry)

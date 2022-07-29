@@ -1,5 +1,9 @@
 # Event Driven Collaboration
 
+Event Driven Architectures (EDA) are a major use case for Brighter's External Bus-you want processes to collaborate via messaging.
+
+(For another use case, offloading work to be performed asynchronously, see [Task Queues](/contents/TaskQueuePattern.md))
+
 ## Messaging
 
 Messages are packets of data, sent asynchronously over middleware

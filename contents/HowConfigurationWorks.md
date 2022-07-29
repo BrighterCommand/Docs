@@ -1,5 +1,7 @@
 # How Configuration Works
 
+TODO: Review for V9
+
 Brighter does not have a dependency on an Inversion Of Control (IoC) framework. This gives you freedom to choose the DI libraries you want for your project.
 
 Instead we follow an approach outlined by Mark Seeman in his blog on a [DI Friendly
@@ -132,7 +134,7 @@ All these individual elements can be passed to a **Command Processor Builder** t
 var commandProcessor = CommandProcessorBuilder.With()
     .Handlers(new HandlerConfiguration(subscriberRegistry, handlerFactory))
     .Policies(policyRegistry)
-    .NoTaskQueues()
+    .NoExternalBus()
     .RequestContextFactory(new InMemoryRequestContextFactory())
     .Build();
 ```

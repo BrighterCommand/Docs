@@ -1,5 +1,7 @@
 # Outbox Support
 
+TODO: This needs enhancement to support V9
+
 Brighter supports storing messages that are sent via an External Bus in an Outbox, as per the [Outbox Pattern](/contents/OutboxPattern.md)
 
 This allows you to determine that a change to an entity owned by your application should always result in a message being sent i.e. you have Transactional Messaging.

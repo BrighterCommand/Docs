@@ -1,1 +1,3 @@
-#Brighter Inbox Support
+# Brighter Inbox Support
+
+TODO: How does our Inbox work

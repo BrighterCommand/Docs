@@ -1,6 +1,6 @@
 # The Task Queue Pattern
 
-The Task Queue Pattern let's you use an external Event Bus to handle work asynchronously. It is a common use of an external bus outside of using it for an event drive architecture.
+The Task Queue Pattern let's you use an External Bus to handle work asynchronously. It is a common use of an External Bus outside of using it for an [Event Driven Architecture](/contents/EventDrivenCollaboration.md).
 
 ## Doing Work Asynchronously
 You might have an HTTP API with a rule that any given request to that API must execute in under 100ms. On measuring the performance of a key POST or PUT operation to your API you find that you exceed this

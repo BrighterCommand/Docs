@@ -341,7 +341,7 @@ public void ConfigureServices(IServiceCollection services)
 
 A *consumer* reads messages from Message-Oriented Middleware (MoM), and a *producer* puts messages onto the MoM for the *consumer* to read.
 
-A *consumer* waits for messages to appear on the queue, reads them, and then calls your *Request Handler* code to react. Because the •consumer* runs your code in response to an external event, a message being placed on the MoM, we call the component that listens for messages and dispatches them a [*Service Activator*](https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingAdapter.html)
+A *consumer* waits for messages to appear on the queue, reads them, and then calls your *Request Handler* code to react. Because the •consumer* runs your code in response to an external request, a message being placed on the External Bus, we call the component that listens for messages and dispatches them a [*Service Activator*](https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingAdapter.html)
 
 To use Brighter's Service Activator you will need to take a dependency on the NuGet package:
 
@@ -480,9 +480,67 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
 ```
 
+#### **Configuring Service Activator Lifetimes**
 
-### ** Additional Brighter Builder Options**
+Under the hood your *Service Activator* uses a *Command Processor* and you will need to configure lifetimes [as discussed above](#configuring-lifetimes).
 
-#### **The Inbox**
+An additional requirement is configuring the lifetime of the *Command Processor* itself. Within the context of an ASP.NET application, configuring the lifetime of the **Command Processor** relies on ASP.NET creating an instance of the *Command Processor* in a request pipeline. When you are using *Service Activator* there is no ASP.NET pipeline, instead Brighter's *Dispatcher* manages the lifetime of the *Command Processor* that we pass a request to. By setting the **ServiceActivatorOptions.UseScoped** field to true, you instruct *Brighter* to use a new *Command Processor* instance for each request. This is important if you take the *Command Processor* as a dependency in any of your *Request Handlers* with a **Scoped** lifetime. If in doubt, just set **ServiceActivatorOptions.UseScoped** field to true. 
+
+
+``` csharp
+private static IHostBuilder CreateHostBuilder(string[] args) =>
+    Host.CreateDefaultBuilder(args)
+        .ConfigureServices(hostContext, services) =>
+        {
+            ConfigureBrighter(hostContext, services);
+        }
+
+private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
+{
+    services.AddServiceActivator(options =>
+        {
+            options.UseScoped = true;
+            options.HandlerLifetime = ServiceLifetime.Scoped;
+            options.MapperLifetime = ServiceLifetime.Singleton;
+            options.CommandProcessorLifetime = ServiceLifetime.Scoped;
+    })
+}
+
+...
+
+```
+
+
+### ** Service Activator Brighter Builder Fluent Interface**
+
+The call to **AddServiceActivator()** returns an **IBrighterBuilder** fluent interface. This means that you can use any of the options described in [Brighter Build Fluent Interfaces](#brighter-builder-fluent-interface) to configure the associated *Command Processor* such as scanning assemblies for *Request Handlers* and adding an *Outbox*.
+
+An option is intended for the context of a Service Activator is described below.
+
+#### **Inbox**
+
+As described in the [Outbox Pattern](/contents/OutboxPattern.md) an *Outbox* offers **Guaranteed, At Least Once** delivery. It explicitly may result in you sending duplicate messages. In addition, MoM tends to offer "At Least Once" guarantees only, further creating the risk that you will receive a duplicate message.
+
+If the request is not idempotent, you can use an Inbox to de-duplicate it. See [Inbox Support](/contents/BrighterInboxSupport.md) for more.
+
+Configuring an *Inbox* has two elements. The first is the type of *Inbox*, the second configuration for the *Inbox* behavior.
+
+Brighter provides a number of *Inbox* implementations for common Dbs (and you can write your own for a Db that we do not support). For this discussion we will look at Brighter's support for working with MySQL. See the documentation for working with specific *Inbox* implementations.
+
+For this we will need the *Inbox* packages for the MySQL *Inbox*.
+
+* **Paramore.Brighter.MySql**
+* **Paramore.Brighter.Outbox.MySql**
+
+For a given backing store the pattern should be Paramore.Brighter.{DATABASE} and Paramore.Brighter.Inbox.{DATABASE} where {DATABASE} is the name of the Db that you are using.
+
+### Running Service Activator
+
+### A Complete Service Activator Example
+
+
+## Samples
+
+Brighter includes a comprehensive set of [Samples](https://github.com/BrighterCommand/Brighter/tree/master/samples) in its main repo that you can review for clarity on how Brighter works and should be configured.
 
 
