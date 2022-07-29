@@ -42,8 +42,8 @@
     * [The Dispatcher](/contents/HowConfiguringTheDispatcherWorks.md#running-the-dispatcher)
 * [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)
 * [AWS SNS/SQS Configuration](/contents/AWSSQSConfiguration.md)
-* [Kafka Configuration]()
-* [Azure Service Bus Configuration]()
+* [Kafka Configuration](/contents/KafkaConfiguration.md)
+* [Azure Service Bus Configuration](/contents/AzureServiceBusConfiguration.md)
 
 ## Using Brighter
 

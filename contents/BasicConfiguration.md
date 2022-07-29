@@ -404,7 +404,81 @@ All *Subscriptions* lets you configure the following common properties.
 * **RunAsync**: Is this an async pipeline? Your pipeline must be sync or async. An async pipeline can increase throughput where a handler is I/O bound by allowing the message pump to read another message whilst we await I/O completion. The cost of this is that strict ordering of messages will now be lost as processing of I/O bound requests may complete out-of-sequence. Brighter provides its own synchronization context for async operations. We recommend scaling via increasing the number of performers, unless you know that I/O is your bottleneck.
 * **TimeoutInMilliseconds**: How long does a read 'wait' before assuming there are no pending messages.
 * **UnaceptableMessageLimit**: Brighter will ack a message that throws an unhandled exception, thus removing it from a queue. 
-In addition, individual transports that provide access to specific MoM sub-class *Subscription* to provide properties unique to the chosen middleware.
+
+For a more detailed discussion of using Requeue (with Delay) for Handler failure, (**RequeueCount** and **RequeueDelayInMilliseconds**) along with termination of a consumer due to message failure (**UnacceptableMessageLimit**) see [Handler Failure](/contents/HandlerFailure.md)
+
+In addition, individual transports that provide access to specific MoM sub-class *Subscription* to provide properties unique to the chosen middleware. We discuss those under a section for that transport.
+
+For RabbitMQ for example, this would look like this:
+
+``` csharp
+private static IHostBuilder CreateHostBuilder(string[] args) =>
+    Host.CreateDefaultBuilder(args)
+        .ConfigureServices(hostContext, services) =>
+        {
+            ConfigureBrighter(hostContext, services);
+        }
+
+private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
+{
+    var subscriptions = new Subscription[]
+    {
+        new RmqSubscription<GreetingMade>(
+            new SubscriptionName("paramore.sample.salutationanalytics"),
+            new ChannelName("SalutationAnalytics"),
+            new RoutingKey("GreetingMade"),
+            runAsync: true,
+            timeoutInMilliseconds: 200,
+            isDurable: true,
+            makeChannels: OnMissingChannel.Create), //change to OnMissingChannel.Validate if you have infrastructure declared elsewhere
+    };
+
+    services.AddServiceActivator(options =>
+        {
+            options.Subscriptions = subscriptions;
+        })
+}
+
+...
+
+```
+
+#### **Gateway Connections & Channel Factories**
+
+A *Gateway Connection* tells Brighter how to connect to MoM for a particular transport. The transport package will contain a *Gateway Connection*, you need to provide the information to connect to your middleware (URIs, ports, credentials etc.) Your transport package provides a *Gateway Connection*
+
+A *Channel Factory* connects Brighter to MoM. Depending on the configuration settings for your *Subscription* it may create the required primitives (topics/routing keys, queues, streams) on MoM or simply attach to ones that you have created via Infrastructure as Code (IaC). Your transport provides a *Channel Factory* and you need to pass it a *Gateway Connection*.
+
+For RabbitMQ, this would look like:
+
+``` csharp
+private static IHostBuilder CreateHostBuilder(string[] args) =>
+    Host.CreateDefaultBuilder(args)
+        .ConfigureServices(hostContext, services) =>
+        {
+            ConfigureBrighter(hostContext, services);
+        }
+
+private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
+{
+
+    var rmqConnection = new RmqMessagingGatewayConnection
+    {
+        AmpqUri = new AmqpUriSpecification(new Uri($"amqp://guest:guest@{host}:5672")),
+        Exchange = new Exchange("paramore.brighter.exchange")
+    };
+
+    var rmqMessageConsumerFactory = new RmqMessageConsumerFactory(rmqConnection);
+
+    services.AddServiceActivator(options =>
+        {
+             options.ChannelFactory = new ChannelFactory(rmqMessageConsumerFactory);
+        })
+}
+
+...
+
+```
 
 
 ### ** Additional Brighter Builder Options**

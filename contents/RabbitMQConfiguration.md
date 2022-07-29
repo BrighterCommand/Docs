@@ -1,5 +1,7 @@
 # RabbitMQ Configuration
 
+TODO: Needs a rewrite
+
 The available configuration options are:
 
 -   amqpUri: Describes how to connect to RabbitMQ
