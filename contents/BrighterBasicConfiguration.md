@@ -14,7 +14,7 @@ We divide configuration into two sections, depending on your requirements:
 
 ## **Configuring The Command Processor**
 
-### **Service Collection Extensions** 
+### **Command Processor Service Collection Extensions** 
 
 Brighter's package:
 
@@ -347,21 +347,16 @@ To use Brighter's Service Activator you will need to take a dependency on the Nu
 
 * **Paramore.Brighter.ServiceActivator**
 
-### **ServiceCollection and HostBuilder Extensions**
+### **ServiceActivator Service Collection Extensions**
 
 We provide support for configuring .NET Core's **HostBuilder** as a *ServiceActivator* for use with MoM. We use Brighter's Command Processor to dispatch the messages read by a *Dipatcher*. If you are not using **HostBuilder** then you will need to configure the Dispatcher yourself. See [How Configuring the Dispatcher Works](/contents/HowConfiguringTheDispatcherWorks.md) for more.
 
 To use Brighter's *Service Activator* with **HostBuilder** you will need to take a dependency on the following NuGet packages:
 
 * **Paramore.Brighter.ServiceActivator.Extensions.Hosting**
-
-#### **ServiceCollection Extensions**
-
-Brighter's package:
-
 * **Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection**
 
-provides an extension method **AddServiceActivator()** that can be used to add Brighter to the .NET Core DI Framework.
+These provide an extension method **AddServiceActivator()** that can be used to add Brighter to the .NET Core DI Framework.
 
 By adding the package you can call the **AddServiceActivator()** extension method.
 
@@ -464,7 +459,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
     var rmqConnection = new RmqMessagingGatewayConnection
     {
-        AmpqUri = new AmqpUriSpecification(new Uri($"amqp://guest:guest@{host}:5672")),
+        AmpqUri = new AmqpUriSpecification(new Uri($"amqp://guest:guest@local:5672")),
         Exchange = new Exchange("paramore.brighter.exchange")
     };
 
@@ -511,9 +506,9 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 ```
 
 
-### ** Service Activator Brighter Builder Fluent Interface**
+### **Service Activator Brighter Builder Fluent Interface**
 
-The call to **AddServiceActivator()** returns an **IBrighterBuilder** fluent interface. This means that you can use any of the options described in [Brighter Build Fluent Interfaces](#brighter-builder-fluent-interface) to configure the associated *Command Processor* such as scanning assemblies for *Request Handlers* and adding an *Outbox*.
+The call to **AddServiceActivator()** returns an **IBrighterBuilder** fluent interface. This means that you can use any of the options described in [Brighter Build Fluent Interfaces](#brighter-builder-fluent-interface) to configure the associated *Command Processor* such as scanning assemblies for *Request Handlers* and adding an *External Bus* and *Outbox*.
 
 An option is intended for the context of a Service Activator is described below.
 
@@ -529,15 +524,163 @@ Brighter provides a number of *Inbox* implementations for common Dbs (and you ca
 
 For this we will need the *Inbox* packages for the MySQL *Inbox*.
 
-* **Paramore.Brighter.MySql**
-* **Paramore.Brighter.Outbox.MySql**
+* **Paramore.Brighter.Inbox.MySql**
 
-For a given backing store the pattern should be Paramore.Brighter.{DATABASE} and Paramore.Brighter.Inbox.{DATABASE} where {DATABASE} is the name of the Db that you are using.
+For a given backing store the pattern should be Paramore.Brighter.Inbox.{DATABASE} where {DATABASE} is the name of the Db that you are using.
+
+To configure our *Inbox* we then need to use the UseExternalInbox method call and pass in an instance of a class that implements **IAmAnInbox**, taken from our package, and an instance of **InboxConfiguration** that tells Brighter how we want to use the Inbox.
+
+For *Inbox Configuration* you set the following properties:
+
+* **ActionOnExists**: What do we do if the request has been handled? The default,**OnceOnlyAction.Throw** is to throw a **OnceOnlyException**. If you take no other action this will cause the message to be rejected and sent to a DLQ if one is configured (See [Handler Failure](/contents/HandlerFailure.md)). The alternative is **OnceOnlyAction.Warn** simply logs that the request is a duplicate, but takes no other action.
+* **OnceOnly**: This defaults to *true* and will check for a duplicate and take the action indicated by **ActionOnExists**. If *false* the *Inbox* will record the request, but will take no further action. (This tends to be set to *false* if you are using the *Inbox* to record what requests caused current state only and not de-duplicate).
+* **Scope**: This indicates the type of request (*Command* or *Event*) to store in the *Inbox*. By default this is set to **InboxScope.All** and captures everything but you can be explicit and just capture **InboxScope.Commands** or **InboxScope.Events**. (This tends to be set to **InboxScope.Commands** when only commands cause changes to state that are not idempotent).
+* **Context**: Used to uniquely identify receipt of this request via this handler. If you are recording *Events* and have multiple handlers, then the first event handler to receive the message will block the others from doing so, unless you disambiguate the handler identity by supplying a context method.
+
+A typical *Inbox* configuration for MySQL would be:
+
+``` csharp
+private static IHostBuilder CreateHostBuilder(string[] args) =>
+    Host.CreateDefaultBuilder(args)
+        .ConfigureServices(hostContext, services) =>
+        {
+            ConfigureBrighter(hostContext, services);
+        }
+
+private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
+{
+    services.AddServiceActivator(options =>
+        { ...  })
+        .UseExternalInbox(
+            new MySqlInbox(new MySqlInboxConfiguration("server=localhost; port=3306; uid=root; pwd=root; database=Salutations", "Inbox");
+            new InboxConfiguration(
+                scope: InboxScope.Commands,
+                onceOnly: true,
+                actionOnExists: OnceOnlyAction.Throw
+            )
+        );
+}
+
+...
+
+```
+Typically you would obtain the connection string for the Db from configuration (as opposed to hard coding the string), likewise for the table name for your *Inbox*.
+
 
 ### Running Service Activator
 
+To run *Service Activator* we add it as a [Hosted Service](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services?view=aspnetcore-6.0&tabs=visual-studio). 
+
+We provide the class **ServiceActivatorHostedService** for this in the NuGet package:
+
+* **Paramore.Brighter.ServiceActivator.Extensions.Hosting**
+
+The **ServiceActivatorHostedService** calls the **Dispatcher.Receive** method which starts message pumps for the configured *Subscriptions*.
+
+``` csharp
+private static IHostBuilder CreateHostBuilder(string[] args) =>
+    Host.CreateDefaultBuilder(args)
+        .ConfigureServices(hostContext, services) =>
+        {
+            ConfigureBrighter(hostContext, services);
+        }
+
+private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
+{
+    ...
+
+    services.AddHostedService<ServiceActivatorHostedService>();
+}
+
+...
+
+```
+
+On shutdown Brighter will allow the current *Request Handler* to complete, then end the message pump loop and exit. If you have long-running handlers it is possible that they will not complete in the default 5s for graceful shutdown of the MS Generic Host. In this case, you need to [increase the timeout](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-6.0#shutdowntimeout) of the host shutdown.
+
+``` csharp
+private static IHostBuilder CreateHostBuilder(string[] args) =>
+    Host.CreateDefaultBuilder(args)
+        .ConfigureServices(hostContext, services) =>
+        {
+            services.Configure<HostOptions>(options =>
+            {
+                options.ShutdownTimeout = TimeSpan.FromSeconds(20);
+            });
+            ConfigureBrighter(hostContext, services);
+        }
+
+private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
+{
+    ...
+
+    services.AddHostedService<ServiceActivatorHostedService>();
+}
+
+```
+
 ### A Complete Service Activator Example
 
+When all of the relevant configuration sections are added together, your code will look something like this, with variations for your transport and stores.
+
+``` csharp
+private static IHostBuilder CreateHostBuilder(string[] args) =>
+    Host.CreateDefaultBuilder(args)
+        .ConfigureServices(hostContext, services) =>
+        {
+            services.Configure<HostOptions>(options =>
+            {
+                options.ShutdownTimeout = TimeSpan.FromSeconds(20);
+            });
+            ConfigureBrighter(hostContext, services);
+        }
+
+private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
+{
+   var subscriptions = new Subscription[]
+    {
+        new RmqSubscription<GreetingMade>(
+            new SubscriptionName("paramore.sample.salutationanalytics"),
+            new ChannelName("SalutationAnalytics"),
+            new RoutingKey("GreetingMade"),
+            runAsync: true,
+            timeoutInMilliseconds: 200,
+            isDurable: true,
+            makeChannels: OnMissingChannel.Create), //change to OnMissingChannel.Validate if you have infrastructure declared elsewhere
+    };
+
+    var rmqConnection = new RmqMessagingGatewayConnection
+    {
+        AmpqUri = new AmqpUriSpecification(new Uri($"amqp://guest:guest@localhost:5672")),
+        Exchange = new Exchange("paramore.brighter.exchange")
+    };
+
+    var rmqMessageConsumerFactory = new RmqMessageConsumerFactory(rmqConnection);
+
+    services.AddServiceActivator(options =>
+        {
+            options.Subscriptions = subscriptions;
+            options.ChannelFactory = new ChannelFactory(rmqMessageConsumerFactory);
+            options.UseScoped = true;
+            options.HandlerLifetime = ServiceLifetime.Scoped;
+            options.MapperLifetime = ServiceLifetime.Singleton;
+            options.CommandProcessorLifetime = ServiceLifetime.Scoped;
+        })
+        .AutoFromAssemblies()
+        .UseExternalInbox(
+            new MySqlInbox(new MySqlInboxConfiguration("server=localhost; port=3306; uid=root; pwd=root; database=Salutations", "Inbox");
+            new InboxConfiguration(
+                scope: InboxScope.Commands,
+                onceOnly: true,
+                actionOnExists: OnceOnlyAction.Throw
+            )
+        )
+    
+    services.AddHostedService<ServiceActivatorHostedService>();
+
+}
+
+```
 
 ## Samples
 

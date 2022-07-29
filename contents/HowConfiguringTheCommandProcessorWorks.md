@@ -1,4 +1,4 @@
-# How Configuration Works
+# How Configuring the Command Processor Works
 
 TODO: Review for V9
 

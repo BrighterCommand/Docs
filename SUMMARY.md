@@ -5,35 +5,44 @@
 * [Show me the code!](/contents/ShowMeTheCode.md)
     * [Dispatching A Request](/contents/ShowMeTheCode.md#dispatching-a-request)
     * [Using an External Bus](/contents/ShowMeTheCode.md#using-an-external-bus)
+    * [Returning Query Results](/contents/ShowMeTheCode.md)
 * [Basic Concepts](/contents/BasicConcepts.md)
 
-## Configuration
+## Brighter Configuration
 
-* [Basic Configuration](/contents/BasicConfiguration.md)
-    * [Using .NET Core Dependency Injection](/contents/BasicConfiguration.md#using-net-core-dependency-injection)
-    * [Configuring the Command Processor](/contents/BasicConfiguration.md#configuring-the-command-processor)
-        *[Service Collection Extensions](/contents/BasicConfiguration.md#service-collection-extensions)
-            * [Adding Polly Policies](/contents/BasicConfiguration.md#adding-polly-policies)
-            * [Configuring Lifetimes](/contents/BasicConfiguration.md#configuring-lifetimes)
-        * [Brighter Builder Fluent Interface](/contents/BasicConfiguration.md#brighter-builder-fluent-interface)
-            * [Type Registration](/contents/BasicConfiguration.md#type-registration)
-            * [Using an External Bus](/contents/BasicConfiguration.md#using-an-external-bus)
-                * [Publications](/contents/BasicConfiguration.md#publications)
-                * [Transports & Gateways](/contents/BasicConfiguration.md#transports-and-gateways)
-                * [Transport NuGet Packages](/contents/BasicConfiguration.md#transport-nuget-packages)
-                * [Bus Example](/contents/BasicConfiguration.md#bus-example)
-                * [Retry and Circuit Breaker](/contents/BasicConfiguration.md#retry-and-circuit-breaker-with-an-external-bus)
-                * [Outbox Support](/contents/BasicConfiguration.md#outbox-support)
-        * [Putting It All Together](/contents/BasicConfiguration.md#putting-it-all-together)
-    * [Configuring the Service Activator](/contents/BasicConfiguration.md#configuring-the-service-activator)
-    * [Samples](/contents/BasicConfiguration.md#samples)
-* [How Configuration Works](/contents/HowConfigurationWorks.md)
-    * [What you need to provide](/contents/HowConfigurationWorks.md#what-you-need-to-provide)
-    * [Subscriber Registry](/contents/HowConfigurationWorks.md#subscriber-registry)
-    * [Handler Factory](/contents/HowConfigurationWorks.md#handler-factory)
-    * [Policy Registry](/contents/HowConfigurationWorks.md#policy-registry)
-    * [Request Context Factory](/contents/HowConfigurationWorks.md#request-context-factory)
-    * [Putting it all together](/contents/HowConfigurationWorks.md#putting-it-all-together)
+* [Basic Configuration](/contents/BrighterBasicConfiguration.md)
+    * [Using .NET Core Dependency Injection](/contents/BrighterBasicConfiguration.md#using-net-core-dependency-injection)
+    * [Configuring the Command Processor](/contents/BrighterBasicConfiguration.md#configuring-the-command-processor)
+        *[Command Processor Service Collection Extensions](/contents/BrighterBasicConfiguration.md#command-processor-service-collection-extensions)
+            * [Adding Polly Policies](/contents/BrighterBasicConfiguration.md#adding-polly-policies)
+            * [Configuring Lifetimes](/contents/BrighterBasicConfiguration.md#configuring-lifetimes)
+        * [Brighter Builder Fluent Interface](/contents/BrighterBasicConfiguration.md#brighter-builder-fluent-interface)
+            * [Type Registration](/contents/BrighterBasicConfiguration.md#type-registration)
+            * [Using an External Bus](/contents/BrighterBasicConfiguration.md#using-an-external-bus)
+                * [Publications](/contents/BrighterBasicConfiguration.md#publications)
+                * [Transports & Gateways](/contents/BrighterBasicConfiguration.md#transports-and-gateways)
+                * [Transport NuGet Packages](/contents/BrighterBasicConfiguration.md#transport-nuget-packages)
+                * [Bus Example](/contents/BrighterBasicConfiguration.md#bus-example)
+                * [Retry and Circuit Breaker](/contents/BrighterBasicConfiguration.md#retry-and-circuit-breaker-with-an-external-bus)
+                * [Outbox Support](/contents/BrighterBasicConfiguration.md#outbox-support)
+        * [Putting It All Together](/contents/BrighterBasicConfiguration.md#putting-it-all-together)
+    * [Configuring the Service Activator](/contents/BrighterBasicConfiguration.md#configuring-the-service-activator)
+        * [ServiceActivator Service Collection Extensions](/contents/BrighterBasicConfiguration.md#serviceactivator-service-collection-extensions)
+            * [Subscriptions](/contents/BrighterBasicConfiguration.md#subscriptions)
+            * [Gateway Connections & Channel Factories](/contents/BrighterBasicConfiguration.md#gateway-connections--channel-factories)
+            * [Configuring Service Activator Lifetimes](/contents/BrighterBasicConfiguration.md#configuring-service-activator-lifetimes)
+        * [Service Activator Brighter Builder Fluent Interface](/contents/BrighterBasicConfiguration.md#service-activator-brighter-builder-fluent-interface)
+            *[Inbox](/contents/BrighterBasicConfiguration.md#inbox)
+        * [Running Service Activator](/contents/BrighterBasicConfiguration.md#running-service-activator)
+        * [A Complete Service Activator Example](/contents/BrighterBasicConfiguration.md#a-complete-service-activator-example)
+    * [Samples](/contents/BrighterBasicConfiguration.md#samples)
+* [How Configuring the Command Processor Works](/contents/HowConfiguringTheCommandProcessorWorks.md)
+    * [What you need to provide](/contents/HowConfiguringTheCommandProcessorWorks.md#what-you-need-to-provide)
+    * [Subscriber Registry](/contents/HowConfiguringTheCommandProcessorWorks.md#subscriber-registry)
+    * [Handler Factory](/contents/HowConfiguringTheCommandProcessorWorks.md#handler-factory)
+    * [Policy Registry](/contents/HowConfiguringTheCommandProcessorWorks.md#policy-registry)
+    * [Request Context Factory](/contents/HowConfiguringTheCommandProcessorWorks.md#request-context-factory)
+    * [Putting it all together](/contents/HowConfiguringTheCommandProcessorWorksmd#putting-it-all-together)
 * [How Configuring a Dispatcher for an External Bus Works](/contents/HowConfiguringTheDispatcherWorks.md)
     * [Configuring the Dispatcher](/contents/HowConfiguringTheDispatcherWorks.md#configuring-the-dispatcher)
     * [Message Mappers](/contents/HowConfiguringTheDispatcherWorks.md#message-mappers)
@@ -46,7 +55,11 @@
 * [Kafka Configuration](/contents/KafkaConfiguration.md)
 * [Azure Service Bus Configuration](/contents/AzureServiceBusConfiguration.md)
 
-## Using Brighter
+## Darker Configuration
+
+* [Basic Configuration](/contents/DarkerBasicConfiguration.md)
+
+## Brighter Request Handlers & Middleware Pipelines
 
 * [How to Implement a Request Handler](/contents/ImplementingAHandler.md)
     * [What is the difference between a Command and an Event?](/contents/ImplementingAHandler.md#what-is-the-difference-between-a-command-and-an-event)
@@ -119,13 +132,19 @@
     * [Sqlite Inbox](/contents/SqliteInbox.md)
     * [Dynamo Inbox](/contents/DynamoInbox.md)
 
-## Monitoring
+## Darker Query Handlers
 
+* [How to Implement a Query Handler](/contents/ImplementAQueryHandler.md)
+
+## Health Checks & Observability
+
+* [Logging](/contents/Logging.md)
 * [Monitoring](/contents/Monitoring.md)
     * [Configuring Monitoring](/contents/Monitoring.md#configuring-monitoring)
     * [Config file](/contents/Monitoring.md#config-file)
     * [Handler configuration](/contents/Monitoring.md#handler-configuration)
     * [Monitor message format](/contents/Monitoring.md#monitor-message-format)
+* [Health Checks](/contents/HealthChecks.md)
 
 ## Under the Hood 
 
