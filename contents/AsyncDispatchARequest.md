@@ -70,8 +70,7 @@ await commandProcessor.SendAsync(new GreetingCommand("Ian"));
 
 Brighter supports the cancellation of asynchronous operations.
 
-The asynchronous methods: **SendAsync**, **PublishAsync**, and **PostAsync** all accept a **CancellationToken** and pass this token down the pipeline. The parameter defaults to null where the call does
-not intend to cancel.
+The asynchronous methods: **SendAsync**, **PublishAsync**, and **PostAsync** all accept a **CancellationToken** and pass this token down the pipeline. The parameter defaults to default(CancellationToken) where the call does not intend to cancel.
 
 The responsibility for checking for a cancellation request lies with the individual handlers, which must determine what action to take if cancellation had been signalled.
 
