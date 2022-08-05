@@ -55,10 +55,8 @@ separation](https://martinfowler.com/bliki/CommandQuerySeparation.html) so a Com
 
 This in turn leads to a set of questions that we need to answer about common scenarios:
 
--   How do I handle failure? With no return value, what do I do if my  handler fails
--   How do I pass information back to the caller? Creation scenarios
-    particularly seem to require the caller knows about identies for
-    created entities.
+-   How do I handle failure? With no return value, what do I do if my  handler fails?
+-   How do I communicate the outcome of a command? 
 
 We discuss these issues below.
 
@@ -67,32 +65,43 @@ We discuss these issues below.
 If we don\'t allow return values, what do you do on failure?
 
 -   The basic failure strategy is to throw an exception. This will terminate the request handling pipeline.
--   If you want Internal Bus support for [Retry, and Circuit Breaker](PolicyRetryAndCircuitBreaker.html) you can use our support for [Polly](https://github.com/App-vNext/Polly) Policies
--   If you want to Requeue (with Delay) to an External Bus, you can throw a **DeferMessageAction** exception.
+-   If you want *Internal Bus* support for [Retry, and Circuit Breaker](PolicyRetryAndCircuitBreaker.html) you can use our support for [Polly](https://github.com/App-vNext/Polly) Policies
+-   If you want to Requeue (with Delay) to an *External Bus*, you should throw a **DeferMessageAction** exception.
 -   Finally you can use our support for a [Fallback](PolicyFallback.html) handler to provide backstop exception handling.
 -   You can also build your own exception handling into your [Pipeline](BuildingAPipeline.html).
 
 We discuss these options in more detail in [Handler Failure](/contents/HandlerFailure.md).
 
-## Passing Information to the Caller
+## Communicating the Outcome of a Command
 
-Sometimes you need to provide information to the caller about the success of the operation. The most common requirement is the Identity of a new created Entity so that you can query for it. For example you are
-implementing a REST API and in response to a POST request you create a new entity and want to return the entity body in the HTTP response body.
+Sometimes you need to provide information to the caller about the outcome of a *Command*, instead of listening for an *Event* an. 
 
-The best approach is to generate the Identity to use for the new Entity and pass that as a parameter on the **Command**, such as Guid or Hi-Lo identity.
+How do you communicate the outcome of handling a *Command*? There are two options, which depend on circumstance:
 
-But what if you are not be able to do this or want to support it for performance reasons?
+* Raise an *Event*
+* Update a field on the *Command*
 
-In that case add a property to the **Command** that you can initialize from the Handler, for example create a **NewEntityIdentity** property in your command that you write the new entity\'s identity to in the
-Handler, and then inspect the property in your **Command** in the calling code after the call to **commandProcessor.Send(command)** completes.
+### Raising an Event
+
+This approach let's you take action in response to a *Command* by raising an *Event* within your handler using **CommandProcessor.Publish** or via an *External Bus* using **CommandProcessor.Post/CommandProcessor.DepositPost**.
+
+If you use an **Internal Bus** these handlers will run immediately, in their own pipeline, before your handler exits. If you use an **External Bus** you offload the work to another process. 
+
+### Update a field on the Command
+
+If you are using an *Internal Bus* and need a return value from a *Command* you will note that **CommandProcessor.Send** has a void return value, so you cannot return a value from the handler.
+
+What happens if the caller needs to know the outcome, and can't be signalled via an *Event*?
+
+In that case add a property to the **Command** that you can initialize from the Handler. As an example, what happens if you need to return the identity of a newly created entity, so that you can use **Darker** to retrieve its details? In this case you can create a **NewEntityIdentity** property in your command that you write a newly created entity\'s identity to in the Handler, and then inspect the property in your **Command** in the calling code after the call to **commandProcessor.Send(command)** completes.
+
+You can think of these as *out* parameters.
 
 ``` csharp
 var createTaskCommand = new CreateTaskCommand();
 commandProcessor.Send(createTaskCommand);
 var newTaskId = createTaskCommand.TaskId;
 ```
-
-Note that you cannot use this strategy with **commandProcessor.Post(command)** as you have no way to update the **Command** in process.
 
 ## Using the base class when dispatching a message
 
