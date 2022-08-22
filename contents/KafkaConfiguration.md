@@ -183,19 +183,19 @@ The following example shows how a subscription might be configured:
 		)
 	};
 		
-		//create the gateway
-		var consumerFactory = new KafkaMessageConsumerFactory(
-		new KafkaMessagingGatewayConfiguration {...} // see connection information above
-		);
+	//create the gateway
+	var consumerFactory = new KafkaMessageConsumerFactory(
+	new KafkaMessagingGatewayConfiguration {...} // see connection information above
+	);
 
-		services.AddServiceActivator(options =>
-		{
-		options.Subscriptions = subscriptions;
-		options.ChannelFactory = new ChannelFactory(consumerFactory);
-		}).AutoFromAssemblies();
+	services.AddServiceActivator(options =>
+	{
+	options.Subscriptions = subscriptions;
+	options.ChannelFactory = new ChannelFactory(consumerFactory);
+	}).AutoFromAssemblies();
 
 
-		services.AddHostedService<ServiceActivatorHostedService>();
+	services.AddHostedService<ServiceActivatorHostedService>();
 }
 ```
 
