@@ -210,7 +210,7 @@ It is important to understand how Brighter manages the **offset** of any **parti
 	- A busy consumer may not flush on every increment of the **CommitBatchSize**, as it may need to wait for the last flush to finish. 
 	- We won't flush again until we cross the next multiple of the **CommitBatchSize**. For example if the **CommitBatchSize** is 10, and the handler is busy so that by the time the buffer flushes there are 13 pending commits in the buffer, the buffer would only flush 10, and 3 would remain in the buffer; we would not flush the next 10 until the buffer hit 20. 
 	- If your **CommitBatchSize** is too low for the throughput, you might find that you miss a flush interval, because you are already flushing. 
-	- If you miss a flush on a busy consumer, your buffer will begin to back up. If this continues, you will not caThis would lead to you continually being "backed up".
+	- If you miss a flush on a busy consumer, your buffer will begin to back up. If this continues, you will not catch up with subsequent flushes, which only flush the **CommitBatchSize** each time. This would lead to you continually being "backed up".
 	- For this reason you must set a **CommitBatchSize** that keeps pace with the throughput of your consumer. Use a larger **CommitBatchSize** for higher throughput consumers, smaller for lower.
 - We sweep uncommitted offsets at an interval. This triggers a flush if no flush has run since the last flush plus the *Subscription's* **SweepUncommittedOffsetsIntervalMs**. 
 	- A sweep will not run if a flush is currently running (and will in turn block a flush).
