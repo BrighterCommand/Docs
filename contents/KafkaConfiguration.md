@@ -190,8 +190,8 @@ The following example shows how a subscription might be configured:
 
 	services.AddServiceActivator(options =>
 	{
-	options.Subscriptions = subscriptions;
-	options.ChannelFactory = new ChannelFactory(consumerFactory);
+		options.Subscriptions = subscriptions;
+		options.ChannelFactory = new ChannelFactory(consumerFactory);
 	}).AutoFromAssemblies();
 
 
