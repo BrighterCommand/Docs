@@ -93,7 +93,7 @@ We allow you to configure properties for both Brighter and the Confluent .NET cl
 - **QueueBufferingMaxKbytes**: Maximum total message size sum allowed on the producer queue. Defaults to 1048576 bytes (so for 10 messages about 104Kb per message).
 - **ReplicationFactor**: What is the replication factor? How many nodes is the topic copied to on the broker? Defaults to 1.
 - **RetryBackoff**: The backoff time before retrying a message send. Defaults to 100.
-- **RequestTimeoutMs**: The ack timeout of the producer request. This value is only enforced by the broker nd relies on Replication being != AcksEnum.None. Defaults to 500.
+- **RequestTimeoutMs**: The ack timeout of the producer request. This value is only enforced by the broker and relies on Replication being != AcksEnum.None. Defaults to 500.
 - **TopicFindTimeoutMs**: How long to wait when asking for topic metadata. Defaults to 5000.
 - **TransactionalId**: The unique identifier for this producer, used with transactions
 
@@ -217,8 +217,8 @@ It is important to understand how Brighter manages the **offset** of any **parti
 	- A sweep flushes a **CommitBatchSize** worth of commits.
 	- It is intended for low-throughput consumers where commits might otherwise languish waiting for a batch-size increment.
 	- It is *not* intended to flush a buffer that backs up because the **CommitBatchSize** is too low, and won't function for that. Fix the **CommitBatchSize** instead.
-- On a re-balance where we stop processing a **partition** on an individual consumer, we flush the remaining **offsets&& for the revoked **partitions**.
-	- We configure the consumer to use sticky assignment strategy to avoid unnecessary re-assignments (see the [Confluent documentation](// https://www.confluent.io/blog/cooperative-rebalancing-in-kafka-streams-consumer-ksqldb/)). 
+- On a re-balance where we stop processing a **partition** on an individual consumer, we flush the remaining **offsets** for the revoked **partitions**.
+	- We configure the consumer to use sticky assignment strategy to avoid unnecessary re-assignments (see the [Confluent documentation](https://www.confluent.io/blog/cooperative-rebalancing-in-kafka-streams-consumer-ksqldb/)). 
 - On a consumer shutdown we flush the buffer to commit all **offsets**.
 
 ## Requeue with Delay
