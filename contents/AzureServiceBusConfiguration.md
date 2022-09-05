@@ -16,7 +16,7 @@ The connection to ASB id defined by an **IServiceBusClientProvider**, Brighter p
 
 * **ServiceBusVisualStudioCredentialClientProvider**: A client provider that uses Visual Studio Credential to authenticate.
 
-In Brighter's implimentation of the Messaging Gateway Publications and Subscvriptions have their own Individual configuration.
+In Brighter's implementation of the Messaging Gateway *Publications* and *Subscriptions* have their own Individual configuration.
 
 ## Publication
 
@@ -61,7 +61,7 @@ We support a number of ASB specific *Subscription* options:
 
 * **DefaultMessageTimeToLive**: How long messages sit in the queue before they expire **default:** 1 minute
 
-* **SqlFilter**: A Sql Filter to apply to the subscription see [Topic Filters](https://docs.microsoft.com/en-us/azure/service-bus-messaging/topic-filters) **default:** none
+* **SqlFilter**: A Sql Filter to apply to the *subscription* see [Topic Filters](https://docs.microsoft.com/en-us/azure/service-bus-messaging/topic-filters) **default:** none
 
 
 This is a typical *Subscription* configuration in a Consumer application:
@@ -114,7 +114,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
 ## Complete Reject
 
-We use ASB's Subscription to surscribe to a Topic on a namespace.
+We use ASB's *Subscription* to surscribe to a Topic on a namespace.
 
 When we Complete a message, in response to a handler chain completing, we Complete the message on ASB using **messageReceiver.CompleteMessageAsync**. Note that we only Complete a message once we have completed running the chain and only if AckOnRead is set to false (as the messages is removed from the queue otherwise).
 
