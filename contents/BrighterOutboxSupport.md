@@ -28,7 +28,7 @@ in error, or raise a log to ensure that there will be manual compensation.
 
 **CommandProcessor.Post** still uses the **Outbox** to store messages you send, but you are not including them in the Db transaction scope, so you have no **guarantees**.
 
-If the failure was on the call to the transport, and not the write to the **Outbox**, you will still have a **Outboxe** entry that you can resend via manual compensation later. If the message is posted to the
+If the failure was on the call to the transport, and not the write to the **Outbox**, you will still have a **Outbox** entry that you can resend via manual compensation later. If the message is posted to the
 broker, it **must** have already been written to the **Outbox**.
 
 In you fail to write to the **Outbox**, but have successfully written the entity to the Db, you would need to compensate by reversing the write to the Db in a **Fallback** handler.
