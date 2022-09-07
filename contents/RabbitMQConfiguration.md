@@ -6,7 +6,7 @@ RabbitMQ is OSS message-oriented-middleware and is [well documented](https://www
 
 RabbitMQ offers an API that defines primitives used to configure the middleware used for messaging:
 
-- **Exchange**: A routing table. Different types of exchanges route messages differently
+- **Exchange**: A routing table. Different types of exchanges route messages differently. An entry in the table is a **Routing Key**.
 - **Queue**: A store-and-forward queue over which a consumer receives messages. A message is locked whilst a consumer has read it, until they ack it, upon which it is deleted from the queue, or nack it, upon which it is requeued or sent to a DLQ.
 - **Binding**: Adds a queue as a target for a routing rule on an exchange. The routing key is used for this on a direct exchange (on the default exchange the routing key is the queue name).
 
