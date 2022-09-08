@@ -65,20 +65,16 @@
     * [What is the difference between a Command and an Event?](/contents/ImplementingAHandler.md#what-is-the-difference-between-a-command-and-an-event)
 * [How to Implement an Async Request Handler](/contents/ImplementingAsyncHandler.md)
 * [Dispatching Requests](/contents/DispatchingARequest.md)
+    * [Usage](/contents/DispatchingARequest.md#usage)
     * [Registering a Handler](/contents/DispatchingARequest.md#registering-a-handler)
     * [Dispatching Requests](/contents/DispatchingARequest.md#dispatching-requests)
-    * [Building a Command Dispatcher](/contents/DispatchingARequest.md#building-a-command-dispatcher)
-    * [Returning results to the caller](/contents/DispatchingARequest.md#returning-results-to-the-caller)
-    * [Handling Failure](/contents/DispatchingARequest.md#handling-failure)
-    * [Passing Information to the Caller](/contents/DispatchingARequest.md#passing-information-to-the-caller)
-    * [Using the base class when dispatching a message](/contents/DispatchingARequest.md#using-the-base-class-when-dispatching-a-message)
 * [Dispatching An Async Request](/contents/AsyncDispatchARequest.md)
     * [Usage](/contents/AsyncDispatchARequest.md#usage)
     * [Registering a Handler](/contents/AsyncDispatchARequest.md#registering-a-handler)
-        * [Pipelines Must be Homogeneous](/contents/AsyncDispatchARequest.md#pipelines-must-be-homogeneous)
     * [Dispatching Requests](/contents/AsyncDispatchARequest.md#dispatching-requests)
-    * [Do Not Block When Calling *Async Methods](/contents/AsyncDispatchARequest.md#do-not-block-when-calling-async-methods)
-    * [Internal Bus & Asynchronous vs. External Bus](/contents/AsyncDispatchARequest.md#internal-bus--asynchronous-vs-external-bus)
+* [Returning results from a handler](/contents/ReturningResultsFromAHandler.md)
+    * [Handling Failure](/contents/ReturningResultsFromAHandler.md#handling-failure)
+    * [Communicating the Outcome](/contents/ReturningResultsFromAHandler.md#communicating-the-outcome-of-a-command)
 * [Using an External Bus ](/contents/ImplementingExternalBus.md)
     * [Brighter's External Bus Architecture](/contents/ImplementingExternalBus.md#brighters-external-bus-architecture)
     * [Sending via the External Bus](/contents/ImplementingExternalBus.md#sending-via-the-external-bus)
@@ -145,6 +141,11 @@
     * [Handler configuration](/contents/Monitoring.md#handler-configuration)
     * [Monitor message format](/contents/Monitoring.md#monitor-message-format)
 * [Health Checks](/contents/HealthChecks.md)
+
+## FAQ
+* [FAQ](/contents/FAQ.md)
+   * [Dispatching a list of requests](/contents/FAQ.md#iterating-over-a-list-of-requests-to-dispatch-them)
+   * [Internal Bus & Asynchronous vs. External Bus](/contents/AsyncDispatchARequest.md#internal-bus--asynchronous-vs-external-bus)
 
 ## Under the Hood 
 
