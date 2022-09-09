@@ -8,26 +8,27 @@ In the following example code we register a handler, create a command processor,
 
 
 ``` csharp
-  public class Program
+    public class Program
     {
-        private static void Main()
+        private static async Task Main(string[] args)
         {
             var host = Host.CreateDefaultBuilder()
-                .ConfigureServices((context, collection) =>
-                {
-                    collection.AddBrighter()
-                        .AutoFromAssemblies();
-                })
+                .ConfigureServices((hostContext, services) =>
+
+                    {
+                        services.AddBrighter()
+                            .AutoFromAssemblies();
+                    }
+                )
                 .UseConsoleLifetime()
                 .Build();
-
+            
             var commandProcessor = host.Services.GetService<IAmACommandProcessor>();
+            
+            await commandProcessor.SendAsync(new GreetingCommand("Ian"));
 
-            commandProcessor.Send(new GreetingCommand("Ian"));
-
-            host.WaitForShutdown();
+            await host.RunAsync();
         }
-   }
 ```
 
 ## Registering a Handler
@@ -38,7 +39,7 @@ Brighter's **HostBuilder** support provides **AutoFromAssemblies** to register a
 
 ### Pipelines Must be Homogeneous
 
-Brighter only supports pipelines that are solely **IHandleRequestsAsync** or **IHandleRequests**.
+Brighter only supports pipelines that are solely **IHandleRequestsAsync** or **IHandleRequests**. In particular, note that middleware (attributes on your handler) must be of the same type as the rest of your pipeline. A common mistake is to **UsePolicy** when you mean **UsePolicyAsync**.
 
 ## Dispatching Requests
 
