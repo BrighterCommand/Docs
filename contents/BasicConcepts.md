@@ -1,10 +1,19 @@
 # Basic Concepts
 
-TODO: Some high level ideas to help folks navigate the docs. May just link to other docs. 
+## Command
+
+A command is an instruction to carry out work. It exercises the domain and results in a change of state.
 
 - Query
 - Query Handler (includes request and response types)
 - Request (includes Command and Event)
-- Request Handler 
-- Internal Bus (includes middleware pipeline)
-- External Bus (includes MoM and Transport)
+
+## Request Handler 
+
+A handler is the entry point to domain code. It receives a request, which may be a [Command](#command) or an Event. A handler may be the target of an Internal Bus or an External Bus
+
+## Internal Bus 
+
+(includes middleware pipeline)
+
+## External Bus (includes MoM and Transport)
