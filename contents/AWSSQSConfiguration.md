@@ -151,3 +151,18 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
             ... //see Basic Configuration
         })
 ```
+
+### Ack and Nack
+
+As elsewhere, Brighter only Acks after your handler has run to process the message. We will Ack unless you throw a **DeferMessageAction**. See [Handler Failure](/contents/HandlerFailure.md) for more.
+
+An Ack will delete the message from the SQS queue using the SDK's **DeleteMessageAsync**.
+
+In response to a DeferMessageAction we will requeue, using the SDK's **ChangeMessageVisibilityAsync** to make the message available again to other consumers.
+
+On a Nack, we will move the message to a DLQ, if there is one. We Nack when we exceed the requeue count for a message, or we raise a ConfigurationException.
+
+
+
+
+
