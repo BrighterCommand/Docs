@@ -1,7 +1,5 @@
 # Outbox Support
 
-TODO: This needs enhancement to support V9
-
 Brighter supports storing messages that are sent via an External Bus in an Outbox, as per the [Outbox Pattern](/contents/OutboxPattern.md)
 
 This allows you to determine that a change to an entity owned by your application should always result in a message being sent i.e. you have Transactional Messaging.
@@ -47,12 +45,62 @@ your control. You can safely ignore Db errors on this policy within this approac
 
 You can then call **CommandProcessor.ClearPostBox** to flush one or more messages from the **Outbox** to the broker. We support multiple messages as your entity write might possibly involve sending multiple downstream messages, which you want to include in the transaction. 
 
-It provides a stronger guarantee than the **CommandProcessor.Post** outside Db transaction with Retry approach as the write to the **Outbox** shares a transaction with the persistance of entity state.
+It provides a stronger guarantee than the **CommandProcessor.Post** outside Db transaction with Retry approach as the write to the **Outbox** shares a transaction with the persistence of entity state.
 
-### Immediate or Sweeper
 
-You can call **CommandProcessor.ClearPostBox** directly in your handler, after the Db transaction completes. This has the lowest latency. You are responsible for tracking the ids of messages that you wish to send in **CommandProcessor.ClearPostBox**, we do not maintain this state for you. Note that you cannnot guarantee that this will succeed, although you can Retry. We use **CommandProcessor.RETRYPOLICY** on the write to the Broker, and you should retry errors writing to the Broker in that policy. However, as the message is now in the **Outbox** you can compensate for eventual failure to write to the Broker by replaying the message from the **MessageStore** at a later time.
+## Participating in Transactions
 
-Alternatively you can use an •Outbox Sweeper* on a dedicated threat that looks for messages that need to be dispatched and sends them. This has lower latency, but because it keeps trying to send the messages until it succeeds is the recommended approach to *Guranteed, At Least Once, Delivery*.
+Brighter has the functionality to allow the  **Outbox** to participate in the database transactions of your application so that you can ensure that distributed requests will be persisted (or fail to persist) inline with application changes.
 
-You can combine these by using immediate clearance, and relying on the Outbox Sweeper to pick up anything that was missed. In that case make sure that you ignore errors caused by a failed call to **CommandProcessor.ClearPostBox** in your handler.
+To have the Brighter **Outbox** participate in Database transactions the command process must be built specifying a **IAmABoxTransactionConnectionProvider**, this connection provider will be used when **CommandProcessor.DepositPost** is called and if there is an active transactions the **Outbox** will participate in the active transaction provider by the specified **IAmABoxTransactionConnectionProvider**.  
+
+It is important to note that **CommandProcessor.Clear** and **CommandPorcessor.Post** will never participate in transactions as the purpose transaction participation is to ensure that **Outbox** messages are committed (or fail to commit) in the same transaction as application entity changes.
+
+Below is an example using a UnitOfWork that wraps the database connection for your application
+``` csharp
+//Begin Database transaction
+unitOfWork.BeginTransaction();
+
+try
+{
+    //Update applicationEntities
+    var updatedContact = contactsService.UpdateContact(contact);
+
+    //Deposit the message in the outbox
+    commandProcess.DepositPost(updatedContact.ToBrighterMessage());
+
+    //Commit Transaction
+    unitOfWork.CommitTransaction();
+}
+catch(Exception e)
+{
+    // If there was an error during processing, rollback all changes
+    unitOfWork.RollbackTransaction();
+}
+```
+
+## Implicit or Explicit clearing of messages from the outbox
+
+There are two approaches to dispatching messages from Brighter's **Outbox**
+  * Implicitly: This relies on a **Sweeper** to dispatch messages out of process
+  * Explicitly: This ensures that your message is sent sooner but will processing time to your application code.
+  
+To explicitly clear a message you can call **CommandProcessor.ClearOutbox** directly in your handler, after the Db transaction completes. This has the lowest latency. You are responsible for tracking the ids of messages that you wish to send in **CommandProcessor.ClearOutbox**, we do not maintain this state for you. Note that you cannnot guarantee that this will succeed, although you can Retry. We use **CommandProcessor.RETRYPOLICY** on the write to the Broker, and you should retry errors writing to the Broker in that policy. However, as the message is now in the **Outbox** you can compensate for eventual failure to write to the Broker by replaying the message from the **MessageStore** at a later time.
+
+To implicitly clear messages from your outbox, configure a **Outbox Sweeper** to listen to your **Outbox** and dispatch messages for you.  Once an **Outbox Sweeper** is running you no longer need to call **CommandProcessor.ClearOutbox** however you still have the choice to if you feel a specific message is time sensitive.
+
+## Outbox Sweeper
+
+The **Outbox Sweeper** is an out of process service that monitors an **Outbox** and dispatches messages that have yet to be dispatches. Using **Outbox Sweeper** has a lower latency impact for your application, but because it keeps trying to send the messages until it succeeds is the recommended approach to *Guranteed, At Least Once, Delivery*.
+
+The benefits of using an **Outbox Sweeper** are:
+  * If there is a failure dispatch a message after it is committed to the **Outbox** it will be retried until it is dispatches
+  * The ability to choose between the implicit and explicit clearing of messages
+
+The **Timed Outbox Sweeper** has the following configurables
+  * TimerInterval: The amount of seconds to wait between checks for undispatches messages (default: 5)
+  * MinimumMessageAge: The age a message (in miliseconds) that a messages should be before the **OutboxSweeper** should attempt to dispatch it. (default: 5000)
+  * BatchSize: The number of messages to attempt to dispatch in each check (default: 100)
+  * UseBulk: Use Bulk dispatching of messages on your **Messaging Gateway** (default: false), note: not all **messaging Gateway**s support Bulk dispatching.
+
+It is important to note that the lower the Minimum Message age is the more likely it is that your message will be dispatches more than once (as if you are explicitly clearing messages your application may have instructed the clearing of a message at the same time as the **Outbox Sweeper**)
