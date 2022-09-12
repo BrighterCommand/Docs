@@ -24,7 +24,7 @@ An event may be used to indicate the outcome of a [command](#command).
 
 ## Event Stream
 
-In [message oriented middleware](#message-oriented-middleware-mom), an event stream delivers [messages](#message) (or records) via a steam. A consumer reads the stream at a specific offset from the start. Consumers can store their offsets to resume reading the stream for where they left off, or reset their offset to re-read a stream. Consumers neither lock, nor delete messages from the stream. For consuming apps to scale, the stream can be partitioned, allowing offsets to be maintained of a partition of the stream. By using separate consumer threads or processes to read a stream, an application can ensure that it is able to reduce the latency of reading the stream.
+In [message oriented middleware](#message-oriented-middleware-mom), an event stream delivers [messages](#message) (or records) via a steam. A consumer reads the stream at a specific offset from the start. Consumers can store their offsets to resume reading the stream for where they left off, or reset their offset to re-read a stream. Consumers neither lock, nor delete messages from the stream. For consuming apps to scale, the stream can be partitioned, allowing offsets to be maintained of a partition of the stream. By using separate consumer threads or processes to read a partition, an application can ensure that it is able to reduce the latency of reading the stream.
 
 Examples: Kafka, Kinesis, Redis Streams
 
