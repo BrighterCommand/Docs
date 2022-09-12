@@ -1,5 +1,5 @@
-# Brighter
+# Brighter and Darker Documentation
 
-Libraries and supporting examples for use with the Ports and Adapters and CQRS architectural styles for .NET, with support for an External Bus.
+Documentation for the Brighter and Darker projects.
 
-[View the Project on GitHub](https://github.com/BrighterCommand)
+The documentation can be used as is, by cloning the repo and viewing the markdown files, however for convenience the documentation is made available via [GitBook](https://brightercommand.gitbook.io/paramore-brighter-documentation/).
