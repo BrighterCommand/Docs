@@ -74,7 +74,7 @@ It is analogous to a method on an ASP.NET Controller.
 
 ## Query Processor
 
-In Darker, a query processor allows you to use the *Query Object Pattern* to separate caller from the executor, typically when separating the code required to execute a query on a specific database/backing store from the parameters of that query. It acts both as a *Query Dispatcher* which allows the separation of the parameters of a [query](#query) from the [handler](#query-handler)) that executes that query and a *Query Processor* that allows you to use a middleware [pipeline](#pipeline) to provide additional and re-usable behaviors when processing that query. 
+In Darker, a query processor allows you to use the *Query Object Pattern* to separate caller from the executor, typically when separating the code required to execute a query on a specific database/backing store from the parameters of that query. It acts both as a *Query Dispatcher* which allows the separation of the parameters of a [query](#query) from the [handler](#query-handler) that executes that query and a *Query Processor* that allows you to use a middleware [pipeline](#pipeline) to provide additional and re-usable behaviors when processing that query. 
 
 The Query Processor dispatches to an [Internal Bus](#internal-bus).
 
@@ -90,7 +90,7 @@ In Brighter, either a [command](#command) or an [event](#event), a request for t
 
 ## Request Handler 
 
-A handler is the entry point to domain code. It receives a request, which may be a [command](#command) or an [event](#event). A handler is always part of an [internal bus](#internal-bus) even if the call to the handler was triggered by sending a [message](#message) to an [external bus](#external-bus). As such a handler forms part of a [pipeline](#pipeline).
+A handler is the entry point to domain code. It receives a request, which may be a [command](#command) or an [event](#event). A handler is always part of an [internal bus](#internal-bus) even when the call to the handler was triggered by a [service activator](#service-activator) receiving a [message](#message) sent by another process to an [external bus](#external-bus). As such a handler forms part of a [pipeline](#pipeline).
 
 It is analogous to a method on an ASP.NET Controller.
 
@@ -102,7 +102,11 @@ To enforce [Command-Query Separation](#command-query-separation-cqs) Brighter ha
 
 Where the request changes state, Brighter models this as a [command](#command) and a matching [event](#event) which describes the change. (See [Returning Results from a Handler](/contents/ReturningResultsFromAHandler.md) for a discussion of returning a response directly to the sender of a Command).
 
-Where the request queries for state, Darker models this as a [query](#query), which returns a response directly to the caller.
+Where the request queries for state, Darker models this as a [query](#query), which returns a [result](#result) directly to the caller.
+
+A common approach is to change state via Brighter and query for the results of that state change via Darker (and return those results to the caller). 
+
+If the call to Brighter results in a new entity, and the id for the new entity was not given to the command (for example it relies on the Database generating the id), a common problem is how to then request the details of that newly created entity via Darker. A simple solution is to update the command with the id (as a conceptual *out* parameter), and then retrieve it from there to use in the Darker query. See [update a field on a command](/contents/ReturningResultsFromAHandler.md#update-a-field-on-the-command) for more. 
 
 ## Service Activator
 
