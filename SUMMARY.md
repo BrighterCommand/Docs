@@ -72,7 +72,7 @@
     * [Usage](/contents/AsyncDispatchARequest.md#usage)
     * [Registering a Handler](/contents/AsyncDispatchARequest.md#registering-a-handler)
     * [Dispatching Requests](/contents/AsyncDispatchARequest.md#dispatching-requests)
-* [Returning results from a handler](/contents/ReturningResultsFromAHandler.md)
+* [Returning results from a Handler](/contents/ReturningResultsFromAHandler.md)
     * [Handling Failure](/contents/ReturningResultsFromAHandler.md#handling-failure)
     * [Communicating the Outcome](/contents/ReturningResultsFromAHandler.md#communicating-the-outcome-of-a-command)
 * [Using an External Bus ](/contents/ImplementingExternalBus.md)
