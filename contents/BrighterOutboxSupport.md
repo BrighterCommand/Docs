@@ -79,7 +79,7 @@ catch(Exception e)
 }
 ```
 
-## Implicit or Explicit clearing of messages from the outbox
+## Implicit or Explicit Clearing of Messages from the Outbox
 
 There are two approaches to dispatching messages from Brighter's **Outbox**
   * Implicitly: This relies on a **Sweeper** to dispatch messages out of process
