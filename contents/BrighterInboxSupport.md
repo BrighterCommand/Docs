@@ -60,6 +60,44 @@ There are two versions of the attribute: sync and async. Ensure that you choose 
 
 Your inbox is configured as part of the Brighter extensions to ServiceCollection. See [Inbox Configuration](/contents/BrighterBasicConfiguration.md#inbox) for more.
 
+### Inbox Builder
+
+Brighter contains DDL to configure your Inbox. For each supported database we include an **InboxBuilder**. The Inbox Builder **GetDDL** which allows you to obtain the DDL statements required to create an Inbox. You can use this as part of your application start up to configure the Inbox if it does not already exist.
+
+The following example shows creation of a MySql inbox.
+
+We assume that INBOX_TABLE_NAME is a constant, shared with the code that configures your inbox.
+
+``` csharp
+
+private static void CreateInbox(IConfiguration config, IHostEnvironment env)
+{
+    try
+    {
+        var connectionString = config.GetConnectionString("Salutations")
+
+        using var sqlConnection = new MySqlConnection(connectionString);
+        sqlConnection.Open();
+
+        using var existsQuery = sqlConnection.CreateCommand();
+        existsQuery.CommandText = MySqlInboxBuilder.GetExistsQuery(INBOX_TABLE_NAME);
+        bool exists = existsQuery.ExecuteScalar() != null;
+
+        if (exists) return;
+
+        using var command = sqlConnection.CreateCommand();
+        command.CommandText = MySqlInboxBuilder.GetDDL(INBOX_TABLE_NAME);
+        command.ExecuteScalar();
+    }
+    catch (System.Exception e)
+    {
+        Console.WriteLine($"Issue with creating Inbox table, {e.Message}");
+        throw;
+    }
+}
+
+```
+
 ## Clearing the Inbox
 
 As of V9, clearing the inbox is deferred to the implementer i.e. Brighter will not do this for you. Typically this involves creating a cron job, or agent, that clears inbox entries that are outside of the window during which they may be resent.
