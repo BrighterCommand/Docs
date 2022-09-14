@@ -104,3 +104,63 @@ The **Timed Outbox Sweeper** has the following configurables
   * UseBulk: Use Bulk dispatching of messages on your **Messaging Gateway** (default: false), note: not all **messaging Gateway**s support Bulk dispatching.
 
 It is important to note that the lower the Minimum Message age is the more likely it is that your message will be dispatches more than once (as if you are explicitly clearing messages your application may have instructed the clearing of a message at the same time as the **Outbox Sweeper**)
+
+### Outbox Configuration
+
+Your outbox is configured as part of the Brighter extensions to ServiceCollection. See [Outbox Configuration](/contents/BrighterBasicConfiguration.md#outbox-support) for more.
+
+### Outbox Builder
+
+Brighter contains DDL to configure your Outbox. For each supported database we include an **OutboxBuilder**. The Inbox Builder **GetDDL** which allows you to obtain the DDL statements required to create an Outbox. You can use this as part of your application start up to configure the Outbox if it does not already exist.
+
+The following example shows creation of a MySql outbox.
+
+We assume that OUTBOX_TABLE_NAME is a constant, shared with the code that configures your inbox.
+
+``` csharp
+
+public static IHost CreateOutbox(this IHost webHost)
+{
+	using (var scope = webHost.Services.CreateScope())
+	{
+	var services = scope.ServiceProvider;
+	var env = services.GetService<IWebHostEnvironment>();
+	var config = services.GetService<IConfiguration>();
+
+	CreateOutbox(config, env);
+	}
+
+	return webHost;
+}
+
+private static void CreateOutbox(IConfiguration config, IWebHostEnvironment env)
+{
+	try
+	{
+	   var connectionString = config.GetConnectionString("Greetings");
+
+	    using var sqlConnection = new MySqlConnection(connectionString);
+            sqlConnection.Open();
+
+            using var existsQuery = sqlConnection.CreateCommand();
+            existsQuery.CommandText = MySqlOutboxBuilder.GetExistsQuery(OUTBOX_TABLE_NAME);
+            bool exists = existsQuery.ExecuteScalar() != null;
+
+            if (exists) return;
+
+            using var command = sqlConnection.CreateCommand();
+            command.CommandText = MySqlOutboxBuilder.GetDDL(OUTBOX_TABLE_NAME);
+            command.ExecuteScalar();
+
+	}
+	catch (System.Exception e)
+	{
+	Console.WriteLine($"Issue with creating Outbox table, {e.Message}");
+	//Rethrow, if we can't create the Outbox, shut down
+	throw;
+	}
+}
+
+```
+
+
