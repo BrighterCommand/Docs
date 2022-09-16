@@ -1,26 +1,23 @@
 # How Configuring the Command Processor Works
 
-TODO: Review for V9
-
 Brighter does not have a dependency on an Inversion Of Control (IoC) framework. This gives you freedom to choose the DI libraries you want for your project.
 
-Instead we follow an approach outlined by Mark Seeman in his blog on a [DI Friendly
+We follow an approach outlined by Mark Seeman in his blog on a [DI Friendly
 Framework](http://blog.ploeh.dk/2014/05/19/di-friendly-framework/) and
 [Message Dispatching without Service
 Location](http://blog.ploeh.dk/2011/09/19/MessageDispatchingwithoutServiceLocation/).
 
 This means that we can support any approach to DI that you choose, provided you implement a range of interfaces that we require to create instances of your classes at runtime.
 
-For .NET Core`\s DI framework we provide the necessary implementation of these interfaces. We leave implementation for other DI frameworks to you.
+For .NET Core's DI framework we provide the implementation of these interfaces. If you are using that approach, just follow the outline in [Basic Configuration](/contents/BrighterBasicConfiguration.md). This chapter is 'interest only' at that point, and you don't need to read it. It may be helpful for debugging.
 
-This document explains  what you need to do to support an alternate DI framework.
+If you choose another DI framework, this document explains  what you need to do to support that DI framework.
 
-## What you need to provide
+## CommandProcessor Configuration Dependencies
 
 -   You need to provide a **Subscriber Registry** with all of the  **Command**s or **Event**s you wish to handle, mapped to their **Request Handlers**.
 -   You need to provide a **Handler Factory** to create your Handlers
--   You need to provide a **Policy Registry** if you intend to use [Polly](https://github.com/App-vNext/Polly) to support Retry and
-    Circuit-Breaker.
+-   You need to provide a **Policy Registry** if you intend to use [Polly](https://github.com/App-vNext/Polly) to support Retry and Circuit-Breaker.
 -   You need to provide a **Request Context Factory**
 
 ## Subscriber Registry
@@ -29,7 +26,9 @@ The Command Dispatcher needs to be able to map **Command**s or **Event**s to a *
 
 For a **Command** we expect one and only one **Request Handlers** for an event we expect many. 
 
-Register your handlers with the **Subscriber Registry**
+YOu can use our **SubcriberRegistry** regardless of your DI framework.
+
+Register your handlers with your **Subscriber Registry**
 
 ``` csharp
 var registry = new SubscriberRegistry();
@@ -47,16 +46,17 @@ var registry = new SubscriberRegistry()
 
 ## Handler Factory
 
-We don\'t know how to construct your handler so we call a factory, that you provide, to build your handler (and its entire dependency chain). 
+We don't know how to construct your handler so we call a factory, that you provide, to build your handler (and its entire dependency chain). 
 
-This factory needs to implement the interface:  **IAmAHandlerFactory**.
+Instead, we take a dependency on an interface for a handler factory, and you implement that. Within the handler factory you need to construct instances of your types in response to our request to create one.
 
-Brighter manages the lifetimes of handlers, as we consider the request pipeline to be a scope, and we will call your factory again asking to release those handlers once we have terminated the pipeline and finished processing the request. You should take appropriate action to clear up the handler and its dependencies in response to that call
+For this you need to implement the interface:  **IAmAHandlerFactory**.
 
-You can implement the Handler Factory using an IoC container, in your own code. 
+Brighter manages the lifetimes of handlers, as we consider the request pipeline to be a scope, and we will call your factory again informing that we have terminated the pipeline and finished processing the request. You should take any required action to clear up the handler and its dependencies in response to that call.
 
-For example using [TinyIoC
-Container](https://github.com/grumpydev/TinyIoC):
+You can implement the Handler Factory using an IoC container. This is what Brighter does with .NET Core 
+
+For example using [TinyIoC Container](https://github.com/grumpydev/TinyIoC):
 
 ``` csharp
 internal class HandlerFactory : IAmAHandlerFactory
@@ -82,9 +82,17 @@ internal class HandlerFactory : IAmAHandlerFactory
 
 ## Policy Registry
 
-If you intend to use a [Polly](https://github.com/App-vNext/Polly)
-Policy to support [Retry and Circuit-Breaker](PolicyRetryAndCircuitBreaker.html) then you will need to register the Policies in the **Policy Registry**. Registration requires a string as a key, that you will use in your \[UsePolicy\] attribute to choose the policy. We provide two keys:
-CommandProcessor.RETRYPOLICY and CommandProcessor.CIRCUITBREAKER.
+If you intend to use a [Polly](https://github.com/App-vNext/Polly) Policy to support [Retry and Circuit-Breaker](PolicyRetryAndCircuitBreaker.html) then you will need to register the Policies in the **Policy Registry**. 
+
+This is just the Polly **PolicyRegistry**.
+
+Registration requires a string as a key, that you will use in your [UsePolicy] attribute to choose the policy. 
+
+The two keys: CommandProcessor.RETRYPOLICY and CommandProcessor.CIRCUITBREAKER are used within Brighter to control our response to broker issues. You can override them if you wish to change our behavior from the default.
+
+You can also use them for a generic retry policy, though we recommend building retry policies that handle the kind of exceptions that will be thrown from your handlers.
+
+In this example, we set up a policy. To make it easy to reference the string, instead of adding it everywhere, we use a global readonly reference, not shown here.
 
 ``` csharp
 var retryPolicy = 
@@ -98,17 +106,17 @@ var circuitBreakerPolicy = Policy.Handle<Exception>().CircuitBreaker(
 		1, TimeSpan.FromMilliseconds(500));
 
 var policyRegistry = new PolicyRegistry() { 
-		{ CommandProcessor.RETRYPOLICY, retryPolicy }, 
-		{ CommandProcessor.CIRCUITBREAKER, circuitBreakerPolicy } 
+		{ Globals.MYRETRYPOLICY, retryPolicy }, 
+		{ Globals.MYCIRCUITBREAKER, circuitBreakerPolicy } 
 	};
 ```
 
-Which you can then use in code like this:
+When you attribute your code, you then use the key to attach a specific policy:
 
 ``` csharp
 [RequestLogging(step: 1, timing: HandlerTiming.Before)]
-[UsePolicy(CommandProcessor.CIRCUITBREAKER, step: 2)]
-[UsePolicy(CommandProcessor.RETRYPOLICY, step: 3)]
+[UsePolicy(Globals.MYRETRYPOLICY, step: 2)]
+[UsePolicy(Globals.MYCIRCUITBREAKER, step: 3)]
 public override TaskReminderCommand Handle(TaskReminderCommand command)
 {
     _mailGateway.Send(new TaskReminder(
@@ -124,9 +132,9 @@ public override TaskReminderCommand Handle(TaskReminderCommand command)
 
 ## Request Context Factory
 
-You need to provide a factory to give us instances of a [Context](UsingTheContextBag.html). If you have no implementation to use, just use the default **InMemoryRequestContextFactory**
+You need to provide a factory to give us instances of a [Context](UsingTheContextBag.html). If you have no implementation to use, just use the default **InMemoryRequestContextFactory**. Typically you would replace ours if you wanted to support initializing the context outside of our pipeline, for tracing for example.
 
-## Putting it all together
+## Command Processor Builder
 
 All these individual elements can be passed to a **Command Processor Builder** to help build a **Command Processor**. This has a fluent interface to help guide you when configuring Brighter. The result looks like this:
 

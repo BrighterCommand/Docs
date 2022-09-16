@@ -50,6 +50,12 @@ Brighter abstracts a specific type of message-oriented middleware by a *Transpor
 
 For simplicity, Brighter only supports transports that have a broker configuration, not point-to-point. If you need point-to-point semantics, configure your routing table entry so that it only delivers to one consuming queue or stream.
 
+## Message Mappers
+
+A message mapper turns domain code into a message: a header and a body, or turns a message into domain code. Because [message oriented middleware](#message-oriented-middleware-mom) typically looks in a header for routing information, it is also where you add routing information via the header.
+
+Each individual transport has code to turn a Brighter format message into a message oriented middleware compatible message, and vice versa, so your code only needs to translate to and from the Brighter format.
+
 ## Message Queue
 
 In [message oriented middleware](#message-oriented-middleware-mom), a message queue delivers [messages](#message) via a queue. A consumer locks a message, processes it, and when it acknowledges it, it is deleted from the queue. Other consumers can process the same queue, and read past any locked messages. This allows scaling via the competing consumers pattern. A nack will release the lock and make a message visible in the queue again, sometimes with a delay. A dead-letter-queue (DLQ) can be used with a nack, to limit the number of retries before a message is considered to be "posion pill" and moved to another queue for undeliverable messages.

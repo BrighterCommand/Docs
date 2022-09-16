@@ -79,6 +79,8 @@
     * [Brighter's External Bus Architecture](/contents/ImplementingExternalBus.md#brighters-external-bus-architecture)
     * [Sending via the External Bus](/contents/ImplementingExternalBus.md#sending-via-the-external-bus)
     * [Receiving via the External Bus](/contents/ImplementingExternalBus.md#receiving-via-the-external-bus)
+* [Message Mappers](/contents/MessageMappers.md)
+    * [Writing A Message Mapper](/contents/MessageMappers.md#writing-a-message-mapper)
 * [Routing](/contents/Routing.md)
     * [Publish-Subscribe](/contents/Routing.md#publish-subscribe)
     * [Direct Messaging](/contents/Routing.md#direct-messaging)
