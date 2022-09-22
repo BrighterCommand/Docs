@@ -267,7 +267,7 @@ In addition for an ORM you will need to add the package that supports the ORM, i
 
 * **Paramore.Brighter.MySql.EntityFrameworkCore**
 
-For a given ORM the pattern should be Paramore.Brighter.{ORM}.{DATABASE where {ORM} is the ORM you are choosing and {DATABASE} is the Db you are using with the ORM.
+For a given ORM the pattern should be Paramore.Brighter.{ORM}.{DATABASE} where {ORM} is the ORM you are choosing and {DATABASE} is the Db you are using with the ORM.
 
 To configure our *Outbox* we then need to use the Use{DATABASE}Outbox method call, where {DATABASE} is the {DATABASE} that we want, passing in the configuration for our Db so that we can access it. In our case this will be **UseMySqlOutbox()**.
 

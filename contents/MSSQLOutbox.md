@@ -1,3 +1,0 @@
-# MS SQL Outbox
-
-TODO
