@@ -159,9 +159,9 @@ public override async Task<GreetingMade> HandleAsync(GreetingMade @event, Cancel
 		posts.Add(await _postBox.DepositPostAsync(new SalutationReceived(DateTimeOffset.Now), cancellationToken: cancellationToken));
 		
 		await tx.CommitAsync(cancellationToken);
-		}
-		catch (Exception e)
-		{
+	}
+	catch (Exception e)
+	{
 		_logger.LogError(e, "Could not save salutation");
 		
 		//if it went wrong rollback entity write and Outbox write
