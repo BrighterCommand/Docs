@@ -48,6 +48,12 @@ You can then call **CommandProcessor.ClearPostBox** to flush one or more message
 It provides a stronger guarantee than the **CommandProcessor.Post** outside Db transaction with Retry approach as the write to the **Outbox** shares a transaction with the persistence of entity state.
 
 
+## Bulk Deposit
+
+Starting in v9.2.0 Brighter allows a batch of Messages to be written to the **Outbox**. If your outbox suoports Bulk (This will become a requirement in v10) **CommandProcessor.DepositPost** can be used to deposit a large number of messages in much quicker than individually.
+
+When creating your **CommandProcessor** you can set an outbox bulk chunk size, if the amount of mesages to be deposited into the **Outbox** is greater than this number it will be broken up into chunks of no more than this size.
+
 ## Participating in Transactions
 
 Brighter has the functionality to allow the  **Outbox** to participate in the database transactions of your application so that you can ensure that distributed requests will be persisted (or fail to persist) inline with application changes.
