@@ -173,8 +173,9 @@ When raising a message on the *Internal Bus*, you use one of the following metho
 When raising a message on an *External Bus*, you use the following methods on the *CommandProcessor*:
 
 * **Post()** and **PostAsync()** - Immediately posts a *Command* or *Event* to another process via the external Bus
-* **DepositPost()** and **DepositPostAsync()** - Puts a *Command* or *Event* in the *Outbox* for later delivery
-* **ClearOutbox()** and **ClearOutboxAsync()** Clears the *Outbox*, posting un-dispatched messages to another process via the *External Bus*.
+* **DepositPost()** and **DepositPostAsync()** - Puts on or many *Command*(s) or *Event*(s) in the *Outbox* for later delivery
+* **ClearOutbox()** and **ClearOutboxAsync()** - Clears the *Outbox*, posting un-dispatched messages to another process via the *External Bus*.
+* **ClearAsyncOutbox()** - Implicitly clears the **Outbox**, similar to above however allows bulk dispatching of messages onto a **Transport**.
 
 The major difference here is whether or not you wish to use an *Outbox* for Transactional Messaging. (See [Outbox Pattern](/contents/OutboxPattern.md) and [Brighter Outbox Support](/contents/BrighterOutboxSupport.md) for more on Brighter and the Outbox Pattern).
 
