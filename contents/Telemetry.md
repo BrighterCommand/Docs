@@ -29,7 +29,7 @@ The activity sources that Brighter emits from are:
   * Paramore.Brighter - Traces started in the **Command Processor** will be given this (Including **Outbox Sweeper**)
   * Paramore.Brighter.ServiceActivator - Traces Started in the **Service Activator**
 
-Please note that Brighter will honor existing spans, i.e. When using ASP.Net a Request will start a trace, it is for this reason that the sample above also includes "Microsft.*" as Bighter will participate in an active trace.
+Please note that Brighter will honor existing spans, i.e. When using ASPNet a Request will start a trace, it is for this reason that the sample above also includes "Microsft.*" as Bighter will participate in an active trace.
 
 ![Distributed Trace](_static/images/DistributedTracingFromASP.png)
 This distributed traces shows a message that is produced from an ASP.Net request and the consumed by Service Activator
