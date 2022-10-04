@@ -150,6 +150,7 @@
     * [Handler configuration](/contents/Monitoring.md#handler-configuration)
     * [Monitor message format](/contents/Monitoring.md#monitor-message-format)
 * [Health Checks](/contents/HealthChecks.md)
+* [Telemetry](/contents/Telemetry.md)
 
 ## FAQ
 * [FAQ](/contents/FAQ.md)
