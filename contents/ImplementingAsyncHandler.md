@@ -27,7 +27,7 @@ To ensure that the pipeline runs, you should return the result of the next handl
 (Because the next element in the pipeline should also be async, you should always await the result of this call.)
 
 ``` csharp
-public class GreetingCommandRequestHandlerAsync : RequestHandlerAsync
+public class GreetingCommandRequestHandlerAsync : RequestHandlerAsync<GreetingCommand>
 {
     public override async Task HandleAsync(GreetingCommand command, CancellationToken? ct = null)
     {
