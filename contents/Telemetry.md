@@ -1,10 +1,17 @@
 # Telemetry
 
-Starting in version 9.2.0 Brighter now supports Open Telemetry Tracing
+Starting in version 9.2.1 Brighter now supports Open Telemetry Tracing
 
 ## Configuring Open Telemtry
 
-The OpenTelemetry SDK can be configured to listen to Activities inside of Brighter
+The OpenTelemetry SDK can be configured to listen to Activities inside of Brighter for more information [OpenTelemetry Tracing](https://opentelemetry.io/docs/instrumentation/net/getting-started/)
+
+
+The below code will 
+* Enable OpenTelemetry tracing
+* Set the service name to "ProducerService"
+* Set OpenTelemetry traving to listen to all Brighter and Microsoft sources
+* Export the telemetry tracts to Jaeger
 
 ```csharp
 //The name of the service

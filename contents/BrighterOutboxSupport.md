@@ -50,7 +50,7 @@ It provides a stronger guarantee than the **CommandProcessor.Post** outside Db t
 
 ## Bulk Deposit
 
-Starting in v9.2.0 Brighter allows a batch of Messages to be written to the **Outbox**. If your outbox suoports Bulk (This will become a requirement in v10) **CommandProcessor.DepositPost** can be used to deposit a large number of messages in much quicker than individually.
+Starting in v9.2.1 Brighter allows a batch of Messages to be written to the **Outbox**. If your outbox suoports Bulk (This will become a requirement in v10) **CommandProcessor.DepositPost** can be used to deposit a large number of messages in much quicker than individually.
 
 When creating your **CommandProcessor** you can set an outbox bulk chunk size, if the amount of mesages to be deposited into the **Outbox** is greater than this number it will be broken up into chunks of no more than this size.
 

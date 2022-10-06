@@ -4,7 +4,7 @@ Brighter provides an AspNet Core Health check for **Service Activator**
 
 ## Configure Health Checks
 
-The below will configure Brighter Health checks for /health and a more detailed page for /health/detail
+The below will configure ASP.Net Core Health checks for Brighter's **Service Activator**, for more information on [ASP.NET Core Health Check](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks?view=aspnetcore-6.0)
 
 ```csharp
 // Web Application Builder code goes here
@@ -42,6 +42,24 @@ app.UseEndpoints(endpoints =>
 
 app.Run();
 
+```
+
+The /health endpoing will return a Status 200 with the Body of the Health status (i.e. Healthy) 
+
+The /health/detail endpoint will return a detailed response with all of your information for example:
+
+```json
+{
+  "status": "Healthy",
+  "results": {
+    "Brighter": {
+      "status": "Healthy",
+      "description": "21 healthy consumers.",
+      "duration": "00:00:00.0000132"
+    }
+  },
+  "totalDuration": "00:00:00.0029747"
+}
 ```
 
 ## Health Status
