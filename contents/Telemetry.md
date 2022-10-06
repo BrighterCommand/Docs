@@ -2,7 +2,7 @@
 
 Starting in version 9.2.1 Brighter now supports Open Telemetry Tracing
 
-## Configuring Open Telemtry
+## Configuring Open Telemetry
 
 The OpenTelemetry SDK can be configured to listen to Activities inside of Brighter for more information [OpenTelemetry Tracing](https://opentelemetry.io/docs/instrumentation/net/getting-started/)
 
