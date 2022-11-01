@@ -36,7 +36,7 @@ You also need to configure what action the inbox takes when it has seen a reques
     - Warn: Just log that a duplicate was received
     - Throw: Throws a OnceOnlyException	
 
-**If you wish to terminate processing on a duplicate, you should set OnceOnly to true; the OnceOnlyAction will default Throw, which is what you need to terminate processing.**
+**If you wish to terminate processing on a duplicate, you should set OnceOnly to true which is what you need to terminate processing; the OnceOnlyAction will default to Throw**
 
 In the context of the Service Activator (listening to messages over middleware) throwing a OnceOnlyException will result in the message being acked (because it has already been processed).
 
