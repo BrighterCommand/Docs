@@ -62,8 +62,8 @@
 ## Brighter Request Handlers & Middleware Pipelines
 
 * [How to Implement a Request Handler](/contents/ImplementingAHandler.md)
-    * [What is the difference between a Command and an Event?](/contents/ImplementingAHandler.md#what-is-the-difference-between-a-command-and-an-event)
 * [How to Implement an Async Request Handler](/contents/ImplementingAsyncHandler.md)
+* [Requests, Commands and an Events](/contents/Requests%2C%20Commands%20and%20Events.md)
 * [Dispatching Requests](/contents/DispatchingARequest.md)
     * [Usage](/contents/DispatchingARequest.md#usage)
     * [Registering a Handler](/contents/DispatchingARequest.md#registering-a-handler)
