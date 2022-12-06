@@ -6,11 +6,11 @@ for the Command or Event.
 For example, assume that you want to handle the **Command** GreetingCommand
 
 ``` csharp
-public class GreetingCommand : IRequest
+public class GreetingCommand : Command
 {
     public GreetingCommand(string name)
+        : base(Guid.NewGuid())
     {
-        Id = Guid.NewGuid();
         Name = name;
     }
 
