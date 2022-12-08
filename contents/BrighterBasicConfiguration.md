@@ -300,6 +300,52 @@ public void ConfigureServices(IServiceCollection services)
 
 (**UseExternalBus()** has optional parameters for use with Request-Reply support for some transports. We don't cover that here, instead see [Direct Messaging](/contents/Routing.md#direct-messaging) for more).
 
+#### **Configuring JSON Serialization**
+
+Brighter defines a set of serialization options for use when it needs to serialize messages to JSON. Internally we use these options in our transports, when serializing messages to an external bus and deserializing from an external bus. You may wish to use these options in your own [*Message Mapper*](/contents/MessageMappers.md) implementation.
+
+By default our JSONSerialization Options are configured as follows:
+
+``` csharp
+static JsonSerialisationOptions()
+{
+    var opts = new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        NumberHandling = JsonNumberHandling.AllowReadingFromString,
+        AllowTrailingCommas = true
+    };
+
+    opts.Converters.Add(new JsonStringConverter());
+    opts.Converters.Add(new DictionaryStringObjectJsonConverter());
+    opts.Converters.Add(new ObjectToInferredTypesConverter());
+    opts.Converters.Add(new JsonStringEnumConverter());
+
+    Options = opts;
+}
+```
+
+You can use the **IBrighterBuilder** extension **ConfigureJsonSerialisation** to override these values. The method takes an Action<JsonSerialisationOptions> lambda expression that allows you to override these defaults. For example:
+
+```csharp
+
+.ConfigureJsonSerialisation((options) =>
+{
+    options.PropertyNameCaseInsensitive = true;
+})
+
+```
+
+If you want to use this configured set of JSON Serialization options in your own code, you can, by using the static property JsonSerialisationOptions.Options. For example:
+
+```csharp
+public GreetingMade MapToRequest(Message message)
+{
+    return JsonSerializer.Deserialize<GreetingMade>(message.Body.Value, JsonSerialisationOptions.Options);
+}
+```
+
 ### **Putting It All Together**
 
 Putting all this together, a typical configuration might looks as follows:
@@ -312,6 +358,10 @@ public void ConfigureServices(IServiceCollection services)
             options.HandlerLifetime = ServiceLifetime.Scoped;
             options.MapperLifetime = ServiceLifetime.Singleton;
             options.PolicyRegistry = policyRegistry;
+        })
+        .ConfigureJsonSerialisation((options) =>
+        {
+            options.PropertyNameCaseInsensitive = true;
         })
         .UseExternalBus(new RmqProducerRegistryFactory(
                 new RmqMessagingGatewayConnection
