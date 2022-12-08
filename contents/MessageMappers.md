@@ -37,3 +37,11 @@ public class TaskReminderCommandMessageMapper : IAmAMessageMapper<TaskReminderCo
     }
 }
 ```
+
+### Controlling JSON Serialization
+
+Brighter uses System.Text.Json to convert the message's metadata to JSON for sending over a messaging middleware transport. You can adjust the behavior of this serialization through our Json
+
+## Transfomers
+
+
