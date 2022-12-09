@@ -326,7 +326,7 @@ static JsonSerialisationOptions()
 }
 ```
 
-You can use the **IBrighterBuilder** extension **ConfigureJsonSerialisation** to override these values. The method takes an Action<JsonSerialisationOptions> lambda expression that allows you to override these defaults. For example:
+You can use the **IBrighterBuilder** extension **ConfigureJsonSerialisation** to override these values. The method takes an **Action\<JsonSerialisationOptions\>** lambda expression that allows you to override these defaults. For example:
 
 ```csharp
 
