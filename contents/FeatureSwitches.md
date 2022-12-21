@@ -1,11 +1,11 @@
 # Feature Switches
 
-We provide a **FeatureSwitch** Attribute that you can use on your **IHandleRequests\<TRequest\>.Handle()** method. The **FeatureSwitch** Attribute that you have configured will determine whether or not the
-**IHandleRequests\<TRequest\>.Handle()** will be executed.
+We provide a **FeatureSwitch** Attribute and **FeatureSwitchAsync** Attribute that you can use on your **IHandleRequests\<TRequest\>.Handle()** method, and **IHandleRequests\<TRequest\>.HandleAysnc()** method. The **FeatureSwitch** Attribute and **FeatureSwitchAsync** Attribute that you have configured will determine whether or not the
+**IHandleRequests\<TRequest\>.Handle()** and **IHandleRequests\<TRequest\>.HandleAsync()** will be executed.
 
 ## Using the Feature Switch Attribute
 
-By adding the **FeatureSwitch** Attribute, you instruct the Command Processor to do one of the following:
+By adding the **FeatureSwitch** Attribute or **FeatureSwitchAsync** Attribute, you instruct the Command Processor to do one of the following:
 
 -   run the handler as normal, this is **FeatureSwitchStatus.On**.
 -   not execute the handler, this is **FeatureSwitchStatus.Off**.
@@ -27,16 +27,16 @@ class MyFeatureSwitchedHandler : RequestHandler<MyCommand>
 }
 ```
 
-In the second example, **MyIncompleteHandler** will not be run in the pipeline.
+In the second example, **MyIncompleteHandlerAsync** will not be run in the pipeline.
 
 ``` csharp
-class MyIncompleteHandler : RequestHandler<MyCommand>
+class MyIncompleteHandlerAsync : RequestHandlerAsync<MyCommand>
 {
-    [FeatureSwitch(typeof(MyIncompleteHandler), FeatureSwitchStatus.Off, step: 1)]
-    public override MyCommand Handle(MyCommand command)
+    [FeatureSwitchAsync(typeof(MyIncompleteHandlerAsync), FeatureSwitchStatus.Off, step: 1)]
+    public override Task<MyCommand> HandleAsync(MyCommand command, CancellationToken cancellationToken = default)
     {
         /* Nothing implmented so we're skipping this handler */
-        return base.Handle(command);
+        return await base.HandleAsync(command, cancellationToken);
     }
 }
 ```
