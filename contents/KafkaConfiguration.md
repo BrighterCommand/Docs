@@ -221,6 +221,78 @@ It is important to understand how Brighter manages the **offset** of any **parti
 	- We configure the consumer to use sticky assignment strategy to avoid unnecessary re-assignments (see the [Confluent documentation](https://www.confluent.io/blog/cooperative-rebalancing-in-kafka-streams-consumer-ksqldb/)). 
 - On a consumer shutdown we flush the buffer to commit all **offsets**.
 
+
+## Working with Schema Registry
+
+If you want to use tools within the Kafka ecosystem such as Kafka Connect or KQSL you will almost certainly need to use Confluent Schema Registry to provide the schema of your message.
+
+You will need to pull in the following package:
+
+* Confluent.SchemaRegistry
+
+and a package for the serialization of your choice. Here we are using JSON, so we use 
+
+* Confluent.SchemaRegistry.Serdes.Json
+
+When working with Brighter, to use Confluent Schema Registry you will need to take a dependency on ISchemaRegistry in the constructor of your message mapper. To fulfill this constructor, in your application setup you will need to register an instance of schema registry. You should configure the schema registry config url to be the url of you schema registry. (Here we just use localhost for a development instance running in docker as an example).
+
+``` csharp
+var schemaRegistryConfig = new SchemaRegistryConfig { Url = "http://localhost:8081"};
+var cachedSchemaRegistryClient = new CachedSchemaRegistryClient(schemaRegistryConfig);
+services.AddSingleton<ISchemaRegistryClient>(cachedSchemaRegistryClient);
+```
+
+Once you can satisfy the dependency, you will want to use the serializer from the Serdes package to serialize the body of your message, instead of System.Text.Json. Note that 'under-the-hood' the Serdes serializer uses [Json.NET](https://www.newtonsoft.com/json) and [NJsonSchema](https://github.com/RicoSuter/NJsonSchema), so you may need to mark up your code with attributes from these packages to create the schema you want and serialize a valid message to it. (Note that, at this time, the Serdes package does not support System.Text.Json so you will need to take a dependency on Json.NET if you want to use the schema registry).
+
+It is worth noting the following aspects of the code sample below:
+
+* We need to set up a SerializationContext and tell Serdes that we are serializing the message body using their serializer
+* We provide two helpers, though you can pass your own settings if you prefer:
+    * **ConfluentJsonSerializationConfig.SerdesJsonSerializerConfig()** offers default settings for JSON serialization (many of these are passed through to Json.NET).
+    * **ConfluentJsonSerializationConfig.NJsonSchemaGeneratorSettings()** offers default settings for JSON Schema generation (such as using camelCase).
+
+
+``` csharp
+public class GreetingEventMessageMapper : IAmAMessageMapper<GreetingEvent>
+{
+private readonly ISchemaRegistryClient _schemaRegistryClient;
+private readonly string _partitionKey = "KafkaTestQueueExample_Partition_One";
+private SerializationContext _serializationContext;
+private const string Topic = "greeting.event";
+
+public GreetingEventMessageMapper(ISchemaRegistryClient schemaRegistryClient)
+{
+	_schemaRegistryClient = schemaRegistryClient;
+	//We care about ensuring that we serialize the body using the Confluent tooling, as it registers and validates schema
+	_serializationContext = new SerializationContext(MessageComponentType.Value, Topic);
+}
+
+public Message MapToMessage(GreetingEvent request)
+{
+	var header = new MessageHeader(messageId: request.Id, topic: Topic, messageType: MessageType.MT_EVENT);
+	//This uses the Confluent JSON serializer, which wraps Newtonsoft but also performs schema registration and validation
+           var serializer = new JsonSerializer<GreetingEvent>(_schemaRegistryClient, ConfluentJsonSerializationConfig.SerdesJsonSerializerConfig(), ConfluentJsonSerializationConfig.NJsonSchemaGeneratorSettings()).AsSyncOverAsync();
+ 	var s = serializer.Serialize(request, _serializationContext);
+	var body = new MessageBody(s, "JSON");
+	header.PartitionKey = _partitionKey;
+
+	var message = new Message(header, body);
+	return message;
+}
+
+public GreetingEvent MapToRequest(Message message)
+{
+	var deserializer = new JsonDeserializer<GreetingEvent>().AsSyncOverAsync();
+	//This uses the Confluent JSON serializer, which wraps Newtonsoft but also performs schema registration and validation
+	var greetingCommand = deserializer.Deserialize(message.Body.Bytes, message.Body.Bytes is null, _serializationContext);
+	
+	return greetingCommand;
+}
+}
+
+```
+
+
 ## Requeue with Delay
 
 We don't currently support requeue with delay for Kafka. It might be added in a future release, where the strategy would be to:
