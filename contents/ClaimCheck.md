@@ -23,7 +23,7 @@ public Message MapToMessage(GreetingEvent request)
 }
 ```
 
-We provide a matching **UnwrapWithAttribute** or **RetrieveClaim** that will use the **ClaimCheckTransformer** to download the body of your **Message** from a luggage store and replace the existing body (likely a claim check reference) with the downloaded content.
+We provide a matching **UnwrapWithAttribute** of **RetrieveClaim** that will use the **ClaimCheckTransformer** to download the body of your **Message** from a luggage store and replace the existing body (likely a claim check reference) with the downloaded content.
 
 ``` csharp
 [RetrieveClaim(0, retain:false)]
