@@ -86,6 +86,7 @@
         * [Claim Check & Retrieve Claim](/contents/ClaimCheck.md#claim-check-and-retrieve-claim)
         * [The Luggage Store](/contents/ClaimCheck.md#the-luggage-store)
             * [S3LuggageStore](/contents/S3LuggageStore.md)
+    * [Compression](/contents/Compression.md)
 * [Routing](/contents/Routing.md)
     * [Publish-Subscribe](/contents/Routing.md#publish-subscribe)
     * [Direct Messaging](/contents/Routing.md#direct-messaging)
