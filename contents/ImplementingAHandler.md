@@ -13,8 +13,7 @@ public class GreetingCommand : Command
     {
         Name = name;
     }
-
-    public Guid Id { get; set; }
+    
     public string Name { get; private set; }
 }
 ```
