@@ -82,7 +82,7 @@
 * [Message Mappers](/contents/MessageMappers.md)
     * [Writing A Message Mapper](/contents/MessageMappers.md#writing-a-message-mapper)
     * [Transformers](/contents/MessageMappers.md#transformers)
-    * [Claim Check](/contents/Claim%20Check.md)
+    * [Claim Check](/contents/ClaimCheck.md)
         * [Claim Check & Retrieve Claim](/contents/ClaimCheck.md#claim-check-and-retrieve-claim)
         * [The Luggage Store](/contents/ClaimCheck.md#the-luggage-store)
             * [S3LuggageStore](/contents/S3LuggageStore.md)
