@@ -63,4 +63,4 @@ The *luggage store* is where we store the body of the message for later retrieva
 
 We provide the following implementations of **IAmAStorageProviderAsync:
 
-* [**S3LuggageStore](/contents/S3LuggageStore.md)
+* [S3LuggageStore](/contents/S3LuggageStore.md)
