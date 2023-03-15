@@ -152,7 +152,7 @@ You can use it as follows:
 	
 Brighter uses the Kafka AdminClient for topic creation. For this to work as expected you should set the server property of **auto.create.topics.enable** to **false**; otherwise the topic will be auto-created with the values defined by your server for new topics, such as the number of partitions. This error can be insidious because your code will still work against this topic, but without inspection you will not observe that its properties do not match those requested.
 	
-If you want to specify the topic through Brigher, or through your own IaaS code, we recommend always setting this setting to false; we recommend only setting it to true if you tell Brighter to assume that the infrastructure exists, as it will then be created on the first write.
+If you want to specify the topic through Brighter, or through your own IaaS code, we recommend always setting this setting to false; we recommend only setting it to true if you tell Brighter to assume that the infrastructure exists, as it will then be created on the first write.
 
 ## Subscription
 
