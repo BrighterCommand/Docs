@@ -50,6 +50,37 @@ var policy = Policy
 policyRegistry.Add("MyExceptionPolicy", policy);
 ```
 
+You can use multiple policies with a handler, instead of passing in a single policy identifier, you can pass in an array of policy identifiers:
+
+So if in addition to the above policy we have:
+
+``` csharp
+var circuitBreakerPolicy = Policy.Handle<Exception>().CircuitBreaker(
+		1, TimeSpan.FromMilliseconds(500));
+
+policyRegistry.Add("MyCircuitBreakerPolicy", policy);
+```
+
+then you can add them both to your handler as follows:
+
+``` csharp
+internal class MyQoSProtectedHandler : RequestHandler<MyCommand>
+{
+    static MyQoSProtectedHandler()
+    {
+        ReceivedCommand = false;
+    }
+
+    [UsePolicy(new [] {"MyCircuitBreakerPolicy", "MyExceptionPolicy"} , step: 1)]
+    public override MyCommand Handle(MyCommand command)
+    {
+        /*Do work that could throw error because of distributed computing reliability*/
+    }
+}
+```
+
+Where we have multiple policies they are evaluated left to right, so in this case "MyCircuitBreakerPolicy" wraps "MyExceptionPolicy".
+
 When creating policies, refer to the [Polly](https://github.com/App-vNext/Polly) documentation.
 
 Whilst [Polly](https://github.com/App-vNext/Polly) does not support a Policy that is both Circuit Breaker and Retry i.e. retry n times with an interval between each retry, and then break circuit, to implement that simply put a Circuit Breaker UsePolicy attribute as an earlier step than the Retry UsePolicy attribute. If retries expire, the exception will bubble out to the Circuit Breaker.

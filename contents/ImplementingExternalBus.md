@@ -90,8 +90,7 @@ public class MailTaskReminderHandler : RequestHandler<TaskReminderCommand>
     }
 
     [RequestLogging(step: 1, timing: HandlerTiming.Before)]
-    [UsePolicy(CommandProcessor.CIRCUITBREAKER, step: 2)]
-    [UsePolicy(CommandProcessor.RETRYPOLICY, step: 3)]
+    [UsePolicy(new [] {CommandProcessor.CIRCUITBREAKER, CommandProcessor.RETRYPOLICY}, step: 2)]
     public override TaskReminderCommand Handle(TaskReminderCommand command)
     {
         _mailGateway.Send(new TaskReminder(

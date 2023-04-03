@@ -116,7 +116,24 @@ When you attribute your code, you then use the key to attach a specific policy:
 ``` csharp
 [RequestLogging(step: 1, timing: HandlerTiming.Before)]
 [UsePolicy(Globals.MYRETRYPOLICY, step: 2)]
-[UsePolicy(Globals.MYCIRCUITBREAKER, step: 3)]
+public override TaskReminderCommand Handle(TaskReminderCommand command)
+{
+    _mailGateway.Send(new TaskReminder(
+        taskName: new TaskName(command.TaskName),
+        dueDate: command.DueDate,
+        reminderTo: new EmailAddress(command.Recipient),
+        copyReminderTo: new EmailAddress(command.CopyTo)
+    ));
+
+    return base.Handle(command);
+}
+```
+
+If you need multiple policies then you can pass them as an array. We evaluate them left to right.
+
+``` csharp
+[RequestLogging(step: 1, timing: HandlerTiming.Before)]
+[UsePolicy(new [] {Globals.MYRETRYPOLICY, Globals.MYCIRCUITBREAKER}, step: 2)]
 public override TaskReminderCommand Handle(TaskReminderCommand command)
 {
     _mailGateway.Send(new TaskReminder(

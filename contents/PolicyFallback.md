@@ -24,8 +24,7 @@ The following example shows a Handler with **Request Handler Attributes** for [R
 public class MyFallbackProtectedHandler: RequestHandler<MyCommand>
 {
     [FallbackPolicy(backstop: false, circuitBreaker: true, step: 1)]
-    [UsePolicy("MyCircuitBreakerStrategy", step: 2)]
-    [UsePolicy("MyRetryStrategy", step: 3)]
+    [UsePolicy(new [] {}"MyCircuitBreakerStrategy", "MyRetryStrategy"}, step: 2)]
     public override MyCommand Handle(MyCommand command)
     {
         /*Do some work that can fail*/
