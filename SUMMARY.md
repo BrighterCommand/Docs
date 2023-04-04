@@ -54,6 +54,7 @@
 * [AWS SNS/SQS Configuration](/contents/AWSSQSConfiguration.md)
 * [Kafka Configuration](/contents/KafkaConfiguration.md)
 * [Azure Service Bus Configuration](/contents/AzureServiceBusConfiguration.md)
+* [Azure Archive Provider Configuration](/contents/AzureBlobConfiguration.md)
 
 ## Darker Configuration
 
