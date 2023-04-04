@@ -111,6 +111,15 @@ The **Timed Outbox Sweeper** has the following configurables
 
 It is important to note that the lower the Minimum Message age is the more likely it is that your message will be dispatches more than once (as if you are explicitly clearing messages your application may have instructed the clearing of a message at the same time as the **Outbox Sweeper**)
 
+## Outbox Archiver
+
+The **Outbox Archiver** is an out of process services that monitors an **Outbox** and will archive messages of older than a certain age.
+
+The **Timed Outbox Archiver** has the following configurables
+  * TimerInterval: The number of seconds to wait between checked for messages eligable for archival (default: 15)
+  * BatchSize: The maximum number of messages to archive for each check (default: 100)
+  * MinimunAge: The time ellapsed since a message was dispated in hours before it is eligable for archival (default: 24)
+
 ### Outbox Configuration
 
 Your outbox is configured as part of the Brighter extensions to ServiceCollection. See [Outbox Configuration](/contents/BrighterBasicConfiguration.md#outbox-support) for more.
