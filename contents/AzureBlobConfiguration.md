@@ -14,9 +14,11 @@ For the archiver to work the calling credential will require the role **Storage 
 * **BlobContainerUri** : The URI of the Blob container to store messages in (i.e. "https://BlobTest.blob.core.windows.net/messagearchive)
 * **TokenCredential** : The Credential to use when writing the Blob
 * **AccessTier** : The Access Tier to write to the blob
-* **TagBlobs** : if this is set to True the following Tags will be written to the blobs
+* **TagBlobs** : if this is set to True the defined in **TagsFunc** will be written to the blobs
+* **TagsFunc**  : The function to arrange the tags to add when storing, please note that **TagBlobs** must be True for these to be used, default Tags :
     - topic
     - correlationId
     - message_type
     - timestamp
     - content_type
+* **StorageLocationFunc** : The function to provide the location to store the message inside of the Blob container, default location : The Id of the message at the root of the **BlobContainerUri**
