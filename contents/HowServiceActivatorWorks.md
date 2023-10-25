@@ -1,3 +1,0 @@
-# How The Service Activator Works
-
-Coming Soon...

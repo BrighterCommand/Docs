@@ -1,0 +1,6 @@
+Brighter Configuration:
+ order: 20
+ entries:
+ - name   : I have to exist in 9.0.0
+   file   : BasicConfiguration.md
+   order : 10

@@ -170,7 +170,7 @@
 
 * [How The Command Processor Works](/contents/HowBrighterWorks.md)
     * [The Dispatcher](/contents/HowBrighterWorks.md#the-dispatcher)
-* [How Service Activator Works](/contents/HowServiceActivatorWorks)
+* [How Service Activator Works](/contents/HowServiceActivatorWorks.md)
 
 ## Commands, Processors, & Dispatchers
 
