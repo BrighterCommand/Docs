@@ -1,8 +1,8 @@
 Overview:
  order: 10
  entries:
- - name   : Show me the code!
-   file   : howMeTheCode.md
+ - name : Show me the code!
+   file : howMeTheCode.md
    order : 10
  - name : Basic Concepts
    file : BasicConcepts.md
@@ -11,14 +11,14 @@ Overview:
 Brighter Configuration:
  order: 20
  entries:
- - name   : Basic Configuration
-   file   : BasicConfiguration.md
+ - name : Basic Configuration
+   file : BasicConfiguration.md
    order : 10
  - name : How Configuring the Command Processor Works
    file : HowConfiguringTheCommandProcessorWorks.md
    order : 20
- - name   : How Configuring a Dispatcher for an External Bus Works
-   file   : HowConfiguringTheDispatcherWorks.md
+ - name : How Configuring a Dispatcher for an External Bus Works
+   file : HowConfiguringTheDispatcherWorks.md
    order : 30
  - name : How Configuring a Dispatcher for an External Bus Works
    file : HowConfiguringTheDispatcherWorks.md
@@ -26,7 +26,7 @@ Brighter Configuration:
  - name : RabbitMQ Configuration
    file : RabbitMQConfiguration.md
    order : 50
- - name : AWS SNS/SQS Configuration
+ - name : AWS SNS Configuration
    file : AWSSQSConfiguration.md
    order : 60
  - name : Kafka Configuration
@@ -41,15 +41,15 @@ Brighter Configuration:
 Darker Configuration:
  order: 30
  entries:
-  - name   : Basic Configuration
-    file   : DarkerBasicConfiguration.md
+  - name : Basic Configuration
+    file : DarkerBasicConfiguration.md
     order : 10
 
 Brighter Request Handlers & Middleware Pipelines:
  order: 40
  entries:
-  - name   : Basic Configuration
-    file   : DarkerBasicConfiguration.md
+  - name : Basic Configuration
+    file : DarkerBasicConfiguration.md
     order : 10
   - name : How to Implement an Async Request Handler
     file : ImplementingAsyncHandler.md
