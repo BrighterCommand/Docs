@@ -14,7 +14,7 @@ Sections:
     order: 20
     entries:
     - name : Basic Configuration
-      file : BasicConfiguration.md
+      file : BrighterBasicConfiguration.md
       order : 10
     - name : How Configuring the Command Processor Works
       file : HowConfiguringTheCommandProcessorWorks.md
