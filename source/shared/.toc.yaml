@@ -22,23 +22,20 @@ Sections:
     - name : How Configuring a Dispatcher for an External Bus Works
       file : HowConfiguringTheDispatcherWorks.md
       order : 30
-    - name : How Configuring a Dispatcher for an External Bus Works
-      file : HowConfiguringTheDispatcherWorks.md
-      order : 40
     - name : RabbitMQ Configuration
       file : RabbitMQConfiguration.md
-      order : 50
+      order : 40
     - name : AWS SNS Configuration
       file : AWSSQSConfiguration.md
-      order : 60
+      order : 50
     - name : Kafka Configuration
       file : KafkaConfiguration.md
-      order : 70
+      order : 60
     - name : Azure Service Bus Configuration
       file: AzureServiceBusConfiguration.md
-      order : 80
+      order : 70
     - name : Azure Archive Provider Configuration
-      order : 90     
+      order : 80     
 
   Darker Configuration:
     order: 30
@@ -107,6 +104,30 @@ Sections:
     - name : Inbox Support
       file : BrighterInboxSupport.md
       order : 20
+    - name: EFCore Outbox 
+      file: EFCoreOutbox.md
+      order : 30
+    - name : Dapper Outbox 
+      file : DapperOutbox.md
+      order : 40
+    - name : Dynamo Outbox 
+      file : DynamoOutbox.md
+      order : 50
+    - name : MSSQL Inbox
+      file : MSSQLInbox.md
+      order : 60
+    - name : MySQL Inbox
+      file : MySQLInbox.md
+      order : 70
+    - name : Postgres Inbox
+      file : PostgresInbox.md
+      order : 80
+    - name : Sqlite Inbox
+      file : SqliteInbox.md
+      order : 90
+    - name : Dynamo Inbox
+      file : DynamoInbox.md
+      order : 100
 
   Darker Query Handlers and Middleware Pipelines:
     order: 60
