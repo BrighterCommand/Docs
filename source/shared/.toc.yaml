@@ -1,186 +1,180 @@
-Overview:
- order: 10
- entries:
- - name : Show me the code!
-   file : howMeTheCode.md
-   order : 10
- - name : Basic Concepts
-   file : BasicConcepts.md
-   order : 20
+---
+Sections:
+  Overview:
+    order: 10
+    entries:
+    - name : Show me the code!
+      file : howMeTheCode.md
+      order : 10
+    - name : Basic Concepts
+      file : BasicConcepts.md
+      order : 20
 
-Brighter Configuration:
- order: 20
- entries:
- - name : Basic Configuration
-   file : BasicConfiguration.md
-   order : 10
- - name : How Configuring the Command Processor Works
-   file : HowConfiguringTheCommandProcessorWorks.md
-   order : 20
- - name : How Configuring a Dispatcher for an External Bus Works
-   file : HowConfiguringTheDispatcherWorks.md
-   order : 30
- - name : How Configuring a Dispatcher for an External Bus Works
-   file : HowConfiguringTheDispatcherWorks.md
-   order : 40
- - name : RabbitMQ Configuration
-   file : RabbitMQConfiguration.md
-   order : 50
- - name : AWS SNS Configuration
-   file : AWSSQSConfiguration.md
-   order : 60
- - name : Kafka Configuration
-   file : KafkaConfiguration.md
-   order : 70
- - name : Azure Service Bus Configuration
-   file: AzureServiceBusConfiguration.md
-   order : 80
- - name : Azure Archive Provider Configuration
-   order : 90     
+  Brighter Configuration:
+    order: 20
+    entries:
+    - name : Basic Configuration
+      file : BasicConfiguration.md
+      order : 10
+    - name : How Configuring the Command Processor Works
+      file : HowConfiguringTheCommandProcessorWorks.md
+      order : 20
+    - name : How Configuring a Dispatcher for an External Bus Works
+      file : HowConfiguringTheDispatcherWorks.md
+      order : 30
+    - name : How Configuring a Dispatcher for an External Bus Works
+      file : HowConfiguringTheDispatcherWorks.md
+      order : 40
+    - name : RabbitMQ Configuration
+      file : RabbitMQConfiguration.md
+      order : 50
+    - name : AWS SNS Configuration
+      file : AWSSQSConfiguration.md
+      order : 60
+    - name : Kafka Configuration
+      file : KafkaConfiguration.md
+      order : 70
+    - name : Azure Service Bus Configuration
+      file: AzureServiceBusConfiguration.md
+      order : 80
+    - name : Azure Archive Provider Configuration
+      order : 90     
 
-Darker Configuration:
- order: 30
- entries:
-  - name : Basic Configuration
-    file : DarkerBasicConfiguration.md
-    order : 10
+  Darker Configuration:
+    order: 30
+    entries:
+    - name : Basic Configuration
+      file : DarkerBasicConfiguration.md
+      order : 10
 
-Brighter Request Handlers & Middleware Pipelines:
- order: 40
- entries:
-  - name : Basic Configuration
-    file : DarkerBasicConfiguration.md
-    order : 10
-  - name : How to Implement an Async Request Handler
-    file : ImplementingAsyncHandler.md
-    order : 20
-  - name : Requests, Commands and an Events
-    file : Requests%2C%20Commands%20and%20Events.md
-    order : 30
-  - name : Dispatching Requests
-    file : DispatchingARequest.md
-    order : 40
-  - name : Dispatching An Async Request
-    file : AsyncDispatchARequest.md
-    order : 50
-  - name : Returning results from a Handler
-    file : ReturningResultsFromAHandler.md
-    order : 60
-  - name : Using an External Bus
-    file : ImplementingExternalBus.md
-    order : 70
-  - name : Message Mappers
-    file : MessageMappers.md
-    order : 80
-  - name : Routing
-    file : Routing.md
-    order : 90
-  - name : Building a Pipeline of Request Handlers
-    file : BuildingAPipeline.md
-    order : 100
-  - name : Building an Async Pipeline of Request Handlers
-    file : BuildingAnAsyncPipeline.md
-  - name : Passing information between Handlers in the Pipeline
-    file : UsingTheContextBag.md
-    order : 110
-  - name : Failure and Dead Letter Queues
-    file : HandlerFailure.md
-    order : 120
-  - name : Supporting Retry and Circuit Breaker
-    file : PolicyRetryAndCircuitBreaker.md
-    order : 130
-  - name : Failure and Fallback
-    file : PolicyFallback.md
-    order : 140
-  - name : Feature Switches
-    file : FeatureSwitches.md
-    order : 150
+  Brighter Request Handlers and Middleware Pipelines:
+    order: 40
+    entries:
+    - name : Basic Configuration
+      file : DarkerBasicConfiguration.md
+      order : 10
+    - name : How to Implement an Async Request Handler
+      file : ImplementingAsyncHandler.md
+      order : 20
+    - name : Requests, Commands and an Events
+      file : Requests%2C%20Commands%20and%20Events.md
+      order : 30
+    - name : Dispatching Requests
+      file : DispatchingARequest.md
+      order : 40
+    - name : Dispatching An Async Request
+      file : AsyncDispatchARequest.md
+      order : 50
+    - name : Returning results from a Handler
+      file : ReturningResultsFromAHandler.md
+      order : 60
+    - name : Using an External Bus
+      file : ImplementingExternalBus.md
+      order : 70
+    - name : Message Mappers
+      file : MessageMappers.md
+      order : 80
+    - name : Routing
+      file : Routing.md
+      order : 90
+    - name : Building a Pipeline of Request Handlers
+      file : BuildingAPipeline.md
+      order : 100
+    - name : Building an Async Pipeline of Request Handlers
+      file : BuildingAnAsyncPipeline.md
+    - name : Passing information between Handlers in the Pipeline
+      file : UsingTheContextBag.md
+      order : 110
+    - name : Failure and Dead Letter Queues
+      file : HandlerFailure.md
+      order : 120
+    - name : Supporting Retry and Circuit Breaker
+      file : PolicyRetryAndCircuitBreaker.md
+      order : 130
+    - name : Failure and Fallback
+      file : PolicyFallback.md
+      order : 140
+    - name : Feature Switches
+      file : FeatureSwitches.md
+      order : 150
 
-Guaranteed, At Least Once:
-order: 50
-entries:
- - name : Outbox Support
-   file : BrighterOutboxSupport.md
-   order : 10
- - name : Inbox Support
-   file : BrighterInboxSupport.md
-   order : 20
+  Guaranteed At Least Once:
+    order: 50
+    entries:
+    - name : Outbox Support
+      file : BrighterOutboxSupport.md
+      order : 10
+    - name : Inbox Support
+      file : BrighterInboxSupport.md
+      order : 20
 
-Darker Query Handlers & Middleware Pipelines:
- order: 60
- entries:
-  - name : How to Implement a Query Handler
-    file : ImplementAQueryHandler.md
-    order : 10
+  Darker Query Handlers and Middleware Pipelines:
+    order: 60
+    entries:
+    - name : How to Implement a Query Handler
+      file : ImplementAQueryHandler.md
+      order : 10
 
-Health Checks & Observability:
- order: 70
- entries:
-  - name : Logging
-    file : Logging.md
-    order : 10
-  - name : Monitoring
-    file : Monitoring.md
-    order : 20
-  - name : Health Checks
-    file : HealthChecks.md
-    order : 30
-  - name : Telemetry
-    file : Telemetry.md
-    order : 40
+  Health Checks and Observability:
+    order: 70
+    entries:
+    - name : Logging
+      file : Logging.md
+      order : 10
+    - name : Monitoring
+      file : Monitoring.md
+      order : 20
+    - name : Health Checks
+      file : HealthChecks.md
+      order : 30
+    - name : Telemetry
+      file : Telemetry.md
+      order : 40
 
-Command, Processors and Dispatchers:
- order: 80
- entries:
-  - name : Command, Processor and Dispatcher Patterns
-    file : CommandsCommandDispatcherandProcessor.md
-    order : 10
+  Command, Processors and Dispatchers:
+    order: 80
+    entries:
+    - name : Command, Processor and Dispatcher Patterns
+      file : CommandsCommandDispatcherandProcessor.md
+      order : 10
 
-Under the Hood:
- order: 90
- entries:
-  - name : How The Command Processor Works
-    file : HowBrighterWorks.md
-    order : 10
-  - name : How Service Activator Works
-    file : HowServiceActivatorWorks.md
-    order : 20
+  Under the Hood:
+    order: 90
+    entries:
+    - name : How The Command Processor Works
+      file : HowBrighterWorks.md
+      order : 10
+    - name : How Service Activator Works
+      file : HowServiceActivatorWorks.md
+      order : 20
 
-Event Driven Architectures:
- order: 100
- entries:
- - name : Microservices
-   file : Microservices.md
-   order : 10
- - name : Event Driven Collaboration  
-   file : EventDrivenCollaboration.md
-   order : 20
- - name : Event Carried State Transfer  
-   file : EventCarriedStateTransfer.md
-   order : 30
- - name : Outbox Pattern
-   file : OutboxPattern.md
-   order : 40
+  Event Driven Architectures:
+    order: 100
+    entries:
+    - name : Microservices
+      file : Microservices.md
+      order : 10
+    - name : Event Driven Collaboration  
+      file : EventDrivenCollaboration.md
+      order : 20
+    - name : Event Carried State Transfer  
+      file : EventCarriedStateTransfer.md
+      order : 30
+    - name : Outbox Pattern
+      file : OutboxPattern.md
+      order : 40
 
-Task Queues:
- order: 110
- entries:
- - name : Using a Task Queue
-   file : TaskQueuePattern.md
-   order : 10
+  Task Queues:
+    order: 110
+    entries:
+    - name : Using a Task Queue
+      file : TaskQueuePattern.md
+      order : 10
 
-
-FAQ:
- order: 110
- entries:
-  - name : FAQ
-    file : FAQ.md
-    order : 1
-
-
-
-
-
-
-
-
+  FAQ:
+    order: 120
+    entries:
+    - name : FAQ
+      file : FAQ.md
+      order : 1
+...

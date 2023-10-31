@@ -1,6 +1,7 @@
-Brighter Configuration:
- order: 20
- entries:
-  - name   : I came from 10.0.0
-    file   : BasicConfiguration.md
-    order : 10
+Sections:
+  Brighter Configuration:
+    order: 20
+    entries:
+    - name   : I came from 10.0.0
+      file   : BasicConfiguration.md
+      order : 1
