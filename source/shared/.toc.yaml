@@ -4,7 +4,7 @@ Sections:
     order: 10
     entries:
     - name : Show me the code!
-      file : howMeTheCode.md
+      file : ShowMeTheCode.md
       order : 10
     - name : Basic Concepts
       file : BasicConcepts.md

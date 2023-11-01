@@ -2,11 +2,11 @@
 
 ## 9
 
-* [Test]()
+* [Version Info](/contents/9/VersionInfo.md)
 
 ### Overview
 
- * [Show me the code!](/contents/9/howMeTheCode.md)
+ * [Show me the code!](/contents/9/ShowMeTheCode.md)
  * [Basic Concepts](/contents/9/BasicConcepts.md)
 
 ### Brighter Configuration
@@ -93,9 +93,11 @@
 
 ## 10
 
+* [Version Info](/contents/10/VersionInfo.md)
+
 ### Overview
 
- * [Show me the code!](/contents/10/howMeTheCode.md)
+ * [Show me the code!](/contents/10/ShowMeTheCode.md)
  * [Basic Concepts](/contents/10/BasicConcepts.md)
 
 ### Brighter Configuration
