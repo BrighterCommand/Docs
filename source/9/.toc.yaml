@@ -1,7 +1,0 @@
-Sections:
-  Brighter Configuration:
-    order: 20
-    entries:
-    - name   : I came from 9.0.0
-      file   : BasicConfiguration.md
-      order : 2
