@@ -1,6 +1,6 @@
 # Summary
 
-## 9
+## VERSION 9
 
 * [Version Info](/contents/9/VersionInfo.md)
 
@@ -91,7 +91,7 @@
 
  * [FAQ](/contents/9/FAQ.md)
 
-## 10
+## VERSION 10
 
 * [Version Info](/contents/10/VersionInfo.md)
 
