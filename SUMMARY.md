@@ -1,214 +1,178 @@
-# Summary
+## 9
 
-## Overview
+### Overview
 
-* [Show me the code!](/contents/ShowMeTheCode.md)
-    * [Dispatching A Request](/contents/ShowMeTheCode.md#dispatching-a-request)
-    * [Using an External Bus](/contents/ShowMeTheCode.md#using-an-external-bus)
-    * [Returning Query Results](/contents/ShowMeTheCode.md)
-* [Basic Concepts](/contents/BasicConcepts.md)
+ * [Show me the code!](/contents/9/howMeTheCode.md)
+ * [Basic Concepts](/contents/9/BasicConcepts.md)
 
-## Brighter Configuration
+### Brighter Configuration
 
-* [Basic Configuration](/contents/BrighterBasicConfiguration.md)
-    * [Using .NET Core Dependency Injection](/contents/BrighterBasicConfiguration.md#using-net-core-dependency-injection)
-    * [Configuring the Command Processor](/contents/BrighterBasicConfiguration.md#configuring-the-command-processor)
-        *[Command Processor Service Collection Extensions](/contents/BrighterBasicConfiguration.md#command-processor-service-collection-extensions)
-            * [Adding Polly Policies](/contents/BrighterBasicConfiguration.md#adding-polly-policies)
-            * [Configuring Lifetimes](/contents/BrighterBasicConfiguration.md#configuring-lifetimes)
-        * [Brighter Builder Fluent Interface](/contents/BrighterBasicConfiguration.md#brighter-builder-fluent-interface)
-            * [Type Registration](/contents/BrighterBasicConfiguration.md#type-registration)
-            * [Using an External Bus](/contents/BrighterBasicConfiguration.md#using-an-external-bus)
-                * [Publications](/contents/BrighterBasicConfiguration.md#publications)
-                * [Transports & Gateways](/contents/BrighterBasicConfiguration.md#transports-and-gateways)
-                * [Transport NuGet Packages](/contents/BrighterBasicConfiguration.md#transport-nuget-packages)
-                * [Bus Example](/contents/BrighterBasicConfiguration.md#bus-example)
-                * [Retry and Circuit Breaker](/contents/BrighterBasicConfiguration.md#retry-and-circuit-breaker-with-an-external-bus)
-                * [Outbox Support](/contents/BrighterBasicConfiguration.md#outbox-support)
-        * [Putting It All Together](/contents/BrighterBasicConfiguration.md#putting-it-all-together)
-    * [Configuring the Service Activator](/contents/BrighterBasicConfiguration.md#configuring-the-service-activator)
-        * [ServiceActivator Service Collection Extensions](/contents/BrighterBasicConfiguration.md#serviceactivator-service-collection-extensions)
-            * [Subscriptions](/contents/BrighterBasicConfiguration.md#subscriptions)
-            * [Gateway Connections & Channel Factories](/contents/BrighterBasicConfiguration.md#gateway-connections--channel-factories)
-            * [Configuring Service Activator Lifetimes](/contents/BrighterBasicConfiguration.md#configuring-service-activator-lifetimes)
-        * [Service Activator Brighter Builder Fluent Interface](/contents/BrighterBasicConfiguration.md#service-activator-brighter-builder-fluent-interface)
-            *[Inbox](/contents/BrighterBasicConfiguration.md#inbox)
-        * [Running Service Activator](/contents/BrighterBasicConfiguration.md#running-service-activator)
-        * [A Complete Service Activator Example](/contents/BrighterBasicConfiguration.md#a-complete-service-activator-example)
-    * [Samples](/contents/BrighterBasicConfiguration.md#samples)
-* [How Configuring the Command Processor Works](/contents/HowConfiguringTheCommandProcessorWorks.md)
-    * [What you need to provide](/contents/HowConfiguringTheCommandProcessorWorks.md#what-you-need-to-provide)
-    * [Subscriber Registry](/contents/HowConfiguringTheCommandProcessorWorks.md#subscriber-registry)
-    * [Handler Factory](/contents/HowConfiguringTheCommandProcessorWorks.md#handler-factory)
-    * [Policy Registry](/contents/HowConfiguringTheCommandProcessorWorks.md#policy-registry)
-    * [Request Context Factory](/contents/HowConfiguringTheCommandProcessorWorks.md#request-context-factory)
-    * [Putting it all together](/contents/HowConfiguringTheCommandProcessorWorksmd#putting-it-all-together)
-* [How Configuring a Dispatcher for an External Bus Works](/contents/HowConfiguringTheDispatcherWorks.md)
-    * [Configuring the Dispatcher](/contents/HowConfiguringTheDispatcherWorks.md#configuring-the-dispatcher)
-    * [Message Mappers](/contents/HowConfiguringTheDispatcherWorks.md#message-mappers)
-    * [Channel Factory](/contents/HowConfiguringTheDispatcherWorks.md#channel-factory)
-    * [Connection List](/contents/HowConfiguringTheDispatcherWorks.md#connection-list)
-    * [Creating a Builder](/contents/HowConfiguringTheDispatcherWorks.md#creating-a-builder)
-    * [The Dispatcher](/contents/HowConfiguringTheDispatcherWorks.md#running-the-dispatcher)
-* [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)
-* [AWS SNS/SQS Configuration](/contents/AWSSQSConfiguration.md)
-* [Kafka Configuration](/contents/KafkaConfiguration.md)
-* [Azure Service Bus Configuration](/contents/AzureServiceBusConfiguration.md)
-* [Azure Archive Provider Configuration](/contents/AzureBlobConfiguration.md)
+ * [Basic Configuration](/contents/9/BrighterBasicConfiguration.md)
+ * [How Configuring the Command Processor Works](/contents/9/HowConfiguringTheCommandProcessorWorks.md)
+ * [How Configuring a Dispatcher for an External Bus Works](/contents/9/HowConfiguringTheDispatcherWorks.md)
+ * [RabbitMQ Configuration](/contents/9/RabbitMQConfiguration.md)
+ * [AWS SNS Configuration](/contents/9/AWSSQSConfiguration.md)
+ * [Kafka Configuration](/contents/9/KafkaConfiguration.md)
+ * [Azure Service Bus Configuration](/contents/9/AzureServiceBusConfiguration.md)
+ * [Azure Archive Provider Configuration](/contents/9/)
 
-## Darker Configuration
+### Darker Configuration
 
-* [Basic Configuration](/contents/DarkerBasicConfiguration.md)
+ * [Basic Configuration](/contents/9/DarkerBasicConfiguration.md)
 
-## Brighter Request Handlers & Middleware Pipelines
+### Brighter Request Handlers and Middleware Pipelines
 
-* [How to Implement a Request Handler](/contents/ImplementingAHandler.md)
-* [How to Implement an Async Request Handler](/contents/ImplementingAsyncHandler.md)
-* [Requests, Commands and an Events](/contents/Requests%2C%20Commands%20and%20Events.md)
-* [Dispatching Requests](/contents/DispatchingARequest.md)
-    * [Usage](/contents/DispatchingARequest.md#usage)
-    * [Registering a Handler](/contents/DispatchingARequest.md#registering-a-handler)
-    * [Dispatching Requests](/contents/DispatchingARequest.md#dispatching-requests)
-* [Dispatching An Async Request](/contents/AsyncDispatchARequest.md)
-    * [Usage](/contents/AsyncDispatchARequest.md#usage)
-    * [Registering a Handler](/contents/AsyncDispatchARequest.md#registering-a-handler)
-    * [Dispatching Requests](/contents/AsyncDispatchARequest.md#dispatching-requests)
-* [Returning results from a Handler](/contents/ReturningResultsFromAHandler.md)
-    * [Handling Failure](/contents/ReturningResultsFromAHandler.md#handling-failure)
-    * [Communicating the Outcome](/contents/ReturningResultsFromAHandler.md#communicating-the-outcome-of-a-command)
-* [Using an External Bus ](/contents/ImplementingExternalBus.md)
-    * [Brighter's External Bus Architecture](/contents/ImplementingExternalBus.md#brighters-external-bus-architecture)
-    * [Sending via the External Bus](/contents/ImplementingExternalBus.md#sending-via-the-external-bus)
-    * [Receiving via the External Bus](/contents/ImplementingExternalBus.md#receiving-via-the-external-bus)
-* [Message Mappers](/contents/MessageMappers.md)
-    * [Writing A Message Mapper](/contents/MessageMappers.md#writing-a-message-mapper)
-    * [Transformers](/contents/MessageMappers.md#transformers)
-    * [Claim Check](/contents/ClaimCheck.md)
-        * [Claim Check & Retrieve Claim](/contents/ClaimCheck.md#claim-check-and-retrieve-claim)
-        * [The Luggage Store](/contents/ClaimCheck.md#the-luggage-store)
-            * [S3LuggageStore](/contents/S3LuggageStore.md)
-    * [Compression](/contents/Compression.md)
-* [Routing](/contents/Routing.md)
-    * [Publish-Subscribe](/contents/Routing.md#publish-subscribe)
-    * [Direct Messaging](/contents/Routing.md#direct-messaging)
-    * [Summary](/contents/Routing.md#summary)
-* [Building a Pipeline of Request Handlers](/contents/BuildingAPipeline.md)
-    * [The Pipes and Filters Architectural Style](/contents/BuildingAPipeline.md#the-pipes-and-filters-architectural-style)
-    * [The Russian Doll Model](/contents/BuildingAPipeline.md#the-russian-doll-model)
-    * [Implementing a Pipeline](/contents/BuildingAPipeline.md#implementing-a-pipeline)
-    * [Using a Manual Approach](/contents/BuildingAPipeline.md#using-a-manual-approach)
-* [Building an Async Pipeline of Request Handlers](/contents/BuildingAnAsyncPipeline.md)
-    * [Implementing a Pipeline](/contents/BuildingAnAsyncPipeline.md#implementing-a-pipeline)
-* [Passing information between Handlers in the Pipeline](/contents/UsingTheContextBag.md)
-* [Failure and Dead Letter Queues](/contents/HandlerFailure.md)
-    * [Retry (and Circuit Break) the *Request* on the Internal Bus](/contents/HandlerFailure.md#retry-and-circuit-break-the-request-on-the-internal-bus)
-    * [Retry (with Delay) the *Request* on the External Bus](/contents/HandlerFailure.md#retry-with-delay-the-request-on-the-external-bus)
-    * [Terminate processing of that *Request*](/contents/HandlerFailure.md#terminate-processing-of-that-request)
-    * [Run a Fallback](/contents/HandlerFailure.md#run-a-fallback)
-    * [Use Custom Middleware](/contents/HandlerFailure.md#use-custom-middleware)
-* [Supporting Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md)
-    * [Using Brighter’s UsePolicy Attribute](/contents/PolicyRetryAndCircuitBreaker.md#using-brighters-usepolicy-attribute)
-    * [Timeout](/contents/PolicyRetryAndCircuitBreaker.md#timeout)
-* [Failure and Fallback](/contents/PolicyFallback.md)
-    * [Calling the Fallback Pipeline](/contents/PolicyFallback.md#calling-the-fallback-pipeline)
-    * [Using the FallbackPolicy Attribute](/contents/PolicyFallback.md#using-the-fallbackpolicy-attribute)
-* [Feature Switches](/contents/FeatureSwitches.md)
-    * [Using the Feature Switch Attribute](/contents/FeatureSwitches.md#using-the-feature-switch-attribute)
-    * [Building a config for Feature Switches with FluentConfigRegistryBuilder](/contents/FeatureSwitches.md#building-a-config-for-feature-switches-with-fluentconfigregistrybuilder)
-    * [Implementing a custom Feature Switch Registry](/contents/FeatureSwitches.md#implementing-a-custom-feature-switch-registry)
-    * [Setting Feature Switching Registry](/contents/FeatureSwitches.md#setting-feature-switching-registry)
+ * [Building an Async Pipeline of Request Handlers](/contents/9/BuildingAnAsyncPipeline.md)
+ * [Basic Configuration](/contents/9/DarkerBasicConfiguration.md)
+ * [How to Implement an Async Request Handler](/contents/9/ImplementingAsyncHandler.md)
+ * [Requests, Commands and an Events](/contents/9/Requests%2C%20Commands%20and%20Events.md)
+ * [Dispatching Requests](/contents/9/DispatchingARequest.md)
+ * [Dispatching An Async Request](/contents/9/AsyncDispatchARequest.md)
+ * [Returning results from a Handler](/contents/9/ReturningResultsFromAHandler.md)
+ * [Using an External Bus](/contents/9/ImplementingExternalBus.md)
+ * [Message Mappers](/contents/9/MessageMappers.md)
+ * [Routing](/contents/9/Routing.md)
+ * [Building a Pipeline of Request Handlers](/contents/9/BuildingAPipeline.md)
+ * [Passing information between Handlers in the Pipeline](/contents/9/UsingTheContextBag.md)
+ * [Failure and Dead Letter Queues](/contents/9/HandlerFailure.md)
+ * [Supporting Retry and Circuit Breaker](/contents/9/PolicyRetryAndCircuitBreaker.md)
+ * [Failure and Fallback](/contents/9/PolicyFallback.md)
+ * [Feature Switches](/contents/9/FeatureSwitches.md)
 
-## Guaranteed, At Least Once
+### Guaranteed At Least Once
 
-* [Outbox Support](/contents/BrighterOutboxSupport.md)
-    * [Post](/contents/BrighterOutboxSupport.md#post)
-    * [Deposit and Clear](/contents/BrighterOutboxSupport.md#deposit-and-clear)
-    * [Participating in Transactions](/contents/BrighterOutboxSupport.md#participating-in-transactions)
-    * [Implicit or Explicit Clearing of Messages from the Outbox](/contents/BrighterOutboxSupport.md#implicit-or-explicit-clearing-of-messages-from-the-outbox)
-    * [Outbox Sweeper](/contents/BrighterOutboxSupport.md#outbox-sweeper)
-    * [Outbox Arcguver](/contents/BrighterOutboxSupport.md#outbox-archiver)
-    * [Outbox Configuration](/contents/BrighterOutboxSupport.md#outbox-configuration)
-    * [Outbox Builder](/contents/BrighterOutboxSupport.md#outbox-builder)
-    * [EFCore Outbox](/contents/EFCoreOutbox.md)
-    * [Dapper Outbox](/contents/DapperOutbox.md)
-    * [Dynamo Outbox](/contents/DynamoOutbox.md)
-    * [Azure Blob Archive Provider](/contents/AzureBlobArchiveProvider.md)
-* [Inbox Support](/contents/BrighterInboxSupport.md)
-    * [Guaranteed, At Least Once](/contents/BrighterInboxSupport.md#guaranteed-at-least-once)
-    * [Guaranteed, Once Only](/contents/BrighterInboxSupport.md#guaranteed-once-only)
-    * [Inbox](/contents/BrighterInboxSupport.md#inbox)
-    * [Adding an Inbox to a Handler](/contents/BrighterInboxSupport.md#adding-an-inbox-to-a-handler)
-    * [Inbox Configuration](/contents/BrighterInboxSupport.md#inbox-configuration)
-    * [Inbox Builder](/contents/BrighterInboxSupport.md#inbox-builder)
-    * [MSSQL Inbox](/contents/MSSQLInbox.md)
-    * [MySQL Inbox](/contents/MySQLInbox.md)
-    * [Postgres Inbox](/contents/PostgresInbox.md)
-    * [Sqlite Inbox](/contents/SqliteInbox.md)
-    * [Dynamo Inbox](/contents/DynamoInbox.md)
+ * [Outbox Support](/contents/9/BrighterOutboxSupport.md)
+ * [Inbox Support](/contents/9/BrighterInboxSupport.md)
+ * [EFCore Outbox](/contents/9/EFCoreOutbox.md)
+ * [Dapper Outbox](/contents/9/DapperOutbox.md)
+ * [Dynamo Outbox](/contents/9/DynamoOutbox.md)
+ * [MSSQL Inbox](/contents/9/MSSQLInbox.md)
+ * [MySQL Inbox](/contents/9/MySQLInbox.md)
+ * [Postgres Inbox](/contents/9/PostgresInbox.md)
+ * [Sqlite Inbox](/contents/9/SqliteInbox.md)
+ * [Dynamo Inbox](/contents/9/DynamoInbox.md)
 
-## Darker Query Handlers
+### Darker Query Handlers and Middleware Pipelines
 
-* [How to Implement a Query Handler](/contents/ImplementAQueryHandler.md)
+ * [How to Implement a Query Handler](/contents/9/ImplementAQueryHandler.md)
 
-## Health Checks & Observability
+### Health Checks and Observability
 
-* [Logging](/contents/Logging.md)
-* [Monitoring](/contents/Monitoring.md)
-    * [Configuring Monitoring](/contents/Monitoring.md#configuring-monitoring)
-    * [Config file](/contents/Monitoring.md#config-file)
-    * [Handler configuration](/contents/Monitoring.md#handler-configuration)
-    * [Monitor message format](/contents/Monitoring.md#monitor-message-format)
-* [Health Checks](/contents/HealthChecks.md)
-* [Telemetry](/contents/Telemetry.md)
+ * [Logging](/contents/9/Logging.md)
+ * [Monitoring](/contents/9/Monitoring.md)
+ * [Health Checks](/contents/9/HealthChecks.md)
+ * [Telemetry](/contents/9/Telemetry.md)
 
-## FAQ
-* [FAQ](/contents/FAQ.md)
-   * [Dispatching a list of requests](/contents/FAQ.md#iterating-over-a-list-of-requests-to-dispatch-them)
-   * [Internal Bus & Asynchronous vs. External Bus](/contents/AsyncDispatchARequest.md#internal-bus--asynchronous-vs-external-bus)
+### Command, Processors and Dispatchers
 
-## Under the Hood 
+ * [Command, Processor and Dispatcher Patterns](/contents/9/CommandsCommandDispatcherandProcessor.md)
 
-* [How The Command Processor Works](/contents/HowBrighterWorks.md)
-    * [The Dispatcher](/contents/HowBrighterWorks.md#the-dispatcher)
-* [How Service Activator Works](/contents/HowServiceActivatorWorks.md)
+### Under the Hood
 
-## Commands, Processors, & Dispatchers
+ * [How The Command Processor Works](/contents/9/HowBrighterWorks.md)
+ * [How Service Activator Works](/contents/9/HowServiceActivatorWorks.md)
 
-* [Commands Patterns](/contents/CommandsCommandDispatcherandProcessor.md)
-    * [Command](/contents/CommandsCommandDispatcherandProcessor.md#command)
-    * [Command Dispatcher](/contents/CommandsCommandDispatcherandProcessor.md#command-dispatcher)
-    * [Command Processor](/contents/CommandsCommandDispatcherandProcessor.md#command-processor)
+### Event Driven Architectures
 
-## Event Driven Architectures
+ * [Microservices](/contents/9/Microservices.md)
+ * [Event Driven Collaboration](/contents/9/EventDrivenCollaboration.md)
+ * [Event Carried State Transfer](/contents/9/EventCarriedStateTransfer.md)
+ * [Outbox Pattern](/contents/9/OutboxPattern.md)
 
-* [Microservices](/contents/Microservices.md)
-    * [Boundaries are explicit](/contents/Microservices.md#boundaries-are-explicit)
-    * [Services are autonomous](/contents/Microservices.md#services-are-autonomous)
-    * [Share Schema not type](/contents/Microservices.md#share-schema-not-type)
-    * [Compatibility is based on policy](/contents/Microservices.md#compatibility-is-based-on-policy)
-* [Event Driven Collaboration](/contents/EventDrivenCollaboration.md)
-    * [Messaging](/contents/EventDrivenCollaboration.md#messaging)
-    * [Temporal Coupling](/contents/EventDrivenCollaboration.md#temporal-coupling)
-    * [Behavioral Coupling](/contents/EventDrivenCollaboration.md#behavioral-coupling)
-    * [Event Driven Collaboration](/contents/EventDrivenCollaboration.md#event-driven-collaboration-1)
-* [Event Carried State Transfer](/contents/EventCarriedStateTransfer.md)
-    * [Outside and Inside Data](/contents/EventCarriedStateTransfer.md#outside-and-inside-data)
-        * [Reference Data](/contents/EventCarriedStateTransfer.md#reference-data)
-        * [Caching](/contents/EventCarriedStateTransfer.md#caching))
-    * [Event Carried State Transfer](/contents/EventCarriedStateTransfer.md#event-carried-state-transfer-1)
-    * [Alternatives to Event Carried State Transfer](/contents/EventCarriedStateTransfer.md#alternatives-to-event-carried-state-transfer)
-    * [Worked Scenario](/contents/EventCarriedStateTransfer.md#worked-scenario)
-        * [A Pipeline](/contents/EventCarriedStateTransfer.md#a-pipeline)
-        * [ECST](/contents/EventCarriedStateTransfer.md#ecst)
-* [Outbox Pattern](/contents/OutboxPattern.md)
-    * [Producer Correctness](/contents/OutboxPattern.md#producer-correctness)
-    * [Solutions](/contents/OutboxPattern.md#solutions)
-        * [Ignore](/contents/OutboxPattern.md#ignore)
-        * [Compensate](/contents/OutboxPattern.md#compensate)
-        * [The Outbox Pattern](/contents/OutboxPattern.md#the-outbox-pattern)
-        • [Log Tailing](/contents/OutboxPattern.md#log-tailing)
+### Task Queues
 
-## Task Queues
+ * [Using a Task Queue](/contents/9/TaskQueuePattern.md)
 
-* [Using a Task Queue](/contents/TaskQueuePattern.md)
-    * [Doing Work Asynchronously](/contents/TaskQueuePattern.md#doing-work-asynchronously)
+### FAQ
+
+ * [FAQ](/contents/9/FAQ.md)
+
+## 10
+
+### Overview
+
+ * [Show me the code!](/contents/10/howMeTheCode.md)
+ * [Basic Concepts](/contents/10/BasicConcepts.md)
+
+### Brighter Configuration
+
+ * [Basic Configuration](/contents/10/BrighterBasicConfiguration.md)
+ * [How Configuring the Command Processor Works](/contents/10/HowConfiguringTheCommandProcessorWorks.md)
+ * [How Configuring a Dispatcher for an External Bus Works](/contents/10/HowConfiguringTheDispatcherWorks.md)
+ * [RabbitMQ Configuration](/contents/10/RabbitMQConfiguration.md)
+ * [AWS SNS Configuration](/contents/10/AWSSQSConfiguration.md)
+ * [Kafka Configuration](/contents/10/KafkaConfiguration.md)
+ * [Azure Service Bus Configuration](/contents/10/AzureServiceBusConfiguration.md)
+ * [Azure Archive Provider Configuration](/contents/10/)
+
+### Darker Configuration
+
+ * [Basic Configuration](/contents/10/DarkerBasicConfiguration.md)
+
+### Brighter Request Handlers and Middleware Pipelines
+
+ * [Building an Async Pipeline of Request Handlers](/contents/10/BuildingAnAsyncPipeline.md)
+ * [Basic Configuration](/contents/10/DarkerBasicConfiguration.md)
+ * [How to Implement an Async Request Handler](/contents/10/ImplementingAsyncHandler.md)
+ * [Requests, Commands and an Events](/contents/10/Requests%2C%20Commands%20and%20Events.md)
+ * [Dispatching Requests](/contents/10/DispatchingARequest.md)
+ * [Dispatching An Async Request](/contents/10/AsyncDispatchARequest.md)
+ * [Returning results from a Handler](/contents/10/ReturningResultsFromAHandler.md)
+ * [Using an External Bus](/contents/10/ImplementingExternalBus.md)
+ * [Message Mappers](/contents/10/MessageMappers.md)
+ * [Routing](/contents/10/Routing.md)
+ * [Building a Pipeline of Request Handlers](/contents/10/BuildingAPipeline.md)
+ * [Passing information between Handlers in the Pipeline](/contents/10/UsingTheContextBag.md)
+ * [Failure and Dead Letter Queues](/contents/10/HandlerFailure.md)
+ * [Supporting Retry and Circuit Breaker](/contents/10/PolicyRetryAndCircuitBreaker.md)
+ * [Failure and Fallback](/contents/10/PolicyFallback.md)
+ * [Feature Switches](/contents/10/FeatureSwitches.md)
+
+### Guaranteed At Least Once
+
+ * [Outbox Support](/contents/10/BrighterOutboxSupport.md)
+ * [Inbox Support](/contents/10/BrighterInboxSupport.md)
+ * [EFCore Outbox](/contents/10/EFCoreOutbox.md)
+ * [Dapper Outbox](/contents/10/DapperOutbox.md)
+ * [Dynamo Outbox](/contents/10/DynamoOutbox.md)
+ * [MSSQL Inbox](/contents/10/MSSQLInbox.md)
+ * [MySQL Inbox](/contents/10/MySQLInbox.md)
+ * [Postgres Inbox](/contents/10/PostgresInbox.md)
+ * [Sqlite Inbox](/contents/10/SqliteInbox.md)
+ * [Dynamo Inbox](/contents/10/DynamoInbox.md)
+
+### Darker Query Handlers and Middleware Pipelines
+
+ * [How to Implement a Query Handler](/contents/10/ImplementAQueryHandler.md)
+
+### Health Checks and Observability
+
+ * [Logging](/contents/10/Logging.md)
+ * [Monitoring](/contents/10/Monitoring.md)
+ * [Health Checks](/contents/10/HealthChecks.md)
+ * [Telemetry](/contents/10/Telemetry.md)
+
+### Command, Processors and Dispatchers
+
+ * [Command, Processor and Dispatcher Patterns](/contents/10/CommandsCommandDispatcherandProcessor.md)
+
+### Under the Hood
+
+ * [How The Command Processor Works](/contents/10/HowBrighterWorks.md)
+ * [How Service Activator Works](/contents/10/HowServiceActivatorWorks.md)
+
+### Event Driven Architectures
+
+ * [Microservices](/contents/10/Microservices.md)
+ * [Event Driven Collaboration](/contents/10/EventDrivenCollaboration.md)
+ * [Event Carried State Transfer](/contents/10/EventCarriedStateTransfer.md)
+ * [Outbox Pattern](/contents/10/OutboxPattern.md)
+
+### Task Queues
+
+ * [Using a Task Queue](/contents/10/TaskQueuePattern.md)
+
+### FAQ
+
+ * [FAQ](/contents/10/FAQ.md)
+
