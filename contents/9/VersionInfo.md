@@ -1,3 +1,0 @@
-# Version Information
-
-Beginning of Version 9
