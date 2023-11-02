@@ -91,6 +91,10 @@
 
  * [FAQ](/contents/9/FAQ.md)
 
+ ## END OF VERSION 9
+
+* [Version Info](/contents/9/VersionEnd.md)
+
 ## VERSION 10
 
 * [Version Info](/contents/10/VersionInfo.md)
@@ -181,4 +185,8 @@
 ### FAQ
 
  * [FAQ](/contents/10/FAQ.md)
+
+  ## END OF VERSION 10
+
+* [Version Info](/contents/10/VersionEnd.md)
 
