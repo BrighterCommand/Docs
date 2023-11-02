@@ -16,6 +16,10 @@ The markdown files in the source are organized by version. We support two versio
 <strong>\contents</strong>
 * N: Markdown file for a version (merges \source\shared && \source\N)
 
+### Building the Documentation
+
+We use the [Rewind](https://github.com/BrighterCommand/Rewind) tool to build <strong>\contents</strong> from  <strong>\source</strong>. See the [README](https://github.com/BrighterCommand/Rewind/blob/main/README.md) for more information on how to build the documentation, in particular how the <strong>.toc.yaml</strong> file works.
+
 ## GitBook
 ### Sources
 For convenience the documentation is made available via [GitBook](https://brightercommand.gitbook.io/paramore-brighter-documentation/).
