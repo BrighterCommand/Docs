@@ -1,0 +1,15 @@
+---
+Sections:
+  VERSION 10:
+    order: 1
+    entries:
+    - name : Version Begins
+      file : VersionBegin.md
+      order : 10
+  END OF VERSION:
+    order: 999
+    entries:   
+    - name : Version Ends
+      file : VersionEnd.md
+      order : 20
+...

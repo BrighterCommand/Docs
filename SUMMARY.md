@@ -1,8 +1,8 @@
-# Summary
+## 9
 
-## VERSION 9
+### VERSION 9
 
-* [Version Info](/contents/9/VersionInfo.md)
+ * [Version Begins](/contents/9/VersionBegin.md)
 
 ### Overview
 
@@ -91,13 +91,15 @@
 
  * [FAQ](/contents/9/FAQ.md)
 
- ## END OF VERSION 9
+### END OF VERSION
 
-* [Version Info](/contents/9/VersionEnd.md)
+ * [Version Ends](/contents/9/VersionEnd.md)
 
-## VERSION 10
+## 10
 
-* [Version Info](/contents/10/VersionInfo.md)
+### VERSION 10
+
+ * [Version Begins](/contents/10/VersionBegin.md)
 
 ### Overview
 
@@ -186,7 +188,7 @@
 
  * [FAQ](/contents/10/FAQ.md)
 
-  ## END OF VERSION 10
+### END OF VERSION
 
-* [Version Info](/contents/10/VersionEnd.md)
+ * [Version Ends](/contents/10/VersionEnd.md)
 
