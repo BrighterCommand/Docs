@@ -46,12 +46,12 @@ public async Task<ActionResult<FindPersonsGreetings>> Post(string name, NewGreet
 Handler code listens for and responds to requests or queries. The handler for the above request and query are:
 
 ``` csharp
-[RequestLogging(0, HandlerTiming.Before)]
+[RequestLoggingAsync(0, HandlerTiming.Before)]
 [UsePolicyAsync(step:1, policy: Policies.Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
-public override async Task<AddPerson> HandleAsync(AddPerson addPerson, CancellationToken cancellationToken = default(CancellationToken))
+public override async Task<AddPerson> HandleAsync(AddPerson addPerson, CancellationToken cancellationToken = default)
 {
-	await _uow.Database.InsertAsync<Person>(new Person(addPerson.Name));
-	
+	await using var connection = await _relationalDbConnectionProvider.GetConnectionAsync(cancellationToken);
+	await connection.ExecuteAsync("insert into Person (Name) values (@Name)", new {Name = addPerson.Name});
 	return await base.HandleAsync(addPerson, cancellationToken);
 }
 ```
@@ -61,15 +61,25 @@ public override async Task<AddPerson> HandleAsync(AddPerson addPerson, Cancellat
 [RetryableQuery(1, Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
 public override async Task<FindPersonsGreetings> ExecuteAsync(FindGreetingsForPerson query, CancellationToken cancellationToken = new CancellationToken())
 {
+	//Retrieving parent and child is a bit tricky with Dapper. From raw SQL We wget back a set that has a row-per-child. We need to turn that
+	//into one entity per parent, with a collection of children. To do that we bring everything back into memory, group by parent id and collate all
+	//the children for that group.
+
 	var sql = @"select p.Id, p.Name, g.Id, g.Message 
 		from Person p
 		inner join Greeting g on g.Recipient_Id = p.Id";
-
-	var people = await _uow.Database.QueryAsync<Person, Greeting, Person>(sql, (person, greeting) =>
+	await using var connection = await _relationalDbConnectionProvider.GetConnectionAsync(cancellationToken);
+	var people = await connection.QueryAsync<Person, Greeting, Person>(sql, (person, greeting) =>
 	{
 		person.Greetings.Add(greeting);
+
 		return person;
 	}, splitOn: "Id");
+	
+	if (!people.Any())
+	{
+		return new FindPersonsGreetings(){Name = query.Name, Greetings = Array.Empty<Salutation>()};
+	}
 
 	var peopleGreetings = people.GroupBy(p => p.Id).Select(grp =>
 	{
@@ -82,9 +92,9 @@ public override async Task<FindPersonsGreetings> ExecuteAsync(FindGreetingsForPe
 
 	return new FindPersonsGreetings
 	{
-		Name = person.Name, 
-		Greetings = person.Greetings.Select(g => new Salutation(g.Greet()))
+		Name = person.Name, Greetings = person.Greetings.Select(g => new Salutation(g.Greet()))
 	};
+}
 
 }
 ```
@@ -96,39 +106,56 @@ As well as using an Internal Bus, in Brighter you can use an External Bus - midd
 The following code sends a request to another process.
 
 ``` csharp
-[RequestLogging(0, HandlerTiming.Before)]
+[RequestLoggingAsync(0, HandlerTiming.Before)]
 [UsePolicyAsync(step:1, policy: Policies.Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
-public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default(CancellationToken))
+public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default)
 {
 	var posts = new List<Guid>();
 	
 	//We use the unit of work to grab connection and transaction, because Outbox needs
 	//to share them 'behind the scenes'
-	
-	var tx = await _uow.BeginOrGetTransactionAsync(cancellationToken);
+
+	var conn = await _transactionProvider.GetConnectionAsync(cancellationToken);
+	var tx = await _transactionProvider.GetTransactionAsync(cancellationToken);
 	try
 	{
-		var searchbyName = Predicates.Field<Person>(p => p.Name, Operator.Eq, addGreeting.Name);
-		var people = await _uow.Database.GetListAsync<Person>(searchbyName, transaction: tx);
-		var person = people.Single();
-		
-		var greeting = new Greeting(addGreeting.Greeting, person);
-		
-		//write the added child entity to the Db
-		await _uow.Database.InsertAsync<Greeting>(greeting, tx);
+		var people = await conn.QueryAsync<Person>(
+                    "select * from Person where name = @name",
+                    new {name = addGreeting.Name},
+                    tx
+                );
+                var person = people.SingleOrDefault();
 
-		//Now write the message we want to send to the Db in the same transaction.
-		posts.Add(await _postBox.DepositPostAsync(new GreetingMade(greeting.Greet()), cancellationToken: cancellationToken));
-		
-		//commit both new greeting and outgoing message
-		await tx.CommitAsync(cancellationToken);
+                if (person != null)
+                {
+                    var greeting = new Greeting(addGreeting.Greeting, person);
+
+                    //write the added child entity to the Db
+                    await conn.ExecuteAsync(
+                        "insert into Greeting (Message, Recipient_Id) values (@Message, @RecipientId)",
+                        new { greeting.Message, RecipientId = greeting.RecipientId },
+                        tx);
+
+                    //Now write the message we want to send to the Db in the same transaction.
+                    posts.Add(await _postBox.DepositPostAsync(
+                        new GreetingMade(greeting.Greet()),
+                        _transactionProvider,
+                        cancellationToken: cancellationToken));
+
+                    //commit both new greeting and outgoing message
+                    await _transactionProvider.CommitAsync(cancellationToken);
+                }
 	}
 	catch (Exception e)
-	{   
-		_logger.LogError(e, "Exception thrown handling Add Greeting request");
-		//it went wrong, rollback the entity change and the downstream message
-		await tx.RollbackAsync(cancellationToken);
-		return await base.HandleAsync(addGreeting, cancellationToken);
+	{
+                _logger.LogError(e, "Exception thrown handling Add Greeting request");
+                //it went wrong, rollback the entity change and the downstream message
+                await _transactionProvider.RollbackAsync(cancellationToken);
+                return await base.HandleAsync(addGreeting, cancellationToken);
+	}
+	finally
+	{
+		_transactionProvider.Close();
 	}
 
 	//Send this message via a transport. We need the ids to send just the messages here, not all outstanding ones.
@@ -142,37 +169,43 @@ public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, Can
 The following code receives a message, sent from another process, via a dispatcher. It uses an Inbox to ensure that it does not process duplicate messages
 
 ``` csharp
-[UseInboxAsync(step:0, contextKey: typeof(GreetingMadeHandlerAsync), onceOnly: true )]
-[RequestLoggingAsync(step: 1, timing: HandlerTiming.Before)]
-[UsePolicyAsync(step:2, policy: Policies.Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
-public override async Task<GreetingMade> HandleAsync(GreetingMade @event, CancellationToken cancellationToken = default(CancellationToken))
+[UseInbox(step:0, contextKey: typeof(GreetingMadeHandler), onceOnly: true )] 
+[RequestLogging(step: 1, timing: HandlerTiming.Before)]
+[UsePolicy(step:2, policy: Policies.Retry.EXPONENTIAL_RETRYPOLICY)]
+public override GreetingMade Handle(GreetingMade @event)
 {
 	var posts = new List<Guid>();
-	
-	var tx = await _uow.BeginOrGetTransactionAsync(cancellationToken);
+            
+	var tx = _transactionConnectionProvider.GetTransaction();
+	var conn = tx.Connection; 
 	try
 	{
 		var salutation = new Salutation(@event.Greeting);
+			
+		conn.Execute(
+			"insert into Salutation (greeting) values (@greeting)", 
+			new {greeting = salutation.Greeting}, 
+			tx); 
 		
-		await _uow.Database.InsertAsync<Salutation>(salutation, tx);
+		posts.Add(_postBox.DepositPost(
+			new SalutationReceived(DateTimeOffset.Now), 
+			_transactionConnectionProvider));
 		
-		posts.Add(await _postBox.DepositPostAsync(new SalutationReceived(DateTimeOffset.Now), cancellationToken: cancellationToken));
-		
-		await tx.CommitAsync(cancellationToken);
+		_transactionConnectionProvider.Commit();
 	}
 	catch (Exception e)
 	{
 		_logger.LogError(e, "Could not save salutation");
-		
+	
 		//if it went wrong rollback entity write and Outbox write
-		await tx.RollbackAsync(cancellationToken);
-		
-		return await base.HandleAsync(@event, cancellationToken);
+		_transactionConnectionProvider.Rollback();
+	
+		return base.Handle(@event);
 	}
 
-	await _postBox.ClearOutboxAsync(posts, cancellationToken: cancellationToken);
+	_postBox.ClearOutbox(posts.ToArray());
 	
-	return await base.HandleAsync(@event, cancellationToken);
+	return base.Handle(@event);
 }
 ```
 

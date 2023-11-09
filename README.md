@@ -20,6 +20,12 @@ The markdown files in the source are organized by version. We support two versio
 
 We use the [Rewind](https://github.com/BrighterCommand/Rewind) tool to build <strong>\contents</strong> from  <strong>\source</strong>. See the [README](https://github.com/BrighterCommand/Rewind/blob/main/README.md) for more information on how to build the documentation, in particular how the <strong>.toc.yaml</strong> file works.
 
+Typically, you can build the documentation by running the following command at the root:
+
+```bash
+bin/Rewind makebook source .
+```
+
 ## GitBook
 ### Sources
 For convenience the documentation is made available via [GitBook](https://brightercommand.gitbook.io/paramore-brighter-documentation/).
