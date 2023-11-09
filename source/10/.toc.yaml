@@ -6,6 +6,18 @@ Sections:
     - name : Version Begins
       file : VersionBegin.md
       order : 10
+  Overview:
+    order: 10
+    entries:
+    - name : Show me the code!
+      file : ShowMeTheCode.md
+      order : 10
+  Brighter Configuration:
+    order: 20
+    entries:
+    - name : Basic Configuration
+      file : BrighterBasicConfiguration.md
+      order : 10      
   END OF VERSION:
     order: 999
     entries:   

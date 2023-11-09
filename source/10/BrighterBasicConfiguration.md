@@ -34,7 +34,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ```
 
-if you are using .NET 6 you can make the call direction on your **HostBuilder**'s Services property.
+if you are using .NET 6 you can make the call directly on your **HostBuilder**'s Services property.
 
 The **AddBrighter()** method takes an **`Action<BrighterOptions>`** delegate. The extension method supplies the delegate with a **BrighterOptions** object that allows you to configure how Brighter runs.
 
@@ -179,17 +179,37 @@ When raising a message on an *External Bus*, you use the following methods on th
 
 The major difference here is whether or not you wish to use an *Outbox* for Transactional Messaging. (See [Outbox Pattern](/contents/OutboxPattern.md) and [Brighter Outbox Support](/contents/BrighterOutboxSupport.md) for more on Brighter and the Outbox Pattern).
 
+#### Configuring an External Bus
+
 To use an *External Bus*, you need to supply Brighter with configuration information that tells Brighter what middleware you are using and how to find it. (You don't need to do anything to configure an *Internal Bus*, it is always available.)
 
-In order to provide Brighter with this information we need to provide it with an implementation of **IAmAProducerRegistry** for the middleware you intend to use for the *External Bus*.
+The **IBrighterBuilder** interface returned from **AddBrighter** allows you to configure the properties of your external bus, by calling the **UseExternalBus** extension method. The UseExternalBus extension method takes a lambda function, whose only parameter is an **ExternalBusConfiguration**. The **ExternalBusConfiguration** lets you set properties such as 
 
-#### **Transports and Gateways**
+``` csharp
+private void ConfigureBrighter(IServiceCollection services)
+{
+    services.AddBrighter(options =>
+        {
+            ...
+        })
+        .UseExternalBus((configure) =>
+        {
+        })
+        .AutoFromAssemblies();
+
+```
+
+#### **Transports 
 
 *Transports* are how Brighter supports specific Message-Oriented-Middleware (MoM). *Transports* are provided in separate NuGet packages so that you can take a dependency only on the transport that you need. Brighter supports a number of different *transports*. 
 
-A *Gateway Connection* is how you configure connection to MoM within a *transport*. As an example, the *Gateway Connection* **RMqGatewayConnection** is used to connect to RabbitMQ. Internally the *Gateway Connection* is used to create a *Gateway* object which wraps the client SDK for the MoM.
+We use the naming convention **Paramore.Brighter.MessagingGateway.{TRANSPORT}** for *transports* where {TRANSPORT} is the name of the middleware. 
 
-We go into more depth on the fields you set here in sections dealing with specific transports.
+In this example we will use the transport for RabbitMQ, provided by the NuGet package: 
+
+* **Paramore.Brighter.MessagingGateway.RMQ**
+
+See the documentation for detail on specific *transports* on how to configure them for use with Brighter, for now it is enough to know that you need to provide a *Messaging Gateway* which tells us how to reach the middleware and a *Publication* which tells us how to configure the middleware.
 
 #### **Publications**
 
@@ -200,24 +220,39 @@ A *Publication* configures a transport for sending a message to it's associated 
 * **MaxOutStandingCheckIntervalMilliSeconds**: How often do we check to see if the Outbox is full.
 * **Topic**: A Topic is the key used within the MoM to route messages. Publishers publish to a topic and subscribers, subscribe to it. We use a class **RoutingKey** to encapsulate the identifier used for a topic. The name the MoM uses for a topic may vary. Kafka & SNS use *topic* whilst RMQ uses *routingkey* 
 
-#### **Transport NuGet Packages**
+#### Producer Registry
 
-We use the naming convention **Paramore.Brighter.MessagingGateway.{TRANSPORT}** for *transports* where {TRANSPORT} is the name of the middleware. 
+In order to provide Brighter with the means to send a message via the transport, we need to provide it with an **IAmAProducerRegistry** for the transport you intend to use for the *External Bus*.
 
-In this example we will show using an implementation of **IAmAProducerRegistry** for RabbitMQ, provided by the NuGet package: 
+A **producer** is the transport specific code that you need to send messages; it implements **IAmAMessageProducer**. 
 
-* **Paramore.Brighter.MessagingGateway.RMQ**
+We register a **producer** with a **producer registry**; it needs to implement **IAmAProducerRegistry** but usually you will use the provided **ProducerRegistry**. At runtime,  we lookup the producer to use in the registry by **routing key** (aka topic).
 
-See the documentation for detail on specific *transports* on how to configure them for use with Brighter, for now it is enough to know that you need to provide a *Messaging Gateway* which tells us how to reach the middleware and a *Publication* which tells us how to configure the middleware.
+Typically for a transport we implement a **producer registry factory**; it needs to implement **IAmAProducerRegistryFactory**. For example, for the RMQ transport, we provide **RmqProducerRegistryFactory**. A **producer registry factory** typically takes a **connection** to the broker and a collection of **publications**, and it iterates over the **publications** creating a producer for each one and registering it in a **producer registry**. It then returns a configured **producer registry**.
 
-*Transports* provide an **IAmAProducerRegistryFactory()** to allow you to create multiple *Publications* connected to the same middleware.
+The following code shows an application using the RMQ transport support to create its **producer registry**.
 
-#### Retry and Circuit Breaker with an External Bus
+``` csharp
+var producerRegistry = new RmqProducerRegistryFactory(
+    new RmqMessagingGatewayConnection
+    {
+        AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
+        Exchange = new Exchange("paramore.brighter.exchange"),
+    },
+    new RmqPublication[]
+    {
+        new RmqPublication
+        {
+            Topic = new RoutingKey("GreetingMade"),
+            MaxOutStandingMessages = 5,
+            MaxOutStandingCheckIntervalMilliSeconds = 500,
+            WaitForConfirmsTimeOutInMilliseconds = 1000,
+            MakeChannels = OnMissingChannel.Create
+        }
+    }
+).Create();
+```
 
-When posting a request to the External Bus we use a Polly policy internally to control Retry and Circuit Breaker in case the External Bus is not available. These policies have defaults but you can configure the behavior using the policy keys: 
-
-* **Paramore.RETRYPOLICY**
-* **Paramore.CIRCUITBREAKER**
 
 #### **Bus Example**
 
@@ -227,31 +262,32 @@ Putting this together, an example configuration for an External Bus for a local 
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddBrighter(...)
-        .UseExternalBus(new RmqProducerRegistryFactory(
-                    new RmqMessagingGatewayConnection
-                    {
-                        AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
-                        Exchange = new Exchange("paramore.brighter.exchange"),
-                    },
-                    new RmqPublication[]{
-                        new RmqPublication
-                    {
-                        Topic = new RoutingKey("GreetingMade"),
-                        MaxOutStandingMessages = 5,
-                        MaxOutStandingCheckIntervalMilliSeconds = 500,
-                        WaitForConfirmsTimeOutInMilliseconds = 1000,
-                        MakeChannels = OnMissingChannel.Create
-                    }}
-                ).Create()
-            )
+        .UseExternalBus((configure) =>
+        {
+            configure.ProducerRegistry = new RmqProducerRegistryFactory(
+                new RmqMessagingGatewayConnection
+                {
+                    AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
+                    Exchange = new Exchange("paramore.brighter.exchange"),
+                },
+                new RmqPublication[]{
+                    new RmqPublication
+                {
+                    Topic = new RoutingKey("GreetingMade"),
+                    MaxOutStandingMessages = 5,
+                    MaxOutStandingCheckIntervalMilliSeconds = 500,
+                    WaitForConfirmsTimeOutInMilliseconds = 1000,
+                    MakeChannels = OnMissingChannel.Create
+                }}
+            ).Create();
+        })
+        .AutoFromAssemblies()
 
             ...
 }
 ```
 
 #### **Outbox Support**
-
-TODO: V10 Changes
 
 If you intend to use Brighter's *Outbox* support for Transactional Messaging then you need to provide us with details of your *Outbox*.
 
@@ -272,17 +308,51 @@ In addition for an ORM you will need to add the package that supports the ORM, i
 
 For a given ORM the pattern should be Paramore.Brighter.{ORM}.{DATABASE} where {ORM} is the ORM you are choosing and {DATABASE} is the Db you are using with the ORM.
 
-To configure our *Outbox* we then need to use the Use{DATABASE}Outbox method call, where {DATABASE} is the {DATABASE} that we want, passing in the configuration for our Db so that we can access it. In our case this will be **UseMySqlOutbox()**.
+#### Configuring the Outbox
 
-As we want to use an ORM, in our case EF Core, we have to tell the Outbox how to access EF Core transactions - as we need to participate in a transaction with the ORM. We call a method for the Db, Use{DATABASE}TransactionConnectionProvider, where {DATABASE} is our Db, so in our case **UseMySqlTransactionConnectionProvider()**.
+To configure our *Outbox* we need to use the **ExternalBusConfiguration**.
 
-As a parameter to Use{DATABASE}TransactionConnectionProvider we need to provide a *Transaction Provider* for the ORM we are using, in our case this is *MySqlEntityFrameworkConnectionProvider<>).
+An Outbox has three pieces: 
 
-Finally, if we want the *Outbox* to use a background thread to clear un-dispatched items from the *Outbox*, and we do in most circumstances, otherwise they will not be dispatched, we need to run an *Outbox Sweeper* to do this work.
+* The *Outbox*, which implements **IAmAnOutbox**. Brighter provides implementations for a range of common Dbs. 
+* The *Connection Provider* which tells Brighter how to connect to the *Outbox*
+* The *Transaction Provider* which allows Brighter to participate in the same transaction that you update an entity with.
+
+In this example, we want to use EF Core with an MySQL Outbox. See the documentation for Outboxes for specific configuration options.
+
+``` csharp
+public void ConfigureServices(IServiceCollection services)
+{
+            
+    var outboxConfiguration = new RelationalDatabaseConfiguration(DbConnectionString());
+    services.AddSingleton<IAmARelationalDatabaseConfiguration>(outboxConfiguration);
+
+    services.AddBrighter(...)
+        .UseExternalBus((configure) =>
+        {
+            configure.Outbox = new MySqlOutbox(outboxConfiguration);
+            configure.TransactionProvider = typeof(MySqlEntityFrameworkConnectionProvider<GreetingsEntityGateway>);
+            configure.ConnectionProvider = typeof(MySqlConnectionProvider);
+        })
+        .AutoFromAssemblies();
+
+        ...
+}
+
+```
+
+Typically **DbConnectionString** would obtain the connection string for the Db from configuration.
+
+#### Outbox Sweeper
+Finally, if we want the *Outbox* to use a background thread to clear un-dispatched items from the *Outbox*, and we do in most circumstances,  we need to run an *Outbox Sweeper* to do this work. (You can force an immediate clear within the code that produces the outgoing message using **ClearOutbox**, but you should still have a sweeper to guarantee it is sent if that call fails).
+
+Typically you run one sweeper. Brighter does not have a distributed lock. As such, running a sweeper in every producer will cause issues as multiple sweepers may try to clear an outstanding message. The outbox documentation looks at your strategies for ensuring only one sweeper runs. For development purposes though, you may wish to add a sweeper to the instance that you are currently running.
 
 To add the *Outbox Sweeper* you will need to take a dependency on another NuGet package:
 
 * **Paramore.Brighter.Extensions.Hosting**
+
+You can then add a sweeper using "UseOutboxSweeper"
 
 This results in:
 
@@ -291,14 +361,14 @@ public void ConfigureServices(IServiceCollection services)
 {
     services.AddBrighter(...)
         .UseExternalBus(...)
-        .UseMySqlOutbox(new MySqlConfiguration(DbConnectionString(), _outBoxTableName), typeof(MySqlConnectionProvider), ServiceLifetime.Singleton)
-        .UseMySqTransactionConnectionProvider(typeof(MySqlEntityFrameworkConnectionProvider<GreetingsEntityGateway>), ServiceLifetime.Scoped)
-        .UseOutboxSweeper()
-
+         .UseOutboxSweeper()
+         .AutoFromAssemblies();
         ...
 }
 
 ```
+
+#### Request-Reply
 
 (**UseExternalBus()** has optional parameters for use with Request-Reply support for some transports. We don't cover that here, instead see [Direct Messaging](/contents/Routing.md#direct-messaging) for more).
 
@@ -348,6 +418,14 @@ public GreetingMade MapToRequest(Message message)
 }
 ```
 
+#### Retry and Circuit Breaker with an External Bus
+
+When sending a request via the External Bus we use a Polly policy internally to control Retry and Circuit Breaker in case the External Bus is not available. These policies have defaults but you can configure the behavior using the policy keys: 
+
+* **Paramore.RETRYPOLICY**
+* **Paramore.CIRCUITBREAKER**
+
+
 ### **Putting It All Together**
 
 Putting all this together, a typical configuration might looks as follows:
@@ -355,6 +433,10 @@ Putting all this together, a typical configuration might looks as follows:
 ``` csharp
 public void ConfigureServices(IServiceCollection services)
 {
+
+    var outboxConfiguration = new RelationalDatabaseConfiguration(DbConnectionString());
+    services.AddSingleton<IAmARelationalDatabaseConfiguration>(outboxConfiguration);
+
     services.AddBrighter(options =>
         {
             options.HandlerLifetime = ServiceLifetime.Scoped;
@@ -365,25 +447,28 @@ public void ConfigureServices(IServiceCollection services)
         {
             options.PropertyNameCaseInsensitive = true;
         })
-        .UseExternalBus(new RmqProducerRegistryFactory(
+       .UseExternalBus((configure) =>
+        {
+            configure.ProducerRegistry = new RmqProducerRegistryFactory(
                 new RmqMessagingGatewayConnection
                 {
-                    AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@rabbitmq:5672")),
+                    AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
                     Exchange = new Exchange("paramore.brighter.exchange"),
                 },
-                new RmqPublication[] {
+                new RmqPublication[]{
                     new RmqPublication
-                    {
-                        Topic = new RoutingKey("GreetingMade"),
-                        MaxOutStandingMessages = 5,
-                        MaxOutStandingCheckIntervalMilliSeconds = 500,
-                        WaitForConfirmsTimeOutInMilliseconds = 1000,
-                        MakeChannels = OnMissingChannel.Create
-                    }}
-            ).Create()
-        )
-        .UseMySqlOutbox(new MySqlConfiguration(DbConnectionString(), _outBoxTableName), typeof(MySqlConnectionProvider), ServiceLifetime.Singleton)
-        .UseMySqTransactionConnectionProvider(typeof(MySqlEntityFrameworkConnectionProvider<GreetingsEntityGateway>), ServiceLifetime.Scoped)
+                {
+                    Topic = new RoutingKey("GreetingMade"),
+                    MaxOutStandingMessages = 5,
+                    MaxOutStandingCheckIntervalMilliSeconds = 500,
+                    WaitForConfirmsTimeOutInMilliseconds = 1000,
+                    MakeChannels = OnMissingChannel.Create
+                }}
+            ).Create();
+           configure.Outbox = new MySqlOutbox(outboxConfiguration);
+           configure.TransactionProvider = typeof(MySqlEntityFrameworkConnectionProvider<GreetingsEntityGateway>);
+           configure.ConnectionProvider = typeof(MySqlConnectionProvider);
+        })
         .UseOutboxSweeper()
         .AutoFromAssemblies();
 }
@@ -603,21 +688,21 @@ private static IHostBuilder CreateHostBuilder(string[] args) =>
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
     services.AddServiceActivator(options =>
-        { ...  })
-        .UseExternalInbox(
-            new MySqlInbox(new MySqlInboxConfiguration("server=localhost; port=3306; uid=root; pwd=root; database=Salutations", "Inbox");
-            new InboxConfiguration(
-                scope: InboxScope.Commands,
-                onceOnly: true,
-                actionOnExists: OnceOnlyAction.Throw
-            )
-        );
+        {   
+            ...
+            options.InboxConfiguration =  new InboxConfiguration(
+                    inbox: new MySqlInbox(new RelationalDatabaseConfiguration(DbConnectionString()))
+                    scope: InboxScope.Commands,
+                    onceOnly: true,
+                    actionOnExists: OnceOnlyAction.Throw
+        )})
+;
 }
 
 ...
 
 ```
-Typically you would obtain the connection string for the Db from configuration (as opposed to hard coding the string), likewise for the table name for your *Inbox*.
+Typically **DbConnectionString** would obtain the connection string for the Db from configuration.
 
 
 ### Running Service Activator
@@ -711,23 +796,29 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
     var rmqMessageConsumerFactory = new RmqMessageConsumerFactory(rmqConnection);
 
     services.AddServiceActivator(options =>
-        {
-            options.Subscriptions = subscriptions;
-            options.ChannelFactory = new ChannelFactory(rmqMessageConsumerFactory);
-            options.UseScoped = true;
-            options.HandlerLifetime = ServiceLifetime.Scoped;
-            options.MapperLifetime = ServiceLifetime.Singleton;
-            options.CommandProcessorLifetime = ServiceLifetime.Scoped;
-        })
-        .AutoFromAssemblies()
-        .UseExternalInbox(
-            new MySqlInbox(new MySqlInboxConfiguration("server=localhost; port=3306; uid=root; pwd=root; database=Salutations", "Inbox");
-            new InboxConfiguration(
-                scope: InboxScope.Commands,
-                onceOnly: true,
-                actionOnExists: OnceOnlyAction.Throw
-            )
-        )
+    {
+        options.Subscriptions = subscriptions;
+        options.ChannelFactory = new ChannelFactory(rmqMessageConsumerFactory);
+        options.UseScoped = true;
+        options.HandlerLifetime = ServiceLifetime.Scoped;
+        options.MapperLifetime = ServiceLifetime.Singleton;
+        options.CommandProcessorLifetime = ServiceLifetime.Scoped;
+        options.PolicyRegistry = new SalutationPolicy();
+        options.InboxConfiguration =  new InboxConfiguration(
+            inbox: new MySqlInbox(new RelationalDatabaseConfiguration(DbConnectionString()))
+            scope: InboxScope.Commands,
+            onceOnly: true,
+            actionOnExists: OnceOnlyAction.Throw
+        );
+    })
+    .UseExternalBus((configure) =>
+    {
+        configure.ProducerRegistry = producerRegistry;
+        configure.Outbox = outbox;
+        configure.TransactionProvider = transactionProvider;
+        configure.ConnectionProvider = connectionProvider;
+    })
+    .AutoFromAssemblies();
     
     services.AddHostedService<ServiceActivatorHostedService>();
 
