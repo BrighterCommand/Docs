@@ -55,8 +55,9 @@ The following code connects to a remote Kafka instance. The settings here will d
 
 ``` csharp
 	services.AddBrighter(...)
-	.UseExternalBus(
-	new KafkaProducerRegistryFactory(
+	.UseExternalBus((configure) =>
+        {
+            configure.ProducerRegistry = new KafkaProducerRegistryFactory(
 		new KafkaMessagingGatewayConfiguration()
 		{
 			Name = "paramore.brighter.greetingsender",
@@ -101,8 +102,9 @@ The following example shows how a *Publication* might be configured:
 
 ``` csharp
 	services.AddBrighter(...)
-	.UseExternalBus(
-	new KafkaProducerRegistryFactory(
+	.UseExternalBus((configure) =>
+        {
+            configure.ProducerRegistry = new KafkaProducerRegistryFactory(
 		...,//connection see above
 		new KafkaPublication[] {new KafkaPublication()
                 {
@@ -112,10 +114,9 @@ The following example shows how a *Publication* might be configured:
                     MessageTimeoutMs = 1000,
                     RequestTimeoutMs = 1000,
                     MakeChannels = OnMissingChannel.Create 
-                }
-		)
-	.Create())
-	...
+                }}
+		).Create();
+	})
 
 ```
 
@@ -139,8 +140,9 @@ You can use it as follows:
 	publication.SetConfigHook(config => config.EnableGaplessGuarantee = true)
 
 	services.AddBrighter(...)
-	.UseExternalBus(
-	new KafkaProducerRegistryFactory(
+	.UseExternalBus((configure) =>
+        {
+            configure.ProducerRegistry = new KafkaProducerRegistryFactory(
 		...,//connection see above
 		new KafkaPublication[] {publication})
 	.Create())
@@ -322,6 +324,8 @@ A non-blocking retry typically creates a copy of the current record, and appends
 (You may need multiple tables or streams to support different delay lengths)
 
 Until Brighter supports this for you, implementation of non-blocking consumers is left to the user.
+
+
 
 
 
