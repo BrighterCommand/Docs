@@ -298,18 +298,30 @@ public GreetingEvent MapToRequest(Message message)
 
 ```
 
+## Requeue with Delay (Non-Blocking Retry)
 
-## Requeue with Delay
+We don't currently support requeue with delay for Kafka. This is also known as non-blocking retry. With a stream if your app cannot process a record but it might be able to process the record after a delay (for example the DB is temporarily unavailable) then the options are:
 
-We don't currently support requeue with delay for Kafka. It might be added in a future release, where the strategy would be to:
+* Blocking Retry - keep retrying the processing of this record
+* Load Shedding - ack the record to commit the offset, skipping this record
+* Non-Blocking Retry - move the record to a new store or queue, skipping the original, append after a delay
 
-- Publish the requeued message to a new stream
-- Commit the offset
-- Poll that stream with a new subscription but at a greater interval between polling (i.e. the delay)
+Brighter supports the first two of these options.
 
-In the interim you can manually implement that approach if required.
+* Blocking Retry - use a Polly policy via the **UsePolicy** attribute
+* Load Shedding - allow the handler to complete, or throw an exception. This will cause the handler to commit the offset.
 
+Note that Blocking Retry means you will apply backpressure as the blocking retry means you will pause consumption until the record can be processed.
 
+A non-blocking retry typically creates a copy of the current record, and appends it to the stream so that it can be processed later:
+
+- Publish the message to be requeued to a new stream or store with a timestamp
+- Ack the existing message so at to commit the offset
+- Poll that stream or store and publish anything whose timestamp + delay means it is now due
+
+(You may need multiple tables or streams to support different delay lengths)
+
+Until Brighter supports this for you, implementation of non-blocking consumers is left to the user.
 
 
 

@@ -9,6 +9,8 @@ Sections:
     - name : Basic Concepts
       file : BasicConcepts.md
       order : 20
+    - name : Why Brighter?
+      file : WhyBrighter.md  
 
   Brighter Configuration:
     order: 20

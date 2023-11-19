@@ -114,6 +114,10 @@ A common approach is to change state via Brighter and query for the results of t
 
 If the call to Brighter results in a new entity, and the id for the new entity was not given to the command (for example it relies on the Database generating the id), a common problem is how to then request the details of that newly created entity via Darker. A simple solution is to update the command with the id (as a conceptual *out* parameter), and then retrieve it from there to use in the Darker query. See [update a field on a command](/contents/ReturningResultsFromAHandler.md#update-a-field-on-the-command) for more. 
 
+## Routing Key (Topic)
+
+A routing key, also called a topic is the key used by message broker to route published messages to a subscriber.
+
 ## Service Activator
 
 A Service Activator triggers execution of your code due to an external input, such as an HTTP call, or a [message](#message) sent over middleware.

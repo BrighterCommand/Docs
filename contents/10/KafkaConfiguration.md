@@ -37,16 +37,18 @@ The following code connects to a local Kafka instance (for development):
 
 ``` csharp
 	services.AddBrighter(...)
-	.UseExternalBus(
-	new KafkaProducerRegistryFactory(
+	.UseExternalBus((configure) =>
+	{
+	    configure.ProducerRegistry = new KafkaProducerRegistryFactory(
 		new KafkaMessagingGatewayConfiguration()
 		{
-			Name = "paramore.brighter.greetingsender",
+		 	Name = "paramore.brighter.greetingsender",
 			BootStrapServers = new[] {"localhost:9092"}
 		},
 		...//publication, see below
 		)
-	.Create())
+	    .Create();
+	})
 	...
 
 ```
@@ -55,8 +57,9 @@ The following code connects to a remote Kafka instance. The settings here will d
 
 ``` csharp
 	services.AddBrighter(...)
-	.UseExternalBus(
-	new KafkaProducerRegistryFactory(
+	.UseExternalBus((configure) =>
+        {
+            configure.ProducerRegistry = new KafkaProducerRegistryFactory(
 		new KafkaMessagingGatewayConfiguration()
 		{
 			Name = "paramore.brighter.greetingsender",
@@ -69,7 +72,8 @@ The following code connects to a remote Kafka instance. The settings here will d
 		},
 		...//publication, see below
 		)
-	.Create())
+	    .Create();
+	})
 	...
 
 ```
@@ -101,8 +105,9 @@ The following example shows how a *Publication* might be configured:
 
 ``` csharp
 	services.AddBrighter(...)
-	.UseExternalBus(
-	new KafkaProducerRegistryFactory(
+	.UseExternalBus((configure) =>
+        {
+            configure.ProducerRegistry = new KafkaProducerRegistryFactory(
 		...,//connection see above
 		new KafkaPublication[] {new KafkaPublication()
                 {
@@ -112,10 +117,9 @@ The following example shows how a *Publication* might be configured:
                     MessageTimeoutMs = 1000,
                     RequestTimeoutMs = 1000,
                     MakeChannels = OnMissingChannel.Create 
-                }
-		)
-	.Create())
-	...
+                }}
+		).Create();
+	})
 
 ```
 
@@ -139,12 +143,13 @@ You can use it as follows:
 	publication.SetConfigHook(config => config.EnableGaplessGuarantee = true)
 
 	services.AddBrighter(...)
-	.UseExternalBus(
-	new KafkaProducerRegistryFactory(
+	.UseExternalBus((configure) =>
+        {
+            configure.ProducerRegistry = new KafkaProducerRegistryFactory(
 		...,//connection see above
-		new KafkaPublication[] {publication})
-	.Create())
-	...
+		new KafkaPublication() {publication}
+	    ).Create();
+	}) 
 
 ```
 	
@@ -261,53 +266,67 @@ It is worth noting the following aspects of the code sample below:
 ``` csharp
 public class GreetingEventMessageMapper : IAmAMessageMapper<GreetingEvent>
 {
-private readonly ISchemaRegistryClient _schemaRegistryClient;
-private readonly string _partitionKey = "KafkaTestQueueExample_Partition_One";
-private SerializationContext _serializationContext;
-private const string Topic = "greeting.event";
+	private readonly ISchemaRegistryClient _schemaRegistryClient;
+	private readonly string _partitionKey = "KafkaTestQueueExample_Partition_One";
+	private SerializationContext _serializationContext;
+	private const string Topic = "greeting.event";
 
-public GreetingEventMessageMapper(ISchemaRegistryClient schemaRegistryClient)
-{
-	_schemaRegistryClient = schemaRegistryClient;
-	//We care about ensuring that we serialize the body using the Confluent tooling, as it registers and validates schema
-	_serializationContext = new SerializationContext(MessageComponentType.Value, Topic);
-}
+	public GreetingEventMessageMapper(ISchemaRegistryClient schemaRegistryClient)
+	{
+		_schemaRegistryClient = schemaRegistryClient;
+		//We care about ensuring that we serialize the body using the Confluent tooling, as it registers and validates schema
+		_serializationContext = new SerializationContext(MessageComponentType.Value, Topic);
+	}
 
-public Message MapToMessage(GreetingEvent request)
-{
-	var header = new MessageHeader(messageId: request.Id, topic: Topic, messageType: MessageType.MT_EVENT);
-	//This uses the Confluent JSON serializer, which wraps Newtonsoft but also performs schema registration and validation
-        var serializer = new JsonSerializer<GreetingEvent>(_schemaRegistryClient, ConfluentJsonSerializationConfig.SerdesJsonSerializerConfig(), ConfluentJsonSerializationConfig.NJsonSchemaGeneratorSettings()).AsSyncOverAsync();
- 	var s = serializer.Serialize(request, _serializationContext);
-	var body = new MessageBody(s, "JSON");
-	header.PartitionKey = _partitionKey;
+	public Message MapToMessage(GreetingEvent request)
+	{
+		var header = new MessageHeader(messageId: request.Id, topic: Topic, messageType: MessageType.MT_EVENT);
+		//This uses the Confluent JSON serializer, which wraps Newtonsoft but also performs schema registration and validation
+		var serializer = new JsonSerializer<GreetingEvent>(_schemaRegistryClient, ConfluentJsonSerializationConfig.SerdesJsonSerializerConfig(), ConfluentJsonSerializationConfig.NJsonSchemaGeneratorSettings()).AsSyncOverAsync();
+		var s = serializer.Serialize(request, _serializationContext);
+		var body = new MessageBody(s, "JSON");
+		header.PartitionKey = _partitionKey;
 
-	var message = new Message(header, body);
-	return message;
-}
+		var message = new Message(header, body);
+		return message;
+	}
 
-public GreetingEvent MapToRequest(Message message)
-{
-	var deserializer = new JsonDeserializer<GreetingEvent>().AsSyncOverAsync();
-	//This uses the Confluent JSON serializer, which wraps Newtonsoft but also performs schema registration and validation
-	var greetingCommand = deserializer.Deserialize(message.Body.Bytes, message.Body.Bytes is null, _serializationContext);
-	
-	return greetingCommand;
-}
+	public GreetingEvent MapToRequest(Message message)
+	{
+		var deserializer = new JsonDeserializer<GreetingEvent>().AsSyncOverAsync();
+		//This uses the Confluent JSON serializer, which wraps Newtonsoft but also performs schema registration and validation
+		var greetingCommand = deserializer.Deserialize(message.Body.Bytes, message.Body.Bytes is null, _serializationContext);
+		
+		return greetingCommand;
+	}
 }
 
 ```
 
+## Requeue with Delay (Non-Blocking Retry)
 
-## Requeue with Delay
+We don't currently support requeue with delay for Kafka. This is also known as non-blocking retry. With a stream if your app cannot process a record but it might be able to process the record after a delay (for example the DB is temporarily unavailable) then the options are:
 
-We don't currently support requeue with delay for Kafka. It might be added in a future release, where the strategy would be to:
+* Blocking Retry - keep retrying the processing of this record
+* Load Shedding - ack the record to commit the offset, skipping this record
+* Non-Blocking Retry - move the record to a new store or queue, skipping the original, append after a delay
 
-- Publish the requeued message to a new stream
-- Commit the offset
-- Poll that stream with a new subscription but at a greater interval between polling (i.e. the delay)
+Brighter supports the first two of these options.
 
-In the interim you can manually implement that approach if required.
+* Blocking Retry - use a Polly policy via the **UsePolicy** attribute
+* Load Shedding - allow the handler to complete, or throw an exception. This will cause the handler to commit the offset.
+
+Note that Blocking Retry means you will apply backpressure as the blocking retry means you will pause consumption until the record can be processed.
+
+A non-blocking retry typically creates a copy of the current record, and appends it to the stream so that it can be processed later:
+
+- Publish the message to be requeued to a new stream or store with a timestamp
+- Ack the existing message so at to commit the offset
+- Poll that stream or store and publish anything whose timestamp + delay means it is now due
+
+(You may need multiple tables or streams to support different delay lengths)
+
+Until Brighter supports this for you, implementation of non-blocking consumers is left to the user.
 
 
 

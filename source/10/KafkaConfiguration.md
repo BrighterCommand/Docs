@@ -37,16 +37,18 @@ The following code connects to a local Kafka instance (for development):
 
 ``` csharp
 	services.AddBrighter(...)
-	.UseExternalBus(
-	new KafkaProducerRegistryFactory(
+	.UseExternalBus((configure) =>
+	{
+	    configure.ProducerRegistry = new KafkaProducerRegistryFactory(
 		new KafkaMessagingGatewayConfiguration()
 		{
-			Name = "paramore.brighter.greetingsender",
+		 	Name = "paramore.brighter.greetingsender",
 			BootStrapServers = new[] {"localhost:9092"}
 		},
 		...//publication, see below
 		)
-	.Create())
+	    .Create();
+	})
 	...
 
 ```
@@ -70,7 +72,8 @@ The following code connects to a remote Kafka instance. The settings here will d
 		},
 		...//publication, see below
 		)
-	.Create())
+	    .Create();
+	})
 	...
 
 ```
@@ -144,9 +147,9 @@ You can use it as follows:
         {
             configure.ProducerRegistry = new KafkaProducerRegistryFactory(
 		...,//connection see above
-		new KafkaPublication[] {publication})
-	.Create())
-	...
+		new KafkaPublication() {publication}
+	    ).Create();
+	}) 
 
 ```
 	
@@ -263,39 +266,39 @@ It is worth noting the following aspects of the code sample below:
 ``` csharp
 public class GreetingEventMessageMapper : IAmAMessageMapper<GreetingEvent>
 {
-private readonly ISchemaRegistryClient _schemaRegistryClient;
-private readonly string _partitionKey = "KafkaTestQueueExample_Partition_One";
-private SerializationContext _serializationContext;
-private const string Topic = "greeting.event";
+	private readonly ISchemaRegistryClient _schemaRegistryClient;
+	private readonly string _partitionKey = "KafkaTestQueueExample_Partition_One";
+	private SerializationContext _serializationContext;
+	private const string Topic = "greeting.event";
 
-public GreetingEventMessageMapper(ISchemaRegistryClient schemaRegistryClient)
-{
-	_schemaRegistryClient = schemaRegistryClient;
-	//We care about ensuring that we serialize the body using the Confluent tooling, as it registers and validates schema
-	_serializationContext = new SerializationContext(MessageComponentType.Value, Topic);
-}
+	public GreetingEventMessageMapper(ISchemaRegistryClient schemaRegistryClient)
+	{
+		_schemaRegistryClient = schemaRegistryClient;
+		//We care about ensuring that we serialize the body using the Confluent tooling, as it registers and validates schema
+		_serializationContext = new SerializationContext(MessageComponentType.Value, Topic);
+	}
 
-public Message MapToMessage(GreetingEvent request)
-{
-	var header = new MessageHeader(messageId: request.Id, topic: Topic, messageType: MessageType.MT_EVENT);
-	//This uses the Confluent JSON serializer, which wraps Newtonsoft but also performs schema registration and validation
-        var serializer = new JsonSerializer<GreetingEvent>(_schemaRegistryClient, ConfluentJsonSerializationConfig.SerdesJsonSerializerConfig(), ConfluentJsonSerializationConfig.NJsonSchemaGeneratorSettings()).AsSyncOverAsync();
- 	var s = serializer.Serialize(request, _serializationContext);
-	var body = new MessageBody(s, "JSON");
-	header.PartitionKey = _partitionKey;
+	public Message MapToMessage(GreetingEvent request)
+	{
+		var header = new MessageHeader(messageId: request.Id, topic: Topic, messageType: MessageType.MT_EVENT);
+		//This uses the Confluent JSON serializer, which wraps Newtonsoft but also performs schema registration and validation
+		var serializer = new JsonSerializer<GreetingEvent>(_schemaRegistryClient, ConfluentJsonSerializationConfig.SerdesJsonSerializerConfig(), ConfluentJsonSerializationConfig.NJsonSchemaGeneratorSettings()).AsSyncOverAsync();
+		var s = serializer.Serialize(request, _serializationContext);
+		var body = new MessageBody(s, "JSON");
+		header.PartitionKey = _partitionKey;
 
-	var message = new Message(header, body);
-	return message;
-}
+		var message = new Message(header, body);
+		return message;
+	}
 
-public GreetingEvent MapToRequest(Message message)
-{
-	var deserializer = new JsonDeserializer<GreetingEvent>().AsSyncOverAsync();
-	//This uses the Confluent JSON serializer, which wraps Newtonsoft but also performs schema registration and validation
-	var greetingCommand = deserializer.Deserialize(message.Body.Bytes, message.Body.Bytes is null, _serializationContext);
-	
-	return greetingCommand;
-}
+	public GreetingEvent MapToRequest(Message message)
+	{
+		var deserializer = new JsonDeserializer<GreetingEvent>().AsSyncOverAsync();
+		//This uses the Confluent JSON serializer, which wraps Newtonsoft but also performs schema registration and validation
+		var greetingCommand = deserializer.Deserialize(message.Body.Bytes, message.Body.Bytes is null, _serializationContext);
+		
+		return greetingCommand;
+	}
 }
 
 ```

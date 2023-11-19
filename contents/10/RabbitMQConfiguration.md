@@ -31,23 +31,19 @@ The following code creates a typical RabbitMQ connection (here shown as part of 
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddBrighter(...)
-        .UseExternalBus(new RmqProducerRegistryFactory(
-                    new RmqMessagingGatewayConnection
-                    {
-                        Name = "MyCommandConnection",
-                        AmpqUri = new AmqpUriSpecification(
-                            new Uri("amqp://guest:guest@localhost:5672")
-                            connectionRetryCount: 5,
-                            retryWaitInMilliseconds: 250,
-                            circuitBreakerTimeInMilliseconds = 30000
-                        ),
-                        Exchange = new Exchange("paramore.brighter.exchange", durable: true, supportDelay: true),
-                        DeadLetterExchange = new Exchange("paramore.brighter.exchange.dlq", durable: true, supportDelay: false),
-                        Heartbeat = 15,
-                        PersistMessages = true
-                    },
-            ... //publication, see below
-        ).Create()
+       .UseExternalBus((configure) =>
+        {
+            configure.ProducerRegistry = new RmqProducerRegistryFactory(
+                new RmqMessagingGatewayConnection
+                {
+                    AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
+                    Exchange = new Exchange("paramore.brighter.exchange"),
+                },
+
+                ...//publication, see below
+            
+            ).Create();
+        }    
 }
 ```
 
@@ -71,22 +67,54 @@ The following code creates a *Publication* for RabbitMQ when configuring an *Ext
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddBrighter(...)
-        .UseExternalBus({
-            ...//connection information, see above
-        },
-        new RmqPublication[]{
-            new RmqPublication
-            {
-                Topic = new RoutingKey("GreetingMade"),
-                MaxOutStandingMessages = 5,
-                MaxOutStandingCheckIntervalMilliSeconds = 500,
-                WaitForConfirmsTimeOutInMilliseconds = 1000,
-                MakeChannels = OnMissingChannel.Create
-            }}
-        ).Create()
+      .UseExternalBus((configure) =>
+        {
+            configure.ProducerRegistry = new RmqProducerRegistryFactory(
+ 
+                ...//connection, see above
+
+                new RmqPublication[]{
+                    new RmqPublication
+                {
+                    Topic = new RoutingKey("GreetingMade"),
+                    MaxOutStandingMessages = 5,
+                    MaxOutStandingCheckIntervalMilliSeconds = 500,
+                    WaitForConfirmsTimeOutInMilliseconds = 1000,
+                    MakeChannels = OnMissingChannel.Create
+                }}
+            ).Create();
 }
 ```
 
+## Putting It Together
+
+Our combined code for the *Connection*  with a single *Publication* looks like this
+
+``` csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddBrighter(...)
+      .UseExternalBus((configure) =>
+        {
+            configure.ProducerRegistry = new RmqProducerRegistryFactory(
+               new RmqMessagingGatewayConnection
+                {
+                    AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
+                    Exchange = new Exchange("paramore.brighter.exchange"),
+                },
+                new RmqPublication[]{
+                    new RmqPublication
+                {
+                    Topic = new RoutingKey("GreetingMade"),
+                    MaxOutStandingMessages = 5,
+                    MaxOutStandingCheckIntervalMilliSeconds = 500,
+                    WaitForConfirmsTimeOutInMilliseconds = 1000,
+                    MakeChannels = OnMissingChannel.Create
+                }}
+            ).Create();
+        }
+}
+```
 
 ## Subscription
 
