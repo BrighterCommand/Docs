@@ -11,6 +11,7 @@ Sections:
       order : 20
     - name : Why Brighter?
       file : WhyBrighter.md  
+      order : 30
 
   Brighter Configuration:
     order: 20

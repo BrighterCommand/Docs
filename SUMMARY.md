@@ -6,9 +6,9 @@
 
 ### Overview
 
- * [Why Brighter?](/contents/9/WhyBrighter.md)
  * [Show me the code!](/contents/9/ShowMeTheCode.md)
  * [Basic Concepts](/contents/9/BasicConcepts.md)
+ * [Why Brighter?](/contents/9/WhyBrighter.md)
 
 ### Brighter Configuration
 
@@ -104,9 +104,9 @@
 
 ### Overview
 
- * [Why Brighter?](/contents/10/WhyBrighter.md)
  * [Show me the code!](/contents/10/ShowMeTheCode.md)
  * [Basic Concepts](/contents/10/BasicConcepts.md)
+ * [Why Brighter?](/contents/10/WhyBrighter.md)
 
 ### Brighter Configuration
 
