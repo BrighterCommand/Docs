@@ -84,7 +84,7 @@ appropriate method(s) on the handler to process the Command.
 
 ![CommandExtendedWorkflow](_static/images/CommandExtendedWorkflow.png)
 
-A Command Dispatcher can also act as the port layer in a [Ports & Adapters architecture](http://alistair.cockburn.us/Hexagonal+architecture).
+A Command Dispatcher can also act as the port layer in a [Ports & Adapters architecture](https://alistair.cockburn.us/hexagonal-architecture/).
 
 ## Command Processor
 
