@@ -36,13 +36,13 @@ Some other command processor packages for .NET don't distinguish between a comma
 
 ## Type over Convention
 
-Brighter & Darker recognize that .NET is a statically typed language. A statically typed language creates clarity over the role of a class, typically using an interface or an abstract base class. This allows the compiler to support roles, as opposed to using naming conventions; Brighter embraces this, so the key classes that you need to implement have a role based interface and may have a base class that provides an implementation that provides default behavior for that interface.
+Brighter & Darker recognize that .NET is a statically typed language. A statically typed language creates clarity over the role of a class, often using an interface or an abstract base class to indicate a role that the class plays. This allows the compiler to enforce passing a type that fulfils that role. Dynamic languages, that do not have a type system can at best use a naming convention. Brighter embraces the type system, so the key classes that you need to implement have a role based interface and may have a base class that provides an implementation that provides default behavior for that interface.
 
 For example, when you write a handler in Brighter you implement the interface **IHandleRequests** typically by inheriting from the base class **RequestHandler**; when you create a request for dispatch by the command processor, you implement the interface **IRequest** typically by inheriting from the base classes **Command** or **Event**.
 
-Some alternative .NET packages try to emulate a dynamic language, by using convention, such as naming patterns. These implementations tend to be overly influenced by frameworks from dynamic languages where type safety is not available. It often leads to "magic code" that is generated at compile time and a perverse reliance on class names to indicate role when type information is available. 
+Some alternative .NET packages try to emulate a dynamic language, by using convention, such as naming patterns. These implementations tend to be overly influenced by frameworks from dynamic languages where type safety is not available. It often leads to "magic code" that is generated at compile time and/or a reliance on class names to indicate role. 
 
-We don't believe that a messaging framework for a statically typed language should forego type safety; we make use of the type system to ensure correctness throughout.
+We don't believe that a messaging framework for a statically typed language should forego type safety; we make use of the type system to use the compiler to ensure correctness.
 
 ## Code over Configuration
 
