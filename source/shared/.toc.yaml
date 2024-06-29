@@ -38,7 +38,11 @@ Sections:
       file: AzureServiceBusConfiguration.md
       order : 70
     - name : Azure Archive Provider Configuration
-      order : 80     
+      order : 80
+    - name : Brighter Control API
+      file : BrighterControlAPI.md
+      order : 90
+
 
   Darker Configuration:
     order: 30
