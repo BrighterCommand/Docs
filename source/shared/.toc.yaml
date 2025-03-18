@@ -135,6 +135,9 @@ Sections:
     - name : Dynamo Inbox
       file : DynamoInbox.md
       order : 100
+    - name : MongoDB Inbox
+      file : MongoInbox.md
+      order : 110
 
   Darker Query Handlers and Middleware Pipelines:
     order: 60
@@ -165,9 +168,31 @@ Sections:
     - name : Command, Processor and Dispatcher Patterns
       file : CommandsCommandDispatcherandProcessor.md
       order : 10
+  
+  Scheduler:
+    order: 90
+    entries:
+    - name: Scheduler
+      file: BrighterSchedulerSupport.md
+      order: 10
+    - name: Hangfire
+      file: HangfireScheduler.md
+      order: 20
+    - name: Quartz
+      file: Quartzcheduler.md
+      order: 30
+    - name: Aws Scheduler
+      file: AwsScheduler.md
+      order: 40
+    - name: Azure Scheduler
+      file: AzureScheduler.md
+      order: 50
+    - name: Custom Scheduler
+      file: CustomScheduler.md
+      order: 60
 
   Under the Hood:
-    order: 90
+    order: 100
     entries:
     - name : How The Command Processor Works
       file : HowBrighterWorks.md
@@ -177,7 +202,7 @@ Sections:
       order : 20
 
   Event Driven Architectures:
-    order: 100
+    order: 120
     entries:
     - name : Microservices
       file : Microservices.md
@@ -193,14 +218,14 @@ Sections:
       order : 40
 
   Task Queues:
-    order: 110
+    order: 130
     entries:
     - name : Using a Task Queue
       file : TaskQueuePattern.md
       order : 10
 
   FAQ:
-    order: 120
+    order: 140
     entries:
     - name : FAQ
       file : FAQ.md
