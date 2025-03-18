@@ -1,13 +1,12 @@
 # Hangfire scheduler
 
-[Hangfire](https://www.hangfire.io/) is one of the most used schedulers in the .NET community, on V10 we have added support to Hangfire for [Brighter's scheduler support](/contents/BrighterScheduleroSupport.md)
+[Hangfire](https://www.hangfire.io/) is one of the most widely used schedulers in the .NET community. In V10 we have added support to Quartz for [Brighter's scheduler functionality](/contents/BrighterSchedulerSupport.md).
 
 ## Usage
 
 For this we will need the *Paramore.Brighter.MessageScheduler.Hangfire* packages.
 
-* **Paramore.Brighter.MessageScheduler.Hangfire**
-
+### Example Configuration
 ```csharp
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)

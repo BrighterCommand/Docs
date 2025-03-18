@@ -1,11 +1,15 @@
 # Quartz scheduler
 
-[Quartz](https://www.quartz-scheduler.net/) is one of the most used schedulers in the .NET community, on V10 we have added support to Quartz for [Brighter's scheduler support](/contents/BrighterScheduleroSupport.md).
+[Quartz](https://www.quartz-scheduler.net/) is one of the most widely used schedulers in the .NET community. In V10 we have added support to Quartz for [Brighter's scheduler functionality](/contents/BrighterSchedulerSupport.md).
+
 
 ## Usage
-For this we will need the *Paramore.Brighter.MessageScheduler.Quartz* packages.
 
-* **Paramore.Brighter.MessageScheduler.Quartz**
+To use Quartz as a scheduler, configure Brighter with the appropriate settings.
+
+### Example Configuration
+
+For this integration, you will need the `Paramore.Brighter.MessageScheduler.Quartz` package.
 
 ```csharp
 private static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -33,7 +37,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
 ### Custom Scheduler Name
 
-By default Brighter uses a `Guid.NewGuid()` to define the scheduler name, it can be customized by
+By default, Brighter uses `Guid.NewGuid()` to define the scheduler name. This behavior can be customized:
 
 ```c#
 _  = new QuartzSchedulerFactory(factory.GetScheduler().GetAwaiter().GetResult())
@@ -53,7 +57,7 @@ _  = new QuartzSchedulerFactory(factory.GetScheduler().GetAwaiter().GetResult())
 
 ### Group
 
-Allow the customer to define a Quartz group that Brighter will use
+Allow customers to define a Quartz group that Brighter will use:
 
 ```c#
 _  = new QuartzSchedulerFactory(factory.GetScheduler().GetAwaiter().GetResult())

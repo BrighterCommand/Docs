@@ -1,137 +1,141 @@
 # AWS Scheduler
 
-[AWS Scheduler](https://aws.amazon.com/blogs/compute/introducing-amazon-eventbridge-scheduler/) is a service on AWS that allows calls of any AWS API, on V10 we have added support to AWS Scheduler for [Brighter's scheduler support](/contents/BrighterScheduleroSupport.md).
+[AWS Scheduler](https://aws.amazon.com/blogs/compute/introducing-amazon-eventbridge-scheduler/) is a service on AWS that allows calls to any AWS API at a specific time. In V10, we have added support for AWS Scheduler in Brighter's scheduler functionality.
 
 ## Usage
 
-AWS Scheduler has 2 ways of scheduler a message:
+AWS Scheduler supports two methods for scheduling messages:
 
-- Scheduler the `FireAwsSchedule` to a specific SNS/SQS, making it necessary to configure the `FireAwsSchedule` consumer.
+1. Schedule the `FireAwsSchedule` message to be send/publish to a specific SNS/SQS. This requires configuring the `FireAwsSchedule` consumer.
+2. Schedule a message directly to the target SNS/SQS. This occurs only when Brighter is scheduling a message.
 
-- Scheduler a message to target SNS/SQS directly, this happens only when Brighter is scheduling a message
+For this, you will need the `Paramore.Brighter.MessageScheduler.Aws` package.
 
-For this, we will need the *Paramore.Brighter.MessageScheduler.Aws* packages.
-
-* **Paramore.Brighter.MessageScheduler.Aws**
+### Example Configuration
 
 ```csharp
 private static IHostBuilder CreateHostBuilder(string[] args) =>
-    Host.CreateDefaultBuilder(args)
- .ConfigureServices(hostContext, services) =>
- {
-            ConfigureBrighter(hostContext, services);
- }
+    Host.CreateDefaultBuilder(args)
+        .ConfigureServices((hostContext, services) =>
+        {
+            ConfigureBrighter(hostContext, services);
+        });
 
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
-    services
- .AddServiceActivator(options => 
- {
-            options.Subscription = new[]{
- ...
-                  new SqsSubscription<FireAwsScheduler>(
-                        new SubscriptionName("paramore.example.scheduler-message"),
-                        new ChannelName("message-scheduler-channel"),
-                        new RoutingKey("message-scheduler-topic"),
-                        bufferSize: 10,
-                        timeOut: TimeSpan.FromMilliseconds(20),
-                        lockTimeout: 30),
- };
- ...  
- })
- .UseScheduler(new AwsSchedulerFactory(new AWSMessagingGatewayConnection(), "some-role")
- {
- // The external SNS/SQS used to fire scheduler messages
-            SchedulerTopicOrQueue = new RoutingKey("message-scheduler-topic"),
-            OnConflict = OnSchedulerConflict.Overwrite
- });
+    services
+        .AddServiceActivator(options =>
+        {
+            options.Subscriptions = new[]
+            {
+                new SqsSubscription<FireAwsScheduler>
+                    new SubscriptionName("paramore.example.scheduler-message"),
+                    new ChannelName("message-scheduler-channel"),
+                    new RoutingKey("message-scheduler-topic"),
+                    bufferSize: 10,
+                    timeOut: TimeSpan.FromMilliseconds(20),
+                    lockTimeout: 30
+                )
+            };
+        })
+        .UseScheduler(new AwsSchedulerFactory(new AWSMessagingGatewayConnection(), "some-role")
+        {
+            // The external SNS/SQS used to fire scheduler messages
+            SchedulerTopicOrQueue = new RoutingKey("message-scheduler-topic"),
+            OnConflict = OnSchedulerConflict.Overwrite
+        });
 }
-...
 ```
 
 ## Role
 
-AWS Scheduler requires an AWS Role that allows assume and have permission to `sqs:SendMessage` and `sns:Publish`.
+AWS Scheduler requires an AWS Role that allows assumption and has permissions for `sqs:SendMessage` and `sns:Publish`.
 
-A sample of the role definition:
+### Sample Role Definition
 
+#### Trust Policy
 ```json
 {
-  "Version": "2012-10-17",
-  "Statement": [
- {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "scheduler.amazonaws.com"
- },
-      "Action": "sts:AssumeRole"
- }
- ]
-```
-
-The policy
-```json
-{
-   "Version": "2012-10-17",
-   "Statement": [
- {
-       "Effect": "Allow",
-       "Action": [
-           "sqs:SendMessage",
-           "sns:Publish"
- ],
-       "Resource": ["*"]
- }]
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "scheduler.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
 }
 ```
 
+#### Permissions Policy
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sqs:SendMessage",
+                "sns:Publish"
+            ],
+            "Resource": ["*"]
+        }
+    ]
+}
+```
 
-```c#
+### Role Creation Option
+
+```csharp
 _ = new AwsSchedulerFactory(new AWSMessagingGatewayConnection(), "some-role")
 {
-    MakeRole = OnMissingRole.Create // Brighter will create the role if it doesn't exist. 
-}
+    MakeRole = OnMissingRole.Create // Brighter will create the role if it doesn't exist.
+};
 ```
 
 ## Configuration
+
 ### Group
-AWS Scheduler has a group concept, which allows companies to organize the scheduler better.
 
-It can be configurated by the property `Group`,
+AWS Scheduler has a group concept, which allows companies to organize schedulers better. It can be configured using the `Group` property.
 
-```c#
+```csharp
 _ = new AwsSchedulerFactory(new AWSMessagingGatewayConnection(), "some-role")
 {
-    Group = new SchedulerGroup
- {
-        Name = "some-group" // It's mandatory and by default, Brighter is going to use the "default" group
-        Tags = new List<Tag>(), // It's optional and by default, Brighter will set the "Source" tag as "Brighter",
-        MakeSchedulerGroup = OnMissingSchedulerGroup.Create // If Brighter should or not create the Scheduler Group, by default Brighter will assume that exists.
- }
-}
+    Group = new SchedulerGroup
+    {
+        Name = "some-group", // It is mandatory, and by default, Brighter will use the "default" group.
+        Tags = new List<Tag>(), // It is optional, and by default, Brighter will set the "Source" tag as "Brighter".
+        MakeSchedulerGroup = OnMissingSchedulerGroup.Create // If Brighter should create the Scheduler Group; by default, Brighter assumes it exists.
+    }
+};
 ```
 
 ### Custom Scheduler Name
-By default Brighter uses a `Guid.NewGuid()` to define the scheduler name, it can be customized by
 
-```c#
+By default, Brighter uses `Guid.NewGuid()` to define the scheduler name. This behavior can be customized as follows:
+
+```csharp
 _ = new AwsSchedulerFactory(new AWSMessagingGatewayConnection(), "some-role")
 {
-    GetOrCreateMessageSchedulerId = message => message.Id;
-    GetOrCreateRequestSchedulerId => request => 
- {
-        if(request is MyCommand command)
- {
-            return command.SomeProperty;
- }
+    GetOrCreateMessageSchedulerId = message => message.Id,
+    GetOrCreateRequestSchedulerId = request =>
+    {
+        if (request is MyCommand command)
+        {
+            return command.SomeProperty;
+        }
 
-        return request.Id.ToString();
- };
-}
+        return request.Id.ToString();
+    }
+};
 ```
 
-### Scheduler name conflict
-Depending on the scheduler name strategy Brighter will need to handle conflict, for solving this problem Brighter has 2 ways:
+### Scheduler Name Conflict
 
-- Throw - Brighter will throw an exception, so whoever is trying to create the scheduler will need to decide what to do.
-- Overwrite - Brighter will call `UpdateScheduler`
+Depending on the scheduler name strategy, Brighter may need to handle conflicts. For resolving this issue, Brighter provides two approaches:
+
+1. **Throw**: Brighter will throw an exception, so whoever is trying to create the scheduler will need to decide what to do.
+2. **Overwrite**: Brighter will call `UpdateScheduler`.

@@ -1,90 +1,162 @@
-# Custom scheduler
+# Custom Scheduler
 
-If you need to add support to a different scheduler provider, you can do it by implementing a different interface depending on your case.
+To add support for a different scheduler provider, implement the appropriate interfaces based on your use case.
 
-## Message scheduler
-The message scheduler is used by `IAmAMessageProducer` (`Sync` and Async`) when the producer doesn't support a delay message or when the delay has passed a threshold (it's a different value depending on the transport). 
+## Message Scheduler
 
-The first step is to schedule the message on the custom scheduler, you can do it by implementing the `IAmAMessageSchedulerAsync` and `IAmAMessageSchedulerSync`.
+The **message scheduler** is used by `IAmAMessageProducer` (sync/async) when:
+- The transport lacks native delay support, or
+- The delay exceeds the transport's threshold (e.g., AWS SQS 15-minute limit).
 
-The next consumes the scheduler message, once the scheduler message is in the customer scheduler message handler, it's necessary to call `IAmACommandProcessor.SendAsync` passing the `FireSchedulerMessage` as the first argument. The brighter will to the rest of the work to you,  passing it to the correct `IAmAMessageProducer`
+### Implementation Steps
 
-The last step is to implement the `IAmAMessageSchedulerFactory`.
+1. **Schedule Messages**  
+   Implement `IAmAMessageSchedulerAsync` and `IAmAMessageSchedulerSync` to interface with your scheduler:
 
-Beware that Brighter should honour the customer flow, so if a customer calls the `SchedulerAsync`, then the fired message will use the `SendAsync`, same for `Sync` calls,  `Scheduler` -> `Send`. You can honour this by setting the `Async` as `true` or `false` on the `FireSchedulerMessage`.
+   ```csharp
+   public class CustomMessageScheduler : IAmAMessageSchedulerAsync, IAmAMessageSchedulerSync
+   {
+       private readonly CustomSchedulerAPI _scheduler;
 
-sample:
-```c#
-public class CustomMessageScheduler(CustomSchedulerAPI scheduler) : IAmAMessageSchedulerAsync, IAmAMessageSchedulerSync
-{
-    public async Task<string> SchedulerAsync(Message message, DateTimeOffset at)
-    {
-        return await scheduler.SechedulerAsync(new CustomSchedulerObject { Data = new {message, Async = true }, At = at } ));
-    }
+       public CustomMessageScheduler(CustomSchedulerAPI scheduler)
+       {
+           _scheduler = scheduler;
+       }
 
-    public string Scheduler(Message message, DateTimeOffset at)
-    {
-        return scheduler.Secheduler(new CustomSchedulerObject { Data = new {message, Async = false }, At = at } ));
-    }
+       public async Task<string> ScheduleAsync(Message message, DateTimeOffset at)
+       {
+           return await _scheduler.ScheduleAsync(
+               new CustomSchedulerObject 
+               { 
+                   Data = new { Message = message, Async = true }, 
+                   At = at 
+               });
+       }
 
-    ....
-}
+       public string Schedule(Message message, DateTimeOffset at)
+       {
+           return _scheduler.Schedule(
+               new CustomSchedulerObject 
+               { 
+                   Data = new { Message = message, Async = false }, 
+                   At = at 
+               });
+       }
+   }
+   ```
 
+2. **Handle Scheduled Messages**  
+   When the scheduler triggers, forward the message to Brighter:
 
-public class CustomerSchedulerHandler(IAmACommandProcessor prrocessor)
-{
-    public async Task ExecuteAsync(CustomeScheudlerObject obj)
-    {
-        await processor.SendAsync(new FireSchedulerMessage
-        {
-            Message = obj.Data.Message,
-            Async = obj.Data.Async
-        });
-    }
-}
-```
+   ```csharp
+   public class CustomSchedulerHandler
+   {
+       private readonly IAmACommandProcessor _processor;
+
+       public CustomSchedulerHandler(IAmACommandProcessor processor)
+       {
+           _processor = processor;
+       }
+
+       public async Task ExecuteAsync(CustomSchedulerObject obj)
+       {
+           await _processor.SendAsync(new FireSchedulerMessage
+           {
+               Message = obj.Data.Message,
+               Async = obj.Data.Async
+           });
+       }
+   }
+   ```
+
+3. **Register the Scheduler**  
+   Implement `IAmAMessageSchedulerFactory` to integrate with Brighter.
 
 ## Request Scheduler
 
-The request scheduler is used by `IAmACommandProcessor` when the customer calls `Send`, `Publish` and `Post` with a `DateTimeOffset` or a `TimeSpan`
+The **request scheduler** is used by `IAmACommandProcessor` when methods like `Send`, `Publish`, or `Post` are called with a `DateTimeOffset` or `TimeSpan`.
 
-The first step is to request the message on the custom scheduler to implement the `IAmARequestSchedulerAsync` and `IAmARequestSchedulerSync`.
+### Implementation Steps
 
-The next consumes the scheduler message, once the scheduler message is in the customer scheduler message handler, it's necessary to call `IAmACommandProcessor.SendAsync` passing the `FireRequestMessage` as the first argument. The brighter will to the rest of the work to you,  by calling the correct method.
+1. **Schedule Requests**  
+   Implement `IAmARequestSchedulerAsync` and `IAmARequestSchedulerSync`:
 
-The last step is to implement the `IAmARequestSchedulerFactory`.
+   ```csharp
+   public class CustomRequestScheduler : IAmARequestSchedulerAsync, IAmARequestSchedulerSync
+   {
+       private readonly CustomSchedulerAPI _scheduler;
 
-Beware that Brighter should honour the customer flow, so if a customer calls the `SendAsync`, then the fired message should use the `SendAsync`, same for `Sync` calls,  `Publish` -> `Publish`. You can honour this by setting the `Async` as `true` or `false` on the `FireRequestMessage`.
+       public CustomRequestScheduler(CustomSchedulerAPI scheduler)
+       {
+           _scheduler = scheduler;
+       }
+
+       public async Task<string> ScheduleAsync<T>(T request, SchedulerType type, DateTimeOffset at)
+       {
+           return await _scheduler.ScheduleAsync(
+               new CustomSchedulerObject 
+               { 
+                   Data = new 
+                   { 
+                       RequestType = typeof(T).FullName, 
+                       Data = Serialize(request), 
+                       Async = true 
+                   }, 
+                   At = at 
+               });
+       }
+
+       public string Schedule<T>(T request, SchedulerType type, DateTimeOffset at)
+       {
+           return _scheduler.Schedule(
+               new CustomSchedulerObject 
+               { 
+                   Data = new 
+                   { 
+                       RequestType = typeof(T).FullName, 
+                       Data = Serialize(request), 
+                       Async = false 
+                   }, 
+                   At = at 
+               });
+       }
+   }
+   ```
+
+2. **Handle Scheduled Requests**  
+   Forward requests to Brighter for processing:
+
+   ```csharp
+   public class CustomRequestHandler
+   {
+       private readonly IAmACommandProcessor _processor;
+
+       public CustomRequestHandler(IAmACommandProcessor processor)
+       {
+           _processor = processor;
+       }
+
+       public async Task ExecuteAsync(CustomSchedulerObject obj)
+       {
+           await _processor.SendAsync(new FireRequestMessage
+           {
+               RequestType = obj.Data.RequestType,
+               RequestData = obj.Data.Data,
+               Async = obj.Data.Async
+           });
+       }
+   }
+   ```
+
+3. **Register the Scheduler**  
+   Implement `IAmARequestSchedulerFactory` to integrate with Brighter.
 
 
-sample:
-```c#
-public class CustomRequestScheduler(CustomSchedulerAPI scheduler) : IAmARequestSchedulerAsync, IAmARequestSchedulerSync
-{
-    public async Task<string> SchedulerAsync<T>(T req, SchedulerType type, DateTimeOffset at)
-    {
-        return await scheduler.SechedulerAsync(new CustomSchedulerObject { Data = new { ReqTypeName = typeof(T).FullName, Data = Serialize(req), Async = true }, At = at } ));
-    }
-
-    public string Scheduler<T>(T req, SchedulerType type, DateTimeOffset at)
-    {
-        return scheduler.Secheduler(new CustomSchedulerObject { Data = new {  ReqTypeName = typeof(T).FullName, Data = Serialize(req), type, Async = false }, At = at } ));
-    }
-
-    ....
-}
+## Key Requirements
+- **Flow Preservation**:  
+  Ensure `Async = true`/`false` is set correctly to match the original call (sync/async).
+- **Serialization**:  
+  Use a consistent format (e.g., JSON) for `RequestData` in `FireRequestMessage`.
 
 
-public class CustomerSchedulerHandler(IAmACommandProcessor prrocessor)
-{
-    public async Task ExecuteAsync(CustomeScheudlerObject obj)
-    {
-        await processor.SendAsync(new FireRequestMessage
-        {
-            RequestType = obj.Data.ReqTypeName,
-            RequestData = obj.Data.Data,
-            Async = obj.Data.Async
-        });
-    }
-}
-```
+**Note**: Replace `CustomSchedulerAPI`, `CustomSchedulerObject`, and serialization logic with your actual implementation details.
