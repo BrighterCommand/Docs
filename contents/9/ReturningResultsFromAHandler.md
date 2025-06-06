@@ -32,7 +32,7 @@ How do you communicate the outcome of handling a *Command*? There are two option
 
 ### Raising an Event
 
-This approach let's you take action in response to a *Command* by raising an *Event* within your handler using **CommandProcessor.Publish** or via an *External Bus* using **CommandProcessor.Post/CommandProcessor.DepositPost**.
+This approach lets you take action in response to a *Command* by raising an *Event* within your handler using **CommandProcessor.Publish** or via an *External Bus* using **CommandProcessor.Post/CommandProcessor.DepositPost**.
 
 If you use an **Internal Bus** these handlers will run immediately, in their own pipeline, before your handler exits. If you use an **External Bus** you offload the work to another process. 
 
