@@ -3,6 +3,7 @@
 This document contains the structured task list for updating the Brighter/Darker documentation for V10. Each task is numbered and includes scope, dependencies, and acceptance criteria.
 
 ## Task Status Legend
+
 - ⬜ Not Started
 - 🔄 In Progress
 - ✅ Completed
@@ -10,154 +11,64 @@ This document contains the structured task list for updating the Brighter/Darker
 
 ---
 
-## Phase 1: Foundation & Migration (Critical Path)
+## Phase 1: Core Framework Features
 
-### TASK-001: Create V10 Migration Guide ⬜
-**Priority**: CRITICAL
-**Estimated Effort**: Large
-**Dependencies**: None
-**File**: `Docs/contents/MigrationV10.md` (NEW)
+### TASK-001: Cloud Events Support Documentation
 
-**Description**: Create comprehensive migration guide from V9 to V10
-
-**Content Requirements**:
-- Summary of all breaking changes
-- Step-by-step migration checklist
-- Code comparison table (V9 vs V10)
-- Update Subscription configuration (isAsync/runAsync → messagePumpType)
-- Update timeouts (milliseconds → TimeSpan)
-- Handle nullable reference types
-- Update builder calls (UseExternalBus → AddProducers, AddServiceActivator → AddConsumers)
-- Migrate policies ([TimeoutPolicy] → [UseResiliencePipeline], [UsePolicy] → [UseResiliencePipeline])
-- Message ID changes (GUID → string)
-- Database schema updates for Inbox/Outbox
-- Generic message pumps - remove type parameters
-- Common migration issues and solutions
-
-**Acceptance Criteria**:
-- [ ] All breaking changes from release notes covered
-- [ ] Each breaking change has before/after code example
-- [ ] Step-by-step checklist provided
-- [ ] Links to relevant detailed documentation
-- [ ] Added to SUMMARY.md
-
----
-
-### TASK-002: Update SUMMARY.md Structure ⬜
-**Priority**: HIGH
-**Estimated Effort**: Small
-**Dependencies**: None
-**File**: `Docs/SUMMARY.md`
-
-**Description**: Reorganize and update documentation table of contents
-
-**Content Requirements**:
-- Add all new V10 feature documentation pages
-- Add "Migration" section with V10 migration guide
-- Add "Advanced Patterns" section (Agreement Dispatcher, Sweeper Circuit Breaking)
-- Ensure "Scheduler" section has all scheduler types
-- Use "Dispatcher" terminology in headings (not ServiceActivator unless referring to assembly)
-- Ensure logical flow: Overview → Basic Config → Handlers → Messaging → Advanced
-- Clear separation of Brighter and Darker content where needed
-
-**Acceptance Criteria**:
-- [ ] All new pages added
-- [ ] Logical grouping maintained
-- [ ] Migration guide prominent
-- [ ] "Dispatcher" terminology used appropriately
-- [ ] Clear navigation for newcomers vs advanced users
-
----
-
-### TASK-003: Simplify Show Me The Code ⬜
-**Priority**: HIGH
-**Estimated Effort**: Medium
-**Dependencies**: TASK-005 (Default Message Mappers)
-**File**: `Docs/contents/ShowMeTheCode.md`
-
-**Description**: Simplify the introductory code example to help newcomers get started
-
-**Content Requirements**:
-- Replace complex Post example with simple Send (no transactions)
-- Use InMemory Outbox in simple example
-- Use default message mapper (no explicit mapper needed in V10)
-- Add clear note explaining this is simplified version
-- Add note that it uses InMemory Outbox (not durable)
-- Link to full Outbox documentation for production example
-- Move current complex example to BrighterOutboxSupport.md
-- Ensure all code examples use V10 syntax
-- Reference WebAPI sample for fully-featured example
-- Emphasize "start simple, add complexity later" philosophy per user feedback
-
-**Acceptance Criteria**:
-- [ ] Simple example uses basic Send without transaction
-- [ ] InMemory Outbox clearly indicated with limitations
-- [ ] No explicit message mapper shown (uses default)
-- [ ] Link to detailed Outbox docs provided
-- [ ] Link to WebAPI sample provided
-- [ ] Complex example preserved in Outbox documentation
-- [ ] Clear progression from simple to complex
-
----
-
-## Phase 2: Core Framework Features (High Priority)
-
-### TASK-004: Cloud Events Support Documentation ⬜
-**Priority**: HIGH
-**Estimated Effort**: Large
 **Dependencies**: None
 **File**: `Docs/contents/CloudEventsSupport.md` (NEW)
 
 **Description**: Document full CloudEvents specification support
 
 **Content Requirements**:
-- What are CloudEvents and why they matter (interoperability, CNCF standard)
-- Reference .NET 9 Eventing Framework, Azure Event Grid adoption
-- **Mandatory CloudEvents properties**: id, source, type, datacontenttype
-- Optional CloudEvents properties: dataschema, subject, time, specversion
-- **Binary mode** (headers): Recommended when protocol supports headers
-- **Structured mode** (JSON body): Recommended when protocol has insufficient headers (SNS/SQS)
+
+- What are CloudEvents and why they matter
+  - [Cloud Events Specification](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md) 
+  - [Cloud Events Primer](https://github.com/cloudevents/spec/blob/main/cloudevents/primer.md)
+- Other messaging frameworks [Dapr CloudEvents adoption](https://docs.dapr.io/developing-applications/building-blocks/pubsub/pubsub-cloudevents/)
+- Most important CloudEvents properties: id, source, type, datacontenttype, specversion
+- Optional CloudEvents properties: dataschema, subject, time
+- **Binary-mode** (headers): Recommended when protocol supports headers
+- **Structured-mode** (JSON body): Recommended when protocol has insufficient headers (SNS/SQS)
 - Setting CloudEvents in Publication
-- Reading CloudEvents in Message Mapper
+- Applying CloudEvents to Message from Publication in a Message Mapper
+  - Support for this in a default mapper (link to TASK-002)
 - CloudEvents header mapping across transports (AMQP, Kafka, RabbitMQ, etc.)
-- CloudEvents type for message routing (link to TASK-006)
-- OTel integration via CloudEvents attributes (traceParent, traceState)
-- DataRef for Claim Check pattern
-- Migration from V9 custom headers to CloudEvents
-- Code examples for binary mode
-- Code examples for structured mode
-- Transport-specific examples (RabbitMQ binary, SNS/SQS structured)
+- CloudEvents type for message routing (link to TASK-003)
+- OTel [Distributed Tracing](https://github.com/cloudevents/spec/blob/main/cloudevents/extensions/distributed-tracing.md)
+- [DataRef](https://github.com/cloudevents/spec/blob/main/cloudevents/extensions/dataref.md) for Claim Check pattern
 
 **Acceptance Criteria**:
+
 - [ ] Explains CloudEvents specification and benefits
 - [ ] Mandatory properties emphasized
 - [ ] Binary vs structured guidance clear (protocol-dependent)
-- [ ] Shows binary mode configuration
-- [ ] Shows structured mode configuration
-- [ ] Transport-specific examples included
-- [ ] Migration guide from custom headers
+- [ ] Links to default mapper documentation
 - [ ] Links to message routing documentation
 - [ ] Added to SUMMARY.md under "Brighter Configuration"
 
 ---
 
-### TASK-005: Default Message Mappers Documentation ⬜
-**Priority**: HIGH
-**Estimated Effort**: Medium
-**Dependencies**: TASK-004 (CloudEvents)
+### TASK-002: Default Message Mappers Documentation
+
+**Dependencies**: TASK-001 (CloudEvents)
 **File**: `Docs/contents/DefaultMessageMappers.md` (NEW)
 
 **Description**: Document automatic message mapping with default mappers
 
 **Content Requirements**:
-- Explain V10 change: no longer need explicit IAmAMessageMapper for JSON
-- **JsonMessageMapper** (binary CloudEvents): Default for JSON serialization
-- **CloudEventJsonMessageMapper** (structured CloudEvents): Alternative default
-- When default mappers are used automatically
-- How to register custom default mapper type (e.g., for Avro, ProtoBuf)
+
+- Explain V10 change: no longer need to implement IAmAMessageMapper if you have a common approach to mapping a message to and from a request.
+- Note that we provide two default message mappers for JSON
+  - **JsonMessageMapper** (Binary-mode CloudEvents): Default for JSON serialization
+  - **CloudEventJsonMessageMapper** (Structured-mode CloudEvents): Alternative that you can set as default
+- You can use your own default mapper type (e.g., for Avro, ProtoBuf)
+- Configuration of default mappers on `ServiceCollectionBrighterBuilder`
+  - By default `AutoFromAssemblies` and `MapperRegistry` use the default mapper (above).
+  - You can set the parameter `defaultMessageMapper` to configure an alternative default mapper
 - **When you still need custom IAmAMessageMapper**:
-  - Non-JSON formats (Avro, ProtoBuf, etc.)
-  - Transform pipelines (ClaimCheck, Compression, Encryption, PII, etc.)
+  - Non-default format
+  - You need a unique transform pipeline (ClaimCheck, Compression, Encryption, PII, etc.)
 - **Transform pipeline example** from `Brighter/samples/Transforms/AWSTransformers/ClaimCheck/Greetings/Ports/Mappers/GreetingEventMessageMapper.cs`:
   - Show [ClaimCheck] attribute on MapToMessage
   - Show [RetrieveClaim] attribute on MapToRequest
@@ -166,40 +77,36 @@ This document contains the structured task list for updating the Brighter/Darker
 - Code examples showing custom default mapper registration
 - Code examples showing transform-based custom mapper
 - Migration from explicit mappers to default mappers
-- How Publication is passed to mapper in V10
 
 **Acceptance Criteria**:
+
 - [ ] Explains both default mapper types
 - [ ] Shows automatic usage (no registration needed)
 - [ ] Shows custom default mapper registration
 - [ ] Transform pipeline use case explained with code example
 - [ ] ClaimCheck example included
 - [ ] All use cases for custom mappers documented
-- [ ] Includes migration guidance
 - [ ] Update MessageMappers.md to reference this
 - [ ] Added to SUMMARY.md
 
 ---
 
-### TASK-006: Dynamic Message Deserialization Documentation ⬜
-**Priority**: HIGH
-**Estimated Effort**: Medium
-**Dependencies**: TASK-004 (CloudEvents)
+### TASK-003: Dynamic Message Deserialization Documentation
+
+**Dependencies**: TASK-001 (CloudEvents)
 **File**: `Docs/contents/DynamicMessageDeserialization.md` (NEW)
 
 **Description**: Document content-based routing and dynamic type resolution
 
 **Content Requirements**:
+
 - Explain **DataType Channel** pattern (default, one type per channel)
 - When to use dynamic deserialization (multiple types on one channel)
 - Using **getRequestType callback** in Subscription
-- Using CloudEvents type for routing (reference CloudEvents documentation)
+- Using CloudEvents type for routing (reference CloudEvents documentation, see TASK-001)
 - Multiple message types on one channel
 - How routing to handler works after type resolution
-- Performance implications (runtime type resolution, caching optimization)
-- Code example with switch-based routing
 - Code example using CloudEvents type routing (TaskCreated, TaskUpdated example from release notes)
-- How this integrates with Agreement Dispatcher (TASK-007)
 - Best practices and recommendations
 
 **Release Notes Example**:
@@ -219,6 +126,7 @@ new KafkaSubscription(
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Explains DataType Channel clearly
 - [ ] Shows getRequestType callback usage
 - [ ] Multiple message types example
@@ -230,16 +138,16 @@ new KafkaSubscription(
 
 ---
 
-### TASK-007: Agreement Dispatcher Documentation ⬜
-**Priority**: HIGH
-**Estimated Effort**: Medium
+### TASK-004: Agreement Dispatcher Documentation ⬜
+
 **Dependencies**: None
 **File**: `Docs/contents/AgreementDispatcher.md` (NEW)
 
 **Description**: Document dynamic handler resolution pattern
 
 **Content Requirements**:
-- Explain **Agreement Dispatcher** pattern (reference Martin Fowler's EAA)
+
+- Explain Martin Fowler's [**Agreement Dispatcher**](https://martinfowler.com/eaaDev/AgreementDispatcher.html) pattern
 - Standard routing: 1-to-1 mapping of request type to handler
 - Agreement routing: Dynamic selection based on request content/context
 - **Use cases**:
@@ -286,11 +194,11 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-008: Reactor and Proactor Documentation ⬜
-**Priority**: HIGH
-**Estimated Effort**: Large
+### TASK-005: Reactor and Proactor Documentation ⬜
+
 **Dependencies**: None
 **Files**:
+
 - `Docs/contents/ReactorAndProactor.md` (NEW)
 - Update `Docs/contents/HowServiceActivatorWorks.md`
 - Update all subscription examples throughout docs
@@ -298,6 +206,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 **Description**: Document concurrency models with new terminology
 
 **Content Requirements**:
+
 - **Reactor pattern**: Blocking I/O, faster performance (no context switch)
 - **Proactor pattern**: Non-blocking I/O, better throughput (yields thread during I/O)
 - Explain **Performer** (message pump) is single-threaded in either case
@@ -338,15 +247,15 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-009: Scheduled Requests/Messaging Overview ⬜
-**Priority**: HIGH
-**Estimated Effort**: Medium
+### TASK-006: Scheduled Requests/Messaging Overview
+
 **Dependencies**: None
 **File**: Update `Docs/contents/BrighterSchedulerSupport.md`
 
 **Description**: Document overview of scheduling support
 
 **Content Requirements**:
+
 - Scheduling overview and use cases
 - Send/Publish/Post with DateTimeOffset parameter
 - Send/Publish/Post with TimeSpan parameter
@@ -365,6 +274,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Code examples with requeue delay
 
 **Acceptance Criteria**:
+
 - [ ] Overview clearly explains feature
 - [ ] All Send/Publish/Post variants documented
 - [ ] Transport native support clearly stated (RabbitMQ only)
@@ -372,22 +282,19 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - [ ] Scheduler comparison table included
 - [ ] Links to detailed scheduler docs
 - [ ] Requeue with Delay explained
-- [ ] Return value (scheduler ID) documented
 - [ ] Existing file updated (not replaced)
 
 ---
 
-## Phase 3: Scheduler Implementations (Medium Priority)
+### TASK-007: InMemory Scheduler Documentation ⬜
 
-### TASK-010: InMemory Scheduler Documentation ⬜
-**Priority**: MEDIUM
-**Estimated Effort**: Small
-**Dependencies**: TASK-009
+**Dependencies**: TASK-006
 **File**: `Docs/contents/InMemoryScheduler.md` (NEW)
 
 **Description**: Document InMemory scheduler for testing/dev
 
 **Content Requirements**:
+
 - What is InMemory scheduler (timer-based, no persistence)
 - **When to use**: Testing, development, demos
 - **Production limitations**: Not durable - crashes lose scheduled messages
@@ -409,19 +316,19 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-011: Quartz Scheduler Documentation ⬜
-**Priority**: MEDIUM
-**Estimated Effort**: Small
-**Dependencies**: TASK-009
+### TASK-008: Quartz Scheduler Documentation ⬜
+
+**Dependencies**: TASK-006
 **File**: Update `Docs/contents/QuartzScheduler.md`
 
 **Description**: Update Quartz.NET integration documentation
 
 **Content Requirements**:
-- Overview of Quartz integration
+
+- Overview of [Quartz Scheduler .NET](https://www.quartz-scheduler.net/) integration
 - **Production recommended** (with Hangfire)
 - Quartz benefits: Mature, persistent, distributed
-- BrighterResolver job factory
+- Uses BrighterResolver job factory
 - Configuration with Quartz
 - QuartzSchedulerFactory setup
 - Registering QuartzBrighterJob
@@ -431,6 +338,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Links to Quartz documentation
 
 **Acceptance Criteria**:
+
 - [ ] V10 configuration shown
 - [ ] Production recommendation clear
 - [ ] Job factory registration clear
@@ -441,16 +349,16 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-012: Hangfire Scheduler Documentation ⬜
-**Priority**: MEDIUM
-**Estimated Effort**: Small
-**Dependencies**: TASK-009
+### TASK-009: Hangfire Scheduler Documentation
+
+**Dependencies**: TASK-006
 **File**: Update `Docs/contents/HangfireScheduler.md`
 
 **Description**: Update Hangfire integration documentation
 
 **Content Requirements**:
-- Overview of Hangfire integration
+
+- Overview of [Hangfire](https://www.hangfire.io/) integration
 - **Production recommended** (with Quartz)
 - Hangfire benefits: Dashboard, easy setup, persistent
 - BrighterHangfireSchedulerJob registration
@@ -969,6 +877,96 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - [ ] Testing guidance included
 - [ ] Reference to samples
 - [ ] Added to SUMMARY.md
+
+---
+
+## Phase 1: Foundation & Migration (Critical Path)
+
+### TASK-001: Create V10 Migration Guide ⬜
+**Priority**: CRITICAL
+**Estimated Effort**: Large
+**Dependencies**: None
+**File**: `Docs/contents/MigrationV10.md` (NEW)
+
+**Description**: Create comprehensive migration guide from V9 to V10
+
+**Content Requirements**:
+- Summary of all breaking changes
+- Step-by-step migration checklist
+- Code comparison table (V9 vs V10)
+- Update Subscription configuration (isAsync/runAsync → messagePumpType)
+- Update timeouts (milliseconds → TimeSpan)
+- Handle nullable reference types
+- Update builder calls (UseExternalBus → AddProducers, AddServiceActivator → AddConsumers)
+- Migrate policies ([TimeoutPolicy] → [UseResiliencePipeline], [UsePolicy] → [UseResiliencePipeline])
+- Message ID changes (GUID → string)
+- Database schema updates for Inbox/Outbox
+- Generic message pumps - remove type parameters
+- Common migration issues and solutions
+
+**Acceptance Criteria**:
+- [ ] All breaking changes from release notes covered
+- [ ] Each breaking change has before/after code example
+- [ ] Step-by-step checklist provided
+- [ ] Links to relevant detailed documentation
+- [ ] Added to SUMMARY.md
+
+---
+
+### TASK-002: Update SUMMARY.md Structure ⬜
+**Priority**: HIGH
+**Estimated Effort**: Small
+**Dependencies**: None
+**File**: `Docs/SUMMARY.md`
+
+**Description**: Reorganize and update documentation table of contents
+
+**Content Requirements**:
+- Add all new V10 feature documentation pages
+- Add "Migration" section with V10 migration guide
+- Add "Advanced Patterns" section (Agreement Dispatcher, Sweeper Circuit Breaking)
+- Ensure "Scheduler" section has all scheduler types
+- Use "Dispatcher" terminology in headings (not ServiceActivator unless referring to assembly)
+- Ensure logical flow: Overview → Basic Config → Handlers → Messaging → Advanced
+- Clear separation of Brighter and Darker content where needed
+
+**Acceptance Criteria**:
+- [ ] All new pages added
+- [ ] Logical grouping maintained
+- [ ] Migration guide prominent
+- [ ] "Dispatcher" terminology used appropriately
+- [ ] Clear navigation for newcomers vs advanced users
+
+---
+
+### TASK-003: Simplify Show Me The Code ⬜
+**Priority**: HIGH
+**Estimated Effort**: Medium
+**Dependencies**: TASK-005 (Default Message Mappers)
+**File**: `Docs/contents/ShowMeTheCode.md`
+
+**Description**: Simplify the introductory code example to help newcomers get started
+
+**Content Requirements**:
+- Replace complex Post example with simple Send (no transactions)
+- Use InMemory Outbox in simple example
+- Use default message mapper (no explicit mapper needed in V10)
+- Add clear note explaining this is simplified version
+- Add note that it uses InMemory Outbox (not durable)
+- Link to full Outbox documentation for production example
+- Move current complex example to BrighterOutboxSupport.md
+- Ensure all code examples use V10 syntax
+- Reference WebAPI sample for fully-featured example
+- Emphasize "start simple, add complexity later" philosophy per user feedback
+
+**Acceptance Criteria**:
+- [ ] Simple example uses basic Send without transaction
+- [ ] InMemory Outbox clearly indicated with limitations
+- [ ] No explicit message mapper shown (uses default)
+- [ ] Link to detailed Outbox docs provided
+- [ ] Link to WebAPI sample provided
+- [ ] Complex example preserved in Outbox documentation
+- [ ] Clear progression from simple to complex
 
 ---
 
