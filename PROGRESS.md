@@ -5,10 +5,10 @@
 ## Project Status
 
 - **Total Tasks**: 27
-- **Completed**: 1
+- **Completed**: 2
 - **In Progress**: 0
-- **Remaining**: 26
-- **Completion**: 4%
+- **Remaining**: 25
+- **Completion**: 7%
 
 ---
 
@@ -22,7 +22,7 @@
 
 ---
 
-## Phase 1: Core Framework Features (1/11 completed)
+## Phase 1: Core Framework Features (2/11 completed)
 
 ### TASK-001: Cloud Events Support Documentation ✅
 **Status**: Completed - 2025-01-02
@@ -30,9 +30,11 @@
 **Priority**: HIGH
 **Notes**: Comprehensive documentation covering CloudEvents specification, binary/structured modes, transport integration, and migration guidance
 
-### TASK-005: Default Message Mappers Documentation ⬜
-**Status**: Not Started
+### TASK-002: Default Message Mappers Documentation ✅
+**Status**: Completed - 2025-01-02
 **File**: `Docs/contents/DefaultMessageMappers.md` (NEW)
+**Priority**: HIGH
+**Notes**: Documented V10 simplification - no longer need explicit mappers for JSON. Covered default mappers (JsonMessageMapper, CloudEventJsonMessageMapper), transform pipelines with ClaimCheck example, and migration from V9
 **Priority**: HIGH
 **Dependencies**: TASK-004
 
@@ -171,6 +173,18 @@
 - Documented: CloudEvents type for routing, OTel integration, DataRef for Claim Check
 - Added: Migration guide from V9 custom headers to V10 CloudEvents
 - Best practices and recommendations included
+
+**TASK-002: Default Message Mappers Documentation** ✅
+- Created comprehensive documentation on V10 default mappers
+- File: `Docs/contents/DefaultMessageMappers.md`
+- Explained V10 simplification: no explicit mappers needed for JSON serialization
+- Covered both default mappers: JsonMessageMapper (binary-mode) and CloudEventJsonMessageMapper (structured-mode)
+- Documented when custom mappers are still needed: non-JSON formats and transform pipelines
+- Included real ClaimCheck transform example from samples
+- Showed transform chaining (PII removal, compression, claim check)
+- Provided migration guidance from V9 explicit mappers to V10 defaults
+- Configuration examples for all scenarios
+- Best practices and sample code references
 
 ---
 
