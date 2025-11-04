@@ -5,10 +5,10 @@
 ## Project Status
 
 - **Total Tasks**: 27
-- **Completed**: 2
+- **Completed**: 3
 - **In Progress**: 0
-- **Remaining**: 25
-- **Completion**: 7%
+- **Remaining**: 24
+- **Completion**: 11%
 
 ---
 
@@ -22,7 +22,7 @@
 
 ---
 
-## Phase 1: Core Framework Features (2/11 completed)
+## Phase 1: Core Framework Features (3/11 completed)
 
 ### TASK-001: Cloud Events Support Documentation ✅
 **Status**: Completed - 2025-01-02
@@ -35,8 +35,12 @@
 **File**: `Docs/contents/DefaultMessageMappers.md` (NEW)
 **Priority**: HIGH
 **Notes**: Documented V10 simplification - no longer need explicit mappers for JSON. Covered default mappers (JsonMessageMapper, CloudEventJsonMessageMapper), transform pipelines with ClaimCheck example, and migration from V9
+
+### TASK-003: Dynamic Message Deserialization Documentation ✅
+**Status**: Completed - 2025-01-02
+**File**: `Docs/contents/DynamicMessageDeserialization.md` (NEW)
 **Priority**: HIGH
-**Dependencies**: TASK-004
+**Notes**: Documented content-based routing with getRequestType callback. Covered DataType Channel vs dynamic deserialization, CloudEvents type routing, custom routing strategies, performance considerations, and integration with Agreement Dispatcher
 
 ### TASK-006: Dynamic Message Deserialization Documentation ⬜
 **Status**: Not Started
@@ -185,6 +189,21 @@
 - Provided migration guidance from V9 explicit mappers to V10 defaults
 - Configuration examples for all scenarios
 - Best practices and sample code references
+
+**TASK-003: Dynamic Message Deserialization Documentation** ✅
+- Created comprehensive documentation on content-based routing
+- File: `Docs/contents/DynamicMessageDeserialization.md`
+- Explained DataType Channel pattern (default, one type per channel)
+- Documented dynamic deserialization with getRequestType callback
+- CloudEvents type routing examples (primary approach)
+- Custom routing strategies (headers, body content)
+- Handler routing after type resolution
+- Integration with Agreement Dispatcher for two-level routing
+- Performance considerations and caching behavior
+- Configuration examples for Kafka, RabbitMQ, AWS SQS
+- Best practices for choosing DataType vs dynamic
+- Comparison table and error handling
+- Links to related documentation
 
 ---
 
