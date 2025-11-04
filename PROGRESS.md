@@ -15,6 +15,7 @@
 ## Setup Phase ✅
 
 ### Documentation Infrastructure
+
 - ✅ Created `CLAUDE.md` - Instructions for Claude as technical documentation writer
 - ✅ Created `REQUIREMENTS.md` - Requirements document with user answers
 - ✅ Created `TASKS.md` - Detailed task breakdown (28 tasks)
@@ -25,141 +26,169 @@
 ## Phase 1: Core Framework Features (3/11 completed)
 
 ### TASK-001: Cloud Events Support Documentation ✅
+
 **Status**: Completed - 2025-01-02
 **File**: `Docs/contents/CloudEventsSupport.md` (NEW)
 **Priority**: HIGH
 **Notes**: Comprehensive documentation covering CloudEvents specification, binary/structured modes, transport integration, and migration guidance
 
 ### TASK-002: Default Message Mappers Documentation ✅
-**Status**: Completed - 2025-01-02
+
 **File**: `Docs/contents/DefaultMessageMappers.md` (NEW)
 **Priority**: HIGH
 **Notes**: Documented V10 simplification - no longer need explicit mappers for JSON. Covered default mappers (JsonMessageMapper, CloudEventJsonMessageMapper), transform pipelines with ClaimCheck example, and migration from V9
 
 ### TASK-003: Dynamic Message Deserialization Documentation ✅
+
 **Status**: Completed - 2025-01-02
 **File**: `Docs/contents/DynamicMessageDeserialization.md` (NEW)
 **Priority**: HIGH
 **Notes**: Documented content-based routing with getRequestType callback. Covered DataType Channel vs dynamic deserialization, CloudEvents type routing, custom routing strategies, performance considerations, and integration with Agreement Dispatcher
 
-### TASK-006: Dynamic Message Deserialization Documentation ⬜
-**Status**: Not Started
-**File**: `Docs/contents/DynamicMessageDeserialization.md` (NEW)
-**Priority**: HIGH
-**Dependencies**: TASK-004
+### TASK-004: Agreement Dispatcher Documentation ✅
 
-### TASK-007: Agreement Dispatcher Documentation ⬜
-**Status**: Not Started
+**Status**: Completed - 2025-01-02
 **File**: `Docs/contents/AgreementDispatcher.md` (NEW)
 **Priority**: HIGH
 
-### TASK-008: Reactor and Proactor Documentation ⬜
+### TASK-005: Reactor and Proactor Documentation ⬜
+
 **Status**: Not Started
 **Files**: `Docs/contents/ReactorAndProactor.md` (NEW) + updates throughout
 **Priority**: HIGH
 
-### TASK-009: Scheduled Requests/Messaging Overview ⬜
+### TASK-006: Scheduled Requests/Messaging Overview ⬜
+
 **Status**: Not Started
 **File**: Update `Docs/contents/BrighterSchedulerSupport.md`
 **Priority**: HIGH
 
 ---
 
-## Phase 3: Scheduler Implementations (0/6 completed)
+### TASK-007: InMemory Scheduler Documentation ⬜
 
-### TASK-010: InMemory Scheduler Documentation ⬜
 **Status**: Not Started
 **Priority**: MEDIUM
 **Dependencies**: TASK-009
 
-### TASK-011: Quartz Scheduler Documentation ⬜
+### TASK-008: Quartz Scheduler Documentation ⬜
+
 **Status**: Not Started
 **Priority**: MEDIUM
 **Dependencies**: TASK-009
 
-### TASK-012: Hangfire Scheduler Documentation ⬜
+### TASK-009: Hangfire Scheduler Documentation ⬜
+
 **Status**: Not Started
 **Priority**: MEDIUM
 **Dependencies**: TASK-009
 
-### TASK-013: AWS Scheduler Documentation ⬜
+### TASK-010: AWS Scheduler Documentation ⬜
+
 **Status**: Not Started
 **Priority**: MEDIUM
 **Dependencies**: TASK-009
 
-### TASK-014: Azure Scheduler Documentation ⬜
+### TASK-011: Azure Scheduler Documentation ⬜
+
 **Status**: Not Started
 **Priority**: MEDIUM
 **Dependencies**: TASK-009
-
-### TASK-015: Custom Scheduler Documentation ⬜
-**Status**: Not Started
-**Priority**: MEDIUM
-**Dependencies**: TASK-009
-
 ---
 
-## Phase 4: Breaking Changes & Updates (0/5 completed)
+## Phase 2: Breaking Changes & Updates
 
-### TASK-016: Request Context Improvements Documentation ⬜
+### TASK-012: Request Context Improvements Documentation ⬜
+
 **Status**: Not Started
 **Priority**: MEDIUM
 
-### TASK-017: Polly Resilience Pipeline Documentation ⬜
+### TASK-013: Polly Resilience Pipeline Documentation ⬜
+
 **Status**: Not Started
 **Priority**: MEDIUM
 
-### TASK-018: Simplified Configuration Documentation ⬜
+### TASK-014: Simplified Configuration Documentation ⬜
+
 **Status**: Not Started
 **Priority**: MEDIUM
 
-### TASK-019: OpenTelemetry Integration Documentation ⬜
+### TASK-015: OpenTelemetry Integration Documentation ⬜
+
 **Status**: Not Started
 **Priority**: MEDIUM
 **Dependencies**: TASK-004
 
-### TASK-020: Nullable Reference Types Documentation ⬜
+### TASK-016: Nullable Reference Types Documentation ⬜
+
 **Status**: Not Started
 **Priority**: MEDIUM
 
 ---
 
-## Phase 5: Transport & Infrastructure (0/6 completed)
+## Phase 3: Transport & Infrastructure
 
-### TASK-021: PostgreSQL Message Broker Documentation ⬜
+### TASK-017: PostgreSQL Message Broker Documentation ⬜
+
 **Status**: Not Started
 **Priority**: LOW
 
-### TASK-022: RabbitMQ Enhancements Documentation ⬜
+### TASK-018: RabbitMQ Enhancements Documentation ⬜
+
 **Status**: Not Started
 **Priority**: LOW
 
-### TASK-023: Kafka Improvements Documentation ⬜
+### TASK-019: Kafka Improvements Documentation ⬜
+
 **Status**: Not Started
 **Priority**: LOW
 
-### TASK-024: AWS SDK v4 Support Documentation ⬜
+### TASK-020: AWS Improvements Documentation ⬜
+
 **Status**: Not Started
 **Priority**: LOW
 
-### TASK-025: Sweeper Circuit Breaking Documentation ⬜
+### TASK-021: Sweeper Circuit Breaking Documentation ⬜
+
 **Status**: Not Started
 **Priority**: LOW
 
-### TASK-026: InMemory Options Overview Documentation ⬜
+### TASK-022: InMemory Options Overview Documentation ⬜
+
 **Status**: Not Started
 **Priority**: LOW
 **Dependencies**: TASK-010
 
 ---
 
-## Phase 6: Glossary & Reference (0/2 completed)
+## Phase 4: Foundation & Migration
 
-### TASK-027: Create Terminology Glossary ⬜
+### TASK-023: Create V10 Migration Guide ⬜
+
 **Status**: Not Started
 **Priority**: LOW
 
-### TASK-028: Update FAQ ⬜
+### TASK-024: Update SUMMARY.md Structure ⬜
+
+**Status**: Not Started
+**Priority**: LOW
+
+### TASK-025: Simplify Show Me The Code
+
+**Status**: Not Started
+**Priority**: LOW
+
+---
+
+## Phase 6: Glossary & Reference
+
+### TASK-026: Create Terminology Glossary ⬜
+
+**Status**: Not Started
+**Priority**: LOW
+
+### TASK-027: Update FAQ
+
 **Status**: Not Started
 **Priority**: LOW
 
@@ -170,6 +199,7 @@
 ### 2025-01-02
 
 **TASK-001: Cloud Events Support Documentation** ✅
+
 - Created comprehensive CloudEvents documentation
 - File: `Docs/contents/CloudEventsSupport.md`
 - Covered: CloudEvents specification, required/optional attributes, binary vs structured modes
@@ -179,6 +209,7 @@
 - Best practices and recommendations included
 
 **TASK-002: Default Message Mappers Documentation** ✅
+
 - Created comprehensive documentation on V10 default mappers
 - File: `Docs/contents/DefaultMessageMappers.md`
 - Explained V10 simplification: no explicit mappers needed for JSON serialization
@@ -191,6 +222,7 @@
 - Best practices and sample code references
 
 **TASK-003: Dynamic Message Deserialization Documentation** ✅
+
 - Created comprehensive documentation on content-based routing
 - File: `Docs/contents/DynamicMessageDeserialization.md`
 - Explained DataType Channel pattern (default, one type per channel)
@@ -205,11 +237,22 @@
 - Comparison table and error handling
 - Links to related documentation
 
+**TASK-004: Agreement Dispatcher Documentation** ✅
+
+- Pattern explained with Martin Fowler reference
+- Multiple use cases documented with examples
+- Registration examples provided
+- AutoFromAssemblies limitation clear
+- Performance implications documented
+- Comparison with standard routing included
+- Added to SUMMARY.md under "Advanced Patterns" section
+
 ---
 
 ## Notes
 
 ### Key Documentation Themes
+
 - Start simple, add complexity gradually
 - Reference Brighter samples directory
 - Use "Dispatcher" terminology (not "ServiceActivator" except for assembly)
@@ -217,6 +260,7 @@
 - Address user feedback: "hard to get started"
 
 ### Important References
+
 - **Release Notes**: `Brighter/release_notes.md`
 - **ADRs**: `Brighter/docs/adr/`
 - **Samples**: `Brighter/samples/` (WebAPI, Transforms, etc.)
