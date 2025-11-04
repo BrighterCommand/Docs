@@ -534,8 +534,8 @@ All *Subscriptions* lets you configure the following common properties.
 * **RequeueCount**: How many times can you retry a message before we declare it a poison pill message?
 * **RequeueDelayInMilliseconds**: When we requeue a message how long should we delay it by?
 * **RoutingKey**: The identifier used to routed messages to subscribers on MoM. You publish to this, and subscriber from this. This has different names; in Kafka or SNS this is a Topic, in RMQ this is the routing key.
-* **RunAsync**: Is this an async pipeline? Your pipeline must be sync or async. An async pipeline can increase throughput where a handler is I/O bound by allowing the message pump to read another message whilst we await I/O completion. The cost of this is that strict ordering of messages will now be lost as processing of I/O bound requests may complete out-of-sequence. Brighter provides its own synchronization context for async operations. We recommend scaling via increasing the number of performers, unless you know that I/O is your bottleneck.
-* **TimeoutInMilliseconds**: How long does a read 'wait' before assuming there are no pending messages.
+* **MessagePumpType**: Chooses the concurrency model: **MessagePumpType.Reactor** (blocking I/O, lower latency) or **MessagePumpType.Proactor** (non-blocking I/O, higher throughput). The Proactor pattern can increase throughput where a handler is I/O bound by allowing the message pump to yield the thread whilst awaiting I/O completion. The cost is that strict ordering of messages may be lost as processing of I/O bound requests may complete out-of-sequence. Brighter provides its own synchronization context for async operations. We recommend scaling via increasing the number of performers, unless you know that I/O is your bottleneck. See [Reactor and Proactor](ReactorAndProactor.md) for details.
+* **TimeOut**: How long does a read 'wait' before assuming there are no pending messages.
 * **UnaceptableMessageLimit**: Brighter will ack a message that throws an unhandled exception, thus removing it from a queue. 
 
 For a more detailed discussion of using Requeue (with Delay) for Handler failure, (**RequeueCount** and **RequeueDelayInMilliseconds**) along with termination of a consumer due to message failure (**UnacceptableMessageLimit**) see [Handler Failure](/contents/HandlerFailure.md)
@@ -560,8 +560,8 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
             new SubscriptionName("paramore.sample.salutationanalytics"),
             new ChannelName("SalutationAnalytics"),
             new RoutingKey("GreetingMade"),
-            runAsync: true,
-            timeoutInMilliseconds: 200,
+            messagePumpType: MessagePumpType.Proactor,
+            timeOut: TimeSpan.FromMilliseconds(200),
             isDurable: true,
             makeChannels: OnMissingChannel.Create), //change to OnMissingChannel.Validate if you have infrastructure declared elsewhere
     };
@@ -776,8 +776,8 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
             new SubscriptionName("paramore.sample.salutationanalytics"),
             new ChannelName("SalutationAnalytics"),
             new RoutingKey("GreetingMade"),
-            runAsync: true,
-            timeoutInMilliseconds: 200,
+            messagePumpType: MessagePumpType.Proactor,
+            timeOut: TimeSpan.FromMilliseconds(200),
             isDurable: true,
             makeChannels: OnMissingChannel.Create), //change to OnMissingChannel.Validate if you have infrastructure declared elsewhere
     };

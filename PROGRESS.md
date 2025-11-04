@@ -1,14 +1,14 @@
 # Brighter V10 Documentation Progress
 
-**Last Updated**: 2025-01-02
+**Last Updated**: 2025-01-04
 
 ## Project Status
 
 - **Total Tasks**: 27
-- **Completed**: 3
+- **Completed**: 5
 - **In Progress**: 0
-- **Remaining**: 24
-- **Completion**: 11%
+- **Remaining**: 22
+- **Completion**: 19%
 
 ---
 
@@ -23,7 +23,7 @@
 
 ---
 
-## Phase 1: Core Framework Features (3/11 completed)
+## Phase 1: Core Framework Features (5/11 completed)
 
 ### TASK-001: Cloud Events Support Documentation ✅
 
@@ -51,11 +51,12 @@
 **File**: `Docs/contents/AgreementDispatcher.md` (NEW)
 **Priority**: HIGH
 
-### TASK-005: Reactor and Proactor Documentation ⬜
+### TASK-005: Reactor and Proactor Documentation ✅
 
-**Status**: Not Started
+**Status**: Completed - 2025-01-04
 **Files**: `Docs/contents/ReactorAndProactor.md` (NEW) + updates throughout
 **Priority**: HIGH
+**Notes**: Created comprehensive documentation covering Reactor (blocking I/O) and Proactor (non-blocking I/O) concurrency models. Updated HowServiceActivatorWorks.md with proper Dispatcher terminology and Reactor/Proactor patterns. Replaced all references to deprecated `isAsync`/`runAsync` parameters with `messagePumpType` throughout documentation. Updated subscription examples in RabbitMQConfiguration.md, BrighterBasicConfiguration.md, and AzureServiceBusConfiguration.md. Added transport support matrix. Added to SUMMARY.md under "Under the Hood" section.
 
 ### TASK-006: Scheduled Requests/Messaging Overview ⬜
 
@@ -246,6 +247,25 @@
 - Performance implications documented
 - Comparison with standard routing included
 - Added to SUMMARY.md under "Advanced Patterns" section
+
+### 2025-01-04
+
+**TASK-005: Reactor and Proactor Documentation** ✅
+
+- Created comprehensive ReactorAndProactor.md documentation
+- File: `Docs/contents/ReactorAndProactor.md`
+- Covered: Reactor pattern (blocking I/O) and Proactor pattern (non-blocking I/O)
+- Documented: Performance vs throughput trade-offs, Performer (message pump) details
+- Included: Transport native support matrix for all major transports
+- Explained: ConfigureAwait(false) warning and synchronization context
+- Created: Migration guide from V9 `isAsync`/`runAsync` to V10 `MessagePumpType`
+- Provided: Decision guide for choosing between patterns with example scenarios
+- Updated: HowServiceActivatorWorks.md with comprehensive Dispatcher documentation
+- Replaced: All references to "ServiceActivator" with "Dispatcher" terminology (except assembly name)
+- Updated: Subscription examples in RabbitMQConfiguration.md, BrighterBasicConfiguration.md, AzureServiceBusConfiguration.md
+- Changed: `runAsync`/`isAsync` → `messagePumpType: MessagePumpType.Reactor/Proactor`
+- Changed: `timeoutInMilliseconds` → `timeOut: TimeSpan.FromMilliseconds()`
+- Added: ReactorAndProactor.md to SUMMARY.md under "Under the Hood" section
 
 ---
 

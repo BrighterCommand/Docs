@@ -84,7 +84,8 @@
 ## Under the Hood
 
  * [How The Command Processor Works](/contents/HowBrighterWorks.md)
- * [How Service Activator Works](/contents/HowServiceActivatorWorks.md)
+ * [How the Dispatcher Works](/contents/HowServiceActivatorWorks.md)
+ * [Reactor and Proactor: Concurrency Models](/contents/ReactorAndProactor.md)
 
 ## Event Driven Architectures
 
