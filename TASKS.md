@@ -170,6 +170,7 @@ new KafkaSubscription(
 - Integration with dynamic message deserialization
 
 **Release Notes Example**:
+
 ```csharp
 registry.RegisterAsync<MyCommand>(((request, context) =>
 {
@@ -184,6 +185,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Pattern explained with Martin Fowler reference
 - [ ] Multiple use cases documented with examples
 - [ ] Registration examples provided
@@ -261,7 +263,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Send/Publish/Post with TimeSpan parameter
 - How scheduling works internally (FireSchedulerMessage, FireSchedulerRequest)
 - **Requeue with Delay** feature
-- **Native delay support**: Only RabbitMQ supports native "Requeue with Delay"
+- **Native delay support**: RabbitMQ and Azure Service Bus support native "Requeue with Delay"
 - All other transports require a scheduler
 - Choosing a scheduler:
   - **Production recommended**: Quartz.NET, Hangfire
@@ -381,16 +383,16 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-013: AWS Scheduler Documentation ⬜
-**Priority**: MEDIUM
-**Estimated Effort**: Medium
+### TASK-010: AWS Scheduler Documentation
+
 **Dependencies**: TASK-009
 **File**: Update `Docs/contents/AwsScheduler.md`
 
 **Description**: Update AWS Scheduler integration documentation
 
 **Content Requirements**:
-- Overview of AWS EventBridge Scheduler integration
+
+- Overview of [AWS EventBridge Scheduler](https://docs.aws.amazon.com/eventbridge/latest/userguide/using-eventbridge-scheduler.html) integration
 - **Cloud provider recommended** for AWS deployments
 - Direct SNS/SQS scheduling (no handler needed for messages)
 - Fire scheduler SNS/SQS for requests
@@ -419,16 +421,16 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-014: Azure Scheduler Documentation ⬜
-**Priority**: MEDIUM
-**Estimated Effort**: Medium
+### TASK-011: Azure Scheduler Documentation
+
 **Dependencies**: TASK-009
 **File**: Update `Docs/contents/AzureScheduler.md`
 
 **Description**: Update Azure Scheduler integration documentation
 
 **Content Requirements**:
-- Overview of Azure Service Bus scheduling
+
+- Overview of [Azure Service Bus scheduling](https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-sequencing)
 - **Cloud provider recommended** for Azure deployments
 - Azure Service Bus native delay support
 - **No reschedule support**: Must cancel + schedule
@@ -453,43 +455,10 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-015: Custom Scheduler Documentation ⬜
-**Priority**: MEDIUM
-**Estimated Effort**: Small
-**Dependencies**: TASK-009
-**File**: Update `Docs/contents/CustomScheduler.md`
+## Phase 2: Breaking Changes & Updates
 
-**Description**: Update custom scheduler implementation guide
+### TASK-012: Request Context Improvements Documentation ⬜
 
-**Content Requirements**:
-- When to implement custom scheduler
-- **IAmAMessageScheduler interface** (messages)
-- **IAmARequestScheduler interface** (requests)
-- IAmAMessageSchedulerAsync methods
-- IAmAMessageSchedulerSync methods
-- **FireSchedulerMessage** type
-- **FireSchedulerRequest** type
-- Implementation guide with steps
-- Code examples from ADR
-- Integration with UseScheduler()
-- Best practices
-
-**Acceptance Criteria**:
-- [ ] All scheduler interfaces documented
-- [ ] Async and sync versions explained
-- [ ] Fire message types explained
-- [ ] Implementation guide clear
-- [ ] Code examples provided
-- [ ] Integration shown
-- [ ] File updated with V10 changes
-
----
-
-## Phase 4: Breaking Changes & Updates (Medium Priority)
-
-### TASK-016: Request Context Improvements Documentation ⬜
-**Priority**: MEDIUM
-**Estimated Effort**: Medium
 **Dependencies**: None
 **Files**:
 - Update `Docs/contents/UsingTheContextBag.md`
@@ -498,12 +467,13 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 **Description**: Document new RequestContext capabilities
 
 **Content Requirements**:
+
 - Setting RequestContext explicitly in Send/Publish/DepositPost methods
 - **OriginatingMessage** property for consumers (access original Message)
 - **PartitionKey** support for dynamic partition assignment
 - **Custom headers** via context
 - **Resilience Context** integration with Polly
-- Context.Span for custom attributes (OpenTelemetry)
+- Context.Span for the current Span/Trace (OpenTelemetry)
 - Code examples:
   - Setting partition key from command
   - Adding custom headers via context
@@ -513,6 +483,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Integration with CloudEvents headers
 
 **Acceptance Criteria**:
+
 - [ ] All new capabilities documented
 - [ ] Code examples for each feature
 - [ ] Integration points explained (Polly, OTel)
@@ -521,22 +492,24 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-017: Polly Resilience Pipeline Documentation ⬜
-**Priority**: MEDIUM
-**Estimated Effort**: Large
+### TASK-013: Polly Resilience Pipeline Documentation ⬜
+
 **Dependencies**: None
 **Files**:
+
 - Update `Docs/contents/PolicyRetryAndCircuitBreaker.md`
 - Update `Docs/contents/PolicyFallback.md`
 - Search and update all policy examples throughout docs
 
-**Description**: Document Polly v8 resilience pipeline support
+**Description**: Document [Polly](https://www.pollydocs.org/) resilience pipeline support
 
 **Content Requirements**:
-- Migration from [TimeoutPolicy] to [UseResiliencePipeline]
-- Migration from [UsePolicy] to [UseResiliencePipeline]
-- **Deprecation notice**: TimeoutPolicy deprecated in V10, removed in V11
+
 - Polly v8 support overview
+  - Polly V7 to V8 [Migration Guide](https://www.pollydocs.org/migration-v8.html)
+- Migration from [UsePolicy] to [UseResiliencePipeline]  
+- Migration from [TimeoutPolicy] to [UseResiliencePipeline]
+  - **Deprecation notice**: TimeoutPolicy deprecated in V10, removed in V11
 - Configuring resilience pipelines in DI
 - Using pipeline name in attribute
 - **CancellationToken integration**: Proper token flow from pipelines
@@ -555,6 +528,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Best practices
 
 **Acceptance Criteria**:
+
 - [ ] Migration guide clear
 - [ ] New attribute usage documented
 - [ ] Polly v8 integration explained
@@ -567,11 +541,11 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-018: Simplified Configuration Documentation ⬜
-**Priority**: MEDIUM
-**Estimated Effort**: Medium
+### TASK-014: Simplified Configuration Documentation
+
 **Dependencies**: None
 **Files**:
+
 - Update `Docs/contents/BrighterBasicConfiguration.md`
 - Update `Docs/contents/HowConfiguringTheCommandProcessorWorks.md`
 - Update `Docs/contents/HowConfiguringTheDispatcherWorks.md`
@@ -580,18 +554,18 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 **Description**: Document renamed configuration methods and use Dispatcher terminology
 
 **Content Requirements**:
+
 - **UseExternalBus() → AddProducers()** change
 - **AddServiceActivator() → AddConsumers()** change
 - Rationale: Simpler, clearer naming convention
 - V10 configuration examples showing new methods
-- Migration from V9 configuration
 - Use **"Dispatcher"** terminology throughout (not "ServiceActivator")
 - Clarify: ServiceActivator is the assembly name, Dispatcher is the concept/class
 - Update all configuration examples throughout docs
-- Code comparison (V9 vs V10)
 - Links to producer/consumer configuration details
 
 **Acceptance Criteria**:
+
 - [ ] New method names explained
 - [ ] Rationale provided
 - [ ] "Dispatcher" terminology used consistently
@@ -602,15 +576,15 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-019: OpenTelemetry Integration Documentation ⬜
-**Priority**: MEDIUM
-**Estimated Effort**: Medium
-**Dependencies**: TASK-004 (CloudEvents)
+### TASK-015: OpenTelemetry Integration Documentation
+
+**Dependencies**: TASK-001 (CloudEvents)
 **File**: Update `Docs/contents/Telemetry.md`
 
 **Description**: Document OpenTelemetry Semantic Conventions support
 
 **Content Requirements**:
+
 - **OTel Semantic Conventions** overview (link to spec)
 - V10 change: Uses OTel conventions (different from V9 custom conventions)
 - **Span attributes** for request handler pipelines
@@ -626,6 +600,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Breaking change notice: Trace structure changed from V9
 
 **Acceptance Criteria**:
+
 - [ ] OTel Semantic Conventions explained
 - [ ] All tracing features documented
 - [ ] Configuration examples provided
@@ -637,15 +612,15 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-020: Nullable Reference Types Documentation ⬜
-**Priority**: MEDIUM
-**Estimated Effort**: Large
+### TASK-016: Nullable Reference Types Documentation
+
 **Dependencies**: None
 **Files**: All files with code examples
 
 **Description**: Update all code examples for nullable reference types
 
 **Content Requirements**:
+
 - Review all code examples in documentation
 - Add null checks where appropriate
 - Use nullable annotations correctly (?, null-forgiving operator)
@@ -658,6 +633,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Best practices for handling nullable in handlers
 
 **Acceptance Criteria**:
+
 - [ ] All code examples null-safe
 - [ ] Proper nullable annotations used
 - [ ] No nullable warnings in examples
@@ -666,20 +642,20 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-## Phase 5: Transport & Infrastructure (Lower Priority)
+## Phase 3: Transport & Infrastructure
 
-### TASK-021: PostgreSQL Message Broker Documentation ⬜
-**Priority**: LOW
-**Estimated Effort**: Medium
+### TASK-017: PostgreSQL Message Broker Documentation
+
+
 **Dependencies**: None
 **File**: `Docs/contents/PostgreSQLMessageBroker.md` (NEW)
 
 **Description**: Document PostgreSQL pub/sub messaging
 
 **Content Requirements**:
+
 - PostgreSQL LISTEN/NOTIFY overview
 - Benefits: Use existing PostgreSQL infrastructure
-- When to use: Microservices with shared PostgreSQL
 - PostgreSQL as message broker configuration
 - Subscription setup
 - Publication setup
@@ -693,6 +669,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - References to existing PostgreSQL Outbox/Inbox docs
 
 **Acceptance Criteria**:
+
 - [ ] Feature explained clearly
 - [ ] Use cases documented
 - [ ] Configuration examples provided
@@ -703,15 +680,15 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-022: RabbitMQ Enhancements Documentation ⬜
-**Priority**: LOW
-**Estimated Effort**: Small
+### TASK-018: RabbitMQ Enhancements Documentation
+
 **Dependencies**: None
 **File**: Update `Docs/contents/RabbitMQConfiguration.md`
 
 **Description**: Document RabbitMQ V10 enhancements
 
 **Content Requirements**:
+
 - **Quorum Queues**:
   - What are quorum queues
   - Benefits: Consistency, availability, replicated
@@ -729,6 +706,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Migration notes if applicable
 
 **Acceptance Criteria**:
+
 - [ ] Quorum queues explained
 - [ ] Configuration requirements clear
 - [ ] Use cases documented
@@ -739,15 +717,15 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-023: Kafka Improvements Documentation ⬜
-**Priority**: LOW
-**Estimated Effort**: Small
+### TASK-019: Kafka Improvements Documentation
+
 **Dependencies**: None
 **File**: Update `Docs/contents/KafkaConfiguration.md`
 
 **Description**: Document Kafka configuration improvements
 
 **Content Requirements**:
+
 - **Configuration callback** support in KafkaSubscription
 - Allows fine-grained configuration of Kafka consumer
 - **Updated default values** for better out-of-box experience
@@ -758,6 +736,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Migration notes if defaults changed behavior
 
 **Acceptance Criteria**:
+
 - [ ] Callback configuration explained
 - [ ] New defaults documented
 - [ ] Code examples provided
@@ -767,39 +746,40 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-024: AWS SDK v4 Support Documentation ⬜
-**Priority**: LOW
-**Estimated Effort**: Medium
+### TASK-020: AWS Improvements Documentation
+
 **Dependencies**: None
 **Files**:
+
 - Update `Docs/contents/AWSSQSConfiguration.md`
 - Update `Docs/contents/DynamoOutbox.md`
 - Update `Docs/contents/DynamoInbox.md`
 - `Docs/contents/S3LuggageStore.md` (NEW)
 
-**Description**: Document AWS SDK v4 support
+**Description**: Document AWS Improvements
 
 **Content Requirements**:
-- AWS SDK v4 support overview
-- **SNS/SQS** with SDK v4:
-  - Standard queues
+
+- **SNS/SQS**
   - FIFO queues
   - SQS direct publishing without SNS
-- **DynamoDB** Inbox/Outbox with SDK v4
+- **DynamoDB**
+  - Outbox performance improvements
 - **S3 Luggage store** for Claim Check pattern:
   - Configuration
   - Usage with ClaimCheck attribute
   - Code examples
 - **Backwards compatibility** with SDK v3
+- Continue to support SDK V3 to allow migration period
 - Migration guidance (v3 to v4)
 - Configuration examples for all services
 - Best practices
 
 **Acceptance Criteria**:
-- [ ] SDK v4 support documented
-- [ ] All AWS services covered (SNS, SQS, DynamoDB, S3)
+
 - [ ] SQS direct publishing explained
 - [ ] S3 Luggage store documented
+- [ ] Dynamo Db performance improvements
 - [ ] Backwards compatibility noted
 - [ ] Migration guidance provided
 - [ ] All AWS docs updated
@@ -807,24 +787,22 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-025: Sweeper Circuit Breaking Documentation ⬜
-**Priority**: LOW
-**Estimated Effort**: Medium
+### TASK-021: Sweeper Circuit Breaking Documentation
+
 **Dependencies**: None
 **File**: `Docs/contents/SweeperCircuitBreaking.md` (NEW)
 
 **Description**: Document topic-level circuit breaking
 
 **Content Requirements**:
+
 - What is sweeper circuit breaking
-- Purpose: Prevent cascade failures when external systems fail
-- How it prevents cascade failures
+- Purpose: Prevent failures to post to one topic blocking posting to others
 - **Failure tracking** per topic
 - **Configurable thresholds**: Failure count before opening
 - **Cooldown periods**: Time before attempting recovery
 - **Automatic recovery**: Testing after cooldown
 - **Bulk dispatch support**: Circuit breaking in batch operations
-- MongoDB Outbox integration
 - Per-transport integration notes
 - Configuration examples
 - Monitoring circuit breaker state
@@ -832,6 +810,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Best practices
 
 **Acceptance Criteria**:
+
 - [ ] Feature explained clearly
 - [ ] Use cases documented (cascade failure prevention)
 - [ ] Configuration examples provided
@@ -843,15 +822,14 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-026: InMemory Options Overview Documentation ⬜
-**Priority**: LOW
-**Estimated Effort**: Medium
-**Dependencies**: TASK-010
+### TASK-022: InMemory Options Overview Documentation
+
 **File**: `Docs/contents/InMemoryOptions.md` (NEW)
 
 **Description**: Document all InMemory implementations
 
 **Content Requirements**:
+
 - Overview of InMemory options philosophy
 - Purpose: Testing, development, demos, simple scenarios
 - **InMemory Scheduler** (link to TASK-010)
@@ -868,6 +846,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - WebAPI sample reference for simple setup
 
 **Acceptance Criteria**:
+
 - [ ] All InMemory options covered
 - [ ] Philosophy explained
 - [ ] Use cases clear (testing, dev, demos)
@@ -880,17 +859,17 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-## Phase 1: Foundation & Migration (Critical Path)
+## Phase 4: Foundation & Migration
 
-### TASK-001: Create V10 Migration Guide ⬜
-**Priority**: CRITICAL
-**Estimated Effort**: Large
+### TASK-023: Create V10 Migration Guide
+
 **Dependencies**: None
 **File**: `Docs/contents/MigrationV10.md` (NEW)
 
 **Description**: Create comprehensive migration guide from V9 to V10
 
 **Content Requirements**:
+
 - Summary of all breaking changes
 - Step-by-step migration checklist
 - Code comparison table (V9 vs V10)
@@ -903,8 +882,10 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Database schema updates for Inbox/Outbox
 - Generic message pumps - remove type parameters
 - Common migration issues and solutions
+- Migration from V9 configuration to V10
 
 **Acceptance Criteria**:
+
 - [ ] All breaking changes from release notes covered
 - [ ] Each breaking change has before/after code example
 - [ ] Step-by-step checklist provided
@@ -913,15 +894,15 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-002: Update SUMMARY.md Structure ⬜
-**Priority**: HIGH
-**Estimated Effort**: Small
+### TASK-024: Update SUMMARY.md Structure
+
 **Dependencies**: None
 **File**: `Docs/SUMMARY.md`
 
 **Description**: Reorganize and update documentation table of contents
 
 **Content Requirements**:
+
 - Add all new V10 feature documentation pages
 - Add "Migration" section with V10 migration guide
 - Add "Advanced Patterns" section (Agreement Dispatcher, Sweeper Circuit Breaking)
@@ -931,6 +912,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Clear separation of Brighter and Darker content where needed
 
 **Acceptance Criteria**:
+
 - [ ] All new pages added
 - [ ] Logical grouping maintained
 - [ ] Migration guide prominent
@@ -939,20 +921,19 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-003: Simplify Show Me The Code ⬜
-**Priority**: HIGH
-**Estimated Effort**: Medium
-**Dependencies**: TASK-005 (Default Message Mappers)
+### TASK-025: Simplify Show Me The Code ⬜
+
 **File**: `Docs/contents/ShowMeTheCode.md`
 
 **Description**: Simplify the introductory code example to help newcomers get started
 
 **Content Requirements**:
-- Replace complex Post example with simple Send (no transactions)
+
+- Replace complex DepositPost example with simple Post (no transactions)
 - Use InMemory Outbox in simple example
 - Use default message mapper (no explicit mapper needed in V10)
-- Add clear note explaining this is simplified version
-- Add note that it uses InMemory Outbox (not durable)
+- Add clear note explaining this is simplest version but production needs DepositPost
+- Add clear note that it uses InMemory Outbox (not durable)
 - Link to full Outbox documentation for production example
 - Move current complex example to BrighterOutboxSupport.md
 - Ensure all code examples use V10 syntax
@@ -960,6 +941,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Emphasize "start simple, add complexity later" philosophy per user feedback
 
 **Acceptance Criteria**:
+
 - [ ] Simple example uses basic Send without transaction
 - [ ] InMemory Outbox clearly indicated with limitations
 - [ ] No explicit message mapper shown (uses default)
@@ -970,17 +952,17 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-## Phase 6: Glossary & Reference (Lower Priority)
+## Phase 6: Glossary & Reference
 
-### TASK-027: Create Terminology Glossary ⬜
-**Priority**: LOW
-**Estimated Effort**: Medium
+### TASK-026: Create Terminology Glossary ⬜
+
 **Dependencies**: All documentation tasks
 **File**: `Docs/contents/Glossary.md` (NEW)
 
 **Description**: Create comprehensive terminology glossary
 
 **Content Requirements**:
+
 - **Core Concepts**:
   - Request (base type for Command, Event, Query)
   - Command (instruction to change state)
@@ -1033,6 +1015,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Cross-references between related terms
 
 **Acceptance Criteria**:
+
 - [ ] All key terms defined
 - [ ] Clear, concise definitions
 - [ ] Links to detailed docs
@@ -1044,15 +1027,15 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 
 ---
 
-### TASK-028: Update FAQ ⬜
-**Priority**: LOW
-**Estimated Effort**: Medium
+### TASK-027: Update FAQ ⬜
+
 **Dependencies**: All other tasks
 **File**: Update `Docs/contents/FAQ.md`
 
 **Description**: Update FAQ with V10 information
 
 **Content Requirements**:
+
 - Add V10-specific questions:
   - When should I use Reactor vs Proactor?
   - Do I need message mappers in V10?
@@ -1078,6 +1061,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 - Reference WebAPI sample for fully-featured example
 
 **Acceptance Criteria**:
+
 - [ ] V10 questions added
 - [ ] Existing answers updated
 - [ ] Migration questions included
@@ -1092,6 +1076,7 @@ registry.RegisterAsync<MyCommand>(((request, context) =>
 ## Task Execution Instructions
 
 ### For User
+
 To request execution of a specific task:
 1. **By number**: "Please complete TASK-001"
 2. **By name**: "Please work on the Migration Guide"
@@ -1099,6 +1084,7 @@ To request execution of a specific task:
 4. **By priority**: "Please complete all HIGH priority tasks"
 
 ### For Claude
+
 When executing a task:
 1. Update task status to 🔄 In Progress
 2. Create or update the specified file(s)
@@ -1111,67 +1097,16 @@ When executing a task:
 9. Report completion with file paths and summary
 
 ### Cross-references Between Tasks
+
 - Many tasks reference each other - include links in documentation
 - CloudEvents (TASK-004) is referenced by Default Mappers (TASK-005), Dynamic Deserialization (TASK-006), OTel (TASK-019)
 - Schedulers (TASK-010-015) depend on Scheduler Overview (TASK-009)
 - InMemory Overview (TASK-026) depends on InMemory Scheduler (TASK-010)
 
-## Summary
-
-- **Total Tasks**: 28
-- **Critical**: 1 (TASK-001)
-- **High Priority**: 8 (TASK-002 to TASK-009)
-- **Medium Priority**: 11 (TASK-010 to TASK-020)
-- **Low Priority**: 8 (TASK-021 to TASK-028)
-- **No Blocked Tasks**: All questions answered ✅
-
-## Recommended Execution Order
-
-### Week 1: Foundation (Critical)
-1. **TASK-001**: Migration Guide (CRITICAL)
-2. **TASK-002**: Update SUMMARY.md
-3. **TASK-003**: Simplify Show Me The Code
-
-### Week 2: Core Features Part 1 (High Priority)
-4. **TASK-004**: Cloud Events Support
-5. **TASK-005**: Default Message Mappers
-6. **TASK-006**: Dynamic Message Deserialization
-7. **TASK-007**: Agreement Dispatcher
-
-### Week 3: Core Features Part 2 & Schedulers (High/Medium Priority)
-8. **TASK-008**: Reactor and Proactor
-9. **TASK-009**: Scheduled Requests Overview
-10. **TASK-010**: InMemory Scheduler
-11. **TASK-011**: Quartz Scheduler
-12. **TASK-012**: Hangfire Scheduler
-
-### Week 4: Cloud Schedulers & Breaking Changes (Medium Priority)
-13. **TASK-013**: AWS Scheduler
-14. **TASK-014**: Azure Scheduler
-15. **TASK-015**: Custom Scheduler
-16. **TASK-016**: Request Context Improvements
-17. **TASK-017**: Polly Resilience Pipeline
-
-### Week 5: Configuration & Telemetry (Medium Priority)
-18. **TASK-018**: Simplified Configuration
-19. **TASK-019**: OpenTelemetry Integration
-20. **TASK-020**: Nullable Reference Types (ongoing)
-
-### Week 6: Transports (Low Priority)
-21. **TASK-021**: PostgreSQL Message Broker
-22. **TASK-022**: RabbitMQ Enhancements
-23. **TASK-023**: Kafka Improvements
-24. **TASK-024**: AWS SDK v4 Support
-
-### Week 7: Advanced & Reference (Low Priority)
-25. **TASK-025**: Sweeper Circuit Breaking
-26. **TASK-026**: InMemory Options Overview
-27. **TASK-027**: Terminology Glossary
-28. **TASK-028**: Update FAQ
-
 ## Integration with Brighter Samples
 
 Reference these samples throughout documentation:
+
 - **WebAPI Sample**: Fully-featured example (reference in Show Me The Code)
 - **Transforms Sample**: ClaimCheck example (reference in Default Message Mappers)
 - Other samples in `Brighter/samples/` for specific features
@@ -1179,6 +1114,7 @@ Reference these samples throughout documentation:
 ## Key Themes for All Documentation
 
 Based on user feedback, emphasize:
+
 1. **Start Simple**: Show basic usage first
 2. **Add Complexity Gradually**: Link to advanced features
 3. **Don't Over-Engineer**: Warn against premature abstraction (e.g., custom handler base classes)
