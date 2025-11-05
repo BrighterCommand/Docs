@@ -1,44 +1,57 @@
 # How The Dispatcher Works
 
-The **Dispatcher** is the component in the `Brighter.ServiceActivator` assembly that consumes messages from external message brokers and dispatches them to your registered handlers. While the Command Processor handles in-process request dispatching, the Dispatcher handles external message consumption and routing.
+The **Dispatcher** is the component in the `Brighter.ServiceActivator` assembly orchestrates your `Performers`. Each `Performer` is a single-thread that runs a `MessagePump`. The `MessagePump` consumes messages from streams or queues, calls a `IAmAMessageMapper` or `IAmAMessageMapperAsync` to map them to a C# type and then dispatches that type to your registered `IHandleRequests` or `IHandleRequestsAsync`. The Command Processor handles in-process request dispatching, and the Dispatcher orchestrates the threads that provide external message consumption and routing.
 
 ## Overview
 
-When you configure Brighter to consume messages from external brokers (using `AddConsumers()`), you're setting up the Dispatcher. The Dispatcher:
+When you configure Brighter to consume messages from external brokers (using `AddConsumers()`), you're setting up the Dispatcher.
 
-1. **Listens** to configured channels on external message brokers
-2. **Retrieves** messages using a Performer (message pump)
-3. **Deserializes** messages into requests using message mappers
-4. **Dispatches** requests to registered handlers via the Command Processor
-5. **Acknowledges** or rejects messages based on handler success
+The `Dispatcher`:
+
+1. **Orchestrates** your `Performers` which is a thread reading messages. You can scale-out your `Performers` for the Competing Consumers pattern.
+
+The `Performer`:
+
+1. **Listens** to a configured channel on an external message brokers
+2. **Retrieves** messages using a Message Pump (a Reactor or a Proactor)
+
+The `Message Pump`:
+
+1. **Deserializes** messages into requests using Message Mappers
+2. **Dispatches** requests to registered Handlers via the Command Processor
+3. **Acknowledges** the message pump acknowledges or rejects messages based on a handler completing without an exception
 
 ## Architecture
 
 ```
 External Message Broker
          ↓
-    [Performer] (Message Pump - Reactor or Proactor)
+  [Dispatcher] (ServiceActivator assembly)
          ↓
-   [Dispatcher] (ServiceActivator assembly)
-         ↓
-  [Message Mapper] (Deserialize)
-         ↓
- [Command Processor] (Handler Pipeline)
-         ↓
-    [Your Handler]
+    [Performer]
+                    ↓
+      [Message Pump - Reactor or Proactor  
+                  ↓   
+        [Message Mapper] (Deserialize)
+                  ↓
+        [Command Processor] (Handler Pipeline)
+                    ↓
+               [Your Handler]
 ```
 
-## The Performer (Message Pump)
+## The Message Pump
 
-The **Performer** is the message pump that retrieves messages from external brokers. It's a core component of the Dispatcher and operates in one of two concurrency models:
+The `MessagePump` retrieves messages from external brokers. It operates in one of two concurrency models:
 
 ### Reactor Pattern (Blocking I/O)
+
 - Uses synchronous message retrieval
 - Blocks thread during I/O operations
 - Lower latency per message
 - Uses `MessagePumpType.Reactor`
 
 ### Proactor Pattern (Non-blocking I/O)
+
 - Uses asynchronous message retrieval
 - Yields thread during I/O operations
 - Higher throughput
@@ -50,7 +63,7 @@ The **Performer** is the message pump that retrieves messages from external brok
 
 Let's trace a message from the broker to your handler:
 
-### 1. Performer Retrieves Message
+### 1. Message Pump Retrieves Message
 
 The Performer polls the configured channel for new messages:
 
@@ -67,17 +80,33 @@ Message message = await channel.ReceiveAsync(timeOut, cancellationToken);
 The Dispatcher uses the registered message mapper to convert the `Message` into a request object:
 
 ```csharp
+
 // V10: Default mapper used automatically if no custom mapper registered
-MyCommand command = messageMapper.MapToRequest(message);
+// Reactor (blocking)
+var request = TranslateMessage(message, context);
+```
+
+```csharp
+
+// V10: Default mapper used automatically if no custom mapper registered
+// Reactor (blocking)
+var request = await TranslateMessage(message, context);
 ```
 
 ### 3. Request Context Creation
 
-The Dispatcher creates a `RequestContext` that includes:
+The Message Pump creates a `RequestContext` that includes:
+
 - The original `Message` (via `OriginatingMessage` property)
 - Span for tracing (OpenTelemetry integration)
-- Custom headers and metadata
-- Partition key (if applicable)
+- Channel Name
+- When the request started
+
+```csharp
+
+RequestContext context = InitRequestContext(span, message);
+
+```
 
 ### 4. Handler Dispatch
 
@@ -85,24 +114,39 @@ The request is dispatched to the Command Processor, which executes the handler p
 
 ```csharp
 // Reactor
-commandProcessor.Send(command);
-
-// Proactor
-await commandProcessor.SendAsync(command, cancellationToken);
+RequestContext context = InitRequestContext(span, message);
 ```
 
-### 5. Message Acknowledgment
+```csharp
+// Proactor
+await InvokeDispatchRequest(request, message, context);
+```
 
-Based on the handler result:
+### 5. Message Acknowledgment, Rejection, Requeue and Fallback
+
+A `IHandleRequests` does not have a return value. Instead, whether we acknowledge or reject the message on the queue or the record in a stream depends on whether the handler throws an exception, or terminates without an exception.
+
+Terminates without an exception:
+
 - **Success** → Message acknowledged (removed from broker)
-- **Unhandled Exception** → Message rejected or requeued
-- **Requeue** → Message requeued for later processing
+
+If the Handler terminates with an exception, that exception determines whether we acknowledge, reject or requeue. A `ConfigurationException` is thrown by the Message Pump due to a failure to find a message mapper or handler.
+
+You can throw a `DeferMessageAction` if you Handler encounters a transient fault (such as network or database failure that cannot be retried successfully)
+
+- **ConfigurationException** - Message rejected, channel closed
+- **DeferMessageAction** - Requeues the message
+- **Unhandled Exception** → Message acknowledged (to prevent a poison pill message)
+
+You can use a Polly resilience policy via [UseResiliencePipeline] to retry the handler, provide a circuit breaker, etc. This will kick in before your exception bubbles out to the Message Pump.
+
+You can use a [FallbackPolicy] to catch an exception that bubbles out of your handler, and resilience policy, to call the `Fallback` method on your `IHandleRequests` derived class (you need to override this and provide an implementation). The `RequestContext` contains the original exception under the key of "FallbackPolicyHandler{TRequest}.CAUSE_OF_FALLBACK_EXCEPTION".
 
 ## Configuration
 
 ### Basic Dispatcher Configuration
 
-Configure the Dispatcher when setting up your service:
+You configure the Dispatcher when setting up your service, using `AddConsumers`:
 
 ```csharp
 services.AddBrighter(...)
@@ -127,6 +171,7 @@ services.AddBrighter(...)
 ### Key Configuration Options
 
 #### noOfPerformers
+
 Controls how many concurrent Performers (message pumps) run for this subscription:
 
 ```csharp
@@ -134,12 +179,14 @@ noOfPerformers: 3  // Three concurrent pumps reading from the same channel
 ```
 
 **Notes:**
+
 - Each Performer is single-threaded
 - Multiple Performers enable competing consumers pattern
 - Useful for high-volume scenarios
 - Consider message ordering requirements
 
 #### messagePumpType
+
 Chooses between Reactor and Proactor patterns:
 
 ```csharp
@@ -150,6 +197,7 @@ messagePumpType: MessagePumpType.Proactor  // Non-blocking I/O
 **See [Reactor and Proactor](ReactorAndProactor.md) for guidance on choosing.**
 
 #### timeOut
+
 How long the Performer waits for a message before polling again:
 
 ```csharp
@@ -157,10 +205,12 @@ timeOut: TimeSpan.FromMilliseconds(200)
 ```
 
 **Trade-offs:**
+
 - **Shorter timeout** → More responsive to shutdown, higher CPU usage
 - **Longer timeout** → Lower CPU usage, slower shutdown response
 
 #### requeueCount and requeueDelayInMilliseconds
+
 Control retry behavior on handler failure:
 
 ```csharp
@@ -179,12 +229,12 @@ requeueDelayInMilliseconds: 1000,          // Wait 1 second between retries
 
 ### Runtime
 
-The Dispatcher continuously:
+Via the `Performers` orchestrated by the `Dispatcher`, Brighter continuously:
+
 1. Polls for new messages (within timeout window)
 2. Deserializes messages to requests
 3. Dispatches to handlers via Command Processor
 4. Acknowledges or rejects messages based on handler results
-5. Tracks failures for circuit breaking (see Sweeper Circuit Breaking)
 
 ### Shutdown
 
@@ -196,17 +246,14 @@ The Dispatcher continuously:
 
 ## Error Handling
 
-### Unhandled Exceptions
+### Defer Message Action Exception
 
-When a handler throws an unhandled exception:
+When a handler throws a `DeferMessageAction` exception:
 
 1. **Requeue Decision** → Dispatcher checks `requeueCount`
-   - If retries remain → Message requeued with delay
-   - If retries exhausted → Message sent to DLQ (if configured) or rejected
 
-2. **Circuit Breaking** → Sweeper tracks failures per topic
-   - If threshold exceeded → Circuit opens for that topic
-   - Other topics continue operating normally
+   - If retries remain → Message requeued (with any configured delay)
+   - If retries exhausted → Message sent to DLQ (if configured) or rejected
 
 ### Dead Letter Queues (DLQ)
 
@@ -221,9 +268,18 @@ var subscription = new Subscription<MyCommand>(
 ```
 
 **Benefits:**
+
 - Prevents message loss
 - Allows investigation of failed messages
 - Enables manual reprocessing
+
+### Configuration Exception
+
+When the pump receives a `ConfigurationException` it indicates that an expected Message Mapper or Handler could not be found or created.
+
+### Other Exception
+
+The message is acknowledged, to prevent a poison pill message from blocking further message consumption.
 
 ## Advanced Features
 
@@ -281,7 +337,8 @@ var subscription = new Subscription<MyCommand>(
 ```
 
 **Considerations:**
-- **Message Ordering** → Not guaranteed across multiple consumers
+
+- **Message Ordering** → We use a single threaded message pump which will preserve ordering for streams, but not queues.
 - **Idempotency** → Use Inbox pattern for deduplication
 - **Load Distribution** → Broker-dependent behavior
 
@@ -289,7 +346,8 @@ var subscription = new Subscription<MyCommand>(
 
 ### OpenTelemetry Integration
 
-The Dispatcher automatically creates spans for:
+The Message Pump automatically creates spans for:
+
 - Message retrieval from broker
 - Message deserialization
 - Handler dispatch
@@ -395,10 +453,10 @@ Test and adjust based on actual load.
 
 The **Dispatcher** is the primary class in the `Brighter.ServiceActivator` assembly. Throughout Brighter documentation, we use the term "Dispatcher" to refer to the concept and the class. We use "ServiceActivator" only when referring to the assembly name:
 
-- ✅ "Configure the Dispatcher to consume messages"
-- ✅ "The Dispatcher uses Performers to retrieve messages"
-- ✅ "The Brighter.ServiceActivator assembly contains the Dispatcher"
-- ❌ "Configure the ServiceActivator to consume messages" (incorrect - too vague)
+- "Configure the Dispatcher to consume messages"
+- "The Dispatcher uses Performers to retrieve messages"
+- "The Brighter.ServiceActivator assembly contains the Dispatcher"
+- "Configure the ServiceActivator to consume messages" (incorrect - too vague)
 
 ## Related Documentation
 
