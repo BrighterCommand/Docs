@@ -5,10 +5,10 @@
 ## Project Status
 
 - **Total Tasks**: 27
-- **Completed**: 5
+- **Completed**: 6
 - **In Progress**: 0
-- **Remaining**: 22
-- **Completion**: 19%
+- **Remaining**: 21
+- **Completion**: 22%
 
 ---
 
@@ -23,7 +23,7 @@
 
 ---
 
-## Phase 1: Core Framework Features (5/11 completed)
+## Phase 1: Core Framework Features (6/11 completed)
 
 ### TASK-001: Cloud Events Support Documentation ✅
 
@@ -58,11 +58,12 @@
 **Priority**: HIGH
 **Notes**: Created comprehensive documentation covering Reactor (blocking I/O) and Proactor (non-blocking I/O) concurrency models. Updated HowServiceActivatorWorks.md with proper Dispatcher terminology and Reactor/Proactor patterns. Replaced all references to deprecated `isAsync`/`runAsync` parameters with `messagePumpType` throughout documentation. Updated subscription examples in RabbitMQConfiguration.md, BrighterBasicConfiguration.md, and AzureServiceBusConfiguration.md. Added transport support matrix. Added to SUMMARY.md under "Under the Hood" section.
 
-### TASK-006: Scheduled Requests/Messaging Overview ⬜
+### TASK-006: Scheduled Requests/Messaging Overview ✅
 
-**Status**: Not Started
-**File**: Update `Docs/contents/BrighterSchedulerSupport.md`
+**Status**: Completed - 2025-01-04
+**File**: Updated `Docs/contents/BrighterSchedulerSupport.md`
 **Priority**: HIGH
+**Notes**: Completely rewrote scheduling documentation with comprehensive overview. Documented Send/Publish/Post with DateTimeOffset and TimeSpan parameters. Explained how scheduling works internally (FireSchedulerMessage, FireSchedulerRequest). Documented Requeue with Delay feature with transport-specific behavior. Added native delay support table for transports (RabbitMQ and Azure Service Bus native, others require scheduler). Created scheduler comparison table with recommendations. Included scheduler ID return value documentation for cancel/reschedule. Added decision guide flowchart. Provided extensive code examples including basic scheduling, cancellation, retry with exponential backoff, and requeue with delay. Included configuration examples for Hangfire, Quartz, and InMemory. Added links to specific scheduler documentation.
 
 ---
 
@@ -266,6 +267,25 @@
 - Changed: `runAsync`/`isAsync` → `messagePumpType: MessagePumpType.Reactor/Proactor`
 - Changed: `timeoutInMilliseconds` → `timeOut: TimeSpan.FromMilliseconds()`
 - Added: ReactorAndProactor.md to SUMMARY.md under "Under the Hood" section
+
+**TASK-006: Scheduled Requests/Messaging Overview** ✅
+
+- Completely rewrote BrighterSchedulerSupport.md with comprehensive scheduling documentation
+- File: `Docs/contents/BrighterSchedulerSupport.md`
+- Added: Overview and use cases section with real-world scenarios
+- Documented: All Send/Publish/Post variants with DateTimeOffset and TimeSpan parameters
+- Explained: How scheduling works internally (FireSchedulerMessage vs FireSchedulerRequest)
+- Documented: Return value (scheduler ID) for cancellation and reschedule
+- Created: Native transport delay support table (RabbitMQ, Azure Service Bus native; others require scheduler)
+- Created: Scheduler comparison table with Production Use, Persistence, Cancellation, Cloud Native columns
+- Provided: Scheduler recommendations for Production (Quartz, Hangfire), Cloud (AWS, Azure), Dev/Test (InMemory)
+- Added: Decision guide flowchart for choosing the right scheduler
+- Documented: Requeue with Delay feature with transport-specific behavior
+- Included: 8 comprehensive code examples (basic scheduling, cancellation, retry with backoff, requeue in handler)
+- Added: Configuration examples for Hangfire, Quartz, and InMemory schedulers
+- Included: 10 best practices for using scheduling
+- Added: Links to all specific scheduler documentation pages
+- Clear warnings about InMemory scheduler durability for production use
 
 ---
 
