@@ -75,6 +75,7 @@
 ## Scheduler
 
  * [Scheduler](/contents/BrighterSchedulerSupport.md)
+ * [InMemory Scheduler](/contents/InMemoryScheduler.md)
  * [Hangfire](/contents/HangfireScheduler.md)
  * [Quartz](/contents/Quartzcheduler.md)
  * [Aws Scheduler](/contents/AwsScheduler.md)
