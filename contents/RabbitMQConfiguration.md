@@ -194,6 +194,3 @@ When we Accept/Ack a message, in response to a handler chain completing, we Ack 
 When we Reject/Nack a message (see [Handler Failure](/contents/HandlerFailure.md) for more on failure) then we use **Channel.Reject** to delete the message, and move it to a DLQ if there is one.
 
 Brighter has an internal buffer for messages pushed to a *Performer* (a thread running a message pump). This buffer has thread affinity (in RabbitMQ we have to Ack or Nack from the thread that received the message). When a consumer closes its connection to RabbitMQ, messages in the buffer that have not been Ack'd or Nack'd will be returned to the queue.
-
-
-
