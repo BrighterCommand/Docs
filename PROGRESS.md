@@ -5,10 +5,10 @@
 ## Project Status
 
 - **Total Tasks**: 27
-- **Completed**: 8
+- **Completed**: 11
 - **In Progress**: 0
-- **Remaining**: 19
-- **Completion**: 30%
+- **Remaining**: 16
+- **Completion**: 41%
 
 ---
 
@@ -23,7 +23,7 @@
 
 ---
 
-## Phase 1: Core Framework Features (8/11 completed)
+## Phase 1: Core Framework Features (11/11 completed) ✅
 
 ### TASK-001: Cloud Events Support Documentation ✅
 
@@ -81,23 +81,26 @@
 **Priority**: MEDIUM
 **Notes**: Completely rewrote Quartz Scheduler documentation with production-grade guidance. Documented production recommendation alongside Hangfire. Explained Quartz benefits (battle-tested, persistent, distributed, reliable, flexible, strong naming). Documented how Brighter integrates (QuartzBrighterJob, BrighterResolver, QuartzSchedulerFactory). Added NuGet packages section. Created comprehensive configuration examples (basic, persistent job store, appsettings.json). Documented persistence options for SQL Server, PostgreSQL, MySQL, and in-memory (dev only). Added advanced configuration (custom scheduler ID generation, job groups, misfire handling). Provided code examples (basic scheduling, cancellation, absolute time). Documented clustering and HA setup with best practices. Added monitoring and observability section (Quartz listeners, health checks). Included 8 best practices with good/bad examples. Added troubleshooting section (jobs not executing, multiple execution, database deadlocks). Provided migration examples from InMemory and Hangfire. Added links to Quartz documentation and database scripts.
 
-### TASK-009: Hangfire Scheduler Documentation ⬜
+### TASK-009: Hangfire Scheduler Documentation ✅
 
-**Status**: Not Started
+**Status**: Completed - 2025-01-04
+**File**: Updated `Docs/contents/HangfireScheduler.md`
 **Priority**: MEDIUM
-**Dependencies**: TASK-009
+**Notes**: Completely rewrote Hangfire Scheduler documentation with production-grade guidance. Documented production recommendation alongside Quartz. Added prominent strong naming caveat (Hangfire assembly NOT strong-named due to Hangfire.Core limitation). Explained Hangfire benefits (dashboard, background jobs, persistence, ease of use). Documented how Brighter integrates (BrighterHangfireSchedulerJob, HangfireMessageSchedulerFactory, JobActivator). Added NuGet packages section. Created comprehensive configuration examples (basic, persistent storage, dashboard with authentication). Documented storage options for SQL Server, PostgreSQL, MySQL, Redis, MongoDB. Added dashboard configuration with authorization. Provided code examples (basic scheduling, cancellation, absolute time). Documented HA setup with multiple servers. Added monitoring section with job filters and health checks. Created comparison table: Hangfire vs Quartz (highlighting strong naming difference). Included 8 best practices with good/bad code comparisons. Added troubleshooting section (dashboard not accessible, jobs not executing, database deadlocks). Provided migration examples from InMemory and Quartz schedulers. Added links to Hangfire documentation and related Brighter scheduler docs.
 
-### TASK-010: AWS Scheduler Documentation ⬜
+### TASK-010: AWS Scheduler Documentation ✅
 
-**Status**: Not Started
+**Status**: Completed - 2025-01-04
+**File**: Updated `Docs/contents/AwsScheduler.md`
 **Priority**: MEDIUM
-**Dependencies**: TASK-009
+**Notes**: Completely rewrote AWS Scheduler documentation with comprehensive cloud-native guidance. Documented AWS EventBridge Scheduler benefits (serverless, scalable, reliable, cost-effective, native AWS integration). Explained when to use AWS Scheduler (AWS infrastructure, serverless architecture, scalability needs). Documented two integration approaches: Direct to Target (UseMessageTopicAsTarget=true, recommended) and Via FireAwsScheduler message (for request scheduling). Added comprehensive IAM role requirements section (trust policy, permissions policy, automatic role creation with OnMissingRole). Documented NuGet packages for AWS SDK v4 (recommended) and v3 (legacy). Created configuration examples (basic, Dispatcher with FireAwsScheduler, scheduler groups, flexible time window, custom scheduler ID). Provided 4 code examples (basic scheduling, absolute time, cancellation, publishing events). Created scheduling modes comparison table (Direct vs FireAwsScheduler). Added comparison table: AWS Scheduler vs Quartz vs Hangfire vs InMemory (highlighting cloud-native, serverless, pay-per-use benefits). Included 8 best practices with good/bad code comparisons. Added troubleshooting section (schedules not executing, access denied, schedule conflicts, high costs). Provided migration examples from InMemory and Quartz/Hangfire schedulers. Added links to AWS EventBridge Scheduler documentation, pricing, quotas, and LocalStack. Summary explains when to use AWS Scheduler vs other schedulers.
 
-### TASK-011: Azure Scheduler Documentation ⬜
+### TASK-011: Azure Scheduler Documentation ✅
 
-**Status**: Not Started
+**Status**: Completed - 2025-01-04
+**File**: Updated `Docs/contents/AzureScheduler.md`
 **Priority**: MEDIUM
-**Dependencies**: TASK-009
+**Notes**: Completely rewrote Azure Service Bus Scheduler documentation with comprehensive cloud-native guidance. Documented Azure Service Bus native scheduling using ScheduledEnqueueTimeUtc (built into Service Bus, no separate service). Explained important limitation: Azure does NOT support rescheduling (must cancel + schedule). Documented when to use Azure Service Bus Scheduler (Azure infrastructure, using Service Bus, simplicity) vs when NOT to use (multi-cloud, reschedule support needed). Explained FireAzureScheduler integration approach (centralized scheduler topic, not direct to target like AWS). Added comprehensive authentication section: Managed Identity (recommended), Visual Studio credentials (dev), connection string, Default Azure credentials. Documented RBAC permissions required (Azure Service Bus Data Sender, Data Receiver). Added NuGet package section (Paramore.Brighter.MessageScheduler.Azure). Created configuration examples (basic, Dispatcher with FireAzureScheduler, custom sender options, custom TimeProvider). Provided 4 code examples (basic scheduling, absolute time, cancellation, rescheduling with cancel+schedule pattern). Created comparison table: Azure vs AWS vs Quartz vs Hangfire vs InMemory (highlighting native scheduling, no reschedule, built-in). Included 8 best practices with good/bad code comparisons (use Managed Identity, separate scheduler topic, cancel+schedule pattern, message TTL, Azure Monitor, Premium tier, DLQ, Azurite for testing). Added troubleshooting section (messages not executing, auth failures, reschedule not working, dead-letter queue). Provided migration examples from InMemory and Quartz/Hangfire schedulers. Added links to Azure Service Bus documentation, scheduled messages, pricing, RBAC roles, Managed Identity. Summary explains native integration, managed service, simplicity, and Azure ecosystem integration. Prominent note about no reschedule support.
 ---
 
 ## Phase 2: Breaking Changes & Updates
@@ -340,6 +343,110 @@
 - Provided: Migration examples from InMemory and Hangfire schedulers
 - Added: Links to Quartz documentation and related Brighter scheduler docs
 - Summary: Clear statement about when to use Quartz (robust, enterprise-grade, clustering, no dashboard needed)
+
+**TASK-009: Hangfire Scheduler Documentation** ✅
+
+- Completely rewrote HangfireScheduler.md with comprehensive production guidance
+- File: `Docs/contents/HangfireScheduler.md`
+- Added: Prominent strong naming caveat at top (Paramore.Brighter.MessageScheduler.Hangfire NOT strong-named)
+- Explained: Strong naming limitation due to Hangfire.Core dependency, alternatives for strong-name requirements
+- Documented: Hangfire benefits (dashboard, background jobs, persistence, ease of use, multiple storage options)
+- Added: Hangfire overview with feature list (persistent storage, distributed processing, dashboard, automatic retries)
+- Explained: How Brighter integrates with Hangfire (BrighterHangfireSchedulerJob, HangfireMessageSchedulerFactory, JobActivator)
+- Documented: Integration flow (schedule → Hangfire persists → background job → BrighterHangfireSchedulerJob → handler)
+- Added: NuGet packages section (Paramore.Brighter.MessageScheduler.Hangfire, Hangfire.Core, storage packages)
+- Created: Basic configuration example with BrighterHangfireSchedulerJob registration
+- Created: Configuration with persistent storage (SQL Server example)
+- Created: Dashboard configuration with authentication (cookie-based and role-based examples)
+- Documented: Storage options for SQL Server, PostgreSQL, MySQL, Redis, MongoDB with NuGet packages
+- Provided: 3 code examples (basic scheduling, cancellation, absolute time)
+- Documented: HA setup with multiple Hangfire servers
+- Explained: How HA works (shared storage, automatic failover, distributed processing)
+- Added: Monitoring section with custom job filters for logging/metrics
+- Added: Health check example with Hangfire monitoring API
+- Created: Comparison table: Hangfire vs Quartz (dashboard, ease of use, strong naming difference highlighted)
+- Included: 8 best practices with good/bad code comparisons
+- Added: Troubleshooting section (dashboard not accessible, jobs not executing, database deadlocks)
+- Provided: Migration examples from InMemory and Quartz schedulers
+- Added: Links to Hangfire documentation and related Brighter scheduler docs
+- Summary: Clear statement about when to use Hangfire (dashboard needed, easy setup, NOT for strong-name requirements)
+
+**TASK-010: AWS Scheduler Documentation** ✅
+
+- Completely rewrote AwsScheduler.md with comprehensive cloud-native guidance
+- File: `Docs/contents/AwsScheduler.md`
+- Added: AWS EventBridge Scheduler overview (serverless, scalable, reliable, cost-effective)
+- Documented: When to use AWS Scheduler (AWS infrastructure, serverless, scalability) vs when NOT to use (multi-cloud, on-premises)
+- Explained: Two integration approaches with flow diagrams
+  - Direct to Target (UseMessageTopicAsTarget=true): EventBridge → directly to SNS/SQS (recommended, lower latency)
+  - Via FireAwsScheduler: EventBridge → FireAwsScheduler message → Dispatcher → handler (for request scheduling)
+- Added: Comprehensive IAM role requirements section
+  - Trust policy for scheduler.amazonaws.com
+  - Permissions policy for sqs:SendMessage and sns:Publish
+  - Automatic role creation with OnMissingRole.Create
+  - Best practice: limit Resource to specific ARNs
+- Documented: NuGet packages (AWS SDK v4 recommended, v3 legacy)
+- Created: 5 configuration examples (basic, Dispatcher with FireAwsScheduler, scheduler groups, flexible time window, custom scheduler ID)
+- Explained: Scheduler groups for organization with tags
+- Explained: Flexible time windows for cost optimization
+- Explained: Custom scheduler IDs for idempotency and tracking
+- Provided: 4 code examples (basic scheduling, absolute time, cancellation, publishing events)
+- Created: Scheduling modes comparison table (Direct to Target vs Via FireAwsScheduler)
+- Created: Comparison table: AWS Scheduler vs Quartz vs Hangfire vs InMemory
+  - Highlighted: Cloud-native, serverless, pay-per-use, AWS-only
+- Included: 8 best practices with good/bad code comparisons
+  - Use direct to target for messages
+  - Limit IAM permissions
+  - Use scheduler groups for organization
+  - Handle OnConflict appropriately
+  - Use custom IDs for idempotency
+  - Monitor with CloudWatch
+  - Use flexible time windows for cost savings
+  - Test with LocalStack
+- Added: Troubleshooting section (schedules not executing, access denied, schedule conflicts, high costs)
+- Provided: Migration examples from InMemory and Quartz/Hangfire schedulers
+- Added: Links to AWS EventBridge Scheduler documentation, pricing, quotas, LocalStack
+- Summary: When to use AWS Scheduler (AWS workloads, serverless, high scalability) vs alternatives
+
+**TASK-011: Azure Service Bus Scheduler Documentation** ✅
+
+- Completely rewrote AzureScheduler.md with comprehensive cloud-native guidance
+- File: `Docs/contents/AzureScheduler.md`
+- Added: Azure Service Bus Scheduler overview (native scheduling using ScheduledEnqueueTimeUtc)
+- Explained: Built into Service Bus (no separate service), managed service, reliable, integrated
+- Documented: Important limitation - Azure does NOT support rescheduling (must cancel + schedule)
+- Documented: When to use (Azure infrastructure, using Service Bus, simplicity) vs when NOT to use (multi-cloud, reschedule support needed)
+- Explained: FireAzureScheduler integration approach with flow diagram
+  - Centralized scheduler topic (not direct to target like AWS)
+  - Why: Azure Service Bus requires topic/queue to hold scheduled message
+- Added: Comprehensive authentication section
+  - Managed Identity (recommended for production)
+  - Visual Studio credentials (development)
+  - Connection string (simple, less secure)
+  - Default Azure credentials (flexible)
+- Documented: RBAC permissions required
+  - Azure Service Bus Data Sender (for scheduling)
+  - Azure Service Bus Data Receiver (for Dispatcher)
+  - Azure CLI examples for role assignment
+- Added: NuGet package section (Paramore.Brighter.MessageScheduler.Azure)
+- Created: 4 configuration examples (basic, Dispatcher with FireAzureScheduler, custom sender options, custom TimeProvider)
+- Provided: 4 code examples (basic scheduling, absolute time, cancellation, rescheduling with cancel+schedule pattern)
+- Created: Comparison table: Azure vs AWS vs Quartz vs Hangfire vs InMemory
+  - Highlighted: Native scheduling (built-in), no reschedule support, managed service
+- Included: 8 best practices with good/bad code comparisons
+  - Use Managed Identity in production
+  - Use separate scheduler topic
+  - Handle reschedule as cancel + schedule
+  - Set appropriate message TTL
+  - Monitor with Azure Monitor
+  - Use Service Bus Premium for production
+  - Configure dead-letter queue
+  - Test locally with Azurite
+- Added: Troubleshooting section (messages not executing, authentication failures, reschedule not working, dead-letter queue)
+- Provided: Migration examples from InMemory and Quartz/Hangfire schedulers
+- Added: Links to Azure Service Bus documentation, scheduled messages, pricing, RBAC roles, Managed Identity
+- Summary: Native integration, managed service, simple setup, Azure ecosystem integration
+- Prominent notes throughout about no reschedule support (must use cancel + schedule pattern)
 
 ---
 

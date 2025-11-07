@@ -651,12 +651,14 @@ var scheduledTime = DateTimeOffset.Now.AddHours(1);
 **Symptom**: Jobs scheduled but never execute
 
 **Possible Causes**:
+
 1. Quartz scheduler not started
 2. Database connectivity issues
 3. QuartzBrighterJob not registered
 4. Misfire threshold exceeded
 
 **Solutions**:
+
 ```csharp
 // Verify scheduler is started
 var scheduler = await _schedulerFactory.GetScheduler();
@@ -676,6 +678,7 @@ services.AddSingleton<QuartzBrighterJob>();
 **Cause**: Clustering not configured or clock drift
 
 **Solution**:
+
 ```csharp
 // Enable clustering
 q.UseClustering();
@@ -752,6 +755,7 @@ services.UseScheduler(provider =>
 ## Summary
 
 Quartz.NET is an excellent production scheduler for Brighter offering:
+
 - **Durability**: Jobs persisted to database survive restarts
 - **Clustering**: High availability with automatic failover
 - **Maturity**: Battle-tested in production for years
