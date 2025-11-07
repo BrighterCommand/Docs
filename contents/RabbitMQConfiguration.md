@@ -16,12 +16,12 @@ We connect to RabbitMQ via a multiplexed TCP/IP connection - RabbitMQ calls thes
 
 The `RabbitMQ.Client` library introduced significant breaking changes in version 7, most notably making its API entirely asynchronous. To support this new version without imposing a breaking change on all existing Brighter users, a new, separate package has been created:
 
-*   [Paramore.Brighter.MessagingGateway.RMQ.Async](https://www.nuget.org/packages/Paramore.Brighter.MessagingGateway.RMQ.Async)
+- [Paramore.Brighter.MessagingGateway.RMQ.Async](https://www.nuget.org/packages/Paramore.Brighter.MessagingGateway.RMQ.Async)
 
 This is important because it allows you to choose the implementation that best fits your project:
 
-*   For existing projects, you can continue to use the `Paramore.Brighter.MessagingGateway.RMQ.Sync` package with `RabbitMQ.Client` v6.x and its synchronous API.
-*   For new projects, or when you are ready to adopt the `async`-native client, you can use the new `Paramore.Brighter.MessagingGateway.RMQ.Async` package. This package is designed to work with the fully asynchronous API of `RabbitMQ.Client` v7+, which can offer better performance and aligns with modern .NET asynchronous programming patterns.
+- For existing projects, you can continue to use the `Paramore.Brighter.MessagingGateway.RMQ.Sync` package with `RabbitMQ.Client` v6.x and its synchronous API.
+- For new projects, or when you are ready to adopt the `async`-native client, you can use the new `Paramore.Brighter.MessagingGateway.RMQ.Async` package. This package is designed to work with the fully asynchronous API of `RabbitMQ.Client` v7+, which can offer better performance and aligns with modern .NET asynchronous programming patterns.
 
 ## Breaking Changes: Package Rename and Proactor Subscription
 
@@ -35,12 +35,12 @@ If your application relies on proactor subscriptions for efficient, non-blocking
 
 The Connection to RabbitMQ is provided by an **RmqMessagingGatewayConnection** which allows you to configure the following:
 
-* **Name**: A unique name for the connection, for diagnostic purposes
-* **AmqpUri**: A connection to AMQP in the form of an [RabbitMQ Uri](https://www.rabbitmq.com/uri-spec.html) **Uri** with reliability options for a retry count (defaults to 3), **ConnectionRetryCount**, retry interval (defaults to 1000ms) **RetryWaitInMilliseconds** and a circuit breaker retry timeout (defaults to 60000ms), **CircuitBreakTimeInMilliseconds**, which introduces a delay when connections exceed the retry count.
-* **Exchange**: The definition of the exchange. **Name** is the identifier for the exchange. All exchanges have a [**Type**](https://www.rabbitmq.com/tutorials/amqp-concepts.html), and the default is **ExchangeType.Direct**, but it is a string value that supports all RabbitMQ exchange types on the .NET SDK. The **Durable** flag is used to indicate if the exchange definition survives node failure or restart of the broker which defaults to *false*. **SupportDelay** indicates if the Exchange supports retry with delay, which defaults to *false*.
-* **DeadLetterExchange**: Another exchange definition, but this one is used to host any Dead Letter Queues (DLQ). This could be the same exchange, but normal practice is to use a different exchange.
-* **Heartbeat**: RabbitMQ uses a heartbeat to determine if a connection has died. This sets the interval for that heartbeat. Defaults to 20s.
-* **PersistMessages**: Should messages be saved to disk? Saving messages to disk allows them to be recovered if a node fails, defaults to *false*.
+- **Name**: A unique name for the connection, for diagnostic purposes
+- **AmqpUri**: A connection to AMQP in the form of an [RabbitMQ Uri](https://www.rabbitmq.com/uri-spec.html) **Uri** with reliability options for a retry count (defaults to 3), **ConnectionRetryCount**, retry interval (defaults to 1000ms) **RetryWaitInMilliseconds** and a circuit breaker retry timeout (defaults to 60000ms), **CircuitBreakTimeInMilliseconds**, which introduces a delay when connections exceed the retry count.
+- **Exchange**: The definition of the exchange. **Name** is the identifier for the exchange. All exchanges have a [**Type**](https://www.rabbitmq.com/tutorials/amqp-concepts.html), and the default is **ExchangeType.Direct**, but it is a string value that supports all RabbitMQ exchange types on the .NET SDK. The **Durable** flag is used to indicate if the exchange definition survives node failure or restart of the broker which defaults to *false*. **SupportDelay** indicates if the Exchange supports retry with delay, which defaults to *false*.
+- **DeadLetterExchange**: Another exchange definition, but this one is used to host any Dead Letter Queues (DLQ). This could be the same exchange, but normal practice is to use a different exchange.
+- **Heartbeat**: RabbitMQ uses a heartbeat to determine if a connection has died. This sets the interval for that heartbeat. Defaults to 20s.
+- **PersistMessages**: Should messages be saved to disk? Saving messages to disk allows them to be recovered if a node fails, defaults to *false*.
 
 In RabbitMQ, recreating an exiting primitive is a no-op provided the definition does not change.
 
@@ -141,11 +141,11 @@ For more on a *Subscription* see the material on configuring *Service Activator*
 
 We support a number of RabbitMQ specific *Subscription* options:
 
-* **DeadLetterChannelName**: The name of the queue to subscribe to DLQ notifications for this subscription (without a queue, the messages sent to the Dead Letter Exchange (DLX) will not be stored) 
-* **DeadLetterRoutingKey**: The routing key that binds the DLQ to the DLX
-* **HighAvailability**: [Deprecated] Not used on versions of RabbitMQ 3+. Prior to this, configuring that a queue should be mirrored was an API option, now it is a configuration management option on the broker.
-* **IsDurable**: Should subscription definitions survive a restart of nodes in the broker.
-* **MaxQueueLength**: [Deprecated] Prefer to use policy to set this instead (see [RabbitMQ docs](https://www.rabbitmq.com/maxlength.html)). The maximum length a RabbitMQ queue can grow to, before new messages are rejected (and sent to a DLQ if there is one).
+- **DeadLetterChannelName**: The name of the queue to subscribe to DLQ notifications for this subscription (without a queue, the messages sent to the Dead Letter Exchange (DLX) will not be stored) 
+- **DeadLetterRoutingKey**: The routing key that binds the DLQ to the DLX
+- **HighAvailability**: [Deprecated] Not used on versions of RabbitMQ 3+. Prior to this, configuring that a queue should be mirrored was an API option, now it is a configuration management option on the broker.
+- **IsDurable**: Should subscription definitions survive a restart of nodes in the broker.
+- **MaxQueueLength**: [Deprecated] Prefer to use policy to set this instead (see [RabbitMQ docs](https://www.rabbitmq.com/maxlength.html)). The maximum length a RabbitMQ queue can grow to, before new messages are rejected (and sent to a DLQ if there is one).
 
 This is a typical *Subscription* configuration in a Consumer application:
 
