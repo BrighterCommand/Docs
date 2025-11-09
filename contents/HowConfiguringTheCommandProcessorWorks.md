@@ -15,10 +15,10 @@ If you choose another DI framework, this document explains  what you need to do 
 
 ## CommandProcessor Configuration Dependencies
 
--   You need to provide a **Subscriber Registry** with all of the  **Command**s or **Event**s you wish to handle, mapped to their **Request Handlers**.
--   You need to provide a **Handler Factory** to create your Handlers
--   You need to provide a **Policy Registry** if you intend to use [Polly](https://github.com/App-vNext/Polly) to support Retry and Circuit-Breaker.
--   You need to provide a **Request Context Factory**
+- You need to provide a **Subscriber Registry** with all of the  **Command**s or **Event**s you wish to handle, mapped to their **Request Handlers**.
+- You need to provide a **Handler Factory** to create your Handlers
+- You need to provide a **Policy Registry** if you intend to use [Polly](https://github.com/App-vNext/Polly) to support Retry and Circuit-Breaker.
+- You need to provide a **Request Context Factory**
 
 ## Subscriber Registry
 
@@ -80,13 +80,79 @@ internal class HandlerFactory : IAmAHandlerFactory
 }
 ```
 
-## Policy Registry
+## Policy Registry and Resilience Pipelines
 
-If you intend to use a [Polly](https://github.com/App-vNext/Polly) Policy to support [Retry and Circuit-Breaker](PolicyRetryAndCircuitBreaker.html) then you will need to register the Policies in the **Policy Registry**. 
+If you intend to use [Polly](https://github.com/App-vNext/Polly) to support [Retry and Circuit-Breaker](PolicyRetryAndCircuitBreaker.html) then you will need to register your policies or resilience pipelines.
+
+### Resilience Pipeline Registry (Recommended)
+
+Registration requires a string as a key, that you will use in your `[UseResiliencePipeline]` attribute to choose the pipeline.
+
+In this example, we set up resilience pipelines. To make it easy to reference the string, instead of adding it everywhere, we use a global readonly reference, not shown here.
+
+``` csharp
+using Polly;
+using Polly.Registry;
+using Polly.Retry;
+using Polly.CircuitBreaker;
+
+var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>();
+
+resiliencePipelineRegistry.TryAddBuilder(Globals.MYRETRYPIPELINE,
+    (builder, context) => builder.AddRetry(new RetryStrategyOptions
+    {
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromMilliseconds(50),
+        BackoffType = DelayBackoffType.Linear
+    }));
+
+resiliencePipelineRegistry.TryAddBuilder(Globals.MYCIRCUITBREAKER,
+    (builder, context) => builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions
+    {
+        FailureRatio = 0.5,
+        MinimumThroughput = 10,
+        BreakDuration = TimeSpan.FromSeconds(30)
+    }));
+```
+
+When you attribute your code, you then use the key to attach a specific resilience pipeline:
+
+``` csharp
+[RequestLogging(step: 1, timing: HandlerTiming.Before)]
+[UseResiliencePipeline(Globals.MYRETRYPIPELINE, step: 2)]
+public override TaskReminderCommand Handle(TaskReminderCommand command)
+{
+    _mailGateway.Send(new TaskReminder(
+        taskName: new TaskName(command.TaskName),
+        dueDate: command.DueDate,
+        reminderTo: new EmailAddress(command.Recipient),
+        copyReminderTo: new EmailAddress(command.CopyTo)
+    ));
+
+    return base.Handle(command);
+}
+```
+
+If you need multiple resilience pipelines then you can use multiple attributes. We evaluate them based on their step order.
+
+``` csharp
+[UseResiliencePipeline(Globals.MYCIRCUITBREAKER, step: 1)]
+[UseResiliencePipeline(Globals.MYRETRYPIPELINE, step: 2)]
+public override TaskReminderCommand Handle(TaskReminderCommand command)
+{
+    // Circuit breaker wraps retry, which wraps this handler
+}
+```
+
+### Legacy: Policy Registry (Deprecated)
+
+> **⚠️ DEPRECATED**: The following approach uses Polly v7 policies, which are deprecated in favor of Polly v8 resilience pipelines.
+
+If you intend to use a [Polly](https://github.com/App-vNext/Polly) Policy to support [Retry and Circuit-Breaker](PolicyRetryAndCircuitBreaker.html) then you will need to register the Policies in the **Policy Registry**.
 
 This is just the Polly **PolicyRegistry**.
 
-Registration requires a string as a key, that you will use in your [UsePolicy] attribute to choose the policy. 
+Registration requires a string as a key, that you will use in your [UsePolicy] attribute to choose the policy.
 
 The two keys: CommandProcessor.RETRYPOLICY and CommandProcessor.CIRCUITBREAKER are used within Brighter to control our response to broker issues. You can override them if you wish to change our behavior from the default.
 
@@ -95,19 +161,19 @@ You can also use them for a generic retry policy, though we recommend building r
 In this example, we set up a policy. To make it easy to reference the string, instead of adding it everywhere, we use a global readonly reference, not shown here.
 
 ``` csharp
-var retryPolicy = 
+var retryPolicy =
 	Policy.Handle<Exception>().WaitAndRetry(
-		new[] { 
-			TimeSpan.FromMilliseconds(50), 
-			TimeSpan.FromMilliseconds(100), 
+		new[] {
+			TimeSpan.FromMilliseconds(50),
+			TimeSpan.FromMilliseconds(100),
 			TimeSpan.FromMilliseconds(150) });
 
 var circuitBreakerPolicy = Policy.Handle<Exception>().CircuitBreaker(
 		1, TimeSpan.FromMilliseconds(500));
 
-var policyRegistry = new PolicyRegistry() { 
-		{ Globals.MYRETRYPOLICY, retryPolicy }, 
-		{ Globals.MYCIRCUITBREAKER, circuitBreakerPolicy } 
+var policyRegistry = new PolicyRegistry() {
+		{ Globals.MYRETRYPOLICY, retryPolicy },
+		{ Globals.MYCIRCUITBREAKER, circuitBreakerPolicy }
 	};
 ```
 
