@@ -1,16 +1,15 @@
 # **Basic Configuration**
 
-Configuration is the most labor-intensive part of using Brighter.Once you have configured Brighter, using its model of requests and handlers is straightforward
+Configuration is the most labor-intensive part of using Brighter. Once you have configured Brighter, using its model of requests and handlers is straightforward.
 
 ## **Using .NET Core Dependency Injection**
 
-This section covers using .NET Core Dependency Injection to configure Brighter. If you want to use an alternative DI container then see the section [How Configuration Works](/contents/HowConfigurationWorks.md) 
+This section covers using .NET Core Dependency Injection to configure Brighter. If you want to use an alternative DI container then see the section [How Configuration Works](/contents/HowConfigurationWorks.md)
 
 We divide configuration into two sections, depending on your requirements:
 
 * [**Configuring The Command Processor**](#configuring-the-command-processor): This section covers configuring the **Command Processor**. Use this if you want to dispatch requests to handlers, or publish messages from your application on an external bus
-* [**Configuring The Service Activator**](#configuring-the-service-activator): This section covers configuring the **Service Activator**. Use this if you want to read messages from a transport (and then dispatch to handlers).
-
+* [**Configuring The Dispatcher**](#configuring-the-dispatcher): This section covers configuring the **Dispatcher** (message consumer). Use this if you want to read messages from a transport (and then dispatch to handlers).
 
 ## **Configuring The Command Processor**
 
@@ -40,80 +39,82 @@ The **AddBrighter()** method takes an **`Action<BrighterOptions>`** delegate. Th
 
 The **AddBrighter()** method returns an **IBrighterBuilder** interface. **IBrighterBuilder** is a [fluent interface](https://en.wikipedia.org/wiki/Fluent_interface) that you can use to configure additional Brighter properties (see [Brighter Builder Fluent Interface](#brighter-builder-fluent-interface)).
 
-#### **Adding Polly Policies**
+#### **Adding Polly Resilience Pipelines**
 
-Brighter uses Polly policies for both internal reliability, and to support adding a custom policy to a handler for reliability.
+**V10**: Brighter supports Polly v8 resilience pipelines for both internal reliability and custom resilience strategies in your handlers.
 
-To use a Polly policy with Brighter you need to register it first with a Polly **PolicyRegistry**. In this example we register both Synchronous and Asynchronous Polly policies with the registry.
+To use Polly with Brighter, register resilience pipelines with a **ResiliencePipelineRegistry<string>**:
 
 ``` csharp
-    var retryPolicy = Policy.Handle<Exception>().WaitAndRetry(new[] 
-        { 
-            TimeSpan.FromMilliseconds(50), 
-            TimeSpan.FromMilliseconds(100), 
-            TimeSpan.FromMilliseconds(150) });
-    
-    var circuitBreakerPolicy = Policy.Handle<Exception>().CircuitBreaker(1, 
-    TimeSpan.FromMilliseconds(500));
-    
-    var retryPolicyAsync = Policy.Handle<Exception>()
-        .WaitAndRetryAsync(new[] { TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(150) });
-    
-    var circuitBreakerPolicyAsync = Policy.Handle<Exception>().CircuitBreakerAsync(1, TimeSpan.FromMilliseconds(500));
+using Polly;
+using Polly.Registry;
+using Polly.Retry;
+using Polly.CircuitBreaker;
 
-    var policyRegistry = new PolicyRegistry()
+var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>();
+
+resiliencePipelineRegistry.TryAddBuilder("RetryPipeline",
+    (builder, context) => builder.AddRetry(new RetryStrategyOptions
     {
-        { "SyncRetryPolicy", retryPolicy },
-        { "SyncCircuitBreakerPolicy", circuitBreakerPolicy },
-        { "AsyncRetryPolicy", retryPolicyAsync },
-        { "AsyncCircuitBreakerPolicy", circuitBreakerPolicyAsync }
-    };
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromMilliseconds(50),
+        BackoffType = DelayBackoffType.Linear
+    }));
 
+resiliencePipelineRegistry.TryAddBuilder("CircuitBreakerPipeline",
+    (builder, context) => builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions
+    {
+        FailureRatio = 0.5,
+        MinimumThroughput = 10,
+        BreakDuration = TimeSpan.FromSeconds(30)
+    }));
 ```
 
-And you can use them in  you own handler like this:
+And use them in your handler like this:
 
 ``` csharp
 internal class MyQoSProtectedHandler : RequestHandler<MyCommand>
 {
-    static MyQoSProtectedHandler()
-    {
-        ReceivedCommand = false;
-    }
-
-    [UsePolicy(policy: "SyncRetryPolicy", step: 1)]
+    [UseResiliencePipeline(policy: "RetryPipeline", step: 1)]
     public override MyCommand Handle(MyCommand command)
     {
-        /*Do work that could throw error because of distributed computing reliability*/
+        // Do work that could throw errors due to distributed computing reliability
+        return base.Handle(command);
     }
 }
 ```
 
-See the section [Policy Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md) for more on using Polly policies with handlers.
+See the section [Policy Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md) for more on using Polly resilience pipelines with handlers.
 
-With the Polly Policy Registry filled, you need to tell Brighter where to find the Policy Registry:
+With the resilience pipeline registry configured, you need to tell Brighter where to find it:
 
 ``` csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddBrighter(options =>
-        options.PolicyRegistry = policyRegistry
+        options.PolicyRegistry = new PolicyRegistry() // Optional: for legacy Polly v7 policies
     )
+    .ConfigureResiliencePipelines(registry =>
+    {
+        registry.TryAddBuilder("RetryPipeline", /* ... */);
+        registry.TryAddBuilder("CircuitBreakerPipeline", /* ... */);
+    });
 }
-
 ```
+
+> **Note**: For legacy Polly v7 policies using `[UsePolicy]`, see the [migration guide](/contents/PolicyRetryAndCircuitBreaker.md#migration-guide-v9-to-v10) for updating to V10 resilience pipelines.
 
 #### **Configuring Lifetimes**
 
-Brighter can register your *Request Handlers* and *Message Mappers* for you (see [IBrighter Builder Fluent Interface](#ibrighterbuilder-fluent-interface)). When we register types for you with ServiceCollection, we need to register them with a given lifetime (see [Dependency Injection Service Lifetimes](https://docs.microsoft.com/en-us/dotnet/core/extensions/dependency-injection#service-lifetimes)).
+Brighter can register your *Request Handlers* and *Message Mappers* for you (see [IBrighter Builder Fluent Interface](#ibrighterbuilder-fluent-interface)). 
 
-We also allow you to set the lifetime for the CommandProcessor.
+When we register *Request Handlers* and *Message Mappers* for you with ServiceCollection, we need to register them with a given lifetime (see [Dependency Injection Service Lifetimes](https://docs.microsoft.com/en-us/dotnet/core/extensions/dependency-injection#service-lifetimes)).
 
 We recommend the following lifetimes:
 
-* If you are using *Scoped* lifetimes, for example with EF Core, make your *Request Handlers* and your *Command Processor* Scoped as well.
-* If you are not using *Scoped* lifetimes you can use *Transient* lifetimes for *Request Handlers* and a *Singleton* lifetime for the *Command Processor*.
-* Your *Message Mappers* should not have state and can be *Singletons*.
+* If you are using *Scoped* lifetimes, for example with EF Core, make your *Request Handlers* *Scoped* as well.
+* If you are not using *Scoped* lifetimes you can use *Transient* lifetimes for *Request Handlers*.
+* You can use the default Transient lifetime for *Message Mappers* but as your *Message Mapper* generally does not have state that persists between invocations you can save allocations by making it a *Singleton*.
 
 (Be cautious about using *Singleton* lifetimes for *Request Handlers*. Even if your *Request Handler* is stateless today, and so does not risk carrying state across requests, a common bug is that state is added to an existing *Request Handler* which has previously been registered as a *Singleton*.)
 
@@ -124,7 +125,6 @@ public void ConfigureServices(IServiceCollection services)
 {
     services.AddBrighter(options =>
         options.HandlerLifetime = ServiceLifetime.Scoped;
-        options.CommandProcessorLifetime = ServiceLifetime.Scoped;
         options.MapperLifetime = ServiceLifetime.Singleton;
     );
 }
@@ -134,6 +134,7 @@ public void ConfigureServices(IServiceCollection services)
 ### **Brighter Builder Fluent Interface**
 
 #### **Type Registration**
+
 The **IBrighterBuilder** fluent interface can scan your assemblies for your *Request Handlers* (inherit from **IHandleRequests<>** or **IHandleRequestsAsync<>**) and *Message Mappers* (inherit from **IAmAMessageMapper<>**) and register then with the **ServiceCollection**. This is the most common way to register your code.
 
 ``` csharp
@@ -156,7 +157,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ```
 
-Instead of using **AutoFromAssemblies** you can exert more fine-grained control over the registration, by explicitly registering your *Request Handlers* and *Message Mappers*. We don't recommend this, but make it available for cases where the automatic registration does not meet your needs.
+Instead of using **AutoFromAssemblies** you can exert more fine-grained control over the registration, by explicitly registering your *Request Handlers* and *Message Mappers*. We recommend this for cases where the automatic registration does not meet your needs, such as using Brighter's support for an Agreement Dispatcher:
 
 * **MapperRegistryFromAssemblies()**, **HandlersFromAssemblies()** and **AsyncHandlersFromAssemblies** are the methods called by **AutoFromAssemblies()** and can be called explicitly.
 * **Handlers()**, **AsyncHandlers()** and **MapperRegistry()** accept an **Action<>** delegate that respectively provide you with **IAmASubscriberRegistry** or **IAmAnAsyncSubscriberRegistry** to register your RequestHandlers explicitly or a **ServiceCollectionMapperRegistry** to register your mappers. This gives you explicit control over what you register.
@@ -183,7 +184,7 @@ The major difference here is whether or not you wish to use an *Outbox* for Tran
 
 To use an *External Bus*, you need to supply Brighter with configuration information that tells Brighter what middleware you are using and how to find it. (You don't need to do anything to configure an *Internal Bus*, it is always available.)
 
-The **IBrighterBuilder** interface returned from **AddBrighter** allows you to configure the properties of your external bus, by calling the **AddProducers** extension method. The AddProducers extension method takes a lambda function, whose only parameter is an **ExternalBusConfiguration**. The **ExternalBusConfiguration** lets you set properties such as 
+The **IBrighterBuilder** interface returned from **AddBrighter** allows you to configure the properties of your external bus, by calling the **AddProducers** extension method. The AddProducers extension method takes a lambda function, whose only parameter is an **ExternalBusConfiguration**. 
 
 ``` csharp
 private void ConfigureBrighter(IServiceCollection services)
@@ -199,7 +200,7 @@ private void ConfigureBrighter(IServiceCollection services)
 
 ```
 
-#### **Transports 
+#### **Transports
 
 *Transports* are how Brighter supports specific Message-Oriented-Middleware (MoM). *Transports* are provided in separate NuGet packages so that you can take a dependency only on the transport that you need. Brighter supports a number of different *transports*. 
 
@@ -224,7 +225,7 @@ A *Publication* configures a transport for sending a message to it's associated 
 
 In order to provide Brighter with the means to send a message via the transport, we need to provide it with an **IAmAProducerRegistry** for the transport you intend to use for the *External Bus*.
 
-A **producer** is the transport specific code that you need to send messages; it implements **IAmAMessageProducer**. 
+A **producer** is the transport specific code that you need to send messages; it implements **IAmAMessageProducer**.
 
 We register a **producer** with a **producer registry**; it needs to implement **IAmAProducerRegistry** but usually you will use the provided **ProducerRegistry**. At runtime,  we lookup the producer to use in the registry by **routing key** (aka topic).
 
@@ -312,7 +313,7 @@ For a given ORM the pattern should be Paramore.Brighter.{ORM}.{DATABASE} where {
 
 To configure our *Outbox* we need to use the **ExternalBusConfiguration**.
 
-An Outbox has three pieces: 
+An Outbox has three pieces:
 
 * The *Outbox*, which implements **IAmAnOutbox**. Brighter provides implementations for a range of common Dbs. 
 * The *Connection Provider* which tells Brighter how to connect to the *Outbox*
@@ -344,9 +345,12 @@ public void ConfigureServices(IServiceCollection services)
 Typically **DbConnectionString** would obtain the connection string for the Db from configuration.
 
 #### Outbox Sweeper
+
 Finally, if we want the *Outbox* to use a background thread to clear un-dispatched items from the *Outbox*, and we do in most circumstances,  we need to run an *Outbox Sweeper* to do this work. (You can force an immediate clear within the code that produces the outgoing message using **ClearOutbox**, but you should still have a sweeper to guarantee it is sent if that call fails).
 
-Typically you run one sweeper. Brighter does not have a distributed lock. As such, running a sweeper in every producer will cause issues as multiple sweepers may try to clear an outstanding message. The outbox documentation looks at your strategies for ensuring only one sweeper runs. For development purposes though, you may wish to add a sweeper to the instance that you are currently running.
+Typically you run one sweeper. Brighter provides a variety of distributed lock implementations to help you run a single sweeper at a time, with other sweepers available as a hot standby. Typically, you run the Sweeper in a stand-alone console project. The outbox documentation looks at your strategies for ensuring only one sweeper runs.
+
+For development purposes though, you may wish to add a sweeper to the instance that you are currently running.
 
 To add the *Outbox Sweeper* you will need to take a dependency on another NuGet package:
 
@@ -354,7 +358,7 @@ To add the *Outbox Sweeper* you will need to take a dependency on another NuGet 
 
 You can then add a sweeper using "UseOutboxSweeper"
 
-This results in:
+For a development version, using an internal sweeper, this results in:
 
 ``` csharp
 public void ConfigureServices(IServiceCollection services)
@@ -374,7 +378,7 @@ public void ConfigureServices(IServiceCollection services)
 
 #### **Configuring JSON Serialization**
 
-Brighter defines a set of serialization options for use when it needs to serialize messages to JSON. Internally we use these options in our transports, when serializing messages to an external bus and deserializing from an external bus. You may wish to use these options in your own [*Message Mapper*](/contents/MessageMappers.md) implementation.
+Brighter defines a set of serialization options for use when it needs to serialize messages to JSON. Internally we use these options in our transports, when serializing messages to an external bus and deserializing from an external bus. We also use them in default JSON message mappers. You may wish to use these options in your own [*Message Mapper*](/contents/MessageMappers.md) implementation.
 
 By default our JSONSerialization Options are configured as follows:
 
@@ -420,7 +424,7 @@ public GreetingMade MapToRequest(Message message)
 
 #### Retry and Circuit Breaker with an External Bus
 
-When sending a request via the External Bus we use a Polly policy internally to control Retry and Circuit Breaker in case the External Bus is not available. These policies have defaults but you can configure the behavior using the policy keys: 
+When sending a request via the External Bus we use a Polly policy internally to control Retry and Circuit Breaker in case the External Bus is not available. These policies have defaults but you can configure the behavior using the policy keys:
 
 * **Paramore.RETRYPOLICY**
 * **Paramore.CIRCUITBREAKER**
@@ -475,21 +479,21 @@ public void ConfigureServices(IServiceCollection services)
 
 ```
 
-## **Configuring The Service Activator**
+## **Configuring The Dispatcher**
 
 A *consumer* reads messages from Message-Oriented Middleware (MoM), and a *producer* puts messages onto the MoM for the *consumer* to read.
 
-A *consumer* waits for messages to appear on the queue, reads them, and then calls your *Request Handler* code to react. Because the •consumer* runs your code in response to an external request, a message being placed on the External Bus, we call the component that listens for messages and dispatches them a [*Service Activator*](https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingAdapter.html)
+A *consumer* waits for messages to appear on the queue, reads them, and then calls your *Request Handler* code to react. The component that listens for messages and dispatches them to handlers is called a **Dispatcher**. (In Enterprise Integration Patterns terminology, this is called a [*Service Activator*](https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingAdapter.html), and the assembly name reflects this, but we use "Dispatcher" for simplicity.)
 
-To use Brighter's Service Activator you will need to take a dependency on the NuGet package:
+To use Brighter's Dispatcher you will need to take a dependency on the NuGet package:
 
-* **Paramore.Brighter.ServiceActivator**
+* **Paramore.Brighter.ServiceActivator** (assembly name, the component is called Dispatcher)
 
-### **ServiceActivator Service Collection Extensions**
+### **Dispatcher Service Collection Extensions**
 
-We provide support for configuring .NET Core's **HostBuilder** as a *ServiceActivator* for use with MoM. We use Brighter's Command Processor to dispatch the messages read by a *Dipatcher*. If you are not using **HostBuilder** then you will need to configure the Dispatcher yourself. See [How Configuring the Dispatcher Works](/contents/HowConfiguringTheDispatcherWorks.md) for more.
+We provide support for configuring .NET Core's **HostBuilder** as a message consumer (Dispatcher) for use with MoM. We use Brighter's Command Processor to dispatch the messages read by the Dispatcher. If you are not using **HostBuilder** then you will need to configure the Dispatcher yourself. See [How Configuring the Dispatcher Works](/contents/HowConfiguringTheDispatcherWorks.md) for more.
 
-To use Brighter's *Service Activator* with **HostBuilder** you will need to take a dependency on the following NuGet packages:
+To use Brighter's Dispatcher with **HostBuilder** you will need to take a dependency on the following NuGet packages:
 
 * **Paramore.Brighter.ServiceActivator.Extensions.Hosting**
 * **Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection**
@@ -518,7 +522,7 @@ The **AddConsumers()** method returns an **IBrighterBuilder** interface. **IBrig
 
 #### **Subscriptions**
 
-When configuring your application's *Service Activator*, your *Subscriptions* indicate configure how your application will receive messages from the associated MoM queues or streams.
+When configuring your application's Dispatcher (message consumer), your *Subscriptions* configure how your application will receive messages from the associated MoM queues or streams.
 
 All *Subscriptions* lets you configure the following common properties.
 
@@ -613,12 +617,9 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
 ```
 
-#### **Configuring Service Activator Lifetimes**
+#### **Configuring Dispatcher Lifetimes**
 
-Under the hood your *Service Activator* uses a *Command Processor* and you will need to configure lifetimes [as discussed above](#configuring-lifetimes).
-
-An additional requirement is configuring the lifetime of the *Command Processor* itself. Within the context of an ASP.NET application, configuring the lifetime of the **Command Processor** relies on ASP.NET creating an instance of the *Command Processor* in a request pipeline. When you are using *Service Activator* there is no ASP.NET pipeline, instead Brighter's *Dispatcher* manages the lifetime of the *Command Processor* that we pass a request to. By setting the **ServiceActivatorOptions.UseScoped** field to true, you instruct *Brighter* to use a new *Command Processor* instance for each request. This is important if you take the *Command Processor* as a dependency in any of your *Request Handlers* with a **Scoped** lifetime. If in doubt, just set **ServiceActivatorOptions.UseScoped** field to true. 
-
+Under the hood your Dispatcher uses a *Command Processor* and you will need to configure lifetimes [as discussed above](#configuring-lifetimes).
 
 ``` csharp
 private static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -632,23 +633,19 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 {
     services.AddConsumers(options =>
         {
-            options.UseScoped = true;
             options.HandlerLifetime = ServiceLifetime.Scoped;
             options.MapperLifetime = ServiceLifetime.Singleton;
-            options.CommandProcessorLifetime = ServiceLifetime.Scoped;
         })
 }
 
 ...
 
 ```
-
-
-### **Service Activator Brighter Builder Fluent Interface**
+### **Dispatcher Brighter Builder Fluent Interface**
 
 The call to **AddConsumers()** returns an **IBrighterBuilder** fluent interface. This means that you can use any of the options described in [Brighter Build Fluent Interfaces](#brighter-builder-fluent-interface) to configure the associated *Command Processor* such as scanning assemblies for *Request Handlers* and adding an *External Bus* and *Outbox*.
 
-An option is intended for the context of a Service Activator is described below.
+An option intended for the context of a Dispatcher (message consumer) is described below.
 
 #### **Inbox**
 
@@ -703,9 +700,9 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 Typically **DbConnectionString** would obtain the connection string for the Db from configuration.
 
 
-### Running Service Activator
+### Running the Dispatcher
 
-To run *Service Activator* we add it as a [Hosted Service](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services?view=aspnetcore-6.0&tabs=visual-studio). 
+To run the Dispatcher we add it as a [Hosted Service](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services?view=aspnetcore-6.0&tabs=visual-studio). 
 
 We provide the class **ServiceActivatorHostedService** for this in the NuGet package:
 
@@ -752,7 +749,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
 ```
 
-### A Complete Service Activator Example
+### A Complete Dispatcher Example
 
 When all of the relevant configuration sections are added together, your code will look something like this, with variations for your transport and stores.
 
@@ -825,4 +822,31 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
 Brighter includes a comprehensive set of [Samples](https://github.com/BrighterCommand/Brighter/tree/master/samples) in its main repo that you can review for clarity on how Brighter works and should be configured.
 
+## **V10 Configuration Changes**
 
+**V10 introduces simplified configuration methods with clearer naming:**
+
+| V9 Method | V10 Method | Purpose |
+|-----------|------------|---------|
+| `UseExternalBus()` | `AddProducers()` | Configure message producers (send/publish to external bus) |
+| `AddServiceActivator()` | `AddConsumers()` | Configure message consumers (receive from external bus) |
+
+**Terminology**: In V10, we use **"Dispatcher"** to refer to the component that dispatches messages to handlers. The assembly name remains `Paramore.Brighter.ServiceActivator` for backward compatibility, but documentation and APIs now use "Dispatcher" for clarity.
+
+### Quick Migration Guide
+
+**V9**:
+```csharp
+services.AddBrighter()
+    .UseExternalBus(...)
+    .AddServiceActivator(...);
+```
+
+**V10**:
+```csharp
+services.AddBrighter()
+    .AddProducers(...)
+    .AddConsumers(...);
+```
+
+---
