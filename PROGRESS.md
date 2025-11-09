@@ -5,10 +5,10 @@
 ## Project Status
 
 - **Total Tasks**: 27
-- **Completed**: 11
+- **Completed**: 12
 - **In Progress**: 0
-- **Remaining**: 16
-- **Completion**: 41%
+- **Remaining**: 15
+- **Completion**: 44%
 
 ---
 
@@ -103,12 +103,14 @@
 **Notes**: Completely rewrote Azure Service Bus Scheduler documentation with comprehensive cloud-native guidance. Documented Azure Service Bus native scheduling using ScheduledEnqueueTimeUtc (built into Service Bus, no separate service). Explained important limitation: Azure does NOT support rescheduling (must cancel + schedule). Documented when to use Azure Service Bus Scheduler (Azure infrastructure, using Service Bus, simplicity) vs when NOT to use (multi-cloud, reschedule support needed). Explained FireAzureScheduler integration approach (centralized scheduler topic, not direct to target like AWS). Added comprehensive authentication section: Managed Identity (recommended), Visual Studio credentials (dev), connection string, Default Azure credentials. Documented RBAC permissions required (Azure Service Bus Data Sender, Data Receiver). Added NuGet package section (Paramore.Brighter.MessageScheduler.Azure). Created configuration examples (basic, Dispatcher with FireAzureScheduler, custom sender options, custom TimeProvider). Provided 4 code examples (basic scheduling, absolute time, cancellation, rescheduling with cancel+schedule pattern). Created comparison table: Azure vs AWS vs Quartz vs Hangfire vs InMemory (highlighting native scheduling, no reschedule, built-in). Included 8 best practices with good/bad code comparisons (use Managed Identity, separate scheduler topic, cancel+schedule pattern, message TTL, Azure Monitor, Premium tier, DLQ, Azurite for testing). Added troubleshooting section (messages not executing, auth failures, reschedule not working, dead-letter queue). Provided migration examples from InMemory and Quartz/Hangfire schedulers. Added links to Azure Service Bus documentation, scheduled messages, pricing, RBAC roles, Managed Identity. Summary explains native integration, managed service, simplicity, and Azure ecosystem integration. Prominent note about no reschedule support.
 ---
 
-## Phase 2: Breaking Changes & Updates
+## Phase 2: Breaking Changes & Updates (1/5 completed)
 
-### TASK-012: Request Context Improvements Documentation ⬜
+### TASK-012: Request Context Improvements Documentation ✅
 
-**Status**: Not Started
+**Status**: Completed - 2025-01-04
+**Files**: Updated `Docs/contents/UsingTheContextBag.md` and `Docs/contents/DispatchingARequest.md`
 **Priority**: MEDIUM
+**Notes**: Comprehensively updated Request Context documentation with all V10 capabilities. Updated UsingTheContextBag.md with new sections: Setting Request Context Explicitly (pass context to Send/Publish/DepositPost), Partition Key (message routing control via RequestContextBagNames.PartitionKey), Custom Headers (dynamic headers via RequestContextBagNames.Headers), CloudEvents Extensions (extension properties via RequestContextBagNames.CloudEventsAdditionalProperties), Originating Message (access original message in consumers for debugging/auditing), OpenTelemetry Span (custom attributes/events via Context.Span), Destination Override (runtime routing via Context.Destination), Resilience Context (Polly V8 integration), Resilience Pipeline Registry (access pre-configured pipelines). Documented Well-Known Context Bag Keys from RequestContextBagNames class. Added 5 best practices (use well-known keys, clean up resources, document custom keys, null checks, explicit context for important metadata). Included comprehensive code examples for each capability. Updated DispatchingARequest.md with new section "Setting Request Context Explicitly" with 3 examples: partition key and headers, CloudEvents extensions, transactional messaging with context. Cross-referenced between both documents and other related documentation (Telemetry, Polly, CloudEvents).
 
 ### TASK-013: Polly Resilience Pipeline Documentation ⬜
 
@@ -447,6 +449,37 @@
 - Added: Links to Azure Service Bus documentation, scheduled messages, pricing, RBAC roles, Managed Identity
 - Summary: Native integration, managed service, simple setup, Azure ecosystem integration
 - Prominent notes throughout about no reschedule support (must use cancel + schedule pattern)
+
+**TASK-012: Request Context Improvements Documentation** ✅
+
+- Comprehensively updated Request Context documentation with all V10 capabilities
+- Files: `Docs/contents/UsingTheContextBag.md` and `Docs/contents/DispatchingARequest.md`
+- Updated UsingTheContextBag.md with new V10 sections:
+  - Setting Request Context Explicitly: Pass context to Send/Publish/DepositPost methods
+  - Partition Key: Control message routing via RequestContextBagNames.PartitionKey
+  - Custom Headers: Dynamic headers via RequestContextBagNames.Headers
+  - CloudEvents Extensions: Extension properties via RequestContextBagNames.CloudEventsAdditionalProperties
+  - Originating Message: Access original message in consumers (Context.OriginatingMessage)
+  - OpenTelemetry Span: Custom attributes/events via Context.Span
+  - Destination Override: Runtime routing decisions via Context.Destination
+  - Resilience Context: Polly V8 integration (Context.ResilienceContext)
+  - Resilience Pipeline Registry: Access pre-configured pipelines (Context.ResiliencePipeline)
+- Documented: Well-Known Context Bag Keys from RequestContextBagNames class
+  - Headers, PartitionKey, CloudEventsAdditionalProperties, WorkflowId, JobId
+- Added: 5 best practices
+  - Use well-known keys (type-safe, discoverable)
+  - Clean up resources (dispose unmanaged resources)
+  - Document custom context keys (for maintainability)
+  - Null checks before accessing properties (defensive coding)
+  - Use explicit context for important metadata (routing, headers)
+- Included: Comprehensive code examples for each capability (10+ examples)
+- Updated DispatchingARequest.md with new section "Setting Request Context Explicitly"
+  - Example: Partition key and custom headers from controller
+  - Example: Publishing events with CloudEvents extensions
+  - Example: Transactional messaging with explicit context (DepositPost)
+- Cross-referenced: Related documentation (Telemetry, Polly, CloudEvents, Fallback)
+- Explained: Integration points with Polly resilience pipelines and OpenTelemetry
+- Documented: Use cases for each capability (multi-tenancy, auditing, debugging, routing)
 
 ---
 
