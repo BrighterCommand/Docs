@@ -1,14 +1,14 @@
 # Brighter V10 Documentation Progress
 
-**Last Updated**: 2025-01-04
+**Last Updated**: 2025-01-10
 
 ## Project Status
 
 - **Total Tasks**: 27
-- **Completed**: 12
+- **Completed**: 17
 - **In Progress**: 0
-- **Remaining**: 15
-- **Completion**: 44%
+- **Remaining**: 10
+- **Completion**: 63%
 
 ---
 
@@ -103,7 +103,7 @@
 **Notes**: Completely rewrote Azure Service Bus Scheduler documentation with comprehensive cloud-native guidance. Documented Azure Service Bus native scheduling using ScheduledEnqueueTimeUtc (built into Service Bus, no separate service). Explained important limitation: Azure does NOT support rescheduling (must cancel + schedule). Documented when to use Azure Service Bus Scheduler (Azure infrastructure, using Service Bus, simplicity) vs when NOT to use (multi-cloud, reschedule support needed). Explained FireAzureScheduler integration approach (centralized scheduler topic, not direct to target like AWS). Added comprehensive authentication section: Managed Identity (recommended), Visual Studio credentials (dev), connection string, Default Azure credentials. Documented RBAC permissions required (Azure Service Bus Data Sender, Data Receiver). Added NuGet package section (Paramore.Brighter.MessageScheduler.Azure). Created configuration examples (basic, Dispatcher with FireAzureScheduler, custom sender options, custom TimeProvider). Provided 4 code examples (basic scheduling, absolute time, cancellation, rescheduling with cancel+schedule pattern). Created comparison table: Azure vs AWS vs Quartz vs Hangfire vs InMemory (highlighting native scheduling, no reschedule, built-in). Included 8 best practices with good/bad code comparisons (use Managed Identity, separate scheduler topic, cancel+schedule pattern, message TTL, Azure Monitor, Premium tier, DLQ, Azurite for testing). Added troubleshooting section (messages not executing, auth failures, reschedule not working, dead-letter queue). Provided migration examples from InMemory and Quartz/Hangfire schedulers. Added links to Azure Service Bus documentation, scheduled messages, pricing, RBAC roles, Managed Identity. Summary explains native integration, managed service, simplicity, and Azure ecosystem integration. Prominent note about no reschedule support.
 ---
 
-## Phase 2: Breaking Changes & Updates (1/5 completed)
+## Phase 2: Breaking Changes & Updates (5/5 completed) ✅
 
 ### TASK-012: Request Context Improvements Documentation ✅
 
@@ -112,35 +112,45 @@
 **Priority**: MEDIUM
 **Notes**: Comprehensively updated Request Context documentation with all V10 capabilities. Updated UsingTheContextBag.md with new sections: Setting Request Context Explicitly (pass context to Send/Publish/DepositPost), Partition Key (message routing control via RequestContextBagNames.PartitionKey), Custom Headers (dynamic headers via RequestContextBagNames.Headers), CloudEvents Extensions (extension properties via RequestContextBagNames.CloudEventsAdditionalProperties), Originating Message (access original message in consumers for debugging/auditing), OpenTelemetry Span (custom attributes/events via Context.Span), Destination Override (runtime routing via Context.Destination), Resilience Context (Polly V8 integration), Resilience Pipeline Registry (access pre-configured pipelines). Documented Well-Known Context Bag Keys from RequestContextBagNames class. Added 5 best practices (use well-known keys, clean up resources, document custom keys, null checks, explicit context for important metadata). Included comprehensive code examples for each capability. Updated DispatchingARequest.md with new section "Setting Request Context Explicitly" with 3 examples: partition key and headers, CloudEvents extensions, transactional messaging with context. Cross-referenced between both documents and other related documentation (Telemetry, Polly, CloudEvents).
 
-### TASK-013: Polly Resilience Pipeline Documentation ⬜
+### TASK-013: Polly Resilience Pipeline Documentation ✅
 
-**Status**: Not Started
+**Status**: Completed - 2025-01-10
+**Files**: Updated `PolicyRetryAndCircuitBreaker.md`, `PolicyFallback.md`, `HowConfiguringTheCommandProcessorWorks.md`
 **Priority**: MEDIUM
+**Notes**: Comprehensive Polly v8 resilience pipeline documentation. Updated PolicyRetryAndCircuitBreaker.md with complete rewrite covering UseResiliencePipeline attribute, all Polly v8 strategies (Retry, Circuit Breaker, Timeout, Rate Limiter, Fallback, Hedging), type-scoped pipelines, CancellationToken integration, Request Context integration, configurable instrumentation, migration guide from V9 to V10, TimeoutPolicy deprecation, best practices, troubleshooting. Updated PolicyFallback.md with V10 resilience pipeline examples, common fallback patterns (compensating transaction, queue for later, default values, alerts), integration with Polly Fallback strategy. Updated HowConfiguringTheCommandProcessorWorks.md with V10 Resilience Pipeline Registry section, side-by-side V9/V10 comparison. Documentation covers ~900 lines across 3 files.
 
-### TASK-014: Simplified Configuration Documentation ⬜
+### TASK-014: Simplified Configuration Documentation ✅
 
-**Status**: Not Started
+**Status**: Completed - 2025-01-10
+**File**: Updated `BrighterBasicConfiguration.md`
 **Priority**: MEDIUM
+**Notes**: Updated configuration documentation for V10 simplified methods. Added V10 Configuration Changes section at top with migration table (UseExternalBus→AddProducers, AddServiceActivator→AddConsumers). Updated terminology throughout: "Service Activator" → "Dispatcher" (except assembly names). Updated all section headings (Configuring The Dispatcher, Dispatcher Brighter Builder Fluent Interface, Running the Dispatcher, Configuring Dispatcher Lifetimes, A Complete Dispatcher Example). Updated Polly section to use resilience pipelines instead of legacy policies with V10 examples. Added quick migration guide from V9 to V10. Clarified assembly name (Paramore.Brighter.ServiceActivator) vs component name (Dispatcher) distinction. ~100 lines updated throughout document.
 
-### TASK-015: OpenTelemetry Integration Documentation ⬜
+### TASK-015: OpenTelemetry Integration Documentation ✅
 
-**Status**: Not Started
+**Status**: Completed - 2025-01-10
+**File**: Completely rewrote `Telemetry.md`
 **Priority**: MEDIUM
 **Dependencies**: TASK-004
+**Notes**: Comprehensive OpenTelemetry Semantic Conventions documentation for V10. Documented breaking change notice (V9 custom conventions → V10 OTel standards). Covered OTel Semantic Conventions for Messaging, W3C TraceContext propagation, CloudEvents integration. Documented Activity Source (paramore.brighter). Provided configuration examples for multiple backends (Jaeger, Zipkin, OTLP, Azure Monitor). Documented configurable instrumentation with BrighterInstrumentation options (RecordRequestInformation, RecordRequestBody, RecordMessageBody, etc). Documented Command Processor spans (send, publish, deposit, clear), attributes, custom span attributes via RequestContext. Documented Dispatcher spans (receive, process), message attributes. Documented Outbox tracing (deposit, clear operations), Inbox tracing (deduplication), Transform pipeline tracing (ClaimCheck, Compression, Encryption). Explained W3C TraceContext propagation (traceparent, tracestate), ASP.NET integration. Documented CloudEvents integration with alternative attribute names. Provided complete configuration examples for Producer and Consumer services. Added distributed tracing example showing end-to-end flow. Included 8 best practices, migration guide from V9, troubleshooting section. ~595 lines of comprehensive documentation.
 
-### TASK-016: Nullable Reference Types Documentation ⬜
+### TASK-016: Nullable Reference Types Documentation ✅
 
-**Status**: Not Started
+**Status**: Completed - 2025-01-10
+**File**: Created `NullableReferenceTypes.md` (NEW)
 **Priority**: MEDIUM
+**Notes**: Comprehensive nullable reference types documentation for V10. Created new guide explaining breaking change (nullable reference types enabled across all Brighter projects). Documented understanding nullable types (non-nullable by default, nullable with ?). Explained impact on Brighter code (Commands, Events, Handlers, Message Mappers) with examples. Created complete migration guide with step-by-step instructions. Addressed all common compiler warnings (CS8600-CS8629) with problem/solution format including multiple options for each. Provided migration steps: Enable nullable, address warnings, update handlers, update mappers. Included 7 best practices (use non-nullable for required, validate at boundaries, use null-coalescing for defaults, document nullability, avoid null-forgiving operator, pattern matching, required members). Documented common patterns in Brighter (command with validation, event with optional properties, handler with optional dependencies). Added troubleshooting section (warnings as errors, suppressing warnings, gradual migration). ~650 lines of practical guidance with extensive code examples.
 
 ---
 
-## Phase 3: Transport & Infrastructure
+## Phase 3: Transport & Infrastructure (1/6 completed)
 
-### TASK-017: PostgreSQL Message Broker Documentation ⬜
+### TASK-017: PostgreSQL Message Broker Documentation ✅
 
-**Status**: Not Started
+**Status**: Completed - 2025-01-10
+**File**: Created `PostgreSQLMessageBroker.md` (NEW)
 **Priority**: LOW
+**Notes**: Comprehensive PostgreSQL message broker documentation. Created new guide explaining table-based queue approach using PostgreSQL LISTEN/NOTIFY. Documented benefits (use existing infrastructure, transactional messaging, familiar tooling). Explained when to use (low-moderate volumes, PostgreSQL apps, transactional scenarios) and when not to use (high volume, large messages, complex routing). Documented limitations (performance constraints, message size limits, no native routing, polling model). Provided complete configuration for Producer and Consumer with PostgresPublication/PostgresSubscription. Created database table schema with required indexes. Documented configuration options in detailed tables (PostgresPublication, PostgresSubscription, RelationalDatabaseConfiguration). Explained message visibility timeout mechanism (5-step flow). Documented JSON vs JSONB performance comparison with recommendations. Covered scheduled messages using visibility timeout, transactional messaging with Outbox pattern. Provided monitoring SQL queries (queue depth, in-flight messages, stuck messages), OpenTelemetry integration. Included 8 best practices (use JSONB, visibility timeout sizing, connection pooling, monitoring, indexing, cleanup, Claim Check, separate tables). Created transport comparison table (PostgreSQL vs RabbitMQ vs Kafka vs SQS). Added troubleshooting section (messages not consumed, high DB load, duplicate processing, slow retrieval). ~650 lines of comprehensive documentation with code examples and SQL queries.
 
 ### TASK-018: RabbitMQ Enhancements Documentation ⬜
 
@@ -481,6 +491,148 @@
 - Explained: Integration points with Polly resilience pipelines and OpenTelemetry
 - Documented: Use cases for each capability (multi-tenancy, auditing, debugging, routing)
 
+**TASK-013: Polly Resilience Pipeline Documentation** ✅
+
+- Comprehensive Polly v8 resilience pipeline documentation (3 files, ~900 lines)
+- PolicyRetryAndCircuitBreaker.md: Complete rewrite with V10 Polly v8 support
+  - UseResiliencePipeline attribute replacing UsePolicy
+  - All resilience strategies: Retry, Circuit Breaker, Timeout, Rate Limiter, Fallback, Hedging
+  - Type-scoped pipelines with UseTypePipeline for per-handler circuit breakers
+  - CancellationToken and Request Context integration
+  - Migration guide from V9 to V10 with step-by-step instructions
+  - TimeoutPolicy marked as deprecated (removed in V11)
+  - Best practices and troubleshooting sections
+- PolicyFallback.md: Updated with V10 examples
+  - Resilience pipeline examples alongside V9 legacy
+  - Common fallback patterns (compensating transactions, queuing, defaults, alerts)
+  - Integration with Polly's Fallback strategy comparison
+- HowConfiguringTheCommandProcessorWorks.md: Added resilience pipelines
+  - V10 Resilience Pipeline Registry section
+  - Side-by-side V9/V10 comparison
+  - Code examples for both approaches
+
+**TASK-014: Simplified Configuration Documentation** ✅
+
+- Updated BrighterBasicConfiguration.md for V10 simplified configuration
+- Added V10 Configuration Changes section with migration table
+  - UseExternalBus() → AddProducers() for message producers
+  - AddServiceActivator() → AddConsumers() for message consumers
+- Updated terminology throughout: "Service Activator" → "Dispatcher"
+  - Except assembly name (Paramore.Brighter.ServiceActivator) for backward compatibility
+- Updated section headings:
+  - Configuring The Dispatcher
+  - Dispatcher Brighter Builder Fluent Interface
+  - Running the Dispatcher
+  - Configuring Dispatcher Lifetimes
+  - A Complete Dispatcher Example
+- Updated Polly section with resilience pipelines replacing legacy policies
+- Added quick migration guide from V9 to V10
+- ~100 lines updated throughout document
+
+**TASK-015: OpenTelemetry Integration Documentation** ✅
+
+- Completely rewrote Telemetry.md (~595 lines) with V10 OTel Semantic Conventions
+- Breaking change notice: V9 custom conventions → V10 OTel standards
+- Documented OTel Semantic Conventions for Messaging, W3C TraceContext, CloudEvents
+- Activity Source configuration (paramore.brighter)
+- Configuration examples for multiple backends: Jaeger, Zipkin, OTLP, Azure Monitor
+- Configurable instrumentation with BrighterInstrumentation options
+  - RecordRequestInformation, RecordRequestBody, RecordMessageBody, etc.
+  - Performance optimization guidance
+- Command Processor spans: send, publish, deposit, clear
+  - Attributes table with paramore.brighter.* namespace
+  - Custom span attributes via RequestContext
+  - Handler pipeline events
+- Dispatcher spans: receive/process for pull/push transports
+  - Message attributes following OTel conventions (messaging.*)
+- Outbox tracing: deposit and clear operations with database spans
+- Inbox tracing: deduplication check spans
+- Transform pipeline tracing: ClaimCheck, Compression, Encryption with external call spans
+- W3C TraceContext propagation: traceparent and tracestate headers
+- ASP.NET integration: spans participate in existing traces
+- CloudEvents integration with alternative attribute names
+- Complete configuration examples for Producer and Consumer services
+- Distributed tracing example showing end-to-end flow across services
+- 8 best practices for instrumentation
+- Migration guide from V9 (span names, attributes)
+- Troubleshooting section
+
+**TASK-016: Nullable Reference Types Documentation** ✅
+
+- Created comprehensive NullableReferenceTypes.md (~650 lines)
+- Breaking change documentation: nullable reference types enabled in V10
+- Understanding nullable types: non-nullable by default, nullable with ?
+- Impact on Brighter code with examples:
+  - Commands and Events (required vs optional properties)
+  - Handlers (dependency injection, parameter handling)
+  - Message Mappers (deserialization, null handling)
+- Complete migration guide with step-by-step instructions:
+  - Enable nullable reference types in project
+  - Address compiler warnings systematically
+  - Update handler code
+  - Update message mappers
+- Addressed all common compiler warnings (CS8600-CS8629):
+  - Problem/solution format
+  - Multiple options for each warning
+  - Code examples for all scenarios
+- 7 best practices:
+  - Use non-nullable for required properties
+  - Validate at boundaries
+  - Use null-coalescing for defaults
+  - Document nullability in XML comments
+  - Avoid null-forgiving operator
+  - Use pattern matching for null checks
+  - Consider required members (C# 11+)
+- Common patterns in Brighter:
+  - Command with validation
+  - Event with optional properties
+  - Handler with optional dependencies
+- Troubleshooting section:
+  - Warnings as errors
+  - Suppressing warnings
+  - Gradual migration strategy
+
+**TASK-017: PostgreSQL Message Broker Documentation** ✅
+
+- Created comprehensive PostgreSQLMessageBroker.md (~650 lines)
+- Table-based queue approach using PostgreSQL for messaging
+- Benefits: Use existing infrastructure, transactional messaging, familiar tooling
+- When to use: Low-moderate volumes (<1000 msg/sec), PostgreSQL apps, transactional scenarios
+- When not to use: High volume, large messages, complex routing
+- Limitations: Performance constraints, message size limits (~1MB), no native routing, polling model
+- Complete configuration:
+  - Producer setup with PostgresPublication
+  - Consumer setup with PostgresSubscription
+  - Database table schema with required indexes
+- Configuration options in detailed tables:
+  - PostgresPublication (Topic, SchemaName, QueueStoreTable, BinaryMessagePayload)
+  - PostgresSubscription (ChannelName, RoutingKey, VisibleTimeout, BufferSize, etc.)
+  - RelationalDatabaseConfiguration (ConnectionString, defaults)
+- Message visibility timeout mechanism (5-step flow preventing duplicate processing)
+- JSON vs JSONB performance comparison with recommendations (JSONB for production)
+- Scheduled messages using visibility timeout
+- Transactional messaging with Outbox pattern integration
+- Monitoring SQL queries:
+  - Queue depth by queue
+  - In-flight messages
+  - Stuck messages
+- OpenTelemetry integration with Npgsql spans
+- 8 best practices:
+  - Use JSONB for production
+  - Set appropriate visibility timeout (2-3x processing time)
+  - Use connection pooling
+  - Monitor queue depth
+  - Index queue table
+  - Regular cleanup
+  - Use Claim Check for large messages
+  - Separate tables for high volume
+- Transport comparison table: PostgreSQL vs RabbitMQ vs Kafka vs SQS
+- Troubleshooting section:
+  - Messages not being consumed
+  - High database load
+  - Messages processed multiple times
+  - Slow message retrieval
+
 ---
 
 ## Notes
@@ -505,12 +657,20 @@
 
 ## Next Steps
 
-**Recommended**: Start with Phase 1 (Foundation & Migration)
-1. TASK-001: Migration Guide (CRITICAL)
-2. TASK-002: Update SUMMARY.md
-3. TASK-003: Simplify Show Me The Code
+**Recommended**: Phase 4 (Foundation & Migration) - CRITICAL
+1. TASK-023: V10 Migration Guide (CRITICAL - pulls together all breaking changes)
+2. TASK-024: Update SUMMARY.md Structure
+3. TASK-025: Simplify Show Me The Code
+
+**Alternative**: Complete Phase 3 (Transport & Infrastructure)
+- TASK-018: RabbitMQ Enhancements (Quorum queues, v7 client)
+- TASK-019: Kafka Improvements (configuration callback)
+- TASK-020: AWS Improvements (SDK v4, S3 Luggage)
+- TASK-021: Sweeper Circuit Breaking
+- TASK-022: InMemory Options Overview
 
 **To Continue**: Tell Claude:
-- "Continue with the next task"
-- "Start TASK-001"
-- "Complete Phase 1"
+- "Continue with Phase 4" (recommended - migration guide is critical)
+- "Continue with Phase 3" (complete transport documentation)
+- "Start TASK-023" (migration guide)
+- Or specify any specific task
