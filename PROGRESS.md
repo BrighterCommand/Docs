@@ -5,10 +5,10 @@
 ## Project Status
 
 - **Total Tasks**: 27
-- **Completed**: 19
+- **Completed**: 20
 - **In Progress**: 0
-- **Remaining**: 8
-- **Completion**: 70%
+- **Remaining**: 7
+- **Completion**: 74%
 
 ---
 
@@ -143,7 +143,7 @@
 
 ---
 
-## Phase 3: Transport & Infrastructure (3/6 completed)
+## Phase 3: Transport & Infrastructure (4/6 completed)
 
 ### TASK-017: PostgreSQL Message Broker Documentation ✅
 
@@ -166,10 +166,12 @@
 **Priority**: LOW
 **Notes**: Comprehensive Kafka V10 improvements documentation. Added V10 Improvements section (~30 lines) explaining configuration callback for consumers and improved default values. Updated Subscription section to include ConfigHook parameter and document all timeout parameters with TimeSpan types and default values. Added Configuration Callback section (~40 lines) showing how to use configHook parameter with complete example, plus 5 common use cases (fine-tuning fetch behavior, enabling statistics, customizing security, adjusting partition assignment, debugging/monitoring). Added Partition Assignment Strategy section (~40 lines) explaining RoundRobin (default), Range, and CooperativeSticky (not supported), with rationale for default choice, code examples, and limitation documentation with link to librdkafka issue. Updated subscription example to use V10 TimeSpan-based parameters (timeOut, sweepUncommittedOffsetsInterval, messagePumpType). Total additions: ~110 lines of V10-specific documentation with comprehensive code examples. All parameter names updated from milliseconds to TimeSpan throughout examples.
 
-### TASK-020: AWS Improvements Documentation ⬜
+### TASK-020: AWS Improvements Documentation ✅
 
-**Status**: Not Started
+**Status**: Completed - 2025-01-10
+**Files**: Updated `AWSSQSConfiguration.md`, `DynamoOutbox.md`, `DynamoInbox.md`, `S3LuggageStore.md`
 **Priority**: LOW
+**Notes**: Comprehensive AWS V10 improvements documentation. Added V10 Improvements section (~70 lines) to AWSSQSConfiguration.md covering: Direct SQS Publishing (benefits, simpler architecture, lower costs, reduced latency), AWS SDK v4 Support (complete package list for v3 and v4 versions), S3 Claim Check Improvements (fixes, SDK v4 support, error handling), DynamoDB Performance Improvements (GUID v7, optimized queries, batch operations, logging), FIFO Queue Enhancements (content-based deduplication, message groups, high-throughput), Migration Path (continue v3, gradual migration, side-by-side, new projects). Added comprehensive Migration Guidance section (~185 lines): Step-by-step migration (identify packages, install v4, update namespaces, credentials config, testing, CI/CD), package migration table (v3 to v4 mappings), Key Differences table (credentials, async APIs, performance, dependencies), Common Migration Issues (credential resolution, region not set, package conflicts) with solutions, Gradual Migration Strategy (4-phase approach: Messaging Gateway, Outbox, Inbox, Transformers), Best Practices (test lower envs first, feature flags, monitor metrics, rollback plan, documentation, team coordination). Expanded AWS SDK v4 Support section (~15 lines) with "Why Separate Packages?" explaining async-first design, reduced allocations, modular packages, improved credential resolution, and benefits (avoid conflicts, migrate incrementally, support legacy, test thoroughly). Updated DynamoOutbox.md (~7 lines): Added v3/v4 package options with recommendations, link to migration guidance. Updated DynamoInbox.md (~6 lines): Added v3/v4 package options with recommendations, link to migration guidance. Updated S3LuggageStore.md (~13 lines): Added v3/v4 package options, V10 Improvements section (fixed implementation, better error handling, SDK v4 support, lifecycle management). Direct SQS publishing was already fully documented. Total additions: ~295 lines of comprehensive AWS V10 documentation with migration guidance.
 
 ### TASK-021: Sweeper Circuit Breaking Documentation ⬜
 
@@ -621,6 +623,18 @@
 - Added Partition Assignment Strategy section: RoundRobin (default), Range, CooperativeSticky (not supported with manual commits), rationale and code examples
 - Updated subscription example: V10 TimeSpan-based parameters (timeOut, sweepUncommittedOffsetsInterval, messagePumpType)
 - Total additions: ~110 lines of V10-specific documentation with comprehensive code examples
+
+**TASK-020: AWS Improvements Documentation** ✅
+
+- Updated AWS documentation files with comprehensive V10 improvements
+- Files: `AWSSQSConfiguration.md`, `DynamoOutbox.md`, `DynamoInbox.md`, `S3LuggageStore.md`
+- Added V10 Improvements section to AWSSQSConfiguration.md: Direct SQS Publishing (benefits, architecture simplification, cost reduction), AWS SDK v4 Support (package list with v3/v4 options), S3 Claim Check Improvements, DynamoDB Performance Improvements, FIFO Queue Enhancements, Migration Path
+- Added comprehensive Migration Guidance section: Step-by-step migration (6 steps with code examples), package migration table, Key Differences table (v3 vs v4 comparison), Common Migration Issues (3 scenarios with solutions), Gradual Migration Strategy (4-phase approach), Best Practices (6 recommendations)
+- Expanded AWS SDK v4 Support section: Explained why separate packages, benefits of dual support
+- Updated DynamoOutbox.md: v3/v4 package options with recommendations, link to migration guidance
+- Updated DynamoInbox.md: v3/v4 package options with recommendations, link to migration guidance
+- Updated S3LuggageStore.md: v3/v4 package options, V10 Improvements section (fixes, error handling, SDK v4 support, lifecycle management)
+- Total additions: ~295 lines of comprehensive AWS V10 documentation with migration guidance
 - Table-based queue approach using PostgreSQL for messaging
 - Benefits: Use existing infrastructure, transactional messaging, familiar tooling
 - When to use: Low-moderate volumes (<1000 msg/sec), PostgreSQL apps, transactional scenarios

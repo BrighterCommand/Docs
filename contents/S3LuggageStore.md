@@ -4,7 +4,13 @@ The **S3LuggageStore** is an implementation of **IAmAStorageProviderAsync** for 
 
 To use the **S3LuggageStore** you need to include the following NuGet package:
 
+**AWS SDK v3** (legacy support):
 * **Paramore.Brighter.Transformers.AWS**
+
+**AWS SDK v4** (recommended for new projects):
+* **Paramore.Brighter.Transformers.AWS.V4**
+
+See [AWS Configuration](/contents/AWSSQSConfiguration.md#migration-guidance) for migration guidance between v3 and v4.
 
 We then need to configure our **S3LuggageStore** and register it with our IoC container. Our **ClaimCheckTransformer** has a dependency on **IAmAStorageProviderAsync** and at runtime, when our [** **IAmAMessageTransformerFactory**](/contents/MessageMappers.md#message-transformer-factory) creates an instance it needs to be able to resolve that dependency. For this reason you need to register the implementation, in this case **S3LuggageStore** with the IoC container to allow it to resolve the dependency.
 
@@ -26,9 +32,9 @@ You configure an **S3LuggageStore** using the **S3LuggateOptions** provided to t
 * **BucketName**: The name of the S3 bucket that backs the luggage store. We use one bucket for the luggage store. You may re-use a bucket that you already have.
 * **BucketRegion**: Where is the bucket? Bucket names must be unique within a region.
 * **StoreCreation**: What should we do when determining if there is a bucket for the store?
-	* **CreateIfMissing**: We will create the bucket in the requested region (provided the credentials provided have rights to do this.)
-	* **ValidateExists**: We will check if the bucket exists in the requested region. We throw an **InvalidOperationException** if it does not.
-	* **AssumeExists**: We do not check for the bucket, but just assume it exists
+  * **CreateIfMissing**: We will create the bucket in the requested region (provided the credentials provided have rights to do this.)
+    * **ValidateExists**: We will check if the bucket exists in the requested region. We throw an **InvalidOperationException** if it does not.
+    * **AssumeExists**: We do not check for the bucket, but just assume it exists
 
 If you choose **CreateIfMissing** or **ValidateExists** then you must register an **IHTTPClientFactory** as we will use this to obtain an HTTP Client for use with the AWS REST API to make a check for the bucket's existence. The simplest way to do this is to use the ServiceCollection extension provided for creating an **IHTTPClientFactory**:
 
@@ -50,5 +56,4 @@ In addition we set the following properties on the bucket, which can be controll
 
 We set *Tags* on the bucket if they are provided in the **Tags** property.
 
-We default the **ACLs** for the bucket to **S3CannedACL.Private, but you can choose to override this with another policy as described in [**S3CannedACL**](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-access-control.html#RESTCannedAccessPolicies). 
-
+We default the **ACLs** for the bucket to **S3CannedACL.Private, but you can choose to override this with another policy as described in [**S3CannedACL**](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-access-control.html#RESTCannedAccessPolicies).

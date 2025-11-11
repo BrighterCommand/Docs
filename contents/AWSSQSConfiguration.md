@@ -43,6 +43,7 @@ public void ConfigureServices(IServiceCollection services)
         })
 }
 ```
+
 ## Publication
 
 For more on a *Publication* see the material on an *Add Producers* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#using-an-external-bus).
@@ -50,6 +51,7 @@ For more on a *Publication* see the material on an *Add Producers* in [Basic Con
 Brighter's **Routing Key** represents the [SNS Topic Name](https://docs.aws.amazon.com/sns/latest/api/API_CreateTopic.html) or [SQS Queue Name](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_CreateQueue.html).
 
 ### Finding and Creating Topics
+
 Depending on the option you choose for how we handle required messaging infrastructure (Create, Validate, Assume), we will need to determine if a **Topic** already exists, when we want to create it if missing, or validate it. 
 
 Naively using the AWS SDK's **FindTopic** method is an expensive operation. This enumerates all the **Topics** in that region, looking for those that have a matching name. Under-the-hood the client SDK pages through your topics. If you have a significant number of topics, this is expensive and subject to rate limiting. 
@@ -64,9 +66,11 @@ If you create your infrastructure out-of-band, and ask us validate it exists, to
     - **TopicFindBy.Name** -> The routing key is the **Topic** name & we use ListTopics to find it (rate limited 30/s)
 
 #### TopicFindBy.Arn 
+
 We use **GetTopicAttributesAsync** SDK method to request attributes of a Topic with the ARN supplied in **TopicArn**. If this call fails with a NotFoundException, we know that the Topic does not exist. This is a *hack*, but is much more efficient than enumeration as a way of determining if the ARN exists.
 
 #### TopicFindBy.Convention 
+
 If you supply only the **Topic** name via the routing key, we construct the ARN by convention as follows:
 
 ``` csharp
@@ -85,6 +89,7 @@ These assumptions work, if the topic is created by the account your credentials 
 Once we obtain an ARN by convention, we can then use the optimized approach described under [TopicFindBy.Arn](#topicfindbyarn) to confirm that your topic exists.
 
 #### TopicFindBy.Name
+
 If you supply a name, but we can't construct the ARN via the above conventions, we have to fall back to the **SDKs** **FindTopic** approach. 
 
 Because creation is idempotent, and **FindTopic** is expensive, you are almost always better off choosing to create over validating a topic by name. 
@@ -349,6 +354,18 @@ In response to a DeferMessageAction we will requeue, using the SDK's **ChangeMes
 
 On a Nack, we will move the message to a DLQ, if there is one. We Nack when we exceed the requeue count for a message, or we raise a ConfigurationException.
 
+### Direct SQS Publishing
+
+Brighter has first-class support for publishing directly to SQS queues without requiring an SNS topic. This is ideal for point-to-point messaging scenarios where you don't need pub/sub routing.
+
+**Benefits**:
+- **Simpler architecture**: Eliminates the need for SNS when doing point-to-point messaging
+- **Lower costs**: Avoid paying for both SNS and SQS when you only need queue-based messaging
+- **Reduced latency**: Direct queue writes are faster than SNS → SQS routing
+- **FIFO support**: Use SQS FIFO queues for ordered message delivery without SNS FIFO topics
+
+Use `SqsProducerRegistryFactory` and `SqsPublication` for direct SQS publishing. See [Direct SQS Publishing](#finding-and-creating-queues) for detailed examples.
+
 ## AWS SDK v4 Support
 
 Brighter provides support for both version 3 and version 4 of the AWS SDK for .NET through separate NuGet packages. This approach is crucial for managing dependencies and avoiding conflicts within your applications.
@@ -357,3 +374,240 @@ Brighter provides support for both version 3 and version 4 of the AWS SDK for .N
 *   **Paramore.Brighter.MessagingGateway.AWSSQS.V4**: This package depends on version 4.x of the AWS SDK. You can find it on NuGet [here](https://www.nuget.org/packages/Paramore.Brighter.MessagingGateway.AWSSQS.V4).
 
 Major versions of the AWS SDK often introduce breaking changes. By offering two distinct packages, Brighter ensures that you can choose the one that aligns with the AWS SDK version used in your project. This prevents "dependency hell" and allows for a smoother migration path if you decide to upgrade from AWS SDK v3 to v4, without being forced to upgrade all your Brighter-related packages at once.
+### FIFO Queue Support
+
+Brighter provides support for FIFO (First-In-First-Out) queues and topics:
+
+- **Content-based deduplication**: Automatic deduplication based on message content
+- **Message groups**: Support for message group IDs for ordered processing within groups
+- **High-throughput FIFO**: Configuration options for high-throughput FIFO queues
+- **Better error handling**: Improved handling of FIFO-specific errors (duplicate messages, invalid group IDs)
+
+### Why Separate Packages?
+
+AWS SDK v4 introduced significant changes to improve performance, reduce package size, and modernize the API. Key changes include:
+
+- **Async-first design**: All APIs are now async by default
+- **Reduced allocations**: Better memory efficiency
+- **Modular packages**: Smaller, more focused packages
+- **Improved credential resolution**: Better defaults for credential discovery
+
+By maintaining separate Brighter packages for v3 and v4, you can:
+
+- **Avoid dependency conflicts**: No version collisions between AWS SDK packages
+- **Migrate incrementally**: Upgrade one component at a time
+- **Support legacy code**: Keep existing applications on v3 while new projects use v4
+- **Test thoroughly**: Validate each migration step before moving forward
+
+### AWS SDK v4 Support
+
+We provides complete support for AWS SDK version 4, while maintaining backwards compatibility with version 3. This allows you to migrate at your own pace without being forced to upgrade all components at once.
+
+**Available Packages**:
+- **Paramore.Brighter.MessagingGateway.AWSSQS**: AWS SDK v3 (legacy support)
+- **Paramore.Brighter.MessagingGateway.AWSSQS.V4**: AWS SDK v4 (recommended for new projects)
+- **Paramore.Brighter.Outbox.DynamoDB**: DynamoDB Outbox with SDK v3
+- **Paramore.Brighter.Outbox.DynamoDB.V4**: DynamoDB Outbox with SDK v4
+- **Paramore.Brighter.Inbox.DynamoDB**: DynamoDB Inbox with SDK v3
+- **Paramore.Brighter.Inbox.DynamoDB.V4**: DynamoDB Inbox with SDK v4
+- **Paramore.Brighter.Transformers.AWS**: S3 Luggage Store with SDK v3
+- **Paramore.Brighter.Transformers.AWS.V4**: S3 Luggage Store with SDK v4
+
+See [AWS SDK v4 Support](#aws-sdk-v4-support) for migration guidance.
+
+## V10 Migration Path
+
+V10 maintains backwards compatibility with existing configurations while providing new features:
+
+1. **Continue using v3**: Existing code using AWS SDK v3 continues to work without changes
+2. **Gradual migration**: Migrate components one at a time to AWS SDK v4
+3. **Side-by-side**: Run v3 and v4 packages in the same application (different transport types)
+4. **New projects**: Start with v4 packages for the latest features and performance
+
+See [Migration Guidance](#migration-guidance) below for step-by-step instructions.
+
+### Migrating from AWS SDK v3 to v4
+
+AWS SDK v4 introduced significant breaking changes to improve performance, modernize the API, and better align with AWS best practices. Brighter V10 supports both versions through separate packages, allowing you to migrate at your own pace.
+
+#### Step-by-Step Migration
+
+**1. Identify Your Current Packages**
+
+First, determine which Brighter AWS packages you're currently using:
+
+```bash
+# Check your project file for v3 packages
+dotnet list package | grep "Paramore.Brighter.*AWS"
+```
+
+**2. Install v4 Packages**
+
+Replace v3 packages with their v4 equivalents:
+
+| V3 Package | V4 Package |
+|------------|------------|
+| `Paramore.Brighter.MessagingGateway.AWSSQS` | `Paramore.Brighter.MessagingGateway.AWSSQS.V4` |
+| `Paramore.Brighter.Outbox.DynamoDB` | `Paramore.Brighter.Outbox.DynamoDB.V4` |
+| `Paramore.Brighter.Inbox.DynamoDB` | `Paramore.Brighter.Inbox.DynamoDB.V4` |
+| `Paramore.Brighter.Transformers.AWS` | `Paramore.Brighter.Transformers.AWS.V4` |
+
+```bash
+# Remove v3 package
+dotnet remove package Paramore.Brighter.MessagingGateway.AWSSQS
+
+# Add v4 package
+dotnet add package Paramore.Brighter.MessagingGateway.AWSSQS.V4
+```
+
+**3. Update Namespace References**
+
+The namespace structure remains the same in most cases, but you'll need to update AWS SDK namespace imports:
+
+```csharp
+// V3
+using Amazon.SimpleNotificationService;
+using Amazon.SQS;
+
+// V4 - Same namespaces, different package versions
+using Amazon.SimpleNotificationService;
+using Amazon.SQS;
+```
+
+**4. Update Credentials and Configuration**
+
+AWS SDK v4 introduced new credential and configuration patterns:
+
+**V3 Approach**:
+
+```csharp
+// V3 - Using profile
+var chain = new CredentialProfileStoreChain();
+if (!chain.TryGetAWSCredentials("default", out var credentials))
+{
+    throw new InvalidOperationException("Missing AWS Credentials");
+}
+
+var region = RegionEndpoint.GetBySystemName("us-east-1");
+var connection = new AwsMessagingGatewayConnection(credentials, region);
+```
+
+**V4 Approach**:
+
+```csharp
+// V4 - Using profile (similar, but with v4 SDK)
+var chain = new CredentialProfileStoreChain();
+if (!chain.TryGetAWSCredentials("default", out var credentials))
+{
+    throw new InvalidOperationException("Missing AWS Credentials");
+}
+
+var region = RegionEndpoint.GetBySystemName("us-east-1");
+var connection = new AwsMessagingGatewayConnection(credentials, region);
+```
+
+**V4 - Using Default Credentials** (recommended):
+
+```csharp
+// V4 - Let SDK resolve credentials automatically
+var credentials = FallbackCredentialsFactory.GetCredentials();
+var region = FallbackRegionFactory.GetRegionEndpoint();
+var connection = new AwsMessagingGatewayConnection(credentials, region);
+```
+
+**5. Test Thoroughly**
+
+After migration, test all AWS interactions:
+
+- SNS topic publishing
+- SQS queue publishing and consumption
+- DynamoDB Outbox/Inbox operations
+- S3 Luggage Store operations
+- IAM permissions and credentials
+
+**6. Update CI/CD Pipelines**
+
+Ensure your build and deployment pipelines reference the correct package versions and AWS SDK dependencies.
+
+#### Key Differences Between v3 and v4
+
+| Aspect | V3 | V4 |
+|--------|----|----|
+| **Credentials** | Manual credential resolution | Improved default credential chain |
+| **Async APIs** | Mix of sync/async | Async-first design |
+| **Performance** | Good | Optimized with reduced allocations |
+| **Dependencies** | Larger package size | Smaller, more modular packages |
+| **Service Clients** | Synchronous construction | Async construction patterns |
+
+#### Common Migration Issues
+
+**Issue 1: Credential Resolution Fails**
+
+```csharp
+// Problem: Credentials not found
+var chain = new CredentialProfileStoreChain();
+if (!chain.TryGetAWSCredentials("default", out var credentials))
+{
+    throw new InvalidOperationException("Missing AWS Credentials");
+}
+
+// Solution: Use fallback credentials
+var credentials = FallbackCredentialsFactory.GetCredentials(); // Checks env vars, profiles, IAM roles
+```
+
+**Issue 2: Region Not Set**
+
+```csharp
+// Problem: Region not specified
+var connection = new AwsMessagingGatewayConnection(credentials, null); // ❌
+
+// Solution: Provide region explicitly or use fallback
+var region = FallbackRegionFactory.GetRegionEndpoint()
+    ?? RegionEndpoint.USEast1; // Fallback to default
+var connection = new AwsMessagingGatewayConnection(credentials, region);
+```
+
+**Issue 3: Package Version Conflicts**
+
+```csharp
+// Problem: Mixing v3 and v4 packages in the same project for the same AWS service
+// Install-Package Paramore.Brighter.MessagingGateway.AWSSQS
+// Install-Package Paramore.Brighter.MessagingGateway.AWSSQS.V4 // ❌ Conflict
+
+// Solution: Use one version per AWS service
+// For SQS/SNS, choose either v3 OR v4, not both
+// You CAN mix if using different AWS services (e.g., SQS v4 + DynamoDB v3)
+```
+
+### Gradual Migration Strategy
+
+You don't have to migrate everything at once. Here's a recommended phased approach:
+
+**Phase 1: Messaging Gateway** (SNS/SQS)
+1. Migrate `Paramore.Brighter.MessagingGateway.AWSSQS` to v4
+2. Update configuration and test messaging
+3. Deploy and monitor
+
+**Phase 2: Outbox** (if using DynamoDB Outbox)
+1. Migrate `Paramore.Brighter.Outbox.DynamoDB` to v4
+2. Test transactional messaging
+3. Deploy and monitor
+
+**Phase 3: Inbox** (if using DynamoDB Inbox)
+1. Migrate `Paramore.Brighter.Inbox.DynamoDB` to v4
+2. Test deduplication
+3. Deploy and monitor
+
+**Phase 4: Transformers** (if using S3 Luggage Store)
+1. Migrate `Paramore.Brighter.Transformers.AWS` to v4
+2. Test claim check pattern
+3. Deploy and monitor
+
+### Best Practices for Migration
+
+1. **Test in Lower Environments First**: Migrate dev → staging → production
+2. **Use Feature Flags**: Enable v4 for a subset of traffic initially
+3. **Monitor Metrics**: Watch for changes in latency, error rates, and AWS API calls
+4. **Have Rollback Plan**: Keep v3 packages available for quick rollback if needed
+5. **Update Documentation**: Document which components use v3 vs v4
+6. **Coordinate with Team**: Ensure all developers understand the migration plan

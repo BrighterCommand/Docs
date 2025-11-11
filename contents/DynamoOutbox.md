@@ -7,11 +7,17 @@ To support transactional messaging when using DynamoDb requires us to use Dynamo
 
 For this we will need the *Outbox* package for DynamoDb:
 
+**AWS SDK v3** (legacy support):
 * **Paramore.Brighter.Outbox.DynamoDB**
 
-**Paramore.Brighter.Outbox.DynamoDb** will pull in another package:
+**AWS SDK v4** (recommended for new projects):
+* **Paramore.Brighter.Outbox.DynamoDB.V4**
 
-* **Paramore.Brighter.DynamoDb**
+**Paramore.Brighter.Outbox.DynamoDb** (or **.V4**) will pull in another package:
+
+* **Paramore.Brighter.DynamoDb** (or **Paramore.Brighter.DynamoDb.V4**)
+
+See [AWS Configuration](/contents/AWSSQSConfiguration.md#migration-guidance) for migration guidance between v3 and v4.
 
 As described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#outbox-support), we configure Brighter to use an outbox with the Use{DB}Outbox method call.
 
