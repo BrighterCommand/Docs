@@ -11,7 +11,9 @@
  * [InMemory Options for Development and Testing](/contents/InMemoryOptions.md)
  * [How Configuring the Command Processor Works](/contents/HowConfiguringTheCommandProcessorWorks.md)
  * [How Configuring a Dispatcher for an External Bus Works](/contents/HowConfiguringTheDispatcherWorks.md)
+ * [Cloud Events Support](/contents/CloudEventsSupport.md)
  * [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)
+ * [PostgreSQL Message Broker](/contents/PostgreSQLMessageBroker.md)
  * [AWS SNS Configuration](/contents/AWSSQSConfiguration.md)
  * [Kafka Configuration](/contents/KafkaConfiguration.md)
  * [Azure Service Bus Configuration](/contents/AzureServiceBusConfiguration.md)
@@ -33,9 +35,12 @@
  * [Returning results from a Handler](/contents/ReturningResultsFromAHandler.md)
  * [Using an External Bus](/contents/ImplementingExternalBus.md)
  * [Message Mappers](/contents/MessageMappers.md)
+ * [Default Message Mappers](/contents/DefaultMessageMappers.md)
+ * [Dynamic Message Deserialization](/contents/DynamicMessageDeserialization.md)
  * [Routing](/contents/Routing.md)
  * [Building a Pipeline of Request Handlers](/contents/BuildingAPipeline.md)
  * [Passing information between Handlers in the Pipeline](/contents/UsingTheContextBag.md)
+ * [Nullable Reference Types](/contents/NullableReferenceTypes.md)
  * [Failure and Dead Letter Queues](/contents/HandlerFailure.md)
  * [Supporting Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md)
  * [Failure and Fallback](/contents/PolicyFallback.md)
@@ -101,6 +106,10 @@
 ## Task Queues
 
  * [Using a Task Queue](/contents/TaskQueuePattern.md)
+
+## Advanced Patterns
+
+ * [Agreement Dispatcher](/contents/AgreementDispatcher.md)
 
 ## FAQ
 
