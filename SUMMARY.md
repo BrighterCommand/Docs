@@ -42,6 +42,7 @@
 ## Guaranteed At Least Once
 
  * [Outbox Support](/contents/BrighterOutboxSupport.md)
+ * [Sweeper Circuit Breaking](/contents/SweeperCircuitBreaking.md)
  * [Inbox Support](/contents/BrighterInboxSupport.md)
  * [MSSQL Outbox](/contents/MSSQLOutbox.md)
  * [MySQL Outbox](/contents/MySQLOutbox.md)

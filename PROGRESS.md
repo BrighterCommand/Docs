@@ -5,10 +5,10 @@
 ## Project Status
 
 - **Total Tasks**: 27
-- **Completed**: 20
+- **Completed**: 21
 - **In Progress**: 0
-- **Remaining**: 7
-- **Completion**: 74%
+- **Remaining**: 6
+- **Completion**: 78%
 
 ---
 
@@ -143,7 +143,7 @@
 
 ---
 
-## Phase 3: Transport & Infrastructure (4/6 completed)
+## Phase 3: Transport & Infrastructure (5/6 completed)
 
 ### TASK-017: PostgreSQL Message Broker Documentation ✅
 
@@ -173,10 +173,12 @@
 **Priority**: LOW
 **Notes**: Comprehensive AWS V10 improvements documentation. Added V10 Improvements section (~70 lines) to AWSSQSConfiguration.md covering: Direct SQS Publishing (benefits, simpler architecture, lower costs, reduced latency), AWS SDK v4 Support (complete package list for v3 and v4 versions), S3 Claim Check Improvements (fixes, SDK v4 support, error handling), DynamoDB Performance Improvements (GUID v7, optimized queries, batch operations, logging), FIFO Queue Enhancements (content-based deduplication, message groups, high-throughput), Migration Path (continue v3, gradual migration, side-by-side, new projects). Added comprehensive Migration Guidance section (~185 lines): Step-by-step migration (identify packages, install v4, update namespaces, credentials config, testing, CI/CD), package migration table (v3 to v4 mappings), Key Differences table (credentials, async APIs, performance, dependencies), Common Migration Issues (credential resolution, region not set, package conflicts) with solutions, Gradual Migration Strategy (4-phase approach: Messaging Gateway, Outbox, Inbox, Transformers), Best Practices (test lower envs first, feature flags, monitor metrics, rollback plan, documentation, team coordination). Expanded AWS SDK v4 Support section (~15 lines) with "Why Separate Packages?" explaining async-first design, reduced allocations, modular packages, improved credential resolution, and benefits (avoid conflicts, migrate incrementally, support legacy, test thoroughly). Updated DynamoOutbox.md (~7 lines): Added v3/v4 package options with recommendations, link to migration guidance. Updated DynamoInbox.md (~6 lines): Added v3/v4 package options with recommendations, link to migration guidance. Updated S3LuggageStore.md (~13 lines): Added v3/v4 package options, V10 Improvements section (fixed implementation, better error handling, SDK v4 support, lifecycle management). Direct SQS publishing was already fully documented. Total additions: ~295 lines of comprehensive AWS V10 documentation with migration guidance.
 
-### TASK-021: Sweeper Circuit Breaking Documentation ⬜
+### TASK-021: Sweeper Circuit Breaking Documentation ✅
 
-**Status**: Not Started
+**Status**: Completed - 2025-01-10
+**File**: Created `SweeperCircuitBreaking.md` (NEW), Updated `SUMMARY.md`
 **Priority**: LOW
+**Notes**: Comprehensive Sweeper Circuit Breaking documentation for V10. Created new SweeperCircuitBreaking.md (~650 lines) explaining: Overview (what it is, when valuable, cascade prevention, resource protection), How It Works (normal operation flow, circuit breaking behavior with 5-step process, benefits of preventing blocking and automatic recovery), Configuration section (enabling circuit breaking with InMemoryOutboxCircuitBreaker, OutboxCircuitBreakerOptions table, calculating cooldown time formula and example), Usage Patterns (basic setup with Outbox Sweeper, custom cooldown configuration for short/long scenarios, without circuit breaking), Monitoring and Observability (checking tripped topics with code example, logging and alerts with health check implementation), Transport-Specific Integration (MongoDB and other transports: MS SQL, PostgreSQL, MySQL, SQLite, DynamoDB), Bulk Dispatch Support (batch grouping, per-topic circuit breaking, healthy topics proceed, individual retry), Best Practices (7 practices: choose appropriate cooldown periods, align cooldown with sweep interval, monitor tripped topics, investigate root causes, use with Outbox Sweeper, consider immediate vs sweeper clearing, test failure scenarios), Troubleshooting section (topics not recovering, all topics tripping, messages stuck in outbox, circuit breaker not working - each with problems, causes, and solutions), Advanced Scenarios (custom circuit breaker implementation example, distributed circuit breaker using Redis/SQL), Summary. Added entry to SUMMARY.md in "Guaranteed At Least Once" section. Complete documentation with configuration tables, code examples, formulas, and practical guidance.
 
 ### TASK-022: InMemory Options Overview Documentation ⬜
 
@@ -635,6 +637,23 @@
 - Updated DynamoInbox.md: v3/v4 package options with recommendations, link to migration guidance
 - Updated S3LuggageStore.md: v3/v4 package options, V10 Improvements section (fixes, error handling, SDK v4 support, lifecycle management)
 - Total additions: ~295 lines of comprehensive AWS V10 documentation with migration guidance
+
+**TASK-021: Sweeper Circuit Breaking Documentation** ✅
+
+- Created comprehensive new SweeperCircuitBreaking.md documentation (~650 lines)
+- File: `Docs/contents/SweeperCircuitBreaking.md` (NEW)
+- Overview: Explained what Sweeper Circuit Breaking is, when it's valuable (transport failures, topic-specific issues, cascade prevention, resource protection)
+- How It Works: Normal operation flow, circuit breaking behavior (5-step process: failure detected, circuit trips, cooldown begins, subsequent sweeps, recovery, retry), benefits
+- Configuration: Enabling circuit breaking with InMemoryOutboxCircuitBreaker, OutboxCircuitBreakerOptions configuration table, calculating cooldown time (formula: CooldownCount × SweepInterval)
+- Usage Patterns: Basic setup with Outbox Sweeper, custom cooldown configurations (short/long scenarios), without circuit breaking option
+- Monitoring and Observability: Checking tripped topics (code example), logging and alerts (health check implementation with ASP.NET Core)
+- Transport-Specific Integration: MongoDB integration, all Outbox implementations (MS SQL, PostgreSQL, MySQL, SQLite, DynamoDB, MongoDB)
+- Bulk Dispatch Support: Batch grouping, per-topic circuit breaking, healthy topics proceed, individual retry
+- Best Practices: 7 recommendations (choose appropriate cooldown periods, align cooldown with sweep interval, monitor tripped topics, investigate root causes, use with Outbox Sweeper, consider immediate vs sweeper clearing, test failure scenarios)
+- Troubleshooting: 4 scenarios (topics not recovering, all topics tripping, messages stuck in outbox, circuit breaker not working) with problems, causes, and solutions
+- Advanced Scenarios: Custom circuit breaker implementation, distributed circuit breaker using Redis/SQL
+- Updated SUMMARY.md: Added entry in "Guaranteed At Least Once" section
+- Complete documentation with configuration tables, formulas, code examples, and practical guidance
 - Table-based queue approach using PostgreSQL for messaging
 - Benefits: Use existing infrastructure, transactional messaging, familiar tooling
 - When to use: Low-moderate volumes (<1000 msg/sec), PostgreSQL apps, transactional scenarios
