@@ -791,20 +791,24 @@
 
 ## Next Steps
 
-**Recommended**: Phase 4 (Foundation & Migration) - CRITICAL
-1. TASK-023: V10 Migration Guide (CRITICAL - pulls together all breaking changes)
-2. TASK-024: Update SUMMARY.md Structure
-3. TASK-025: Simplify Show Me The Code
+**Current Status**: Phase 4 (Foundation & Migration) - 2/3 completed (67%)
 
-**Alternative**: Complete Phase 3 (Transport & Infrastructure)
-- TASK-018: RabbitMQ Enhancements (Quorum queues, v7 client)
-- TASK-019: Kafka Improvements (configuration callback)
-- TASK-020: AWS Improvements (SDK v4, S3 Luggage)
-- TASK-021: Sweeper Circuit Breaking
-- TASK-022: InMemory Options Overview
+**Remaining in Phase 4**:
+- TASK-025: Simplify Show Me The Code (last task in Phase 4)
+
+**Phase 6: Glossary & Reference** (Not Started)
+- TASK-026: Create Terminology Glossary
+- TASK-027: Update FAQ
+
+**Summary**:
+- ✅ Phases 1, 2, 3 completed (22 tasks)
+- ✅ Phase 4: 2/3 completed (TASK-023, TASK-024 done; TASK-025 remaining)
+- ⬜ Phase 6: 2 tasks remaining
+
+**Overall Progress**: 24/27 tasks completed (89%)
 
 **To Continue**: Tell Claude:
-- "Continue with Phase 4" (recommended - migration guide is critical)
-- "Continue with Phase 3" (complete transport documentation)
-- "Start TASK-023" (migration guide)
+- "Do TASK-025" (complete Phase 4)
+- "Start TASK-026" (begin glossary work)
+- "Do TASK-027" (update FAQ)
 - Or specify any specific task
