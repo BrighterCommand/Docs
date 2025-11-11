@@ -7,6 +7,7 @@
 ## Brighter Configuration
 
  * [Basic Configuration](/contents/BrighterBasicConfiguration.md)
+ * [InMemory Options for Development and Testing](/contents/InMemoryOptions.md)
  * [How Configuring the Command Processor Works](/contents/HowConfiguringTheCommandProcessorWorks.md)
  * [How Configuring a Dispatcher for an External Bus Works](/contents/HowConfiguringTheDispatcherWorks.md)
  * [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)
