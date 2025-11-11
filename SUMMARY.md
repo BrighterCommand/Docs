@@ -3,6 +3,7 @@
  * [Show me the code!](/contents/ShowMeTheCode.md)
  * [Basic Concepts](/contents/BasicConcepts.md)
  * [Why Brighter?](/contents/WhyBrighter.md)
+ * [V10 Migration Guide](/contents/V10MigrationGuide.md)
 
 ## Brighter Configuration
 
