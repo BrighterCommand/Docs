@@ -101,111 +101,121 @@ public override async Task<FindPersonsGreetings> ExecuteAsync(FindGreetingsForPe
 
 ## Using an External Bus
 
-As well as using an Internal Bus, in Brighter you can use an External Bus - middleware such as RabbitMQ or Kafka - to send a request between processes. Brighter supports both sending a request, and provides a *Dispatcher* than can listen for requests on middleware and forward it to a handler.
+As well as using an Internal Bus, in Brighter you can use an External Bus - middleware such as RabbitMQ or Kafka - to send a request between processes. Brighter supports both sending a request, and provides a *Dispatcher* that can listen for requests on middleware and forward it to a handler.
 
-The following code sends a request to another process.
+> **📝 Note: Start Simple, Add Complexity Later**
+> The examples below show the **simplest way** to get started with Brighter's external bus. They use the **InMemory Outbox** for development and testing, which requires no additional infrastructure setup.
+>
+> **⚠️ InMemory Outbox Limitations:**
+
+> - Not durable - crashes lose messages
+> - Not suitable for production
+> - No distributed transactions
+>
+> For **production scenarios**, see:
+
+> - [Outbox Pattern](/contents/BrighterOutboxSupport.md) - Transactional messaging with database-backed Outbox
+> - [WebAPI Sample](https://github.com/BrighterCommand/Brighter/tree/master/samples/WebAPI) - Fully-featured production example
+> - [InMemory Options](/contents/InMemoryOptions.md) - When to use InMemory components
+
+### Sending a Message to Another Process
+
+The following code shows the simplest way to send a message to another process using Brighter's external bus:
 
 ``` csharp
 [RequestLoggingAsync(0, HandlerTiming.Before)]
-[UsePolicyAsync(step:1, policy: Policies.Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
-public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default)
+[UsePolicyAsync(step: 1, policy: Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
+public override async Task<AddGreeting> HandleAsync(
+    AddGreeting addGreeting,
+    CancellationToken cancellationToken = default)
 {
-	var posts = new List<Guid>();
-	
-	//We use the unit of work to grab connection and transaction, because Outbox needs
-	//to share them 'behind the scenes'
+    await using var connection = await _relationalDbConnectionProvider.GetConnectionAsync(cancellationToken);
 
-	var conn = await _transactionProvider.GetConnectionAsync(cancellationToken);
-	var tx = await _transactionProvider.GetTransactionAsync(cancellationToken);
-	try
-	{
-		var people = await conn.QueryAsync<Person>(
-                    "select * from Person where name = @name",
-                    new {name = addGreeting.Name},
-                    tx
-                );
-                var person = people.SingleOrDefault();
+    // Write to database
+    await connection.ExecuteAsync(
+        "insert into Greeting (Message, Recipient_Id) values (@Message, @RecipientId)",
+        new { Message = addGreeting.Greeting, RecipientId = addGreeting.PersonId });
 
-                if (person != null)
-                {
-                    var greeting = new Greeting(addGreeting.Greeting, person);
+    // Send message to external bus
+    await _commandProcessor.PostAsync(
+        new GreetingMade(addGreeting.Greeting),
+        cancellationToken: cancellationToken);
 
-                    //write the added child entity to the Db
-                    await conn.ExecuteAsync(
-                        "insert into Greeting (Message, Recipient_Id) values (@Message, @RecipientId)",
-                        new { greeting.Message, RecipientId = greeting.RecipientId },
-                        tx);
-
-                    //Now write the message we want to send to the Db in the same transaction.
-                    posts.Add(await _postBox.DepositPostAsync(
-                        new GreetingMade(greeting.Greet()),
-                        _transactionProvider,
-                        cancellationToken: cancellationToken));
-
-                    //commit both new greeting and outgoing message
-                    await _transactionProvider.CommitAsync(cancellationToken);
-                }
-	}
-	catch (Exception e)
-	{
-                _logger.LogError(e, "Exception thrown handling Add Greeting request");
-                //it went wrong, rollback the entity change and the downstream message
-                await _transactionProvider.RollbackAsync(cancellationToken);
-                return await base.HandleAsync(addGreeting, cancellationToken);
-	}
-	finally
-	{
-		_transactionProvider.Close();
-	}
-
-	//Send this message via a transport. We need the ids to send just the messages here, not all outstanding ones.
-	//Alternatively, you can let the Sweeper do this, but at the cost of increased latency
-	await _postBox.ClearOutboxAsync(posts, cancellationToken:cancellationToken);
-
-	return await base.HandleAsync(addGreeting, cancellationToken);
+    return await base.HandleAsync(addGreeting, cancellationToken);
 }
 ```
 
-The following code receives a message, sent from another process, via a dispatcher. It uses an Inbox to ensure that it does not process duplicate messages
+**What's happening here:**
+
+- The handler writes to the database
+- `PostAsync()` sends a message via the configured transport (RabbitMQ, Kafka, etc.)
+- The message is written to the `InMemoryOutbox`, then immediately dispatched
+- **No explicit message mapper needed** - uses default JSON mappers automatically
+- **No transactions** - This is the simplest approach for getting started
+
+### Receiving a Message from Another Process
+
+The following code receives a message sent from another process via a Dispatcher:
 
 ``` csharp
-[UseInbox(step:0, contextKey: typeof(GreetingMadeHandler), onceOnly: true )] 
-[RequestLogging(step: 1, timing: HandlerTiming.Before)]
-[UsePolicy(step:2, policy: Policies.Retry.EXPONENTIAL_RETRYPOLICY)]
-public override GreetingMade Handle(GreetingMade @event)
+[RequestLoggingAsync(0, HandlerTiming.Before)]
+[UsePolicyAsync(step: 1, policy: Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
+public override async Task<GreetingMade> HandleAsync(
+    GreetingMade @event,
+    CancellationToken cancellationToken = default)
 {
-	var posts = new List<Guid>();
-            
-	var tx = _transactionConnectionProvider.GetTransaction();
-	var conn = tx.Connection; 
-	try
-	{
-		var salutation = new Salutation(@event.Greeting);
-			
-		conn.Execute(
-			"insert into Salutation (greeting) values (@greeting)", 
-			new {greeting = salutation.Greeting}, 
-			tx); 
-		
-		posts.Add(_postBox.DepositPost(
-			new SalutationReceived(DateTimeOffset.Now), 
-			_transactionConnectionProvider));
-		
-		_transactionConnectionProvider.Commit();
-	}
-	catch (Exception e)
-	{
-		_logger.LogError(e, "Could not save salutation");
-	
-		//if it went wrong rollback entity write and Outbox write
-		_transactionConnectionProvider.Rollback();
-	
-		return base.Handle(@event);
-	}
+    await using var connection = await _relationalDbConnectionProvider.GetConnectionAsync(cancellationToken);
 
-	_postBox.ClearOutbox(posts.ToArray());
-	
-	return base.Handle(@event);
+    // Process the received message
+    await connection.ExecuteAsync(
+        "insert into Salutation (greeting) values (@greeting)",
+        new { greeting = @event.Greeting });
+
+    return await base.HandleAsync(@event, cancellationToken);
 }
 ```
+
+**What's happening here:**
+- The Dispatcher receives the message from the transport
+- Routes it to this handler based on message type
+- The handler processes the message and writes to the database
+- **No explicit message mapper needed** - V10 automatically deserializes JSON messages
+
+### Configuration Example
+
+Here's how to configure Brighter with an InMemory Outbox and a transport:
+
+``` csharp
+services.AddBrighter(options =>
+{
+    // Configure handlers
+    options.HandlerLifetime = ServiceLifetime.Scoped;
+    options.MapperLifetime = ServiceLifetime.Singleton;
+    options.CommandProcessorLifetime = ServiceLifetime.Scoped;
+})
+.UseInMemoryOutbox() // Simple outbox for development
+.AutoFromAssemblies(); // Auto-discover handlers
+
+services.AddProducers(options =>
+{
+    // Configure your transport (RabbitMQ, Kafka, AWS, etc.)
+    options.UseRabbitMQ(new RabbitMqConfiguration
+    {
+        AmqpUri = new Uri("amqp://guest:guest@localhost:5672")
+    })
+    .Publication<GreetingMade>(publication =>
+    {
+        publication.Topic = new RoutingKey("greeting.made");
+    });
+});
+```
+
+### Next Steps
+
+Once you're comfortable with these basics:
+
+1. **Add Transactional Messaging** - Use [DepositPost and ClearOutbox](/contents/BrighterOutboxSupport.md) for guaranteed message delivery
+2. **Add Deduplication** - Use [Inbox Pattern](/contents/InboxConfiguration.md) to handle duplicate messages
+3. **Production Outbox** - Replace InMemory with [database-backed Outbox](/contents/BrighterOutboxSupport.md)
+4. **Explore Samples** - See the [WebAPI Sample](https://github.com/BrighterCommand/Brighter/tree/master/samples/WebAPI) for production patterns
 

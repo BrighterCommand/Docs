@@ -1,14 +1,14 @@
 # Brighter V10 Documentation Progress
 
-**Last Updated**: 2025-01-10
+**Last Updated**: 2025-01-13
 
 ## Project Status
 
 - **Total Tasks**: 27
-- **Completed**: 24
+- **Completed**: 25
 - **In Progress**: 0
-- **Remaining**: 3
-- **Completion**: 89%
+- **Remaining**: 2
+- **Completion**: 93%
 
 ---
 
@@ -190,7 +190,7 @@
 
 ---
 
-## Phase 4: Foundation & Migration (2/3 completed)
+## Phase 4: Foundation & Migration (3/3 completed) ✅
 
 ### TASK-023: Create V10 Migration Guide ✅
 
@@ -206,10 +206,12 @@
 **Priority**: LOW
 **Notes**: Reorganized and updated documentation table of contents for V10. Added all new V10 feature documentation pages. Created new "Advanced Patterns" section with Agreement Dispatcher. Updated Brighter Configuration section: Added Cloud Events Support and PostgreSQL Message Broker entries. Updated Brighter Request Handlers section: Added Default Message Mappers, Dynamic Message Deserialization, and Nullable Reference Types entries. Verified all new pages from Phases 1-4 are included (CloudEventsSupport.md, DefaultMessageMappers.md, DynamicMessageDeserialization.md, AgreementDispatcher.md, ReactorAndProactor.md, InMemoryScheduler.md, NullableReferenceTypes.md, PostgreSQLMessageBroker.md, SweeperCircuitBreaking.md, InMemoryOptions.md, V10MigrationGuide.md). Confirmed logical flow: Overview → Basic Config → Handlers → Messaging → Advanced. Used "Dispatcher" terminology appropriately in headings. Clear navigation structure maintained for newcomers and advanced users. Migration guide prominent in Overview section.
 
-### TASK-025: Simplify Show Me The Code
+### TASK-025: Simplify Show Me The Code ✅
 
-**Status**: Not Started
+**Status**: Completed - 2025-01-13
+**File**: Updated `Docs/contents/ShowMeTheCode.md`, `Docs/contents/BrighterOutboxSupport.md`
 **Priority**: LOW
+**Notes**: Simplified introductory code examples to help newcomers get started. Replaced complex DepositPost with simple Post (no transactions). Used InMemory Outbox in simple example. No explicit message mapper shown (uses V10 defaults). Added clear notes about InMemory Outbox limitations. Added links to production documentation (BrighterOutboxSupport.md) and WebAPI sample. Moved complete transactional example to BrighterOutboxSupport.md with both producer and consumer. Emphasized "start simple, add complexity later" philosophy. Added configuration example showing InMemory Outbox setup. Created clear progression path from simple to complex with "Next Steps" section.
 
 ---
 
@@ -675,6 +677,28 @@
 - Migration guide prominent in Overview section (line 6)
 - Total sections: 15 main sections with 117 entries
 
+**TASK-025: Simplify Show Me The Code** ✅
+
+- Simplified ShowMeTheCode.md with beginner-friendly external bus examples
+- File: Updated `Docs/contents/ShowMeTheCode.md`
+- Replaced complex DepositPost/transaction example with simple PostAsync (no transactions)
+- Added prominent note box explaining InMemory Outbox limitations (not durable, not production)
+- Created simplified sending example: Simple handler with database write + PostAsync
+- Created simplified receiving example: Simple consumer handler without Inbox complexity
+- Added configuration example showing InMemory Outbox setup with RabbitMQ
+- Emphasized V10 feature: No explicit message mapper needed (uses default JSON mappers)
+- Added clear "Next Steps" section with 4-step progression path
+- Links to production documentation: BrighterOutboxSupport.md, InboxConfiguration.md, InMemoryOptions.md
+- Links to WebAPI Sample for fully-featured production example
+- Added "Complete Example: Transactional Messaging" section to BrighterOutboxSupport.md
+  - Producer example using DepositPost with transactions (AddGreetingHandlerAsync)
+  - Consumer example using Inbox for deduplication (GreetingMadeHandler)
+  - Complete code with try-catch-finally, transaction management, ClearOutbox
+  - Key points explaining UseInboxAsync, DepositPostAsync, transactional guarantees
+  - Link back to ShowMeTheCode.md for simpler approach
+- Emphasizes "start simple, add complexity later" philosophy per user feedback
+- Clear progression: Simple Post → Transactional DepositPost → Add Inbox → Production setup
+
 **TASK-017: PostgreSQL Message Broker Documentation** ✅
 
 - Created comprehensive PostgreSQLMessageBroker.md (~650 lines)
@@ -712,6 +736,23 @@
 - Updated DynamoInbox.md: v3/v4 package options with recommendations, link to migration guidance
 - Updated S3LuggageStore.md: v3/v4 package options, V10 Improvements section (fixes, error handling, SDK v4 support, lifecycle management)
 - Total additions: ~295 lines of comprehensive AWS V10 documentation with migration guidance
+
+### 2025-01-13
+
+**TASK-025: Simplify Show Me The Code** ✅
+
+- Simplified introductory code examples to help newcomers get started
+- Files: `Docs/contents/ShowMeTheCode.md`, `Docs/contents/BrighterOutboxSupport.md`
+- Replaced complex DepositPost example with simple Post (no transactions)
+- Used InMemory Outbox in simple example
+- No explicit message mapper shown (uses V10 defaults)
+- Added clear notes about InMemory Outbox limitations
+- Added links to production documentation (BrighterOutboxSupport.md) and WebAPI sample
+- Moved complete transactional example to BrighterOutboxSupport.md with both producer and consumer
+- Emphasized "start simple, add complexity later" philosophy
+- Added configuration example showing InMemory Outbox setup
+- Created clear progression path from simple to complex with "Next Steps" section
+- All acceptance criteria met
 
 **TASK-021: Sweeper Circuit Breaking Documentation** ✅
 
@@ -791,24 +832,20 @@
 
 ## Next Steps
 
-**Current Status**: Phase 4 (Foundation & Migration) - 2/3 completed (67%)
+**Current Status**: Phase 4 (Foundation & Migration) - ✅ COMPLETED
 
-**Remaining in Phase 4**:
-- TASK-025: Simplify Show Me The Code (last task in Phase 4)
-
-**Phase 6: Glossary & Reference** (Not Started)
+**Phase 6: Glossary & Reference** (Not Started - 2 tasks remaining)
 - TASK-026: Create Terminology Glossary
 - TASK-027: Update FAQ
 
 **Summary**:
-- ✅ Phases 1, 2, 3 completed (22 tasks)
-- ✅ Phase 4: 2/3 completed (TASK-023, TASK-024 done; TASK-025 remaining)
+- ✅ Phases 1, 2, 3, 4 completed (25 tasks)
 - ⬜ Phase 6: 2 tasks remaining
 
-**Overall Progress**: 24/27 tasks completed (89%)
+**Overall Progress**: 25/27 tasks completed (93%)
 
 **To Continue**: Tell Claude:
-- "Do TASK-025" (complete Phase 4)
-- "Start TASK-026" (begin glossary work)
+- "Do TASK-026" (create glossary)
 - "Do TASK-027" (update FAQ)
+- "Do all remaining tasks" (complete Phase 6)
 - Or specify any specific task

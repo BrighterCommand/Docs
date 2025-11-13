@@ -134,15 +134,16 @@ public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, Can
 
 **CommandProcessor.Post** allows you to easily send a message when you are not participating in a transaction with your Db. It is important to note that **CommandProcessor.Post** will never participate in a transaction with your persistent Outbox.
 
-**CommandProcessor.Post** first writes a message to the persistent Outbox and then immediately attempts to dispatch it to the message broker. If your application crashes between the successful Outbox write and the dispatch, the message will remain in the Outbox for a sweeper or manual process to send later.
+**CommandProcessor.Post** first writes a message to the `InMemoryOutbox` and then immediately attempts to dispatch it to the message broker. If your application crashes between the successful Outbox write and the dispatch, the message will remain in the Outbox for a sweeper or manual process to send later. if your transport uses a callback to indicate that a message has successfully been written to the transport, the InMemoryOutbox will be updated when the message has been written.
 
-However, because the Outbox write is not part of your application's database transaction, there is no guarantee that both operations (e.g., updating your entity and writing to the Outbox) will succeed or fail together.
+However, because the InMemoryOutbox is volatile, you will lose any unsent messages if your application crashes. For this reason we don't recommend use of `Post` and the `InMemoryOutbox` unless you can survive message loss.
 
 This method is intended for scenarios where you do not need transactional guarantees between your database writes and message dispatching.
 
 ## Implicit or Explicit Clearing of Messages from the Outbox
 
 There are two approaches to dispatching messages from Brighter's **Outbox**
+
   * Implicitly: This relies on a **Sweeper** to dispatch messages out of process
   * Explicitly: This ensures that your message is sent sooner but will processing time to your application code.
 
@@ -159,12 +160,14 @@ To implicitly clear messages from your outbox, configure a **Outbox Sweeper** to
 The **Outbox Sweeper** is process that monitors an **Outbox** and dispatches messages that have yet to be dispatches. Using **Outbox Sweeper** has a lower latency impact for your application, but because it keeps trying to send the messages until it succeeds is the recommended approach to *Guranteed, At Least Once, Delivery*.
 
 The benefits of using an **Outbox Sweeper** are:
+
   * If there is a failure dispatch a message after it is committed to the **Outbox** it will be retried until it is dispatches
   * The ability to choose between the implicit and explicit clearing of messages
 
 The **Timed Outbox Sweeper** has the following configurables
-  * TimerInterval: The amount of seconds to wait between checks for undispatches messages (default: 5)
-  * MinimumMessageAge: The age a message (in miliseconds) that a messages should be before the **OutboxSweeper** should attempt to dispatch it. (default: 5000)
+
+  * TimerInterval: The amount of seconds to wait between checks for undispatched messages (default: 5)
+  * MinimumMessageAge: The age a message (in milliseconds) that a messages should be before the **OutboxSweeper** should attempt to dispatch it. (default: 5000)
   * BatchSize: The number of messages to attempt to dispatch in each check (default: 100)
   * UseBulk: Use Bulk dispatching of messages on your **Messaging Gateway** (default: false), note: not all **messaging Gateway**s support Bulk dispatching.
 
@@ -174,14 +177,15 @@ It is important to note that the lower the Minimum Message age is the more likel
 
 You should only have one **Sweeper** instance running for a given Outbox at any time. While running the sweeper on a background thread within your producer application might be acceptable during development, this approach becomes problematic in production. As you scale out your application for resilience and performance, you will end up with multiple conflicting sweeper instances.
 
-The recommended production strategy is to run the **Sweeper** in its own dedicated service. Ensure that only one instance of this service is running at a time, for example by using a distributed lock or by deploying it as a singleton service in your container orchestrator. See [Kubernetes Singleton Pattern](https://www.weave.works/blog/kubernetes-patterns-singleton-application-pattern) for an example of this approach.
+The recommended production strategy is to run the **Sweeper** in its own dedicated service. Ensure that only one instance of this service is running at a time, for example by using a distributed lock or by deploying it as a singleton service in your container orchestrator. Brighter supports a range of distributed locks for this purpose.
 
 ## Outbox Archiver
 
 The **Outbox Archiver** is an out-of-process service that monitors an **Outbox** and archives messages older than a certain age.
 
 The **Timed Outbox Archiver** has the following configurables
-  * TimerInterval: The number of seconds to wait between checked for messages eligable for archival (default: 15)
+
+  * TimerInterval: The number of seconds to wait between checked for messages eligible for archival (default: 15)
   * BatchSize: The maximum number of messages to archive for each check (default: 100)
   * MinimunAge: The time ellapsed since a message was dispated in hours before it is eligable for archival (default: 24)
 
@@ -241,3 +245,170 @@ private static void CreateOutbox(IConfiguration config, IWebHostEnvironment env)
 	}
 }
 ```
+## Complete Example: Transactional Messaging
+
+This section provides a complete example showing both **producer** and **consumer** using transactional messaging with the Outbox and Inbox patterns. This is the **production-recommended approach** for guaranteed, at-least-once delivery.
+
+### Producer: Using DepositPost with Transactions
+
+The following example shows a handler that writes to the database and sends a message, all within a single transaction:
+
+``` csharp
+public class AddGreetingHandlerAsync : RequestHandlerAsync<AddGreeting>
+{
+    private readonly ILogger<AddGreetingHandlerAsync> _logger;
+    private readonly IAmACommandProcessor _postBox;
+    private readonly IAmATransactionConnectionProvider _transactionProvider;
+
+    public AddGreetingHandlerAsync(
+        IAmATransactionConnectionProvider transactionProvider,
+        IAmACommandProcessor postBox,
+        ILogger<AddGreetingHandlerAsync> logger)
+    {
+        _transactionProvider = transactionProvider;
+        _postBox = postBox;
+        _logger = logger;
+    }
+
+    [RequestLoggingAsync(0, HandlerTiming.Before)]
+    [UsePolicyAsync(step: 1, policy: Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
+    public override async Task<AddGreeting> HandleAsync(
+        AddGreeting addGreeting,
+        CancellationToken cancellationToken = default)
+    {
+        var posts = new List<Id>();
+
+        // The transaction provider (unit of work) gives us a connection and transaction
+        // that the Outbox can share 'behind the scenes'.
+        var conn = await _transactionProvider.GetConnectionAsync(cancellationToken);
+        var tx = await _transactionProvider.GetTransactionAsync(cancellationToken);
+        try
+        {
+            var people = await conn.QueryAsync<Person>(
+                "select * from Person where name = @name",
+                new { name = addGreeting.Name },
+                tx
+            );
+            var person = people.SingleOrDefault();
+
+            if (person != null)
+            {
+                var greeting = new Greeting(addGreeting.Greeting, person);
+
+                // Write the entity to the database
+                await conn.ExecuteAsync(
+                    "insert into Greeting (Message, Recipient_Id) values (@Message, @RecipientId)",
+                    new { greeting.Message, greeting.RecipientId },
+                    tx);
+
+                // Write the message to the Outbox in the same transaction
+                posts.Add(await _postBox.DepositPostAsync(
+                    new GreetingMade(greeting.Greet()),
+                    _transactionProvider,
+                    cancellationToken: cancellationToken));
+
+                // Commit both the entity write and the outgoing message
+                await _transactionProvider.CommitAsync(cancellationToken);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown handling Add Greeting request");
+            // Rollback both the entity change and the outgoing message
+            await _transactionProvider.RollbackAsync(cancellationToken);
+            return await base.HandleAsync(addGreeting, cancellationToken);
+        }
+        finally
+        {
+            _transactionProvider.Close();
+        }
+
+        // Dispatch the message(s) via a transport.
+        // Alternatively, let the Sweeper handle this, at the cost of increased latency.
+        await _postBox.ClearOutboxAsync(posts, cancellationToken: cancellationToken);
+
+        return await base.HandleAsync(addGreeting, cancellationToken);
+    }
+}
+```
+
+### Consumer: Using Inbox for Deduplication
+
+The following example shows a consumer that receives a message and uses the Inbox pattern to prevent duplicate processing:
+
+``` csharp
+public class GreetingMadeHandler : RequestHandlerAsync<GreetingMade>
+{
+    private readonly ILogger<GreetingMadeHandler> _logger;
+    private readonly IAmACommandProcessor _postBox;
+    private readonly IAmATransactionConnectionProvider _transactionConnectionProvider;
+
+    public GreetingMadeHandler(
+        IAmATransactionConnectionProvider transactionConnectionProvider,
+        IAmACommandProcessor postBox,
+        ILogger<GreetingMadeHandler> logger)
+    {
+        _transactionConnectionProvider = transactionConnectionProvider;
+        _postBox = postBox;
+        _logger = logger;
+    }
+
+    [UseInboxAsync(step: 0, contextKey: typeof(GreetingMadeHandler), onceOnly: true)]
+    [RequestLoggingAsync(step: 1, timing: HandlerTiming.Before)]
+    [UsePolicyAsync(step: 2, policy: Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
+    public override async Task<GreetingMade> HandleAsync(
+        GreetingMade @event,
+        CancellationToken cancellationToken = default)
+    {
+        var posts = new List<Id>();
+
+        var conn = await _transactionConnectionProvider.GetConnectionAsync(cancellationToken);
+        var tx = await _transactionConnectionProvider.GetTransactionAsync(cancellationToken);
+        try
+        {
+            var salutation = new Salutation(@event.Greeting);
+
+            // Write to database
+            await conn.ExecuteAsync(
+                "insert into Salutation (greeting) values (@greeting)",
+                new { greeting = salutation.Greeting },
+                tx);
+
+            // Write outgoing message in the same transaction
+            posts.Add(await _postBox.DepositPostAsync(
+                new SalutationReceived(DateTimeOffset.Now),
+                _transactionConnectionProvider,
+                cancellationToken: cancellationToken));
+
+            // Commit both writes
+            await _transactionConnectionProvider.CommitAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Could not save salutation");
+
+            // Rollback both entity write and Outbox write
+            await _transactionConnectionProvider.RollbackAsync(cancellationToken);
+
+            return await base.HandleAsync(@event, cancellationToken);
+        }
+        finally
+        {
+            _transactionConnectionProvider.Close();
+        }
+
+        // Dispatch messages
+        await _postBox.ClearOutboxAsync(posts, cancellationToken: cancellationToken);
+
+        return await base.HandleAsync(@event, cancellationToken);
+    }
+}
+```
+
+**Key Points:**
+- **UseInboxAsync** attribute ensures the message is only processed once
+- **DepositPostAsync** writes to the Outbox within the transaction
+- **ClearOutboxAsync** sends the message after the transaction commits
+- Both entity writes and message writes succeed or fail together
+
+For a simpler, non-transactional approach suitable for getting started, see [Show me the code!](/contents/ShowMeTheCode.md#using-an-external-bus).
