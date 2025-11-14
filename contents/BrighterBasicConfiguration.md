@@ -200,7 +200,7 @@ private void ConfigureBrighter(IServiceCollection services)
 
 ```
 
-#### **Transports
+#### Transports
 
 *Transports* are how Brighter supports specific Message-Oriented-Middleware (MoM). *Transports* are provided in separate NuGet packages so that you can take a dependency only on the transport that you need. Brighter supports a number of different *transports*. 
 
