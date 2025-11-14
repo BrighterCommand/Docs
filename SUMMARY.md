@@ -17,18 +17,18 @@
 
 ## Brighter Request Handlers and Middleware Pipelines
 
- * [Building an Async Pipeline of Request Handlers](/contents/BuildingAnAsyncPipeline.md)
- * [How to Implement an Async Request Handler](/contents/ImplementingAsyncHandler.md)
  * [Requests, Commands and an Events](/contents/Requests%2C%20Commands%20and%20Events.md)
  * [Dispatching Requests](/contents/DispatchingARequest.md)
  * [Dispatching An Async Request](/contents/AsyncDispatchARequest.md)
+ * [Returning results from a Handler](/contents/ReturningResultsFromAHandler.md) 
+ * [Building a Pipeline of Request Handlers](/contents/BuildingAPipeline.md)
+ * [Building an Async Pipeline of Request Handlers](/contents/BuildingAnAsyncPipeline.md)
+ * [Passing information between Handlers in the Pipeline](/contents/UsingTheContextBag.md) 
+ * [How to Implement an Async Request Handler](/contents/ImplementingAsyncHandler.md)
  * [Agreement Dispatcher](/contents/AgreementDispatcher.md)
  * [Supporting Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md)
  * [Failure and Fallback](/contents/PolicyFallback.md)
- * [Building a Pipeline of Request Handlers](/contents/BuildingAPipeline.md)
- * [Passing information between Handlers in the Pipeline](/contents/UsingTheContextBag.md)
- * [Feature Switches](/contents/FeatureSwitches.md) 
- * [Returning results from a Handler](/contents/ReturningResultsFromAHandler.md)
+ * [Feature Switches](/contents/FeatureSwitches.md)
 
 ## Darker Query Handlers and Middleware Pipelines
 
@@ -40,9 +40,9 @@
  * [Message Mappers](/contents/MessageMappers.md)
  * [Routing](/contents/Routing.md) 
  * [Default Message Mappers](/contents/DefaultMessageMappers.md)
- * [Cloud Events Support](/contents/CloudEventsSupport.md) 
+ * [Cloud Events Support](/contents/CloudEventsSupport.md)
+ * [Dynamic Message Deserialization](/contents/DynamicMessageDeserialization.md) 
  * [Failure and Dead Letter Queues](/contents/HandlerFailure.md) 
- * [Dynamic Message Deserialization](/contents/DynamicMessageDeserialization.md)
 
 ## Guaranteed At Least Once
 
