@@ -19,7 +19,6 @@
 ## Brighter Request Handlers and Middleware Pipelines
 
  * [Building an Async Pipeline of Request Handlers](/contents/BuildingAnAsyncPipeline.md)
- * [Basic Configuration](/contents/DarkerBasicConfiguration.md)
  * [How to Implement an Async Request Handler](/contents/ImplementingAsyncHandler.md)
  * [Requests, Commands and an Events](/contents/Requests%2C%20Commands%20and%20Events.md)
  * [Dispatching Requests](/contents/DispatchingARequest.md)
