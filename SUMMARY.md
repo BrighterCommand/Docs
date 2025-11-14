@@ -30,16 +30,19 @@
  * [Passing information between Handlers in the Pipeline](/contents/UsingTheContextBag.md)
  * [Feature Switches](/contents/FeatureSwitches.md) 
  * [Returning results from a Handler](/contents/ReturningResultsFromAHandler.md)
- * [Failure and Dead Letter Queues](/contents/HandlerFailure.md) 
- * [Using an External Bus](/contents/ImplementingExternalBus.md)
- * [Message Mappers](/contents/MessageMappers.md)
- * [Default Message Mappers](/contents/DefaultMessageMappers.md)
- * [Dynamic Message Deserialization](/contents/DynamicMessageDeserialization.md)
- * [Routing](/contents/Routing.md)
 
- ## Darker Query Handlers and Middleware Pipelines
+## Darker Query Handlers and Middleware Pipelines
 
  * [How to Implement a Query Handler](/contents/ImplementAQueryHandler.md)
+
+## Using an External Bus
+
+ * [Using an External Bus](/contents/ImplementingExternalBus.md)
+ * [Message Mappers](/contents/MessageMappers.md)
+ * [Routing](/contents/Routing.md) 
+ * [Default Message Mappers](/contents/DefaultMessageMappers.md)
+ * [Failure and Dead Letter Queues](/contents/HandlerFailure.md) 
+ * [Dynamic Message Deserialization](/contents/DynamicMessageDeserialization.md)
 
 ## Guaranteed At Least Once
 
