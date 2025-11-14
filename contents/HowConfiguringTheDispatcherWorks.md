@@ -23,7 +23,9 @@ Configuring the **Command Processor** is covered in [How Configuring the Command
 
 ### Message Mappers
 
-You need to register your [Message Mapper](/contents/MessageMappers.md) so that we can find it. The registry must implement **IAmAMessageMapperRegistry**. We recommend using Brighter's **MessageMapperRegistry** unless you have more specific requirements.
+The default message mapper typically handles serializing and deserializing messages from transports. See [Default Message Mappers](/contents/DefaultMessageMappers.md).
+
+If you are using a custom Message Mapper, then you need to register your [Message Mapper](/contents/MessageMappers.md) so that we can find it. The registry must implement **IAmAMessageMapperRegistry**. We recommend using Brighter's **MessageMapperRegistry** unless you have more specific requirements.
 
 ``` csharp
 var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory)
