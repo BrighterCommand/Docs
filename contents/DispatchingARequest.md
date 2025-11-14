@@ -53,6 +53,146 @@ An *External Bus* consumer is just a handler, but typically you host it using Br
 
 Brighter only supports pipelines that are solely **IHandleRequestsAsync** or **IHandleRequests**. In particular, note that middleware (attributes on your handler) must be of the same type as the rest of your pipeline. A common mistake is to **UsePolicy** when you mean **UsePolicyAsync**.
 
+## Setting Request Context Explicitly
+
+In V10, you can now set the **RequestContext** explicitly when calling `Send`, `Publish`, or `DepositPost` methods. This allows you to set properties of the **RequestContext** for transmission to the **RequestHandler** instead of having a new context created by the **RequestContextFactory** for that pipeline.
+
+This is useful when you want to:
+- Set partition keys for message routing
+- Add custom headers dynamically
+- Pass CloudEvents extension properties
+- Control message destination routing
+- Set up OpenTelemetry context
+
+### Example: Setting Partition Key and Headers
+
+```csharp
+public class OrderController : ControllerBase
+{
+    private readonly IAmACommandProcessor _commandProcessor;
+
+    public async Task<IActionResult> CreateOrder(CreateOrderRequest request)
+    {
+        // Create explicit context
+        var context = new RequestContext();
+
+        // Set partition key for message routing (e.g., to ensure tenant messages go to same partition)
+        context.Bag[RequestContextBagNames.PartitionKey] = request.TenantId;
+
+        // Add custom headers
+        context.Bag[RequestContextBagNames.Headers] = new Dictionary<string, object>
+        {
+            ["x-correlation-id"] = HttpContext.TraceIdentifier,
+            ["x-tenant-id"] = request.TenantId,
+            ["x-user-id"] = User.Identity?.Name,
+            ["x-timestamp"] = DateTime.UtcNow
+        };
+
+        // Pass context explicitly to Send
+        await _commandProcessor.SendAsync(
+            new CreateOrderCommand
+            {
+                OrderId = request.OrderId,
+                TenantId = request.TenantId
+            },
+            requestContext: context
+        );
+
+        return Accepted();
+    }
+}
+```
+
+### Example: Publishing Events with CloudEvents Extensions
+
+```csharp
+public class EventPublisher
+{
+    private readonly IAmACommandProcessor _commandProcessor;
+
+    public async Task PublishOrderCreatedEvent(Order order)
+    {
+        var context = new RequestContext();
+
+        // Add CloudEvents extension properties
+        context.Bag[RequestContextBagNames.CloudEventsAdditionalProperties] = new Dictionary<string, object>
+        {
+            ["ordervalue"] = order.TotalValue,
+            ["customercategory"] = order.CustomerCategory,
+            ["region"] = order.ShippingAddress.Region
+        };
+
+        // Publish event with context
+        await _commandProcessor.PublishAsync(
+            new OrderCreatedEvent
+            {
+                OrderId = order.Id,
+                CustomerId = order.CustomerId
+            },
+            requestContext: context
+        );
+    }
+}
+```
+
+### Example: Transactional Messaging with Context
+
+```csharp
+public class OrderHandler : RequestHandlerAsync<CreateOrderCommand>
+{
+    private readonly IAmACommandProcessor _commandProcessor;
+    private readonly IUnitOfWork _uow;
+
+    public override async Task<CreateOrderCommand> HandleAsync(
+        CreateOrderCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        var context = new RequestContext();
+
+        // Set routing information
+        context.Bag[RequestContextBagNames.PartitionKey] = command.TenantId;
+        context.Bag[RequestContextBagNames.Headers] = new Dictionary<string, object>
+        {
+            ["x-source-command"] = nameof(CreateOrderCommand),
+            ["x-tenant-id"] = command.TenantId
+        };
+
+        var posts = new List<Guid>();
+
+        var conn = await _uow.GetConnectionAsync(cancellationToken);
+        await conn.OpenAsync(cancellationToken);
+        var tx = _uow.GetTransaction();
+
+        try
+        {
+            // Save order to database
+            await _orderRepository.AddAsync(command, cancellationToken);
+
+            // Deposit message with explicit context
+            posts.Add(await _commandProcessor.DepositPostAsync(
+                new OrderCreatedEvent { OrderId = command.OrderId },
+                requestContext: context,
+                cancellationToken: cancellationToken
+            ));
+
+            await tx.CommitAsync(cancellationToken);
+        }
+        catch (Exception)
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw;
+        }
+
+        // Clear outbox
+        await _commandProcessor.ClearOutboxAsync(posts, cancellationToken: cancellationToken);
+
+        return await base.HandleAsync(command, cancellationToken);
+    }
+}
+```
+
+See [Passing Information Between Handlers in the Pipeline](UsingTheContextBag.md) for more information on Request Context capabilities.
+
 ## Dispatching Requests
 
 Once you have registered your Handlers, you can dispatch requests to them. 

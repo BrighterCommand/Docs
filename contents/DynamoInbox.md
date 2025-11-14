@@ -5,7 +5,13 @@ The DynamoDb Inbox allows use of DynamoDb for [Brighter's inbox support](/conten
 
 For this we will need the *Inbox* packages for the DynamoDb *Inbox*.
 
+**AWS SDK v3** (legacy support):
 * **Paramore.Brighter.Inbox.DynamoDb**
+
+**AWS SDK v4** (recommended for new projects):
+* **Paramore.Brighter.Inbox.DynamoDb.V4**
+
+See [AWS Configuration](/contents/AWSSQSConfiguration.md#migration-guidance) for migration guidance between v3 and v4.
 
 ``` csharp
 private static IHostBuilder CreateHostBuilder(string[] args) =>

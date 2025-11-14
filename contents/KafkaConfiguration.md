@@ -154,7 +154,7 @@ You can use it as follows:
 ```
 	
 ### Kafka Topic Auto Create
-	
+
 Brighter uses the Kafka AdminClient for topic creation. For this to work as expected you should set the server property of **auto.create.topics.enable** to **false**; otherwise the topic will be auto-created with the values defined by your server for new topics, such as the number of partitions. This error can be insidious because your code will still work against this topic, but without inspection you will not observe that its properties do not match those requested.
 	
 If you want to specify the topic through Brighter, or through your own IaaS code, we recommend always setting this setting to false; we recommend only setting it to true if you tell Brighter to assume that the infrastructure exists, as it will then be created on the first write.
@@ -165,16 +165,18 @@ For more on a *Subscription* see the material on configuring *Service Activator*
 
 We support a number of Kafka specific *Subscription* options:
 
-- **CommitBatchSize**: We commit processed work (marked as acked or rejected) when a batch size worth of work has been completed (see [below](#offset-management)).
+- **CommitBatchSize**: We commit processed work (marked as acked or rejected) when a batch size worth of work has been completed (see [below](#offset-management)). Defaults to 10.
+- **ConfigHook**: Allows you to modify the Kafka client configuration before a consumer is created. Used to set properties that Brighter does not expose. See [Configuration Callback](#configuration-callback) below.
 - **GroupId**: Only one consumer in a group can read from a partition at any one time; this preserves ordering. We do not default this value, and expect you to set it.
-- **IsolationLevel**: Default to read only committed messages, change if you want to read uncommitted messages. May cause duplicates.
-- **MaxPollIntervalMs**: How often the consumer needs to poll for new messages to be considered alive, polling greater than this interval triggers a re-balance. Kafka default to 300000ms
-- **NumPartitions**: How many partitions does the topic have? Used for topic creation, if required.
-- **OffsetDefault**:  What do we do if there is no offset stored in ZooKeeper for this consumer. Defaults to AutoOffsetReset.Earliest - Begin reading the stream from the start. Options include AutOffsetRest.Latest - Start from now i.e. only consume messages after we start and AutoOffsetReset.Error - which considers it an error if not reset is found
-- **ReadCommittedOffsetsTimeOutMs**: How long before attempting to read back committed offsets (mainly used in debugging) is an error. Defaults to 5000.
+- **IsolationLevel**: Default to read only committed messages, change if you want to read uncommitted messages. May cause duplicates. Defaults to ReadCommitted.
+- **MaxPollInterval**: How often the consumer needs to poll for new messages to be considered alive, polling greater than this interval triggers a re-balance. Defaults to 300000ms (5 minutes).
+- **NumPartitions**: How many partitions does the topic have? Used for topic creation, if required. Defaults to 1.
+- **OffsetDefault**:  What do we do if there is no offset stored for this consumer. Defaults to AutoOffsetReset.Earliest - Begin reading the stream from the start. Options include AutoOffsetReset.Latest - Start from now i.e. only consume messages after we start and AutoOffsetReset.Error - which considers it an error if no reset is found
+- **PartitionAssignmentStrategy**: How do partitions get assigned to consumers in the group? Defaults to RoundRobin for even distribution. See [Partition Assignment Strategy](#partition-assignment-strategy) below.
+- **ReadCommittedOffsetsTimeOut**: How long before attempting to read back committed offsets (mainly used in debugging) is an error. Defaults to 5000ms.
 - **ReplicationFactor**: What is the replication factor? How many nodes is the topic copied to on the broker? Defaults to 1. Used for topic creation if required.
-- **SessionTimeoutMs**: If Kafka does not receive a heartbeat from the consumer within this time window, trigger a re-balance. Default is Kafka default of 10s.
-- **SweepUncommittedOffsetsIntervalMs**: The interval at which we sweep, looking for offsets that have not been flushed (see [below](#offset-management)).
+- **SessionTimeout**: If Kafka does not receive a heartbeat from the consumer within this time window, trigger a re-balance. Defaults to 10000ms (10 seconds).
+- **SweepUncommittedOffsetsInterval**: The interval at which we sweep, looking for offsets that have not been flushed (see [below](#offset-management)). Defaults to 30000ms (30 seconds).
 
 The following example shows how a subscription might be configured:
 
@@ -184,16 +186,17 @@ The following example shows how a subscription might be configured:
 	var subscriptions = new KafkaSubscription[]
 	{
 		new KafkaSubscription<GreetingEvent>(
-			new SubscriptionName("paramore.example.greeting"),
+			subscriptionName: new SubscriptionName("paramore.example.greeting"),
 			channelName: new ChannelName("greeting.event"),
 			routingKey: new RoutingKey("greeting.event"),
 			groupId: Environment.GetEnvironmentVariable("KAFKA_GROUPID"),
-			timeoutInMilliseconds: 100,
+			timeOut: TimeSpan.FromMilliseconds(100),
 			commitBatchSize: 5,
-			sweepUncommittedOffsetsIntervalMs: 3000
+			sweepUncommittedOffsetsInterval: TimeSpan.FromMilliseconds(3000),
+			messagePumpType: MessagePumpType.Reactor
 		)
 	};
-		
+
 	//create the gateway
 	var consumerFactory = new KafkaMessageConsumerFactory(
 	new KafkaMessagingGatewayConfiguration {...} // see connection information above
@@ -209,6 +212,147 @@ The following example shows how a subscription might be configured:
 	services.AddHostedService<ServiceActivatorHostedService>();
 }
 ```
+
+### Configuration Callback
+
+Similar to producers, the Confluent .NET client for consumers has a range of configuration options. Some of those can be controlled through the subscription. But, to allow you the full range of configuration options for the Confluent client, including new options that may appear, we provide a **configHook** parameter on **KafkaSubscription**.
+
+The **configHook** takes a *delegate* (you can pass a lambda). Your delegate will be called with the *proposed* ConsumerConfig (taking into account the *Subscription* settings). You can adjust additional parameters at this point.
+
+You can use it as follows:
+
+``` csharp
+var subscription = new KafkaSubscription<GreetingEvent>(
+	subscriptionName: new SubscriptionName("paramore.example.greeting"),
+	channelName: new ChannelName("greeting.event"),
+	routingKey: new RoutingKey("greeting.event"),
+	groupId: Environment.GetEnvironmentVariable("KAFKA_GROUPID"),
+	timeOut: TimeSpan.FromMilliseconds(100),
+	commitBatchSize: 5,
+	sweepUncommittedOffsetsInterval: TimeSpan.FromMilliseconds(3000),
+	messagePumpType: MessagePumpType.Reactor,
+	configHook: config =>
+	{
+		// Customize the Confluent Consumer configuration
+		config.FetchMinBytes = 1024;
+		config.FetchWaitMaxMs = 500;
+		config.StatisticsIntervalMs = 60000; // Enable statistics
+	}
+);
+
+var subscriptions = new KafkaSubscription[] { subscription };
+
+//create the gateway
+var consumerFactory = new KafkaMessageConsumerFactory(
+	new KafkaMessagingGatewayConfiguration {...} // see connection information above
+);
+
+services.AddConsumers(options =>
+{
+	options.Subscriptions = subscriptions;
+	options.ChannelFactory = new ChannelFactory(consumerFactory);
+}).AutoFromAssemblies();
+```
+
+### Common Configuration Callback Use Cases
+
+The **configHook** is useful for:
+
+**1. Fine-tuning fetch behavior**:
+
+``` csharp
+configHook: config =>
+{
+	config.FetchMinBytes = 1024;        // Minimum data per fetch request
+	config.FetchWaitMaxMs = 100;        // Max time to wait for fetch.min.bytes
+	config.FetchMaxBytes = 52428800;    // Maximum data for all partitions
+}
+```
+
+**2. Enabling consumer statistics**:
+
+``` csharp
+configHook: config =>
+{
+	config.StatisticsIntervalMs = 30000; // Emit stats every 30 seconds
+}
+```
+
+**3. Customizing security settings**:
+
+``` csharp
+configHook: config =>
+{
+	config.EnableSslCertificateVerification = true;
+	config.SslEndpointIdentificationAlgorithm = SslEndpointIdentificationAlgorithm.Https;
+}
+```
+
+**4. Adjusting partition assignment**:
+
+``` csharp
+configHook: config =>
+{
+	// Note: PartitionAssignmentStrategy should typically be set via the subscription parameter
+	// But you can override it here if needed
+	config.SessionTimeoutMs = 45000;  // Increase for slow rebalances
+}
+```
+
+**5. Debugging and monitoring**:
+
+``` csharp
+configHook: config =>
+{
+	config.Debug = "consumer,cgrp,topic,fetch"; // Enable debug logging
+	config.StatisticsIntervalMs = 10000;        // Frequent statistics for debugging
+}
+```
+
+### Partition Assignment Strategy
+
+Kafka distributes partitions across consumers in a consumer group using a partition assignment strategy. In V10, Brighter provides control over this strategy through the **partitionAssignmentStrategy** parameter.
+
+**Available Strategies**:
+
+- **RoundRobin** (default): Distributes partitions evenly across consumers in a round-robin fashion. This is the most balanced distribution but may cause all partitions to be reassigned during rebalances.
+- **Range**: Assigns contiguous partition ranges to consumers. Useful for co-locating related partitions on the same consumer.
+- **CooperativeSticky**: Not supported with Brighter's manual offset commits (will throw an exception).
+
+**Why RoundRobin is the Default**:
+
+Brighter uses **RoundRobin** as the default strategy because:
+1. It provides the most even distribution of partitions across consumers
+2. It works reliably with Brighter's manual offset commit strategy
+3. It's straightforward to reason about for most use cases
+
+**Using Range Strategy**:
+
+The **Range** strategy is useful when you want to co-locate partitions on the same consumer:
+
+``` csharp
+var subscription = new KafkaSubscription<GreetingEvent>(
+	subscriptionName: new SubscriptionName("paramore.example.greeting"),
+	channelName: new ChannelName("greeting.event"),
+	routingKey: new RoutingKey("greeting.event"),
+	groupId: Environment.GetEnvironmentVariable("KAFKA_GROUPID"),
+	partitionAssignmentStrategy: PartitionAssignmentStrategy.Range
+);
+```
+
+**CooperativeSticky Limitation**:
+
+The **CooperativeSticky** strategy is not supported when using manual offset commits (which Brighter requires for its at-least-once delivery guarantees). Attempting to use it will throw an `ArgumentOutOfRangeException`:
+
+``` csharp
+// This will throw an exception:
+var subscription = new KafkaSubscription<GreetingEvent>(
+	// ...
+	partitionAssignmentStrategy: PartitionAssignmentStrategy.CooperativeSticky // ❌ Not supported
+);
+```
+
+This is due to a [known issue in librdkafka](https://github.com/confluentinc/librdkafka/issues/4059) where CooperativeSticky doesn't work correctly with manual offset management.
 
 ## Offset Management
 
@@ -231,7 +375,6 @@ It is important to understand how Brighter manages the **offset** of any **parti
 - On a re-balance where we stop processing a **partition** on an individual consumer, we flush the remaining **offsets** for the revoked **partitions**.
 	- We configure the consumer to use sticky assignment strategy to avoid unnecessary re-assignments (see the [Confluent documentation](https://www.confluent.io/blog/cooperative-rebalancing-in-kafka-streams-consumer-ksqldb/)). 
 - On a consumer shutdown we flush the buffer to commit all **offsets**.
-
 
 ## Working with Schema Registry
 
@@ -261,7 +404,6 @@ It is worth noting the following aspects of the code sample below:
 * We provide two helpers, though you can pass your own settings if you prefer:
     * **ConfluentJsonSerializationConfig.SerdesJsonSerializerConfig()** offers default settings for JSON serialization (many of these are passed through to Json.NET).
     * **ConfluentJsonSerializationConfig.NJsonSchemaGeneratorSettings()** offers default settings for JSON Schema generation (such as using camelCase).
-
 
 ``` csharp
 public class GreetingEventMessageMapper : IAmAMessageMapper<GreetingEvent>
