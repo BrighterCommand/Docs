@@ -10,7 +10,6 @@
  * [How Configuring the Command Processor Works](/contents/HowConfiguringTheCommandProcessorWorks.md)
  * [How Configuring a Dispatcher for an External Bus Works](/contents/HowConfiguringTheDispatcherWorks.md)
 * [InMemory Options for Development and Testing](/contents/InMemoryOptions.md)
- * [Cloud Events Support](/contents/CloudEventsSupport.md)
 
 ## Darker Configuration
 
@@ -41,6 +40,7 @@
  * [Message Mappers](/contents/MessageMappers.md)
  * [Routing](/contents/Routing.md) 
  * [Default Message Mappers](/contents/DefaultMessageMappers.md)
+ * [Cloud Events Support](/contents/CloudEventsSupport.md) 
  * [Failure and Dead Letter Queues](/contents/HandlerFailure.md) 
  * [Dynamic Message Deserialization](/contents/DynamicMessageDeserialization.md)
 
