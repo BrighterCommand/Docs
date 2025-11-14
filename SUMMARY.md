@@ -111,6 +111,10 @@
 
  * [Agreement Dispatcher](/contents/AgreementDispatcher.md)
 
+## Reference
+
+ * [Glossary](/contents/Glossary.md)
+
 ## FAQ
 
  * [FAQ](/contents/FAQ.md)
