@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(cat:*), Bash(test:*), Bash(grep:*), Write
+allowed-tools: Bash(cat:*), Bash(test:spec/*), Bash(grep:spec/*), Write
 description: Start implementation from approved tasks
 argument-hint: [phase-number]
 ---
@@ -7,17 +7,6 @@ argument-hint: [phase-number]
 ## Context
 
 Current spec: !`cat spec/.current-spec 2>/dev/null`
-Tasks approved: !`test -f spec/$(cat spec/.current-spec)/.tasks-approved && echo "Yes" || echo "No"`
-
-## Current Tasks
-
-!`if [ -f "spec/$(cat spec/.current-spec)/tasks.md" ]; then
-    echo "=== Phase Overview ==="
-    grep "^## Phase" "spec/$(cat spec/.current-spec)/tasks.md"
-    echo ""
-    echo "=== Incomplete Tasks ==="
-    grep "^- \[ \]" "spec/$(cat spec/.current-spec)/tasks.md" | head -20
-fi`
 
 ## Your Task
 

@@ -1,12 +1,11 @@
 ---
-allowed-tools: Bash(cat:*), Bash(test:*), Write
+allowed-tools: Bash(cat:*), Bash(test:spec/*), Write
 description: Create implementation task list
 ---
 
 ## Context
 
 Current spec: !`cat spec/.current-spec 2>/dev/null`
-Design approved: !`test -f spec/$(cat spec/.current-spec)/.design-approved && echo "Yes" || echo "No"`
 
 ## Your Task
 
