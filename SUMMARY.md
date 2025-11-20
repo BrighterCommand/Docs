@@ -35,6 +35,11 @@
  * [Queries and Query Objects](/contents/QueriesAndQueryObjects.md)
  * [How to Implement a Query Handler](/contents/ImplementAQueryHandler.md)
  * [Query Pipeline and Decorators](/contents/QueryPipeline.md)
+ * [Query Patterns](/contents/QueryPatterns.md)
+
+## CQRS Patterns
+
+ * [CQRS with Brighter and Darker](/contents/CQRSWithBrighterAndDarker.md)
 
 ## Using an External Bus
 
