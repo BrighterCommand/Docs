@@ -1,19 +1,11 @@
 ---
-allowed-tools: Bash(cat:*), Bash(test:*)
+allowed-tools: Bash(cat:*), Bash(test:spec/*), Bash(ls:spec/*), Bash(grep:*), Read
 description: Review current specification phase
 ---
 
 ## Current Spec Status
 
-!`current=$(cat spec/.current-spec 2>/dev/null)
-if [ -n "$current" ]; then
-    echo "Active spec: $current"
-    echo "Files present:"
-    ls -la "spec/$current/" | grep -E "(requirements|design|tasks)\.md"
-    echo ""
-    echo "Approval status:"
-    ls -la "spec/$current/" | grep "approved"
-fi`
+Current spec: !`cat spec/.current-spec 2>/dev/null`
 
 ## Your Task
 

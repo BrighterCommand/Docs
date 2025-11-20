@@ -80,7 +80,7 @@ It is analogous to a method on an ASP.NET Controller.
 
 ## Query Processor
 
-In Darker, a query processor allows you to use the *Query Object Pattern* to separate caller from the executor, typically when separating the code required to execute a query on a specific database/backing store from the parameters of that query. It acts both as a *Query Dispatcher* which allows the separation of the parameters of a [query](#query) from the [handler](#query-handler) that executes that query and a *Query Processor* that allows you to use a middleware [pipeline](#pipeline) to provide additional and re-usable behaviors when processing that query. 
+In Darker, a query processor allows you to use the *Query Object Pattern* to separate caller from the executor, typically when separating the code required to execute a query on a specific database/backing store from the parameters of that query. It acts both as a *Query Dispatcher* which allows the separation of the parameters of a [query](#query) from the [handler](#query-handler) that executes that query and a *Query Processor* that allows you to use a middleware [pipeline](#pipeline) to provide additional and re-usable behaviors when processing that query.
 
 The Query Processor dispatches to an [Internal Bus](#internal-bus).
 

@@ -28,11 +28,35 @@ See: [Publishing Events](/contents/DistributedTaskQueue.md)
 
 ### Query
 
-A request for data that does not update state. Queries are processed by the Query Processor (Darker). A query returns a Result.
+A request for data that does not update state. Queries are processed by the Query Processor (Darker). A query returns a Result. Queries implement `IQuery<TResult>` where `TResult` is the type of data returned.
 
-Example: `FindGreetingsForPerson`, `GetOrderById`, `SearchProducts`
+Example: `GetPersonNameQuery`, `GetOrderDetailsQuery`, `SearchProductsQuery`
 
-See: Darker documentation
+See: [Queries and Query Objects](/contents/QueriesAndQueryObjects.md), [CQRS with Brighter and Darker](/contents/CQRSWithBrighterAndDarker.md)
+
+### Query Object
+
+A pattern where query parameters are encapsulated in an object that implements `IQuery<TResult>`. The Query Object pattern separates the definition of a query from its execution, enabling middleware pipelines and testability.
+
+See: [Queries and Query Objects](/contents/QueriesAndQueryObjects.md)
+
+### Query Handler
+
+A class that executes a query and returns results. Query handlers contain the logic for retrieving and projecting data. Handlers derive from `QueryHandler<TQuery, TResult>` (synchronous) or `QueryHandlerAsync<TQuery, TResult>` (asynchronous).
+
+See: [Implementing a Query Handler](/contents/ImplementAQueryHandler.md)
+
+### Query Pipeline
+
+A chain of decorators (middleware) that wrap a query handler to provide cross-cutting concerns like logging, retry, circuit breakers, and fallback policies. Similar to Brighter's request pipeline but optimized for read operations.
+
+See: [Query Pipeline and Decorators](/contents/QueryPipeline.md)
+
+### Query Decorator
+
+A middleware component that wraps query handlers to add cross-cutting functionality. Common decorators include `QueryLogging`, `RetryableQuery`, and `FallbackPolicy`.
+
+See: [Query Pipeline and Decorators](/contents/QueryPipeline.md)
 
 ## Processors
 
@@ -46,11 +70,11 @@ See: [How the Command Processor Works](/contents/HowConfiguringTheCommandProcess
 
 ### Query Processor
 
-The component that executes Queries and returns Results. The Query Processor provides middleware functionality similar to the Command Processor. Part of Darker.
+The component that executes Queries and returns Results. The Query Processor provides middleware functionality similar to the Command Processor, including logging, retry, and fallback policies. Part of Darker. The Query Processor dispatches queries to query handlers through a pipeline of decorators.
 
-Interface: `IAmAQueryProcessor`
+Interface: `IQueryProcessor`
 
-See: Darker documentation
+See: [Darker Basic Configuration](/contents/DarkerBasicConfiguration.md), [Query Pipeline and Decorators](/contents/QueryPipeline.md)
 
 ## Brighter and Darker
 
@@ -62,9 +86,9 @@ See: [Show me the code!](/contents/ShowMeTheCode.md)
 
 ### Darker
 
-The framework for Queries - messages that return data without updating state. Darker follows the same patterns as Brighter but is optimized for query scenarios.
+The framework for Queries - messages that return data without updating state. Darker follows the same patterns as Brighter (handlers, pipelines, policies) but is optimized for read operations. Darker implements the Query Object pattern and provides decorators for logging, retry, circuit breakers, and fallback.
 
-See: Darker documentation
+See: [Darker Basic Configuration](/contents/DarkerBasicConfiguration.md), [CQRS with Brighter and Darker](/contents/CQRSWithBrighterAndDarker.md)
 
 ## Dispatcher
 

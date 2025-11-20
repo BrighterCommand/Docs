@@ -1,12 +1,12 @@
 ---
-allowed-tools: Bash(cat:*), Bash(grep:*), Write
+allowed-tools: Bash(cat:*), Bash(grep:spec/*), Write, Read
 description: Mark a task as complete
 argument-hint: <task-description-or-number>
 ---
 
 ## Current Tasks
 
-!`cat spec/$(cat spec/.current-spec)/tasks.md | grep -n "^- \[" | head -20`
+Use Read tool to check: spec/001-darker_documentation_improvements/tasks.md
 
 ## Your Task
 

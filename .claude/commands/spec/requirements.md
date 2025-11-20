@@ -1,12 +1,11 @@
 ---
-allowed-tools: Bash(cat:*), Bash(test:*), Bash(touch:*), Write
+allowed-tools: Bash(cat:*), Bash(test:*), Bash(touch:*), Bash(ls:spec/*), Write
 description: Create or review requirements specification
 ---
 
 ## Context
 
 Current spec: !`cat spec/.current-spec 2>/dev/null || echo "No active spec"`
-Spec directory contents: !`ls -la spec/$(cat spec/.current-spec 2>/dev/null)/ 2>/dev/null || echo "Spec not found"`
 
 ## Your Task
 

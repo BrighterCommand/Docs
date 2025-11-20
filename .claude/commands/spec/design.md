@@ -1,13 +1,11 @@
 ---
-allowed-tools: Bash(cat:*), Bash(test:*), Bash(ls:*), Write
+allowed-tools: Bash(cat:*), Bash(test:spec/*), Bash(ls:spec/*), Write
 description: Create technical design specification
 ---
 
 ## Context
 
 Current spec: !`cat spec/.current-spec 2>/dev/null`
-Requirements approved: !`test -f spec/$(cat spec/.current-spec)/.requirements-approved && echo "Yes" || echo "No"`
-Current directory: !`ls -la spec/$(cat spec/.current-spec)/ 2>/dev/null`
 
 ## Your Task
 
