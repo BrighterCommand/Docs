@@ -97,7 +97,7 @@ builder.Services.AddTickerQ(options =>
  });
 });
 
-//-omitted code-//
+var app = builder.Build();
 // you must migrate the database 
 
 using (var scope = app.Services.CreateScope())
@@ -189,18 +189,13 @@ Always configure TickerQ with a persistent store (like EF Core) for production e
 ### 2. Monitor via Dashboard
 Leverage the TickerQ dashboard to inspect job states, failures, and upcoming schedules. This is invaluable for debugging and operations.
 
-### 3. Source Generators
-Ensure your project is correctly configured to allow TickerQ's source generators to run. This usually works out of the box with modern .NET SDKs, but be aware of any build warnings related to source generation.
-
 ## Troubleshooting
 
 ### Jobs Not Firing
-- **Check Host**: TickerQ runs as a hosted service. Ensure  is called and the host is kept alive.
-```csharp
-//use one of two ways 
+- **Check Host**: TickerQ runs as a hosted service. Ensure  TickerQ service started is called and the host is kept alive.
+```csharp 
 app.UseTickerQ(); 
-//or
-TickerFunctionProvider.Build();
+
 ```
 - **Timezone**: Be aware of timezone settings when scheduling absolute times. Brighter typically uses UTC.
 ```csharp
