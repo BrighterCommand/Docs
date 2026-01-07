@@ -392,6 +392,48 @@ public class LargeMessageMapper : IAmAMessageMapper<LargeDataCommand>
 }
 ```
 
+## Test Configuration Patterns
+
+When writing tests, you can use Brighter's `Func<IServiceProvider, T>` overloads and the Microsoft Options pattern to create isolated test configurations. This enables parallel test execution without serialization.
+
+**Using PostConfigure for Test Overrides**
+
+```csharp
+public class MyTests
+{
+    private ServiceProvider BuildTestServiceProvider()
+    {
+        var services = new ServiceCollection();
+        var internalBus = new InternalBus();
+
+        services.AddBrighter(options =>
+        {
+            options.HandlerLifetime = ServiceLifetime.Scoped;
+        })
+        .AddProducers(options =>
+        {
+            options.ProducerRegistry = new InMemoryProducerRegistryFactory(
+                internalBus,
+                new[] { new Publication { Topic = new RoutingKey("TestTopic") } },
+                InstrumentationOptions.All
+            ).Create();
+            options.Outbox = new InMemoryOutbox();
+        })
+        .AutoFromAssemblies();
+
+        // Override specific options for this test
+        services.PostConfigure<BrighterOptions>(options =>
+        {
+            options.RequestContextFactory = new TestRequestContextFactory();
+        });
+
+        return services.BuildServiceProvider();
+    }
+}
+```
+
+For more details on service provider overloads and the Options pattern, see [Service Provider Function Overloads](/contents/BrighterBasicConfiguration.md#service-provider-function-overloads) and [Using the Options Pattern](/contents/BrighterBasicConfiguration.md#using-the-options-pattern) in the Basic Configuration documentation.
+
 ## Complete Testing Example
 
 Here's a complete example showing how to use multiple InMemory components together:

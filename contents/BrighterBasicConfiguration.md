@@ -131,6 +131,204 @@ public void ConfigureServices(IServiceCollection services)
 
 ```
 
+#### **Service Provider Function Overloads**
+
+In addition to the standard `Action<BrighterOptions>` delegate, Brighter provides overloads that accept `Func<IServiceProvider, T>` delegates. These enable **deferred resolution** - your configuration code can access services from the DI container that may be registered later in the setup process.
+
+**Why Use Service Provider Overloads?**
+
+- **Deferred Resolution**: Access services registered elsewhere in your DI configuration
+- **Runtime Service Access**: Resolve services like `IConfiguration`, custom factories, or test doubles at runtime
+- **Test Isolation**: Each test can have its own isolated configuration without static state conflicts
+
+**AddBrighter with Service Provider**
+
+``` csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    // Register a custom factory first
+    services.AddSingleton<IAmARequestContextFactory, MyCustomContextFactory>();
+
+    // Use the Func<IServiceProvider, BrighterOptions> overload
+    services.AddBrighter(sp => new BrighterOptions
+    {
+        HandlerLifetime = ServiceLifetime.Scoped,
+        MapperLifetime = ServiceLifetime.Singleton,
+        RequestContextFactory = sp.GetRequiredService<IAmARequestContextFactory>()
+    })
+    .AutoFromAssemblies();
+}
+```
+
+**AddProducers with Service Provider**
+
+The `AddProducers` method also supports a service provider overload for configuring your external bus producers:
+
+``` csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddBrighter(options =>
+    {
+        options.HandlerLifetime = ServiceLifetime.Scoped;
+    })
+    .AddProducers(sp =>
+    {
+        var configuration = sp.GetRequiredService<IConfiguration>();
+        var connectionString = configuration.GetConnectionString("RabbitMQ");
+
+        return new ProducersConfiguration
+        {
+            ProducerRegistry = new RmqProducerRegistryFactory(
+                new RmqMessagingGatewayConnection
+                {
+                    AmpqUri = new AmqpUriSpecification(new Uri(connectionString)),
+                    Exchange = new Exchange("paramore.brighter.exchange"),
+                },
+                new RmqPublication[]
+                {
+                    new RmqPublication
+                    {
+                        Topic = new RoutingKey("GreetingMade"),
+                        MakeChannels = OnMissingChannel.Create
+                    }
+                }
+            ).Create()
+        };
+    })
+    .AutoFromAssemblies();
+}
+```
+
+**AddConsumers with Service Provider**
+
+Similarly, `AddConsumers` supports deferred resolution:
+
+``` csharp
+private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
+{
+    services.AddConsumers(sp =>
+    {
+        var configuration = sp.GetRequiredService<IConfiguration>();
+
+        return new ConsumersOptions
+        {
+            Subscriptions = GetSubscriptions(sp),
+            DefaultChannelFactory = CreateChannelFactory(sp, configuration),
+            HandlerLifetime = ServiceLifetime.Scoped
+        };
+    })
+    .AutoFromAssemblies();
+}
+```
+
+#### **Using the Options Pattern**
+
+Brighter integrates with Microsoft's [Options pattern](https://docs.microsoft.com/en-us/dotnet/core/extensions/options), allowing you to use `Configure<T>` and `PostConfigure<T>` to modify options after initial registration. This is particularly useful for testing scenarios where you need to override specific settings.
+
+**PostConfigure for Test Overrides**
+
+The `PostConfigure<BrighterOptions>` method runs after all `Configure` calls, allowing you to override settings for tests:
+
+``` csharp
+// In your test setup
+public class MyIntegrationTests
+{
+    private ServiceProvider BuildTestServiceProvider()
+    {
+        var services = new ServiceCollection();
+
+        // Standard Brighter configuration (could be shared with production)
+        services.AddBrighter(options =>
+        {
+            options.HandlerLifetime = ServiceLifetime.Scoped;
+        })
+        .AutoFromAssemblies();
+
+        // Test-specific overrides using PostConfigure
+        services.PostConfigure<BrighterOptions>(options =>
+        {
+            options.RequestContextFactory = new TestRequestContextFactory();
+        });
+
+        return services.BuildServiceProvider();
+    }
+}
+```
+
+**Combining with Standard .NET Options Patterns**
+
+You can combine Brighter's configuration with other Options pattern features:
+
+``` csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    // Bind from configuration
+    services.Configure<BrighterOptions>(Configuration.GetSection("Brighter"));
+
+    // Add Brighter with defaults
+    services.AddBrighter(options =>
+    {
+        options.HandlerLifetime = ServiceLifetime.Scoped;
+    })
+    .AutoFromAssemblies();
+
+    // Environment-specific overrides
+    if (Environment.IsDevelopment())
+    {
+        services.PostConfigure<BrighterOptions>(options =>
+        {
+            options.RequestContextFactory = new DebugRequestContextFactory();
+        });
+    }
+}
+```
+
+**Benefits for Parallel Test Execution**
+
+The combination of service provider overloads and the Options pattern enables parallel test execution without the need for test serialization:
+
+- Each test can build its own `ServiceProvider` with isolated configuration
+- No static state conflicts between tests running in parallel
+- Test-specific overrides don't affect other tests
+
+``` csharp
+public class ParallelTestsA
+{
+    [Fact]
+    public async Task Test_With_Custom_Context()
+    {
+        var services = new ServiceCollection();
+        services.AddBrighter(options => { })
+            .AutoFromAssemblies();
+
+        services.PostConfigure<BrighterOptions>(o =>
+            o.RequestContextFactory = new TestContextFactoryA());
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IAmACommandProcessor>();
+        // Test runs isolated from other parallel tests
+    }
+}
+
+public class ParallelTestsB
+{
+    [Fact]
+    public async Task Test_With_Different_Context()
+    {
+        var services = new ServiceCollection();
+        services.AddBrighter(options => { })
+            .AutoFromAssemblies();
+
+        services.PostConfigure<BrighterOptions>(o =>
+            o.RequestContextFactory = new TestContextFactoryB());
+
+        await using var provider = services.BuildServiceProvider();
+        var processor = provider.GetRequiredService<IAmACommandProcessor>();
+        // Runs in parallel with TestsA without conflicts
+    }
+}
+```
+
 ### **Brighter Builder Fluent Interface**
 
 #### **Type Registration**
