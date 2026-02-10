@@ -10,6 +10,7 @@
  * [How Configuring the Command Processor Works](/contents/HowConfiguringTheCommandProcessorWorks.md)
  * [How Configuring a Dispatcher for an External Bus Works](/contents/HowConfiguringTheDispatcherWorks.md)
 * [InMemory Options for Development and Testing](/contents/InMemoryOptions.md)
+* [Test Double Options for Command Processor](/contents/TestDoubleOptions.md)
 
 ## Darker Configuration
 
