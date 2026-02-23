@@ -127,6 +127,7 @@ var subscription = new KafkaSubscription<PlaceOrder>(
 var subscription = new SqsSubscription<PlaceOrder>(
     subscriptionName: new SubscriptionName("Order Processor"),
     channelName: new ChannelName("order-queue"),
+    channelType: ChannelType.PubSub,
     routingKey: new RoutingKey("orders"),
     deadLetterRoutingKey: new RoutingKey("orders-dlq"),
     requeueCount: 3,
@@ -197,6 +198,7 @@ Protect against mass message loss during systemic failures by limiting the numbe
 var subscription = new SqsSubscription<PlaceOrder>(
     subscriptionName: new SubscriptionName("Order Processor"),
     channelName: new ChannelName("order-queue"),
+    channelType: ChannelType.PubSub,
     routingKey: new RoutingKey("orders"),
     unacceptableMessageLimit: 10,                              // Stop after 10 errors
     unacceptableMessageLimitWindow: TimeSpan.FromMinutes(5),   // Reset count every 5 minutes
