@@ -1,20 +1,24 @@
 ---
 allowed-tools: Bash(cat:*), Bash(grep:spec/*), Write, Read
 description: Mark a task as complete
-argument-hint: <task-description-or-number>
+argument-hint: <task-number>
 ---
 
-## Current Tasks
+## Context
 
-Use Read tool to check: spec/001-darker_documentation_improvements/tasks.md
+Current spec: !`cat spec/.current-spec 2>/dev/null`
 
 ## Your Task
 
 Update the task status for: "$ARGUMENTS"
 
-1. Find the matching task in tasks.md
-2. Change `- [ ]` to `- [x]` for that task
-3. Show updated progress statistics
-4. Suggest next task to work on
+1. Read tasks.md from the current spec directory
+2. Find the matching task (by number, e.g. "2.1.1", or by keyword match)
+3. Change `- [ ]` to `- [x]` for that task
+4. Show updated progress:
+   - Tasks completed in this phase
+   - Total tasks completed across all phases
+   - Percentage complete
+5. Suggest the next incomplete task to work on
 
-Use the Write tool to update the file.
+Use the Read tool to find the task, then the Write tool to update tasks.md.
