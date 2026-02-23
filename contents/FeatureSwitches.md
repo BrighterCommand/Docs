@@ -41,6 +41,42 @@ class MyIncompleteHandlerAsync : RequestHandlerAsync<MyCommand>
 }
 ```
 
+## Don't Acknowledge When Switched Off
+
+By default, when a feature switch is **Off**, the handler is skipped and the message is silently acknowledged and discarded. This is fine when you are using the Command Processor directly, but when consuming messages from an [External Bus](/contents/DispatchingARequest.md) you may want to hold messages on the channel until the feature is re-enabled, rather than losing them.
+
+The `dontAck` parameter controls this behavior. When set to `true` and the feature is off, the attribute throws a `DontAckAction` instead of silently consuming the message. The [message pump](/contents/HowServiceActivatorWorks.md) leaves the message unacknowledged on the channel, and the transport re-delivers it after its visibility timeout expires.
+
+```csharp
+class MyFeatureSwitchedHandler : RequestHandler<MyCommand>
+{
+    [FeatureSwitch(typeof(MyFeatureSwitchedHandler), FeatureSwitchStatus.Config, step: 1, dontAck: true)]
+    public override MyCommand Handle(MyCommand command)
+    {
+        // If the feature is switched off, the message stays on the channel
+        // instead of being silently discarded
+        return base.Handle(command);
+    }
+}
+```
+
+The async variant works the same way:
+
+```csharp
+class MyFeatureSwitchedHandlerAsync : RequestHandlerAsync<MyCommand>
+{
+    [FeatureSwitchAsync(typeof(MyFeatureSwitchedHandlerAsync), FeatureSwitchStatus.Config, step: 1, dontAck: true)]
+    public override async Task<MyCommand> HandleAsync(MyCommand command, CancellationToken cancellationToken = default)
+    {
+        return await base.HandleAsync(command, cancellationToken);
+    }
+}
+```
+
+The `dontAck` parameter defaults to `false` to preserve backward compatibility. Set it to `true` whenever you are consuming from an External Bus and want to preserve messages while a feature is temporarily disabled.
+
+For more on how `DontAckAction` works and how transports handle unacknowledged messages, see [Error Handling](/contents/HandlerFailure.md#dont-acknowledge-dontackaction).
+
 ## Building a config for Feature Switches with FluentConfigRegistryBuilder
 
 We provide a **FluentConfigRegistryBuilder** to build a mapping of request handlers to **FeatureSwitchStatus**. For each Handler that you wish to feature switch you supply a type and a status using a fluent

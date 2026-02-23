@@ -50,7 +50,8 @@
  * [Default Message Mappers](/contents/DefaultMessageMappers.md)
  * [Cloud Events Support](/contents/CloudEventsSupport.md)
  * [Dynamic Message Deserialization](/contents/DynamicMessageDeserialization.md) 
- * [Failure and Dead Letter Queues](/contents/HandlerFailure.md) 
+ * [Error Handling](/contents/HandlerFailure.md)
+ * [Error Handling Options](/contents/ErrorHandlingOptions.md)
 
 ## Guaranteed At Least Once
 

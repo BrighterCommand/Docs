@@ -1,20 +1,22 @@
 ---
-allowed-tools: Bash(ls:*), Bash(echo:*), Bash(test:*)
+allowed-tools: Bash(ls:*), Bash(echo:*), Bash(test:*), Bash(cat:*)
 description: Switch to a different specification
-argument-hint: <spec-id>
+argument-hint: <spec-id-or-name>
 ---
 
 ## Available Specifications
 
 !`ls -d spec/*/ 2>/dev/null | sort`
 
+Current spec: !`cat spec/.current-spec 2>/dev/null || echo "None"`
+
 ## Your Task
 
 Switch the active specification to: $ARGUMENTS
 
-1. Verify the spec directory exists
-2. Update spec/.current-spec with the new spec directory name ([ID]-$ARGUMENTS)
-3. Show the status of the newly active spec
-4. Display next recommended action
+1. Verify the spec directory exists (match by ID number or name)
+2. Update `spec/.current-spec` with the spec directory name
+3. Show the status of the newly active spec (phase, progress)
+4. Display the recommended next action
 
-If no argument provided, list all available specs.
+If no argument provided, list all available specs and ask the user which to switch to.
