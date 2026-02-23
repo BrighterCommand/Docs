@@ -6,6 +6,10 @@ A command is an instruction to carry out work. It exercises the domain and resul
 
 An [event](#event) may be used to indicate the outcome of a command.
 
+## Dead Letter Queue (DLQ)
+
+A queue where messages that cannot be processed are sent for later investigation. When Brighter rejects a message (via `RejectMessageAction` or after exceeding the requeue count), and a DLQ is configured on the subscription, the message is routed there instead of being discarded. Some transports (RabbitMQ, Azure Service Bus) provide native DLQ support; for others, Brighter manages the DLQ by producing the rejected message to a separate channel.
+
 ## Command Processor
 
 In Brighter, a command processor allows you to use the *Command Pattern* to separate caller from the executor, typically when separating I/O from domain code. It acts both as a *Command Dispatcher* which allows the separation of the parameters of a [request](#request) from the [handler](#request-handler) that executes that request and a *Command Processor* that allows you to use a middleware [pipeline](#pipeline) to provide additional and re-usable behaviors when processing that request. 
@@ -62,11 +66,19 @@ In [message oriented middleware](#message-oriented-middleware-mom), a message qu
 
 Examples: SQS, AMQP 0-9-1 (Rabbit MQ), AMQP 1-0 (Azure Service Bus).
 
+## Nack (Negative Acknowledgment)
+
+A signal to the transport that a message was not successfully processed. The transport's behavior on nack varies: RabbitMQ requeues the message, SQS resets its visibility timeout, Azure Service Bus releases the lock, and stream-based transports like Kafka simply do not commit the offset. In Brighter, throwing `DontAckAction` from a handler triggers a nack.
+
 ## Pipeline
 
 A pipeline is a sequence of [handlers](#request-handler) that respond to a [request](#request) or [query](#query). The last handler in the sequence is the "target" handler, which forms the pipeline sink. Handlers prior to that form "middleware" that can transform or respond to the request before it reaches the target handler.
 
 Brighter and Darker's pipelines use a "Russian Doll Model" that is, each handler in the pipeline encompasses the call to the next handler, allowing the handler chain to behave like a call stack. 
+
+## Poison Message
+
+A message that repeatedly fails processing. Without safeguards, a poison message blocks the message pump in an infinite failure-requeue-failure loop. Brighter prevents this with `RequeueCount`, which limits the number of requeue attempts before the message is rejected. The default behavior — acknowledging on failure — also prevents poison messages by ensuring the pump always moves on.
 
 ## Query
 
