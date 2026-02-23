@@ -220,7 +220,30 @@ A [nack](/contents/BasicConcepts.md#nack-negative-acknowledgment) (negative ackn
 | Redis | No-op (`BLPOP` is destructive — the message is already consumed) |
 | MQTT | No-op (no acknowledgment concept in MQTT) |
 
+### Using FeatureSwitchAttribute with dontAck
+
+If you are using [Feature Switches](/contents/FeatureSwitches.md), the `FeatureSwitchAttribute` has built-in support for `DontAckAction`. Set the `dontAck` parameter to `true`, and the attribute throws `DontAckAction` when the feature is off — instead of silently acknowledging the message.
+
+```csharp
+public class OrderHandler : RequestHandler<PlaceOrder>
+{
+    [FeatureSwitch(typeof(OrderHandler), FeatureSwitchStatus.Config, step: 1, dontAck: true)]
+    public override PlaceOrder Handle(PlaceOrder command)
+    {
+        // If the feature is switched off, the message stays on the channel
+        ProcessOrder(command);
+        return base.Handle(command);
+    }
+
+    // ...
+}
+```
+
+Without `dontAck: true`, the feature switch silently consumes the message when the feature is off. With it, messages are preserved on the channel for re-delivery when the feature is re-enabled. See [Feature Switches](/contents/FeatureSwitches.md#dont-acknowledge-when-switched-off) for details.
+
 ### Throwing DontAckAction Directly
+
+You can also throw `DontAckAction` directly in your handler for custom scenarios that don't use the feature switch attribute:
 
 ```csharp
 public class OrderHandler : RequestHandler<PlaceOrder>
