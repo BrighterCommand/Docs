@@ -21,7 +21,7 @@ This means:
 Every other error handling behavior described in this document requires you to opt in, using either:
 
 - **Action exceptions** — special exceptions you throw in your handler or middleware (`DeferMessageAction`, `RejectMessageAction`, `DontAckAction`, `InvalidMessageAction`). These are not bugs; they are flow control signals that tell the message pump what to do.
-- **Backstop attributes** — middleware attributes on your handler method that catch unhandled exceptions and convert them to action exceptions (`RejectMessageOnErrorAttribute`, `DontAckOnErrorAttribute`).
+- **Backstop attributes** — middleware attributes on your handler method that catch unhandled exceptions and convert them to action exceptions (`RejectMessageOnErrorAttribute`, `DontAckOnErrorAttribute`, `DeferMessageOnErrorAttribute`).
 - **Resilience middleware** — retry and circuit breaker policies that handle transient errors before they reach the pump (`UseResiliencePipelineAttribute`, `FallbackPolicyAttribute`).
 
 The rest of this document explains each option and when to use it.
@@ -43,7 +43,7 @@ All action exceptions except `DeferMessageAction` increment an internal unaccept
 The right strategy depends on why processing failed and what you want to happen to the message:
 
 - **Transient error, retry immediately:** Use `UseResiliencePipelineAttribute` with a Polly retry policy to retry within the same message pump cycle. If all retries fail, the exception propagates to the pump. See [Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md).
-- **Transient error, retry later:** Throw `DeferMessageAction` to requeue the message on the External Bus with a delay. The message becomes available to any consumer after the delay expires. See [Requeue with Delay](#requeue-with-delay-defermessageaction).
+- **Transient error, retry later:** Use `DeferMessageOnErrorAttribute` to catch any unhandled exception and requeue the message on the External Bus with a delay. The message becomes available to any consumer after the delay expires. For fine-grained control, throw `DeferMessageAction` directly. See [Requeue with Delay](#requeue-with-delay-defermessageaction).
 - **Non-transient error, preserve for investigation:** Throw `RejectMessageAction` to route the message to a Dead Letter Queue (DLQ). Or use `RejectMessageOnErrorAttribute` as a backstop to catch any unhandled exception and reject. See [Reject to Dead Letter Queue](#reject-to-dead-letter-queue-rejectmessageaction).
 - **Temporary block, try again after transport timeout:** Throw `DontAckAction` to leave the message on the channel. The transport re-delivers it after its visibility timeout expires. Or use `DontAckOnErrorAttribute` as a backstop. See [Don't Acknowledge](#dont-acknowledge-dontackaction).
 - **Deserialization failure:** Throw `InvalidMessageAction` from a message mapper to route the message to an invalid message channel, keeping it separate from processing errors. See [Invalid Message Handling](#invalid-message-handling-invalidmessageaction).
@@ -63,11 +63,66 @@ You control requeue behavior through two `Subscription` properties:
 
 How the delay is implemented depends on the transport. Some transports support native delay; others rely on a configured `IAmARequestScheduler`. See [Error Handling Options](/contents/ErrorHandlingOptions.md) for configuration details.
 
+The delay mechanism depends on a configured scheduler (`IAmARequestScheduler`). By default, Brighter supplies an `InMemoryScheduler` that holds deferred messages in memory. If the host shuts down before a deferred message fires, it is lost. For production systems that require durability, configure an external scheduler such as Quartz, Hangfire, TickerQ, or AWS Scheduler.
+
 ### When to Use It
 
-Use `DeferMessageAction` for transient failures where retrying the same message after a delay is likely to succeed. Typical scenarios include a downstream service that is temporarily unavailable or a rate limit that resets after a short period.
+Use requeue with delay for transient failures where retrying the same message after a delay is likely to succeed. Typical scenarios include a downstream service that is temporarily unavailable or a rate limit that resets after a short period.
+
+### Using DeferMessageOnErrorAttribute
+
+The simplest way to requeue on error is to add `DeferMessageOnErrorAttribute` to your handler pipeline. It wraps the handler invocation in a try/catch and converts any unhandled exception into a `DeferMessageAction`, requeuing the message rather than silently discarding it.
+
+The `delayMilliseconds` parameter overrides the `RequeueDelay` configured on the Subscription. If omitted or set to `0`, the Subscription default is used.
+
+```csharp
+public class OrderHandler : RequestHandler<PlaceOrder>
+{
+    // Any unhandled exception → requeue with a 5-second delay
+    [DeferMessageOnError(step: 0, delayMilliseconds: 5000)]
+    public override PlaceOrder Handle(PlaceOrder command)
+    {
+        ProcessOrder(command);
+        return base.Handle(command);
+    }
+
+    // ...
+}
+```
+
+For async handlers, use `DeferMessageOnErrorAsyncAttribute` instead. The behavior is identical.
+
+### Retry Then Requeue Pattern
+
+A common pattern is to combine in-process retry with deferred requeue. The resilience pipeline retries immediately a few times; if all retries fail, `DeferMessageOnErrorAttribute` catches the final exception and requeues the message on the External Bus.
+
+```csharp
+public class OrderHandler : RequestHandler<PlaceOrder>
+{
+    // Outermost: catch any unhandled exception and requeue with delay
+    [DeferMessageOnError(step: 0, delayMilliseconds: 5000)]
+    // Innermost: retry transient failures in-process first
+    [UseResiliencePipeline("OrderRetryPolicy", step: 1)]
+    public override PlaceOrder Handle(PlaceOrder command)
+    {
+        // 1. Retry policy retries transient failures in-process
+        // 2. If all retries are exhausted, the exception propagates
+        // 3. DeferMessageOnError catches it and requeues with a 5-second delay
+        ProcessOrder(command);
+        return base.Handle(command);
+    }
+
+    // ...
+}
+```
+
+For details on configuring the resilience pipeline, see [Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md).
+
+See [Backstop Attributes](#backstop-attributes) for pipeline ordering guidance and [Error Handling Options](/contents/ErrorHandlingOptions.md) for requeue and scheduler configuration.
 
 ### Throwing DeferMessageAction Directly
+
+If you need fine-grained control over which exceptions trigger a requeue — for example, only requeuing on a specific exception type while letting others propagate — you can throw `DeferMessageAction` directly in your handler.
 
 ```csharp
 public class OrderHandler : RequestHandler<PlaceOrder>
@@ -87,7 +142,7 @@ public class OrderHandler : RequestHandler<PlaceOrder>
         }
         catch (ServiceUnavailableException)
         {
-            // Requeue the message — it will be retried after the configured delay
+            // Only requeue on this specific exception — others propagate as normal
             throw new DeferMessageAction();
         }
 
@@ -95,35 +150,6 @@ public class OrderHandler : RequestHandler<PlaceOrder>
     }
 }
 ```
-
-### Retry Then Requeue Pattern
-
-A common pattern is to combine in-process retry with deferred requeue. The resilience pipeline retries immediately a few times; if all retries fail, the handler catches the final exception and defers to retry later on the External Bus.
-
-```csharp
-public class OrderHandler : RequestHandler<PlaceOrder>
-{
-    private readonly IOrderService _orderService;
-
-    // Retry 3 times in-process, then requeue on the External Bus
-    [UseResiliencePipeline("OrderRetryPolicy", step: 1)]
-    public override PlaceOrder Handle(PlaceOrder command)
-    {
-        try
-        {
-            _orderService.Place(command.OrderId, command.Amount);
-        }
-        catch (ServiceUnavailableException)
-        {
-            throw new DeferMessageAction();
-        }
-
-        return base.Handle(command);
-    }
-}
-```
-
-For details on configuring the resilience pipeline, see [Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md).
 
 ## Reject to Dead Letter Queue (RejectMessageAction)
 
@@ -356,9 +382,16 @@ Catches any exception thrown by the inner pipeline and throws `DontAckAction`, l
 - Sync: `DontAckOnErrorAttribute`
 - Async: `DontAckOnErrorAsyncAttribute`
 
+### DeferMessageOnErrorAttribute
+
+Catches any exception thrown by the inner pipeline and throws `DeferMessageAction`, requeuing the message with a delay. The original exception is preserved as the `InnerException`. Unlike the other backstop attributes, `DeferMessageOnErrorAttribute` accepts a `delayMilliseconds` parameter that overrides the `RequeueDelay` configured on the Subscription. If omitted or set to `0`, the Subscription default is used.
+
+- Sync: `DeferMessageOnErrorAttribute`
+- Async: `DeferMessageOnErrorAsyncAttribute`
+
 ### Pipeline Ordering
 
-Backstop attributes should be at the **outermost** position in the pipeline (lowest step number, typically `step: 0`). Retry and circuit breaker middleware should be **inside** (higher step numbers). This ensures the backstop only fires after all retry attempts are exhausted.
+Backstop attributes should be at the **outermost** position in the pipeline (lowest step number, typically `step: 0`). Retry and circuit breaker middleware should be **inside** (higher step numbers). This ensures the backstop only fires after all retry attempts are exhausted. Any backstop attribute (`RejectMessageOnError`, `DontAckOnError`, or `DeferMessageOnError`) can be used at step 0 — choose the one that matches your desired failure behavior.
 
 ```csharp
 public class OrderHandler : RequestHandler<PlaceOrder>

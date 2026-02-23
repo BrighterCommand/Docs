@@ -24,7 +24,9 @@ Set this to a positive integer to prevent infinite retry loops. A value of `-1` 
 | **Type** | `TimeSpan` |
 | **Default** | `TimeSpan.Zero` |
 
-How long a requeued message waits before becoming visible on the channel again. How the delay is implemented depends on the transport — some support native delay, others rely on a configured scheduler.
+How long a requeued message waits before becoming visible on the channel again. How the delay is implemented depends on the transport — some support native delay, others rely on a configured scheduler (`IAmARequestScheduler`).
+
+By default, Brighter provides an `InMemoryScheduler` that holds deferred messages in memory. If the host shuts down before a deferred message fires, it is lost. For durable scheduling in production, configure an external scheduler such as Quartz, Hangfire, TickerQ, or AWS Scheduler.
 
 ### UnacceptableMessageLimit
 
