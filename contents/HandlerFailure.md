@@ -42,12 +42,12 @@ All action exceptions except `DeferMessageAction` increment an internal unaccept
 
 The right strategy depends on why processing failed and what you want to happen to the message:
 
-- **Transient error, retry immediately:** Use `UseResiliencePipelineAttribute` with a Polly retry policy to retry within the same message pump cycle. If all retries fail, the exception propagates to the pump. See [Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md).
-- **Transient error, retry later:** Use `DeferMessageOnErrorAttribute` to catch any unhandled exception and requeue the message on the External Bus with a delay. The message becomes available to any consumer after the delay expires. For fine-grained control, throw `DeferMessageAction` directly. See [Requeue with Delay](#requeue-with-delay-defermessageaction).
+- **Transient error, retry immediately:** Use `[UseResiliencePipeline]` with a Polly retry policy to retry within the same message pump cycle. If all retries fail, the exception propagates to the pump. See [Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md).
+- **Transient error, retry later:** Use `[DeferMessageOnError]` to catch any unhandled exception and requeue the message on the External Bus with a delay. The message becomes available to any consumer after the delay expires. For fine-grained control, throw `DeferMessageAction` directly. See [Requeue with Delay](#requeue-with-delay-defermessageaction).
 - **Non-transient error, preserve for investigation:** Throw `RejectMessageAction` to route the message to a Dead Letter Queue (DLQ). Or use `RejectMessageOnErrorAttribute` as a backstop to catch any unhandled exception and reject. See [Reject to Dead Letter Queue](#reject-to-dead-letter-queue-rejectmessageaction).
-- **Temporary block, try again after transport timeout:** Throw `DontAckAction` to leave the message on the channel. The transport re-delivers it after its visibility timeout expires. Or use `DontAckOnErrorAttribute` as a backstop. See [Don't Acknowledge](#dont-acknowledge-dontackaction).
+- **Temporary block, try again after transport timeout:** Throw `DontAckAction` to leave the message on the channel. The transport re-delivers it after its visibility timeout expires. Or use `[DontAckOnError]` as a backstop. See [Don't Acknowledge](#dont-acknowledge-dontackaction).
 - **Deserialization failure:** Throw `InvalidMessageAction` from a message mapper to route the message to an invalid message channel, keeping it separate from processing errors. See [Invalid Message Handling](#invalid-message-handling-invalidmessageaction).
-- **Compensating action before failing:** Use `FallbackPolicyAttribute` to run cleanup or compensating logic when the handler fails, then let the exception propagate. See [Fallback Handlers](/contents/PolicyFallback.md).
+- **Compensating action before failing:** Use `[FallbackPolicy]` to run cleanup or compensating logic when the handler fails, then let the exception propagate. See [Fallback Handlers](/contents/PolicyFallback.md).
 - **Default (do nothing):** Let the exception propagate. The message is acknowledged and discarded. This is appropriate when errors are non-transient and you rely on logs and traces for investigation.
 
 ## Requeue with Delay (DeferMessageAction)
@@ -69,9 +69,22 @@ The delay mechanism depends on a configured scheduler (`IAmARequestScheduler`). 
 
 Use requeue with delay for transient failures where retrying the same message after a delay is likely to succeed. Typical scenarios include a downstream service that is temporarily unavailable or a rate limit that resets after a short period.
 
+### Blocking Retry and Non-Blocking Retry
+
+Because a Performer in Brighter, is a single-threaded message pump, using Polly middleware, through `[UsePolicy]` or '[UseResilience]` (or their async equivalents) create a **Blocking Retry**, that is no other message will be processed by the Performer until this pipeline completes. For streams this often what you want as the messages in the stream need to be consumed in sequence.
+
+However, if you don't want to block the thread throwing `DeferMessageAction` will create a **Non-Blocking Retry** by moving the message into Brighter's scheduler (or use native delay support on the transport), which will deliver it after a delay, freeing up the Performer to process the next message in the channel.
+
+`DeferMessageAction` will de-order the message. This means you cannot rely on the order of messages in the channel. Either, your message must be able to processed independently of the others, or you must use a strategy to process out-of-order. For example you may add a version stamp to the message and only applying it if you have not already processed a later message.
+
+A useful rule of thumb is:
+
+* **Queue**: You can use `DeferMessageAction` without other design decisions, as items on the queue are not ordered.
+* **Stream**: If you use `DeferMessageAction` either you do not need ordering, or you have another technique to enforce ordering such as a buffer, or optimistic concurrency control.
+
 ### Using DeferMessageOnErrorAttribute
 
-The simplest way to requeue on error is to add `DeferMessageOnErrorAttribute` to your handler pipeline. It wraps the handler invocation in a try/catch and converts any unhandled exception into a `DeferMessageAction`, requeuing the message rather than silently discarding it.
+The simplest way to requeue on error is to add `[DeferMessageOnError]` to your handler pipeline. It wraps the handler invocation in a try/catch and converts any unhandled exception into a `DeferMessageAction`, requeuing the message rather than silently discarding it.
 
 The `delayMilliseconds` parameter overrides the `RequeueDelay` configured on the Subscription. If omitted or set to `0`, the Subscription default is used.
 
@@ -90,11 +103,11 @@ public class OrderHandler : RequestHandler<PlaceOrder>
 }
 ```
 
-For async handlers, use `DeferMessageOnErrorAsyncAttribute` instead. The behavior is identical.
+For async handlers, use `[DeferMessageOnErrorAsync]` instead. The behavior is identical.
 
 ### Retry Then Requeue Pattern
 
-A common pattern is to combine in-process retry with deferred requeue. The resilience pipeline retries immediately a few times; if all retries fail, `DeferMessageOnErrorAttribute` catches the final exception and requeues the message on the External Bus.
+A common pattern is to combine in-process retry with deferred requeue. The resilience pipeline retries immediately a few times; if all retries fail, `[DeferMessageOnError]` catches the final exception and requeues the message on the External Bus. As a `[UseResiliencePipeline]` blocks the message pump, keep retries quick, as you won't process other messages whilst you block on processing the current one. For a longer delay, use `[DeferMessageOnError]`
 
 ```csharp
 public class OrderHandler : RequestHandler<PlaceOrder>
@@ -193,7 +206,7 @@ public class OrderHandler : RequestHandler<PlaceOrder>
 
 ### Using RejectMessageOnErrorAttribute as a Backstop
 
-Instead of catching every possible exception in your handler, you can add `RejectMessageOnErrorAttribute` to your pipeline. It wraps the handler invocation in a try/catch and converts any unhandled exception into a `RejectMessageAction`, ensuring the message goes to the DLQ rather than being silently discarded.
+Instead of catching every possible exception in your handler, you can add `[RejectMessageOnError]` to your pipeline. It wraps the handler invocation in a try/catch and converts any unhandled exception into a `RejectMessageAction`, ensuring the message goes to the DLQ rather than being silently discarded.
 
 ```csharp
 public class OrderHandler : RequestHandler<PlaceOrder>
@@ -213,7 +226,7 @@ public class OrderHandler : RequestHandler<PlaceOrder>
 }
 ```
 
-For async handlers, use `RejectMessageOnErrorAsyncAttribute` instead. The behavior is identical.
+For async handlers, use `[RejectMessageOnErrorAsync]` instead. The behavior is identical.
 
 See [Backstop Attributes](#backstop-attributes) for pipeline ordering guidance and [Error Handling Options](/contents/ErrorHandlingOptions.md) for DLQ configuration.
 
@@ -223,7 +236,7 @@ See [Backstop Attributes](#backstop-attributes) for pipeline ordering guidance a
 
 Throwing `DontAckAction` tells the message pump to leave the message unacknowledged on the channel. The transport re-delivers it after its visibility timeout expires. A configurable delay (`DontAckDelay`, default 1 second) pauses the pump before processing the next message, preventing tight-loop CPU burn when a message is repeatedly not acknowledged.
 
-Each `DontAckAction` increments the unacceptable message counter. If the counter reaches the configured `UnacceptableMessageLimit`, the pump shuts down.
+Each `DontAckAction` increments the unacceptable message counter. If the counter reaches the configured `UnacceptableMessageLimit`, the pump shuts down. You can prevent shutdown by setting the `UnacceptableMessageLimit` to 0, or negative. You can also use `UnacceptableMessageLimitWindow` to control the period in which the limit is evaluated. This allows you to shut down for a burst of failures - typical if you have a poison pill message - but ignore failures that occur over time. (See below for more.)
 
 ### When to Use It
 
@@ -248,7 +261,7 @@ A [nack](/contents/BasicConcepts.md#nack-negative-acknowledgment) (negative ackn
 
 ### Using FeatureSwitchAttribute with dontAck
 
-If you are using [Feature Switches](/contents/FeatureSwitches.md), the `FeatureSwitchAttribute` has built-in support for `DontAckAction`. Set the `dontAck` parameter to `true`, and the attribute throws `DontAckAction` when the feature is off — instead of silently acknowledging the message.
+If you are using [Feature Switches](/contents/FeatureSwitches.md), the `[FeatureSwitch]` has built-in support for `DontAckAction`. Set the `dontAck` parameter to `true`, and the attribute throws `DontAckAction` when the feature is off — instead of silently acknowledging the message.
 
 ```csharp
 public class OrderHandler : RequestHandler<PlaceOrder>
@@ -299,7 +312,7 @@ public class OrderHandler : RequestHandler<PlaceOrder>
 
 ### Using DontAckOnErrorAttribute as a Backstop
 
-Like `RejectMessageOnErrorAttribute`, you can use `DontAckOnErrorAttribute` to convert any unhandled exception into a `DontAckAction`. The message stays on the channel instead of being discarded.
+Like `[RejectMessageOnError]`, you can use `[DontAckOnError]` to convert any unhandled exception into a `DontAckAction`. The message stays on the channel instead of being discarded.
 
 ```csharp
 public class OrderHandler : RequestHandler<PlaceOrder>
@@ -372,22 +385,22 @@ Backstop attributes wrap your handler pipeline in a try/catch and convert any un
 
 Catches any exception thrown by the inner pipeline and throws `RejectMessageAction`, routing the message to the DLQ. The original exception is preserved as the `InnerException` and logged at `Error` level before rethrowing.
 
-- Sync: `RejectMessageOnErrorAttribute`
-- Async: `RejectMessageOnErrorAsyncAttribute`
+- Sync: `[RejectMessageOnError]`
+- Async: `[RejectMessageOnErrorAsync]`
 
 ### DontAckOnErrorAttribute
 
 Catches any exception thrown by the inner pipeline and throws `DontAckAction`, leaving the message on the channel for the transport to re-deliver. The original exception is preserved as the `InnerException`.
 
-- Sync: `DontAckOnErrorAttribute`
-- Async: `DontAckOnErrorAsyncAttribute`
+- Sync: `[DontAckOnError]`
+- Async: `[DontAckOnErrorAsync]`
 
 ### DeferMessageOnErrorAttribute
 
-Catches any exception thrown by the inner pipeline and throws `DeferMessageAction`, requeuing the message with a delay. The original exception is preserved as the `InnerException`. Unlike the other backstop attributes, `DeferMessageOnErrorAttribute` accepts a `delayMilliseconds` parameter that overrides the `RequeueDelay` configured on the Subscription. If omitted or set to `0`, the Subscription default is used.
+Catches any exception thrown by the inner pipeline and throws `DeferMessageAction`, requeuing the message with a delay. The original exception is preserved as the `InnerException`. Unlike the other backstop attributes, `[DeferMessageOnError]` accepts a `delayMilliseconds` parameter that overrides the `RequeueDelay` configured on the Subscription. If omitted or set to `0`, the Subscription default is used.
 
-- Sync: `DeferMessageOnErrorAttribute`
-- Async: `DeferMessageOnErrorAsyncAttribute`
+- Sync: `[DeferMessageOnError]`
+- Async: `[DeferMessageOnErrorAsync]`
 
 ### Pipeline Ordering
 
