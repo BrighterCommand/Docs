@@ -329,6 +329,24 @@ public class ParallelTestsB
 }
 ```
 
+### **Validating Your Configuration**
+
+We recommend enabling pipeline validation and diagnostics as part of your standard configuration. This catches common misconfiguration errors — such as sync/async mismatches, incorrect attribute ordering, and missing handlers — at startup rather than at runtime.
+
+``` csharp
+builder.Services.AddBrighter(options =>
+    {
+        options.HandlerLifetime = ServiceLifetime.Scoped;
+    })
+    .AutoFromAssemblies()
+    .ValidatePipelines()
+    .DescribePipelines();
+```
+
+**ValidatePipelines** checks your configuration and throws a `PipelineValidationException` if errors are found. **DescribePipelines** logs a structured report of your configured pipelines to `ILogger`. Both are opt-in and independent of each other.
+
+For full details on what gets checked, how to configure validation flags, and how to interpret the diagnostic report, see [Pipeline Validation and Diagnostics](/contents/PipelineValidation.md).
+
 ### **Brighter Builder Fluent Interface**
 
 #### **Type Registration**

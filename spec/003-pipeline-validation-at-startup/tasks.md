@@ -11,12 +11,12 @@
 
 **Goal**: Verify understanding of the feature by reading source code and running samples.
 
-- [ ] **Task 1.1:** Read validation source code and verify diagnostic output format
+- [x] **Task 1.1:** Read validation source code and verify diagnostic output format
   - Input: `../Brighter/src/Paramore.Brighter/Validation/PipelineDiagnosticWriter.cs`, `HandlerPipelineValidationRules.cs`, `ProducerValidationRules.cs`, `../Brighter/src/Paramore.Brighter.ServiceActivator/Validation/ConsumerValidationRules.cs`
   - Output: Confirmed understanding of all 8 validation rules, error message templates, and diagnostic output format
   - Notes: Compare source with the rule reference table in design.md; note any discrepancies
 
-- [ ] **Task 1.2:** Read sample project using ValidatePipelines and DescribePipelines
+- [x] **Task 1.2:** Read sample project using ValidatePipelines and DescribePipelines
   - Input: `../Brighter/samples/WebAPI/` projects that call `.ValidatePipelines().DescribePipelines()`
   - Output: Confirmed working configuration pattern to use as the Quick Start example
   - Notes: Identify the simplest sample that demonstrates the feature
@@ -29,27 +29,27 @@
 
 Dependencies: Phase 1 complete.
 
-- [ ] **Task 2.1:** Write PipelineValidation.md — introduction and Quick Start
+- [x] **Task 2.1:** Write PipelineValidation.md — introduction and Quick Start
   - Input: design.md Quick Start section, sample project from Task 1.2
   - Output: `contents/PipelineValidation.md` lines 1-50 (H1 title, intro, Quick Start with code example)
   - Notes: Keep intro to 2-3 sentences. Quick Start should be a complete, runnable configuration example showing `.ValidatePipelines().DescribePipelines()` in context.
 
-- [ ] **Task 2.2:** Write PipelineValidation.md — What Gets Checked (validation rules reference)
+- [x] **Task 2.2:** Write PipelineValidation.md — What Gets Checked (validation rules reference)
   - Input: design.md rule reference table, `HandlerPipelineValidationRules.cs`, `ProducerValidationRules.cs`, `ConsumerValidationRules.cs`
   - Output: `contents/PipelineValidation.md` "What Gets Checked" section with three subsections (Handler Pipeline Checks, Producer Checks, Consumer Checks), each with a rule table
   - Notes: Use tables with columns: Rule, Severity, What It Checks, Example Error. Group by configuration path (AddBrighter, AddProducers, AddConsumers). Explain briefly that checks scale to what's configured.
 
-- [ ] **Task 2.3:** Write PipelineValidation.md — Diagnostic Report section
+- [x] **Task 2.3:** Write PipelineValidation.md — Diagnostic Report section
   - Input: design.md diagnostic output examples, `PipelineDiagnosticWriter.cs`
   - Output: `contents/PipelineValidation.md` "Diagnostic Report" section with Information-level summary example and annotated Debug-level full detail example
   - Notes: Show realistic output with domain examples (OrderCreated, PaymentReceived). Annotate what each section means.
 
-- [ ] **Task 2.4:** Write PipelineValidation.md — Configuration section
+- [x] **Task 2.4:** Write PipelineValidation.md — Configuration section
   - Input: design.md Configuration section, `BrighterPipelineValidationExtensions.cs`
   - Output: `contents/PipelineValidation.md` "Configuration" section with subsections: Enabling, Controlling Error Behavior, Conditional Enablement, How Validation Scales
   - Notes: Show `throwOnError: false` example, environment-gated example, IConfiguration-gated example. Explain `enabled` parameter and independence of ValidatePipelines/DescribePipelines.
 
-- [ ] **Task 2.5:** Write PipelineValidation.md — Common Mistakes and Fixes, Further Reading
+- [x] **Task 2.5:** Write PipelineValidation.md — Common Mistakes and Fixes, Further Reading
   - Input: design.md Common Mistakes section, test files in `../Brighter/tests/Paramore.Brighter.Core.Tests/Validation/`
   - Output: `contents/PipelineValidation.md` "Common Mistakes and Fixes" section (4 before/after pairs) and "Further Reading" section
   - Notes: Each mistake gets its own H3 with a brief explanation and before/after code. Keep code abbreviated — show only the relevant declaration. Further Reading links to BuildingAPipeline.md, Routing.md, HowConfiguringTheDispatcherWorks.md, ADR 0053.
@@ -62,12 +62,12 @@ Dependencies: Phase 1 complete.
 
 Dependencies: Task 2.1 complete (so the target page exists to link to).
 
-- [ ] **Task 3.1:** Update BrighterBasicConfiguration.md — add validation recommendation
+- [x] **Task 3.1:** Update BrighterBasicConfiguration.md — add validation recommendation
   - Input: design.md section for this file, existing `contents/BrighterBasicConfiguration.md`
   - Output: New "Validating Your Configuration" subsection (~15-20 lines) added after the main AddBrighter configuration example
   - Notes: Brief intro (1-2 sentences), code example extending the existing pattern, link to PipelineValidation.md. Do not restructure existing content.
 
-- [ ] **Task 3.2:** Update HowConfiguringTheDispatcherWorks.md — add consumer validation note
+- [x] **Task 3.2:** Update HowConfiguringTheDispatcherWorks.md — add consumer validation note
   - Input: design.md section for this file, existing `contents/HowConfiguringTheDispatcherWorks.md`
   - Output: New "Validating Consumer Configuration" subsection (~10-15 lines) near the end of the consumer/subscription configuration section
   - Notes: Brief note about consumer-specific checks (pump/handler mismatch, missing handlers). Link to PipelineValidation.md. Do not restructure existing content.
@@ -80,7 +80,7 @@ Dependencies: Task 2.1 complete (so the target page exists to link to).
 
 Dependencies: Phases 2 and 3 complete.
 
-- [ ] **Task 4.1:** Update SUMMARY.md and verify all cross-links
+- [x] **Task 4.1:** Update SUMMARY.md and verify all cross-links
   - Input: design.md SUMMARY.md changes section
   - Output: `SUMMARY.md` updated with new entry under "Brighter Configuration"; all cross-links verified (PipelineValidation ↔ BrighterBasicConfiguration ↔ HowConfiguringTheDispatcherWorks)
   - Notes: Entry goes after "Test Double Options for Command Processor". Verify no broken links in all modified files.

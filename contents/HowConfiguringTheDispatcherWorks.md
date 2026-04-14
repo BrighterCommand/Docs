@@ -64,6 +64,16 @@ _dispatcher = DispatchBuilder.With()
     .Build();
 ```
 
+## Validating Consumer Configuration
+
+When you enable pipeline validation with `.ValidatePipelines()` on the **IBrighterBuilder**, consumer-specific checks run automatically when `AddConsumers()` is used. These checks catch common mistakes before the dispatcher starts receiving messages:
+
+- **Pump/handler type mismatch**: A `Reactor` subscription with an async handler, or a `Proactor` subscription with a sync handler.
+- **Missing handler**: A subscription with no handler registered for its `RequestType`.
+- **Ambiguous RequestType**: A `RequestType` that implements neither `ICommand` nor `IEvent`.
+
+Validation is deferred to the `ServiceActivatorHostedService` so that it runs before `Receive()` is called. For full details, see [Pipeline Validation and Diagnostics](/contents/PipelineValidation.md).
+
 ## Running The Dispatcher
 
 To ensure that messages reach the handlers from the queue you have to run a **Dispatcher**.
