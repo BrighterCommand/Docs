@@ -28,7 +28,7 @@ Some messaging frameworks encourage you to share an assembly containing your mes
 
 We do not recommend this, instead preferring to keep to the Service Oriented Architecture (SOA) *tenet* of **Share schema not type**.
 
-Between components that we wish to be independently deployable - which might after all be in different languages, or use different frameworks - you should share a schema that defines the shape of the message (for example [AsyncAPI](https://www.asyncapi.com/).
+Between components that we wish to be independently deployable - which might after all be in different languages, or use different frameworks - you should share a schema that defines the shape of the message (for example [AsyncAPI](https://www.asyncapi.com/). Brighter can [generate AsyncAPI documents automatically](/contents/AsyncAPISupport.md) from your service configuration.
 
 The only exception is where you have two apps that form part of a single service - such as a Task Queue that supports offloading work from a web API - as these tend to be a unit for Continuous Integration and not independently deployable, then sharing types may be appropriate.
 

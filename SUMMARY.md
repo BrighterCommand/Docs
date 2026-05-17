@@ -51,6 +51,7 @@
  * [Default Message Mappers](/contents/DefaultMessageMappers.md)
  * [Cloud Events Support](/contents/CloudEventsSupport.md)
  * [Dynamic Message Deserialization](/contents/DynamicMessageDeserialization.md) 
+ * [AsyncAPI Document Generation](/contents/AsyncAPISupport.md)
  * [Error Handling](/contents/HandlerFailure.md)
  * [Error Handling Options](/contents/ErrorHandlingOptions.md)
 
