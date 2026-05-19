@@ -23,7 +23,7 @@ dotnet add package Paramore.Brighter.AsyncAPI
 dotnet add package Paramore.Brighter.AsyncAPI.NJsonSchema
 ```
 
-The core package (`Paramore.Brighter.AsyncAPI`) contains the document generator. The schema package (`Paramore.Brighter.AsyncAPI.NJsonSchema`) provides the default JSON Schema generator using NJsonSchema. If you implement your own `IAmASchemaGenerator`, you do not need the NJsonSchema package.
+The core package (`Paramore.Brighter.AsyncAPI`) contains the document generator. The schema package (`Paramore.Brighter.AsyncAPI.NJsonSchema`) provides the default JSON Schema generator using NJsonSchema. If you implement your own `IAmASchemaGenerator`, you do not need the NJsonSchema package — but you must register your implementation before calling `UseAsyncApi()`, otherwise `UseAsyncApi()` throws an `InvalidOperationException`.
 
 ### Adding AsyncAPI Generation
 
@@ -71,7 +71,7 @@ Brighter collects messaging contracts from three sources, processed in this prio
 2. **Publications** — topics your service produces (registered via `AddProducers()`)
 3. **Assembly scanning** — [IRequest](/contents/BasicConcepts.md) types decorated with `[PublicationTopic]`
 
-DI-registered sources (subscriptions and publications) take priority during deduplication. If a routing key is already covered by a subscription or publication, assembly scanning does not create a duplicate entry.
+Deduplication is keyed on `(channel, action)`. Subscriptions produce `receive` operations; publications and assembly-scanned `[PublicationTopic]` types produce `send` operations. Sources are processed in the order above, so DI-registered publications suppress assembly-scanned sends on the same routing key. A subscription and a publication on the same routing key are *not* duplicates — they produce one channel with both a `receive` and a `send` operation.
 
 ### Subscriptions (Receive Operations)
 
@@ -144,9 +144,10 @@ Assembly scanning is useful when you want your message types to self-document th
 
 When the same routing key appears in multiple sources, Brighter produces one channel with multiple operations rather than duplicate channels:
 
-- Same routing key from a subscription and a publication → one channel, one `receive` operation, one `send` operation
+- Same routing key from a subscription and a publication → one channel, one `receive` operation, one `send` operation (different actions, so not a duplicate)
 - Same `IRequest` type in both a subscription and a publication → one message component in `components/messages`
-- Same routing key from DI registration and assembly scanning → DI wins, assembly scan is skipped
+- Same routing key as both a DI publication and an assembly-scanned `[PublicationTopic]` type → DI publication wins, assembly scan is skipped (both are `send`)
+- A subscription on a routing key does not suppress an assembly-scanned `send` on the same key — they have different actions, so both are emitted
 
 ## Configuration
 
@@ -241,6 +242,8 @@ if (args.Length > 0 && args[0] == "--generate-asyncapi")
 ```
 
 The host must be built (so DI is resolved) but does not need to start running. No broker connection is required for RabbitMQ-based services. For Kafka, see the [Kafka example](#kafka-example) below for a pattern that avoids broker connections during generation.
+
+If `UseAsyncApi()` was never called, `GenerateAsyncApiDocumentAsync()` throws an `InvalidOperationException` because neither `IAmAnAsyncApiDocumentGenerator` nor `IAsyncApiDocumentWriter` will be registered. The output path is also normalised: if you pass a path without a `.json` extension it is appended, and the YAML file is always written alongside with the `.yaml` extension.
 
 You can validate the generated document using the [AsyncAPI CLI](https://www.asyncapi.com/tools/cli):
 
