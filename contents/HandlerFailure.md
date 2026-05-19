@@ -8,6 +8,8 @@ This guide explains each error handling strategy and helps you choose the right 
 
 **Brighter acknowledges every message, whether your handler succeeds or throws an unhandled exception.**
 
+**Every unhandled exception is logged at `Error` level by the message pump — failures are never silently discarded.**
+
 This is deliberate. If the message pump re-delivered a message every time processing failed, a single bad message — a [poison message](/contents/BasicConcepts.md) — could block the pump indefinitely. The handler would fail, the message would be re-delivered, the handler would fail again, and nothing else on that channel would be processed.
 
 By acknowledging on failure, Brighter ensures the pump moves on. The assumption is that an unhandled exception represents a non-transient error: something is wrong with the message or the handler logic, and retrying the same message won't help. Operators investigate from logs and distributed traces.
@@ -15,8 +17,7 @@ By acknowledging on failure, Brighter ensures the pump moves on. The assumption 
 This means:
 
 - If your handler completes without throwing, the message is acknowledged (success).
-- If an unhandled exception leaves the [pipeline](/contents/BuildingAPipeline.md), the message is also acknowledged and discarded.
-- Errors are logged, but the message is gone.
+- If an unhandled exception leaves the [pipeline](/contents/BuildingAPipeline.md), the message pump logs it at `Error` level, then acknowledges and discards the message.
 
 Every other error handling behavior described in this document requires you to opt in, using either:
 
