@@ -91,11 +91,12 @@ Foundational pages first. Tasks 2.3a, 2.3b, and 2.4 are parallelisable once 2.1 
 
 These can begin once Phase 2 P0 pages are in place; 3.2 depends on 2.1 and 2.2 (it cross-links them) but not on the per-backend updates.
 
-- [ ] **Task 3.1:** Update `contents/Glossary.md` with five BoxProvisioning terms
+- [x] **Task 3.1:** Update `contents/Glossary.md` with five BoxProvisioning terms
   - Input: design.md §"Updated file — `contents/Glossary.md`" (lines 660–702); existing `Glossary.md` structure for placement
   - Output: new H2 "Database Provisioning" inserted between `## Patterns` and `## Messaging`, containing five H3 term entries: BoxProvisioning, Migration Chain, Migration History Table, Bootstrap Path, Advisory Lock — with exact body text per design lines 669–697
   - Notes: anchors must be kebab-case (`#boxprovisioning`, `#migration-chain`, `#migration-history-table`, `#bootstrap-path`, `#advisory-lock`) and match the `[term](#anchor)` links seeded on `BoxProvisioning.md` in Task 2.1. Existing `### Outbox` and `### Inbox` entries under `## Patterns` are left alone (design line 700–702).
   - Depends on: 2.1 (anchor targets only meaningful once the concept page links to them)
+  - **Result (2026-05-26):** New `## Database Provisioning` H2 inserted into `contents/Glossary.md` between `## Patterns` (after the Claim Check entry) and `## Messaging`. Five H3 entries — BoxProvisioning, Migration Chain, Migration History Table, Bootstrap Path, Advisory Lock — added with body text verbatim from design.md lines 669–697. All five anchors verified to match the slugs already linked from `BoxProvisioning.md` (intro + §How it works + §Concurrency + §Per-backend support) and `BoxProvisioningUpgrade.md` (advisory-lock prose link + Further Reading list); the five outbound `See:` links resolve to existing H2/H3 targets (`BoxProvisioning.md#per-backend-support`, `BoxProvisioning.md#the-migration-history-table`, `BoxProvisioningUpgrade.md#what-happens-on-first-start`, `BoxProvisioningConfiguration.md#tuning-the-migration-lock-timeout`, plus the concept-page intro). Existing `### Outbox` and `### Inbox` entries under `## Patterns` left untouched per design line 700–702.
 
 - [x] **Task 3.2:** Write `contents/BoxProvisioningUpgrade.md` (the operator-facing upgrade page)
   - Input: design.md §"New file 3" (lines 401–533); ADRs 0053 §2/§5/§6 and 0057 §1/§2/§3/§5a/§6
