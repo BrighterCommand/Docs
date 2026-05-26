@@ -68,6 +68,10 @@ There are two versions of the attribute: sync and async. Ensure that you choose 
 
 Your inbox is configured as part of the Brighter extensions to `IServiceCollection`. See [Inbox Configuration](/contents/BrighterBasicConfiguration.md#inbox) for more.
 
+### Provisioning the Inbox Table
+
+If your Inbox runs on a relational database (MSSQL, PostgreSQL, MySQL, SQLite, or Spanner), Brighter can create and migrate the table for you at application startup — see [Database Provisioning](/contents/BoxProvisioning.md). The **Inbox Builder** section below describes the alternative: managing the DDL yourself.
+
 ### Inbox Builder
 
 Brighter contains DDL to configure your Inbox. For each supported database we include an **InboxBuilder**. The Inbox Builder has a `GetDDL` method which allows you to obtain the DDL statements required to create an Inbox table. You can use this as part of your application start up to configure the Inbox if it does not already exist.

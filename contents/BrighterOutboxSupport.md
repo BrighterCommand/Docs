@@ -193,6 +193,10 @@ The **Timed Outbox Archiver** has the following configurables
 
 Your outbox is configured as part of the Brighter extensions to ServiceCollection. See [Outbox Configuration](/contents/BrighterBasicConfiguration.md#outbox-support) for more.
 
+### Provisioning the Outbox Table
+
+If your Outbox runs on a relational database (MSSQL, PostgreSQL, MySQL, SQLite, or Spanner), Brighter can create and migrate the table for you at application startup — see [Database Provisioning](/contents/BoxProvisioning.md). The **Outbox Builder** section below describes the alternative: managing the DDL yourself.
+
 ### Outbox Builder
 
 Brighter contains DDL to configure your Outbox. For each supported database we include an **OutboxBuilder**. The Inbox Builder **GetDDL** which allows you to obtain the DDL statements required to create an Outbox. You can use this as part of your application start up to configure the Outbox if it does not already exist.
