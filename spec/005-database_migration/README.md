@@ -1,7 +1,7 @@
 # Spec 005: Database Migration
 
 **Created:** 2026-05-26
-**Status:** Requirements Phase
+**Status:** Ready to merge (PR #63)
 
 ## Topic Overview
 
@@ -9,14 +9,14 @@ Documentation for database migration topics in Brighter/Darker. This will cover 
 
 ## Status Checklist
 
-- [ ] Requirements gathered
-- [ ] Requirements reviewed and approved
-- [ ] Documentation outline created
-- [ ] Outline reviewed and approved
-- [ ] Writing tasks identified
-- [ ] Writing complete
-- [ ] Documentation reviewed
-- [ ] Spec closed
+- [x] Requirements gathered
+- [x] Requirements reviewed and approved
+- [x] Documentation outline created
+- [x] Outline reviewed and approved
+- [x] Writing tasks identified
+- [x] Writing complete
+- [x] Documentation reviewed
+- [ ] Spec closed (gated on PR #63 merge)
 
 ## Next Steps
 
