@@ -114,11 +114,12 @@ These can begin once Phase 2 P0 pages are in place; 3.2 depends on 2.1 and 2.2 (
 
 All three tasks run last. 4.1 must precede 4.2 (link verifier needs the new SUMMARY.md entries). 4.3 is the final gate.
 
-- [ ] **Task 4.1:** Update `SUMMARY.md` with the new "Database Provisioning" section
+- [x] **Task 4.1:** Update `SUMMARY.md` with the new "Database Provisioning" section
   - Input: design.md §"SUMMARY.md changes" (lines 69–99) — before/after shown verbatim; CLAUDE.md "SUMMARY.md Management"
   - Output: insertion at lines 87–93 region of `SUMMARY.md` adding the new H2 with three child entries, placed between "Outbox and Inbox" and "Health Checks and Observability"
   - Notes: indentation uses single leading space + `*` to match surrounding section style. Three entries: `BoxProvisioning.md`, `BoxProvisioningConfiguration.md`, `BoxProvisioningUpgrade.md`.
   - Depends on: 2.1, 2.2, 3.2 (the three target files must exist; otherwise SUMMARY.md links break)
+  - **Result (2026-05-26):** `SUMMARY.md` updated. New `## Database Provisioning` H2 inserted between line 85 (final `[MongoDb Inbox]` entry of `## Outbox and Inbox`) and the existing `## Health Checks and Observability` (now line 93). Three child links — `[Box Provisioning]`, `[Configuring Box Provisioning]`, `[Upgrading Existing Deployments]` — added in the design's exact order with the design's single-leading-space + `*` indentation. All three target files verified present in `contents/` (no orphaned links). Inserts 6 lines total; no other SUMMARY.md content moved.
 
 - [ ] **Task 4.2:** End-to-end cross-link verification
   - Input: requirements.md §Constraints "Cross-linking" + §3 bidirectional rule; design.md §"Cross-links" subsections (one per file outline)
