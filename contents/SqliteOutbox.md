@@ -2,6 +2,20 @@
 
 The SQLite Outbox provides a message store for the [Transactional Outbox pattern](/contents/BrighterOutboxSupport.md) using a SQLite database. This ensures that messages are saved within the same transaction as your business logic and published to a message broker later.
 
+## **Provisioning the Outbox Table**
+
+You have two equally valid options for creating and maintaining the Outbox table:
+
+**Option A — Let Brighter provision and migrate it for you (recommended for greenfield apps).**
+
+Brighter ships a library that creates the table on first start and evolves its schema across Brighter releases automatically. See [Database Provisioning](/contents/BoxProvisioning.md) for the overview and [Configuring Box Provisioning](/contents/BoxProvisioningConfiguration.md) for the call-site shape. SQLite serialises migrations via file-level locking — long upgrade chains briefly block readers.
+
+**Option B — Manage the DDL yourself (recommended where you have schema-change governance).**
+
+Use `SqliteOutboxBuilder.GetDDL()` to obtain the same DDL Brighter ships, then drive it through your own change-management tooling — FluentMigrator, Flyway, Liquibase, an enterprise change-window pipeline, or hand-rolled scripts. The rest of this page describes this option.
+
+Neither option is deprecated. Choose based on fit: small teams and greenfield apps benefit from startup-time provisioning; teams with DBA approval workflows or change windows often prefer to drive the same DDL through their own tooling.
+
 ## **NuGet Packages**
 
 To use the SQLite Outbox, you need to install the following packages from NuGet. If you are using Entity Framework Core, you will also need the EF Core integration package.
@@ -20,7 +34,7 @@ Install-Package Paramore.Brighter.Sqlite.EntityFrameworkCore
 
 The SQLite Outbox requires a specific table in your database to store messages before they are dispatched. You can generate the necessary SQL Data Definition Language (DDL) script to create this table using the `SqliteOutboxBuilder` helper class.
 
-**Note:** You are responsible for creating and maintaining this table. This includes tasks such as adding indexes to optimize query performance and managing schema migrations when updating to new versions of Brighter that may require additional columns.
+**Note:** When you choose Option B, you are responsible for creating the table and applying schema changes when upgrading to new versions of Brighter. Option A handles both for you — see [Database Provisioning](/contents/BoxProvisioning.md). Either way, application-level concerns like additional indexes for query performance remain your responsibility.
 
 ### **Generating the DDL**
 

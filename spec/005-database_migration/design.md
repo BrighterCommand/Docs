@@ -310,7 +310,7 @@ Mark with `[term](/contents/Glossary.md#term-anchor)` on first use:
 
   - Forgetting the per-backend package
   - Putting connectionName overload when not on Aspire (works fine, but no DI benefit)
-  - Setting MigrationLockTimeout *after* calling AddXxxOutbox (silently ignored)
+  - Calling `UseBoxProvisioning` more than once on the same builder — throws `ConfigurationException`. Configure every outbox and inbox inside a single `UseBoxProvisioning(opts => { … })` delegate.
 
 ## Further Reading
 
@@ -348,9 +348,9 @@ Mark with `[term](/contents/Glossary.md#term-anchor)` on first use:
 | 2 | Outbox-only registration with explicit config (MSSQL) | ADR 0053 §3 (`AddMsSqlOutbox`) | ~15 lines: `var dbConfig = new RelationalDatabaseConfiguration(...);` then `services.AddBrighter()...UseBoxProvisioning(opts => opts.AddMsSqlOutbox(dbConfig))` |
 | 3 | Outbox + Inbox together (MSSQL) | derived from ADR 0053 §3 | ~20 lines: same shape, both `Add` calls inside the same `UseBoxProvisioning` |
 | 4 | `connectionName` overload (MSSQL, Aspire path) | ADR 0053 §3 second overload | ~12 lines: `opts.AddMsSqlOutbox("BrighterDb", outboxTableName: "Outbox")` |
-| 5 | Migration lock timeout — recommended (parameter) | ADR 0053 §3 | one-liner: `UseBoxProvisioning(opts => {...}, migrationLockTimeout: TimeSpan.FromMinutes(2))` |
-| 6 | Migration lock timeout — ordering-sensitive (property) | ADR 0053 §3 (BoxProvisioningOptions.MigrationLockTimeout doc) | ~6 lines: set `opts.MigrationLockTimeout = ...` *before* any `Add` call — with comment warning that setting it after is silently ignored |
-| 7 | Per-backend snippet (one per backend) | ADR 0053 §3 (extended to each backend) | ~6 lines each: just the `opts.Add{Backend}Outbox(config)` line, anchored to a per-backend NuGet identifier |
+| 5 | Migration lock timeout (late-bound property) | `BoxProvisioningOptions.MigrationLockTimeout` doc-comment | ~6 lines: `opts.MigrationLockTimeout = TimeSpan.FromMinutes(2);` set anywhere inside the configure delegate — the value is read late, when registrations actually run, so placement before-or-after the `Add*` calls is equivalent. Drop the "set before Add*" warning from earlier ADR revisions. |
+| 6 | _(reserved — was "ordering-sensitive property"; merged into #5 after Task 1.1 verification)_ | — | — |
+| 7 | Per-backend snippet (one per backend) | actual extension-method surface in `../Brighter/src/Paramore.Brighter.BoxProvisioning.{MsSql\|PostgreSql\|MySql\|Sqlite\|Spanner}/` | ~6 lines each: just the `opts.Add{Backend}Outbox(config)` line, anchored to a per-backend NuGet identifier. **SQLite carries an extra `enableWalMode = true` parameter** — show its overload with the parameter visible (defaulted) and call out in the SQLite per-backend section that `enableWalMode: false` is the opt-out for hosts that already manage `PRAGMA journal_mode`. Spanner has no `MigrationLockTimeout` knob and no `schemaName` parameter — its degenerate runner needs neither. |
 
 Sample anchor: `Brighter/samples/WebAPI/WebAPI_Dapper/GreetingsWeb/Startup.cs:116` (the `UseBoxProvisioning(options => { BoxProvisioningFactory.AddOutbox(options, rdbms, outboxConfiguration); })` call) — link in Further Reading, **do not paste the factory's code**. The configuration page shows the direct shape (`opts.AddMsSqlOutbox(config)`) which is what the factory dispatches to internally; the factory itself exists because the sample supports multiple backends at runtime, which is a sample concern, not a user concern.
 
@@ -714,9 +714,8 @@ Cross-cuts the per-file outlines above so the writer can prepare them once.
 | Outbox-only registration (MSSQL, explicit config) | `BoxProvisioningConfiguration.md` | ADR 0053 §3 + sample line 116 | Written from ADR; pattern matches sample |
 | Outbox + Inbox together (MSSQL) | `BoxProvisioningConfiguration.md` | Derived from above | Written from scratch |
 | `connectionName` overload (MSSQL, Aspire path) | `BoxProvisioningConfiguration.md` | ADR 0053 §3 second overload | Written from ADR |
-| Migration lock timeout — parameter form (recommended) | `BoxProvisioningConfiguration.md` | ADR 0053 §3 | One-liner |
-| Migration lock timeout — property form (ordering-sensitive) | `BoxProvisioningConfiguration.md` | ADR 0053 §3 BoxProvisioningOptions doc | Short snippet with warning comment |
-| Per-backend `opts.Add{Backend}Outbox(config)` snippets (×5) | `BoxProvisioningConfiguration.md` | ADR 0053 §3 extended | Written per backend |
+| Migration lock timeout — property assignment (only form) | `BoxProvisioningConfiguration.md` | `BoxProvisioningOptions.MigrationLockTimeout` doc-comment | Short snippet. **Late-bound — no ordering sensitivity.** Earlier ADR revisions described a `migrationLockTimeout` parameter on `UseBoxProvisioning` and an order-sensitive property; the shipped surface has neither. |
+| Per-backend `opts.Add{Backend}Outbox(config)` snippets (×5) | `BoxProvisioningConfiguration.md` | actual extension-method surface (Task 1.1 verified) | Written per backend. SQLite snippet shows the extra `enableWalMode = true` parameter. Spanner snippet omits any lock-timeout reference. |
 | Operator query — inspect history | `BoxProvisioningUpgrade.md` | Schema from ADR 0053 §5 | One-line `SELECT` + expected output |
 | Log output on bootstrap | `BoxProvisioningUpgrade.md` | ADR 0053 §2 logging | Plain text |
 | Error message — "not a Brighter box" | `BoxProvisioningUpgrade.md` | ADR 0057 §2 (quote verbatim) | Plain text + remediation |
