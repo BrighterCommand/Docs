@@ -3,6 +3,9 @@ _build/
 env/
 .vscode/
 
+# Session resume state — local Claude Code working notes
+PROMPT.md
+
 # macOS
 .DS_Store
 .DS_Store?
