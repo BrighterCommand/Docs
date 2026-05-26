@@ -166,6 +166,38 @@ A pattern for handling large messages. Instead of sending the entire message thr
 
 See: [Default Message Mappers](/contents/DefaultMessageMappers.md), [S3 Luggage Store](/contents/S3LuggageStore.md)
 
+## Database Provisioning
+
+### BoxProvisioning
+
+The Brighter library family that creates and migrates relational Outbox and Inbox tables at application startup. Shipped as `Paramore.Brighter.BoxProvisioning` (core) plus one per backend (`*.MsSql`, `*.PostgreSql`, `*.MySql`, `*.Sqlite`, `*.Spanner`). Registered via `services.AddBrighter().UseBoxProvisioning(...)`.
+
+See: [Box Provisioning](/contents/BoxProvisioning.md), [Configuring Box Provisioning](/contents/BoxProvisioningConfiguration.md)
+
+### Migration Chain
+
+The ordered list of `BoxMigration` records (V1..V_latest) that, when applied in sequence, evolve a Brighter Outbox or Inbox table from its earliest shipped shape to the current schema. The chain is per-backend and per-box-type. Outbox: V1..V7 on all four relational backends. Inbox: V1..V2 on MSSQL/MySQL/SQLite; V1 only on PostgreSQL.
+
+See: [Box Provisioning](/contents/BoxProvisioning.md#per-backend-support)
+
+### Migration History Table
+
+The table BoxProvisioning creates and maintains to track which migrations have been applied. Named `__BrighterMigrationHistory` on every backend except Spanner (where it is `BrighterMigrationHistory` — no leading underscores, per Spanner naming rules). Primary key `(SchemaName, BoxTableName, MigrationVersion)`. Visible to operators and DBAs.
+
+See: [Box Provisioning](/contents/BoxProvisioning.md#the-migration-history-table)
+
+### Bootstrap Path
+
+One of BoxProvisioning's three runner paths. Triggered when the Outbox or Inbox table exists but the migration history table has no rows for it — typically a pre-existing deployment adopting BoxProvisioning for the first time. The runner introspects columns to detect which schema version the table is at, writes a synthetic history row, then applies any subsequent migrations. Contrast with **fresh install** (no table) and **normal migration** (table + history).
+
+See: [Upgrading Existing Deployments](/contents/BoxProvisioningUpgrade.md#what-happens-on-first-start)
+
+### Advisory Lock
+
+A database-native lock primitive that BoxProvisioning uses to serialise migration runs across multiple instances of the same application starting simultaneously. Per-backend: `sp_getapplock` (MSSQL), `pg_try_advisory_lock` (PostgreSQL), `GET_LOCK` (MySQL), `BEGIN IMMEDIATE` (SQLite — file-level lock, not strictly an advisory lock). Held for the duration of one migration run; released on commit or rollback. Configurable via `MigrationLockTimeout` (default: 30 seconds).
+
+See: [Configuring Box Provisioning](/contents/BoxProvisioningConfiguration.md#tuning-the-migration-lock-timeout)
+
 ## Messaging
 
 ### Producer
