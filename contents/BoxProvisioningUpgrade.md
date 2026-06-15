@@ -213,3 +213,4 @@ This is intentional. Backwards-compatible additive migrations and a redeploy-and
 - Per-backend Inbox pages: [MSSQL](/contents/MSSQLInbox.md), [MySQL](/contents/MySQLInbox.md), [PostgreSQL](/contents/PostgresInbox.md), [SQLite](/contents/SqliteInbox.md).
 - `Brighter/docs/adr/0057-box-schema-versioning-and-migrations.md` — versioning model, three-path runner, discriminator gate, mid-chain failure semantics.
 - `Brighter/docs/adr/0053-box-database-migration.md` — hosted-service logging, MSSQL all-or-nothing transaction model, payload-mode validation.
+- `Brighter/docs/adr/0061-box-provisioning-value-types.md` — the value types that replace primitives on the provisioning interfaces (a source-level change only; no effect on the operator-visible behaviour described on this page).
