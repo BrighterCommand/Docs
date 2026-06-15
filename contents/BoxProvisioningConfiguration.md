@@ -66,6 +66,8 @@ services.AddBrighter()
 
 The `RelationalDatabaseConfiguration` you pass to `AddMsSqlOutbox` is the same configuration object you already supply to the MSSQL Outbox itself. Reuse the singleton you registered for `IAmARelationalDatabaseConfiguration` rather than constructing a second one.
 
+> **Note**: BoxProvisioning's internal interfaces now wrap their table name, schema name, and migration parameters in [value types](/contents/BoxProvisioning.md#value-types-on-the-provisioning-interfaces) (`BoxTableName`, `SchemaName`, and so on) to defeat primitive obsession. This does not change how you *configure* provisioning: `outBoxTableName`, `schemaName`, and the other configuration parameters shown on this page remain plain strings, and they convert implicitly where the provisioning interfaces consume them. The value types only matter if you implement those interfaces yourself.
+
 ### Outbox and Inbox together
 
 If your service uses both an Outbox and an Inbox, configure both inside the same `UseBoxProvisioning` delegate:
@@ -243,4 +245,4 @@ Spanner uses the *degenerate runner* — see [Box Provisioning](/contents/BoxPro
 - Per-backend Outbox pages: [MSSQL](/contents/MSSQLOutbox.md) · [MySQL](/contents/MySQLOutbox.md) · [PostgreSQL](/contents/PostgresOutbox.md) · [SQLite](/contents/SqliteOutbox.md).
 - Per-backend Inbox pages: [MSSQL](/contents/MSSQLInbox.md) · [MySQL](/contents/MySQLInbox.md) · [PostgreSQL](/contents/PostgresInbox.md) · [SQLite](/contents/SqliteInbox.md).
 - Sample: `Brighter/samples/WebAPI/WebAPI_Dapper/GreetingsWeb/Startup.cs:116` — the canonical `UseBoxProvisioning` call-site in the WebAPI Dapper sample. (The sample wraps the per-backend call in a small `BoxProvisioningFactory` because it supports multiple backends at runtime; in your application you call the per-backend extension directly, as the examples above show.)
-- ADRs: `Brighter/docs/adr/0053-box-database-migration.md` (architecture, hosted service, package layout) and `Brighter/docs/adr/0057-box-schema-versioning-and-migrations.md` (advisory-lock design, migration runner).
+- ADRs: `Brighter/docs/adr/0053-box-database-migration.md` (architecture, hosted service, package layout), `Brighter/docs/adr/0057-box-schema-versioning-and-migrations.md` (advisory-lock design, migration runner), and `Brighter/docs/adr/0061-box-provisioning-value-types.md` (the value types on the provisioning interfaces).

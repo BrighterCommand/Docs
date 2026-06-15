@@ -132,12 +132,51 @@ BoxProvisioning is scoped narrowly. It does **not**:
 
 ## Source-breaking changes on upgrade
 
-The first release of BoxProvisioning ships two source-breaking interface changes. These are only relevant if you *implement* the affected interfaces yourself (most applications consume Brighter's built-in implementations and are unaffected).
+The first release of BoxProvisioning ships source-breaking interface changes. These are only relevant if you *implement* the affected interfaces yourself (most applications consume Brighter's built-in implementations and are unaffected).
 
-- **`IAmARelationalDatabaseConfiguration.SchemaName`** is now an abstract member of the interface (previously a property on the concrete class only). If you implement `IAmARelationalDatabaseConfiguration` directly — for example to surface a custom configuration source — add a `public string? SchemaName => null;` member to preserve the pre-change behaviour. The provisioner treats `null` as "use the backend default schema" (`dbo` for MSSQL, `public` for PostgreSQL, and so on). The default-interface-member form is not available because `Paramore.Brighter` targets `netstandard2.0`.
-- **`IAmABoxMigration`** gains one required member (`ISet<string> LogicalColumns`) and two optional members (`string? SourceReference`, `string? IdempotencyCheckSql`). If you author your own migration classes — for example, to ship a private extension column — implement the new members on recompile. The vast majority of users consume Brighter's built-in migrations and never touch this interface.
+- **`IAmARelationalDatabaseConfiguration.SchemaName`** is now an abstract member of the interface (previously a property on the concrete class only). If you implement `IAmARelationalDatabaseConfiguration` directly — for example to surface a custom configuration source — add a `public string? SchemaName => null;` member to preserve the pre-change behaviour. The provisioner treats `null` as "use the backend default schema" (`dbo` for MSSQL, `public` for PostgreSQL, and so on). The default-interface-member form is not available because `Paramore.Brighter` targets `netstandard2.0`. `SchemaName` on this core interface stays a plain `string?` — it is *not* one of the BoxProvisioning value types described below.
+- **`IAmABoxMigration` exposes its members as value types.** The interface declares `Version` as `MigrationVersion`, `Description` as `MigrationDescription`, and `UpScript` as `SqlScript`, plus one required `IReadOnlyCollection<string> LogicalColumns` member (the cross-backend column-name set used for version detection) and two optional members, `SourceReference?` and `IdempotencyCheckSql` (typed `SqlScript?`). If you author your own migration classes — for example, to ship a private extension column — declare these members with the value types on recompile. `LogicalColumns` stays a plain string collection. The vast majority of users consume Brighter's built-in migrations and never touch this interface.
+- **`IAmABoxMigrationRunner.MigrateAsync` and `IAmABoxProvisioner.BoxTableName` use value types.** `MigrateAsync(BoxTableName tableName, SchemaName? schemaName, …)` types its table and schema parameters, and `IAmABoxProvisioner.BoxTableName` is typed `BoxTableName`. Only implementers of these infrastructure interfaces — typically authors adding a new backend — are affected; the built-in per-backend runners and provisioners already carry the new signatures.
 
-If you only call `AddBrighter().UseBoxProvisioning(...)` and the built-in `Add{Backend}Outbox` / `Add{Backend}Inbox` extensions, neither change affects you.
+If you only call `AddBrighter().UseBoxProvisioning(...)` and the built-in `Add{Backend}Outbox` / `Add{Backend}Inbox` extensions, none of these changes affect you.
+
+### Value types on the provisioning interfaces
+
+The provisioning interfaces wrap their user-facing `string` and `int` parameters in dedicated value types rather than passing bare primitives. The motivation is to defeat *primitive obsession*: in a signature such as `MigrateAsync(string tableName, string? schemaName, …)` the two adjacent strings can be transposed with no compiler error, and the bug surfaces only at runtime as a wrong-table or wrong-schema DDL operation. Typing each parameter makes that transposition a compile error and lets the type itself document what the value means.
+
+Six value types live in the `Paramore.Brighter.BoxProvisioning` namespace, each modelled on the existing `Id` type — a `record` wrapping a single primitive, with a `Value` property, a public constructor, implicit conversions to and from the underlying primitive, an overridden `ToString()`, and value equality:
+
+| Value type | Wraps | Used for | Nullable in use |
+|------------|-------|----------|-----------------|
+| `BoxTableName` | `string` | the box table name | no |
+| `SchemaName` | `string` | the database schema name | yes (`SchemaName?` — SQLite has no schema) |
+| `MigrationVersion` | `int` | the migration version number | no |
+| `MigrationDescription` | `string` | the human-readable migration description | no |
+| `SqlScript` | `string` | the migration up-script and idempotency-check SQL | up-script no; idempotency check `SqlScript?` |
+| `SourceReference` | `string` | the commit / PR that introduced a migration | yes (`SourceReference?` — V1 has none) |
+
+The five string-backed types also expose a static `IsNullOrEmpty` helper (mirroring `Id.IsNullOrEmpty`), so `BoxTableName.IsNullOrEmpty(t)` replaces `string.IsNullOrEmpty(t.Value)`. `MigrationVersion` additionally implements `IComparable<MigrationVersion>` so versions order correctly.
+
+Because the conversions are **implicit in both directions**, existing code that passes primitives keeps compiling unchanged. Constructing a `BoxMigration` with string and `int` literals still works — the literals convert to the value types at the call site:
+
+```csharp
+using Paramore.Brighter.BoxProvisioning;
+
+// Primitives convert implicitly — no argument changes needed.
+var migration = new BoxMigration(
+    5,                                              // int → MigrationVersion
+    "V5: add CloudEvents columns",                  // string → MigrationDescription
+    "ALTER TABLE Outbox ADD Source NVARCHAR(255) NULL", // string → SqlScript
+    new[] { "Source" });                            // IReadOnlyCollection<string>, unchanged
+
+MigrationVersion version = migration.Version;       // value type round-trips
+int versionNumber = version;                        // MigrationVersion → int, implicit
+string description = migration.Description;          // MigrationDescription → string, implicit
+```
+
+The same implicit conversions apply at every infrastructure call site, so `MigrateAsync("Outbox", "dbo", …)` and a `RelationalDatabaseConfiguration` whose `SchemaName` is a core `string?` continue to compile. The one place the implicit conversion does **not** help is implementing `IAmABoxMigration` (or the runner / provisioner interfaces) with your own class: a property's declared type must match the interface exactly, so declare the members with the value types — `public MigrationVersion Version => …` — rather than the underlying primitive. Constructing the built-in `BoxMigration` record, which is what almost everyone does, needs no change.
+
+Identifier validation is unchanged: `Identifiers.AssertSafe` still runs at the provisioner and runner entry points (on the wrapped string), so a malformed table name such as `"1Outbox"` is rejected exactly as before. The value types are pure information holders — they carry and compare the value, but they do not decide whether it is a safe SQL identifier. For the full design rationale, see ADR `Brighter/docs/adr/0061-box-provisioning-value-types.md`.
 
 ## Further Reading
 
@@ -148,5 +187,5 @@ If you only call `AddBrighter().UseBoxProvisioning(...)` and the built-in `Add{B
 - Per-backend Inbox pages: [MSSQL](/contents/MSSQLInbox.md) · [MySQL](/contents/MySQLInbox.md) · [PostgreSQL](/contents/PostgresInbox.md) · [SQLite](/contents/SqliteInbox.md).
 - [Outbox Pattern](/contents/OutboxPattern.md) — the underlying messaging pattern and the boundary between application data and the Outbox.
 - [Glossary](/contents/Glossary.md) — definitions of [BoxProvisioning](/contents/Glossary.md#boxprovisioning), [Migration Chain](/contents/Glossary.md#migration-chain), [Migration History Table](/contents/Glossary.md#migration-history-table), [Bootstrap Path](/contents/Glossary.md#bootstrap-path), and [Advisory Lock](/contents/Glossary.md#advisory-lock).
-- ADRs: `Brighter/docs/adr/0053-box-database-migration.md` (architecture, hosted service, package layout) and `Brighter/docs/adr/0057-box-schema-versioning-and-migrations.md` (versioning model, three-path runner, advisory-lock design).
+- ADRs: `Brighter/docs/adr/0053-box-database-migration.md` (architecture, hosted service, package layout), `Brighter/docs/adr/0057-box-schema-versioning-and-migrations.md` (versioning model, three-path runner, advisory-lock design), and `Brighter/docs/adr/0061-box-provisioning-value-types.md` (the value types that replace primitives on the provisioning interfaces).
 - If you are adding a new backend or a new column to an existing migration chain, see the implementor guides in the Brighter repository under `docs/guides/box-provisioning-*.md` — those guides are scoped to Brighter contributors, not consumers.
