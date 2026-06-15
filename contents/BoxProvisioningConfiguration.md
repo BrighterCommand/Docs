@@ -66,7 +66,7 @@ services.AddBrighter()
 
 The `RelationalDatabaseConfiguration` you pass to `AddMsSqlOutbox` is the same configuration object you already supply to the MSSQL Outbox itself. Reuse the singleton you registered for `IAmARelationalDatabaseConfiguration` rather than constructing a second one.
 
-> **Note**: BoxProvisioning's internal interfaces now wrap their table name, schema name, and migration parameters in [value types](/contents/BoxProvisioning.md#value-types-on-the-provisioning-interfaces) (`BoxTableName`, `SchemaName`, and so on) to defeat primitive obsession. This does not change how you *configure* provisioning: `outBoxTableName`, `schemaName`, and the other configuration parameters shown on this page remain plain strings, and they convert implicitly where the provisioning interfaces consume them. The value types only matter if you implement those interfaces yourself.
+> **Note**: BoxProvisioning's internal interfaces express their table name, schema name, and migration parameters as [value types](/contents/BoxProvisioning.md#value-types-on-the-provisioning-interfaces) (`BoxTableName`, `SchemaName`, and so on) to defeat primitive obsession. This does not affect how you *configure* provisioning: `outBoxTableName`, `schemaName`, and the other configuration parameters shown on this page are plain strings, and they convert implicitly where the provisioning interfaces consume them. The value types only matter if you implement those interfaces yourself.
 
 ### Outbox and Inbox together
 
