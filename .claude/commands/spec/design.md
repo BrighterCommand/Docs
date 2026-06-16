@@ -5,7 +5,7 @@ description: Create documentation outline and structure
 
 ## Context
 
-Current spec: !`cat spec/.current-spec 2>/dev/null`
+Current spec: !`cat spec/.current-spec 2>/dev/null || echo "No active spec"`
 
 ## Your Task
 

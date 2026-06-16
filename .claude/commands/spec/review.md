@@ -5,7 +5,7 @@ description: Review current specification phase
 
 ## Current Spec Status
 
-Current spec: !`cat spec/.current-spec 2>/dev/null`
+Current spec: !`cat spec/.current-spec 2>/dev/null || echo "No active spec"`
 
 ## Your Task
 

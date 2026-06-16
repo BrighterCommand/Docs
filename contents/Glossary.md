@@ -140,6 +140,29 @@ Examples: `RequestLoggingAsync`, `UseResiliencePipeline`, `UseInboxAsync`
 
 See: [Building a Pipeline](/contents/BuildingAPipeline.md)
 
+### Request Validation
+
+Pipeline middleware that validates a Request's data before the business handler
+runs. Opt in per handler with the `[ValidateRequest]` (or `[ValidateRequestAsync]`)
+attribute, and choose a **validation provider** — FluentValidation, DataAnnotations,
+or Brighter's Specification pattern — by registering one of the provider packages.
+An invalid request throws a `RequestValidationException` and the handler never runs.
+
+Not to be confused with **pipeline validation**, which checks pipeline
+*configuration* at startup (see [Pipeline Validation and Diagnostics](/contents/PipelineValidation.md)).
+
+See: [Request Validation](/contents/RequestValidation.md)
+
+### Specification
+
+A composable rule object (`ISpecification<T>` / `Specification<T>`, in the core
+`Paramore.Brighter` package) that pairs a predicate with the `ValidationError` it
+reports when unsatisfied. Rules combine with `And`/`Or`. Used as one of the
+[Request Validation](/contents/RequestValidation.md) providers, and for content-based
+routing in the [Agreement Dispatcher](/contents/AgreementDispatcher.md).
+
+See: [Request Validation](/contents/RequestValidation.md)
+
 ## Patterns
 
 ### Outbox
