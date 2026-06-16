@@ -31,6 +31,7 @@
  * [Supporting Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md)
  * [Failure and Fallback](/contents/PolicyFallback.md)
  * [Feature Switches](/contents/FeatureSwitches.md)
+ * [Request Validation](/contents/RequestValidation.md)
 
 ## Darker Query Handlers and Middleware Pipelines
 
