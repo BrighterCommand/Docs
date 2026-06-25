@@ -161,3 +161,5 @@ public void ConfigureServices(IServiceCollection services)
     .AutoFromAssemblies(); // Scan for handlers and mappers
 }
 ```
+
+> **Running more than one instance?** Configure a [distributed lock](/contents/DistributedLock.md) so only one Sweeper (and Archiver) runs at a time — see [MySQL Distributed Lock](/contents/MySqlDistributedLock.md).

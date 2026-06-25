@@ -43,7 +43,7 @@ taken place. This method returns the Id for that message.
 (Note that we use **CommandProcessor.RETRYPOLICY** on the write, but this will only impact the attempt to write within the transaction, not the success or failure of the overall Db transaction, which is under
 your control. You can safely ignore Db errors on this policy within this approach for this reason.)
 
-You can then call **CommandProcessor.ClearPostBox** to flush one or more messages from the **Outbox** to the broker. We support multiple messages as your entity write might possibly involve sending multiple downstream messages, which you want to include in the transaction. 
+You can then call **CommandProcessor.ClearOutbox** to flush one or more messages from the **Outbox** to the broker. We support multiple messages as your entity write might possibly involve sending multiple downstream messages, which you want to include in the transaction. 
 
 It provides a stronger guarantee than the **CommandProcessor.Post** outside Db transaction with Retry approach as the write to the **Outbox** shares a transaction with the persistence of entity state.
 
@@ -177,17 +177,110 @@ It is important to note that the lower the Minimum Message age is the more likel
 
 You should only have one **Sweeper** instance running for a given Outbox at any time. While running the sweeper on a background thread within your producer application might be acceptable during development, this approach becomes problematic in production. As you scale out your application for resilience and performance, you will end up with multiple conflicting sweeper instances.
 
-The recommended production strategy is to run the **Sweeper** in its own dedicated service. Ensure that only one instance of this service is running at a time, for example by using a distributed lock or by deploying it as a singleton service in your container orchestrator. Brighter supports a range of distributed locks for this purpose.
+The recommended production strategy is to run the **Sweeper** in its own dedicated service. Ensure that only one instance of this service is running at a time, for example by using a [distributed lock](/contents/DistributedLock.md) or by deploying it as a singleton service in your container orchestrator. Brighter supports a range of distributed locks for this purpose.
+
+### You always need a Sweeper
+
+You always need a Sweeper — even the `InMemoryOutbox` relies on one to dispatch its messages. For the `InMemoryOutbox` the Sweeper runs *in-process*, where Brighter's default in-process lock is enough and no distributed lock is required. It is when you use an **external Outbox** (a database, DynamoDB, MongoDB, and so on) **and** scale out to more than one instance that you need a real [distributed lock](/contents/DistributedLock.md) to keep a single Sweeper active.
+
+Even if you use the `Post` method on the `CommandProcessor` instead of an explicit `DepositPost` followed by `ClearOutbox`, under the hood `Post` just does a `DepositPost` followed by a `ClearOutbox`. So if that clear fails, your message will still be in the Outbox. The good news is you can ensure it is sent; the bad news is that you must run a Sweeper to do so.
+
+Without the Sweeper, you have two risks:
+
+- An explicit attempt to clear the Outbox by calling `ClearOutbox` on the `CommandProcessor` can fail. Although it is protected by a Polly resilience policy, if that policy still does not succeed in clearing the Outbox, the messages will linger there. Running a Sweeper means they are eventually sent.
+- Some transports, notably RabbitMQ and Kafka, support callbacks to inform the caller that a message has been sent. This happens asynchronously, so at the point of calling `Post` or `ClearOutbox` you do not yet know whether the message was sent; instead you must await the callback. Because the calling code has moved on, the response always returns on a new thread, which has no context for the original call and cannot interactively notify you that the operation failed. However, if you have a Sweeper, the message — still in your Outbox — will be sent.
+
 
 ## Outbox Archiver
 
-The **Outbox Archiver** is an out-of-process service that monitors an **Outbox** and archives messages older than a certain age.
+The **Outbox Archiver** is a background service that monitors an **Outbox** and moves messages older than a certain age into long-term storage, keeping your Outbox small. It is the clean-out stage of the Outbox life-cycle: the [Sweeper](#implicit-clear) dispatches messages, and the Archiver later retires the ones that have been sent.
 
-The **Timed Outbox Archiver** has the following configurables
+Like the Sweeper, the Archiver should run as a **singleton** — only one Archiver per Outbox at a time. It shares the same [distributed lock](/contents/DistributedLock.md) mechanism, taking a lock on the resource named `"Archiver"`, so the same configured `opt.DistributedLock` coordinates both the Sweeper and the Archiver.
 
-  * TimerInterval: The number of seconds to wait between checked for messages eligible for archival (default: 15)
-  * BatchSize: The maximum number of messages to archive for each check (default: 100)
-  * MinimunAge: The time ellapsed since a message was dispated in hours before it is eligable for archival (default: 24)
+You register the Archiver with `UseOutboxArchiver<TTransaction>`, passing an archive provider (an `IAmAnArchiveProvider`) and options. For a ready-made archive provider, see the [Azure Archive Provider](/contents/AzureBlobArchiveProvider.md).
+
+```csharp
+.UseOutboxArchiver<TransactWriteItemsRequest>(
+    archiveProvider,
+    opt =>
+    {
+        opt.MinimumAge = TimeSpan.FromHours(24);   // archive messages dispatched over a day ago
+        opt.ArchiveBatchSize = 100;
+    });
+```
+
+`TTransaction` is the **transaction type** your Outbox writes to — the same type Brighter wraps in a transaction when it stores a message — not the transaction *provider* you register on `opt.ConnectionProvider`/`opt.TransactionProvider`. Use the type from the column below for your store:
+
+| Outbox | `TTransaction` to use | Namespace |
+| --- | --- | --- |
+| SQL Server, PostgreSQL, MySQL, SQLite | `DbTransaction` | `System.Data.Common` |
+| DynamoDB | `TransactWriteItemsRequest` | `Amazon.DynamoDBv2.Model` |
+| MongoDB | `IClientSessionHandle` | `MongoDB.Driver` |
+| Firestore | `FirestoreTransaction` | `Paramore.Brighter.Outbox.Firestore` |
+
+For example, a DynamoDB Outbox uses `UseOutboxArchiver<TransactWriteItemsRequest>`. The `DynamoDbUnitOfWork` you register as the provider is *not* a transaction type, so `UseOutboxArchiver<DynamoDbUnitOfWork>` does not compile.
+
+The **Timed Outbox Archiver** has the following configurables:
+
+  * `TimerInterval`: The number of seconds to wait between checks for messages eligible for archival (default: 15)
+  * `MinimumAge`: A `TimeSpan` for how long since a message was dispatched before it is eligible for archival (default: 24 hours)
+  * `ArchiveBatchSize`: The maximum number of messages to archive in each check (default: 100)
+
+### Running the Sweeper and Archiver Out of Process
+
+Running the Sweeper or Archiver on a background thread inside your producer application is fine for development, but in production that thread competes with your application for scheduling, and you have to take care that only one instance runs. At scale, the cleaner option is a **dedicated worker executable** that hosts only the Sweeper and Archiver, configured with the same external Outbox and a [distributed lock](/contents/DistributedLock.md). You then schedule it with your container orchestrator (Kubernetes or similar).
+
+The worker below uses DynamoDB; swap the three fenced lines for your own database, Outbox, and lock provider.
+
+```csharp
+var dynamoDb = new AmazonDynamoDBClient();
+IAmAnArchiveProvider archiveProvider = /* your archive provider, e.g. an S3/blob archive */;
+
+var builder = Host.CreateApplicationBuilder(args);
+builder.Services
+    .AddSingleton<IAmazonDynamoDB>(dynamoDb)
+    .AddBrighter()
+    .AddProducers(opt =>
+    {
+        // ---- swap these for your backend ----
+        opt.Outbox = new DynamoDbOutbox(dynamoDb, new DynamoDbConfiguration { /* ... */ });
+        opt.ConnectionProvider = typeof(DynamoDbUnitOfWork);
+        opt.TransactionProvider = typeof(DynamoDbUnitOfWork);
+        opt.DistributedLock = new DynamoDbLockingProvider(
+            dynamoDb, new DynamoDbLockingProviderOptions("brighter-locks", "sweeper-group"));
+        // --------------------------------------
+    })
+    .UseOutboxSweeper(opt => { opt.BatchSize = 10; })
+    // TTransaction is the Outbox's transaction type — TransactWriteItemsRequest for DynamoDB
+    // (see the transaction-type table above for other stores).
+    .UseOutboxArchiver<TransactWriteItemsRequest>(
+        archiveProvider, opt => { opt.MinimumAge = TimeSpan.FromHours(24); });
+
+var host = builder.Build();
+await host.RunAsync();
+```
+
+Because the distributed lock guarantees a single active Sweeper and Archiver, you do **not** have to pin the deployment to a single replica. You can run several replicas for resilience, and the lock ensures only one does the work at a time:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: brighter-outbox-worker
+spec:
+  replicas: 2          # safe: the distributed lock keeps a single Sweeper/Archiver active
+  selector:
+    matchLabels:
+      app: brighter-outbox-worker
+  template:
+    metadata:
+      labels:
+        app: brighter-outbox-worker
+    spec:
+      containers:
+        - name: worker
+          image: your-registry/brighter-outbox-worker:latest
+```
 
 ### Outbox Configuration
 
