@@ -170,6 +170,8 @@ In your handler, you take a dependency on Brighter's **IAmATransactionConnection
 
 You call **DepositPostAsync** within that transaction to write the message to the Outbox. Once the transaction has closed, you can call **ClearOutboxAsync** to immediately clear, or you can rely on the Outbox Sweeper to clear for you.
 
+> **Running more than one instance?** Configure a [distributed lock](/contents/DistributedLock.md) so only one Sweeper (and Archiver) runs at a time — see [MongoDB Distributed Lock](/contents/MongoDbDistributedLock.md).
+
 ```csharp
 public class AddGreetingHandler : RequestHandlerAsync<AddGreeting>
 {

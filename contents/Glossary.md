@@ -183,6 +183,12 @@ A background process that monitors an Outbox and dispatches messages that have n
 
 See: [Outbox Support](/contents/BrighterOutboxSupport.md#implicit-clear)
 
+### Archiver
+
+A background process that moves messages older than a configured age out of the Outbox into long-term storage, keeping the Outbox small. Like the Sweeper, it runs as a singleton, coordinated by a Distributed Lock on the resource named `"Archiver"`.
+
+See: [Outbox Archiver](/contents/BrighterOutboxSupport.md#outbox-archiver)
+
 ### Claim Check
 
 A pattern for handling large messages. Instead of sending the entire message through the broker, the large payload is stored externally (e.g., in S3 or blob storage), and only a reference (claim check) is sent in the message. The receiver retrieves the payload using the claim check.
@@ -220,6 +226,12 @@ See: [Upgrading Existing Deployments](/contents/BoxProvisioningUpgrade.md#what-h
 A database-native lock primitive that BoxProvisioning uses to serialise migration runs across multiple instances of the same application starting simultaneously. Per-backend: `sp_getapplock` (MSSQL), `pg_try_advisory_lock` (PostgreSQL), `GET_LOCK` (MySQL), `BEGIN IMMEDIATE` (SQLite — file-level lock, not strictly an advisory lock). Held for the duration of one migration run; released on commit or rollback. Configurable via `MigrationLockTimeout` (default: 30 seconds).
 
 See: [Configuring Box Provisioning](/contents/BoxProvisioningConfiguration.md#tuning-the-migration-lock-timeout)
+
+### Distributed Lock
+
+A lock held in shared infrastructure (a database, blob store, and so on) that lets multiple application instances coordinate so only one performs a task at a time. Brighter uses it to keep a single Outbox [Sweeper](#sweeper) and [Archiver](#archiver) active when you scale out, through the `IDistributedLock` abstraction and a provider for each backend (DynamoDB, Postgres, MS SQL, MySQL, Azure Blob, MongoDB, Firestore). Related to, but broader than, the [Advisory Lock](#advisory-lock) used by BoxProvisioning.
+
+See: [Distributed Lock](/contents/DistributedLock.md)
 
 ## Messaging
 

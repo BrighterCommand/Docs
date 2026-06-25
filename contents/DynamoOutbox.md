@@ -40,7 +40,9 @@ public void ConfigureServices(IServiceCollection services)
 
 In our handler we take a dependency on Brighter's **IAmABoxTransactionConnectionProvider** interface and convert it to a **DynamoDbUnitofWork**. We explicitly start a transaction within the handler on the Database within the Unit of Work.  
 
-We call **DepositPostAsync** within that transaction to write the message to the Outbox. Once the transaction has closed we can call **ClearOutboxAsync** to immediately clear, or we can rely on the Outbox Sweeper, if we have configured one to clear for us. (There are equivalent synchronous versions of these APIs).x
+We call **DepositPostAsync** within that transaction to write the message to the Outbox. Once the transaction has closed we can call **ClearOutboxAsync** to immediately clear, or we can rely on the Outbox Sweeper, if we have configured one to clear for us. (There are equivalent synchronous versions of these APIs).
+
+> **Running more than one instance?** Configure a [distributed lock](/contents/DistributedLock.md) so only one Sweeper (and Archiver) runs at a time — see [DynamoDB Distributed Lock](/contents/DynamoDbDistributedLock.md).
 
 ``` csharp
 public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default(CancellationToken))
