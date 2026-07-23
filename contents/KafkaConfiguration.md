@@ -92,7 +92,7 @@ We allow you to configure properties for both Brighter and the Confluent .NET cl
 - **MessageTimeoutMs**: Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery. A time of 0 is infinite. Default is 5000.
 - **MaxInFlightRequestsPerConnection**: Maximum number of in-flight requests the  client will send. We default this to 1, so as to allow retries to not de-order the stream.
 - **NumPartitions**: How many partitions for this topic. We default to 1.
-- **Partitioner**: How do we map a partition key to a partition? Defaults to Partitioner.ConsistentRandom, but we recommend Partitioner.Murmur2Random for compatibility with the Kafka Java producer. See [Kafka Hash Partitioning](#kafka-hash-partitioning) below for the supported values and the differences between them.
+- **Partitioner**: How do we map a partition key to a partition? Defaults to Partitioner.ConsistentRandom, but we recommend Partitioner.Murmur2Random for a more even distribution of messages across partitions. See [Kafka Hash Partitioning](#kafka-hash-partitioning) below for the supported values and the differences between them.
 - **QueueBufferingMaxMessages**: Maximum number of messages allowed on the producer queue. Defaults to 10.
 - **QueueBufferingMaxKbytes**: Maximum total message size sum allowed on the producer queue. Defaults to 1048576 bytes (so for 10 messages about 104Kb per message).
 - **ReplicationFactor**: What is the replication factor? How many nodes is the topic copied to on the broker? Defaults to 1.
@@ -150,19 +150,19 @@ Brighter supports the following partitioners:
 | Partitioner | Keyed messages | Unkeyed messages | Notes |
 | --- | --- | --- | --- |
 | **Random** | Random partition | Random partition | Ignores the partition key entirely, so there are no per-key ordering guarantees. |
-| **Consistent** | CRC32 hash of the key | Always the same (single) partition | librdkafka's legacy consistent partitioner. |
-| **ConsistentRandom** | CRC32 hash of the key | Random partition | Brighter's default. |
-| **Murmur2** | Murmur2 hash of the key | Always the same (single) partition | Uses the same hash algorithm as the Kafka Java producer. |
-| **Murmur2Random** | Murmur2 hash of the key | Random partition | Matches the default partitioner of the Kafka Java producer. **Recommended.** |
+| **Consistent** | CRC32 hash of the key | Always the same (single) partition | librdkafka's legacy consistent partitioner. CRC32 can cluster keys, risking uneven distribution. |
+| **ConsistentRandom** | CRC32 hash of the key | Random partition | Brighter's default. CRC32 can cluster keys, risking uneven distribution. |
+| **Murmur2** | Murmur2 hash of the key | Always the same (single) partition | Good key distribution, but the single partition for unkeyed messages can become a hot spot. |
+| **Murmur2Random** | Murmur2 hash of the key | Random partition | The most even distribution for both keyed and unkeyed messages. **Recommended.** |
 
 The difference between the *Consistent** family and the *Murmur2** family is the hash function used to map a key to a partition: **CRC32** versus **Murmur2**. Because the hash functions differ, the same key maps to a different partition under each family. The difference between each base variant and its **Random** counterpart is what happens to messages *without* a partition key: the base variants (**Consistent**, **Murmur2**) always write unkeyed messages to the same single partition, whereas the **Random** variants (**ConsistentRandom**, **Murmur2Random**) spread them randomly across partitions. A single partition for unkeyed messages can become a bottleneck and a hot spot, so the **Random** variants are generally preferable.
 
 #### Why We Recommend Murmur2Random
 
-We recommend setting **Partitioner** to **Partitioner.Murmur2Random**:
+We recommend setting **Partitioner** to **Partitioner.Murmur2Random** because of how it distributes messages across partitions:
 
-1. **Java producer compatibility**: it uses the same Murmur2 hash function, and the same random assignment for unkeyed messages, as the default partitioner of the official Kafka Java producer. If other producers write to the same topic—Kafka Connect, Kafka Streams, ksqlDB, or services written in other languages—the same key hashes to the same partition regardless of which client produced it. With a CRC32-based partitioner, a .NET producer and a Java producer would route the same key to different partitions, splitting a key's messages across partitions and breaking per-key ordering.
-2. **Better key distribution**: Murmur2 generally spreads keys more evenly across partitions than CRC32, reducing the risk of "hot" partitions.
+1. **More even distribution of keyed messages**: Murmur2 generally spreads keys more uniformly across partitions than the CRC32 hash used by **Consistent** and **ConsistentRandom**. This matters because uneven distribution creates "hot" partitions: a few partitions receive a disproportionate share of the messages, so the consumers assigned to those partitions become a bottleneck while the remaining consumers sit underused. Because only one consumer in a group may read a partition at a time, a hot partition caps your effective throughput and grows consumer lag no matter how many consumers you add.
+2. **No single partition for unkeyed messages**: where **Murmur2** (and **Consistent**) send every message without a partition key to the same partition—concentrating all of that load on one partition, and therefore on one consumer—**Murmur2Random** spreads unkeyed messages randomly across all partitions.
 
 ``` csharp
 	new KafkaPublication[]
