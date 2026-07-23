@@ -11,7 +11,7 @@ Kafka has two main roles:
 
 **Topics** are append-only streams of events. Multiple producers can write to a topic, and multiple consumers can read from one. A **consumer** uses an **offset** into the stream to indicate the event it wants to read. Kafka does not delete an event from the stream when it is ack'd by the consumer; instead a **consumer** increments its **offset** once an item has been read so that it can avoid processing the same event twice. See [Offset Management](#offset-management) for more on how Brighter manages **consumer offsets**. As a result the lifetime of events on a stream is instead a configuration setting for the stream. 
 
-As a **consumer** manages an **offset** to record events that is has read, you cannot scale an application that wishes to consume a **topic** by increasing the number of **consumers**--they don't share an offset--without partitioning the **topic**. If you supply a **partition key**, a **partition** uses consistent hashing to slice a **topic** into a number of streams; otherwise it will use round-robin. See [this documentation](https://jaceklaskowski.gitbooks.io/apache-kafka/content/kafka-producer-internals-DefaultPartitioner.html) for more. Each **partition** is only read by a single **consumer** within the application. All of the consumers for an application should share the same group id, called a **consumer group** in Kafka. As each **consumer** tracks the **offset** for the **partitions** it is reading, it is possible to have multiple **consumers** read and process the same **topic**. 
+As a **consumer** manages an **offset** to record events that is has read, you cannot scale an application that wishes to consume a **topic** by increasing the number of **consumers**--they don't share an offset--without partitioning the **topic**. If you supply a **partition key**, a **partition** uses consistent hashing to slice a **topic** into a number of streams; otherwise it will use round-robin. See [this documentation](https://jaceklaskowski.gitbooks.io/apache-kafka/content/kafka-producer-internals-DefaultPartitioner.html) for more. See [Kafka Hash Partitioning](#kafka-hash-partitioning) for how to control the hashing algorithm that Brighter uses to map a **partition key** to a **partition**. Each **partition** is only read by a single **consumer** within the application. All of the consumers for an application should share the same group id, called a **consumer group** in Kafka. As each **consumer** tracks the **offset** for the **partitions** it is reading, it is possible to have multiple **consumers** read and process the same **topic**. 
 
 A **consumer** may read from *multiple* **partitions**, but only one **consumer** may read from a **partition** at one time in a given **consumer group**. Kafka will assign partitions across the pool of consumers for the **consumer group**. When the pool changes, a **rebalance** occurs, which may mean that a consumer changes the **partition** that it is assigned within the **consumer group**. Brighter favors *sticky assignment of partitions* to avoid unnecessary churn of partitions.
 
@@ -92,7 +92,7 @@ We allow you to configure properties for both Brighter and the Confluent .NET cl
 - **MessageTimeoutMs**: Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery. A time of 0 is infinite. Default is 5000.
 - **MaxInFlightRequestsPerConnection**: Maximum number of in-flight requests the  client will send. We default this to 1, so as to allow retries to not de-order the stream.
 - **NumPartitions**: How many partitions for this topic. We default to 1.
-- **Partitioner**: How do we partition? Defaults to Partitioner.ConsistentRandom.
+- **Partitioner**: How do we map a partition key to a partition? Defaults to Partitioner.ConsistentRandom, but we recommend Partitioner.Murmur2Random for compatibility with the Kafka Java producer. See [Kafka Hash Partitioning](#kafka-hash-partitioning) below for the supported values and the differences between them.
 - **QueueBufferingMaxMessages**: Maximum number of messages allowed on the producer queue. Defaults to 10.
 - **QueueBufferingMaxKbytes**: Maximum total message size sum allowed on the producer queue. Defaults to 1048576 bytes (so for 10 messages about 104Kb per message).
 - **ReplicationFactor**: What is the replication factor? How many nodes is the topic copied to on the broker? Defaults to 1.
@@ -122,6 +122,62 @@ The following example shows how a *Publication* might be configured:
 	})
 
 ```
+
+### Kafka Hash Partitioning
+
+A Kafka **topic** is split into **partitions**, and the producer decides which **partition** each message is written to. The algorithm that makes this decision is the **partitioner**, which Brighter exposes through the **Partitioner** property on a *Publication*. Brighter's **Partitioner** enum maps directly onto the Confluent .NET client's *partitioner* setting (from librdkafka).
+
+How the partitioner behaves depends on whether the message has a **partition key**. You set the partition key on the message header in your message mapper:
+
+``` csharp
+public Message MapToMessage(GreetingEvent request)
+{
+	var header = new MessageHeader(request.Id, "greeting.event", MessageType.MT_EVENT)
+	{
+		//Messages with the same partition key go to the same partition
+		PartitionKey = request.CustomerId.ToString()
+	};
+	...
+}
+```
+
+When a **partition key** is present, the partitioner hashes the key and selects a partition deterministically: all messages with the same key are written to the same **partition**, which preserves their order relative to one another (and means they are handled by the same consumer in a consumer group). When no key is set, the behavior depends on the partitioner variant, as described below.
+
+#### Supported Partitioners
+
+Brighter supports the following partitioners:
+
+| Partitioner | Keyed messages | Unkeyed messages | Notes |
+| --- | --- | --- | --- |
+| **Random** | Random partition | Random partition | Ignores the partition key entirely, so there are no per-key ordering guarantees. |
+| **Consistent** | CRC32 hash of the key | Always the same (single) partition | librdkafka's legacy consistent partitioner. |
+| **ConsistentRandom** | CRC32 hash of the key | Random partition | Brighter's default. |
+| **Murmur2** | Murmur2 hash of the key | Always the same (single) partition | Uses the same hash algorithm as the Kafka Java producer. |
+| **Murmur2Random** | Murmur2 hash of the key | Random partition | Matches the default partitioner of the Kafka Java producer. **Recommended.** |
+
+The difference between the *Consistent** family and the *Murmur2** family is the hash function used to map a key to a partition: **CRC32** versus **Murmur2**. Because the hash functions differ, the same key maps to a different partition under each family. The difference between each base variant and its **Random** counterpart is what happens to messages *without* a partition key: the base variants (**Consistent**, **Murmur2**) always write unkeyed messages to the same single partition, whereas the **Random** variants (**ConsistentRandom**, **Murmur2Random**) spread them randomly across partitions. A single partition for unkeyed messages can become a bottleneck and a hot spot, so the **Random** variants are generally preferable.
+
+#### Why We Recommend Murmur2Random
+
+We recommend setting **Partitioner** to **Partitioner.Murmur2Random**:
+
+1. **Java producer compatibility**: it uses the same Murmur2 hash function, and the same random assignment for unkeyed messages, as the default partitioner of the official Kafka Java producer. If other producers write to the same topic—Kafka Connect, Kafka Streams, ksqlDB, or services written in other languages—the same key hashes to the same partition regardless of which client produced it. With a CRC32-based partitioner, a .NET producer and a Java producer would route the same key to different partitions, splitting a key's messages across partitions and breaking per-key ordering.
+2. **Better key distribution**: Murmur2 generally spreads keys more evenly across partitions than CRC32, reducing the risk of "hot" partitions.
+
+``` csharp
+	new KafkaPublication[]
+	{
+		new KafkaPublication()
+		{
+			Topic = new RoutingKey("MyTopicName"),
+			NumPartitions = 3,
+			Partitioner = Partitioner.Murmur2Random,
+			MakeChannels = OnMissingChannel.Create
+		}
+	}
+```
+
+Note that changing the partitioner on an existing topic changes where keys land: messages with the same key may be written to different partitions before and after the change, which can break per-key ordering during the transition. Plan such a change for a deployment window where this is acceptable, or apply it when you create a new topic.
 
 ### Configuration Callback
 
@@ -469,10 +525,3 @@ A non-blocking retry typically creates a copy of the current record, and appends
 (You may need multiple tables or streams to support different delay lengths)
 
 Until Brighter supports this for you, implementation of non-blocking consumers is left to the user.
-
-
-
-
-
-
-
