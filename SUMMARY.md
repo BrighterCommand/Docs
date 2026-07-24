@@ -12,6 +12,7 @@
 * [InMemory Options for Development and Testing](/contents/InMemoryOptions.md)
 * [Test Double Options for Command Processor](/contents/TestDoubleOptions.md)
 * [Pipeline Validation and Diagnostics](/contents/PipelineValidation.md)
+* [Analyzer Support](/contents/AnalyzerSupport.md)
 
 ## Darker Configuration
 
