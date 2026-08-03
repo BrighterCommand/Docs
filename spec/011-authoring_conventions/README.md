@@ -128,10 +128,27 @@ paths relative to `root`.
 
 ## Open Questions
 
-1. How aggressively do we split? Every mixed page, or a size threshold (the `CLAUDE.md`
-   guidance suggests ~500 lines) plus judgement?
-2. Does the banner belong above or below the H1? Below reads better and keeps the H1
-   first for GitBook's title extraction; confirm against a rendered preview.
+Both resolved 2026-08-03 — see `requirements.md` § Resolved Questions.
+
+1. ~~How aggressively do we split?~~ **Not by size, and mostly not here.** Size is the
+   wrong criterion: `Glossary.md` (589 lines) and `KafkaConfiguration.md` (606) are
+   single-mode and should not be split, while `ReactorAndProactor.md` (440) mixes all
+   four. Candidates are scored by mode mixing, and **this spec ships only the two
+   demonstrator splits** — `RabbitMQConfiguration.md` and `BrighterBasicConfiguration.md`
+   — handing a scored worklist to Spec 010, which executes the rest while re-filing.
+   See the scope note below.
+2. ~~Banner above or below the H1?~~ **Below.** Keeps the H1 first for GitBook's title
+   extraction, and the measurement makes it unambiguous: 0 of 107 pages currently open
+   with a blockquote after the H1, so "first non-blank line after the H1" is a rule the
+   linter can enforce with no legacy exceptions.
+
+## Scope Change Since This README (2026-08-03)
+
+Splitting moved from this spec to Spec 010. Splitting a page creates new pages needing
+names, `SUMMARY.md` placement and redirects — all of which 010 owns and is already
+doing to the same files. Doing it here would touch the split pages twice and produce
+two overlapping diffs, which is exactly what the 011-before-010 ordering was chosen to
+avoid. This spec keeps the rule, the linter and two demonstrators.
 
 ## Source Material
 
@@ -154,10 +171,10 @@ to move them — and avoids two large overlapping diffs over the same files.
 
 ## Status Checklist
 
-- [ ] Requirements gathered
-- [ ] Requirements reviewed and approved
-- [ ] Documentation outline created
-- [ ] Outline reviewed and approved
+- [x] Requirements gathered (`requirements.md`, 2026-08-03)
+- [x] Requirements reviewed and approved (2026-08-03)
+- [x] Documentation outline created (`design.md`, 2026-08-03)
+- [x] Outline reviewed and approved (2026-08-03)
 - [ ] Writing tasks identified
 - [ ] Writing complete
 - [ ] Documentation reviewed
@@ -165,10 +182,20 @@ to move them — and avoids two large overlapping diffs over the same files.
 
 ## Next Steps
 
-1. Verify GitBook front-matter tolerance on a test branch
-2. Agree the front-matter schema and the heading convention
-3. Decide the page-splitting threshold
-4. Create requirements document
+1. ~~Verify GitBook front-matter tolerance~~ — resolved; front matter ruled out, banner
+   adopted
+2. ~~Agree the schema and heading convention~~ — banner vocabulary and heading rule are
+   in `requirements.md` § The Conventions
+3. ~~Decide the page-splitting threshold~~ — resolved; see Open Questions above
+4. ~~Create requirements document~~ — done 2026-08-03
+5. ~~`/spec:review`, then `/spec:design`~~ — both done 2026-08-03; `design.md` approved
+6. `/spec:tasks`, then execute design steps 1–3 only (CI green on the untouched tree →
+   the `CLAUDE.md` amendment → `pagelint.py` run locally). The 107-page sweep waits for
+   a session of its own.
+
+`modemix.py` in this directory is the throwaway analysis script behind the mode-mixing
+figures. Kept so Spec 010's worklist can be regenerated rather than re-derived. Run it
+from the repository root.
 
 ## Notes
 

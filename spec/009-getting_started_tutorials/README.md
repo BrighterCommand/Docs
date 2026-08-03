@@ -118,12 +118,15 @@ Existing candidates to assess for reuse: `samples/CommandProcessor` (rung 1),
 
 ## Open Questions
 
-1. Do we pin exact package versions (accurate, ages badly) or float (stays fresh,
-   drifts silently)? A version-pinned tutorial verified each release is probably
-   right, but it creates maintenance load.
-2. Does the Kafka tutorial need a multi-broker `docker-compose`, or is a single broker
-   with a multi-partition topic enough to demonstrate consumer-group rebalancing?
-   Prefer the simpler setup if it can show the point.
+Both resolved 2026-08-03 — see `requirements.md` § Resolved Questions.
+
+1. ~~Pin package versions or float?~~ **Pin, verified per release.** A release
+   checklist item (deliverable D9) requires re-running all four tutorials and bumping
+   the pinned versions each release.
+2. ~~Does Kafka need a multi-broker `docker-compose`?~~ **No.** Rebalancing is a
+   function of partitions and consumer instances, not brokers. The existing
+   single-broker `docker-compose-kafka.yaml` plus a second *consumer instance* shows
+   the point, and is both simpler to run and closer to how services really scale out.
 
 ## Dependencies
 
@@ -139,10 +142,10 @@ parallel** with the others. Agreed order across the programme is
 
 ## Status Checklist
 
-- [ ] Requirements gathered
-- [ ] Requirements reviewed and approved
-- [ ] Documentation outline created
-- [ ] Outline reviewed and approved
+- [x] Requirements gathered (`requirements.md`, 2026-08-03)
+- [x] Requirements reviewed and approved (2026-08-03)
+- [x] Documentation outline created (`design.md`, 2026-08-03)
+- [x] Outline reviewed and approved (2026-08-03; six findings applied, D12 added)
 - [ ] Writing tasks identified
 - [ ] Writing complete
 - [ ] Documentation reviewed
