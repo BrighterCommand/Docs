@@ -168,14 +168,15 @@ We support a number of Kafka specific *Subscription* options:
 - **CommitBatchSize**: We commit processed work (marked as acked or rejected) when a batch size worth of work has been completed (see [below](#offset-management)). Defaults to 10.
 - **ConfigHook**: Allows you to modify the Kafka client configuration before a consumer is created. Used to set properties that Brighter does not expose. See [Configuration Callback](#configuration-callback) below.
 - **GroupId**: Only one consumer in a group can read from a partition at any one time; this preserves ordering. We do not default this value, and expect you to set it.
+- **GroupProtocol**: Selects the Kafka consumer group protocol: `ClassicGroupProtocol` (default) or `ConsumerGroupProtocol` (KIP-848). See [Consumer Group Protocol (KIP-848)](#consumer-group-protocol-kip-848) below. Defaults to null, which uses the classic protocol.
 - **IsolationLevel**: Default to read only committed messages, change if you want to read uncommitted messages. May cause duplicates. Defaults to ReadCommitted.
 - **MaxPollInterval**: How often the consumer needs to poll for new messages to be considered alive, polling greater than this interval triggers a re-balance. Defaults to 300000ms (5 minutes).
 - **NumPartitions**: How many partitions does the topic have? Used for topic creation, if required. Defaults to 1.
 - **OffsetDefault**:  What do we do if there is no offset stored for this consumer. Defaults to AutoOffsetReset.Earliest - Begin reading the stream from the start. Options include AutoOffsetReset.Latest - Start from now i.e. only consume messages after we start and AutoOffsetReset.Error - which considers it an error if no reset is found
-- **PartitionAssignmentStrategy**: How do partitions get assigned to consumers in the group? Defaults to RoundRobin for even distribution. See [Partition Assignment Strategy](#partition-assignment-strategy) below.
+- **PartitionAssignmentStrategy**: How do partitions get assigned to consumers in the group? Defaults to RoundRobin for even distribution. See [Partition Assignment Strategy](#partition-assignment-strategy) below. **Deprecated**: set `PartitionAssignmentStrategy` on a `ClassicGroupProtocol` via **GroupProtocol** instead.
 - **ReadCommittedOffsetsTimeOut**: How long before attempting to read back committed offsets (mainly used in debugging) is an error. Defaults to 5000ms.
 - **ReplicationFactor**: What is the replication factor? How many nodes is the topic copied to on the broker? Defaults to 1. Used for topic creation if required.
-- **SessionTimeout**: If Kafka does not receive a heartbeat from the consumer within this time window, trigger a re-balance. Defaults to 10000ms (10 seconds).
+- **SessionTimeout**: If Kafka does not receive a heartbeat from the consumer within this time window, trigger a re-balance. Defaults to 10000ms (10 seconds). **Deprecated**: set `SessionTimeout` on a `ClassicGroupProtocol` via **GroupProtocol** instead.
 - **SweepUncommittedOffsetsInterval**: The interval at which we sweep, looking for offsets that have not been flushed (see [below](#offset-management)). Defaults to 30000ms (30 seconds).
 
 The following example shows how a subscription might be configured:
@@ -311,7 +312,9 @@ configHook: config =>
 
 ### Partition Assignment Strategy
 
-Kafka distributes partitions across consumers in a consumer group using a partition assignment strategy. In V10, Brighter provides control over this strategy through the **partitionAssignmentStrategy** parameter.
+Kafka distributes partitions across consumers in a consumer group using a partition assignment strategy. Brighter provides control over this strategy through the **partitionAssignmentStrategy** parameter on the subscription, or the **PartitionAssignmentStrategy** property on a `ClassicGroupProtocol` (see [Consumer Group Protocol (KIP-848)](#consumer-group-protocol-kip-848)).
+
+> **Deprecated**: The **partitionAssignmentStrategy** parameter and the **PartitionAssignmentStrategy** property on `KafkaSubscription` are obsolete and will be removed in a future version. Configure the strategy on a `ClassicGroupProtocol` assigned to the subscription's **GroupProtocol** property instead. Note that partition assignment strategies only apply to the classic protocol; with KIP-848 partition assignment is broker-driven.
 
 **Available Strategies**:
 
@@ -335,9 +338,14 @@ var subscription = new KafkaSubscription<GreetingEvent>(
 	subscriptionName: new SubscriptionName("paramore.example.greeting"),
 	channelName: new ChannelName("greeting.event"),
 	routingKey: new RoutingKey("greeting.event"),
-	groupId: Environment.GetEnvironmentVariable("KAFKA_GROUPID"),
-	partitionAssignmentStrategy: PartitionAssignmentStrategy.Range
-);
+	groupId: Environment.GetEnvironmentVariable("KAFKA_GROUPID")
+)
+{
+	GroupProtocol = new ClassicGroupProtocol
+	{
+		PartitionAssignmentStrategy = PartitionAssignmentStrategy.Range
+	}
+};
 ```
 
 **CooperativeSticky Limitation**:
@@ -348,11 +356,82 @@ The **CooperativeSticky** strategy is not supported when using manual offset com
 // This will throw an exception:
 var subscription = new KafkaSubscription<GreetingEvent>(
 	// ...
-	partitionAssignmentStrategy: PartitionAssignmentStrategy.CooperativeSticky // ❌ Not supported
-);
+)
+{
+	GroupProtocol = new ClassicGroupProtocol
+	{
+		PartitionAssignmentStrategy = PartitionAssignmentStrategy.CooperativeSticky // ❌ Not supported
+	}
+};
 ```
 
 This is due to a [known issue in librdkafka](https://github.com/confluentinc/librdkafka/issues/4059) where CooperativeSticky doesn't work correctly with manual offset management.
+
+### Consumer Group Protocol (KIP-848)
+
+[KIP-848](https://cwiki.apache.org/confluence/display/KAFKA/KIP-848%3A+The+Next+Generation+of+the+Consumer+Rebalance+Protocol) is Kafka's next-generation consumer group protocol: group membership and partition assignment become broker-driven, which significantly reduces rebalance times and removes the "stop-the-world" rebalances of the classic protocol. It is generally available from Apache Kafka 4.0 (which also requires KRaft mode, with no ZooKeeper).
+
+Brighter supports both protocols through the **GroupProtocol** property on `KafkaSubscription`, which takes an `IGroupProtocol` implementation:
+
+- **ClassicGroupProtocol** (default): Kafka's original consumer group protocol, where partition assignment is computed by the clients. Carries `SessionTimeout`, `HeartbeatInterval`, and `PartitionAssignmentStrategy`.
+- **ConsumerGroupProtocol**: The KIP-848 consumer protocol (`group.protocol=consumer`), where partition assignment is computed by the broker. Carries `GroupRemoteAssignor` (the broker-side assignor name) and `GroupInstanceId` (static membership).
+
+**Using the classic protocol explicitly**:
+
+``` csharp
+var subscription = new KafkaSubscription<GreetingEvent>(
+	subscriptionName: new SubscriptionName("paramore.example.greeting"),
+	channelName: new ChannelName("greeting.event"),
+	routingKey: new RoutingKey("greeting.event"),
+	groupId: Environment.GetEnvironmentVariable("KAFKA_GROUPID")
+)
+{
+	GroupProtocol = new ClassicGroupProtocol
+	{
+		SessionTimeout = TimeSpan.FromSeconds(30),
+		HeartbeatInterval = TimeSpan.FromSeconds(10),
+		PartitionAssignmentStrategy = PartitionAssignmentStrategy.RoundRobin
+	}
+};
+```
+
+When you don't supply a **GroupProtocol**, Brighter uses a `ClassicGroupProtocol` and back-fills any null properties from the consumer's constructor parameters — `SessionTimeout` (default 10 seconds) and `PartitionAssignmentStrategy` (default `RoundRobin`) — preserving the existing behavior. If you do supply a `ClassicGroupProtocol`, any values you have set are preserved; only null properties are back-filled.
+
+> **Warning**: The back-fill mutates the `ClassicGroupProtocol` instance in place. Do not share one instance across subscriptions — with a shared instance, the first consumer's back-filled values would silently apply to the second subscription as well. The instance is also applied to every consumer created from the subscription (one per performer).
+
+**Using the KIP-848 consumer protocol**:
+
+``` csharp
+var subscription = new KafkaSubscription<GreetingEvent>(
+	subscriptionName: new SubscriptionName("paramore.example.greeting"),
+	channelName: new ChannelName("greeting.event"),
+	routingKey: new RoutingKey("greeting.event"),
+	groupId: Environment.GetEnvironmentVariable("KAFKA_GROUPID")
+)
+{
+	GroupProtocol = new ConsumerGroupProtocol()
+};
+```
+
+`ConsumerGroupProtocol` deliberately does **not** set `session.timeout.ms`, `heartbeat.interval.ms`, or `partition.assignment.strategy`: librdkafka rejects those properties when `group.protocol=consumer`. Heartbeats, session management, and partition assignment are broker-driven under KIP-848.
+
+**Broker requirement**: The KIP-848 consumer protocol requires a broker that supports it (Apache Kafka 4.0 or later). Using `ConsumerGroupProtocol` against an older broker will fail.
+
+**Static membership**:
+
+`ConsumerGroupProtocol.GroupInstanceId` enables Kafka static membership (`group.instance.id`). Static membership requires a **unique** id per consumer instance. Because the subscription's `GroupProtocol` instance is applied to every consumer created from that subscription (one per performer), all of those consumers would register the same static id and collide on group join. Only set `GroupInstanceId` when the subscription has a single performer; to use static membership with multiple performers, assign a unique `group.instance.id` per consumer via the **configHook** instead:
+
+``` csharp
+configHook: config => config.GroupInstanceId = $"greeter-{Guid.NewGuid()}"
+```
+
+**Infrastructure validation caveat**:
+
+With the consumer protocol, group membership is broker-driven and completes asynchronously: subscribing to a non-existent topic does not fail synchronously at consumer creation. Infrastructure validation via `OnMissingChannel.Validate` therefore has weaker guarantees than with the classic protocol and cannot reliably detect missing topics. Prefer `OnMissingChannel.Create`, or provision topics out-of-band (for example, via IaC).
+
+**Deprecated subscription properties**:
+
+`KafkaSubscription.SessionTimeout` and `KafkaSubscription.PartitionAssignmentStrategy` are now marked obsolete and will be removed in a future version. Their values are still honored as back-fill defaults for the classic protocol, but new code should configure these values on a `ClassicGroupProtocol` instead.
 
 ## Offset Management
 
@@ -469,10 +548,3 @@ A non-blocking retry typically creates a copy of the current record, and appends
 (You may need multiple tables or streams to support different delay lengths)
 
 Until Brighter supports this for you, implementation of non-blocking consumers is left to the user.
-
-
-
-
-
-
-

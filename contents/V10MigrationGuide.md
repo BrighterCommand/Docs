@@ -590,6 +590,61 @@ services.AddBrighter(options =>
 
 **See also**: [InMemory Options Documentation](/contents/InMemoryOptions.md)
 
+### 6. Kafka KIP-848 Consumer Group Protocol
+
+V10 adds support for [KIP-848](https://cwiki.apache.org/confluence/display/KAFKA/KIP-848%3A+The+Next+Generation+of+the+Consumer+Rebalance+Protocol), Kafka's next-generation consumer group protocol with broker-driven partition assignment (requires Apache Kafka 4.0 or later).
+
+**Not a breaking change**: Existing subscriptions continue to use the classic consumer group protocol by default.
+
+**Obsoleted properties**: `KafkaSubscription.SessionTimeout` and `KafkaSubscription.PartitionAssignmentStrategy` are now marked `[Obsolete]` and will be removed in a future version. They still work (their values are used as back-fill defaults), but new code should set these values on a `ClassicGroupProtocol`:
+
+**Before**:
+
+```csharp
+var subscription = new KafkaSubscription<GreetingEvent>(
+    subscriptionName: new SubscriptionName("paramore.example.greeting"),
+    channelName: new ChannelName("greeting.event"),
+    routingKey: new RoutingKey("greeting.event"),
+    groupId: "my-consumer-group",
+    sessionTimeout: TimeSpan.FromSeconds(30),
+    partitionAssignmentStrategy: PartitionAssignmentStrategy.Range
+);
+```
+
+**After**:
+
+```csharp
+var subscription = new KafkaSubscription<GreetingEvent>(
+    subscriptionName: new SubscriptionName("paramore.example.greeting"),
+    channelName: new ChannelName("greeting.event"),
+    routingKey: new RoutingKey("greeting.event"),
+    groupId: "my-consumer-group"
+)
+{
+    GroupProtocol = new ClassicGroupProtocol
+    {
+        SessionTimeout = TimeSpan.FromSeconds(30),
+        PartitionAssignmentStrategy = PartitionAssignmentStrategy.Range
+    }
+};
+```
+
+**Opting into KIP-848**:
+
+```csharp
+var subscription = new KafkaSubscription<GreetingEvent>(
+    subscriptionName: new SubscriptionName("paramore.example.greeting"),
+    channelName: new ChannelName("greeting.event"),
+    routingKey: new RoutingKey("greeting.event"),
+    groupId: "my-consumer-group"
+)
+{
+    GroupProtocol = new ConsumerGroupProtocol()
+};
+```
+
+**See also**: [Kafka Configuration — Consumer Group Protocol (KIP-848)](/contents/KafkaConfiguration.md#consumer-group-protocol-kip-848)
+
 ## Step 4: Test Your Migration
 
 ### Unit Tests
