@@ -332,14 +332,21 @@ from scratch and carry the same risk, so they are verified as they are written
 > Goal: navigation, accuracy, and the QA checklist. Runs after Phases 2 and 3.
 > Order matters: 4.1 before 4.4; 4.2 before 4.5.
 
-- [ ] **Task 4.1:** Update `SUMMARY.md`
+- [x] **Task 4.1:** Update `SUMMARY.md`
   - Input: `design.md` §SUMMARY.md Changes; current lines 81–82
   - Output: `* [Replay On Seen](/contents/ReplayOnSeen.md)` inserted between
     `Inbox Support` and `MSSQL Outbox` in the **Outbox and Inbox** section, unnested
   - Notes: Single line, no nesting — nesting in that section signals "one of N
     implementations", the wrong signal here.
 
-- [ ] **Task 4.2:** Check `ReplayOnSeen.md` length and decide on the split
+- [x] **Task 4.2:** Check `ReplayOnSeen.md` length and decide on the split
+  - **Decision (2026-08-03):** split executed. Page was 1,154 lines against a 450–520
+    target — the design estimate was wrong by 2.2×, not an overrun. Custom-store notes
+    [P2-18] extracted to `contents/CausationTrackingStores.md` (149 lines) on the audience
+    seam; `ReplayOnSeen.md` is now 1,032 lines. The split is justified by audience, **not**
+    by length: it removes 11% and cannot reach the target. 1,032 is within repo norms
+    (`QueryPatterns.md` 1,289, `CQRSWithBrighterAndDarker.md` 1,142,
+    `BrighterBasicConfiguration.md` 1,068). No reader-facing material was cut.
   - Input: the finished page; `design.md` §1 target (450–520 lines)
   - Output: either confirmation the page is within target, or the custom-store section
     [P2-18] extracted to its own page with `SUMMARY.md` and the Further Reading links
@@ -348,7 +355,17 @@ from scratch and carry the same risk, so they are verified as they are written
     custom-store notes — never cut reader-facing material. That section is the clean seam
     because it targets a different audience. Depends on 3.8.
 
-- [ ] **Task 4.3:** Verify every code example against the source
+- [x] **Task 4.3:** Verify every code example against the source
+  - **Result (2026-08-03):** all 12 examples verified against V10 source; 3 defects found
+    and fixed. (1) `ReplayOnSeen.md` quoted the two "does not implement" validation errors
+    naming `'InMemoryInbox'` and `'MySqlOutbox'` — both *do* implement the role interfaces
+    (`InMemoryInbox.cs:115`; `RelationDatabaseOutbox.cs:24`), so neither message can occur
+    as printed, and it contradicted the Store Support table on the same page. Renamed to
+    `'MyCustomInbox'`/`'MyCustomOutbox'` and added a note that these two Errors can only
+    name a hand-written store. (2) `DynamoOutbox.md` presented `CausationIndexName` as
+    freely settable; `DynamoDbConfiguration.cs:36-40` says "Leave this at the default" —
+    reframed to lead with that. (3) Examples 5 and 9, the two written from scratch, were
+    **correct** — the risk flagged at design did not materialise.
   - Input: all 12 examples; the Phase 1 `verification-notes.md`
   - Output: confirmation each example compiles against the V10 API; fixes for any drift
   - Notes: Concentrate on Examples **5** (the two-step cascade) and **9** (the DynamoDB
@@ -356,7 +373,20 @@ from scratch and carry the same risk, so they are verified as they are written
     `InboxConfiguration` parameter names and Example 4's `Context as RequestContext` form.
     This is the second pass; examples were verified at writing time.
 
-- [ ] **Task 4.4:** Verify all internal links resolve
+- [x] **Task 4.4:** Verify all internal links resolve
+  - **Result (2026-08-03):** `python3 tools/linkcheck.py` exits 0 — 108 files, zero broken
+    links. Checked beyond the tool, since it verifies only that links present resolve:
+    all eight edited pages carry a back-link into `ReplayOnSeen.md`;
+    `BrighterOutboxSupport.md#you-always-need-a-sweeper` resolves (target at
+    `BrighterOutboxSupport.md:182`); `BrighterBasicConfiguration.md#inbox` resolves from
+    the `#### **Inbox**` heading and is used by 9 pages; the external ADR URL (which the
+    tool skips) names the right one of the **four** files sharing number 0057, and that
+    file is on `origin/master`. Both new pages are in `SUMMARY.md`.
+  - **Out of scope, for the record:** the repo has 10 pre-existing orphans not in
+    `SUMMARY.md` (`ClaimCheck.md`, `Compression.md`, `EFCoreOutbox.md`,
+    `ImplementingAHandler.md`, `MongoDBInbox.md`, `S3LuggageStore.md`,
+    `AzureBlobConfiguration.md`, `Requests, Commands and Events.md`, `VersionBegin.md`,
+    `VersionEnd.md`). None introduced by this spec. linkcheck cannot detect orphans.
   - Input: all new and edited pages, `SUMMARY.md`
   - Output: `python3 tools/linkcheck.py` exits zero; fixes for anything it reports
   - Notes: Includes the back-links into `ReplayOnSeen.md` from all eight edited pages and
@@ -365,7 +395,25 @@ from scratch and carry the same risk, so they are verified as they are written
     `BrighterBasicConfiguration.md#inbox` was confirmed resolving at tasks review — the
     design's "known-unverified link" concern is settled; seven pages use it. Depends on 4.1.
 
-- [ ] **Task 4.5:** Terminology and style pass
+- [x] **Task 4.5:** Terminology and style pass
+  - **Result (2026-08-03):** 5 fixes. (1-2) `PipelineValidation.md:335,367` used lowercase
+    "causation ids"/"causation id" in our own prose — capitalised per design §Style Notes.
+    (3-4) The duplicate-flow diagram in `ReplayOnSeen.md` used lowercase inside the ASCII
+    box — capitalised; replacement is the same character width, so box alignment holds.
+    (5) `BrighterInboxSupport.md:53` said "Service Activator" as a concept, banned by
+    CLAUDE.md — now "Dispatcher", and its "will result" changed to present tense. That
+    line was **pre-existing** (commit 213def1), not written by this spec; corrected as it
+    sits directly under our new paragraph.
+  - **Deliberately left alone:** lowercase "causation id" at `ReplayOnSeen.md:559,613` —
+    both are verbatim quoted output (`HandlerPipelineValidationRules.cs`,
+    `UseInboxHandler.cs:264`) and must match the source exactly. Remaining
+    "ServiceActivator" hits across the deliverables are real assembly/type/method names
+    (`ServiceActivatorHostedService`, `AddServiceActivator`) or Glossary entries defining
+    the term — all legitimate.
+  - **Verified clean:** no "idempotent" anywhere in the new pages; "cascade" never
+    capitalised and not in the Glossary; "Replay On Seen" appears only as the H1 and as
+    link text, never as a pseudo-term in prose; no first-person; all six "will" usages are
+    genuine future reference, not present-tense violations.
   - Input: all deliverables; `contents/Glossary.md`, `BasicConcepts.md`,
     `design.md` §Style Notes
   - Output: consistent **Causation Id** / `CausationId`, **Replay** / `OnceOnlyAction.Replay`,
@@ -376,7 +424,15 @@ from scratch and carry the same risk, so they are verified as they are written
     not go in the Glossary. Confirm the page title "Replay On Seen" has not leaked into
     the running prose as a pseudo-term. Depends on 4.2.
 
-- [ ] **Task 4.6:** Final read-through against the QA checklist
+- [x] **Task 4.6:** Final read-through against the QA checklist
+  - **Result (2026-08-03):** QA checklist passes; `README.md` Status Checklist updated
+    with the closing note. One fix: the intro of `CausationTrackingStores.md` bolded
+    **Causation Id** without defining it — a reader landing on that page directly (it has
+    its own `SUMMARY.md` entry since 4.2) got no definition. Added a one-clause definition
+    and deep-linked the term to `ReplayOnSeen.md#causation-id`. Verified the referenced
+    test `When_a_seen_message_is_replayed_end_to_end.cs` exists; all 20 requirements
+    P0-1..P2-20 map to completed tasks; nothing dropped, including the P2-19 item the
+    spec pre-authorised cutting.
   - Input: `CLAUDE.md` Quality Assurance Checklist; all deliverables
   - Output: the `README.md` Status Checklist ticked (Writing complete, Documentation
     reviewed) with a short closing note beneath it confirming the code, content,

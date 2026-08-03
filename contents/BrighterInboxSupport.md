@@ -50,7 +50,7 @@ The combination of these flags results in the following behaviors:
 
 `Replay` asks for more than the other two actions: it needs an inbox and an outbox that both track causation, a schema migrated to hold the causation column, and an [Outbox Sweeper](/contents/BrighterOutboxSupport.md#you-always-need-a-sweeper) to resend what it marks undispatched. Read [Replay On Seen](/contents/ReplayOnSeen.md) before you enable it — miss a prerequisite and replay does nothing, usually without an error.
 
-In the context of the Service Activator (listening to messages over middleware) throwing a `OnceOnlyException` will result in the message being acked (because it has already been processed).
+In the context of the Dispatcher (listening to messages over middleware) throwing a `OnceOnlyException` results in the message being acked (because it has already been processed).
 
 The inbox is global to your application and uses the request id; you will want to distinguish requests in the inbox if you need to store the same request id for different pipelines. For example, if you deliver an event to multiple handlers, each handler has a request with the same request id.
 

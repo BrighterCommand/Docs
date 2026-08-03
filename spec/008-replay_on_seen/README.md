@@ -1,8 +1,7 @@
 # Spec 008: Replay On Seen
 
 **Created:** 2026-08-01
-**Status:** Implementation Phase — requirements, design, and tasks all approved
-(2026-08-01 / 2026-08-02 / 2026-08-02)
+**Status:** Writing and review complete (2026-08-03) — ready to close
 
 ## Topic Overview
 
@@ -42,9 +41,52 @@ configuration, and the observability and gotchas around replay.
 - [x] Outline reviewed and approved (2026-08-02)
 - [x] Writing tasks identified (`tasks.md`)
 - [x] Tasks reviewed and approved (2026-08-02)
-- [ ] Writing complete
-- [ ] Documentation reviewed
+- [x] Writing complete (2026-08-03)
+- [x] Documentation reviewed (2026-08-03)
 - [ ] Spec closed
+
+### Closing note (2026-08-03)
+
+All 33 tasks complete; every requirement P0-1 through P2-20 is covered. **Nothing was
+dropped** — including P2-19, which the tasks flagged as the item to cut if effort ran
+short.
+
+**Deliverables:** `contents/ReplayOnSeen.md` (1,037 lines) and
+`contents/CausationTrackingStores.md` (151 lines), plus updates to nine existing pages
+(`BrighterInboxSupport`, `BrighterOutboxSupport`, `BrighterBasicConfiguration`,
+`PipelineValidation`, `DynamoOutbox`, `Glossary`, `BoxProvisioning`,
+`BoxProvisioningUpgrade`, `V10MigrationGuide`) and two `SUMMARY.md` entries.
+
+**QA checklist result:**
+
+- *Code* — all 12 examples verified against V10 source in Task 4.3. Every C# block is
+  fenced `csharp`; the three unlabelled fences are plain-text output (the flow diagram
+  and two quoted log blocks) and correctly carry no language. Three defects were found
+  and fixed, notably two quoted validation errors naming stores that always implement
+  the role interfaces and so could never produce them.
+- *Content* — terminology matches the Glossary and design §Style Notes (Task 4.5, 5
+  fixes). No "idempotent"; "cascade" stays descriptive; the page title never leaks into
+  prose as a pseudo-term.
+- *Structure* — both pages are in `SUMMARY.md`; `linkcheck.py` exits 0 across 108 files;
+  each page ends in Further Reading.
+- *Accuracy* — claims checked against source, not release notes alone. The
+  `CausationIndexName` guidance was reversed to match `DynamoDbConfiguration.cs`, which
+  says "Leave this at the default".
+
+**Deliberate deviations, all recorded in `design.md` §Style Notes:** no Sample Code
+section (no sample in `Brighter/samples/` uses replay — the end-to-end test is cited
+instead); "You Must Thread Your RequestContext" is an H2 prerequisite rather than a
+pitfall; store support is a matrix rather than per-store pages; and the
+`BoxProvisioning.md` corrections belong to spec 005's pages but are fixed here.
+
+**Known gap, out of scope:** `ReplayOnSeen.md` is 1,037 lines against a design target of
+450–520. The target was mis-estimated at design time by roughly 2.2×, not overrun; the
+sanctioned custom-store split removed 128 lines and could not close that distance. The
+page sits within repo norms (`QueryPatterns.md` 1,289; `CQRSWithBrighterAndDarker.md`
+1,142). See Task 4.2 for the full reasoning.
+
+Separately, Task 4.4 recorded 10 pre-existing orphan pages absent from `SUMMARY.md`,
+none introduced by this spec. They deserve their own change.
 
 ## Next Steps
 

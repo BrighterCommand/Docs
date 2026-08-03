@@ -332,7 +332,7 @@ new RmqSubscription<OrderCreated>(...)
 
 ### Replay Without Causation Tracking
 
-A handler configured with `OnceOnlyAction.Replay` needs an Inbox and an Outbox that both track causation ids, *and* live schemas that can store them. Validation checks each store in turn. Only a store that does not implement the role interface is an Error — an un-migrated schema is a Warning, so the host starts cleanly and replay silently does nothing.
+A handler configured with `OnceOnlyAction.Replay` needs an Inbox and an Outbox that both track Causation Ids, *and* live schemas that can store them. Validation checks each store in turn. Only a store that does not implement the role interface is an Error — an un-migrated schema is a Warning, so the host starts cleanly and replay silently does nothing.
 
 The usual cause is provisioning one box and forgetting the other.
 
@@ -364,7 +364,7 @@ services.AddBrighter()
     });
 ```
 
-Replay reads the causation id from the Inbox and hands it to the Outbox, so either box being behind is enough to stop it. [Replay On Seen](/contents/ReplayOnSeen.md#when-replay-does-not-fire) lists every finding this rule produces, along with the runtime failures that produce no startup finding at all.
+Replay reads the Causation Id from the Inbox and hands it to the Outbox, so either box being behind is enough to stop it. [Replay On Seen](/contents/ReplayOnSeen.md#when-replay-does-not-fire) lists every finding this rule produces, along with the runtime failures that produce no startup finding at all.
 
 ## Further Reading
 

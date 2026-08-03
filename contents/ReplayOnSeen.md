@@ -159,13 +159,13 @@ Duplicate PlaceOrder arrives
 │         │                                    │
 │         ▼                                    │
 │   inbox.GetCausationId(id, contextKey)       │
-│         │  ──► the causation id stored when  │
+│         │  ──► the Causation Id stored when  │
 │         │      PlaceOrder was first handled  │
 │         ▼                                    │
 │   outbox.ReplayCausation(causationId)        │
 │         │  ──► clears the dispatched state   │
 │         │      of every message stored under │
-│         │      that causation id             │
+│         │      that Causation Id             │
 │         ▼                                    │
 │   return  ──►  PlaceOrderHandler never runs  │
 └──────────────────────────────────────────────┘
@@ -417,7 +417,7 @@ marked as startup errors stop your host — so it is worth walking the list befo
 
 | Requirement | How to satisfy it | What happens if you don't |
 |---|---|---|
-| The Inbox implements `IAmACausationTrackingInbox` | Every Brighter-maintained Inbox already does. A hand-written Inbox must implement it — see [Implementing Causation Tracking in Your Own Store](#implementing-causation-tracking-in-your-own-store) | Startup **error** from [pipeline validation](/contents/PipelineValidation.md): replay has no way to look up the original Causation Id |
+| The Inbox implements `IAmACausationTrackingInbox` | Every Brighter-maintained Inbox already does. A hand-written Inbox must implement it — see [Implementing Causation Tracking in Your Own Store](/contents/CausationTrackingStores.md) | Startup **error** from [pipeline validation](/contents/PipelineValidation.md): replay has no way to look up the original Causation Id |
 | The Outbox implements `IAmACausationTrackingOutbox` | Same — every Brighter-maintained Outbox does | Startup **error**. If there is no Outbox at all, you get a **warning** instead: the duplicate is skipped and nothing is resent |
 | The store schema carries the causation column | Run [box provisioning](/contents/BoxProvisioning.md) to bring the schema up to date; on DynamoDB, create the [Causation index](/contents/DynamoOutbox.md#replay-support-the-causation-index). See [Store Support](#store-support) for what each store needs | Startup **warning** only — the host starts. At runtime the store reports no causation support, duplicates are skipped, and nothing is resent |
 | An Outbox Sweeper is running | Register one with `.UseOutboxSweeper(...)` — see below | The messages are marked undispatched and stay that way. Nothing reaches the broker |
@@ -517,6 +517,10 @@ the write path falls back to the old shape when the column is missing. That fall
 the restart it implies once you *have* migrated, is covered under
 [Upgrading Without Migrating](#upgrading-without-migrating).
 
+Writing your own Inbox or Outbox, rather than using one Brighter ships? The role interfaces
+it has to implement, and the three rules that are easy to get wrong, are covered in
+[Implementing Causation Tracking in Your Own Store](/contents/CausationTrackingStores.md).
+
 ## When Replay Does Not Fire
 
 Replay is quiet when it works and quiet when it doesn't. A duplicate arrives, your handler
@@ -539,7 +543,7 @@ stores for their schema capability rather than assuming it.
 
 | Finding | Severity | Cause | Fix |
 |---|---|---|---|
-| Inbox is not causation-tracking | **Error** | The configured Inbox does not implement `IAmACausationTrackingInbox`, so there is no way to look up the original Causation Id | Use a Brighter-maintained Inbox, or implement the interface — see [Implementing Causation Tracking in Your Own Store](#implementing-causation-tracking-in-your-own-store) |
+| Inbox is not causation-tracking | **Error** | The configured Inbox does not implement `IAmACausationTrackingInbox`, so there is no way to look up the original Causation Id | Use a Brighter-maintained Inbox, or implement the interface — see [Implementing Causation Tracking in Your Own Store](/contents/CausationTrackingStores.md) |
 | Inbox schema does not support it | Warning | The Inbox implements the interface, but the live store reports no causation support — usually an un-migrated schema | Migrate the Inbox. See [Store Support](#store-support) |
 | No Outbox to replay | Warning | Replay is configured on a handler with no Outbox injected | Expected for a terminal step that deposits nothing. Otherwise, configure an Outbox |
 | Outbox is not causation-tracking | **Error** | The configured Outbox does not implement `IAmACausationTrackingOutbox`, so the dispatched state of the original messages cannot be reset | Use a Brighter-maintained Outbox, or implement the interface |
@@ -551,7 +555,7 @@ An unconfigured Inbox renders as `'(none)'` in the first message. The messages r
 
 ```
 OnceOnlyAction.Replay requires a causation-tracking inbox, but the configured
-inbox 'InMemoryInbox' does not implement IAmACausationTrackingInbox — Replay
+inbox 'MyCustomInbox' does not implement IAmACausationTrackingInbox — Replay
 cannot find the causation id of the original handling
 
 OnceOnlyAction.Replay requires causation tracking, but the inbox store schema
@@ -563,7 +567,7 @@ skipped and no messages are resent (Replay is a graceful terminal step without
 an outbox)
 
 OnceOnlyAction.Replay requires a causation-tracking outbox, but the configured
-outbox 'MySqlOutbox' does not implement IAmACausationTrackingOutbox — Replay
+outbox 'MyCustomOutbox' does not implement IAmACausationTrackingOutbox — Replay
 cannot reset the dispatched state of the original messages
 
 OnceOnlyAction.Replay requires causation tracking, but the outbox store schema
@@ -576,7 +580,12 @@ store — the schema capability probe failed (SqlException: Login failed for use
 relying on Replay
 ```
 
-Two details worth knowing when you read the output. Only the two "does not implement"
+Note the store names in the two "does not implement" messages. Every Inbox and Outbox
+Brighter ships implements the role interfaces, so those two findings can only ever name a
+store you wrote yourself — a Brighter-maintained store that is merely un-migrated produces
+the *schema* warning instead.
+
+Two more details worth knowing when you read the output. Only the two "does not implement"
 findings are **Errors**; everything else is a Warning, which means a host with a completely
 un-migrated schema starts perfectly cleanly and then never replays anything. And the Inbox
 findings come first: if there is no Outbox, or the Outbox is not causation-tracking,
@@ -1006,134 +1015,6 @@ The full rationale, including the alternatives that were considered and rejected
 [ADR 0057 — Replay Outbox Messages on Inbox Duplicate Detection](https://github.com/BrighterCommand/Brighter/blob/master/docs/adr/0057-replay-outbox-on-inbox-duplicate.md).
 Note the filename: several ADRs share the number 0057.
 
-## Implementing Causation Tracking in Your Own Store
-
-> This section is for people **writing** an Inbox or Outbox — a backend Brighter does not
-> ship, or a wrapper of your own. If you are using a Brighter-maintained store, it already
-> implements everything below; see [Store Support](#store-support) instead.
-
-Causation tracking is an **optional role interface** on each box, separate from the core
-Inbox and Outbox interfaces. A store that does not implement it keeps working exactly as
-before — it simply never participates in replay.
-
-### The two interfaces
-
-Both live in the `Paramore.Brighter` namespace.
-
-`IAmACausationTrackingInbox` has three jobs:
-
-| Member | What your implementation must do |
-|---|---|
-| `SupportsCausationTracking()` / `…Async()` | Report whether the **live** store can hold a Causation Id right now |
-| `GetCausationId(id, contextKey, …)` / `…Async()` | Return the Causation Id stored against an entry, or `null` if there is none |
-| *(your `Add`)* | Read the Causation Id out of the request context and store it with the entry |
-
-`IAmACausationTrackingOutbox` mirrors it:
-
-| Member | What your implementation must do |
-|---|---|
-| `SupportsCausationTracking()` / `…Async()` | As above |
-| `ReplayCausation(causationId, …)` / `…Async()` | Clear the dispatched state of every message stored under that Causation Id, so the Sweeper resends them. Return `true` if you did it, `false` if it was a no-op |
-| *(your `Add`)* | Read the Causation Id out of the request context and store it with the message |
-
-Note that storing the Causation Id is **not** on either interface. It happens inside your
-`Add`, which already receives the `RequestContext` it needs:
-
-```csharp
-using Paramore.Brighter;
-
-private static string? ReadCausationId(RequestContext? requestContext)
-    => requestContext?.Bag.TryGetValue(RequestContextBagNames.CausationId, out var value) == true
-        ? value as string
-        : null;
-```
-
-### Three rules that are easy to get wrong
-
-**`SupportsCausationTracking()` must report the live state, not your intent.** It is not
-"does this class implement the interface" — the class obviously does, or the method would not
-be there. It is "can the store *this instance is talking to* hold a Causation Id today". For a
-schemaless store that is genuinely always `true`. For anything with a schema, go and look:
-Brighter's relational stores query for the column, and its DynamoDB Outbox calls
-`DescribeTable` for the index. Returning an optimistic `true` makes
-[pipeline validation](/contents/PipelineValidation.md) pass and then fails at runtime, which
-is precisely the outcome the method exists to prevent.
-
-**Never throw for an unsupported store — degrade.** `GetCausationId` returns `null` and
-`ReplayCausation` returns `false`. A duplicate arriving at an un-migrated store must not
-unwind the consumer pipeline with a schema error, and the `false` return is what lets
-Brighter record a
-[`Replay Skipped` event](#replay-versus-replay-skipped) rather than claiming a replay that
-never happened.
-
-**Gate your own write path on the same answer.** If your `Add` unconditionally writes a
-Causation Id, an un-migrated store starts failing deposits the moment someone upgrades. Ask
-the same probe, and fall back to your original write when it says no. If the probe is
-expensive, memoize it — and read
-[Upgrading Without Migrating](#upgrading-without-migrating) for the restart consequence that
-memoizing carries.
-
-### A skeleton
-
-```csharp
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Paramore.Brighter;
-
-public class MyOutbox : IAmAnOutboxSync<Message, MyTransaction>, IAmACausationTrackingOutbox
-{
-    private bool? _causationSupported;
-
-    // ... the core Outbox members: Get, MarkDispatched, OutstandingMessages, Delete ...
-
-    public void Add(Message message, RequestContext requestContext, int outBoxTimeout = -1,
-        IAmABoxTransactionProvider<MyTransaction>? transactionProvider = null)
-    {
-        var causationId = ReadCausationId(requestContext);
-
-        // Gate the write on the same probe: an un-migrated store keeps its original shape
-        if (SupportsCausationTracking())
-            StoreWithCausation(message, causationId);
-        else
-            Store(message);
-    }
-
-    public bool SupportsCausationTracking()
-        => _causationSupported ??= CausationColumnExists();   // a live check, memoized
-
-    public Task<bool> SupportsCausationTrackingAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(SupportsCausationTracking());
-
-    public bool ReplayCausation(string causationId, RequestContext? requestContext,
-        Dictionary<string, object>? args = null)
-    {
-        // A no-op, not an exception, when the store cannot support it
-        if (!SupportsCausationTracking())
-            return false;
-
-        foreach (var message in FindByCausation(causationId))
-            ClearDispatchedState(message);   // the Sweeper takes it from here
-
-        return true;
-    }
-
-    public Task<bool> ReplayCausationAsync(string causationId, RequestContext? requestContext,
-        Dictionary<string, object>? args = null, CancellationToken cancellationToken = default)
-        => Task.FromResult(ReplayCausation(causationId, requestContext, args));
-}
-```
-
-The Inbox side is the same shape: probe, store the Causation Id in `Add` when the probe says
-you can, and return it from `GetCausationId` — or `null`.
-
-### Registration
-
-Nothing extra to do. `AddProducers` checks whether your Outbox implements
-`IAmACausationTrackingOutbox` and registers the same instance under that interface as well.
-The Inbox handler takes it as an optional constructor dependency, so an Outbox that does not
-implement the role resolves to `null` and the handler degrades to a plain skip.
-
 ## Further Reading
 
 - [Inbox Support](/contents/BrighterInboxSupport.md) — configuring an Inbox, and the other
@@ -1147,6 +1028,8 @@ implement the role resolves to `null` and the handler degrades to a plain skip.
   run does, and what to check afterwards
 - [Pipeline Validation](/contents/PipelineValidation.md) — the startup checks, including the
   replay rule
+- [Implementing Causation Tracking in Your Own Store](/contents/CausationTrackingStores.md) —
+  the role interfaces to implement if you write your own Inbox or Outbox
 - [DynamoDb Outbox](/contents/DynamoOutbox.md) — including the Causation index replay needs
 - [Telemetry](/contents/Telemetry.md) — the tracing the span events attach to
 - [Glossary](/contents/Glossary.md) — Causation Id, Replay, Inbox, Outbox, Sweeper

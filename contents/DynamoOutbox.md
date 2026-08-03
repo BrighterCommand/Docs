@@ -175,9 +175,11 @@ Two operational notes:
 
 ### The index name
 
-`DynamoDbConfiguration.CausationIndexName` defaults to `"Causation"` and is settable, so the Outbox can query an index under another name.
+`DynamoDbConfiguration.CausationIndexName` defaults to `"Causation"`. **Leave it there.**
 
-Be aware of one wrinkle if you change it: the index name on `MessageItem` is a compile-time literal, so `DynamoDbTableFactory` always generates an index called `Causation`. Point `CausationIndexName` somewhere else and you must create that index yourself — otherwise the Outbox probes for a name nothing has created and concludes replay is unsupported.
+It has a public setter, unlike the name suggests it should be treated — but it does not behave like the `Outstanding` and `Delivered` index names, which you can rename freely. The Causation index name is also declared on `MessageItem` as an attribute argument, and attribute arguments must be compile-time constants, so the annotation cannot read your configured value. `DynamoDbTableFactory` therefore always generates an index called `Causation`, whatever you set here.
+
+Point `CausationIndexName` at another name and the probe and the replay query both target a GSI the table model never declares. Nothing errors: `SupportsCausationTracking()` simply reports `false`, and replay silently finds no messages. If you have a genuine reason to rename it, you must create the index under that name yourself.
 
 ### If you skip the index
 

@@ -79,6 +79,8 @@
    * [MongoDB Distributed Lock](/contents/MongoDbDistributedLock.md)
    * [Firestore Distributed Lock](/contents/FirestoreDistributedLock.md)
  * [Inbox Support](/contents/BrighterInboxSupport.md)
+ * [Replay On Seen](/contents/ReplayOnSeen.md)
+ * [Causation Tracking in a Custom Store](/contents/CausationTrackingStores.md)
  * [MSSQL Outbox](/contents/MSSQLOutbox.md)
  * [MySQL Outbox](/contents/MySQLOutbox.md)
  * [Postgres Outbox](/contents/PostgresOutbox.md)
