@@ -215,7 +215,7 @@ services.AddProducers(options =>
 Once you're comfortable with these basics:
 
 1. **Add Transactional Messaging** - Use [DepositPost and ClearOutbox](/contents/BrighterOutboxSupport.md) for guaranteed message delivery
-2. **Add Deduplication** - Use [Inbox Pattern](/contents/InboxConfiguration.md) to handle duplicate messages
+2. **Add Deduplication** - Use [Inbox Pattern](/contents/BrighterInboxSupport.md) to handle duplicate messages
 3. **Production Outbox** - Replace InMemory with [database-backed Outbox](/contents/BrighterOutboxSupport.md)
 4. **Explore Samples** - See the [WebAPI Sample](https://github.com/BrighterCommand/Brighter/tree/master/samples/WebAPI) for production patterns
 

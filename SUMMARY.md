@@ -20,13 +20,14 @@
 
 ## Brighter Request Handlers and Middleware Pipelines
 
- * [Requests, Commands and an Events](/contents/Requests%2C%20Commands%20and%20Events.md)
+ * [Requests, Commands and Events](/contents/Requests%2C%20Commands%20and%20Events.md)
  * [Dispatching Requests](/contents/DispatchingARequest.md)
  * [Dispatching An Async Request](/contents/AsyncDispatchARequest.md)
  * [Returning results from a Handler](/contents/ReturningResultsFromAHandler.md) 
  * [Building a Pipeline of Request Handlers](/contents/BuildingAPipeline.md)
  * [Building an Async Pipeline of Request Handlers](/contents/BuildingAnAsyncPipeline.md)
  * [Passing information between Handlers in the Pipeline](/contents/UsingTheContextBag.md) 
+ * [How to Implement a Request Handler](/contents/ImplementingAHandler.md)
  * [How to Implement an Async Request Handler](/contents/ImplementingAsyncHandler.md)
  * [Agreement Dispatcher](/contents/AgreementDispatcher.md)
  * [Supporting Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md)
@@ -52,6 +53,9 @@
  * [Routing](/contents/Routing.md) 
  * [Default Message Mappers](/contents/DefaultMessageMappers.md)
  * [Cloud Events Support](/contents/CloudEventsSupport.md)
+ * [Claim Check](/contents/ClaimCheck.md)
+   * [S3 Luggage Store](/contents/S3LuggageStore.md)
+ * [Compression](/contents/Compression.md)
  * [Dynamic Message Deserialization](/contents/DynamicMessageDeserialization.md) 
  * [AsyncAPI Document Generation](/contents/AsyncAPISupport.md)
  * [Error Handling](/contents/HandlerFailure.md)
@@ -64,7 +68,8 @@
  * [AWS SNS Configuration](/contents/AWSSQSConfiguration.md)
  * [Kafka Configuration](/contents/KafkaConfiguration.md)
  * [Azure Service Bus Configuration](/contents/AzureServiceBusConfiguration.md)
- * [Azure Archive Provider Configuration](/contents/AzureBlobArchiveProvider.md)
+ * [Azure Blob Archive Provider](/contents/AzureBlobArchiveProvider.md)
+   * [Azure Archive Provider Configuration](/contents/AzureBlobConfiguration.md)
  * [Brighter Control API](/contents/BrighterControlAPI.md)
 
 ## Outbox and Inbox
@@ -80,11 +85,14 @@
    * [MongoDB Distributed Lock](/contents/MongoDbDistributedLock.md)
    * [Firestore Distributed Lock](/contents/FirestoreDistributedLock.md)
  * [Inbox Support](/contents/BrighterInboxSupport.md)
+ * [Replay On Seen](/contents/ReplayOnSeen.md)
+ * [Causation Tracking in a Custom Store](/contents/CausationTrackingStores.md)
  * [MSSQL Outbox](/contents/MSSQLOutbox.md)
  * [MySQL Outbox](/contents/MySQLOutbox.md)
  * [Postgres Outbox](/contents/PostgresOutbox.md)
  * [Sqlite Outbox](/contents/SqliteOutbox.md)
  * [Dapper Outbox](/contents/DapperOutbox.md)
+ * [EF Core Outbox](/contents/EFCoreOutbox.md)
  * [Dynamo Outbox](/contents/DynamoOutbox.md)
  * [MongoDb Outbox](/contents/MongoDBOutbox.md)
  * [MSSQL Inbox](/contents/MSSQLInbox.md)
@@ -92,7 +100,7 @@
  * [Postgres Inbox](/contents/PostgresInbox.md)
  * [Sqlite Inbox](/contents/SqliteInbox.md)
  * [Dynamo Inbox](/contents/DynamoInbox.md)
- * [MongoDb Inbox](/contents/MongoDbInbox.md)
+ * [MongoDb Inbox](/contents/MongoDBInbox.md)
 
 ## Database Provisioning
 

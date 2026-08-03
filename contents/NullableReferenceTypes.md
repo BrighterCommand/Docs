@@ -704,6 +704,6 @@ Then address warnings incrementally and eventually enable `TreatWarningsAsErrors
 - [Microsoft: Nullable Reference Types](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references)
 - [Microsoft: Nullable Reference Types Tutorial](https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/nullable-reference-types)
 - [Microsoft: Nullable Attributes](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/attributes/nullable-analysis)
-- [Brighter Commands and Events](CommandsEventsAndMessages.md)
+- [Brighter Commands and Events](/contents/Requests%2C%20Commands%20and%20Events.md)
 - [Brighter Handlers](ImplementingAHandler.md)
 - [Brighter Message Mappers](MessageMappers.md)

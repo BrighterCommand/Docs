@@ -8,7 +8,7 @@ This glossary provides definitions for key terms used in Brighter and Darker. Te
 
 A message sent over a bus. The base type for Commands, Events, and Queries. A Request represents an instruction or notification that needs to be processed by a handler.
 
-See: [Implementing Command, Events and Queries](/contents/ImplementingCommand.md)
+See: [Implementing Command, Events and Queries](/contents/Requests%2C%20Commands%20and%20Events.md)
 
 ### Command
 
@@ -24,7 +24,7 @@ A notification that something has happened. Events are facts about the past. Mul
 
 Example: `GreetingMade`, `PersonDeleted`, `OrderPlaced`
 
-See: [Publishing Events](/contents/DistributedTaskQueue.md)
+See: [Publishing Events](/contents/TaskQueuePattern.md)
 
 ### Query
 
@@ -175,7 +175,19 @@ See: [Outbox Pattern](/contents/OutboxPattern.md), [Outbox Support](/contents/Br
 
 A pattern for deduplication - ensuring that a message is only processed once. The Inbox tracks which messages have been processed and prevents duplicate processing of the same message.
 
-See: [Inbox Configuration](/contents/InboxConfiguration.md)
+See: [Inbox Configuration](/contents/BrighterInboxSupport.md#inbox-configuration)
+
+### Causation Id
+
+The identifier that links an Inbox entry to the Outbox messages produced while handling that request. Every message a handler deposits during one invocation is stamped with the same Causation Id, and so is the Inbox entry recording that the request was handled — which is what lets a later duplicate find its own downstream messages. It defaults to the handled request's own `Id`. Distinct from the **Correlation Id**, which ties a reply back to its request; neither is derived from the other.
+
+See: [Causation Id](/contents/ReplayOnSeen.md#causation-id)
+
+### Replay (Inbox)
+
+The `OnceOnlyAction` that makes duplicate detection re-dispatch the Outbox messages produced during the original handling, instead of throwing or logging a warning. The handler does not run again: Brighter looks up the Inbox entry's [Causation Id](#causation-id), clears the dispatched state of the Outbox messages stored under it, and the Sweeper sends them on its next pass. Used to walk a stalled workflow forward when an upstream step succeeded but its downstream message was lost.
+
+See: [Replay On Seen](/contents/ReplayOnSeen.md)
 
 ### Sweeper
 

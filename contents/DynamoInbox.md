@@ -11,7 +11,7 @@ For this we will need the *Inbox* packages for the DynamoDb *Inbox*.
 **AWS SDK v4** (recommended for new projects):
 * **Paramore.Brighter.Inbox.DynamoDb.V4**
 
-See [AWS Configuration](/contents/AWSSQSConfiguration.md#migration-guidance) for migration guidance between v3 and v4.
+See [AWS Configuration](/contents/AWSSQSConfiguration.md#migrating-from-aws-sdk-v3-to-v4) for migration guidance between v3 and v4.
 
 ``` csharp
 private static IHostBuilder CreateHostBuilder(string[] args) =>

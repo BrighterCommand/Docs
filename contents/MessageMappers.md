@@ -8,7 +8,7 @@ Typically, you serialize your request as the **MessageBody** for in **MapToMessa
 
 The body is a byte[] and as such we can support any format that can be converted into a byte[] as the message body.
 
-Because [message oriented middleware](#message-oriented-middleware-mom) typically looks in a header for routing information, you add your routing information in the **MessageHeader**.
+Because [message oriented middleware](/contents/BasicConcepts.md#message-oriented-middleware-mom) typically looks in a header for routing information, you add your routing information in the **MessageHeader**.
 
 Each individual transport has code to turn a Brighter format message into a message oriented middleware compatible message, and vice versa, so your code only needs to translate to and from the Brighter format.
 

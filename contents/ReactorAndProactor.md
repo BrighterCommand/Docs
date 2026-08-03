@@ -427,9 +427,7 @@ var subscription = new Subscription<OrderCommand>(
 
 - [How the Dispatcher Works](HowServiceActivatorWorks.md) - Dispatcher internals
 - [Configuring the Dispatcher](HowConfiguringTheDispatcherWorks.md) - Dispatcher configuration
-- [Subscriptions](BrighterSubscriptionsAndTopology.md) - Subscription configuration
-- [Message Pumps](MessagePumps.md) - Message pump implementation details
-- [Performance Tuning](PerformanceTuning.md) - Optimization strategies
+- [Configuring Subscriptions](/contents/BrighterBasicConfiguration.md#configuring-the-dispatcher) - Subscription configuration
 
 ## Summary
 
