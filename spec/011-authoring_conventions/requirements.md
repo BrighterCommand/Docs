@@ -28,7 +28,7 @@ the difference is checkable rather than mysterious.
 
 | Measure | Value | Note |
 |---|---|---|
-| Pages under `contents/` | **107** | Earlier notes said 110. `linkcheck.py` reports 109 files = 107 pages + `SUMMARY.md` + `README.md`. No subdirectories. |
+| Pages under `contents/` | **105** | Measured at 107; two were `VersionBegin.md` / `VersionEnd.md`, a pre-GitBook-versioning hack, **deleted 2026-08-03** — see note below. Earlier programme notes said 110. `linkcheck.py` now reports 107 files = 105 pages + `SUMMARY.md` + `README.md`. No subdirectories. |
 | Pages with no H1 | **0** | Every page has one. |
 | Pages already opening with a blockquote after the H1 | **0** | Nothing to collide with. |
 | C# code blocks (```` ```csharp ````) | **796** | |
@@ -43,6 +43,27 @@ the difference is checkable rather than mysterious.
 Worst heading collisions: `## Further Reading` 29, `## Best Practices` 26,
 `## Configuration` 22, `## Troubleshooting` 14, `## Summary` 14, `## Usage` 13,
 `## Related Documentation` 10, `## Overview` 10.
+
+#### `VersionBegin.md` and `VersionEnd.md` deleted (2026-08-03)
+
+The corpus was 107 pages when measured. Two of them — `contents/VersionBegin.md`
+("Beginning of Version") and `contents/VersionEnd.md` ("End of Version") — were a hack
+predating GitBook's support for multiple versions, and were **deleted on the maintainer's
+instruction** while this task list was being written. Nothing linked to them, they were
+absent from `SUMMARY.md`, and each held an H1 plus one line of body.
+
+Consequences, all in the same direction:
+
+- **Every page count in this spec is 105**, not 107: the banner sweep, the
+  `pagetypes.tsv` row count, the V11 version bump and AC3.
+- **The heading figures are unchanged.** Neither page had an H2, so they contributed
+  nothing to the 53 colliding texts or the 297 instances.
+- **`linkcheck.py`'s `NON_CONTENT` exemption is gone.** It existed solely to keep these
+  two out of the orphan check. With them deleted, every page under `contents/` must now
+  be reachable from `SUMMARY.md` with no exemptions — a page that is not navigable has to
+  be either linked or deleted. `pagelint.py` therefore needs no exemption list either,
+  which removes a class of "is this page exempt?" ambiguity from the banner rule.
+- `linkcheck.py` is clean before and after the deletion.
 
 ### Mode mixing, measured
 
@@ -123,7 +144,7 @@ This spec's output is consumed by three parties, which is unusual and shapes the
 
 **Q1 — the banner goes below the H1.** *(decided 2026-08-03)* Below keeps the H1 as
 the first element, which is what GitBook extracts as the page title. The measurement
-makes this safe and unambiguous: **0 of 107 pages** currently begin with a blockquote
+makes this safe and unambiguous: **0 of 105 pages** currently begin with a blockquote
 after their H1, so "first non-blank line after the H1 must match the banner pattern"
 is a rule the linter can enforce with no legacy exceptions and no ambiguity about
 whether a banner is present.
@@ -135,7 +156,7 @@ GitBook renders as a callout, and nothing about it is version- or platform-speci
 **Q2 — front matter is ruled out.** *(resolved 2026-08-03, carried from the README)*
 GitBook's own documentation points at `.gitbook.yaml` rather than front matter for Git
 Sync, and issue #1079 reports front matter rendering literally into the page body.
-Shipping it across 107 pages risked a block of raw YAML atop every published page. The
+Shipping it across every page risked a block of raw YAML atop every published page. The
 visible banner is better for both audiences anyway — it renders, and it survives the
 front-matter stripping retrieval chunkers apply.
 
@@ -156,7 +177,7 @@ touches the split pages twice and produces two overlapping diffs, exactly the ou
 the ordering was chosen to avoid.
 
 **Q4 — the banner sweep does not trigger the `using`-directive rule.** *(decided
-2026-08-03)* Adding one mechanical line to 107 pages is not "touching" a page for the
+2026-08-03)* Adding one mechanical line to 105 pages is not "touching" a page for the
 purposes of the code-completeness rule. Otherwise the sweep drags 796 hand-verified
 code-block edits behind it and stops being reviewable.
 
@@ -209,7 +230,7 @@ Immediately below the H1, one blank line, then a single-line blockquote:
   contested, that argument belongs in review, not in the vocabulary.
 - **Applies to** — `Brighter V10`, `Darker V10`, or both. Required.
 
-  This is 107 edits at V11. That is acceptable — the docs site publishes one version
+  This is 105 edits at V11. That is acceptable — the docs site publishes one version
   at a time, so the bump is a single mechanical pass — but it must be *mechanical*:
   `pagelint.py --fix` covers the version segment (P1), so the V11 change is one
   command and a diff review rather than a page-by-page trudge.
@@ -285,7 +306,7 @@ generator.
 
 - **Conventions section in `CLAUDE.md`**, covering all five conventions above with
   the banner vocabulary written out.
-- **Banner added to all 107 pages** under `contents/`. Script-generated, human-reviewed
+- **Banner added to all 105 pages** under `contents/`. Script-generated, human-reviewed
   for the page-type call.
 - **`tools/pagelint.py`** implementing the rules below, wired into CI beside
   `linkcheck.py`.
@@ -325,7 +346,7 @@ generator.
 | ID | File | Description | Priority |
 |---|---|---|---|
 | D1 | `CLAUDE.md` | New *Page Conventions* section (banner format and vocabulary, heading qualification rule, navigation allowlist, version markers, code completeness, `llms.txt` format) **and an amendment to the existing *File Organization Pattern*** so the prescribed skeleton no longer mandates the unqualified headings the linter rejects. Both edits in one change — shipping the first without the second leaves `CLAUDE.md` self-contradictory. | P0 |
-| D2 | `contents/*.md` (107 files) | Banner inserted below each H1. | P0 |
+| D2 | `contents/*.md` (105 files) | Banner inserted below each H1. | P0 |
 | D3 | `contents/*.md` (subset) | Colliding headings subject-qualified; the 8 inbound anchor links repointed. | P0 |
 | D4 | `tools/pagelint.py` | The linter. Rules and exit-code contract below. | P0 |
 | D5 | `.github/workflows/docs.yml` | **The repository's first CI workflow.** Runs `linkcheck.py` and `pagelint.py` on push and pull request; both gate the build. | P0 |
@@ -418,11 +439,11 @@ External inbound links from blog posts and Stack Overflow answers are the real
 exposure and cannot be fixed from here; the count is small enough that this is
 acceptable, and it is the last moment it will be this small.
 
-**The banner sweep is a 107-file diff.** Reviewable only if it is genuinely
+**The banner sweep is a 105-file diff.** Reviewable only if it is genuinely
 mechanical. Keep it as its own commit, separate from heading de-duplication, and let
 the linter rather than the reviewer verify uniformity.
 
-**Page-type assignment is a judgement call at 107 scale.** The script can propose from
+**Page-type assignment is a judgement call at 105 scale.** The script can propose from
 the existing structure, but a wrong page type is worse than none — it tells a reader
 the page is something it is not. Every proposed type gets human review, and pages that
 resist classification go on the worklist as split candidates rather than being forced
@@ -433,7 +454,7 @@ into a bucket.
 1. `python3 tools/pagelint.py` exits 0 across the repo, with the `using`-directive
    warning count printed and recorded as the baseline to shrink.
 2. `python3 tools/linkcheck.py` exits 0, including the orphan check.
-3. All 107 pages carry a banner whose page type has been reviewed by a human, not just
+3. All 105 pages carry a banner whose page type has been reviewed by a human, not just
    generated.
 4. No `##` heading text appears on more than one page, except the navigation allowlist.
 5. `CLAUDE.md` documents every convention the linter enforces, and the linter enforces

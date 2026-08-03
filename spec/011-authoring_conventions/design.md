@@ -8,7 +8,7 @@
 
 Unlike most documentation specs, the bulk of this one is **not new prose**. It is a
 convention, a tool that enforces it, the CI that runs the tool, and a mechanical sweep
-across 107 existing pages. Two page splits ship as demonstrators; the rest of the
+across 105 existing pages. Two page splits ship as demonstrators; the rest of the
 splitting is Spec 010's.
 
 ```
@@ -22,7 +22,7 @@ Docs/
 │   ├── linkcheck.py                      REUSE  helpers imported by pagelint
 │   └── pagelint.py                       NEW   D4 — the linter
 ├── contents/
-│   ├── *.md  (107 files)                 EDIT  D2 banner, D3 headings
+│   ├── *.md  (105 files)                 EDIT  D2 banner, D3 headings
 │   ├── RabbitMQConfiguration.md          SPLIT D6 → 4 pages
 │   ├── RabbitMQDurability.md             NEW   D6
 │   ├── RabbitMQMigrateToQuorumQueues.md  NEW   D6
@@ -91,7 +91,7 @@ BANNER_RE = re.compile(
 | `CQRSWithBrighterAndDarker.md` | `> **Explanation** · Applies to **Brighter and Darker V10**` |
 | `FAQ.md` | `> **Reference** · Applies to **Brighter V10**` |
 
-### Assigning a page type to 107 pages
+### Assigning a page type to 105 pages
 
 Automation proposes; a human decides. The proposal comes from signals we already have:
 
@@ -129,7 +129,7 @@ The two are genuinely different jobs and should not be conflated:
 | Input | `pagetypes.tsv` verdicts | The page itself |
 | Decides page type | Reads a human's decision | Never — cannot know |
 | Lifetime | Deleted after the sweep | Lives with the repo |
-| Job | Insert 107 banners once | Fix mechanical faults on new pages, bump the version at V11 |
+| Job | Insert 105 banners once | Fix mechanical faults on new pages, bump the version at V11 |
 
 Folding the TSV-reading into `--fix` would leave a durable tool carrying one-off
 migration logic, and would make the V11 version bump depend on a file that by then
@@ -630,9 +630,9 @@ requires a rule that is not yet true.
 |---|---|---|
 | 1 | `docs.yml` running `linkcheck.py` only | Green build on the untouched tree — the baseline |
 | 2 | `CLAUDE.md`: amend the pattern, add Page Conventions | Review; no code depends on it yet |
-| 3 | `pagelint.py`, all rules, **not yet in CI** | Run locally against the untouched tree. Expected: **107 banner errors** (rule 1, one per page), **256 cross-page heading errors** across 50 texts (rule 3a, one per instance), **34 within-page heading errors** across 12 pages (rule 3b). Those counts *are* the test — a materially different number means a rule is wrong, not the corpus |
-| 4 | Generate `pagetypes.tsv`; **human reviews every row** | Verdict column complete on all 107 rows; `apply_banners.py` refuses to run otherwise |
-| 5 | Banner sweep via `apply_banners.py` — one mechanical commit, 107 files | Rules 1 and 2 report zero |
+| 3 | `pagelint.py`, all rules, **not yet in CI** | Run locally against the untouched tree. Expected: **105 banner errors** (rule 1, one per page), **256 cross-page heading errors** across 50 texts (rule 3a, one per instance), **34 within-page heading errors** across 12 pages (rule 3b). Those counts *are* the test — a materially different number means a rule is wrong, not the corpus |
+| 4 | Generate `pagetypes.tsv`; **human reviews every row** | Verdict column complete on all 105 rows; `apply_banners.py` refuses to run otherwise |
+| 5 | Banner sweep via `apply_banners.py` — one mechanical commit, 105 files | Rules 1 and 2 report zero |
 | 6 | Heading de-duplication (256 cross-page + 34 within-page) and the 8 same-page anchors. **Plus a separate small commit** merging the 3 duplicate-content pairs in `Glossary.md` and `FAQ.md` | Rules 3a and 3b report zero; `linkcheck.py` still clean |
 | 7 | Add `pagelint.py` to `docs.yml` | Green build with both tools |
 | 8 | Split `RabbitMQConfiguration.md`; redirects | `linkcheck.py`, `pagelint.py`, redirect check |
@@ -648,7 +648,7 @@ Spec 010 — 010 needs the **conventions and the worklist**, which land at steps
 | Requirement | Design section |
 |---|---|
 | D1 `CLAUDE.md` | §2 |
-| D2 banner on 107 pages | §1, §12 steps 4–5 |
+| D2 banner on 105 pages | §1, §12 steps 4–5 |
 | D3 heading de-duplication | §5 |
 | D4 `pagelint.py` | §3 |
 | D5 CI workflow | §4 |
