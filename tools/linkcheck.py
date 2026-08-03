@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
 """Check internal markdown links across the documentation.
 
-Reports two kinds of breakage:
+Reports four kinds of breakage:
 
   MISSING FILE    the link target file does not exist
   MISSING ANCHOR  the file exists, but no heading in it slugifies to the anchor
+  WRONG CASE      the target exists only under different capitalisation
+  ORPHAN          a published page nothing in SUMMARY.md links to
+
+WRONG CASE matters because macOS and Windows resolve paths case-insensitively
+while GitBook and GitHub do not. A link that works on the machine that wrote it
+404s once published, and a plain os.path.isfile() check cannot see it.
+
+ORPHAN catches the opposite failure: the link resolves, but no reader can reach
+the page, because it never made it into the table of contents. Anchors and file
+existence say nothing about reachability, so this is checked separately by
+walking SUMMARY.md. Pages listed in NON_CONTENT below are exempt.
 
 Anchors are slugified with GitHub's rules, which GitBook follows: inline
 markdown is stripped, the text is lowercased, punctuation is dropped, and each
@@ -14,6 +25,9 @@ space becomes a hyphen. Note that runs of spaces are *not* collapsed, so
 Usage:
     python3 tools/linkcheck.py            # check the whole repo
     python3 tools/linkcheck.py contents/Glossary.md   # check specific files
+
+Orphans are only reported on a whole-repo run: the check needs every page in
+view to know what is missing, so passing explicit paths skips it.
 
 Exit code is 1 when anything is broken, 0 when clean, so it can gate CI.
 """
@@ -30,6 +44,12 @@ SKIP_DIRS = {'.git', '.github', '.claude', '.repomix', 'spec', 'node_modules'}
 
 # Files whose links are deliberate placeholders, not real targets.
 SKIP_FILES = {'CLAUDE.md', 'PROMPT.md'}
+
+# Pages that are not reader-facing content, so are exempt from the orphan check.
+# VersionBegin/VersionEnd are GitBook version markers, not documentation.
+NON_CONTENT = {'VersionBegin.md', 'VersionEnd.md'}
+
+TOC = 'SUMMARY.md'
 
 LINK_RE = re.compile(r'\[([^\]]*)\]\(([^)]+)\)')
 HEADING_RE = re.compile(r'^(#{1,6})\s+(.*?)\s*#*$', re.M)
@@ -73,8 +93,53 @@ def md_files():
                 yield os.path.join(dirpath, fn)
 
 
+def real_paths():
+    """Map lowercased repo-relative path -> its true on-disk spelling."""
+    out = {}
+    for p in md_files():
+        rel = os.path.relpath(p, ROOT)
+        out[rel.lower()] = rel
+    return out
+
+
+def linked_from_toc():
+    """Repo-relative paths that SUMMARY.md links to, in its own spelling."""
+    toc = os.path.join(ROOT, TOC)
+    if not os.path.isfile(toc):
+        return None
+    with open(toc, encoding='utf-8') as fh:
+        body = fh.read()
+    out = set()
+    for _, raw in LINK_RE.findall(body):
+        target = unquote(raw.strip()).split('#')[0]
+        if not target.endswith('.md'):
+            continue
+        out.add(os.path.normpath(target.lstrip('/')))
+    return out
+
+
+def orphans():
+    """Published pages that SUMMARY.md never links to."""
+    listed = linked_from_toc()
+    if listed is None:
+        return []
+    listed = {p.lower() for p in listed}
+    out = []
+    for p in md_files():
+        rel = os.path.relpath(p, ROOT)
+        # Only pages under contents/ are navigable; SUMMARY.md itself is the TOC.
+        if os.path.dirname(rel) != 'contents':
+            continue
+        if os.path.basename(rel) in NON_CONTENT:
+            continue
+        if rel.lower() not in listed:
+            out.append(rel)
+    return sorted(out)
+
+
 def check(paths):
     anchor_cache = {}
+    on_disk = real_paths()
     problems = []
     for src in paths:
         with open(src, encoding='utf-8') as fh:
@@ -101,6 +166,14 @@ def check(paths):
                 if not os.path.isfile(path):
                     problems.append(('MISSING FILE', rel_src, lineno, raw, label))
                     continue
+                # isfile() is case-insensitive on macOS/Windows, so a link that
+                # resolves here can still 404 on GitBook. Compare spellings.
+                rel_target = os.path.relpath(path, ROOT)
+                actual = on_disk.get(rel_target.lower())
+                if actual and actual != rel_target:
+                    problems.append(
+                        ('WRONG CASE', rel_src, lineno, raw, f'file is {actual}'))
+                    continue
                 if anchor:
                     if path not in anchor_cache:
                         anchor_cache[path] = anchors_for(path)
@@ -111,6 +184,7 @@ def check(paths):
 
 
 def main(argv):
+    whole_repo = not argv
     if argv:
         paths = [os.path.abspath(p) for p in argv]
         missing = [p for p in paths if not os.path.isfile(p)]
@@ -121,18 +195,29 @@ def main(argv):
         paths = list(md_files())
 
     problems = check(paths)
-    if not problems:
+    # Reachability needs every page in view, so only check it on a full run.
+    stranded = orphans() if whole_repo else []
+
+    if not problems and not stranded:
         print(f"No broken internal links ({len(paths)} files checked).")
         return 0
 
-    for kind in ('MISSING FILE', 'MISSING ANCHOR'):
+    for kind in ('MISSING FILE', 'WRONG CASE', 'MISSING ANCHOR'):
         rows = [p for p in problems if p[0] == kind]
         if not rows:
             continue
         print(f"\n===== {kind} ({len(rows)}) =====")
         for _, src, lineno, target, label in rows:
             print(f"{src}:{lineno}  [{label}]({target})")
-    print(f"\n{len(problems)} broken link(s) across {len(paths)} files.")
+
+    if stranded:
+        print(f"\n===== ORPHAN ({len(stranded)}) =====")
+        print(f"published, but nothing in {TOC} links to them:")
+        for rel in stranded:
+            print(f"  {rel}")
+
+    total = len(problems) + len(stranded)
+    print(f"\n{total} problem(s) across {len(paths)} files.")
     return 1
 
 

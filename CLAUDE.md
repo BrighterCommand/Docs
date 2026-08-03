@@ -121,10 +121,19 @@ When unclear about a feature:
 ### Cross-Linking Documentation
 
 **Verifying links:** `python3 tools/linkcheck.py` checks every internal link in
-the published docs — that the target file exists, and that the anchor matches a
-real heading. Pass file paths to check just those files. It exits non-zero when
-anything is broken, so it can gate CI. Run it after any change that adds or
-retargets links.
+the published docs. It reports four faults:
+
+- **MISSING FILE** — the target does not exist
+- **MISSING ANCHOR** — the file exists, but no heading slugifies to the anchor
+- **WRONG CASE** — the target exists only under different capitalisation. macOS
+  and Windows resolve these; GitBook does not, so they 404 once published
+- **ORPHAN** — a page under `contents/` that `SUMMARY.md` never links to
+
+Pass file paths to check just those files; orphans are only reported on a
+whole-repo run, since that check needs every page in view. It exits non-zero
+when anything is broken, so it can gate CI. Run it after any change that adds or
+retargets links, **and after adding a page** — the orphan check is what enforces
+the "never create orphaned files" rule below.
 
 **Internal Links (to other docs):**
 
