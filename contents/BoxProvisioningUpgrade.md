@@ -12,7 +12,7 @@ The first start of your application after you enable `UseBoxProvisioning` follow
 2. It finds the table and queries `__BrighterMigrationHistory` (or `BrighterMigrationHistory` on Spanner) for rows scoped to that table. There are none — this is a pre-existing deployment.
 3. It introspects the table's columns through the database's `information_schema` (or `pragma_table_info` on SQLite) and walks the migration chain top-down until it finds the highest version whose columns are all present. That is the version Brighter originally shipped the table at.
 4. It writes a single synthetic row into `__BrighterMigrationHistory` recording that version as already applied. No DDL runs at this point.
-5. It then runs any subsequent migrations in order — for example, if your table was originally created at V4 and the current Brighter ships V7, the runner applies V5, V6, and V7, inserting a history row after each successful migration.
+5. It then runs any subsequent migrations in order — for example, if your table was originally created at V4 and the current Brighter ships V8, the runner applies V5, V6, V7, and V8, inserting a history row after each successful migration.
 6. Every future start uses the normal path: the runner reads `MAX(MigrationVersion)` from the history table and applies any new migrations that have shipped since the last run.
 
 The entire bootstrap path runs inside the [advisory lock](/contents/Glossary.md#advisory-lock) — so concurrent application instances starting at the same time cannot race on the synthetic history insertion.
@@ -60,23 +60,25 @@ WHERE BoxTableName = 'Outbox'
 ORDER BY MigrationVersion;
 ```
 
-A bootstrap of a table that was originally at V4 against a Brighter release that ships V7 produces something like:
+A bootstrap of a table that was originally at V4 against a Brighter release that ships V8 produces something like:
 
 ```text
 MigrationVersion | BoxTableName | AppliedAt           | Description
------------------+--------------+---------------------+----------------------------------------
-1                | Outbox       | 2026-05-26 09:14:01 | bootstrap: detected at V4
-2                | Outbox       | 2026-05-26 09:14:01 | bootstrap: detected at V4
-3                | Outbox       | 2026-05-26 09:14:01 | bootstrap: detected at V4
+-----------------+--------------+---------------------+---------------------------------------------------
 4                | Outbox       | 2026-05-26 09:14:01 | bootstrap: detected at V4
-5                | Outbox       | 2026-05-26 09:14:02 | + DataRef + SpecVersion
-6                | Outbox       | 2026-05-26 09:14:02 | + Source + Type + Subject
-7                | Outbox       | 2026-05-26 09:14:03 | + DataSchema
+5                | Outbox       | 2026-05-26 09:14:02 | Add CloudEvents columns (Source, Type, DataSchema, Subject, TraceParent, TraceState, Baggage)
+6                | Outbox       | 2026-05-26 09:14:02 | Add WorkflowId, JobId columns
+7                | Outbox       | 2026-05-26 09:14:03 | Add DataRef, SpecVersion columns
+8                | Outbox       | 2026-05-26 09:14:04 | Add CausationId column and replay index
 ```
+
+There is **one** bootstrap row, not one per skipped version: the runner stamps the version it detected and moves straight on to the migrations above it. The rows that follow carry each migration's own description string, verbatim from the backend's `*MigrationCatalog`.
 
 Cross-check `MAX(MigrationVersion)` against the per-backend support matrix on [Database Provisioning](/contents/BoxProvisioning.md#per-backend-support). If the highest applied version matches `V_latest` for your backend, your table is current.
 
-New columns added by V5–V7 on a bootstrapped table will be `NULL` for every row that already existed. That is expected and safe — every Brighter migration is additive, and Brighter accepts `NULL` for these columns on old rows. No backfill is required.
+New columns added by V5–V8 on a bootstrapped table will be `NULL` for every row that already existed. That is expected and safe — every Brighter migration is additive, and Brighter accepts `NULL` for these columns on old rows. No backfill is required.
+
+- **If you intend to use [replay on seen](/contents/ReplayOnSeen.md)**, confirm the causation column landed on *both* boxes: the Outbox at V8, and the Inbox at V3 — or V2 on PostgreSQL, whose chain is one step shorter. The column is `CausationId`, or lowercase `causationid` on PostgreSQL. Replay needs both boxes migrated, and a box that missed the migration produces a startup *warning* rather than an error, so your application starts and quietly replays nothing. Note also that rows written before the migration keep a `NULL` causation id and can never be replayed — only messages deposited afterwards can.
 
 ## Documented edge cases
 
@@ -127,7 +129,7 @@ This is acceptable only when the existing table already matches `V_latest`. If y
 
 The MSSQL runner wraps the entire migration chain — `sp_getapplock`, every `ALTER TABLE`, every history insert — in a single `SqlTransaction`. This produces **all-or-nothing** semantics for a single provisioning run:
 
-- A mid-chain failure rolls back **every** migration the run touched. If V5, V6, and V7 are pending and V7 fails, V5 and V6 are also rolled back.
+- A mid-chain failure rolls back **every** migration the run touched. If V6, V7, and V8 are pending and V8 fails, V6 and V7 are also rolled back.
 - The `__BrighterMigrationHistory` table will not contain partial progress. After a failure, `MAX(MigrationVersion)` reflects the last fully successful run, not the highest individual migration that succeeded in the failed run.
 - PostgreSQL behaves the same way (transactional DDL). MySQL and SQLite differ: MySQL commits implicitly on each DDL statement and SQLite commits per-migration, so a mid-chain failure on those backends leaves the migrations that did succeed in the history table and the next run resumes from the next version.
 

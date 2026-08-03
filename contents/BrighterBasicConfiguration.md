@@ -4,7 +4,7 @@ Configuration is the most labor-intensive part of using Brighter. Once you have 
 
 ## **Using .NET Core Dependency Injection**
 
-This section covers using .NET Core Dependency Injection to configure Brighter. If you want to use an alternative DI container then see the section [How Configuration Works](/contents/HowConfigurationWorks.md)
+This section covers using .NET Core Dependency Injection to configure Brighter. If you want to use an alternative DI container then see the section [How Configuration Works](/contents/HowConfiguringTheCommandProcessorWorks.md)
 
 We divide configuration into two sections, depending on your requirements:
 
@@ -106,7 +106,7 @@ public void ConfigureServices(IServiceCollection services)
 
 #### **Configuring Lifetimes**
 
-Brighter can register your *Request Handlers* and *Message Mappers* for you (see [IBrighter Builder Fluent Interface](#ibrighterbuilder-fluent-interface)). 
+Brighter can register your *Request Handlers* and *Message Mappers* for you (see [IBrighter Builder Fluent Interface](#brighter-builder-fluent-interface)). 
 
 When we register *Request Handlers* and *Message Mappers* for you with ServiceCollection, we need to register them with a given lifetime (see [Dependency Injection Service Lifetimes](https://docs.microsoft.com/en-us/dotnet/core/extensions/dependency-injection#service-lifetimes)).
 
@@ -590,7 +590,7 @@ public void ConfigureServices(IServiceCollection services)
 
 #### Request-Reply
 
-(**AddProducers()** has optional parameters for use with Request-Reply support for some transports. We don't cover that here, instead see [Direct Messaging](/contents/Routing.md#direct-messaging) for more).
+(**AddProducers()** has optional parameters for use with Request-Reply support for some transports. We don't cover that here, instead see [Direct Messaging](/contents/Routing.md#commands) for more).
 
 #### **Configuring JSON Serialization**
 
@@ -734,7 +734,7 @@ if you are using .NET 6 you can make the call direction on your **HostBuilder**'
 
 The **AddConsumers()** method takes an **`Action<ServiceActivatorOptions>`** delegate. The extension method supplies the delegate with a **ServiceActivatorOptions** object that allows you to configure how Brighter runs.
 
-The **AddConsumers()** method returns an **IBrighterBuilder** interface. **IBrighterBuilder** is a [fluent interface](https://en.wikipedia.org/wiki/Fluent_interface) that you can use to configure Brighter *Command Processor* properties. It is discussed above at [Brighter Builder Fluent Interface](#brighter-builder-fluent-interface)) and the same options apply. We discuss one additional option that becomes important when receiving requests the *Inbox* in [Additional Brighter Builder Options](/contents/BasicConfiguration.md#the-inbox).
+The **AddConsumers()** method returns an **IBrighterBuilder** interface. **IBrighterBuilder** is a [fluent interface](https://en.wikipedia.org/wiki/Fluent_interface) that you can use to configure Brighter *Command Processor* properties. It is discussed above at [Brighter Builder Fluent Interface](#brighter-builder-fluent-interface)) and the same options apply. We discuss one additional option that becomes important when receiving requests the *Inbox* in [Additional Brighter Builder Options](/contents/BrighterBasicConfiguration.md#inbox).
 
 #### **Subscriptions**
 
@@ -883,7 +883,7 @@ To configure our *Inbox* we then need to use the UseExternalInbox method call an
 
 For *Inbox Configuration* you set the following properties:
 
-* **ActionOnExists**: What do we do if the request has been handled? The default,**OnceOnlyAction.Throw** is to throw a **OnceOnlyException**. If you take no other action this will cause the message to be rejected and sent to a DLQ if one is configured (See [Handler Failure](/contents/HandlerFailure.md)). The alternative is **OnceOnlyAction.Warn** simply logs that the request is a duplicate, but takes no other action.
+* **ActionOnExists**: What do we do if the request has been handled? The default,**OnceOnlyAction.Throw** is to throw a **OnceOnlyException**. If you take no other action this will cause the message to be rejected and sent to a DLQ if one is configured (See [Handler Failure](/contents/HandlerFailure.md)). The alternative is **OnceOnlyAction.Warn** simply logs that the request is a duplicate, but takes no other action. A third option, **OnceOnlyAction.Replay**, also skips the handler but resends the messages that handler produced the first time it ran — it has prerequisites, so see [Replay On Seen](/contents/ReplayOnSeen.md) before you choose it.
 * **OnceOnly**: This defaults to *true* and will check for a duplicate and take the action indicated by **ActionOnExists**. If *false* the *Inbox* will record the request, but will take no further action. (This tends to be set to *false* if you are using the *Inbox* to record what requests caused current state only and not de-duplicate).
 * **Scope**: This indicates the type of request (*Command* or *Event*) to store in the *Inbox*. By default this is set to **InboxScope.All** and captures everything but you can be explicit and just capture **InboxScope.Commands** or **InboxScope.Events**. (This tends to be set to **InboxScope.Commands** when only commands cause changes to state that are not idempotent).
 * **Context**: Used to uniquely identify receipt of this request via this handler. If you are recording *Events* and have multiple handlers, then the first event handler to receive the message will block the others from doing so, unless you disambiguate the handler identity by supplying a context method.

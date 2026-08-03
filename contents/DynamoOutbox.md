@@ -87,3 +87,104 @@ public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, Can
 	return await base.HandleAsync(addGreeting, cancellationToken);
 }
 ```
+
+## Replay Support: The Causation Index
+
+[Replay On Seen](/contents/ReplayOnSeen.md) resends every Outbox message produced under a given Causation Id. On DynamoDB that means querying on a non-key attribute, which needs a Global Secondary Index — by default one named **Causation**, with `CausationId` as its hash key.
+
+This applies to both `Paramore.Brighter.Outbox.DynamoDB` and `.V4`. The DynamoDB **Inbox** needs nothing: it looks a Causation Id up by the table's own primary key.
+
+### A new table gets the index for free
+
+`MessageItem.CausationId` is decorated with `[DynamoDBGlobalSecondaryIndexHashKey(indexName: "Causation")]`, and `DynamoDbTableFactory` reflects over those attributes when it builds the request. So a table you create through the factory already has the index — you only add a throughput entry for it:
+
+```csharp
+var createTableRequest = new DynamoDbTableFactory().GenerateCreateTableRequest<MessageItem>(
+    new DynamoDbCreateProvisionedThroughput(
+        new ProvisionedThroughput { ReadCapacityUnits = 10, WriteCapacityUnits = 10 },
+        new Dictionary<string, ProvisionedThroughput?>
+        {
+            ["Outstanding"] = new() { ReadCapacityUnits = 10, WriteCapacityUnits = 10 },
+            ["OutstandingAllTopics"] = new() { ReadCapacityUnits = 10, WriteCapacityUnits = 10 },
+            ["Delivered"] = new() { ReadCapacityUnits = 10, WriteCapacityUnits = 10 },
+            ["DeliveredAllTopics"] = new() { ReadCapacityUnits = 10, WriteCapacityUnits = 10 },
+            ["Causation"] = new() { ReadCapacityUnits = 10, WriteCapacityUnits = 10 },  // replay
+        }));
+
+var builder = new DynamoDbTableBuilder(client);
+await builder.Build(createTableRequest);
+await builder.EnsureTablesReady([createTableRequest.TableName], TableStatus.ACTIVE);
+```
+
+### Adding the index to an existing table
+
+A table provisioned before replay shipped does not have the index, and there is no migration runner for DynamoDB. Add it yourself with `UpdateTable`:
+
+```csharp
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+
+var request = new UpdateTableRequest
+{
+    TableName = "brighter_outbox",
+
+    // The index's key attribute has to be declared, even though the table already stores it
+    AttributeDefinitions =
+    [
+        new AttributeDefinition
+        {
+            AttributeName = "CausationId",
+            AttributeType = ScalarAttributeType.S
+        }
+    ],
+
+    GlobalSecondaryIndexUpdates =
+    [
+        new GlobalSecondaryIndexUpdate
+        {
+            Create = new CreateGlobalSecondaryIndexAction
+            {
+                IndexName = "Causation",
+                KeySchema =
+                [
+                    new KeySchemaElement { AttributeName = "CausationId", KeyType = KeyType.HASH }
+                ],
+
+                // Replay only reads MessageId, which is the base table's hash key and is
+                // therefore always present in a KEYS_ONLY index
+                Projection = new Projection { ProjectionType = ProjectionType.KEYS_ONLY },
+
+                // Omit this on a PAY_PER_REQUEST table — it applies to PROVISIONED billing only
+                ProvisionedThroughput = new ProvisionedThroughput
+                {
+                    ReadCapacityUnits = 10,
+                    WriteCapacityUnits = 10
+                }
+            }
+        }
+    ]
+};
+
+await client.UpdateTableAsync(request);
+```
+
+Two operational notes:
+
+- **The index backfills asynchronously.** DynamoDB populates a new GSI in the background, and the index reports `CREATING` until it finishes. Until then a replay may find only part of a causation's messages, so wait for the index to become `ACTIVE` before you rely on it.
+- **Restart your hosts afterwards.** The Outbox probes for the index once, with `DescribeTable`, and caches the answer for the life of the store instance. An Outbox built before the index existed keeps reporting that replay is unsupported until the process restarts.
+
+### The index name
+
+`DynamoDbConfiguration.CausationIndexName` defaults to `"Causation"` and is settable, so the Outbox can query an index under another name.
+
+Be aware of one wrinkle if you change it: the index name on `MessageItem` is a compile-time literal, so `DynamoDbTableFactory` always generates an index called `Causation`. Point `CausationIndexName` somewhere else and you must create that index yourself — otherwise the Outbox probes for a name nothing has created and concludes replay is unsupported.
+
+### If you skip the index
+
+Nothing breaks, and replay never happens:
+
+- **Deposits are unaffected.** The `CausationId` attribute is still written; with no index to populate it is simply an ordinary attribute.
+- **Startup warns.** `SupportsCausationTracking()` reports `false`, and [pipeline validation](/contents/PipelineValidation.md) raises a *warning* — not an error — for any handler configured with `OnceOnlyAction.Replay`.
+- **Duplicates are skipped quietly.** `ReplayCausation` returns `false` rather than throwing, so a duplicate does not fail the consumer pipeline with a DynamoDB `ValidationException`. Nothing is resent.
+
+See [When Replay Does Not Fire](/contents/ReplayOnSeen.md#when-replay-does-not-fire) for how to tell this apart from the other reasons a replay produces nothing.

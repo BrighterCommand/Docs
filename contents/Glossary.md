@@ -177,6 +177,18 @@ A pattern for deduplication - ensuring that a message is only processed once. Th
 
 See: [Inbox Configuration](/contents/BrighterInboxSupport.md#inbox-configuration)
 
+### Causation Id
+
+The identifier that links an Inbox entry to the Outbox messages produced while handling that request. Every message a handler deposits during one invocation is stamped with the same Causation Id, and so is the Inbox entry recording that the request was handled — which is what lets a later duplicate find its own downstream messages. It defaults to the handled request's own `Id`. Distinct from the **Correlation Id**, which ties a reply back to its request; neither is derived from the other.
+
+See: [Causation Id](/contents/ReplayOnSeen.md#causation-id)
+
+### Replay (Inbox)
+
+The `OnceOnlyAction` that makes duplicate detection re-dispatch the Outbox messages produced during the original handling, instead of throwing or logging a warning. The handler does not run again: Brighter looks up the Inbox entry's [Causation Id](#causation-id), clears the dispatched state of the Outbox messages stored under it, and the Sweeper sends them on its next pass. Used to walk a stalled workflow forward when an upstream step succeeded but its downstream message was lost.
+
+See: [Replay On Seen](/contents/ReplayOnSeen.md)
+
 ### Sweeper
 
 A background process that monitors an Outbox and dispatches messages that have not yet been sent. The Sweeper provides guaranteed, at-least-once delivery by continuously attempting to send messages until they succeed.

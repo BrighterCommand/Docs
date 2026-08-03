@@ -38,6 +38,7 @@ These checks apply to all Brighter applications, including those that only use t
 | Handler type visibility | Error | Handler class must be `public`. Brighter only discovers public handler types — a non-public handler will silently not be found by the pipeline builder. |
 | Sync/async attribute consistency | Error | Async handlers (`IHandleRequestsAsync<T>`) must use async attributes (e.g. `RejectMessageOnErrorAsyncAttribute`). Sync handlers must use sync attributes. A mismatch will throw a `ConfigurationException` at pipeline build time. |
 | Backstop attribute ordering | Warning | Backstop error-handling attributes (`RejectMessageOnError`, `DeferMessageOnError`, `DontAckOnError`) should be at the outermost position (lowest step number). If a backstop has a higher step number than a resilience pipeline attribute, it will never execute on failure. |
+| Replay requires causation tracking | Error and Warning | A pipeline using `OnceOnlyAction.Replay` needs an Inbox and an Outbox that both implement the causation-tracking role interfaces *and* whose live schemas support it. A store that does not implement the interface is an Error; an un-migrated schema, a missing Outbox, or a probe that could not reach the store is a Warning. Only pipelines configured for `Replay` are checked. See [Replay On Seen](/contents/ReplayOnSeen.md). |
 
 **Example error messages:**
 
@@ -51,6 +52,15 @@ this will throw a ConfigurationException at pipeline build time
 'RejectMessageOnError' at step 5 is after 'UseResiliencePipeline' at step 3 —
 in Brighter, lower step values are outer wrappers, so the backstop will never
 execute on failure
+
+Handler 'ProcessPaymentHandler': OnceOnlyAction.Replay requires a
+causation-tracking outbox, but the configured outbox 'MyCustomOutbox' does not
+implement IAmACausationTrackingOutbox — Replay cannot reset the dispatched
+state of the original messages
+
+Handler 'ProcessPaymentHandler': OnceOnlyAction.Replay requires causation
+tracking, but the inbox store schema does not support it — migrate the inbox
+schema to add the CausationId column for Replay to work
 ```
 
 ### Producer Checks (AddProducers)
@@ -319,6 +329,42 @@ new RmqSubscription<OrderCreated>(...)
 // Explicitly include the handler's assembly
 .AutoFromAssemblies([typeof(OrderHandler).Assembly])
 ```
+
+### Replay Without Causation Tracking
+
+A handler configured with `OnceOnlyAction.Replay` needs an Inbox and an Outbox that both track causation ids, *and* live schemas that can store them. Validation checks each store in turn. Only a store that does not implement the role interface is an Error — an un-migrated schema is a Warning, so the host starts cleanly and replay silently does nothing.
+
+The usual cause is provisioning one box and forgetting the other.
+
+**Before** (warning):
+
+```csharp
+[UseInbox(step: 1, contextKey: typeof(ProcessPaymentHandler), onceOnly: true,
+    onceOnlyAction: OnceOnlyAction.Replay)]
+public override ProcessPayment Handle(ProcessPayment command) { ... }
+
+// ... but only the Outbox is provisioned, so the Inbox has no CausationId column
+services.AddBrighter()
+    .AddProducers(producers => { /* ... */ })
+    .UseBoxProvisioning(opts =>
+    {
+        opts.AddMsSqlOutbox(outboxConfig);
+    });
+```
+
+**After** (fixed):
+
+```csharp
+services.AddBrighter()
+    .AddProducers(producers => { /* ... */ })
+    .UseBoxProvisioning(opts =>
+    {
+        opts.AddMsSqlOutbox(outboxConfig);
+        opts.AddMsSqlInbox(inboxConfig);   // both boxes need the causation column
+    });
+```
+
+Replay reads the causation id from the Inbox and hands it to the Outbox, so either box being behind is enough to stop it. [Replay On Seen](/contents/ReplayOnSeen.md#when-replay-does-not-fire) lists every finding this rule produces, along with the runtime failures that produce no startup finding at all.
 
 ## Further Reading
 

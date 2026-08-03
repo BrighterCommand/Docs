@@ -69,7 +69,7 @@ Each column has an operator-visible purpose:
 - `MigrationVersion` — the integer version the row records. `1` for V1 (bootstrap or fresh install on a born-past-V1 backend), counting up from there.
 - `SchemaName` — the database schema the box lives in (`dbo` on MSSQL, `public` on PostgreSQL, the database name on SQLite, and so on). Set to the backend's default schema when not otherwise specified.
 - `BoxTableName` — the table name (`Outbox`, `Inbox`, `tenant_1_Outbox`, whatever you configured).
-- `Description` — a human-readable note recording how the row was inserted: `"fresh install at V7"`, `"bootstrap: detected at V4"`, or the migration's own description string (e.g. `"V5: add CloudEvents columns"`). Useful when triaging an upgrade — it tells you whether a row came from the fresh path, the bootstrap path, or a real chain replay.
+- `Description` — a human-readable note recording how the row was inserted: `"fresh install at V8"`, `"bootstrap: detected at V4"`, or the migration's own description string (e.g. `"Add CloudEvents columns (Source, Type, DataSchema, Subject, TraceParent, TraceState, Baggage)"`). Useful when triaging an upgrade — it tells you whether a row came from the fresh path, the bootstrap path, or a real chain replay.
 - `AppliedAt` — UTC timestamp set by the database default (`GETUTCDATE()` on MSSQL, `NOW()` on PostgreSQL, and so on). Useful for correlating against deploy times.
 
 For day-to-day operations, treat the history table as read-only audit data. You can `SELECT` from it to confirm which migrations have run on a given environment (the [Upgrading Existing Deployments](/contents/BoxProvisioningUpgrade.md) page shows the query); you should not delete or rewrite rows. Deleting a row would cause the runner to re-apply that migration on the next startup, which is safe but pointless.
@@ -90,22 +90,26 @@ On Kubernetes, size your readiness probe's `initialDelaySeconds` and `failureThr
 
 | Backend | NuGet package | Outbox versions | Inbox versions | Advisory-lock primitive |
 |---------|---------------|-----------------|----------------|-------------------------|
-| MSSQL | `Paramore.Brighter.BoxProvisioning.MsSql` | V1..V7 | V1..V2 | `sp_getapplock` |
-| PostgreSQL | `Paramore.Brighter.BoxProvisioning.PostgreSql` | V1..V7 | V1 only | `pg_try_advisory_lock` |
-| MySQL | `Paramore.Brighter.BoxProvisioning.MySql` | V1..V7 | V1..V2 | `GET_LOCK` |
-| SQLite | `Paramore.Brighter.BoxProvisioning.Sqlite` | V1..V7 | V1..V2 | `BEGIN IMMEDIATE` |
-| Spanner | `Paramore.Brighter.BoxProvisioning.Spanner` | fresh-install-only | fresh-install-only | n/a (DDL serialised by Spanner) |
+| MSSQL | `Paramore.Brighter.BoxProvisioning.MsSql` | V1..V8 | V1..V3 | `sp_getapplock` |
+| PostgreSQL | `Paramore.Brighter.BoxProvisioning.PostgreSql` | V1..V8 | V1..V2 | `pg_try_advisory_lock` |
+| MySQL | `Paramore.Brighter.BoxProvisioning.MySql` | V1..V8 | V1..V3 | `GET_LOCK` |
+| SQLite | `Paramore.Brighter.BoxProvisioning.Sqlite` | V1..V8 | V1..V3 | `BEGIN IMMEDIATE` |
+| Spanner | `Paramore.Brighter.BoxProvisioning.Spanner` | fresh-install-only (creates the V8 shape) | fresh-install-only (creates the V3 shape) | n/a (DDL serialised by Spanner) |
 
 Per-backend Outbox pages: [MSSQL](/contents/MSSQLOutbox.md), [MySQL](/contents/MySQLOutbox.md), [PostgreSQL](/contents/PostgresOutbox.md), [SQLite](/contents/SqliteOutbox.md). Per-backend Inbox pages: [MSSQL](/contents/MSSQLInbox.md), [MySQL](/contents/MySQLInbox.md), [PostgreSQL](/contents/PostgresInbox.md), [SQLite](/contents/SqliteInbox.md). Each of these pages shows the Option A and Option B shapes for that backend.
 
-The "Outbox versions" and "Inbox versions" columns refer to the ordered [migration chain](/contents/Glossary.md#migration-chain). V1 is the historical first-shipped DDL for that backend; later versions add columns over time as Brighter's message model has grown (for example, V4 added `PartitionKey`; V5 added the CloudEvents columns; V7 added `DataRef` and `SpecVersion`). Each version's full column list is recorded in the backend's `*MigrationCatalog` source, alongside the PR and commit that introduced it.
+The "Outbox versions" and "Inbox versions" columns refer to the ordered [migration chain](/contents/Glossary.md#migration-chain). V1 is the historical first-shipped DDL for that backend; later versions add columns over time as Brighter's message model has grown (for example, V4 added `PartitionKey`; V5 added the CloudEvents columns; V7 added `DataRef` and `SpecVersion`; V8 added `CausationId`). Each version's full column list is recorded in the backend's `*MigrationCatalog` source, alongside the PR and commit that introduced it.
+
+The Inbox chains are much shorter, and their latest migration adds the matching causation column: V3 on MSSQL, MySQL, and SQLite, V2 on PostgreSQL. Both boxes need it before [replay on seen](/contents/ReplayOnSeen.md) will work — an Outbox migrated without its Inbox, or the reverse, leaves replay silently doing nothing.
+
+**The Outbox V8 migration also creates an index**, which makes it the first migration in any catalog to create anything other than columns. The index name varies by backend — `idx_{table}_CausationId` on MSSQL and SQLite, the bare `idx_CausationId` on MySQL (which scopes index names to the table), and lowercase `idx_{table}_causationid` on PostgreSQL, whose column is `causationid` rather than `CausationId`. Because the index is built over rows that already exist, expect this migration to take longer than earlier ones on a large Outbox table, and to hold the migration lock for that time.
 
 ## Per-backend differences to be aware of
 
 | Backend | Asymmetry | What it means for operators |
 |---------|-----------|------------------------------|
 | MSSQL | All-or-nothing multi-version upgrade | A mid-chain failure rolls back *all* migrations in that run. See [Upgrading Existing Deployments](/contents/BoxProvisioningUpgrade.md#mssql-multi-version-upgrades). |
-| PostgreSQL | Inbox is V1-only | The Postgres Inbox shipped with its final column set in 2021; no V2 exists. The chain is intentionally shorter. |
+| PostgreSQL | Inbox chain is one version shorter | The Postgres Inbox shipped with `ContextKey` in 2021, so it never needed the V2 migration the other backends have. It runs V1..V2 where they run V1..V3, and ends at the same column set. |
 | MySQL | Minimum 8.0 | Earlier MySQL versions are not supported. |
 | SQLite | File-level locking only | Long migration chains block readers. Acceptable for the dev/test use case SQLite targets. |
 | Spanner | Fresh-install-only (degenerate runner) | The runner can create the table but cannot evolve an existing table. Track-record: no known production deployments. |
@@ -113,7 +117,7 @@ The "Outbox versions" and "Inbox versions" columns refer to the ordered [migrati
 These differences are not bugs — they reflect each backend's native semantics or the historical shape of the code that already shipped:
 
 - **MSSQL's all-or-nothing rule** follows from MSSQL's single-transaction-spans-the-whole-run model, which is how MSSQL gives you transactional DDL at all. The runner wraps the lock-acquire, every migration's DDL, and every history-row insert in one transaction. A failure at migration *N* rolls back migrations *1..N-1* applied in the same run, which is consistent with MSSQL's general transactional-DDL behaviour. PostgreSQL, MySQL, and SQLite commit per-migration, so a mid-chain failure there leaves the earlier migrations intact. The MSSQL semantics matter mostly when you skip several Brighter versions at once; see [Upgrading Existing Deployments](/contents/BoxProvisioningUpgrade.md#mssql-multi-version-upgrades) for the operator-facing detail.
-- **The PostgreSQL Inbox is V1-only** because the PostgreSQL Inbox was introduced in 2021 and shipped with `ContextKey` and the composite primary key from its very first commit. The MSSQL / MySQL / SQLite Inbox V2 migration added `ContextKey` to tables that pre-existed without it; PostgreSQL never had that earlier shape, so there is nothing to migrate. Not a missing feature — just a shorter chain.
+- **The PostgreSQL Inbox chain is one version shorter** because the PostgreSQL Inbox was introduced in 2021 and shipped with `ContextKey` and the composite primary key from its very first commit. The MSSQL / MySQL / SQLite Inbox V2 migration added `ContextKey` to tables that pre-existed without it; PostgreSQL never had that earlier shape, so it had nothing to migrate and its chain starts one step ahead. Later migrations still apply — what the other three do at V3, PostgreSQL does at V2 (adding the causation column). So a fully migrated PostgreSQL Inbox reports V2 and a fully migrated MSSQL Inbox reports V3, and both have the same columns. Not a missing feature — just a shorter chain.
 - **MySQL's 8.0 minimum** reflects the underlying need for `JSON` and modern `INFORMATION_SCHEMA.COLUMNS` behaviour. MySQL 5.7 is end-of-life from Oracle and unsupported.
 - **SQLite's file-level locking** is the SQLite design; long migrations on a high-throughput SQLite database would briefly block readers. In practice SQLite serves dev, test, and small-deployment workloads, where this is acceptable.
 - **Spanner's degenerate runner** reflects the fact that no production Brighter installation has ever run on Spanner. The runner creates the table on a fresh database but does not attempt to evolve an existing one; if that ever changes, a full Spanner migration chain can be added without breaking the abstraction.

@@ -190,6 +190,8 @@ Without the Sweeper, you have two risks:
 - An explicit attempt to clear the Outbox by calling `ClearOutbox` on the `CommandProcessor` can fail. Although it is protected by a Polly resilience policy, if that policy still does not succeed in clearing the Outbox, the messages will linger there. Running a Sweeper means they are eventually sent.
 - Some transports, notably RabbitMQ and Kafka, support callbacks to inform the caller that a message has been sent. This happens asynchronously, so at the point of calling `Post` or `ClearOutbox` you do not yet know whether the message was sent; instead you must await the callback. Because the calling code has moved on, the response always returns on a new thread, which has no context for the original call and cannot interactively notify you that the operation failed. However, if you have a Sweeper, the message — still in your Outbox — will be sent.
 
+There is a third case, and it makes the Sweeper unavoidable rather than merely advisable. If you configure an Inbox with `OnceOnlyAction.Replay`, a duplicate request makes Brighter clear the dispatched marker on the messages the original handling produced — the `Dispatched` column on a relational Outbox — putting them back in the Sweeper's path. That is the *only* way a replayed message ever leaves your application: replay resets rows, it never dispatches anything itself, so without a Sweeper the messages are marked outstanding and stay there. See [Replay On Seen](/contents/ReplayOnSeen.md).
+
 
 ## Outbox Archiver
 
@@ -509,3 +511,5 @@ public class GreetingMadeHandler : RequestHandlerAsync<GreetingMade>
 - Both entity writes and message writes succeed or fail together
 
 For a simpler, non-transactional approach suitable for getting started, see [Show me the code!](/contents/ShowMeTheCode.md#using-an-external-bus).
+
+This handler drops a duplicate: the Inbox stops it, and `SalutationReceived` is not sent again. If a duplicate should instead push a stalled flow forward — resending the messages the first run produced, without running the handler again — see [Replay On Seen](/contents/ReplayOnSeen.md).

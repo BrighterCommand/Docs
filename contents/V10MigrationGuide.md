@@ -329,6 +329,33 @@ public class MyHandler : RequestHandlerAsync<MyCommand>
 }
 ```
 
+#### `InstrumentationOptions` (added in 10.7.0)
+
+**Breaking Change**: `IRequestContext` gains a required `InstrumentationOptions` member.
+
+It carries the instrumentation options configured for the pipeline that created the
+context, so middleware handlers can gate their own telemetry — on
+`InstrumentationOptions.Brighter`, for example — without needing to know how the
+Command Processor was configured.
+
+This is **source-breaking for direct implementors of `IRequestContext` only**.
+`Paramore.Brighter` targets `netstandard2.0`, which has no default interface members, so
+the member is plain and abstract: any third-party or test type implementing the interface
+fails to compile until it adds one line.
+
+```csharp
+public class MyRequestContext : IRequestContext
+{
+    // ... other members
+
+    // 10.7.0: add this
+    public InstrumentationOptions InstrumentationOptions { get; set; } = InstrumentationOptions.All;
+}
+```
+
+The shipped `RequestContext` already implements it, defaulting to
+`InstrumentationOptions.All`, so code that uses the shipped context needs no change.
+
 ### 6. Request Id and CorrelationId type change
 
 In V9 the `Request` type used a `Guid` to represent the identity of a `Command` or `Event`. In V10, as part of a move away from primitives, we have changed this to be a type `Id`. An `Id` can be constructed from a `string` using its `ToString()` method. If you have used a `Guid` then you will need to turn the `Guid` into a `string`.
