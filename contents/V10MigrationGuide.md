@@ -512,7 +512,7 @@ new KafkaSubscription(
 );
 ```
 
-**See also**: [Dynamic Deserialization Documentation](/contents/DynamicDeserialization.md)
+**See also**: [Dynamic Deserialization Documentation](/contents/DynamicMessageDeserialization.md)
 
 ### 4. OpenTelemetry Semantic Conventions
 

@@ -424,7 +424,7 @@ V10 maintains backwards compatibility with existing configurations while providi
 3. **Side-by-side**: Run v3 and v4 packages in the same application (different transport types)
 4. **New projects**: Start with v4 packages for the latest features and performance
 
-See [Migration Guidance](#migration-guidance) below for step-by-step instructions.
+See [Migration Guidance](#migrating-from-aws-sdk-v3-to-v4) below for step-by-step instructions.
 
 ### Migrating from AWS SDK v3 to v4
 

@@ -393,7 +393,7 @@ When migrating to V10, be aware of these CloudEvents-related breaking changes:
    public Message MapToMessage(OrderCreated request, Publication publication)
    ```
 
-See the [V10 Migration Guide](MigrationV10.md) for complete migration instructions.
+See the [V10 Migration Guide](V10MigrationGuide.md) for complete migration instructions.
 
 ## Best Practices
 

@@ -8,7 +8,7 @@ This glossary provides definitions for key terms used in Brighter and Darker. Te
 
 A message sent over a bus. The base type for Commands, Events, and Queries. A Request represents an instruction or notification that needs to be processed by a handler.
 
-See: [Implementing Command, Events and Queries](/contents/ImplementingCommand.md)
+See: [Implementing Command, Events and Queries](/contents/Requests%2C%20Commands%20and%20Events.md)
 
 ### Command
 
@@ -24,7 +24,7 @@ A notification that something has happened. Events are facts about the past. Mul
 
 Example: `GreetingMade`, `PersonDeleted`, `OrderPlaced`
 
-See: [Publishing Events](/contents/DistributedTaskQueue.md)
+See: [Publishing Events](/contents/TaskQueuePattern.md)
 
 ### Query
 
@@ -175,7 +175,7 @@ See: [Outbox Pattern](/contents/OutboxPattern.md), [Outbox Support](/contents/Br
 
 A pattern for deduplication - ensuring that a message is only processed once. The Inbox tracks which messages have been processed and prevents duplicate processing of the same message.
 
-See: [Inbox Configuration](/contents/InboxConfiguration.md)
+See: [Inbox Configuration](/contents/BrighterInboxSupport.md#inbox-configuration)
 
 ### Sweeper
 

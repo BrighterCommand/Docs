@@ -120,6 +120,12 @@ When unclear about a feature:
 
 ### Cross-Linking Documentation
 
+**Verifying links:** `python3 tools/linkcheck.py` checks every internal link in
+the published docs — that the target file exists, and that the anchor matches a
+real heading. Pass file paths to check just those files. It exits non-zero when
+anything is broken, so it can gate CI. Run it after any change that adds or
+retargets links.
+
 **Internal Links (to other docs):**
 
 ```markdown
@@ -416,7 +422,7 @@ Before finalizing documentation, verify:
 **Structure:**
 
 - [ ] SUMMARY.md updated with any new files
-- [ ] All cross-links work (no broken links)
+- [ ] All cross-links work (no broken links) — verify with `python3 tools/linkcheck.py`
 - [ ] File follows standard organization pattern
 - [ ] Headings are logical and scannable
 - [ ] Further Reading section includes relevant links

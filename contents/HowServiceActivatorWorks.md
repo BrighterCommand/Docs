@@ -463,7 +463,7 @@ The **Dispatcher** is the primary class in the `Brighter.ServiceActivator` assem
 - **[Reactor and Proactor](ReactorAndProactor.md)** - Concurrency model details
 - **[Brighter Basic Configuration](BrighterBasicConfiguration.md)** - Initial setup
 - **[Configuring the Dispatcher](HowConfiguringTheDispatcherWorks.md)** - Advanced configuration
-- **[Subscriptions and Topology](BrighterSubscriptionsAndTopology.md)** - Subscription patterns
+- **[Configuring Subscriptions](/contents/BrighterBasicConfiguration.md#configuring-the-dispatcher)** - Subscription patterns
 - **[Dynamic Message Deserialization](DynamicMessageDeserialization.md)** - Content-based routing
 - **[Agreement Dispatcher](AgreementDispatcher.md)** - Dynamic handler selection
 - **[Health Checks](HealthChecks.md)** - Monitoring

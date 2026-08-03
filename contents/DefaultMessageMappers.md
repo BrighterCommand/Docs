@@ -465,7 +465,7 @@ services.AddBrighter(options => { })
 - [Claim Check Pattern](ClaimCheck.md) - Handling large messages
 - [Message Mappers](MessageMappers.md) - Legacy V9 mapper documentation
 - [Compression](Compression.md) - Compressing messages
-- [V10 Migration Guide](MigrationV10.md) - Complete migration instructions
+- [V10 Migration Guide](V10MigrationGuide.md) - Complete migration instructions
 
 ## Sample Code
 

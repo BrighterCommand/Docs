@@ -25,7 +25,7 @@ Brighter V10 provides InMemory implementations for the following components:
 | [InMemory Inbox](#inmemory-inbox) | Message deduplication | Limited use cases |
 | [InMemory Scheduler](#inmemory-scheduler) | Delayed message scheduling | Limited use cases |
 | [InMemory Archive](#inmemory-archive) | Message archiving | No |
-| [InMemory Storage Provider](#inmemory-storage-provider) | Claim Check pattern | No |
+| [InMemory Storage Provider](/contents/ClaimCheck.md) | Claim Check pattern | No |
 
 ## InMemory Transport
 
