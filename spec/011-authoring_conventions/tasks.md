@@ -1,8 +1,26 @@
 # Tasks: Spec 011 — Page Type Discipline and Machine-Readable Conventions
 
 **Created:** 2026-08-03
+**Revised:** 2026-08-03 at review — six findings applied; `design.md` and
+`requirements.md` amended with them (see *Applied at review* below)
 **Design:** [`design.md`](design.md) (approved 2026-08-03)
 **Requirements:** [`requirements.md`](requirements.md) (approved 2026-08-03)
+
+### Applied at review (2026-08-03)
+
+1. **Rule 3a compares `slug()`, not raw text** — expect **48** colliding texts at Task
+   2.8, not 50. Instances are 256 either way. New section below; design §3 gains
+   *Rules 3a and 3b compare `slug()`*; requirements § Measurements carries both columns
+2. **Rule 3b's twelve pages enumerated in full** under Task 2.8 — design §3 named ten
+   and closed with "+ 2 more", which made that task's check unrunnable. The two missing
+   are `AWSSQSConfiguration.md` and `BrighterSchedulerSupport.md`, and
+   `InMemoryOptions.md` has a fourth repeat the old table omitted
+3. **Task 4.5 traced** — the three content merges had no row in the traceability table
+4. **Acceptance criteria renumbered 1–8** in requirements; two were both numbered 6.
+   Task 7.4 and design's traceability row updated
+5. **Tasks 2.4 and 2.6 are not parallel** — both are branches of `check_code_blocks`
+6. **`md_files()` is repo-wide, not `contents/`** — noted in Task 2.1, along with
+   confirmation that importing `linkcheck.py` is safe (it has a `__main__` guard)
 
 ## Overview
 
@@ -31,9 +49,10 @@ runs the linter forfeits that check.
 
 ---
 
-## Two corpus facts established while writing this list (2026-08-03)
+## Three corpus facts established while writing this list (2026-08-03)
 
-Both are cheap to verify and both would otherwise surface as confusing failures mid-sweep.
+All three are cheap to verify and all three would otherwise surface as confusing failures
+mid-sweep. The third was added at this list's own review.
 
 ### The corpus is 105 pages — `VersionBegin.md` and `VersionEnd.md` are deleted
 
@@ -80,6 +99,31 @@ and both content lines carry trailing double-spaces. This compounds the design's
 that malformed indentation disables GitBook redirects *silently rather than erroring* —
 see Task 6.12, which must strip these rather than edit around them.
 
+### Rule 3a's text count depends on normalisation; its instance count does not
+
+Found at this list's review, by running the collision analysis both ways. Four H2 texts
+are emphasised, all four on the four outbox pages (`MSSQLOutbox.md`, `MySQLOutbox.md`,
+`PostgresOutbox.md`, `SqliteOutbox.md`): `## **Provisioning the Outbox Table**`,
+`## **NuGet Packages**`, `## **Database Table Schema**`, `## **Configuration**`. Two of
+them have plain twins elsewhere — `Configuration` ×22 and `NuGet Packages` ×5 — which are
+distinct texts raw and the same text after `slug()`, which is what GitBook does when it
+builds the anchor.
+
+| Comparison | Colliding texts | …needing qualification | Instances |
+|---|---|---|---|
+| Raw — the figure quoted throughout requirements | 53 | **50** | **256** |
+| `slug()`-normalised — **what `pagelint.py` does** | 51 | **48** | **256** |
+
+**Expect 48, not 50, at Task 2.8.** The instance count is 256 either way; only the text
+count moves, by exactly those two merges — `## Configuration` rises from 22 instances to
+26, `## NuGet Packages` from 5 to 9. Without this written down, Phase 2's reconciliation
+would trip its own stop-rule over a normalisation choice nobody had recorded. Design §3
+now states the rule (*Rules 3a and 3b compare `slug()`, not raw text*) and requirements
+§ Measurements carries both columns. All four emphasised texts need qualifying under
+either comparison, since each already appears on four pages; they are a named sub-case
+for Task 4.2 because qualifying them is also the moment to drop the emphasis, which is
+the convention nowhere else in the corpus.
+
 ---
 
 ## Phase 1 — Baseline and Conventions (design §12 steps 1–2)
@@ -120,7 +164,7 @@ in CI — it will fail loudly, and that is the point.
 - [ ] **Task 2.1:** Write the `pagelint.py` skeleton — page set, imports, output contract
   - Input: design §3 (signatures given), `tools/linkcheck.py` in full (225 lines — the pattern to follow)
   - Output: `tools/pagelint.py` — module docstring, `from linkcheck import md_files, slug, HEADING_RE`, `NAV_ALLOWLIST`, `BANNER_RE`, `PAGE_TYPES`, a `Finding` record, `main()` with optional path arguments and the exit-code contract
-  - Notes: **Import, do not duplicate** (requirements Q5). Mirror `linkcheck.py`'s conventions so someone who has read one can read the other: stdlib only, single file, `path:line: RULE: message`, exit 1 on any error, 0 when only warnings, 2 on bad arguments. The page set for page-level rules is **every** file under `contents/` — all 105 are reader-facing now that the two version markers are deleted, so there is no exemption list to carry and none should be invented. `README.md` and `SUMMARY.md` are not pages.
+  - Notes: **Import, do not duplicate** (requirements Q5). Verified at review that this works as designed: `linkcheck.py` defines `md_files` (`:85`), `slug` (`:55`) and `HEADING_RE` (`:52`) at module scope and guards its entry point with `if __name__ == '__main__'` (`:219`), so importing it runs nothing. Mirror its conventions so someone who has read one can read the other: stdlib only, single file, `path:line: RULE: message`, exit 1 on any error, 0 when only warnings, 2 on bad arguments. The page set for page-level rules is **every** file under `contents/` — all 105 are reader-facing now that the two version markers are deleted, so there is no exemption list to carry and none should be invented. **`md_files()` is not that set:** it walks the whole repo minus `SKIP_DIRS`/`SKIP_FILES` (`linkcheck.py:44`, `:47`), so it returns root `README.md` and `SUMMARY.md` too. `pagelint.py` filters to `contents/` itself — otherwise the first run reports a missing banner on `SUMMARY.md` and the reconciliation starts with a bug to explain. `README.md` and `SUMMARY.md` are not pages.
 
 - [ ] **Task 2.2:** Implement rules 1 and 2 — banner presence and grammar
   - Input: design §1 (`BANNER_RE` given complete), design §3 rules table
@@ -130,7 +174,7 @@ in CI — it will fail loudly, and that is the point.
 - [ ] **Task 2.3:** Implement rules 3a and 3b — heading uniqueness, two different scopes
   - Input: design §3 "Rule 3 is two rules", design §5, requirements § The navigation allowlist
   - Output: `check_headings(all_pages) -> list[Finding]`
-  - Notes: **3a is H2-only, across pages. 3b is H2–H4, within one page.** The asymmetry is deliberate and documented: 39 H3 texts appear on multiple pages (112 instances) and are *not* defects, because an H3 is read under its H2. Both rules exempt `NAV_ALLOWLIST` by exact text. Uniqueness is a property of the corpus, so when invoked on a subset the function loads every page for context but reports only on the requested ones — exactly how `linkcheck.py` handles orphans. Error message names the other pages and proposes the qualifier.
+  - Notes: **3a is H2-only, across pages. 3b is H2–H4, within one page.** The asymmetry is deliberate and documented: 39 H3 texts appear on multiple pages (112 instances) and are *not* defects, because an H3 is read under its H2. **Both compare `slug(text)`, not raw markdown** — see the normalisation finding at the top of this file and design §3; `NAV_ALLOWLIST` is likewise matched normalised, so an emphasised `## **Further Reading**` stays exempt. Uniqueness is a property of the corpus, so when invoked on a subset the function loads every page for context but reports only on the requested ones — exactly how `linkcheck.py` handles orphans. Error message names the other pages and proposes the qualifier.
 
 - [ ] **Task 2.4:** Implement rule 4 — language tag on every fence (warning)
   - Input: requirements § Measurements (185 untagged blocks), design §3 rules table
@@ -155,7 +199,26 @@ in CI — it will fail loudly, and that is the point.
 - [ ] **Task 2.8:** Run `python3 tools/pagelint.py` repo-wide and reconcile the counts
   - Input: the untouched tree; expected counts from design §12 step 3, **corrected per the table at the top of this file**
   - Output: Saved raw output for comparison (scratch, not committed)
-  - Notes: **This is the real test of the phase.** Expect **105** banner errors (rule 1, one per page — the corpus is 105 pages, see above), **256** cross-page heading errors across 50 texts (rule 3a), **34** within-page errors across 12 pages (rule 3b). Rule 3b's 12 pages are named in design §3 — check the list matches, not just the total; the same total from different pages means the rule is finding something else. **A materially different number means a rule is wrong, not the corpus.** Stop and revise the design before sweeping anything.
+  - Notes: **This is the real test of the phase.** Expect **105** banner errors (rule 1, one per page — the corpus is 105 pages, see above), **256** cross-page heading errors across **48** texts (rule 3a, comparing `slug()` — 50 if you compare raw, and that difference is a normalisation choice rather than a bug, see the finding at the top of this file), **34** within-page errors across 12 pages (rule 3b). **Check rule 3b page by page against the table below, not just the total** — the same total from different pages means the rule is finding something else. **A materially different number means a rule is wrong, not the corpus.** Stop and revise the design before sweeping anything.
+  - Rule 3b's twelve pages, complete (design §3 previously named ten and closed with "+ 2 more", which made this check unrunnable as written):
+
+    | Page | Repeats | Instances |
+    |---|---|---|
+    | `InMemoryOptions.md` | `When to Use` ×5, `Configuration` ×5, `Limitations` ×3, `Example Usage` ×3 | 12 |
+    | `HandlerFailure.md` | `What It Does` ×4, `When to Use It` ×4 | 6 |
+    | `PostgreSQLMessageBroker.md` | `How It Works` ×2, `Transactional Messaging` ×2, `Configuration` ×2 | 3 |
+    | `ReactorAndProactor.md` | `Handlers` ×2, `Message Mappers` ×2, `Middleware/Attributes` ×2 | 3 |
+    | `RabbitMQConfiguration.md` | `Best Practices` ×3 | 2 |
+    | `Glossary.md` | `Dispatcher` ×2, `CloudEvents` ×2 | 2 |
+    | `AWSSQSConfiguration.md` | `AWS SDK v4 Support` ×2 | 1 |
+    | `BrighterSchedulerSupport.md` | `Configuration` ×2 | 1 |
+    | `CustomScheduler.md` | `Implementation Steps` ×2 | 1 |
+    | `FAQ.md` | `When should I use Reactor vs Proactor?` ×2 | 1 |
+    | `ImplementAQueryHandler.md` | `Complete Example` ×2 | 1 |
+    | `KafkaConfiguration.md` | `Configuration Callback` ×2 | 1 |
+    | | | **34** |
+
+    `AWSSQSConfiguration.md` and `BrighterSchedulerSupport.md` are the two that were unnamed. Note `InMemoryOptions.md` has a **fourth** repeat the old table missed (`Example Usage` ×3), so Task 4.3 qualifies 12 headings there, not 10.
 
 - [ ] **Task 2.9:** Record the measured baseline
   - Input: Task 2.8 output
@@ -211,17 +274,17 @@ renamed**.
 - [ ] **Task 4.1:** Propose qualifiers for the 50 colliding texts
   - Input: design §5 "Deriving the qualifier", `pagelint.py` rule 3a output
   - Output: A reviewed proposal list (scratch): page · current heading · proposed heading
-  - Notes: The qualifier is the page's subject, from its H1 with filler removed. **The script proposes, a human edits** — `## Hangfire Best Practices` beats `## Hangfire Scheduler Best Practices` and no rule can tell you that. Worst offenders: `Best Practices` ×26, `Configuration` ×22, `Troubleshooting` ×14, `Summary` ×14, `Usage` ×13, `Overview` ×10.
+  - Notes: The qualifier is the page's subject, from its H1 with filler removed. **The script proposes, a human edits** — `## Hangfire Best Practices` beats `## Hangfire Scheduler Best Practices` and no rule can tell you that. Worst offenders: `Best Practices` ×26, `Configuration` ×26 (22 plain plus 4 emphasised, which the linter's normalisation merges), `Troubleshooting` ×14, `Summary` ×14, `Usage` ×13, `Overview` ×10.
 
 - [ ] **Task 4.2:** Apply cross-page qualification — 256 instances across 50 texts
   - Input: Task 4.1 proposals
   - Output: Edits across the affected pages under `contents/`
-  - Notes: Mechanical commit, no prose changes riding along. The three allowlisted texts that repeat (`Further Reading` ×29, `Related Documentation` ×10, `See Also` ×2 — 41 instances) **stay exactly as they are**; their uniformity is a feature.
+  - Notes: Mechanical commit, no prose changes riding along. The three allowlisted texts that repeat (`Further Reading` ×29, `Related Documentation` ×10, `See Also` ×2 — 41 instances) **stay exactly as they are**; their uniformity is a feature. **Named sub-case — the four outbox pages.** `MSSQLOutbox.md`, `MySQLOutbox.md`, `PostgresOutbox.md` and `SqliteOutbox.md` each carry the same four **emphasised** H2s: `## **Provisioning the Outbox Table**`, `## **NuGet Packages**`, `## **Database Table Schema**`, `## **Configuration**`. All 16 need qualifying, and qualifying them is the moment to drop the emphasis too — `## **Configuration**` on `PostgresOutbox.md` becomes `## PostgreSQL Outbox Configuration`, not `## **PostgreSQL Outbox Configuration**`. Bold H2s are the convention nowhere else, and `slug()` ignores emphasis, so dropping it leaves the anchor unchanged. Task 6.7 does the same thing on `BrighterBasicConfiguration.md`, the only other page with bold H2s.
 
 - [ ] **Task 4.3:** Apply within-page qualification — 34 instances across 12 pages
-  - Input: design §3 rule 3b table (all 12 pages listed with their repeats)
+  - Input: the complete rule 3b table under Task 2.8 (design §3's copy is now complete too)
   - Output: Edits to those 12 pages
-  - Notes: Worst is `InMemoryOptions.md` — `When to Use` ×5, `Configuration` ×5, `Limitations` ×3, producing `#when-to-use-1`, `#when-to-use-2` … on chunks that sit next to each other. Within a page a duplicate is **always** a defect. `RabbitMQConfiguration.md` is on this list and Phase 6a dissolves all three of its `### Best Practices` — that happens by luck; fix it here anyway so the outcome is deliberate and the page is correct before the split.
+  - Notes: Worst is `InMemoryOptions.md` — `When to Use` ×5, `Configuration` ×5, `Example Usage` ×3, `Limitations` ×3, i.e. **12** qualifications on one page, producing `#when-to-use-1`, `#when-to-use-2` … on chunks that sit next to each other. `Example Usage` was missing from the design's original table; use the Task 2.8 copy. Within a page a duplicate is **always** a defect. `RabbitMQConfiguration.md` is on this list and Phase 6a dissolves all three of its `### Best Practices` — that happens by luck; fix it here anyway so the outcome is deliberate and the page is correct before the split.
 
 - [ ] **Task 4.4:** Repoint the 8 same-page anchor links
   - Input: design §5 "The anchor links are all same-page" (all 8 listed with line numbers)
@@ -351,9 +414,9 @@ schedule pressure should give — Spec 010 needs the conventions (Phase 1) and t
   - Notes: Scope it narrowly — `--fix` must **never** decide a page type; it cannot know one. Its reason for existing is that the V11 bump is 105 edits, and it should be one command plus a diff review rather than a page-by-page trudge. Do **not** fold `apply_banners.py`'s TSV logic in: that would leave a durable tool carrying one-off migration logic, keyed to a file that by then records a decision made years earlier.
 
 - [ ] **Task 7.4:** Acceptance pass and programme handoff
-  - Input: requirements § Acceptance Criteria (AC1–AC7)
+  - Input: requirements § Acceptance Criteria (AC1–AC8)
   - Output: A checked-off AC list appended to this file; `PROMPT.md` updated with 011's completion state and the measured baseline; `PROMPT.md` open question 3 closed
-  - Notes: Walk all seven: `pagelint.py` exits 0 with the warning count recorded (AC1) · `linkcheck.py` exits 0 including orphans (AC2) · every banner human-reviewed (AC3) · no cross-page `##` collisions outside the allowlist (AC4) · `CLAUDE.md` ↔ linter parity in **both** directions and the *File Organization Pattern* no longer prescribing rejected headings (AC5) · CI green with both tools, and green on the untouched tree *before* the sweeps (AC6) · splits navigable with redirects settled, worklist executable without re-deriving the analysis (AC7). Note that requirements numbers two criteria "6"; treat both as binding. Then hand to Spec 010 — it needs the conventions and the worklist, both of which now exist.
+  - Notes: Walk all eight: `pagelint.py` exits 0 with the warning count recorded (AC1) · `linkcheck.py` exits 0 including orphans (AC2) · every banner human-reviewed (AC3) · no cross-page `##` collisions outside the allowlist (AC4) · `CLAUDE.md` ↔ linter parity in **both** directions and the *File Organization Pattern* no longer prescribing rejected headings (AC5) · CI green with both tools, and green on the untouched tree *before* the sweeps (AC6) · splits navigable with redirects settled (AC7) · worklist executable without re-deriving the analysis (AC8). There are eight: requirements numbered two of them "6" until this list's review renumbered them to 1–8, and design's traceability row was updated to match. Then hand to Spec 010 — it needs the conventions and the worklist, both of which now exist.
 
 ---
 
@@ -365,7 +428,8 @@ schedule pressure should give — Spec 010 needs the conventions (Phase 1) and t
 1.2 ┬─► 1.4 ──► Phase 2             └──► 5.3  (009 D9 wiring)
 1.3 ┘
 
-2.1 ─► 2.2, 2.3, 2.4, 2.5, 2.6  (rules, parallelisable)
+2.1 ─► 2.2, 2.3, 2.5           (rules, parallelisable)
+   └─► 2.4 ─► 2.6              (both branches of check_code_blocks — same file)
         └────────► 2.7 ─► 2.8 ─► 2.9 ─► ⛔ session boundary
 
 3.1 ─► 3.2 ─► 3.3 ─► 3.4 ─► 3.5
@@ -395,7 +459,9 @@ schedule pressure should give — Spec 010 needs the conventions (Phase 1) and t
 
 ## Parallelisable
 
-- Tasks 2.2–2.6 — independent rule functions against one skeleton
+- Tasks 2.2, 2.3, 2.5 — independent rule functions against one skeleton. **2.4 and 2.6
+  are not independent of each other**: both implement branches of `check_code_blocks`,
+  and 2.7 then changes its dispatch. Do them as one sitting, in the order 2.4 → 2.6 → 2.7
 - Tasks 6.2–6.4 — three new pages from disjoint source sections
 - Tasks 6.8–6.9 — likewise
 - Tasks 7.2–7.3 — P1, independent of the splits
@@ -407,6 +473,7 @@ schedule pressure should give — Spec 010 needs the conventions (Phase 1) and t
 | D1 `CLAUDE.md` conventions + pattern amendment | 1.2, 1.3, 1.4, 7.2 |
 | D2 banner on every page | 3.1–3.5 |
 | D3 heading de-duplication + 8 anchors | 4.1–4.4, 4.6 |
+| Content defects surfaced by rule 3b (design §8) — the 3 merges | 4.5 |
 | D4 `tools/pagelint.py` | 2.1–2.9, 7.3 |
 | D5 `.github/workflows/docs.yml` | 1.1, 5.1, 5.2, 5.3 |
 | D6 RabbitMQ split | 6.1–6.6 |
@@ -414,4 +481,4 @@ schedule pressure should give — Spec 010 needs the conventions (Phase 1) and t
 | D8 worklist | 7.1 |
 | D9 `llms.txt` format | 1.3 |
 | Redirects | 6.12 |
-| AC1–AC7 | 7.4 |
+| AC1–AC8 | 7.4 |

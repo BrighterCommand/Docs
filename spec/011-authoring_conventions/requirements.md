@@ -35,14 +35,43 @@ the difference is checkable rather than mysterious.
 | …of those, containing a `using` directive | **133 (16%)** | Earlier notes said ~230 of ~1,050. That count appears to have included all fenced blocks, not just C#-tagged ones. Either way the direction is the same and the compliance is worse than assumed. |
 | Fenced blocks with **no language tag** | **185** | Not previously measured. `CLAUDE.md` requires a language on every block. |
 | Distinct `##` heading texts | **474** | |
-| Heading texts appearing on more than one page | **53** | |
-| Total `##` heading instances that are non-unique | **297** | 41 are on the navigation allowlist (`Further Reading` 29, `Related Documentation` 10, `See Also` 2) and stay uniform. **256 instances across 50 texts need qualification.** |
+| Heading texts appearing on more than one page | **53** raw / **51** normalised | See *Raw versus normalised heading text* below. |
+| Total `##` heading instances that are non-unique | **297** | 41 are on the navigation allowlist (`Further Reading` 29, `Related Documentation` 10, `See Also` 2) and stay uniform. **256 instances need qualification, across 50 texts raw / 48 normalised.** |
 | Internal links carrying an `#anchor` | **299** | |
 | …targeting a generic anchor that de-duplication would rename | **8** | 7 × `#provisioning`, 1 × `#configuration`. See risk note below. |
 
 Worst heading collisions: `## Further Reading` 29, `## Best Practices` 26,
 `## Configuration` 22, `## Troubleshooting` 14, `## Summary` 14, `## Usage` 13,
 `## Related Documentation` 10, `## Overview` 10.
+
+#### Raw versus normalised heading text (established 2026-08-03 at tasks review)
+
+The figures above compare heading text **raw**. Four H2 texts in the corpus are
+emphasised, and all four sit on the same four outbox pages — `MSSQLOutbox.md`,
+`MySQLOutbox.md`, `PostgresOutbox.md`, `SqliteOutbox.md`, each carrying
+`## **Provisioning the Outbox Table**`, `## **NuGet Packages**`,
+`## **Database Table Schema**` and `## **Configuration**`.
+
+All four are cross-page collisions under either comparison, since each appears on four
+pages. What normalisation changes is that **two of them merge with plain twins
+elsewhere**: `**Configuration**` ×4 with `Configuration` ×22, and `**NuGet Packages**`
+×4 with `NuGet Packages` ×5. `**Database Table Schema**` and
+`**Provisioning the Outbox Table**` have no plain form anywhere, so they stay distinct
+either way.
+
+**The linter compares normalised**, because a collision that GitBook resolves into
+`#configuration` and `#configuration-1` is a real collision regardless of how the
+markdown is emphasised. The consequence for the counts:
+
+| Comparison | Colliding texts | …needing qualification | Instances needing qualification |
+|---|---|---|---|
+| Raw | 53 | 50 | **256** |
+| `slug()`-normalised — **what `pagelint.py` does** | 51 | **48** | **256** |
+
+The instance count is 256 either way; only the text count moves, by exactly the two
+merges above. `## Configuration` rises from 22 instances to 26 and `## NuGet Packages`
+from 5 to 9. Design §3 and the Phase 2 reconciliation target both use the normalised
+figures.
 
 #### `VersionBegin.md` and `VersionEnd.md` deleted (2026-08-03)
 
@@ -463,10 +492,13 @@ into a bucket.
    rejects.
 6. CI exists, runs both tools on push and pull request, and was **green on the current
    tree before the sweeps landed**, so any later failure is attributable.
-6. The two demonstrator splits are single-mode pages that a reader can navigate, with
+7. The two demonstrator splits are single-mode pages that a reader can navigate, with
    redirects in place for the URLs that moved.
-7. The worklist is complete enough for Spec 010 to execute against without re-deriving
+8. The worklist is complete enough for Spec 010 to execute against without re-deriving
    the analysis.
+
+*(Renumbered 2026-08-03 at the tasks review: two criteria were both numbered 6. There
+are eight, and the design's traceability row reading "AC1–AC6" means all of them.)*
 
 ## Notes
 

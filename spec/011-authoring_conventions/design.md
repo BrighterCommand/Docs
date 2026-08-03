@@ -218,6 +218,25 @@ only *reports* on the requested ones, exactly as `linkcheck.py` handles orphans.
 | 2 | Banner matches `BANNER_RE` (type in vocabulary, *Applies to* present) | error | error |
 | 3a | `##` heading text unique **across pages**, `NAV_ALLOWLIST` exempt | error | error |
 | 3b | Heading text unique **within a page**, H2–H4, `NAV_ALLOWLIST` exempt | error | error |
+
+### Rules 3a and 3b compare `slug()`, not raw text
+
+Both compare `slug(text)`, not the markdown as written. Four H2 texts are emphasised,
+all four on the four outbox pages (`MSSQLOutbox.md`, `MySQLOutbox.md`,
+`PostgresOutbox.md`, `SqliteOutbox.md`): `## **Provisioning the Outbox Table**`,
+`## **NuGet Packages**`, `## **Database Table Schema**`, `## **Configuration**`. Two of
+them have plain twins elsewhere in the corpus — `Configuration` ×22 and `NuGet Packages`
+×5. GitBook strips the emphasis when it builds the anchor, so those pairs really do
+collide in the published URL; comparing raw text would let them through. `slug()` is
+imported from `linkcheck.py`, so the linter compares exactly what the link checker
+resolves anchors against.
+
+This moves the rule 3a text count and nothing else: **48 texts, 256 instances**
+normalised, against 50 texts and the same 256 raw. The `NAV_ALLOWLIST` is matched
+normalised too — it is declared as the five plain texts, and the linter compares
+`slug()` of the heading against `slug()` of each entry, so an emphasised
+`## **Further Reading**` is still exempt rather than a false positive. Rule 3b is
+unaffected — 12 pages, 34 instances under either comparison.
 | 4 | Fenced block carries a language tag | warning → error once P1 lands | error |
 | 5 | `ServiceActivator` in prose where `Dispatcher` is meant | error | error |
 | 6 | C# block carries `using` directives | **warning, counted** | **error** |
@@ -231,14 +250,31 @@ unattributable-chunk problem in its purest form.
 
 Measured 2026-08-03: **12 pages, 34 duplicate instances.**
 
-| Page | Repeats |
-|---|---|
-| `InMemoryOptions.md` | `When to Use` ×5, `Configuration` ×5, `Limitations` ×3 |
-| `HandlerFailure.md` | `What It Does` ×4, `When to Use It` ×4 |
-| `ReactorAndProactor.md` | `Handlers` ×2, `Message Mappers` ×2, `Middleware/Attributes` ×2 |
-| `PostgreSQLMessageBroker.md` | `How It Works` ×2, `Transactional Messaging` ×2, `Configuration` ×2 |
-| `RabbitMQConfiguration.md` | `Best Practices` ×3 |
-| `KafkaConfiguration.md`, `ImplementAQueryHandler.md`, `FAQ.md`, `CustomScheduler.md`, `Glossary.md`, + 2 more | 1 each |
+All twelve, with the repeat that fires and the number of surplus instances it
+contributes. **The list is complete** — an earlier draft named ten and closed with
+"+ 2 more", which left Phase 2's reconciliation unable to check the pages rather than
+just the total.
+
+| Page | Repeats | Instances |
+|---|---|---|
+| `InMemoryOptions.md` | `When to Use` ×5, `Configuration` ×5, `Limitations` ×3, `Example Usage` ×3 | 12 |
+| `HandlerFailure.md` | `What It Does` ×4, `When to Use It` ×4 | 6 |
+| `PostgreSQLMessageBroker.md` | `How It Works` ×2, `Transactional Messaging` ×2, `Configuration` ×2 | 3 |
+| `ReactorAndProactor.md` | `Handlers` ×2, `Message Mappers` ×2, `Middleware/Attributes` ×2 | 3 |
+| `RabbitMQConfiguration.md` | `Best Practices` ×3 | 2 |
+| `Glossary.md` | `Dispatcher` ×2, `CloudEvents` ×2 | 2 |
+| `AWSSQSConfiguration.md` | `AWS SDK v4 Support` ×2 | 1 |
+| `BrighterSchedulerSupport.md` | `Configuration` ×2 | 1 |
+| `CustomScheduler.md` | `Implementation Steps` ×2 | 1 |
+| `FAQ.md` | `When should I use Reactor vs Proactor?` ×2 | 1 |
+| `ImplementAQueryHandler.md` | `Complete Example` ×2 | 1 |
+| `KafkaConfiguration.md` | `Configuration Callback` ×2 | 1 |
+| | | **34** |
+
+`InMemoryOptions.md` carries a fourth repeat (`Example Usage` ×3) that the earlier
+table missed, so the page needs **12** qualifications rather than 10. `Glossary.md`
+and `FAQ.md` appear here because of the duplicate-content pairs below — those are
+**merged, not qualified**.
 
 Bounded and one-off: 34 headings gain a qualifier at step 6, alongside the cross-page
 work. Note that `RabbitMQConfiguration.md` — our own demonstrator — is on this list,
@@ -630,7 +666,7 @@ requires a rule that is not yet true.
 |---|---|---|
 | 1 | `docs.yml` running `linkcheck.py` only | Green build on the untouched tree — the baseline |
 | 2 | `CLAUDE.md`: amend the pattern, add Page Conventions | Review; no code depends on it yet |
-| 3 | `pagelint.py`, all rules, **not yet in CI** | Run locally against the untouched tree. Expected: **105 banner errors** (rule 1, one per page), **256 cross-page heading errors** across 50 texts (rule 3a, one per instance), **34 within-page heading errors** across 12 pages (rule 3b). Those counts *are* the test — a materially different number means a rule is wrong, not the corpus |
+| 3 | `pagelint.py`, all rules, **not yet in CI** | Run locally against the untouched tree. Expected: **105 banner errors** (rule 1, one per page), **256 cross-page heading errors** across **48** normalised texts (rule 3a, one per instance — 50 texts if compared raw; see *Rules 3a and 3b compare `slug()`*), **34 within-page heading errors** across the 12 pages named above (rule 3b). Those counts *are* the test — a materially different number means a rule is wrong, not the corpus |
 | 4 | Generate `pagetypes.tsv`; **human reviews every row** | Verdict column complete on all 105 rows; `apply_banners.py` refuses to run otherwise |
 | 5 | Banner sweep via `apply_banners.py` — one mechanical commit, 105 files | Rules 1 and 2 report zero |
 | 6 | Heading de-duplication (256 cross-page + 34 within-page) and the 8 same-page anchors. **Plus a separate small commit** merging the 3 duplicate-content pairs in `Glossary.md` and `FAQ.md` | Rules 3a and 3b report zero; `linkcheck.py` still clean |
@@ -656,5 +692,5 @@ Spec 010 — 010 needs the **conventions and the worklist**, which land at steps
 | D7 BrighterBasicConfiguration split | §6b |
 | D8 worklist | §8 |
 | D9 `llms.txt` format | §7 |
-| AC1–AC6 | §12, each step naming its check |
+| AC1–AC8 | §12, each step naming its check |
 </content>
