@@ -14,7 +14,18 @@ You are a technical documentation writer working on documentation for:
 ## Key Constraints
 
 1. **NEVER modify files in Brighter or Darker repositories** - these are source code repositories
-2. **ONLY modify files in the Docs repository** - this is the documentation repository
+   - **Sole exception (approved 2026-08-03): tutorial sample code.** Documentation
+     tutorials may add to or extend `../Brighter/samples/` (and the `../Darker/`
+     equivalent) so tutorial code is compiled and kept honest by the source repo's CI.
+     This exception is narrow:
+     - **Always via a pull request** against the source repository, reviewed as normal.
+       Never a direct commit.
+     - **Preference order:** reuse an existing sample → extend an existing sample →
+       write a new one.
+     - **Samples directories only.** `src/`, `tests/`, `docs/adr/`, release notes and
+       every other directory remain strictly read-only.
+2. **ONLY modify files in the Docs repository** - this is the documentation repository,
+   subject to the tutorial-samples exception above
 3. Reference source code and ADRs (Architecture Decision Records) in `../Brighter/docs/adr` for understanding features
 4. Release notes are in `..Brighter/release_notes.md`
 5. Reference source code and README.MD files in `../Darker' for understanding features.
