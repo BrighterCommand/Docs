@@ -270,7 +270,72 @@ sweep being a sweep. They get added as pages are edited for other reasons, which
 the *Prerequisites* half of the banner grammar is currently unexercised across the
 corpus. Worth a look at Task 3.5's rendered preview.
 
-## 10. Task 3.2 is complete
+## 10. Darker is a sister project, and the classification had not treated it as one
+
+**Maintainer, 2026-08-04:** *"Darker is Brighter's sister project, the query side to
+Brighter's command side. So its documentation sits alongside. It often parallels, but
+it is not the same."*
+
+Checking the classification against that turned up two wrong calls and one structural
+finding.
+
+### The parallel pairs, and where they diverged
+
+| Concept | Brighter | | Darker | |
+|---|---|---|---|---|
+| Basic configuration | `BrighterBasicConfiguration.md` | How-to | `DarkerBasicConfiguration.md` | How-to |
+| The request / query object | `Requests, Commands and Events.md` | Explanation | `QueriesAndQueryObjects.md` | Explanation |
+| Implementing a handler | `ImplementingAHandler.md` | How-to | `ImplementAQueryHandler.md` | How-to |
+| The pipeline | `BuildingAPipeline.md` | How-to | `QueryPipeline.md` | ~~Explanation~~ → **How-to** |
+| Patterns | *(none)* | | `QueryPatterns.md` | How-to |
+
+Four of five already lined up. **`QueryPipeline.md` was the one that did not, and it was
+my misreading rather than a real divergence** — I took its lead from *Introduction* and
+*How the Query Pipeline Works* and classified it Explanation, when the payload is
+*Available Decorators · Decorator Patterns · Configuring Polly Policies*. A reader who
+wants logging or retry on a query handler comes here to do a task. Corrected to
+**How-to**, which also restores the parallel.
+
+### `WhyBrighter.md` applies to both, and plainly so
+
+Its opening sentence is *"So why would you choose **Brighter & Darker**?"*, its
+*Command Query Separation* section exists to explain that Brighter modifies state and
+Darker reads it, and *Type over Convention* opens *"Brighter & Darker recognize…"*.
+Filed as `Brighter V10` because the title says "Why Brighter?" — a title-shaped
+judgement about a page whose content says otherwise. Corrected to
+**`Brighter and Darker V10`**.
+
+### The structural finding: Darker's docs are not thin, they are differently shaped
+
+The interesting number is the reverse of what "sister project" might suggest.
+`QueryPipeline.md` is **928 lines**; its Brighter counterpart `BuildingAPipeline.md` is
+**177**.
+
+The Darker page is five times the size because it absorbs material that on the Brighter
+side lives in separate pages — decorators, Polly policy configuration, and resilience
+patterns are all inside `QueryPipeline.md`, whereas Brighter splits them across
+`BuildingAPipeline.md`, `PolicyRetryAndCircuitBreaker.md` and `PolicyFallback.md`.
+
+So the asymmetry is **architectural, not editorial**: the same subject is decomposed one
+way on one side and not at all on the other. That is a worklist entry for Task 7.1 and a
+filing question for Spec 010 — not something to fix by moving a banner.
+
+### An open question this raises about the banner itself
+
+`Applies to **Brighter V10**` now sits on **96 pages**, and on a cross-cutting page that
+is an *exclusion claim*: it tells a Darker reader the page is not for them. Some are
+certainly right — `RequestValidation.md` says in its own text that validation applies to
+Brighter requests and not Darker queries. Others are unverified, and the likely
+candidates are the middleware and resilience pages: `PolicyRetryAndCircuitBreaker.md`,
+`PolicyFallback.md`, `UsingTheContextBag.md`, `FeatureSwitches.md`, `Telemetry.md`.
+
+`QueryPipeline.md` documents Polly policies for Darker, so at least the resilience story
+is shared in substance even where the pages are not. **Establishing which of those 96
+genuinely exclude Darker needs the Darker source, not the docs**, and it is out of scope
+here — but the banner has made an implicit claim explicit on every page at once, which
+is the first time it has been checkable at all.
+
+## 11. Task 3.2 is complete
 
 **105 of 105 verdicts filled**, so `apply_banners.py` will run. Final distribution:
 
