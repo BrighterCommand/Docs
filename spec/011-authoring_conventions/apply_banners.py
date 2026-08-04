@@ -16,18 +16,24 @@ linter errors with no sign that a human decision was skipped rather than a page
 missed.
 
 Deliberately not folded into `pagelint.py --fix`. The sweep is P0 and --fix is
-P1, and a design that makes a P0 step depend on a P1 tool is wrong. This lives
-beside the spec because it is used once; delete it after Task 3.4.
+P1, and a design that makes a P0 step depend on a P1 tool is wrong.
+
+The design says to delete this after Task 3.4, on the grounds that it is used
+once. It has since been used three more times -- to correct two page types, and
+to retarget ten Darker version markers -- so it is kept until the verdicts are
+final. Delete it then; `pagelint.py --fix` is the durable tool.
 
 Prerequisites are omitted from every banner. The segment is optional by design,
 and choosing prerequisites is a per-page judgement that cannot be made
 mechanically -- so the sweep stays a sweep, and prerequisites get added as pages
 are edited for other reasons.
 
-Re-running is safe: a first line that already matches BANNER_RE is REPLACED, not
+Re-running is safe: a first line shaped like one of our banners is REPLACED, not
 duplicated, so a corrected verdict can be re-applied without unpicking anything.
-Any other blockquote in that position is left alone and reported, because it is
-content this script did not write and must not eat.
+The test is BANNER_SHAPE_RE rather than BANNER_RE, so a banner left stale by a
+vocabulary change is still recognised as ours. Any other blockquote in that
+position is left alone and reported, because it is content this script did not
+write and must not eat.
 
 Usage:
     python3 spec/011-authoring_conventions/apply_banners.py --dry-run
@@ -43,9 +49,8 @@ ROOT = HERE.parents[1]
 TSV = HERE / 'pagetypes.tsv'
 
 sys.path.insert(0, str(ROOT / 'tools'))
-from pagelint import BANNER_RE, PAGE_TYPES  # noqa: E402
-
-APPLIES = ('Brighter V10', 'Darker V10', 'Brighter and Darker V10')
+from pagelint import (APPLIES_TO, BANNER_SHAPE_RE,  # noqa: E402  one source of truth
+                      PAGE_TYPES)
 
 
 def banner(verdict, applies):
@@ -68,8 +73,8 @@ def validate(rows):
             problems.append((r['path'], f'verdict {verdict!r} is not one of {PAGE_TYPES}'))
         if not applies:
             problems.append((r['path'], 'applies is blank'))
-        elif applies not in APPLIES:
-            problems.append((r['path'], f'applies {applies!r} is not one of {APPLIES}'))
+        elif applies not in APPLIES_TO:
+            problems.append((r['path'], f'applies {applies!r} is not one of {APPLIES_TO}'))
         if not (ROOT / r['path']).is_file():
             problems.append((r['path'], 'no such file'))
     return problems
@@ -84,7 +89,10 @@ def apply_to(path, text, line, dry_run):
 
     nxt = next((i for i in range(h1 + 1, len(lines)) if lines[i].strip()), None)
 
-    if nxt is not None and BANNER_RE.match(lines[nxt].rstrip()):
+    # BANNER_SHAPE_RE, not BANNER_RE: a banner written under a superseded
+    # vocabulary is still ours to rewrite, and is precisely what needs
+    # rewriting. BANNER_RE would call it foreign and refuse.
+    if nxt is not None and BANNER_SHAPE_RE.match(lines[nxt].rstrip()):
         if lines[nxt].rstrip() == line:
             return 'unchanged'
         lines[nxt] = line

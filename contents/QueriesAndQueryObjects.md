@@ -1,6 +1,6 @@
 # Queries and Query Objects
 
-> **Explanation** · Applies to **Darker V10**
+> **Explanation** · Applies to **Darker V4**
 
 ## Introduction
 

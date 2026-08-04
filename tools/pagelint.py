@@ -77,11 +77,33 @@ NAV_ALLOWLIST = frozenset({
 
 PAGE_TYPES = ('Tutorial', 'How-to', 'Reference', 'Explanation')
 
+# Brighter and Darker version independently: Brighter is on V10, Darker's latest
+# release is 4.1.1. An earlier draft of this vocabulary said "Darker V10", which
+# is a version that has never existed -- exactly the kind of confident-but-wrong
+# version claim the banner is here to prevent.
+#
+# Deliberately a closed vocabulary rather than a version pattern. When Brighter
+# goes to V11, or Darker ships the release currently in flight, every unbumped
+# page fails loudly instead of quietly asserting last year's version. That is
+# 105 mechanical edits, which is what `--fix` exists for. Change the versions
+# HERE and nowhere else -- CLAUDE.md documents this tuple, and
+# apply_banners.py imports it.
+APPLIES_TO = ('Brighter V10 and Darker V4', 'Brighter V10', 'Darker V4')
+
 BANNER_RE = re.compile(
     r'^> \*\*(Tutorial|How-to|Reference|Explanation)\*\*'      # page type
-    r' · Applies to \*\*(Brighter V10|Darker V10|Brighter and Darker V10)\*\*'
+    r' · Applies to \*\*(' + '|'.join(APPLIES_TO) + r')\*\*'   # longest first
     r'( · Prerequisites: .+)?$'                                 # optional
 )
+
+# Structural match only: is this line one of our banners *at all*, whatever it
+# says? BANNER_RE answers "is this banner valid"; this answers "is this banner
+# ours to rewrite". The two differ exactly when a banner was written under a
+# superseded vocabulary -- which happened the first time the Darker version was
+# corrected, and will happen again at V11. Without this, a tool replacing
+# banners cannot tell its own stale output from a page's content blockquote,
+# and correctly refuses to touch either.
+BANNER_SHAPE_RE = re.compile(r'^> \*\*[^*]+\*\* · Applies to \*\*[^*]+\*\*')
 
 BANNER_EXAMPLE = '> **Reference** · Applies to **Brighter V10**'
 

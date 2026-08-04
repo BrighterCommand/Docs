@@ -1,6 +1,6 @@
 # CQRS with Brighter and Darker
 
-> **Explanation** · Applies to **Brighter and Darker V10**
+> **Explanation** · Applies to **Brighter V10 and Darker V4**
 
 ## Introduction
 

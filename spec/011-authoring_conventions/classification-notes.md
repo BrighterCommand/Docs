@@ -320,6 +320,55 @@ So the asymmetry is **architectural, not editorial**: the same subject is decomp
 way on one side and not at all on the other. That is a worklist entry for Task 7.1 and a
 filing question for Spec 010 — not something to fix by moving a banner.
 
+### There is no Darker V10 — the banner vocabulary was wrong (2026-08-04)
+
+Design §1 fixed the vocabulary as `Brighter V10 | Darker V10 | Brighter and Darker V10`,
+assuming Darker tracks Brighter's version line. **It does not.**
+
+| | |
+|---|---|
+| `Paramore.Darker` latest release | **4.1.1** |
+| Published prereleases | none |
+| Tags | 4.1.1, 4.1.0, 4.0.1, 4.0.0, 3.0.0, 2.0.79 |
+| Local `../Darker` HEAD | `4.1.1-7-g2f76cda` — 7 commits ahead of the tag |
+
+So "Darker V10" is a version that has never existed, and the sweep put that claim on
+**10 pages**, `Glossary.md` and `ShowMeTheCode.md` among them. The banner's whole reason
+for existing is to stop a reader — or a model — acting on the wrong version, so a false
+version marker is the worst thing it could carry.
+
+**Corrected** to `APPLIES_TO = ('Brighter V10 and Darker V4', 'Brighter V10',
+'Darker V4')`, defined once in `tools/pagelint.py`, imported by `apply_banners.py`, and
+documented in `CLAUDE.md`. Five pages now read `Darker V4` and five
+`Brighter V10 and Darker V4`.
+
+**Deferred, on the maintainer's instruction:** Darker's next release is in flight and its
+source is ahead of what is deployed, so the *content* of the Darker pages is not updated
+now. They are positioned instead — the ten are identifiable as a set from the `applies`
+column in `pagetypes.tsv`, and bumping them when the release lands is one edit to
+`APPLIES_TO`, one to that column, and a re-run of `apply_banners.py`.
+
+Do not update Darker page content against the `../Darker` working tree in the meantime:
+it documents behaviour that is not released, and the docs site publishes the deployed
+version.
+
+### The gap this exposed in `apply_banners.py`
+
+Retargeting the ten failed on the first attempt, and instructively. The script decided
+whether a blockquote was its own by matching `BANNER_RE` — but those ten banners had been
+written under the *old* vocabulary, so they no longer matched, and it correctly refused
+to touch what it took for page content. It reported `10 FOREIGN BLOCKQUOTE` and wrote
+nothing.
+
+The distinction it lacked is between **"is this banner valid"** and **"is this banner
+ours"**. Those differ exactly when a vocabulary changes — which is not an edge case: it
+is what happens at every version bump, and the V11 bump will hit it across all 105 pages.
+
+`BANNER_SHAPE_RE` now answers the second question structurally, and `BANNER_RE` keeps
+answering the first. `apply_banners.py` replaces on shape; `pagelint.py` validates on
+grammar. A page whose banner is stale reports `BANNER MALFORMED` — which is how the ten
+surfaced — rather than being silently skipped.
+
 ### An open question this raises about the banner itself
 
 `Applies to **Brighter V10**` now sits on **96 pages**, and on a cross-cutting page that

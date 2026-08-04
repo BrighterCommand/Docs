@@ -119,12 +119,26 @@ The separator is ` · ` — space, U+00B7 MIDDLE DOT, space. Not a hyphen, not a
 It is fixed so the pattern can be strict:
 
 ```python
+APPLIES_TO = ('Brighter V10 and Darker V4', 'Brighter V10', 'Darker V4')
+
 BANNER_RE = re.compile(
     r'^> \*\*(Tutorial|How-to|Reference|Explanation)\*\*'      # page type
-    r' · Applies to \*\*(Brighter V10|Darker V10|Brighter and Darker V10)\*\*'
+    r' · Applies to \*\*(' + '|'.join(APPLIES_TO) + r')\*\*'   # longest first
     r'( · Prerequisites: .+)?$'                                 # optional
 )
 ```
+
+**Brighter and Darker version independently.** Brighter is on V10; Darker's latest
+release is 4.1.1. There is no "Darker V10" and there never has been — an earlier draft
+of this vocabulary said there was, which is exactly the confident-but-wrong version
+claim the banner exists to prevent. A page covering both spells out both:
+`Applies to **Brighter V10 and Darker V4**`.
+
+The vocabulary is closed rather than a version pattern, deliberately. When Brighter
+goes to V11 or Darker ships its next release, every unbumped page fails the build
+instead of quietly asserting last year's version. Change the versions in
+`APPLIES_TO` in `tools/pagelint.py` and nowhere else — this section documents that
+tuple and `apply_banners.py` imports it.
 
 **Page type** is exactly one of four values:
 

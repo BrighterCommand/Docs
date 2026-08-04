@@ -1,6 +1,6 @@
 # Basic Concepts
 
-> **Reference** · Applies to **Brighter and Darker V10**
+> **Reference** · Applies to **Brighter V10 and Darker V4**
 
 ## Command
 

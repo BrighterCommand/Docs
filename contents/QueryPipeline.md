@@ -1,6 +1,6 @@
 # Query Pipeline and Decorators
 
-> **How-to** · Applies to **Darker V10**
+> **How-to** · Applies to **Darker V4**
 
 ## Introduction
 

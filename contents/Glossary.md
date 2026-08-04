@@ -1,6 +1,6 @@
 # Glossary
 
-> **Reference** · Applies to **Brighter and Darker V10**
+> **Reference** · Applies to **Brighter V10 and Darker V4**
 
 This glossary provides definitions for key terms used in Brighter and Darker. Terms are organized by category for easy navigation.
 
