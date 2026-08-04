@@ -132,7 +132,7 @@ CommandProcessor dispatches your original command
 Your Handler executes
 ```
 
-### Configuration
+### Configuring a Scheduler
 
 To use scheduling, you need to configure a scheduler when setting up Brighter:
 
@@ -204,7 +204,7 @@ public class ProcessOrderHandlerAsync : RequestHandlerAsync<ProcessOrderCommand>
 }
 ```
 
-### Configuration
+### Requeue Delay Configuration
 
 Configure requeue delay in your subscription:
 

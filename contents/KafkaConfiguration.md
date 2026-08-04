@@ -181,7 +181,7 @@ We recommend setting **Partitioner** to **Partitioner.Murmur2Random** because of
 
 Note that changing the partitioner on an existing topic changes where keys land: messages with the same key may be written to different partitions before and after the change, which can break per-key ordering during the transition. Plan such a change for a deployment window where this is acceptable, or apply it when you create a new topic.
 
-### Configuration Callback
+### Publication Configuration Callback
 
 The Confluent .NET client has a range of configuration options. Some of those can be controlled through the publication. But, to allow you the full range of configuration options for the Confluent client, including new options that may appear, we provide a callback on the **KafkaProducerRegistryFactory**. The registry exposes a method, **SetConfigHook(Action<ProducerConfig> hook)**. The method takes a *delegate* (you can pass a lambda). Your delegate will be called with the *proposed* ProducerConfig (taking into account the *Publication* settings). You can adjust additional parameters at this point.
 
@@ -224,7 +224,7 @@ For more on a *Subscription* see the material on configuring the *Dispatcher* in
 We support a number of Kafka specific *Subscription* options:
 
 - **CommitBatchSize**: We commit processed work (marked as acked or rejected) when a batch size worth of work has been completed (see [below](#offset-management)). Defaults to 10.
-- **ConfigHook**: Allows you to modify the Kafka client configuration before a consumer is created. Used to set properties that Brighter does not expose. See [Configuration Callback](#configuration-callback) below.
+- **ConfigHook**: Allows you to modify the Kafka client configuration before a consumer is created. Used to set properties that Brighter does not expose. See [Configuration Callback](#subscription-configuration-callback) below.
 - **GroupId**: Only one consumer in a group can read from a partition at any one time; this preserves ordering. We do not default this value, and expect you to set it.
 - **GroupProtocol**: Selects the Kafka consumer group protocol: `ClassicGroupProtocol` (default) or `ConsumerGroupProtocol` (KIP-848). See [Consumer Group Protocol (KIP-848)](#consumer-group-protocol-kip-848) below. Defaults to null, which uses the classic protocol.
 - **IsolationLevel**: Default to read only committed messages, change if you want to read uncommitted messages. May cause duplicates. Defaults to ReadCommitted.
@@ -272,7 +272,7 @@ The following example shows how a subscription might be configured:
 }
 ```
 
-### Configuration Callback
+### Subscription Configuration Callback
 
 Similar to producers, the Confluent .NET client for consumers has a range of configuration options. Some of those can be controlled through the subscription. But, to allow you the full range of configuration options for the Confluent client, including new options that may appear, we provide a **configHook** parameter on **KafkaSubscription**.
 

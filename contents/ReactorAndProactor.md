@@ -69,7 +69,7 @@ With a Proactor your handlers, mappers and middleware should be async.
 
 When using `MessagePumpType.Reactor`, you must use **synchronous** implementations:
 
-#### Handlers
+#### Reactor Handlers
 Implement `IHandleRequests<T>` (not `IHandleRequestsAsync<T>`):
 
 ```csharp
@@ -85,7 +85,7 @@ public class MyCommandHandler : RequestHandler<MyCommand>
 }
 ```
 
-#### Message Mappers
+#### Reactor Message Mappers
 Use synchronous `MapToMessage` and `MapToRequest` methods:
 
 ```csharp
@@ -109,7 +109,7 @@ public class MyCommandMessageMapper : IAmAMessageMapper<MyCommand>
 }
 ```
 
-#### Middleware/Attributes
+#### Reactor Middleware/Attributes
 Use synchronous handler attributes and middleware:
 
 ```csharp
@@ -129,7 +129,7 @@ public class MyCommandHandler : RequestHandler<MyCommand>
 
 When using `MessagePumpType.Proactor`, you must use **asynchronous** implementations:
 
-#### Handlers
+#### Proactor Handlers
 Implement `IHandleRequestsAsync<T>` (not `IHandleRequests<T>`):
 
 ```csharp
@@ -147,7 +147,7 @@ public class MyCommandHandlerAsync : RequestHandlerAsync<MyCommand>
 }
 ```
 
-#### Message Mappers
+#### Proactor Message Mappers
 Message mappers remain synchronous (they don't perform I/O), but the mapper is called from an async context:
 
 ```csharp
@@ -174,7 +174,7 @@ public class MyCommandMessageMapper : IAmAMessageMapper<MyCommand>
 
 **Note:** Message mappers don't have async variants because they typically don't perform I/O operations—they just transform data structures. If your mapper needs to perform async I/O (e.g., reading from a claim check store), use a custom mapper with synchronous wrapper methods that call `Task.Run()` or similar.
 
-#### Middleware/Attributes
+#### Proactor Middleware/Attributes
 Use asynchronous handler attributes and middleware:
 
 ```csharp

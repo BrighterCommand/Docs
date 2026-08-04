@@ -251,7 +251,7 @@ If you attempt to create a quorum queue without meeting the configuration requir
 - `isDurable` is `true`
 - `highAvailability` is `false`
 
-### Best Practices
+### Quorum Queue Best Practices
 
 1. **Use at least 3 nodes**: Quorum queues are designed for clusters with at least 3 nodes. A single node or 2-node cluster defeats the purpose of the Raft consensus algorithm.
 
@@ -410,7 +410,7 @@ Do not use persistent messages when:
 - **Short message lifetime**: Messages that expire quickly
 - **Memory-based queues**: Testing, development environments
 
-### Best Practices
+### Persistent Message Best Practices
 
 1. **Use with quorum queues**: Quorum queues require persistence and provide stronger durability guarantees.
 
@@ -553,7 +553,7 @@ When a connection is blocked:
 4. **Adjust queue policies**: Set max lengths or TTLs to prevent unbounded growth
 5. **Monitor continuously**: Set up dashboards and alerts for RabbitMQ health
 
-### Best Practices
+### Best Practices for Blocked Connections
 
 1. **Monitor resource usage**: Regularly check RabbitMQ memory and disk usage to prevent alarms.
 

@@ -8,7 +8,7 @@ Brighter supports for using PostgreSQL as a message broker, enabling pub/sub mes
 
 The PostgreSQL message broker uses a table-based queue approach where messages are stored in a PostgreSQL table and retrieved by consumers. This provides a lightweight messaging solution that leverages your existing PostgreSQL database without requiring additional message broker infrastructure.
 
-### How It Works
+### How the PostgreSQL Broker Works
 
 1. **Producer**: Inserts messages into a queue store table
 2. **Consumer**: Retrieves messages from the queue store table based on visibility timeout
@@ -27,7 +27,7 @@ The system uses a visibility timeout mechanism (similar to AWS SQS) where messag
 - **Simplified operations**: One less service to manage, monitor, and maintain
 - **Reduced costs**: No separate message broker licensing or infrastructure
 
-### Transactional Messaging
+### Transactional Guarantees
 
 - **Atomic operations**: Messages and business data in the same database
 - **Strong consistency**: ACID guarantees for message operations
@@ -314,7 +314,7 @@ public class OrderCreatedEventHandler : RequestHandlerAsync<OrderCreatedEvent>
 
 The PostgreSQL message broker uses a **visibility timeout** mechanism to prevent duplicate processing:
 
-### How It Works
+### How Message Visibility Works
 
 1. **Message Published**: `visible_timeout` set to `CURRENT_TIMESTAMP`
 2. **Message Retrieved**: Consumer reads messages where `visible_timeout <= CURRENT_TIMESTAMP`
@@ -347,7 +347,7 @@ PostgreSQL supports two JSON data types:
 | **Indexing** | Limited | Full indexing support |
 | **Recommendation** | Low volume | **Production use** |
 
-### Configuration
+### JSONB Configuration
 
 ```csharp
 // Use JSONB (recommended)

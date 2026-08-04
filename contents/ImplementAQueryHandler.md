@@ -237,7 +237,7 @@ Use `QueryHandler<TQuery, TResult>` only when:
 
 **Important:** For database queries, HTTP calls, file I/O, or any operation that waits on external resources, use `QueryHandlerAsync<TQuery, TResult>` instead.
 
-### Complete Example
+### Complete Synchronous Handler Example
 
 ```csharp
 using Paramore.Darker;
@@ -343,7 +343,7 @@ Use `IQueryHandler<TQuery, TResult>` directly when you need:
 - **Advanced scenarios** not covered by the base classes
 - **Conditional sync/async** execution based on runtime conditions
 
-### Complete Example
+### Complete Direct Implementation Example
 
 ```csharp
 using Paramore.Darker;

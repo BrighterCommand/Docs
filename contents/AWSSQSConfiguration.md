@@ -401,7 +401,7 @@ By maintaining separate Brighter packages for v3 and v4, you can:
 - **Support legacy code**: Keep existing applications on v3 while new projects use v4
 - **Test thoroughly**: Validate each migration step before moving forward
 
-### AWS SDK v4 Support
+### Available Packages for SDK v3 and v4
 
 We provides complete support for AWS SDK version 4, while maintaining backwards compatibility with version 3. This allows you to migrate at your own pace without being forced to upgrade all components at once.
 
@@ -415,7 +415,7 @@ We provides complete support for AWS SDK version 4, while maintaining backwards 
 - **Paramore.Brighter.Transformers.AWS**: S3 Luggage Store with SDK v3
 - **Paramore.Brighter.Transformers.AWS.V4**: S3 Luggage Store with SDK v4
 
-See [AWS SDK v4 Support](#aws-sdk-v4-support) for migration guidance.
+See [V10 Migration Path](#v10-migration-path) for migration guidance.
 
 ## V10 Migration Path
 
