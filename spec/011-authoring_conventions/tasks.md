@@ -246,12 +246,12 @@ Goal: a human page-type verdict for every page, then one mechanical 105-file com
   - Output: Verdict column complete on all 105 rows
   - Notes: Budget review time on the flagged ones: `FAQ.md`, `ShowMeTheCode.md` (a showcase — Reference fits poorly, but it is not a tutorial; Spec 009 addresses the underlying problem), `WhyBrighter.md` (Explanation), `V10MigrationGuide.md` (consulted → Reference), `Glossary.md` (Reference), and the 14 four-mode pages — whose difficulty in choosing *is* the worklist signal, so capture that difficulty for Task 7.1 as you go.
 
-- [ ] **Task 3.3:** Write `apply_banners.py`
+- [x] **Task 3.3:** Write `apply_banners.py`
   - Input: design §1 "The sweep script is a separate, throwaway deliverable"
   - Output: `spec/011-authoring_conventions/apply_banners.py`
   - Notes: Reads the **verdict** column, **never** the proposal. **A blank verdict is a hard stop:** print the offending rows and exit non-zero **without writing to a single page**. Do not sweep the reviewed rows and skip the rest — half a sweep produces a 60-file diff that looks deliberate, and the missing banners then surface as linter errors with no sign that a human decision was skipped rather than a page missed. Deliberately *not* folded into `pagelint.py --fix`: the sweep is P0 and `--fix` is P1, and a design that makes a P0 step depend on a P1 tool is wrong. Lives beside the spec because it is used once; **delete it after Task 3.4**.
 
-- [ ] **Task 3.4:** Run the sweep — one mechanical commit
+- [x] **Task 3.4:** Run the sweep — one mechanical commit
   - Input: `apply_banners.py`, reviewed `pagetypes.tsv`
   - Output: 105 files under `contents/` each gaining one banner line and one blank line below the H1; `apply_banners.py` deleted
   - Notes: **Its own commit**, carrying nothing else — a 105-file diff is reviewable only if it is genuinely mechanical, and the linter rather than the reviewer verifies uniformity. Verify: rules 1 and 2 report **zero**; `linkcheck.py` still clean (banners carrying prerequisite links add link targets to check).

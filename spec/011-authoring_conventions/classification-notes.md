@@ -246,7 +246,31 @@ All 28 must reach zero before Task 5.1 puts `pagelint.py` in CI. Most are identi
 written in **bold** where `CLAUDE.md` asks for backticks; `HowServiceActivatorWorks.md`
 takes the `<!-- pagelint: allow-serviceactivator -->` opt-out.
 
-## 9. Task 3.2 is complete
+## 9. The banner sweep, and two things it nearly carried (Task 3.4, 2026-08-04)
+
+105 files, **212 insertions, zero deletions**, every inserted line a banner or a blank.
+Rules 1 and 2 report zero; `linkcheck.py` clean.
+
+Two defects were caught only because the diff was inspected rather than trusted, and
+both are worth recording because the next mechanical sweep will be tempted the same way:
+
+- **The first run produced a banner with no blank line after it**, running straight into
+  the following `##`. **`pagelint.py` passed anyway** — rule 1 only asks what the first
+  non-blank line after the H1 is, and by that test the page was perfect. A green linter
+  is not the same as a correct page, and no rule here can tell you so.
+- **The second run silently added a trailing newline to the 18 files that lacked one.**
+  Harmless in itself, and arguably an improvement, but it is not what a commit claiming
+  to be nothing but banner insertions should contain. `apply_banners.py` now preserves
+  the original ending. The 18 are listed in the commit; tidying them is a separate
+  change if it is worth making at all.
+
+**Prerequisites were omitted from every banner.** The segment is optional by design and
+choosing prerequisites is a per-page judgement — including it would have stopped the
+sweep being a sweep. They get added as pages are edited for other reasons, which means
+the *Prerequisites* half of the banner grammar is currently unexercised across the
+corpus. Worth a look at Task 3.5's rendered preview.
+
+## 10. Task 3.2 is complete
 
 **105 of 105 verdicts filled**, so `apply_banners.py` will run. Final distribution:
 
