@@ -271,35 +271,108 @@ Goal: a human page-type verdict for every page, then one mechanical 105-file com
 Goal: rules 3a and 3b at zero, with the three content defects **merged rather than
 renamed**.
 
-- [ ] **Task 4.1:** Propose qualifiers for the 50 colliding texts
+- [x] **Task 4.1:** Propose qualifiers for the 50 colliding texts
   - Input: design §5 "Deriving the qualifier", `pagelint.py` rule 3a output
   - Output: A reviewed proposal list (scratch): page · current heading · proposed heading
   - Notes: The qualifier is the page's subject, from its H1 with filler removed. **The script proposes, a human edits** — `## Hangfire Best Practices` beats `## Hangfire Scheduler Best Practices` and no rule can tell you that. Worst offenders: `Best Practices` ×26, `Configuration` ×26 (22 plain plus 4 emphasised, which the linter's normalisation merges), `Troubleshooting` ×14, `Summary` ×14, `Usage` ×13, `Overview` ×10.
 
-- [ ] **Task 4.2:** Apply cross-page qualification — 256 instances across 50 texts
+- [x] **Task 4.2:** Apply cross-page qualification — 256 instances across 50 texts
   - Input: Task 4.1 proposals
   - Output: Edits across the affected pages under `contents/`
   - Notes: Mechanical commit, no prose changes riding along. The three allowlisted texts that repeat (`Further Reading` ×29, `Related Documentation` ×10, `See Also` ×2 — 41 instances) **stay exactly as they are**; their uniformity is a feature. **Named sub-case — the four outbox pages.** `MSSQLOutbox.md`, `MySQLOutbox.md`, `PostgresOutbox.md` and `SqliteOutbox.md` each carry the same four **emphasised** H2s: `## **Provisioning the Outbox Table**`, `## **NuGet Packages**`, `## **Database Table Schema**`, `## **Configuration**`. All 16 need qualifying, and qualifying them is the moment to drop the emphasis too — `## **Configuration**` on `PostgresOutbox.md` becomes `## PostgreSQL Outbox Configuration`, not `## **PostgreSQL Outbox Configuration**`. Bold H2s are the convention nowhere else, and `slug()` ignores emphasis, so dropping it leaves the anchor unchanged. Task 6.7 does the same thing on `BrighterBasicConfiguration.md`, the only other page with bold H2s.
 
-- [ ] **Task 4.3:** Apply within-page qualification — 34 instances across 12 pages
+- [x] **Task 4.3:** Apply within-page qualification — 34 instances across 12 pages
   - Input: the complete rule 3b table under Task 2.8 (design §3's copy is now complete too)
   - Output: Edits to those 12 pages
   - Notes: Worst is `InMemoryOptions.md` — `When to Use` ×5, `Configuration` ×5, `Example Usage` ×3, `Limitations` ×3, i.e. **12** qualifications on one page, producing `#when-to-use-1`, `#when-to-use-2` … on chunks that sit next to each other. `Example Usage` was missing from the design's original table; use the Task 2.8 copy. Within a page a duplicate is **always** a defect. `RabbitMQConfiguration.md` is on this list and Phase 6a dissolves all three of its `### Best Practices` — that happens by luck; fix it here anyway so the outcome is deliberate and the page is correct before the split.
 
-- [ ] **Task 4.4:** Repoint the 8 same-page anchor links
+- [x] **Task 4.4:** Repoint the 8 same-page anchor links — **measured 18 anchors / 28 links; 19 repointed, see *Phase 4 as executed***
   - Input: design §5 "The anchor links are all same-page" (all 8 listed with line numbers)
   - Output: Updated links in the 7 distributed-lock pages (`[Provisioning](#provisioning)`) and `FAQ.md:8` (`[Configuration](#configuration)`)
   - Notes: All 8 are **same-page** links — no file prefix — so each is fixed in the same edit that renames its heading, leaving no window in which the repo is inconsistent. Run `python3 tools/linkcheck.py` after Tasks 4.2–4.4; it reports any missed one as MISSING ANCHOR. External inbound links from blog posts cannot be fixed from here; 8 is small and will never be smaller than it is now.
 
-- [ ] **Task 4.5:** Merge the three duplicate-content pairs — **separate commit**
+- [x] **Task 4.5:** Merge the three duplicate-content pairs — **separate commit**
   - Input: design §8 "Content defects surfaced by rule 3b"
-  - Output: `contents/Glossary.md` — one `Dispatcher` entry (currently `:95` and `:393`), one `CloudEvents` entry; `contents/FAQ.md` — one "When should I use Reactor vs Proactor?" answer
+  - Output: `contents/Glossary.md` — one `Dispatcher` entry (currently `:95` and `:393`), one `CloudEvents` entry; `contents/FAQ.md` — one "When should I use Reactor vs Proactor?" answer — **premise superseded: there were no duplicate pairs, see *Phase 4 as executed*.**
   - Notes: **Do not let the mechanical pass qualify the second heading of each pair.** That turns a visible duplicate into a permanent one, hidden behind a heading that now looks intentional. A glossary with two entries for one term needs the entries merged, and the merged text reviewed as a content change — hence its own small commit. Spec 009 D12 is **waiting on the `Dispatcher` merge** before it can link `Glossary.md#dispatcher`; say so in the commit message.
 
-- [ ] **Task 4.6:** Verify the phase
+- [x] **Task 4.6:** Verify the phase
   - Input: `pagelint.py`, `linkcheck.py`
   - Output: Rules 3a and 3b at zero; `linkcheck.py` clean
   - Notes: AC4 is "no `##` heading text appears on more than one page, except the navigation allowlist" — the linter reporting zero *is* the check. Confirm the remaining rule-1/2 count is still zero, i.e. no page was edited in a way that displaced its banner.
+
+### Phase 4 as executed (2026-08-04)
+
+**`pagelint.py` reports 0 errors.** Rules 1–5 are all clean. What remains is the
+804-block using-directive debt, which is warnings and is deliberate — Phase 5 can
+proceed. `linkcheck.py` clean at 107 files throughout.
+
+| Commit | Task | Shape |
+|---|---|---|
+| `d232324` | 4.5 | 2 files, 3 headings |
+| `64dd111` | 4.3 | 10 files, 48 lines — 31 headings + 2 link fixes |
+| `0b1b841` | 4.1–4.4 | 74 files, 279 lines — 260 headings + 19 links |
+
+#### Task 4.5's premise was wrong: there were no duplicate pairs to merge
+
+Checked against the files rather than taken from the audit. `Glossary.md` **defines
+`Dispatcher` once**, not twice: the audit cited `:95` and `:393`, but `:95` is the
+`### Dispatcher` term entry and `:393` is inside the `Timeout` entry and has nothing to
+do with it. What actually collided was the *section* heading `## Dispatcher` with its
+own first term `### Dispatcher` two lines below. `CloudEvents` was the same shape.
+`FAQ.md`'s second `###` was a one-line signpost, not a second answer.
+
+So the real defect was a section heading stealing its own term's anchor — `#dispatcher`
+resolved to the section and the term got `#dispatcher-1`. Fixed by naming the sections
+for what they hold: `## Dispatcher and Consumers`, `## CloudEvents and Encodings`.
+Every term stays an H3.
+
+**Spec 009's D12 is not blocked.** It was recorded as waiting on a merge that does not
+exist, and can link `Glossary.md#dispatcher` now.
+
+#### De-duplication found two links that resolved to the wrong section
+
+The argument for rule 3a, in miniature — both had been passing `linkcheck.py` the whole
+time, because the anchor existed, just not on the section the author meant:
+
+- `KafkaConfiguration.md:227` said "See Configuration Callback **below**", but
+  `#configuration-callback` resolved to the *publication* hook above it; the
+  subscription one was `-1`.
+- `AWSSQSConfiguration.md:418` promised migration guidance and linked
+  `#aws-sdk-v4-support` — the section the line already sat in.
+
+#### Six collisions were fixed on the other page
+
+Where an anchor had inbound links, the *other* page moved. `BasicConcepts.md` keeps
+`## Command` and `## Command Processor` (8 inbound links) and `Command Patterns` takes
+`## The Command Pattern` / `## The Command Processor Pattern`;
+`BrighterBasicConfiguration.md` keeps `#configuring-the-dispatcher` (6 inbound links, 4
+of them cross-page) and `HowConfiguringTheDispatcherWorks.md` moves. **The design
+predicted 8 same-page anchor links to repoint (Task 4.4); the true figure is 18 anchors
+carrying 28 links**, and choosing which side moves cut the rewrites to 19.
+
+#### Two headings were navigation under another name
+
+`## Additional Resources` on 5 pages became `## Further Reading`, and `## Next` on 3
+became `## Next Steps` — both allowlisted spellings, so they need no qualifier. None of
+the five pages had any allowlisted heading before, so this makes them conform rather
+than merely de-collide. **No allowlist change was needed**, which was the alternative
+and would have touched both `pagelint.py` and `CLAUDE.md`.
+
+#### One page was renamed beyond its collisions
+
+`FAQ.md` has 8 category H2s, of which 4 collided, and its own table of contents lists
+all 8. Qualifying half would have left that list reading two ways at once, so all 8 took
+the `<Category> Questions` form. The TOC's link *text* was deliberately left unsuffixed
+— eight entries ending in "Questions" reads worse than it navigates.
+
+#### Left for Task 6.7
+
+`BrighterBasicConfiguration.md`'s `## **Configuring The Dispatcher**` keeps its
+emphasis. It is in the KEEP set so its linked anchor survives, and `slug()` ignores
+emphasis, so dropping the bold is anchor-neutral and belongs with the split that is
+already editing the page. The four outbox pages *did* drop theirs, because they were
+being requalified anyway.
 
 ---
 
