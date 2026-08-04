@@ -1,0 +1,24 @@
+name: docs
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # pagelint.py --changed derives its strict ranges from the merge-base,
+          # so the full history has to be here. Present from the first version of
+          # this file rather than added alongside that step, because a shallow
+          # clone fails in a way that looks like "no changes" rather than an error.
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 tools/linkcheck.py
+
+      # tools/pagelint.py joins this job once the banner and heading sweeps have
+      # made it pass — see spec/011-authoring_conventions/tasks.md, Task 5.1.
+      # This workflow ships running linkcheck.py alone so there is a green
+      # baseline on an untouched tree, and every later failure is attributable.
