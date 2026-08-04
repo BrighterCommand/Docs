@@ -92,7 +92,7 @@ The framework for Queries - messages that return data without updating state. Da
 
 See: [Darker Basic Configuration](/contents/DarkerBasicConfiguration.md), [CQRS with Brighter and Darker](/contents/CQRSWithBrighterAndDarker.md)
 
-## Dispatcher
+## Dispatcher and Consumers
 
 ### Dispatcher
 
@@ -399,7 +399,7 @@ A pattern for preventing failures when posting to one topic from blocking postin
 
 See: [Sweeper Circuit Breaking](/contents/SweeperCircuitBreaking.md)
 
-## CloudEvents
+## CloudEvents and Encodings
 
 ### CloudEvents
 

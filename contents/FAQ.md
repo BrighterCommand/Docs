@@ -589,9 +589,11 @@ See: [Default Message Mappers](/contents/DefaultMessageMappers.md), [V10 Migrati
 
 ## Performance & Concurrency
 
-### When should I use Reactor vs Proactor?
+### Which message pump type gives better throughput?
 
-See [Configuration section](#when-should-i-use-reactor-vs-proactor) above.
+Proactor, in most cases — it yields its thread during I/O. Reactor is faster per
+message. See [When should I use Reactor vs Proactor?](#when-should-i-use-reactor-vs-proactor)
+under Configuration for the full comparison and how to configure it.
 
 ### How many message pumps should I configure per queue?
 
