@@ -20,8 +20,10 @@ reader is trying to do. Concrete symptoms in the current TOC:
   *Why Brighter?* (top), *Command, Processors and Dispatchers*, *Event Driven
   Architectures*, *Task Queues*, *Under the Hood*.
 - **"Reference" contains one page** — the Glossary.
-- **Two glossaries.** `BasicConcepts.md` (24 terms) occupies one of three prime
-  Overview slots and is a subset of `Glossary.md` (100 terms, better organised).
+- ~~**Two glossaries.**~~ **Withdrawn 2026-08-04 on the maintainer's ruling.**
+  `BasicConcepts.md` (24 terms) does occupy one of three prime Overview slots and its
+  terms do also appear in `Glossary.md` (100 terms) — but the separation is deliberate,
+  not duplication. See *The `BasicConcepts` merge is withdrawn* below.
 - **Migration content sits mid-tree**, between provisioning and conceptual sections.
 
 This spec restructures `SUMMARY.md` into a reader-intent hierarchy. The governing
@@ -52,8 +54,9 @@ Explanation        Under the Hood, EDA patterns, Task Queues, CQRS, Reactor/Proa
 ## Scope
 
 - Rewrite `SUMMARY.md` to the agreed structure
-- Merge `BasicConcepts.md` into `Glossary.md`, preserving every definition and its
-  contextual prose
+- ~~Merge `BasicConcepts.md` into `Glossary.md`~~ — **withdrawn 2026-08-04**, see
+  below. Consider instead adding per-term links from `BasicConcepts.md` into the fuller
+  `Glossary.md` entry
 - Retitle sections to reader intent — e.g. *"Guaranteed At Least Once"* becomes
   *"Transports"*, with the delivery-guarantee material moved into Explanation rather
   than discarded
@@ -79,8 +82,34 @@ Explanation        Under the Hood, EDA patterns, Task Queues, CQRS, Reactor/Proa
 
 ## Out of Scope
 
-- Editing page *bodies*, beyond the `BasicConcepts` → `Glossary` merge. Splitting
-  mixed-mode pages is [Spec 011](../011-authoring_conventions/README.md).
+- Editing page *bodies*. Splitting mixed-mode pages is
+  [Spec 011](../011-authoring_conventions/README.md). The `BasicConcepts` → `Glossary`
+  merge that this line used to except is withdrawn, so there is now no body-editing
+  carve-out at all.
+
+### The `BasicConcepts` merge is withdrawn (2026-08-04)
+
+Ruled by the maintainer during Spec 011's Task 3.2 page-type review. The two pages do
+two different jobs, and the smaller is not redundant for overlapping with the larger:
+
+> We want to ensure that key terms are easily understood, without needing to review the
+> whole glossary. Possibly greater use of links would help, but this was separated with
+> that goal in mind, which should be considered.
+
+`BasicConcepts.md` is a curated 24-term orientation set for a newcomer;
+`Glossary.md` is the complete 100-term reference. The audit measured the overlap and
+inferred duplication from it without asking why the smaller set existed.
+
+Two completed specs corroborate that this is a live convention rather than an accident:
+spec 002's Task 3.1 deliberately added three terms to `BasicConcepts.md` (DLQ, Nack,
+Poison Message), and spec 006 lists it as a link target on first use of *Command* and
+*Request*.
+
+**What replaces the merge:** per-term links from `BasicConcepts.md` into the
+corresponding `Glossary.md` anchor, so a reader wanting depth has one click rather than
+a second page to find. That is additive and cheap — glossary links already carry
+`#anchor`s and `linkcheck.py` validates them. Full note in
+[`spec/011-authoring_conventions/classification-notes.md`](../011-authoring_conventions/classification-notes.md).
 
 ## Source Material
 
