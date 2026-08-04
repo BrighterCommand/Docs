@@ -377,7 +377,7 @@ schedule pressure should give — Spec 010 needs the conventions (Phase 1) and t
 - [ ] **Task 6.9:** Write `contents/DispatcherConfigurationReference.md` (~210 lines)
   - Input: design §6b — original lines 708–859, 860–918
   - Output: New page — Dispatcher Service Collection Extensions · Dispatcher Brighter Builder Fluent Interface
-  - Notes: Verbatim move. Banner: `Reference`. "Dispatcher", not "ServiceActivator", in the prose — rule 5 will enforce it.
+  - Notes: Verbatim move. Banner: `Reference`. "Dispatcher", not "ServiceActivator", in the prose — rule 5 will enforce it. **The source lines were already corrected on 2026-08-04 (`741890f`), so this move inherits backticked identifiers rather than owing the fix.**
 
 - [ ] **Task 6.10:** Fold the V10 configuration section into `V10MigrationGuide.md`
   - Input: original lines 1041–1068 (V10 Configuration Changes + Quick Migration Guide)
@@ -497,7 +497,7 @@ schedule pressure should give — Spec 010 needs the conventions (Phase 1) and t
 | 3a `HEADING NOT UNIQUE` | 256 instances / 48 texts | **262 / 50** | **prediction wrong, rule right** — see below |
 | 3b `HEADING REPEATED` | 34 across 12 pages | **34 across the same 12** | exact, and verified page by page, not just on the total |
 | 4 `LANGUAGE TAG` (warning) | 185 | **36** across 14 pages | **corpus figure wrong** — see below |
-| 5 `SERVICEACTIVATOR` | not predicted | **11** across 3 pages | all explained; needs a small fix before Task 5.1 |
+| 5 `SERVICEACTIVATOR` | not predicted | **11** across 3 pages → **28 across 12** once widened to both spellings | all explained; **cleared 2026-08-04, now 0** |
 | 6 `USING DIRECTIVES` (warning) | 663 of 796 C# blocks | **804 of 940** | **corpus figure wrong** — same cause as rule 4 |
 
 **No rule needed revising.** Phase 2's stop-rule asks whether a materially different
@@ -584,6 +584,26 @@ and 923–927 are the Dispatcher material that moves to
 `DispatcherConfigurationReference.md` at Task 6.9, whose note already says "Dispatcher,
 not ServiceActivator, in the prose — rule 5 will enforce it". Do it there; the two
 `BrighterControlAPI.md` and `HowServiceActivatorWorks.md` fixes are one line each.
+
+> **Done 2026-08-04 — `741890f`. Rule 5 is at zero; `pagelint.py` 324 → 296 errors,
+> warnings unchanged at 840.** Both the count and the plan above are superseded. The
+> count became **28 across 12 pages** once the rule was widened to `Service\s*Activator`
+> (see `classification-notes.md` §8) — the table above records only the closed-spelling
+> baseline, and its line numbers predate the banner sweep's +2.
+>
+> **The remediation deviated twice, deliberately, and both deviations are argued in
+> `classification-notes.md` §8.** `HowServiceActivatorWorks.md` took **per-line**
+> opt-outs rather than the page-level one, so the other 457 lines stay checked; and
+> `BrighterBasicConfiguration.md` was fixed **now rather than at Task 6.9**, because
+> Phase 5 precedes Phase 6 and gating CI on a page split gates it on the largest
+> remaining piece of work. Task 6.9 now inherits correct prose instead of owing it.
+>
+> §8 also records a **gap in rule 5 found while clearing it**: headings are parsed into
+> `page.headings`, never `page.prose`, so rule 5 cannot see them. Three headings carry
+> the term and all three are legitimate, so nothing is wrong today — but nothing would
+> stop a future `## Configuring Service Activator` either. **Left for a maintainer
+> ruling**, because the trailing-comment opt-out cannot be reused on a heading without
+> the comment landing inside the anchor slug.
 
 ### What the linter's own behaviour confirmed
 

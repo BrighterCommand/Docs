@@ -246,6 +246,80 @@ All 28 must reach zero before Task 5.1 puts `pagelint.py` in CI. Most are identi
 written in **bold** where `CLAUDE.md` asks for backticks; `HowServiceActivatorWorks.md`
 takes the `<!-- pagelint: allow-serviceactivator -->` opt-out.
 
+### Cleared 2026-08-04 — `741890f`, 28 insertions and 28 deletions
+
+Rule 5 is at **zero**. `pagelint.py` went 324 → 296 errors with warnings unchanged at
+840, so no code block was touched; `linkcheck.py` clean at 107 files. Every changed
+line is one of the 28 findings and nothing else.
+
+The 28 turned out to be three kinds, not the two the table above implies, and each
+wanted a different fix:
+
+| Kind | Pages | Fix |
+|---|---|---|
+| Prose that means the Dispatcher | `AzureServiceBusConfiguration`, `KafkaConfiguration`, `RabbitMQConfiguration`, `BrighterControlAPI`, `CQRSWithBrighterAndDarker`, `DispatchingARequest`, `HealthChecks` | renamed to "Dispatcher" |
+| Identifiers in **bold** | `BrighterBasicConfiguration` ×7, `BrighterControlAPI` ×1, `WhyBrighter` ×1 | backticks |
+| The term as the page's own subject | `BasicConcepts` ×2, `ImplementingExternalBus` ×1, `BrighterBasicConfiguration` ×1, `HowServiceActivatorWorks` ×3 | per-line opt-out |
+
+The first kind is the rule earning its place. The three transport pages carried an
+identical sentence — "the material on configuring *Service Activator* in [Basic
+Configuration](…#configuring-the-dispatcher)" — whose own link target says
+*dispatcher*. That is the terminology drift stated and contradicted in one line, three
+times, and nobody had noticed.
+
+**Deviation from the remediation planned above: `HowServiceActivatorWorks.md` takes
+per-line opt-outs, not the page-level one.** The page-level comment disables rule 5 for
+all 460 lines, and only three of them are about the name; the rest use "Dispatcher"
+correctly and should keep being checked. `check_terminology` honours a trailing
+`<!-- pagelint: allow-serviceactivator -->` as well as a whole-line one, so the narrow
+form was available. Same reasoning for `BrighterBasicConfiguration.md:704`, which cites
+the Enterprise Integration Patterns pattern by name and then explains why we do not use
+it — one line out of 1,068.
+
+**Also a deviation: the `BrighterBasicConfiguration.md` fixes were not deferred to
+Task 6.9.** The plan was to make them while splitting the page, on the grounds that it
+is being edited there anyway. But Task 5.1 needs rule 5 at zero, Phase 6 is after
+Phase 5, and a linter that cannot go into CI until a page split lands is a linter
+gated on the largest remaining piece of work. Nine backtick changes now; the split
+inherits correct prose.
+
+**Two renames asserted API facts, and both were checked against Brighter source rather
+than inferred** — the kind of claim this programme has been caught on before:
+
+- The Control API's "node" **is** a Dispatcher.
+  `DispatcherExtensions.GetNodeStatus(this IDispatcher dispatcher)` sets
+  `NodeName = dispatcher.HostName.Value`
+  (`src/Paramore.Brighter.ServiceActivator.Control/Extensions/DispatcherExtensions.cs:8`)
+- The health check **is** a Dispatcher health check. `BrighterServiceActivatorHealthCheck`
+  reads `((Dispatcher)_dispatcher).Subscriptions` and compares live consumers against
+  `NoOfPerformers`
+  (`src/Paramore.Brighter.ServiceActivator.Extensions.Diagnostics/HealthChecks/`)
+
+### The gap this exposed: rule 5 cannot see headings
+
+`Page._parse()` appends heading lines to `self.headings` and *everything else* to
+`self.prose`, and `check_terminology` iterates `page.prose`. So a heading containing the
+term is invisible to rule 5. Three exist:
+
+| Heading | Legitimate? |
+|---|---|
+| `contents/BasicConcepts.md:135` `## Service Activator` | yes — the term is the entry being defined |
+| `contents/Glossary.md:111` `### ServiceActivator` | yes — same |
+| `contents/HowServiceActivatorWorks.md:454` `## Relationship to ServiceActivator Assembly` | yes — about the assembly name |
+
+All three are fine today, so nothing is broken. What is missing is the *check*: nothing
+stops a future `## Configuring Service Activator` from passing.
+
+**Not fixed here, because the obvious fix breaks anchors.** Widening rule 5 to headings
+needs an opt-out those three headings can use, and the trailing-comment form cannot be
+it — `## Service Activator <!-- pagelint: allow-serviceactivator -->` puts the comment
+inside the heading text, so `slug()` folds it into the anchor and every inbound link to
+`#service-activator` breaks. `linkcheck.py` would catch that, but a convention whose
+opt-out breaks a different rule is the wrong convention. An opt-out on the *preceding*
+line is the likely answer. **Recorded for the maintainer as a rule-scope decision, not
+taken unilaterally** — it changes rule 5's meaning, and `CLAUDE.md`'s ledger describes
+rule 5 as applying to prose.
+
 ## 9. The banner sweep, and two things it nearly carried (Task 3.4, 2026-08-04)
 
 105 files, **212 insertions, zero deletions**, every inserted line a banner or a blank.
