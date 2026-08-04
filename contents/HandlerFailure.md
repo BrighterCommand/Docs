@@ -1,5 +1,7 @@
 # Error Handling
 
+> **Explanation** · Applies to **Brighter V10**
+
 When your handler throws an exception on the [External Bus](/contents/DispatchingARequest.md), Brighter's message pump catches it and decides what to do with the message. The default is to acknowledge the message and move on. Every other behavior — requeue, reject to a Dead Letter Queue, leave unacknowledged — requires you to opt in by throwing a specific action exception or adding middleware to your pipeline.
 
 This guide explains each error handling strategy and helps you choose the right one.

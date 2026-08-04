@@ -1,5 +1,7 @@
 # Telemetry
 
+> **Reference** · Applies to **Brighter V10**
+
 Brighter provides comprehensive OpenTelemetry integration for distributed tracing across message boundaries, enabling end-to-end observability in distributed systems.
 
 ## OpenTelemetry Semantic Conventions

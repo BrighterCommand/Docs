@@ -1,5 +1,7 @@
 # MS SQL Distributed Lock
 
+> **Reference** · Applies to **Brighter V10**
+
 The MS SQL locking provider implements Brighter's [distributed
 lock](/contents/DistributedLock.md) using SQL Server **application locks**
 (`sp_getapplock` / `sp_releaseapplock`), so a single [Outbox

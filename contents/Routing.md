@@ -1,5 +1,7 @@
 # Routing
 
+> **Explanation** · Applies to **Brighter V10**
+
 ### Routing Messages
 
 A producer routes messages to subscribers by setting a **Topic** on the **MessageHeader**. A **Topic** is just a string that you intend to use as a unique identifier for this message. A simple scheme can be the

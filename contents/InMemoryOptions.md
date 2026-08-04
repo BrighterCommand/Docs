@@ -1,5 +1,7 @@
 # InMemory Options for Development and Testing
 
+> **Reference** · Applies to **Brighter V10**
+
 ## Overview
 
 Brighter V10 provides a comprehensive suite of in-memory implementations for key components, making it easy to develop and test applications without external dependencies. These in-memory options replace databases, message brokers, and schedulers with simple, lightweight alternatives that run entirely in process.

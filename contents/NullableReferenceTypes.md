@@ -1,5 +1,7 @@
 # Nullable Reference Types
 
+> **Reference** · Applies to **Brighter V10**
+
 V10 enables [nullable reference types](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references) across all Brighter projects, providing improved type safety and helping prevent null reference exceptions.
 
 ---

@@ -1,5 +1,7 @@
 # Brighter Scheduler Support
 
+> **Explanation** · Applies to **Brighter V10**
+
 In distributed applications, it is often necessary to schedule messages for deferred execution—whether for implementing delayed workflows, retry mechanisms, or time-based business processes. Brighter provides built-in scheduling capabilities to handle these scenarios.
 
 ## Overview

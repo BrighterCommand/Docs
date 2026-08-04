@@ -1,5 +1,7 @@
 # TickerQ Scheduler
 
+> **Reference** · Applies to **Brighter V10**
+
 [TickerQ](https://github.com/Arcenox-co/TickerQ) is a high-performance, reflection-free background task scheduler for .NET that uses source generators. Brighter provides integration with TickerQ for [scheduler functionality](/contents/BrighterSchedulerSupport.md), offering a modern, lightweight alternative for distributed scheduling.
 
 ## TickerQ Overview

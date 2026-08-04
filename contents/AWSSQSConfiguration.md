@@ -1,5 +1,7 @@
 # AWS SQS Configuration
 
+> **Reference** · Applies to **Brighter V10**
+
 ## General
 
 SNS and SQS are proprietary message-oriented-middleware available on the AWS platform. Both are well documented: see [SNS](https://docs.aws.amazon.com/sns/latest/dg/welcome.html) and [SQS](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html). Brighter handles the details of sending to SNS using an SQS queue for the consumer. You might find the [documentation for the AWS .NET SDK](https://docs.aws.amazon.com/sdk-for-net/) helpful when debugging, but you should not have to interact with it directly to use Brighter.

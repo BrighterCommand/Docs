@@ -1,5 +1,7 @@
 # MongoDB Distributed Lock
 
+> **Reference** · Applies to **Brighter V10**
+
 The MongoDB locking provider implements Brighter's [distributed
 lock](/contents/DistributedLock.md) by writing lock documents to a MongoDB collection, so
 a single [Outbox Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) and Archiver

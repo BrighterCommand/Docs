@@ -1,5 +1,7 @@
 # Passing Information Between Handlers in the Pipeline
 
+> **How-to** · Applies to **Brighter V10**
+
 A key constraint of the Pipes and Filters architectural style is that Filters do not share state. One reason is that this limits your ability to recompose the pipeline as steps must follow other steps.
 
 However, when dealing with Handlers that implement orthogonal concerns it can be useful to pass context along the chain. Given that many orthogonal concerns have constraints about ordering anyway, we can live with the ordering constraints imposed by passing context.

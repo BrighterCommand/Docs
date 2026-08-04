@@ -1,5 +1,7 @@
 # Box Provisioning
 
+> **Explanation** · Applies to **Brighter V10**
+
 [BoxProvisioning](/contents/Glossary.md#boxprovisioning) is the Brighter library that creates and migrates your [Outbox](/contents/BrighterOutboxSupport.md) and [Inbox](/contents/BrighterInboxSupport.md) tables at application startup. You register it once with `services.AddBrighter().UseBoxProvisioning(...)`; on every start it inspects the database, applies any outstanding schema changes under a backend-level [advisory lock](/contents/Glossary.md#advisory-lock), and records what it did. This page explains what BoxProvisioning is, how it makes decisions, and what to expect operationally. The companion page [Configuring Box Provisioning](/contents/BoxProvisioningConfiguration.md) shows the call-site shapes.
 
 ## When to use Box Provisioning

@@ -1,5 +1,7 @@
 # Azure Blob Distributed Lock
 
+> **Reference** · Applies to **Brighter V10**
+
 The Azure Blob locking provider implements Brighter's [distributed
 lock](/contents/DistributedLock.md) using **blob leases** in Azure Blob Storage, so a
 single [Outbox Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) and Archiver

@@ -1,5 +1,7 @@
 # Request Validation
 
+> **How-to** · Applies to **Brighter V10**
+
 Brighter can validate a request in its handler pipeline **before** your business
 handler runs. Validation is opt-in per handler: you mark the handler's
 `Handle`/`HandleAsync` method with `[ValidateRequest]`, and you choose *how* the

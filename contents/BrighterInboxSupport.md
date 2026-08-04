@@ -1,5 +1,7 @@
 # Brighter Inbox Support
 
+> **Explanation** · Applies to **Brighter V10**
+
 ## Guaranteed, At Least Once
 
 Messaging makes the *guaranteed, at least once* promise.

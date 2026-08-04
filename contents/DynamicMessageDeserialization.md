@@ -1,5 +1,7 @@
 # Dynamic Message Deserialization
 
+> **Explanation** · Applies to **Brighter V10**
+
 ## Overview
 
 Brighter supports dynamic type resolution, allowing you to route multiple message types through a single channel. Instead of determining the message type at compile-time through generic parameters, you can use content-based routing where the message type is determined at runtime from metadata.

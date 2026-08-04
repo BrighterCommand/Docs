@@ -1,5 +1,7 @@
 # S3 Luggage Store
 
+> **Reference** · Applies to **Brighter V10**
+
 The **S3LuggageStore** is an implementation of **IAmAStorageProviderAsync** for AWS S3 Object Storage. It allows use of the [Claim Check](/contents/ClaimCheck.md) *Transformer* with S3 Object Storage as the *Luggage Store*.
 
 To use the **S3LuggageStore** you need to include the following NuGet package:

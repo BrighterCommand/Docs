@@ -1,5 +1,7 @@
 # PostgreSQL Message Broker
 
+> **Reference** · Applies to **Brighter V10**
+
 Brighter supports for using PostgreSQL as a message broker, enabling pub/sub messaging patterns using your existing PostgreSQL infrastructure.
 
 ## Overview

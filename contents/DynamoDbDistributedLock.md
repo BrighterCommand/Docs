@@ -1,5 +1,7 @@
 # DynamoDB Distributed Lock
 
+> **Reference** · Applies to **Brighter V10**
+
 The DynamoDB locking provider implements Brighter's [distributed
 lock](/contents/DistributedLock.md) on top of Amazon DynamoDB, so a single [Outbox
 Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) and Archiver run when you

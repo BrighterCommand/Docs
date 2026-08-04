@@ -1,5 +1,7 @@
 # AWS Scheduler
 
+> **Reference** · Applies to **Brighter V10**
+
 **AWS EventBridge Scheduler** is a fully managed, serverless service on AWS that allows you to create, run, and manage scheduled tasks at scale. Brighter integrates with AWS EventBridge Scheduler to provide cloud-native scheduling for AWS workloads.
 
 ## When to Use AWS Scheduler

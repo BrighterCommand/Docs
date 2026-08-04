@@ -1,5 +1,7 @@
 # Command Patterns
 
+> **Explanation** · Applies to **Brighter V10**
+
 ## Command
 
 The **Command** design pattern encapsulates a request as an object, allowing reuse, queuing or logging of requests, or undoable operations. It also serves to decouple the implementation of the request from the

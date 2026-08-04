@@ -1,5 +1,7 @@
 # Replay On Seen
 
+> **Reference** · Applies to **Brighter V10**
+
 When your [Inbox](/contents/BrighterInboxSupport.md) recognises a message it has already
 handled, it normally throws or logs a warning and stops — the work is done, so there is
 nothing to do. `OnceOnlyAction.Replay` changes what a duplicate means: instead of stopping,

@@ -1,5 +1,7 @@
 # AsyncAPI Document Generation
 
+> **How-to** · Applies to **Brighter V10**
+
 Brighter can automatically generate [AsyncAPI 3.0](https://www.asyncapi.com/docs/reference/specification/v3.0.0) documents from your service's runtime configuration. This gives you machine-readable documentation of your messaging contracts — the topics your service publishes to and subscribes from, along with JSON Schema for each message type — without maintaining separate documentation that drifts out of date.
 
 ## What is AsyncAPI?

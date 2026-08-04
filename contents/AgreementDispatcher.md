@@ -1,5 +1,7 @@
 # Agreement Dispatcher
 
+> **How-to** · Applies to **Brighter V10**
+
 ## Overview
 
 The **Agreement Dispatcher** is a pattern for routing requests to handlers dynamically based on the request's content or context, rather than using a fixed type-to-handler mapping. This pattern, described by Martin Fowler in [Patterns of Enterprise Application Architecture](https://martinfowler.com/eaaDev/AgreementDispatcher.html), enables flexible routing logic that can change based on business rules, time, geography, or other runtime conditions.

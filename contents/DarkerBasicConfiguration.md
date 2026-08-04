@@ -1,5 +1,7 @@
 # Basic Configuration
 
+> **How-to** · Applies to **Darker V10**
+
 ## Introduction
 
 Darker is the query-side counterpart to [Brighter](/contents/BrighterBasicConfiguration.md), implementing the Query Object pattern for CQRS (Command Query Responsibility Segregation) architectures. While Brighter handles commands and events that change state, Darker provides a pipeline for executing queries that read state. Together, they form a complete CQRS solution for .NET applications.

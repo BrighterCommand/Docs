@@ -1,5 +1,7 @@
 # Default Message Mappers
 
+> **How-to** · Applies to **Brighter V10**
+
 ## Using Default Message Mappers
 
 You do not need to implement `IAmAMessageMapper` for every message type.

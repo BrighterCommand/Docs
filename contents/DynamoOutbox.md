@@ -1,5 +1,7 @@
 # DynamoDb Outbox
 
+> **Reference** · Applies to **Brighter V10**
+
 ## Usage
 The DynamoDb Outbox allows integration between DynamoDb and [Brighter's outbox support](/contents/BrighterOutboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#outbox-support).
 

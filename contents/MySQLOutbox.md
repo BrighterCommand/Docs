@@ -1,5 +1,7 @@
 # **Using the MySQL Outbox**
 
+> **Reference** · Applies to **Brighter V10**
+
 The MySQL Outbox provides a message store for the [Transactional Outbox pattern](/contents/BrighterOutboxSupport.md) using a MySQL database. This ensures that messages are saved within the same transaction as your business logic and published to a message broker later.
 
 ## **Provisioning the Outbox Table**

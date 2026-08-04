@@ -1,5 +1,7 @@
 # Postgres Distributed Lock
 
+> **Reference** · Applies to **Brighter V10**
+
 The Postgres locking provider implements Brighter's [distributed
 lock](/contents/DistributedLock.md) using PostgreSQL **advisory locks**, so a single
 [Outbox Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) and Archiver run when

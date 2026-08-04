@@ -1,5 +1,7 @@
 # Basic Concepts
 
+> **Reference** · Applies to **Brighter and Darker V10**
+
 ## Command
 
 A command is an instruction to carry out work. It exercises the domain and results in a change of state. It expects a single handler.

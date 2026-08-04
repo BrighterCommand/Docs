@@ -1,4 +1,7 @@
 # **Brighter Control API**
+
+> **Reference** · Applies to **Brighter V10**
+
 The brighter control API allows direct management of a Service Activator node
 
 ## Configuring the API

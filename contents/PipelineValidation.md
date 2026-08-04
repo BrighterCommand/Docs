@@ -1,5 +1,7 @@
 # Pipeline Validation and Diagnostics
 
+> **How-to** · Applies to **Brighter V10**
+
 Brighter can validate your pipeline configuration at startup, catching common mistakes before any messages are sent or consumed. It can also log a diagnostic report showing exactly how your pipelines, publications, and subscriptions are wired. Both features are opt-in and configured via extension methods on **IBrighterBuilder**.
 
 ## Quick Start

@@ -1,5 +1,7 @@
 # Kafka Configuration
 
+> **Reference** · Applies to **Brighter V10**
+
 ## General
 
 Kafka is OSS message-oriented-middleware and is [well documented](https://kafka.apache.org/documentation/#gettingStarted). Brighter handles the details of sending to or receiving from Kafka. You may find it useful to understand the [building blocks](https://kafka.apache.org/documentation/#introduction) of the protocol. Brighter's Kafka support is implemented on top of the Confluent .NET client, and you might find the [documentation for the .NET client](https://docs.confluent.io/kafka-clients/dotnet/current/overview.html) helpful when debugging, but you should not have to interact with it directly to use Brighter (although we expose many of its configuration options).

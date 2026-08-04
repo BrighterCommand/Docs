@@ -1,5 +1,7 @@
 # Why Brighter?
 
+> **Explanation** · Applies to **Brighter V10**
+
 There are many options for .NET developers looking for either a package to use as a command processor/dispatcher pattern implementation (sometimes confused with the mediator pattern) or package to use as a messaging framework. So why would you choose Brighter & Darker?
 
 ## Reactor Pattern

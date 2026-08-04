@@ -1,5 +1,7 @@
 # Reactor and Proactor: Concurrency Models
 
+> **Explanation** · Applies to **Brighter V10**
+
 Brighter V10 introduces clearer terminology for its concurrency models: **Reactor** and **Proactor**. 
 
 ## Overview

@@ -1,5 +1,7 @@
 # Configuring Box Provisioning
 
+> **How-to** · Applies to **Brighter V10**
+
 This page is the how-to companion to [Box Provisioning](/contents/BoxProvisioning.md). It shows the NuGet packages you install, the call-site shapes for `UseBoxProvisioning`, the explicit and `connectionName` registration overloads, the migration-lock-timeout knob, and the per-backend quirks. Start with [Box Provisioning](/contents/BoxProvisioning.md) if you want the conceptual overview first — this page assumes you already know what the bootstrap path is and why an advisory lock is involved.
 
 ## Prerequisites

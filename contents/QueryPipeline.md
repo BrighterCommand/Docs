@@ -1,5 +1,7 @@
 # Query Pipeline and Decorators
 
+> **Explanation** · Applies to **Darker V10**
+
 ## Introduction
 
 The Query Pipeline in Darker provides a powerful way to add cross-cutting concerns to your query handlers without modifying the handler code itself. Using decorators (also called middleware), you can add capabilities like logging, retry logic, circuit breakers, and fallback behavior to any query handler through simple attribute annotations.

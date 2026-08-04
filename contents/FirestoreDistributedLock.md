@@ -1,5 +1,7 @@
 # Firestore Distributed Lock
 
+> **Reference** · Applies to **Brighter V10**
+
 The Firestore locking provider implements Brighter's [distributed
 lock](/contents/DistributedLock.md) using Google Cloud Firestore, so a single [Outbox
 Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) and Archiver run when you

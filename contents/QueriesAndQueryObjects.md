@@ -1,5 +1,7 @@
 # Queries and Query Objects
 
+> **Explanation** · Applies to **Darker V10**
+
 ## Introduction
 
 The Query Object pattern separates the parameters of a query from the execution of that query. In Darker, queries are simple objects that encapsulate the data needed to perform a query, while query handlers contain the logic to execute the query and return results.

@@ -1,5 +1,7 @@
 # MSSQL Inbox
 
+> **Reference** · Applies to **Brighter V10**
+
 ## Usage
 The MSSQL Inbox allows use of MSSQL for [Brighter's inbox support](/contents/BrighterInboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#inbox).
 

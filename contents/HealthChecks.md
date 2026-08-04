@@ -1,5 +1,7 @@
 # Health Checks
 
+> **How-to** · Applies to **Brighter V10**
+
 Brighter provides an AspNet Core Health check for **Service Activator**
 
 ## Configure Health Checks

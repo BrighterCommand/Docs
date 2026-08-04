@@ -1,5 +1,7 @@
 # Implementing a Query Handler
 
+> **How-to** · Applies to **Darker V10**
+
 ## Introduction
 
 Query handlers are the entry point to your query execution logic in Darker. A query handler receives a query object, executes the necessary logic to retrieve or compute the requested data, and returns the result. Query handlers are always part of an internal bus and form part of a middleware pipeline, similar to how request handlers work in Brighter.

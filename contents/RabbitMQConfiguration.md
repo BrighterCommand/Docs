@@ -1,5 +1,7 @@
 # RabbitMQ Configuration
 
+> **Reference** · Applies to **Brighter V10**
+
 ## General
 
 RabbitMQ is OSS message-oriented-middleware and is [well documented](https://www.rabbitmq.com/documentation.html). Brighter handles the details of sending to or receiving from RabbitMQ. You may find it useful to understand the [building blocks](https://www.rabbitmq.com/tutorials/amqp-concepts.html) of the protocol. You might find the [documentation for the .NET SDK](https://www.rabbitmq.com/dotnet-api-guide.html) helpful when debugging, but you should not have to interact with it directly to use Brighter.

@@ -1,5 +1,7 @@
 # Using an External Bus 
 
+> **How-to** · Applies to **Brighter V10**
+
 Brighter provides support for an External Bus. Instead of handling a command or event, synchronously and in-process, (an Internal Event Bus) work can be dispatched to a distributed queue to be handled
 asynchronously and out-of-process. The trade-off here is between the cost of distribution (see [The Fallacies of Distributed Computing](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing).
 

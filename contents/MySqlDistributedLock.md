@@ -1,5 +1,7 @@
 # MySQL Distributed Lock
 
+> **Reference** · Applies to **Brighter V10**
+
 The MySQL locking provider implements Brighter's [distributed
 lock](/contents/DistributedLock.md) using MySQL's named locks (`GET_LOCK` /
 `RELEASE_LOCK`), so a single [Outbox

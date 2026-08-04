@@ -1,5 +1,7 @@
 # Upgrading Existing Deployments
 
+> **How-to** · Applies to **Brighter V10**
+
 This page is for operators of a pre-existing Brighter deployment who are adopting [Database Provisioning](/contents/BoxProvisioning.md) for the first time. It describes what Brighter does when it starts against a table that was created and maintained by hand, what you should see in the logs, what to verify afterwards, and how to read the documented edge cases and the most likely failures.
 
 If your application is greenfield — that is, the Outbox and Inbox tables do not yet exist — the *fresh install* path described in [Database Provisioning](/contents/BoxProvisioning.md#how-it-works) applies, and most of this page is not relevant. Read [Configuring Box Provisioning](/contents/BoxProvisioningConfiguration.md) instead.

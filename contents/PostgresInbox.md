@@ -1,5 +1,7 @@
 # Postgres Inbox
 
+> **Reference** · Applies to **Brighter V10**
+
 ## Usage
 The Postgres Inbox allows use of Postgres for [Brighter's inbox support](/contents/BrighterInboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#inbox).
 

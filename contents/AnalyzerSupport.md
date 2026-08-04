@@ -1,5 +1,7 @@
 # Analyzer Support
 
+> **Reference** · Applies to **Brighter V10**
+
 Brighter provides Roslyn analyzers that detect common configuration and message-mapping mistakes while you write and build your application. The analyzers surface these problems as IDE and compiler warnings, before they can become runtime errors or subtle production behavior.
 
 The Brighter analyzer package also includes code fixes for supported diagnostics. A code fix lets your IDE apply the recommended change through Quick Actions instead of editing the code manually.

@@ -1,5 +1,7 @@
 # Hangfire Scheduler
 
+> **Reference** · Applies to **Brighter V10**
+
 [Hangfire](https://www.hangfire.io/) is one of the most widely used background job processing libraries in the .NET community, featuring a built-in monitoring dashboard. Brighter provides first-class integration with Hangfire for [scheduler functionality](/contents/BrighterSchedulerSupport.md), making it an excellent choice for production systems requiring easy setup, visual monitoring, and persistent scheduling.
 
 ## Production Recommendation

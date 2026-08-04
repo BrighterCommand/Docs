@@ -1,5 +1,7 @@
 # Fallback
 
+> **How-to** · Applies to **Brighter V10**
+
 You may want some sort of backstop exception handler, that allows you to take compensating action, such as undoing any partially committed work, issuing a compensating transaction, or queuing work for later delivery (perhaps using the [External Bus](/contents/ImplementingExternalBus.md)).
 
 To support this we provide a **IHandleRequests\<TRequest\>Fallback** method. In the Fallback method you write your code to run in the event of failure.

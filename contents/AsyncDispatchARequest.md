@@ -1,5 +1,7 @@
 # Dispatching Requests Asynchronously
 
+> **How-to** · Applies to **Brighter V10**
+
 Once you have [implemented your Request Handler](ImplementingAHandler.html), you will want to dispatch **Commands** or **Events** to that Handler.
 
 ## Usage

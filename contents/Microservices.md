@@ -1,5 +1,7 @@
 # Microservices
 
+> **Explanation** · Applies to **Brighter V10**
+
 It is possible to think of microservices as 3rd generation SOA. First generation SOA was SOAP based web services. 2nd generation SOA was messaging, sometimes over SOAP, but also over middleware, often an
 Enterpise Service Bus (ESB). The third generation emphasizes \"smart endpoints, dumb pipes\" over the use of an ESB, either via REST or a lightweight broker such as RMQ.
 

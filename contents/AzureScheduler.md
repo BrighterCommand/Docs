@@ -1,5 +1,7 @@
 # Azure Service Bus Scheduler
 
+> **Reference** · Applies to **Brighter V10**
+
 **Azure Service Bus** includes native support for scheduled message delivery using the `ScheduledEnqueueTimeUtc` property. In V10, Brighter integrates with Azure Service Bus's built-in scheduling capabilities to provide cloud-native scheduling for Azure workloads.
 
 ## When to Use Azure Service Bus Scheduler

@@ -1,5 +1,7 @@
 # Test Double Options for Command Processor
 
+> **How-to** · Applies to **Brighter V10**
+
 ## Overview
 
 When handlers depend on `IAmACommandProcessor` to publish events or send commands, you need a way to verify those interactions in tests. The `Paramore.Brighter.Testing` package provides `SpyCommandProcessor` - a test double that records all calls for later verification.

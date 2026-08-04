@@ -1,5 +1,7 @@
 # Custom Scheduler
 
+> **How-to** · Applies to **Brighter V10**
+
 To add support for a different scheduler provider, implement the appropriate interfaces based on your use case.
 
 ## Message Scheduler

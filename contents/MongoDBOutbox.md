@@ -1,5 +1,7 @@
 # MongoDB Outbox
 
+> **Reference** · Applies to **Brighter V10**
+
 ## Usage
 The MongoDB Outbox allows integration between MongoDB and [Brighter's outbox support](/contents/BrighterOutboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#outbox-support).
 

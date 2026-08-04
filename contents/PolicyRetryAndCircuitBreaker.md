@@ -1,5 +1,7 @@
 # Supporting Retry and Circuit Breaker
 
+> **How-to** · Applies to **Brighter V10**
+
 Brighter is a [Command Processor](https://www.goparamore.io/control-bus-and-data-bus/) and supports a [pipeline of Handlers to handle orthogonal requests](BuildingAPipeline.html).
 
 Amongst the valuable uses of orthogonal requests is patterns to support Quality of Service in a distributed environment: [Timeout, Retry, and Circuit Breaker](PolicyRetryAndCircuitBreaker.html#using-brighters-useresiliencepipeline-attribute).

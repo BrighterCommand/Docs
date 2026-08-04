@@ -1,5 +1,7 @@
 # Quartz Scheduler
 
+> **Reference** · Applies to **Brighter V10**
+
 [Quartz.NET](https://www.quartz-scheduler.net/) is one of the most widely used enterprise-grade scheduling libraries in the .NET community. Brighter provides first-class integration with Quartz for [scheduler functionality](/contents/BrighterSchedulerSupport.md), making it an excellent choice for production systems requiring durable, distributed scheduling.
 
 ## Quartz.NET Overview

@@ -1,5 +1,7 @@
 # **Using the MSSQL Outbox**
 
+> **Reference** · Applies to **Brighter V10**
+
 The MSSQL Outbox provides a message store for the [Transactional Outbox pattern](/contents/BrighterOutboxSupport.md) using a Microsoft SQL Server database. This ensures that messages are saved within the same transaction as your business logic and published to a message broker later.
 
 ## **Provisioning the Outbox Table**

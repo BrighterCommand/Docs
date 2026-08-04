@@ -1,5 +1,7 @@
 # Query Patterns
 
+> **How-to** · Applies to **Darker V10**
+
 ## Introduction
 
 This guide presents common query patterns you'll encounter when building real-world applications with Darker. While [Queries and Query Objects](/contents/QueriesAndQueryObjects.md) covers the fundamentals of query design, and [Implementing a Query Handler](/contents/ImplementAQueryHandler.md) covers basic handler implementation, this document focuses on practical patterns for complex scenarios including pagination, projections, aggregations, and Entity Framework Core integration.

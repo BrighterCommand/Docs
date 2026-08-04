@@ -1,5 +1,7 @@
 # Frequently Asked Questions
 
+> **Reference** · Applies to **Brighter V10**
+
 This FAQ addresses common questions about using Brighter and Darker, organized by category. For V10-specific changes, see the [V10 Migration Guide](/contents/V10MigrationGuide.md).
 
 ## Table of Contents
