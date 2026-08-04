@@ -3,6 +3,10 @@ _build/
 env/
 .vscode/
 
+# pagelint.py imports linkcheck.py, so running it writes tools/__pycache__/
+__pycache__/
+*.py[cod]
+
 # Session resume state — local Claude Code working notes
 PROMPT.md
 

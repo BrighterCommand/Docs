@@ -131,22 +131,22 @@ the convention nowhere else in the corpus.
 Goal: the repository's first CI workflow, green on a tree nothing has touched, and the
 conventions recorded in `CLAUDE.md` before any tool enforces them.
 
-- [ ] **Task 1.1:** Create `.github/workflows/docs.yml` running `linkcheck.py` alone
+- [x] **Task 1.1:** Create `.github/workflows/docs.yml` running `linkcheck.py` alone
   - Input: design §4 (the YAML is given complete and runnable), `tools/linkcheck.py`
   - Output: `.github/workflows/docs.yml` — first workflow in the repo; `.github/` does not exist yet
   - Notes: Ship **only** the `linkcheck.py` step now. `fetch-depth: 0` from the start, even though nothing needs the merge-base until Task 5.1 — adding it later invites forgetting it. `actions/checkout@v4` and `actions/setup-python@v5` are the only external actions permitted, and both tools are stdlib-only, so the build cannot fail for reasons unrelated to the docs. **Must be green on the untouched tree** — this is the baseline that makes every later failure attributable (AC6). Verify by pushing the branch and reading the run, not by asserting it locally.
 
-- [ ] **Task 1.2:** Amend `CLAUDE.md`'s *File Organization Pattern*
+- [x] **Task 1.2:** Amend `CLAUDE.md`'s *File Organization Pattern*
   - Input: design §2a (amended text quoted verbatim), requirements § "This contradicts `CLAUDE.md` today"
   - Output: `CLAUDE.md`, the *File Organization Pattern* list — same skeleton, same ordering, plus the banner at position 2 and the qualification rule at position 4
   - Notes: As written today the documented standard prescribes `## Configuration`, `## Best Practices`, `## Common Pitfalls` and `## Sample Code` — four of the worst collisions. An author following it produces a page the linter rejects. **Same commit as Task 1.3**; either alone leaves the file contradicting itself.
 
-- [ ] **Task 1.3:** Add the *Page Conventions* section to `CLAUDE.md`
+- [x] **Task 1.3:** Add the *Page Conventions* section to `CLAUDE.md`
   - Input: design §2b (six-subsection table), §1 (banner grammar + 5 worked examples), §7 (`llms.txt` format), requirements § The Conventions
   - Output: `CLAUDE.md`, new *Page Conventions* section with six subsections: page banner · heading qualification · version markers on code · complete code blocks · `llms.txt` · enforcement
   - Notes: Copy `BANNER_RE` and the five-item navigation allowlist **verbatim** — this section and `pagelint.py` must not drift, and the allowlist is declared canonical in requirements. Separator is ` · ` (U+00B7 with a space either side), not a hyphen or pipe. State the `Reference`-as-catch-all rule and why a fifth vocabulary value was rejected. The ❌/✅ version-marker pair needs a **real** V9→V10 example — take one from `V10MigrationGuide.md` rather than inventing one. Commit with Task 1.2.
 
-- [ ] **Task 1.4:** Build the `CLAUDE.md` ↔ linter rule ledger
+- [x] **Task 1.4:** Build the `CLAUDE.md` ↔ linter rule ledger
   - Input: Tasks 1.2–1.3 output, design §3 rules table, requirements § D4
   - Output: A short two-column table in the *Enforcement* subsection: each convention ↔ the linter rule that checks it
   - Notes: AC5 is bidirectional — every documented convention has a rule, every rule is documented. Writing the mapping down before the linter exists means Phase 2 implements against a list rather than a memory. A rule in only one of the two places is how the next round of decay begins.
@@ -161,42 +161,42 @@ consistent. No code depends on `CLAUDE.md` yet, so review is the only gate.
 Goal: `tools/pagelint.py`, all six rules, run **locally against the untouched tree**. Not
 in CI — it will fail loudly, and that is the point.
 
-- [ ] **Task 2.1:** Write the `pagelint.py` skeleton — page set, imports, output contract
+- [x] **Task 2.1:** Write the `pagelint.py` skeleton — page set, imports, output contract
   - Input: design §3 (signatures given), `tools/linkcheck.py` in full (225 lines — the pattern to follow)
   - Output: `tools/pagelint.py` — module docstring, `from linkcheck import md_files, slug, HEADING_RE`, `NAV_ALLOWLIST`, `BANNER_RE`, `PAGE_TYPES`, a `Finding` record, `main()` with optional path arguments and the exit-code contract
   - Notes: **Import, do not duplicate** (requirements Q5). Verified at review that this works as designed: `linkcheck.py` defines `md_files` (`:85`), `slug` (`:55`) and `HEADING_RE` (`:52`) at module scope and guards its entry point with `if __name__ == '__main__'` (`:219`), so importing it runs nothing. Mirror its conventions so someone who has read one can read the other: stdlib only, single file, `path:line: RULE: message`, exit 1 on any error, 0 when only warnings, 2 on bad arguments. The page set for page-level rules is **every** file under `contents/` — all 105 are reader-facing now that the two version markers are deleted, so there is no exemption list to carry and none should be invented. **`md_files()` is not that set:** it walks the whole repo minus `SKIP_DIRS`/`SKIP_FILES` (`linkcheck.py:44`, `:47`), so it returns root `README.md` and `SUMMARY.md` too. `pagelint.py` filters to `contents/` itself — otherwise the first run reports a missing banner on `SUMMARY.md` and the reconciliation starts with a bug to explain. `README.md` and `SUMMARY.md` are not pages.
 
-- [ ] **Task 2.2:** Implement rules 1 and 2 — banner presence and grammar
+- [x] **Task 2.2:** Implement rules 1 and 2 — banner presence and grammar
   - Input: design §1 (`BANNER_RE` given complete), design §3 rules table
   - Output: `check_banner(path, lines) -> list[Finding]`
   - Notes: Rule 1 — the first non-blank line **after the H1** must be the banner. Rule 2 — it must match `BANNER_RE`. Measured: 0 of 105 pages currently open with a blockquote after the H1, so there are no legacy exceptions and no ambiguity about whether a banner is present. Error message must show a ready-to-paste example (design §3 output sample).
 
-- [ ] **Task 2.3:** Implement rules 3a and 3b — heading uniqueness, two different scopes
+- [x] **Task 2.3:** Implement rules 3a and 3b — heading uniqueness, two different scopes
   - Input: design §3 "Rule 3 is two rules", design §5, requirements § The navigation allowlist
   - Output: `check_headings(all_pages) -> list[Finding]`
   - Notes: **3a is H2-only, across pages. 3b is H2–H4, within one page.** The asymmetry is deliberate and documented: 39 H3 texts appear on multiple pages (112 instances) and are *not* defects, because an H3 is read under its H2. **Both compare `slug(text)`, not raw markdown** — see the normalisation finding at the top of this file and design §3; `NAV_ALLOWLIST` is likewise matched normalised, so an emphasised `## **Further Reading**` stays exempt. Uniqueness is a property of the corpus, so when invoked on a subset the function loads every page for context but reports only on the requested ones — exactly how `linkcheck.py` handles orphans. Error message names the other pages and proposes the qualifier.
 
-- [ ] **Task 2.4:** Implement rule 4 — language tag on every fence (warning)
+- [x] **Task 2.4:** Implement rule 4 — language tag on every fence (warning)
   - Input: requirements § Measurements (185 untagged blocks), design §3 rules table
   - Output: `check_code_blocks()`, language-tag branch
   - Notes: **Warning repo-wide until P1 Task 7.2 lands**, error under `--changed`. Track fence state properly — an untagged fence *closing* a tagged block is not a violation.
 
-- [ ] **Task 2.5:** Implement rule 5 — `ServiceActivator` in prose
+- [x] **Task 2.5:** Implement rule 5 — `ServiceActivator` in prose
   - Input: design §3 "Rule 5 needs care", requirements § D4 final paragraph
   - Output: `check_terminology(path, lines) -> list[Finding]`
   - Notes: Three legitimate uses a naive ban would fire on: inside fences (`ServiceActivatorHostedService`, `Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection`), inside inline code spans, and throughout `HowServiceActivatorWorks.md`. Scan **prose outside fences and outside backticks**, and honour a file-level opt-out: `<!-- pagelint: allow-serviceactivator -->`.
 
-- [ ] **Task 2.6:** Implement rule 6 — `using` directives in C# blocks (warning, counted)
+- [x] **Task 2.6:** Implement rule 6 — `using` directives in C# blocks (warning, counted)
   - Input: requirements Q4 (the two strictness levels), § Measurements (796 C# blocks, 133 with `using`)
   - Output: `check_code_blocks()`, `using`-directive branch, plus the counted summary line
   - Notes: **Warning repo-wide, with a count**, so the debt is visible rather than either ignored or blocking. Requirements Q4 is explicit that the banner sweep must not trigger this rule — one mechanical line per page is not "touching" a page for code-completeness purposes, or the sweep drags 796 hand-verified edits behind it.
 
-- [ ] **Task 2.7:** Implement `--changed` with **block** granularity
+- [x] **Task 2.7:** Implement `--changed` with **block** granularity
   - Input: design §3 "Rule 6 and `--changed`", requirements § D4 final note
   - Output: `changed_ranges(merge_base) -> dict[path, list[(start, end)]]`, and strict-mode dispatch in `check_code_blocks`
   - Notes: A code block is *strict* only if it **overlaps a changed line range**. File-level strictness would mean a typo fix on a 700-line page obliges backfilling every block on it — which penalises exactly the small corrections we want people to make, and the predictable outcome is that they stop making them. Derive ranges from `git diff` against the merge-base. Degrade honestly if git history is unavailable (non-zero, stating why) rather than silently passing.
 
-- [ ] **Task 2.8:** Run `python3 tools/pagelint.py` repo-wide and reconcile the counts
+- [x] **Task 2.8:** Run `python3 tools/pagelint.py` repo-wide and reconcile the counts
   - Input: the untouched tree; expected counts from design §12 step 3, **corrected per the table at the top of this file**
   - Output: Saved raw output for comparison (scratch, not committed)
   - Notes: **This is the real test of the phase.** Expect **105** banner errors (rule 1, one per page — the corpus is 105 pages, see above), **256** cross-page heading errors across **48** texts (rule 3a, comparing `slug()` — 50 if you compare raw, and that difference is a normalisation choice rather than a bug, see the finding at the top of this file), **34** within-page errors across 12 pages (rule 3b). **Check rule 3b page by page against the table below, not just the total** — the same total from different pages means the rule is finding something else. **A materially different number means a rule is wrong, not the corpus.** Stop and revise the design before sweeping anything.
@@ -220,7 +220,7 @@ in CI — it will fail loudly, and that is the point.
 
     `AWSSQSConfiguration.md` and `BrighterSchedulerSupport.md` are the two that were unnamed. Note `InMemoryOptions.md` has a **fourth** repeat the old table missed (`Example Usage` ×3), so Task 4.3 qualifies 12 headings there, not 10.
 
-- [ ] **Task 2.9:** Record the measured baseline
+- [x] **Task 2.9:** Record the measured baseline
   - Input: Task 2.8 output
   - Output: A short *Measured baseline (date)* section appended to this file — errors by rule, the `using`-directive warning count and the pages it spans, plus any discrepancy against prediction and its explanation
   - Notes: AC1 requires the warning count "printed and recorded as the baseline to shrink", so it needs to live somewhere durable. Also update `PROMPT.md`'s audit-data section where the linter contradicts a scripted figure — that file is what the next session reads first.
@@ -482,3 +482,127 @@ schedule pressure should give — Spec 010 needs the conventions (Phase 1) and t
 | D9 `llms.txt` format | 1.3 |
 | Redirects | 6.12 |
 | AC1–AC8 | 7.4 |
+
+---
+
+## Measured baseline (2026-08-04) — Task 2.9
+
+`python3 tools/pagelint.py`, run repo-wide against the untouched tree at commit
+`deee51d`. **412 errors, 840 warnings across 105 pages**, exit 1.
+
+| Rule | Predicted | Measured | Verdict |
+|---|---|---|---|
+| 1 `BANNER MISSING` | 105 | **105** | exact — one per page, no page reported twice |
+| 2 `BANNER MALFORMED` | 0 | **0** | exact — and 0 `NO H1`, confirming the sweep is unambiguous |
+| 3a `HEADING NOT UNIQUE` | 256 instances / 48 texts | **262 / 50** | **prediction wrong, rule right** — see below |
+| 3b `HEADING REPEATED` | 34 across 12 pages | **34 across the same 12** | exact, and verified page by page, not just on the total |
+| 4 `LANGUAGE TAG` (warning) | 185 | **36** across 14 pages | **corpus figure wrong** — see below |
+| 5 `SERVICEACTIVATOR` | not predicted | **11** across 3 pages | all explained; needs a small fix before Task 5.1 |
+| 6 `USING DIRECTIVES` (warning) | 663 of 796 C# blocks | **804 of 940** | **corpus figure wrong** — same cause as rule 4 |
+
+**No rule needed revising.** Phase 2's stop-rule asks whether a materially different
+number means a rule is wrong; on inspection every discrepancy is in the prediction, and
+two of the three come from a single unrecorded fact about the corpus. Rules 1, 2 and 3b
+reproduced their predictions exactly, and rule 3a reproduces its *raw* prediction
+exactly, which is what makes the remaining gap diagnosable rather than mysterious.
+
+### The finding: 143 C# fences are written ```` ``` csharp ````, with a space
+
+CommonMark trims the info string, so ```` ``` csharp ```` is a C#-tagged block and
+renders as one. A script matching `^```csharp` does not see it. That single fact
+explains both code-block discrepancies:
+
+| | Counted by the earlier script | Actually |
+|---|---|---|
+| Fenced blocks with **no** language | 185 | **36** — 149 of the 185 have a space-separated info string |
+| C#-tagged blocks | 796 | **940** — 787 exact, 143 space-separated, 8 indented, 2 other |
+| C# blocks with a `using` directive | 133 | **136** |
+
+`36 + 149 = 185` reproduces the old figure exactly, which is the confirmation that this
+is the cause rather than a plausible story about it.
+
+Two consequences, both in the same direction:
+
+- **Task 7.2 shrinks from 185 fences to 36.** Adding a language tag to 36 blocks across
+  14 pages is small enough to do alongside the sweeps rather than as a phase of its own,
+  which makes flipping rule 4 to a repo-wide error cheap.
+- **The `using`-directive debt is larger than recorded** — 804 blocks across 89 pages,
+  not 663 across 67. Compliance is **14%**, not 16%. This changes nothing about the
+  mechanism (Q4's two strictness levels retire the debt as pages are edited) but the
+  baseline AC1 requires us to record is 804, and that is the number to shrink.
+
+The 149 space-separated fences are **not** a defect and are not on any worklist. They
+render correctly; they are merely inconsistent with the 787 written without the space.
+Normalising them is cosmetic, and doing it as a sweep of its own would touch 40-odd
+pages to change nothing a reader can see.
+
+### Rule 3a: 262 instances across 50 texts, not 256 across 48
+
+The raw comparison measures **50 texts / 256 instances** — exactly what requirements
+§ Measurements predicts. The normalised comparison, which is what `pagelint.py` does,
+measures **50 texts / 262 instances**.
+
+The *Applied at review* finding at the top of this file predicted 48 texts / 256
+instances. It was right that normalising merges the emphasised outbox headings into
+their plain twins, and right that this subtracts two texts. What it missed is that
+`slug()` also **lowercases**, so normalisation pulls in case-variant pairs that were not
+collisions when compared raw. All four, accounting for the +6 exactly:
+
+| Merge | Instances added |
+|---|---|
+| `## Common pitfalls` folds into `## Common Pitfalls` | +1 |
+| `## NuGet packages` folds into the `NuGet Packages` group | +1 |
+| `## How It Works` + `## How it works` — neither collided raw, together they do | +2 |
+| `## **Configuring The Dispatcher**` + `## Configuring the Dispatcher` — likewise | +2 |
+
+The last two are why the text count comes back to 50: the two emphasis merges subtract
+two texts, and these two new collisions add two back. That the count is 50 under both
+comparisons is a coincidence, and a misleading one — the underlying sets differ.
+
+**Task 4.1 therefore proposes qualifiers for 50 texts / 262 instances**, and Task 4.2
+applies them. The named sub-case for the four outbox pages is unchanged. Design §3 and
+requirements § Measurements have been corrected.
+
+### Rule 5's 11 findings are all real, and none is the error the rule describes
+
+| Page | Lines | What fired |
+|---|---|---|
+| `BrighterBasicConfiguration.md` | 706, 714, 715, 735, 923, 925, 927 | `**Paramore.Brighter.ServiceActivator.Extensions.Hosting**`, `**ServiceActivatorHostedService**`, `**ServiceActivatorOptions**` |
+| `BrighterControlAPI.md` | 7 | `**Paramore.Brighter.ServiceActivator.Control.Api**` |
+| `HowServiceActivatorWorks.md` | 454, 458, 459 | the page discussing the name itself |
+
+The design anticipated identifiers being exempt *inside inline code spans*. These eight
+are identifiers written in **bold** instead of backticks, which `CLAUDE.md` already
+tells authors not to do — "use `code` for code elements, file names, class names,
+methods". So the rule is correct and the pages are wrong, in a small and mechanical way.
+
+**Remediation, required before Task 5.1 puts `pagelint.py` in CI:** add
+`<!-- pagelint: allow-serviceactivator -->` to `HowServiceActivatorWorks.md`, and change
+the eight bolded identifiers to backticks. Both pages are already being edited in
+Phase 6 — `BrighterBasicConfiguration.md` is split at Task 6.7, and its lines 706–735
+and 923–927 are the Dispatcher material that moves to
+`DispatcherConfigurationReference.md` at Task 6.9, whose note already says "Dispatcher,
+not ServiceActivator, in the prose — rule 5 will enforce it". Do it there; the two
+`BrighterControlAPI.md` and `HowServiceActivatorWorks.md` fixes are one line each.
+
+### What the linter's own behaviour confirmed
+
+- **`--changed` strictness is genuinely per block.** Tested against a synthetic page:
+  an edit inside the second block makes only that block an error; an edit on a line
+  *between* two blocks makes neither strict. This is the property Task 2.7 exists for
+  and it was worth proving before CI relies on it.
+- **`changed_ranges` parses multi-hunk diffs** and raises rather than returning empty
+  when the ref does not resolve, so the vacuous pass Task 5.2 warns about cannot happen
+  silently — the run exits 2 with the shallow-clone explanation.
+- **Exit codes:** 1 with errors, 2 on a missing `--changed` ref and on a path outside
+  `contents/`, 0 when clean. Same contract as `linkcheck.py`.
+- **Fence-aware parsing matters.** `pagelint.py` tracks fences before reading headings,
+  so a `# Install packages` comment in a bash block is not counted as an H1. The corpus
+  also contains two 4-backtick fences and 18 indented ones, both handled.
+
+### Where this leaves the phase
+
+Phases 1 and 2 are complete. `linkcheck.py` is green in CI on the untouched tree
+(run 30881245792, `107 files checked`), `pagelint.py` is written, run and reconciled,
+and it is **deliberately not in `docs.yml`** — Task 5.1 adds it once the sweeps make it
+pass. The next session starts at Task 3.1.

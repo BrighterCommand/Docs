@@ -31,12 +31,12 @@ the difference is checkable rather than mysterious.
 | Pages under `contents/` | **105** | Measured at 107; two were `VersionBegin.md` / `VersionEnd.md`, a pre-GitBook-versioning hack, **deleted 2026-08-03** — see note below. Earlier programme notes said 110. `linkcheck.py` now reports 107 files = 105 pages + `SUMMARY.md` + `README.md`. No subdirectories. |
 | Pages with no H1 | **0** | Every page has one. |
 | Pages already opening with a blockquote after the H1 | **0** | Nothing to collide with. |
-| C# code blocks (```` ```csharp ````) | **796** | |
-| …of those, containing a `using` directive | **133 (16%)** | Earlier notes said ~230 of ~1,050. That count appears to have included all fenced blocks, not just C#-tagged ones. Either way the direction is the same and the compliance is worse than assumed. |
-| Fenced blocks with **no language tag** | **185** | Not previously measured. `CLAUDE.md` requires a language on every block. |
+| C# code blocks (```` ```csharp ````) | **940** | **Corrected 2026-08-04 by `pagelint.py`.** Measured at 796 by a script matching `^```csharp`, which misses the **143** blocks written ```` ``` csharp ```` with a space and the 8 indented ones. CommonMark trims the info string, so those are C# blocks and render as such. |
+| …of those, containing a `using` directive | **136 (14%)** | Earlier notes said ~230 of ~1,050; that count appears to have included all fenced blocks, not just C#-tagged ones. Against the corrected denominator of 940 the debt is **804 blocks across 89 pages** — worse than the 663/67 assumed, and the figure AC1 records as the baseline to shrink. |
+| Fenced blocks with **no language tag** | **36** | **Corrected 2026-08-04.** The 185 figure counted the 149 space-separated info strings (```` ``` csharp ````) as untagged; `36 + 149 = 185` reproduces it exactly. Only 36 blocks, across 14 pages, genuinely lack a language. P1 Task 7.2 shrinks accordingly. |
 | Distinct `##` heading texts | **474** | |
 | Heading texts appearing on more than one page | **53** raw / **51** normalised | See *Raw versus normalised heading text* below. |
-| Total `##` heading instances that are non-unique | **297** | 41 are on the navigation allowlist (`Further Reading` 29, `Related Documentation` 10, `See Also` 2) and stay uniform. **256 instances need qualification, across 50 texts raw / 48 normalised.** |
+| Total `##` heading instances that are non-unique | **297** | 41 are on the navigation allowlist (`Further Reading` 29, `Related Documentation` 10, `See Also` 2) and stay uniform. **Measured by `pagelint.py` 2026-08-04: 262 instances across 50 texts normalised**, against 256 across 50 raw. The 48-text figure below was wrong — see the correction. |
 | Internal links carrying an `#anchor` | **299** | |
 | …targeting a generic anchor that de-duplication would rename | **8** | 7 × `#provisioning`, 1 × `#configuration`. See risk note below. |
 
@@ -66,12 +66,29 @@ markdown is emphasised. The consequence for the counts:
 | Comparison | Colliding texts | …needing qualification | Instances needing qualification |
 |---|---|---|---|
 | Raw | 53 | 50 | **256** |
-| `slug()`-normalised — **what `pagelint.py` does** | 51 | **48** | **256** |
+| `slug()`-normalised — **what `pagelint.py` does** | 51 | **50** | **262** |
 
-The instance count is 256 either way; only the text count moves, by exactly the two
-merges above. `## Configuration` rises from 22 instances to 26 and `## NuGet Packages`
-from 5 to 9. Design §3 and the Phase 2 reconciliation target both use the normalised
-figures.
+**Corrected 2026-08-04 against the linter's first run.** This section previously said
+normalisation moved the text count to 48 and left the instances at 256. The raw figures
+were confirmed exactly — 50 texts, 256 instances — but the normalised ones were not.
+
+The analysis above is right that `slug()` strips emphasis, and right that this merges
+`**Configuration**` into `Configuration` (22 → 26 instances) and `**NuGet Packages**`
+into `NuGet Packages`. What it missed is that **`slug()` also lowercases**, so it
+merges case variants too — and two of those pairs were *not* collisions when compared
+raw, so normalising creates collisions rather than only merging existing ones:
+
+| Merge | Instances added |
+|---|---|
+| `## Common pitfalls` into `## Common Pitfalls` | +1 |
+| `## NuGet packages` into the `NuGet Packages` group | +1 |
+| `## How It Works` + `## How it works` — new collision | +2 |
+| `## **Configuring The Dispatcher**` + `## Configuring the Dispatcher` — new collision | +2 |
+
+That is the +6, and the two new collisions are why the text count returns to 50 after
+the two emphasis merges subtract two. **50 under both comparisons is a coincidence**,
+and the underlying sets differ. Design §3 and `tasks.md` § *Measured baseline* carry the
+same correction; Tasks 4.1 and 4.2 work on 50 texts / 262 instances.
 
 #### `VersionBegin.md` and `VersionEnd.md` deleted (2026-08-03)
 
@@ -341,7 +358,8 @@ generator.
   `linkcheck.py`.
 - **Heading de-duplication**: of 53 colliding heading texts / 297 instances, three are
   on the navigation allowlist (`Further Reading`, `Related Documentation`, `See Also` —
-  41 instances) and stay as they are. **50 texts / 256 instances need qualification.**
+  41 instances) and stay as they are. **50 texts / 262 instances need qualification**
+  (measured 2026-08-04; 256 when heading text is compared raw).
 - **Two demonstrator splits** — `RabbitMQConfiguration.md` and
   `BrighterBasicConfiguration.md`.
 - **The scored worklist** handed to Spec 010, with each candidate's mode score, size
@@ -350,8 +368,9 @@ generator.
 ### P1 — should have
 
 - **`llms.txt` format definition** (the generator ships with 010).
-- **Language tags added** to the 185 untagged fenced blocks. Mechanical enough to sit
-  alongside the sweep, and it makes the code-block rules enforceable repo-wide.
+- **Language tags added** to the **36** untagged fenced blocks (measured 2026-08-04;
+  the earlier figure of 185 counted space-separated info strings as untagged). Small
+  enough to sit alongside the sweep, and it makes rule 4 enforceable repo-wide.
 - **A `--fix` mode on `pagelint.py`** for the mechanical rules (banner insertion,
   language tags), so the same tool that reports the debt can retire it.
 
@@ -364,8 +383,8 @@ generator.
 
 - **Rewriting prose for style.** This spec is structural.
 - **Splitting beyond the two demonstrators** — see Q3; the rest is Spec 010's.
-- **Backfilling all 796 code blocks** — see Q4; the mechanism retires this debt as
-  pages are edited.
+- **Backfilling all 940 C# code blocks** — see Q4; the mechanism retires this debt as
+  pages are edited. 804 of them lack `using` directives (measured 2026-08-04).
 - **Moving or renaming files.** Spec 010 owns placement. This spec edits pages in
   place, with the single exception of the new pages the two demonstrator splits
   create.

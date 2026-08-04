@@ -231,8 +231,17 @@ collide in the published URL; comparing raw text would let them through. `slug()
 imported from `linkcheck.py`, so the linter compares exactly what the link checker
 resolves anchors against.
 
-This moves the rule 3a text count and nothing else: **48 texts, 256 instances**
-normalised, against 50 texts and the same 256 raw. The `NAV_ALLOWLIST` is matched
+**Corrected 2026-08-04 against the linter's first run.** This paragraph previously
+said normalisation moved the text count to 48 and left the instance count at 256.
+Measured: normalised is **50 texts, 262 instances**, against **50 texts, 256
+instances** raw. `slug()` lowercases as well as stripping emphasis, so it also merges
+case variants — `## Common pitfalls` into `## Common Pitfalls`, `## NuGet packages`
+into the `NuGet Packages` group, and two pairs (`How It Works`/`How it works`,
+`**Configuring The Dispatcher**`/`Configuring the Dispatcher`) that were *not*
+collisions raw and become collisions normalised. That last class is what the earlier
+analysis missed: it accounts for +6 instances, and for the text count returning to 50
+after the two emphasis merges subtracted two. The full derivation is in `tasks.md`
+§ *Measured baseline*. The `NAV_ALLOWLIST` is matched
 normalised too — it is declared as the five plain texts, and the linter compares
 `slug()` of the heading against `slug()` of each entry, so an emphasised
 `## **Further Reading**` is still exempt rather than a false positive. Rule 3b is
@@ -372,7 +381,9 @@ any sweep. `pagelint.py` joins once the sweeps have made it pass.
 
 ## 5. Heading De-duplication (D3)
 
-**50 heading texts, 256 instances.** The three allowlisted texts that appear more than
+**50 heading texts, 262 instances** as the linter counts them (2026-08-04; 256 when
+heading text is compared raw — see *Rules 3a and 3b compare `slug()`*). The three
+allowlisted texts that appear more than
 once (`Further Reading` 29, `Related Documentation` 10, `See Also` 2 — 41 instances)
 stay exactly as they are.
 
@@ -664,9 +675,9 @@ requires a rule that is not yet true.
 
 | # | Step | Verified by |
 |---|---|---|
-| 1 | `docs.yml` running `linkcheck.py` only | Green build on the untouched tree — the baseline |
-| 2 | `CLAUDE.md`: amend the pattern, add Page Conventions | Review; no code depends on it yet |
-| 3 | `pagelint.py`, all rules, **not yet in CI** | Run locally against the untouched tree. Expected: **105 banner errors** (rule 1, one per page), **256 cross-page heading errors** across **48** normalised texts (rule 3a, one per instance — 50 texts if compared raw; see *Rules 3a and 3b compare `slug()`*), **34 within-page heading errors** across the 12 pages named above (rule 3b). Those counts *are* the test — a materially different number means a rule is wrong, not the corpus |
+| 1 | `docs.yml` running `linkcheck.py` only | ✅ **Done 2026-08-04.** Green on the untouched tree — run 30881245792, `107 files checked`, on both the push and pull-request events |
+| 2 | `CLAUDE.md`: amend the pattern, add Page Conventions | ✅ **Done 2026-08-04.** Both edits in one commit; `BANNER_RE` checked against all five worked banners and two malformed ones. The ledger records one deliberate gap — version markers have no rule |
+| 3 | `pagelint.py`, all rules, **not yet in CI** | ✅ **Done 2026-08-04.** Ran locally against the untouched tree: **105** banner errors, **0** malformed, **262** cross-page heading errors across 50 normalised texts (rule 3a), **34** within-page errors across the 12 pages named above (rule 3b), **36** untagged fences, **11** terminology errors, **804** `using`-directive warnings. Rules 1, 2 and 3b hit their predictions exactly; the three that did not are reconciled in `tasks.md` § *Measured baseline*, and no rule needed revising |
 | 4 | Generate `pagetypes.tsv`; **human reviews every row** | Verdict column complete on all 105 rows; `apply_banners.py` refuses to run otherwise |
 | 5 | Banner sweep via `apply_banners.py` — one mechanical commit, 105 files | Rules 1 and 2 report zero |
 | 6 | Heading de-duplication (256 cross-page + 34 within-page) and the 8 same-page anchors. **Plus a separate small commit** merging the 3 duplicate-content pairs in `Glossary.md` and `FAQ.md` | Rules 3a and 3b report zero; `linkcheck.py` still clean |
