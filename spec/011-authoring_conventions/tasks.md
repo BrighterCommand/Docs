@@ -236,7 +236,7 @@ phase — CI must stay green.
 
 Goal: a human page-type verdict for every page, then one mechanical 105-file commit.
 
-- [ ] **Task 3.1:** Generate `pagetypes.tsv` — the proposals
+- [x] **Task 3.1:** Generate `pagetypes.tsv` — the proposals
   - Input: design §1 "Assigning a page type to 105 pages", `SUMMARY.md`, `modemix.py` scores
   - Output: `spec/011-authoring_conventions/pagetypes.tsv` — 105 rows, one per page: `path` · `proposed type` · `confidence` · `signal that fired` · `human verdict` *(blank)*
   - Notes: Four signals, in order: `SUMMARY.md` section · title verb (gerund/imperative → How-to) · single-mode score from `modemix.py` · everything else to a **review queue, not a default**. A wrong page type is worse than a slow one — it tells the reader the page is something it is not. The generator may be a throwaway script beside the spec.
