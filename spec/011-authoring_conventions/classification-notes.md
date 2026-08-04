@@ -316,9 +316,16 @@ it — `## Service Activator <!-- pagelint: allow-serviceactivator -->` puts the
 inside the heading text, so `slug()` folds it into the anchor and every inbound link to
 `#service-activator` breaks. `linkcheck.py` would catch that, but a convention whose
 opt-out breaks a different rule is the wrong convention. An opt-out on the *preceding*
-line is the likely answer. **Recorded for the maintainer as a rule-scope decision, not
-taken unilaterally** — it changes rule 5's meaning, and `CLAUDE.md`'s ledger describes
-rule 5 as applying to prose.
+line is the likely answer.
+
+> **Ruled by the maintainer 2026-08-04: leave rule 5 as it is.** The risk is low enough
+> to be a future problem, solved then. **Do not re-raise this** — the gap is known,
+> recorded, and accepted, not overlooked. Rule 5 stays a prose rule and `CLAUDE.md`'s
+> ledger stays accurate as written.
+>
+> The trigger for revisiting it is a heading that *should* say "Dispatcher" reaching the
+> corpus. Today's three are `BasicConcepts.md:135`, `Glossary.md:111` and
+> `HowServiceActivatorWorks.md:454`, and all three are the term as its own subject.
 
 ## 9. The banner sweep, and two things it nearly carried (Task 3.4, 2026-08-04)
 

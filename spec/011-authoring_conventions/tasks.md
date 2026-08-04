@@ -674,9 +674,11 @@ not ServiceActivator, in the prose — rule 5 will enforce it". Do it there; the
 > §8 also records a **gap in rule 5 found while clearing it**: headings are parsed into
 > `page.headings`, never `page.prose`, so rule 5 cannot see them. Three headings carry
 > the term and all three are legitimate, so nothing is wrong today — but nothing would
-> stop a future `## Configuring Service Activator` either. **Left for a maintainer
-> ruling**, because the trailing-comment opt-out cannot be reused on a heading without
-> the comment landing inside the anchor slug.
+> stop a future `## Configuring Service Activator` either.
+>
+> **Ruled 2026-08-04: leave rule 5 as it is**, the risk being low enough to be a future
+> problem. The gap is accepted, not overlooked; **do not re-raise it.** Rule 5 stays a
+> prose rule, so `CLAUDE.md`'s ledger needs no change and Task 5.1 is unaffected.
 
 ### What the linter's own behaviour confirmed
 
