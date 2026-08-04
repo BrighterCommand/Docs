@@ -307,7 +307,7 @@ rule in only one of the two places is how the next round of decay begins:
 | Heading qualification, across pages (`##`, allowlist exempt) | 3a | error | error |
 | Heading qualification, within a page (`##`–`####`, allowlist exempt) | 3b | error | error |
 | Language tag on every fence | 4 | warning → error once the backfill lands | error |
-| "Dispatcher", not "ServiceActivator", in prose | 5 | error | error |
+| "Dispatcher", not "ServiceActivator" or "Service Activator", in prose | 5 | error | error |
 | `using` directives in C# blocks | 6 | warning, counted | error |
 | Version markers on code (❌/✅) | — | **review only** | **review only** |
 
@@ -315,8 +315,12 @@ Version markers are the one convention with no rule, and deliberately so: whethe
 code blocks differ *by version* is a judgement about meaning, and a regex that guessed
 at it would fire on every before/after pair in the repo. It is checked in review.
 
-Rule 5 has three legitimate exceptions built in — the term is fine inside fenced
-blocks and inline code spans (`ServiceActivatorHostedService`,
+Rule 5 matches **both spellings** — `ServiceActivator` and `Service Activator`. The
+API surface uses the closed form, but prose here uses the open one just as often, and
+both are the same V9 term.
+
+It has three legitimate exceptions built in — the term is fine inside fenced blocks and
+inline code spans (`ServiceActivatorHostedService`,
 `Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection`), and a page that
 discusses the name itself opts out with a comment:
 
@@ -718,7 +722,8 @@ Before finalizing documentation, verify:
 
 **Terminology Pitfalls:**
 
-- ❌ Don't use "ServiceActivator" - prefer "Dispatcher" for V10
+- ❌ Don't use "ServiceActivator" or "Service Activator" - prefer "Dispatcher" for V10.
+  If you mean the assembly or a type, put it in `backticks`, not **bold**
 - ❌ Don't use inconsistent terms - check BasicConcepts.md and Glossary
 - ❌ Don't introduce new terms without defining them
 

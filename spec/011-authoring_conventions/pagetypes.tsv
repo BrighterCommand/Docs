@@ -27,80 +27,80 @@ contents/RequestValidation.md		review	"no signal fired (section ""Brighter Reque
 contents/Routing.md		review	"no signal fired (section ""Using an External Bus"", modes: none)"	Explanation
 contents/S3LuggageStore.md		review	"no signal fired (section ""Using an External Bus"", modes: none)"	Reference
 contents/Telemetry.md		review	"no signal fired (section ""Health Checks and Observability"", modes: explanation,guidance,howto,reference)"	Reference
-contents/AWSSQSConfiguration.md	Reference	low	"SUMMARY.md section ""Guaranteed At Least Once""; but scores 3 modes (explanation,guidance,howto)"	
-contents/AwsScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	
-contents/AzureScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	
-contents/BrighterSchedulerSupport.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	
-contents/CQRSWithBrighterAndDarker.md	Explanation	low	"SUMMARY.md section ""CQRS Patterns""; but scores 3 modes (explanation,guidance,howto)"	
-contents/FAQ.md	Reference	low	design section 1: outside Diataxis, consulted not read	
-contents/Glossary.md	Reference	low	design section 1: outside Diataxis, consulted not read	
-contents/HangfireScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	
-contents/InMemoryScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	
-contents/PostgreSQLMessageBroker.md	Reference	low	"SUMMARY.md section ""Guaranteed At Least Once""; but scores 4 modes (explanation,guidance,howto,reference)"	
-contents/QuartzScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 3 modes (guidance,howto,reference)"	
-contents/RabbitMQConfiguration.md	Reference	low	"SUMMARY.md section ""Guaranteed At Least Once""; but scores 4 modes (explanation,guidance,howto,reference)"	
-contents/ReactorAndProactor.md	Explanation	low	"SUMMARY.md section ""Under the Hood""; but scores 4 modes (explanation,guidance,howto,reference)"	
+contents/AWSSQSConfiguration.md	Reference	low	"SUMMARY.md section ""Guaranteed At Least Once""; but scores 3 modes (explanation,guidance,howto)"	Reference
+contents/AwsScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
+contents/AzureScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
+contents/BrighterSchedulerSupport.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Explanation
+contents/CQRSWithBrighterAndDarker.md	Explanation	low	"SUMMARY.md section ""CQRS Patterns""; but scores 3 modes (explanation,guidance,howto)"	Explanation
+contents/FAQ.md	Reference	low	design section 1: outside Diataxis, consulted not read	Reference
+contents/Glossary.md	Reference	low	design section 1: outside Diataxis, consulted not read	Reference
+contents/HangfireScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
+contents/InMemoryScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
+contents/PostgreSQLMessageBroker.md	Reference	low	"SUMMARY.md section ""Guaranteed At Least Once""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
+contents/QuartzScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 3 modes (guidance,howto,reference)"	Reference
+contents/RabbitMQConfiguration.md	Reference	low	"SUMMARY.md section ""Guaranteed At Least Once""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
+contents/ReactorAndProactor.md	Explanation	low	"SUMMARY.md section ""Under the Hood""; but scores 4 modes (explanation,guidance,howto,reference)"	Explanation
 contents/ShowMeTheCode.md		low	design section 1: a showcase; Reference fits poorly but it is not a tutorial	How-to
-contents/SweeperCircuitBreaking.md	Reference	low	"SUMMARY.md section ""Outbox and Inbox""; but scores 4 modes (explanation,guidance,howto,reference)"	
-contents/TickerQScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 3 modes (guidance,howto,reference)"	
-contents/V10MigrationGuide.md	Reference	low	design section 1: consulted, so Reference not How-to	
-contents/WhyBrighter.md	Explanation	low	design section 1	
-contents/AzureBlobArchiveProvider.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	
-contents/AzureBlobConfiguration.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	
-contents/AzureBlobDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/AzureServiceBusConfiguration.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	
-contents/BrighterControlAPI.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	
-contents/BrighterInboxSupport.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/BrighterOutboxSupport.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/CommandsCommandDispatcherandProcessor.md	Explanation	medium	"SUMMARY.md section ""Command, Processors and Dispatchers"""	
-contents/CustomScheduler.md	Reference	medium	"SUMMARY.md section ""Scheduler"""	
-contents/DapperOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/DistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/DynamoDbDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/DynamoInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/DynamoOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/EFCoreOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/EventCarriedStateTransfer.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	
-contents/EventDrivenCollaboration.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	
-contents/FeatureSwitches.md	How-to	medium	single mode scored: howto	
-contents/FirestoreDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/HowServiceActivatorWorks.md	Explanation	medium	"title ""How The Dispatcher Works"" is How-X-Works, not a how-to; but scores 3 modes (guidance,howto,reference)"	
-contents/KafkaConfiguration.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	
-contents/MSSQLInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/MSSQLOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/Microservices.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	
-contents/MongoDBInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/MongoDBOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/MongoDbDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/Monitoring.md	Reference	medium	single mode scored: reference	
-contents/MsSqlDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/MySQLInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/MySQLOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/MySqlDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/OutboxPattern.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	
-contents/PolicyRetryAndCircuitBreaker.md	How-to	medium	"title ""Supporting Retry and Circuit Breaker"" opens with a gerund or imperative; but scores 3 modes (guidance,howto,reference)"	
-contents/PostgresDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/PostgresInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/PostgresOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/ReplayOnSeen.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/Requests, Commands and Events.md	Explanation	medium	single mode scored: explanation	
-contents/SqliteInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/SqliteOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	
-contents/TaskQueuePattern.md	Explanation	medium	"SUMMARY.md section ""Task Queues"""	
-contents/TestDoubleOptions.md	How-to	medium	"title ""Test Double Options for Command Processor"" opens with a gerund or imperative; but scores 3 modes (guidance,howto,reference)"	
-contents/UsingTheContextBag.md	How-to	medium	"title ""Passing Information Between Handlers in the Pipeline"" opens with a gerund or imperative; but scores 3 modes (guidance,howto,reference)"	
-contents/AsyncDispatchARequest.md	How-to	high	"title ""Dispatching Requests Asynchronously"" opens with a gerund or imperative"	
-contents/BoxProvisioningConfiguration.md	How-to	high	"title ""Configuring Box Provisioning"" opens with a gerund or imperative"	
-contents/BoxProvisioningUpgrade.md	How-to	high	"title ""Upgrading Existing Deployments"" opens with a gerund or imperative"	
-contents/BuildingAPipeline.md	How-to	high	"title ""Building a Pipeline of Request Handlers"" opens with a gerund or imperative"	
-contents/BuildingAnAsyncPipeline.md	How-to	high	"title ""Building a Pipeline of Async Request Handlers"" opens with a gerund or imperative"	
-contents/CausationTrackingStores.md	How-to	high	"title ""Implementing Causation Tracking in Your Own Store"" opens with a gerund or imperative"	
-contents/DispatchingARequest.md	How-to	high	"title ""Dispatching Requests"" opens with a gerund or imperative"	
-contents/HowBrighterWorks.md	Explanation	high	"title ""How The Command Processor Works"" is How-X-Works, not a how-to"	
-contents/HowConfiguringTheCommandProcessorWorks.md	Explanation	high	"title ""How Configuring the Command Processor Works"" is How-X-Works, not a how-to"	
-contents/HowConfiguringTheDispatcherWorks.md	Explanation	high	"title ""How Configuring a Dispatcher for an External Bus Works"" is How-X-Works, not a how-to"	
-contents/ImplementAQueryHandler.md	How-to	high	"title ""Implementing a Query Handler"" opens with a gerund or imperative"	
-contents/ImplementingAHandler.md	How-to	high	"title ""How to Implement a Request Handler"" opens with a gerund or imperative"	
-contents/ImplementingAsyncHandler.md	How-to	high	"title ""How to Implement an Asynchronous Request Handler"" opens with a gerund or imperative"	
-contents/ImplementingExternalBus.md	How-to	high	"title ""Using an External Bus"" opens with a gerund or imperative"	
-contents/ReturningResultsFromAHandler.md	How-to	high	"title ""Returning Results from a Handler"" opens with a gerund or imperative"	
+contents/SweeperCircuitBreaking.md	Reference	low	"SUMMARY.md section ""Outbox and Inbox""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
+contents/TickerQScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 3 modes (guidance,howto,reference)"	Reference
+contents/V10MigrationGuide.md	Reference	low	design section 1: consulted, so Reference not How-to	How-to
+contents/WhyBrighter.md	Explanation	low	design section 1	Explanation
+contents/AzureBlobArchiveProvider.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference
+contents/AzureBlobConfiguration.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference
+contents/AzureBlobDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/AzureServiceBusConfiguration.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference
+contents/BrighterControlAPI.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference
+contents/BrighterInboxSupport.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Explanation
+contents/BrighterOutboxSupport.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Explanation
+contents/CommandsCommandDispatcherandProcessor.md	Explanation	medium	"SUMMARY.md section ""Command, Processors and Dispatchers"""	Explanation
+contents/CustomScheduler.md	Reference	medium	"SUMMARY.md section ""Scheduler"""	How-to
+contents/DapperOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/DistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Explanation
+contents/DynamoDbDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/DynamoInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/DynamoOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/EFCoreOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/EventCarriedStateTransfer.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	Explanation
+contents/EventDrivenCollaboration.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	Explanation
+contents/FeatureSwitches.md	How-to	medium	single mode scored: howto	How-to
+contents/FirestoreDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/HowServiceActivatorWorks.md	Explanation	medium	"title ""How The Dispatcher Works"" is How-X-Works, not a how-to; but scores 3 modes (guidance,howto,reference)"	Explanation
+contents/KafkaConfiguration.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference
+contents/MSSQLInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/MSSQLOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/Microservices.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	Explanation
+contents/MongoDBInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/MongoDBOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/MongoDbDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/Monitoring.md	Reference	medium	single mode scored: reference	Reference
+contents/MsSqlDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/MySQLInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/MySQLOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/MySqlDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/OutboxPattern.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	Explanation
+contents/PolicyRetryAndCircuitBreaker.md	How-to	medium	"title ""Supporting Retry and Circuit Breaker"" opens with a gerund or imperative; but scores 3 modes (guidance,howto,reference)"	How-to
+contents/PostgresDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/PostgresInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/PostgresOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/ReplayOnSeen.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/Requests, Commands and Events.md	Explanation	medium	single mode scored: explanation	Explanation
+contents/SqliteInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/SqliteOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
+contents/TaskQueuePattern.md	Explanation	medium	"SUMMARY.md section ""Task Queues"""	Explanation
+contents/TestDoubleOptions.md	How-to	medium	"title ""Test Double Options for Command Processor"" opens with a gerund or imperative; but scores 3 modes (guidance,howto,reference)"	How-to
+contents/UsingTheContextBag.md	How-to	medium	"title ""Passing Information Between Handlers in the Pipeline"" opens with a gerund or imperative; but scores 3 modes (guidance,howto,reference)"	How-to
+contents/AsyncDispatchARequest.md	How-to	high	"title ""Dispatching Requests Asynchronously"" opens with a gerund or imperative"	How-to
+contents/BoxProvisioningConfiguration.md	How-to	high	"title ""Configuring Box Provisioning"" opens with a gerund or imperative"	How-to
+contents/BoxProvisioningUpgrade.md	How-to	high	"title ""Upgrading Existing Deployments"" opens with a gerund or imperative"	How-to
+contents/BuildingAPipeline.md	How-to	high	"title ""Building a Pipeline of Request Handlers"" opens with a gerund or imperative"	How-to
+contents/BuildingAnAsyncPipeline.md	How-to	high	"title ""Building a Pipeline of Async Request Handlers"" opens with a gerund or imperative"	How-to
+contents/CausationTrackingStores.md	How-to	high	"title ""Implementing Causation Tracking in Your Own Store"" opens with a gerund or imperative"	How-to
+contents/DispatchingARequest.md	How-to	high	"title ""Dispatching Requests"" opens with a gerund or imperative"	How-to
+contents/HowBrighterWorks.md	Explanation	high	"title ""How The Command Processor Works"" is How-X-Works, not a how-to"	Explanation
+contents/HowConfiguringTheCommandProcessorWorks.md	Explanation	high	"title ""How Configuring the Command Processor Works"" is How-X-Works, not a how-to"	Explanation
+contents/HowConfiguringTheDispatcherWorks.md	Explanation	high	"title ""How Configuring a Dispatcher for an External Bus Works"" is How-X-Works, not a how-to"	Explanation
+contents/ImplementAQueryHandler.md	How-to	high	"title ""Implementing a Query Handler"" opens with a gerund or imperative"	How-to
+contents/ImplementingAHandler.md	How-to	high	"title ""How to Implement a Request Handler"" opens with a gerund or imperative"	How-to
+contents/ImplementingAsyncHandler.md	How-to	high	"title ""How to Implement an Asynchronous Request Handler"" opens with a gerund or imperative"	How-to
+contents/ImplementingExternalBus.md	How-to	high	"title ""Using an External Bus"" opens with a gerund or imperative"	How-to
+contents/ReturningResultsFromAHandler.md	How-to	high	"title ""Returning Results from a Handler"" opens with a gerund or imperative"	How-to

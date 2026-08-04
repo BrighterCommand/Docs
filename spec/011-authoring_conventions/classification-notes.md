@@ -159,18 +159,106 @@ page.
 
 ---
 
-## 5. Still open
+## 5. Family overview pages are Explanation, not Reference
 
-- **`Logging.md` is a 3-line stub** — an H1 and the word `TODO`. It is linked from
-  `SUMMARY.md`, so it is published and navigable, and the orphan check cannot see it
-  precisely *because* it is linked. Classified `Reference` to unblock the sweep, but
-  that is a banner on nothing. Belongs to Spec 013 as a content gap. **No ruling yet.**
-- **Rule 5 misses the two-word spelling.** `pagelint.py` matches `ServiceActivator` but
-  not `Service Activator`, which appears **19 times across 11 pages** — worst are
-  `DispatchingARequest.md` (4) and `BrighterControlAPI.md` (3). `CLAUDE.md`'s pitfall
-  list treats both spellings as the same violation. Widening the rule to
-  `Service\s*Activator` takes the pre-Task-5.1 remediation from 11 findings to 30.
-  **No ruling yet.**
-- **76 rows still to review** — the `medium` and `high` confidence proposals. Task 3.2
-  is not complete until all 105 verdicts are filled, and `apply_banners.py` will refuse
-  to run while any is blank.
+**Ruled 2026-08-04: "agreed it's a pattern."**
+
+Several sections have an overview page sitting above a set of per-technology pages.
+The implementations are Reference — parameters, options, behaviour. The overview's job
+is different: it explains **which one to pick and why**, which is Explanation.
+
+`SUMMARY.md` section skew proposed Reference for all of them, because it cannot tell an
+overview from an implementation. Four pages move:
+
+| Page | Proposed | **Verdict** |
+|---|---|---|
+| `BrighterSchedulerSupport.md` | Reference | **Explanation** |
+| `DistributedLock.md` | Reference | **Explanation** |
+| `BrighterOutboxSupport.md` | Reference | **Explanation** |
+| `BrighterInboxSupport.md` | Reference | **Explanation** |
+
+`BoxProvisioning.md` was already ruled Explanation in §3 and is the same shape — it is
+the pattern's first instance rather than an exception to it.
+
+**For Spec 010:** this is a navigational fact as well as a modal one. Each of these
+pages is the entry point to a family, and the restructure should keep them there.
+
+## 6. The scheduler pages are one split, applied seven times
+
+Not a page-type finding — all seven stay Reference — but the strongest single entry for
+Task 7.1's worklist.
+
+`AwsScheduler` (773L), `AzureScheduler` (715L), `HangfireScheduler` (830L),
+`QuartzScheduler` (767L), `TickerQScheduler` (232L), `InMemoryScheduler` (539L) and
+`PostgreSQLMessageBroker` (660L) follow an **identical template**:
+
+```
+Overview / When to Use  ->  How Brighter Integrates  ->  NuGet Packages
+->  Configuration  ->  Code Examples  ->  Best Practices  ->  Troubleshooting
+->  Migration from Other Schedulers  ->  Summary
+```
+
+Every one scores 3–4 modes. Recording them as seven separate worklist rows would hide
+the fact that **one split decision covers all seven** — Reference core keeps the file
+name, the *When to Use* / *Comparison* material becomes Explanation, and
+*Migration from Other Schedulers* becomes a How-to. Spec 010 should settle the shape
+once and apply it, not relitigate it per scheduler.
+
+## 7. Two verdicts applied on the assistant's recommendation
+
+Both were put to the maintainer with reasoning and neither was explicitly ruled on. The
+maintainer's instruction was "bulk-confirm, I can raise any exceptions later", so they
+are applied — but they are flagged here because one contradicts an approved design, and
+neither should be mistaken for a maintainer decision.
+
+- **`CustomScheduler.md` → How-to** (proposed Reference). Its content is
+  *Implementation Steps* — twice, which is also why it is a rule 3b page. It is a
+  build-your-own guide, not a reference.
+- **`V10MigrationGuide.md` → How-to** (proposed Reference). **This contradicts design
+  §1**, which argued Reference on the grounds that the page is "consulted rather than
+  read through". The page is structurally *Before You Start → Step 1 … Step 6 →
+  Rollback Plan*. That is a how-to in every structural sense, and the design's argument
+  does not survive contact with the outline. Note this does *not* conflict with the
+  `NullableReferenceTypes.md` ruling in §3: there the migration steps are a section of a
+  page about a language feature, here they are the whole page.
+
+  If this is overruled, design §1's *Pages expected to need argument* list and the
+  `pagetypes.tsv` verdict both need reverting.
+
+## 8. Rule 5 widened to both spellings
+
+**Ruled 2026-08-04: yes.** `pagelint.py` matched `ServiceActivator` but not
+`Service Activator`, and `CLAUDE.md`'s pitfall list treats them as one violation.
+`SERVICEACTIVATOR_RE` is now `Service\s*Activator`.
+
+Findings went from **11 to 28**, covering 30 occurrences across 12 pages — two lines
+carry both spellings, and the rule reports once per line.
+
+| Page | Findings |
+|---|---|
+| `BrighterBasicConfiguration.md` | 8 |
+| `BrighterControlAPI.md` | 4 |
+| `HowServiceActivatorWorks.md` | 3 |
+| `BasicConcepts.md`, `DispatchingARequest.md`, `HealthChecks.md`, `ImplementingExternalBus.md` | 2 each |
+| `AzureServiceBusConfiguration.md`, `CQRSWithBrighterAndDarker.md`, `KafkaConfiguration.md`, `RabbitMQConfiguration.md`, `WhyBrighter.md` | 1 each |
+
+All 28 must reach zero before Task 5.1 puts `pagelint.py` in CI. Most are identifiers
+written in **bold** where `CLAUDE.md` asks for backticks; `HowServiceActivatorWorks.md`
+takes the `<!-- pagelint: allow-serviceactivator -->` opt-out.
+
+## 9. Task 3.2 is complete
+
+**105 of 105 verdicts filled**, so `apply_banners.py` will run. Final distribution:
+
+| Type | Pages |
+|---|---|
+| Reference | 48 |
+| How-to | 30 |
+| Explanation | 27 |
+
+No page took `Tutorial`. That is correct today and is exactly the gap Spec 009 exists to
+fill — the corpus has no tutorial, which is the substance of the criticism in
+[Docs#67](https://github.com/BrighterCommand/Docs/issues/67).
+
+The 59 `medium`/`high` rows outside the family-overview pattern were bulk-confirmed as
+proposed, with exceptions to be raised later.

@@ -241,7 +241,7 @@ Goal: a human page-type verdict for every page, then one mechanical 105-file com
   - Output: `spec/011-authoring_conventions/pagetypes.tsv` — 105 rows, one per page: `path` · `proposed type` · `confidence` · `signal that fired` · `human verdict` *(blank)*
   - Notes: Four signals, in order: `SUMMARY.md` section · title verb (gerund/imperative → How-to) · single-mode score from `modemix.py` · everything else to a **review queue, not a default**. A wrong page type is worse than a slow one — it tells the reader the page is something it is not. The generator may be a throwaway script beside the spec.
 
-- [ ] **Task 3.2:** Human review of every row
+- [x] **Task 3.2:** Human review of every row
   - Input: `pagetypes.tsv`, design §1 "Pages expected to need argument"
   - Output: Verdict column complete on all 105 rows
   - Notes: Budget review time on the flagged ones: `FAQ.md`, `ShowMeTheCode.md` (a showcase — Reference fits poorly, but it is not a tutorial; Spec 009 addresses the underlying problem), `WhyBrighter.md` (Explanation), `V10MigrationGuide.md` (consulted → Reference), `Glossary.md` (Reference), and the 14 four-mode pages — whose difficulty in choosing *is* the worklist signal, so capture that difficulty for Task 7.1 as you go.

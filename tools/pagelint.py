@@ -107,6 +107,13 @@ INLINE_CODE_RE = re.compile(r'`[^`]*`')
 LINK_TARGET_RE = re.compile(r'\]\([^)]*\)')
 OPT_OUT = '<!-- pagelint: allow-serviceactivator -->'
 
+# Both spellings. The API surface uses the closed form, but prose in this repo
+# uses the open one just as often -- 19 instances across 11 pages when this was
+# first measured -- and CLAUDE.md's pitfall list treats them as one violation.
+# Matching only the closed form would leave the commoner prose spelling of the
+# V9 term unenforced, which is the failure this rule exists to prevent.
+SERVICEACTIVATOR_RE = re.compile(r'Service\s*Activator')
+
 Finding = namedtuple('Finding', 'path line rule message severity')
 
 
@@ -372,11 +379,13 @@ def check_terminology(page):
         if OPT_OUT in line:
             continue
         stripped = LINK_TARGET_RE.sub(']()', INLINE_CODE_RE.sub('``', line))
-        if 'ServiceActivator' in stripped:
+        found = SERVICEACTIVATOR_RE.search(stripped)
+        if found:
             findings.append(error(
                 page.rel, lineno, 'SERVICEACTIVATOR',
-                'use "Dispatcher" in prose; "ServiceActivator" is the V9 name and '
-                'survives only in the API surface. If this page discusses the name '
+                f'use "Dispatcher" in prose; "{found.group(0)}" is the V9 name and '
+                'survives only in the API surface. If this is an identifier, put it '
+                'in backticks rather than bold. If this page discusses the name '
                 f'itself, add `{OPT_OUT}`'))
     return findings
 
