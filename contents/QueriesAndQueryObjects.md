@@ -2,7 +2,7 @@
 
 > **Explanation** · Applies to **Darker V4**
 
-## Introduction
+## Query Object Introduction
 
 The Query Object pattern separates the parameters of a query from the execution of that query. In Darker, queries are simple objects that encapsulate the data needed to perform a query, while query handlers contain the logic to execute the query and return results.
 
@@ -845,7 +845,7 @@ public class SalesStatistics
 }
 ```
 
-## Best Practices
+## Query Object Best Practices
 
 - **Make queries immutable** - Use read-only properties or init-only setters
 - **Use descriptive names** - Queries should clearly indicate what data they retrieve
@@ -856,7 +856,7 @@ public class SalesStatistics
 - **Seal query classes** - Use `sealed` to prevent inheritance and maintain immutability
 - **Prefer composition** - Use filter objects for complex query parameters
 
-## Common Pitfalls
+## Query Object Common Pitfalls
 
 - **Mutable query objects** - Avoid properties with public setters that can be changed after creation
 - **Business logic in queries** - Keep calculation and business rules in handlers, not queries

@@ -2,7 +2,7 @@
 
 > **Reference** · Applies to **Brighter V10**
 
-## Usage
+## Dapper Outbox Usage
 The Dapper Outbox allows integration between Dapper and [Brighter's outbox support](/contents/BrighterOutboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#outbox-support).
 
 For this we will need the *Outbox* package for Dapper. Packages for Dapper exist for the following RDBMS: MSSQL, MYSQL, and Sqlite. Packages have the naming convention:

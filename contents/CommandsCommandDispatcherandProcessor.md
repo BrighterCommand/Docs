@@ -2,7 +2,7 @@
 
 > **Explanation** · Applies to **Brighter V10**
 
-## Command
+## The Command Pattern
 
 The **Command** design pattern encapsulates a request as an object, allowing reuse, queuing or logging of requests, or undoable operations. It also serves to decouple the implementation of the request from the
 requestor. The caller of a Command object does not need to understand how the Command is implemented, only that the Command exists. When the caller and the implementer are decoupled it becomes easy to replace or
@@ -88,7 +88,7 @@ appropriate method(s) on the handler to process the Command.
 
 A Command Dispatcher can also act as the port layer in a [Ports & Adapters architecture](https://alistair.cockburn.us/hexagonal-architecture/).
 
-## Command Processor
+## The Command Processor Pattern
 
 Brighter is a .NET implementation of the [Command Processor pattern](https://wiki.hsr.ch/APF/files/CommandProcessor.pdf).
 

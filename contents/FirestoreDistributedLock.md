@@ -7,14 +7,14 @@ lock](/contents/DistributedLock.md) using Google Cloud Firestore, so a single [O
 Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) and Archiver run when you
 scale out. It is a good choice when your workloads already run on Google Cloud.
 
-## Package
+## Firestore Distributed Lock Package
 
 * **Paramore.Brighter.Locking.Firestore**
 
 The provider stores its locks in a Firestore collection that you name through the
-Firestore configuration — see [Provisioning](#provisioning).
+Firestore configuration — see [Provisioning](#firestore-distributed-lock-provisioning).
 
-## Configuration
+## Firestore Distributed Lock Configuration
 
 The Firestore provider is configured through a `FirestoreConfiguration`, whose
 constructor takes your project id and database. Set its `Locking` property to a
@@ -44,7 +44,7 @@ connection provider.
 | `Name` | `string` | The collection that holds the lock documents. |
 | `Ttl` | `TimeSpan?` | Optional expiry for lock documents. |
 
-## Example
+## Firestore Distributed Lock Example
 
 ```csharp
 var configuration = new FirestoreConfiguration("my-gcp-project", "(default)")
@@ -64,7 +64,7 @@ services
     .UseOutboxSweeper(opt => { opt.BatchSize = 10; });
 ```
 
-## Provisioning
+## Firestore Distributed Lock Provisioning
 
 The provider creates lock documents in the collection named by `Locking.Name`. It
 acquires a lock with an atomic create that succeeds only when the document does not
@@ -73,7 +73,7 @@ stale locks expire, which protects you if an instance crashes before releasing i
 Ensure the application's service account can read and write documents in the lock
 collection.
 
-## Notes
+## Firestore Distributed Lock Notes
 
 - Resource names are normalised for Firestore (for example `/` and `.` are replaced),
   so lock document ids are always valid. You do not need to do anything for this.

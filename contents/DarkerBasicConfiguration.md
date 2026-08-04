@@ -2,13 +2,13 @@
 
 > **How-to** · Applies to **Darker V4**
 
-## Introduction
+## Darker Configuration Introduction
 
 Darker is the query-side counterpart to [Brighter](/contents/BrighterBasicConfiguration.md), implementing the Query Object pattern for CQRS (Command Query Responsibility Segregation) architectures. While Brighter handles commands and events that change state, Darker provides a pipeline for executing queries that read state. Together, they form a complete CQRS solution for .NET applications.
 
 You use Darker when you want to separate the parameters of a query from the execution of that query, typically when you need to add cross-cutting concerns such as logging, retry policies, or circuit breakers to your query handling. For more information on CQRS patterns and how Brighter and Darker work together, see [CQRS with Brighter and Darker](/contents/CQRSWithBrighterAndDarker.md).
 
-## Prerequisites
+## Darker Configuration Prerequisites
 
 ### .NET Version Requirements
 
@@ -148,7 +148,7 @@ public class PeopleController : ControllerBase
 
 Working examples can be found in the Darker samples: `Darker/samples/SampleMinimalApi/`
 
-## Configuration Options
+## Darker Configuration Options
 
 ### Query Processor Lifetime
 
@@ -467,7 +467,7 @@ app.Run();
 
 This pattern is useful in modular monoliths or when organizing queries by domain.
 
-## Troubleshooting
+## Darker Configuration Troubleshooting
 
 ### Common Issues
 

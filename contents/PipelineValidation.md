@@ -4,7 +4,7 @@
 
 Brighter can validate your pipeline configuration at startup, catching common mistakes before any messages are sent or consumed. It can also log a diagnostic report showing exactly how your pipelines, publications, and subscriptions are wired. Both features are opt-in and configured via extension methods on **IBrighterBuilder**.
 
-## Quick Start
+## Pipeline Validation Quick Start
 
 Add `.ValidatePipelines()` and `.DescribePipelines()` to your Brighter configuration chain:
 
@@ -151,7 +151,7 @@ Key things to look for in the report:
 - **Mapper resolution**: Check whether a *custom* or *default* mapper is used. If you expected a custom mapper but see `(default)`, your mapper may not be registered correctly.
 - **Transforms**: Verify that outgoing transforms (`WrapWith`) appear on publications and incoming transforms (`UnwrapWith`) are configured where expected.
 
-## Configuration
+## Pipeline Validation Configuration
 
 ### Enabling Validation and Diagnostics
 

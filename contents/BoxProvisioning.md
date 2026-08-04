@@ -20,7 +20,7 @@ A few signals that point firmly at one option over the other:
 - *Your service account is locked down to `SELECT/INSERT/UPDATE/DELETE`* → Option B. BoxProvisioning needs `CREATE TABLE` and `ALTER TABLE` rights; if you cannot grant those, Option A is not an option.
 - *You are upgrading an existing application that already has an Outbox / Inbox* → either works. Under Option A you will hit the bootstrap path on first start (see below); under Option B you apply the new version's DDL the same way you applied the original.
 
-## How it works
+## How Box Provisioning Works
 
 When the host starts, the `BoxProvisioningHostedService` runs before traffic is accepted. For every Outbox or Inbox you registered (Outboxes first, then Inboxes — Outboxes are on the critical path of `DepositPost`), the matching provisioner:
 

@@ -2,10 +2,10 @@
 
 > **Reference** · Applies to **Brighter V10**
 
-## General
+## Azure Service Bus General
 Azure Service Bus (ASB) is a fully managed enterprise message broker and is [well documented](https://docs.microsoft.com/en-us/azure/service-bus-messaging/) Brighter handles the details of sending to or receiving from ASB.  You may find it useful to understand the [concepts](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-queues-topics-subscriptions) of the ASB.
 
-## Connection
+## Azure Service Bus Connection
 The connection to ASB id defined by an **IServiceBusClientProvider**, Brighter proviedes the following Implimentations
 
 * **ServiceBusChainedClientProvider**: A client provider that allows you to specific a chain of **TokenCredentials** to authenticate with.
@@ -20,7 +20,7 @@ The connection to ASB id defined by an **IServiceBusClientProvider**, Brighter p
 
 In Brighter's implementation of the Messaging Gateway *Publications* and *Subscriptions* have their own Individual configuration.
 
-## Publication
+## Azure Service Bus Publication
 
 No custom properties are supported for ASB
 
@@ -47,7 +47,7 @@ public void ConfigureServices(IServiceCollection services)
 
 For more on a *Publication* see the material on an *Add Producers* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#using-an-external-bus).
 
-## Subscription
+## Azure Service Bus Subscription
 
 For more on a *Subscription* see the material on configuring the *Dispatcher* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#configuring-the-dispatcher).
 

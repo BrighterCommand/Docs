@@ -2,7 +2,7 @@
 
 > **Reference** · Applies to **Brighter V10**
 
-## Usage
+## Postgres Inbox Usage
 The Postgres Inbox allows use of Postgres for [Brighter's inbox support](/contents/BrighterInboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#inbox).
 
 For this we will need the *Inbox* packages for the Postgres *Inbox*.
@@ -31,7 +31,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
 ```
 
-## Provisioning the Inbox Table
+## Provisioning the Postgres Inbox Table
 
 You have two equally valid options for creating and maintaining the Inbox table:
 

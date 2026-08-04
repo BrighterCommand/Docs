@@ -138,6 +138,6 @@ internal class MyReplyMessageMapper : IAmAMessageMapper<MyReply>
 }
 ```
 
-## Summary
+## Routing Summary
 
 The key to understanding routing in Brighter is that the **IAmAMessageMapper** implementation provides the point at which you control routing by setting the **MessageHeader**.

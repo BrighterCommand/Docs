@@ -391,7 +391,7 @@ services.AddBrighter(options => { })
     });
 ```
 
-## Best Practices
+## Default Message Mapper Best Practices
 
 ### 1. Start with Default Mappers
 
@@ -469,7 +469,7 @@ services.AddBrighter(options => { })
 - [Compression](Compression.md) - Compressing messages
 - [V10 Migration Guide](V10MigrationGuide.md) - Complete migration instructions
 
-## Sample Code
+## Default Message Mapper Sample Code
 
 Full working examples can be found in the Brighter samples:
 

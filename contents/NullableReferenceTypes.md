@@ -427,7 +427,7 @@ public class OrderEventMessageMapper : IAmAMessageMapper<OrderCreatedEvent>
 
 ---
 
-## Best Practices
+## Nullable Reference Type Best Practices
 
 ### 1. Use Non-Nullable for Required Properties
 
@@ -661,7 +661,7 @@ public class SendEmailHandler : RequestHandler<SendEmailCommand>
 
 ---
 
-## Troubleshooting
+## Nullable Reference Type Troubleshooting
 
 ### Warning: Treat as Errors
 
@@ -701,7 +701,7 @@ Then address warnings incrementally and eventually enable `TreatWarningsAsErrors
 
 ---
 
-## Additional Resources
+## Further Reading
 
 - [Microsoft: Nullable Reference Types](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references)
 - [Microsoft: Nullable Reference Types Tutorial](https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/nullable-reference-types)

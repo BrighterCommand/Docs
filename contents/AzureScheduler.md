@@ -112,7 +112,7 @@ az role assignment create \
     --scope /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.ServiceBus/namespaces/<namespace>
 ```
 
-## NuGet Package
+## Azure Scheduler NuGet Package
 
 To use Azure Service Bus Scheduler, install:
 
@@ -127,7 +127,7 @@ dotnet add package Paramore.Brighter.MessageScheduler.Azure
 - `Azure.Messaging.ServiceBus` - Azure Service Bus SDK
 - `Paramore.Brighter.MessagingGateway.AzureServiceBus` - Brighter's Azure Service Bus transport
 
-## Configuration
+## Azure Scheduler Configuration
 
 ### Basic Configuration
 
@@ -251,7 +251,7 @@ var schedulerFactory = new AzureServiceBusSchedulerFactory(
 };
 ```
 
-## Code Examples
+## Azure Scheduler Code Examples
 
 ### Basic Scheduling with Delay
 
@@ -374,7 +374,7 @@ public class OrderService
 }
 ```
 
-## Comparison with Other Schedulers
+## Azure Scheduler Comparison with Other Schedulers
 
 | Feature | Azure Service Bus | AWS Scheduler | Quartz.NET | Hangfire | InMemory |
 |---------|-------------------|---------------|------------|----------|----------|
@@ -398,7 +398,7 @@ public class OrderService
 - Want simplicity (no separate scheduler service)
 - Don't need reschedule support (cancel+schedule is acceptable)
 
-## Best Practices
+## Azure Scheduler Best Practices
 
 ### 1. Use Managed Identity in Production
 
@@ -502,7 +502,7 @@ if (environment.IsDevelopment())
 }
 ```
 
-## Troubleshooting
+## Azure Scheduler Troubleshooting
 
 ### Scheduled Messages Not Executing
 
@@ -618,7 +618,7 @@ public override async Task<FireAzureScheduler> HandleAsync(
 }
 ```
 
-## Migration from Other Schedulers
+## Azure Scheduler Migration from Other Schedulers
 
 ### From InMemory Scheduler
 
@@ -688,7 +688,7 @@ services.AddBrighter(options => { ... })
 - [Hangfire Scheduler](HangfireScheduler.md) - Alternative with dashboard
 - [InMemory Scheduler](InMemoryScheduler.md) - For testing and development
 
-## External Links
+## Azure Scheduler External Links
 
 - [Azure Service Bus Message Sequencing](https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-sequencing)
 - [Azure Service Bus Scheduled Messages](https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-sequencing#scheduled-messages)
@@ -696,7 +696,7 @@ services.AddBrighter(options => { ... })
 - [Azure RBAC Roles for Service Bus](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#azure-service-bus-data-sender)
 - [Azure Managed Identity](https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview)
 
-## Summary
+## Azure Scheduler Summary
 
 Azure Service Bus Scheduler leverages Azure Service Bus's native scheduling capabilities for cloud-native scheduling:
 

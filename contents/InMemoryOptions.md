@@ -2,7 +2,7 @@
 
 > **Reference** · Applies to **Brighter V10**
 
-## Overview
+## InMemory Options Overview
 
 Brighter V10 provides a comprehensive suite of in-memory implementations for key components, making it easy to develop and test applications without external dependencies. These in-memory options replace databases, message brokers, and schedulers with simple, lightweight alternatives that run entirely in process.
 
@@ -675,7 +675,7 @@ When moving to production, replace InMemory components:
 
 **No code changes required** - just swap the registration in your DI container!
 
-## Summary
+## InMemory Options Summary
 
 Brighter V10 provides comprehensive InMemory options for all major components:
 

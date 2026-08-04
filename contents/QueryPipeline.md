@@ -2,7 +2,7 @@
 
 > **How-to** · Applies to **Darker V4**
 
-## Introduction
+## Query Pipeline Introduction
 
 The Query Pipeline in Darker provides a powerful way to add cross-cutting concerns to your query handlers without modifying the handler code itself. Using decorators (also called middleware), you can add capabilities like logging, retry logic, circuit breakers, and fallback behavior to any query handler through simple attribute annotations.
 
@@ -749,7 +749,7 @@ Both support custom decorators for application-specific cross-cutting concerns.
 
 When using both Brighter and Darker together in a CQRS architecture, you'll apply similar patterns but with framework-specific decorators. For more information on using both frameworks together, see [CQRS with Brighter and Darker](/contents/CQRSWithBrighterAndDarker.md).
 
-## Best Practices
+## Query Pipeline Best Practices
 
 **1. Order decorators logically**
 
@@ -809,7 +809,7 @@ Use Polly's callback methods to log or alert when circuit breakers open or close
 
 Ensure your `FallbackAsync` methods are tested and return appropriate default values. Fallback logic should be simple and not throw exceptions.
 
-## Common Pitfalls
+## Query Pipeline Common Pitfalls
 
 **1. Wrong decorator ordering**
 

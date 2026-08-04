@@ -4,7 +4,7 @@
 
 The **Dispatcher** is the component in the `Brighter.ServiceActivator` assembly orchestrates your `Performers`. Each `Performer` is a single-thread that runs a `MessagePump`. The `MessagePump` consumes messages from streams or queues, calls a `IAmAMessageMapper` or `IAmAMessageMapperAsync` to map them to a C# type and then dispatches that type to your registered `IHandleRequests` or `IHandleRequestsAsync`. The Command Processor handles in-process request dispatching, and the Dispatcher orchestrates the threads that provide external message consumption and routing.
 
-## Overview
+## Dispatcher Overview
 
 When you configure Brighter to consume messages from external brokers (using `AddConsumers()`), you're setting up the Dispatcher.
 
@@ -23,7 +23,7 @@ The `Message Pump`:
 2. **Dispatches** requests to registered Handlers via the Command Processor
 3. **Acknowledges** the message pump acknowledges or rejects messages based on a handler completing without an exception
 
-## Architecture
+## Dispatcher Architecture
 
 ```
 External Message Broker
@@ -144,7 +144,7 @@ You can use a Polly resilience policy via [UseResiliencePipeline] to retry the h
 
 You can use a [FallbackPolicy] to catch an exception that bubbles out of your handler, and resilience policy, to call the `Fallback` method on your `IHandleRequests` derived class (you need to override this and provide an implementation). The `RequestContext` contains the original exception under the key of "FallbackPolicyHandler{TRequest}.CAUSE_OF_FALLBACK_EXCEPTION".
 
-## Configuration
+## Dispatcher Configuration
 
 ### Basic Dispatcher Configuration
 
@@ -246,7 +246,7 @@ Via the `Performers` orchestrated by the `Dispatcher`, Brighter continuously:
 4. **Channel Close** → Connections to broker closed gracefully
 5. **Cleanup** → Resources released
 
-## Error Handling
+## Dispatcher Error Handling
 
 ### Defer Message Action Exception
 
@@ -344,7 +344,7 @@ var subscription = new Subscription<MyCommand>(
 - **Idempotency** → Use Inbox pattern for deduplication
 - **Load Distribution** → Broker-dependent behavior
 
-## Monitoring and Observability
+## Dispatcher Monitoring and Observability
 
 ### OpenTelemetry Integration
 
@@ -397,7 +397,7 @@ controlBusSender.Send(new ConfigurationCommand(ConfigurationCommandType.StartCha
 
 **See [Brighter Control API](BrighterControlAPI.md) for details.**
 
-## Best Practices
+## Dispatcher Best Practices
 
 ### 1. Choose the Right Concurrency Model
 
@@ -472,7 +472,7 @@ The **Dispatcher** is the primary class in the `Brighter.ServiceActivator` assem
 - **[Telemetry](Telemetry.md)** - OpenTelemetry integration
 - **[Control API](BrighterControlAPI.md)** - Runtime control
 
-## Summary
+## Dispatcher Summary
 
 The **Dispatcher** in the `Brighter.ServiceActivator` assembly is responsible for:
 - Consuming messages from external brokers via Performers (message pumps)

@@ -8,7 +8,7 @@ Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) and Archiver run whe
 scale out. It is a natural fit when you already use the [DynamoDB
 Outbox](/contents/DynamoOutbox.md).
 
-## Package
+## DynamoDB Distributed Lock Package
 
 Add the locking package for AWS SDK v4:
 
@@ -19,9 +19,9 @@ package targets AWS SDK v3, which is out of support on AWS, and exists only to a
 migration.
 
 The provider stores its locks in a DynamoDB table that you must create in advance (see
-[Provisioning](#provisioning)).
+[Provisioning](#dynamodb-distributed-lock-provisioning)).
 
-## Configuration
+## DynamoDB Distributed Lock Configuration
 
 Configure the provider with `DynamoDbLockingProvider`, passing your `IAmazonDynamoDB`
 client and a `DynamoDbLockingProviderOptions`:
@@ -44,7 +44,7 @@ two optional settings:
 | `LeaseValidity` | `TimeSpan` | 1 minute | How long the lease is held before it expires automatically. Set it comfortably longer than a Sweeper/Archiver cycle. |
 | `ManuallyReleaseLock` | `bool` | `false` | When `false`, the lock simply expires after `LeaseValidity`; when `true`, it is released explicitly on completion. |
 
-## Example
+## DynamoDB Distributed Lock Example
 
 ```csharp
 var dynamoDb = new AmazonDynamoDBClient();
@@ -68,7 +68,7 @@ services
     .UseOutboxSweeper(opt => { opt.BatchSize = 10; });
 ```
 
-## Provisioning
+## DynamoDB Distributed Lock Provisioning
 
 The lock table must exist before the provider runs. Create a table whose partition key
 matches the provider's lock items, with the name you pass as `LockTableName`. If you
@@ -77,7 +77,7 @@ example with the AWS SDK, CDK, or Terraform). Consider enabling DynamoDB's
 [time-to-live](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html)
 feature so expired lock items are cleaned up automatically.
 
-## Notes
+## DynamoDB Distributed Lock Notes
 
 - Use the same `LeaseholderGroupId` for every instance that must share the lock; a
   different value creates an independent lock.

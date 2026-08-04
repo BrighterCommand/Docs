@@ -6,18 +6,18 @@ This FAQ addresses common questions about using Brighter and Darker, organized b
 
 ## Table of Contents
 
-- [Getting Started](#getting-started)
-- [Configuration](#configuration)
-- [Messaging](#messaging)
-- [Handlers & Pipelines](#handlers--pipelines)
-- [Resilience & Policies](#resilience--policies)
-- [Scheduling](#scheduling)
-- [Migration](#migration)
-- [Performance & Concurrency](#performance--concurrency)
+- [Getting Started](#getting-started-questions)
+- [Configuration](#configuration-questions)
+- [Messaging](#messaging-questions)
+- [Handlers & Pipelines](#handlers--pipelines-questions)
+- [Resilience & Policies](#resilience--policies-questions)
+- [Scheduling](#scheduling-questions)
+- [Migration](#migration-questions)
+- [Performance & Concurrency](#performance--concurrency-questions)
 
 ---
 
-## Getting Started
+## Getting Started Questions
 
 ### How do I get started with Brighter?
 
@@ -109,7 +109,7 @@ public class MyHandler : RequestHandlerAsync<MyCommand>
 
 ---
 
-## Configuration
+## Configuration Questions
 
 ### What's the difference between AddProducers and AddConsumers?
 
@@ -194,7 +194,7 @@ See: [CloudEvents Support](/contents/CloudEventsSupport.md)
 
 ---
 
-## Messaging
+## Messaging Questions
 
 ### What's the difference between Post and DepositPost?
 
@@ -289,7 +289,7 @@ See: [Default Message Mappers](/contents/DefaultMessageMappers.md), [S3 Luggage 
 
 ---
 
-## Handlers & Pipelines
+## Handlers & Pipelines Questions
 
 ### How do I pass data between handlers in a pipeline?
 
@@ -381,7 +381,7 @@ commandProcessor.Send((dynamic)command);
 
 ---
 
-## Resilience & Policies
+## Resilience & Policies Questions
 
 ### How do I add retry logic to my handlers?
 
@@ -459,7 +459,7 @@ See: [V10 Migration Guide](/contents/V10MigrationGuide.md)
 
 ---
 
-## Scheduling
+## Scheduling Questions
 
 ### What scheduler should I use in production?
 
@@ -536,7 +536,7 @@ See: [Scheduler Support](/contents/BrighterSchedulerSupport.md)
 
 ---
 
-## Migration
+## Migration Questions
 
 ### How do I migrate from V9 to V10?
 
@@ -587,7 +587,7 @@ See: [Default Message Mappers](/contents/DefaultMessageMappers.md), [V10 Migrati
 
 ---
 
-## Performance & Concurrency
+## Performance & Concurrency Questions
 
 ### Which message pump type gives better throughput?
 

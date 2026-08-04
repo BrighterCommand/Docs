@@ -2,7 +2,7 @@
 
 > **How-to** · Applies to **Brighter V10**
 
-## Overview
+## V10 Migration Overview
 
 Brighter V10 introduces significant improvements and new features while maintaining a clear migration path from V9. This guide provides step-by-step instructions for upgrading your application to V10, addressing breaking changes, and adopting new features.
 
@@ -859,7 +859,7 @@ If you encounter issues during migration:
    - Error messages and stack traces
    - Environment details (.NET version, OS, transport)
 
-## Summary
+## V10 Migration Summary
 
 Migrating to Brighter V10 involves:
 

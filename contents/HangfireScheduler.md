@@ -62,7 +62,7 @@ When you schedule a message with Brighter:
 6. Your handler executes
 7. Job appears in Hangfire dashboard with status
 
-## NuGet Packages
+## Hangfire NuGet Packages
 
 Install the required NuGet packages:
 
@@ -91,7 +91,7 @@ dotnet add package Hangfire.Redis.StackExchange
 dotnet add package Hangfire.Mongo
 ```
 
-## Configuration
+## Hangfire Configuration
 
 ### Basic Configuration
 
@@ -362,7 +362,7 @@ The Hangfire dashboard provides:
 - **Job Details**: Inspect job arguments and exceptions
 - **Manual Actions**: Requeue, delete, or retry jobs
 
-## Code Examples
+## Hangfire Code Examples
 
 ### Basic Scheduling
 
@@ -472,7 +472,7 @@ builder.Services.AddHangfireServer(options =>
 - Set appropriate worker counts per server
 - Use queues to control job distribution
 
-## Monitoring and Observability
+## Hangfire Monitoring and Observability
 
 ### Job Filters
 
@@ -584,7 +584,7 @@ builder.Services.AddHealthChecks()
     .AddCheck<HangfireHealthCheck>("hangfire");
 ```
 
-## Best Practices
+## Hangfire Best Practices
 
 ### 1. Always Use Persistent Storage in Production
 
@@ -683,7 +683,7 @@ builder.Services.AddHangfireServer(options =>
 // View retry attempts in dashboard
 ```
 
-## Troubleshooting
+## Hangfire Troubleshooting
 
 ### Jobs Not Executing
 
@@ -748,7 +748,7 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 });
 ```
 
-## Migration from Other Schedulers
+## Hangfire Migration from Other Schedulers
 
 ### From InMemory Scheduler
 
@@ -819,7 +819,7 @@ services.UseScheduler(provider =>
 - [Azure Scheduler](AzureScheduler.md) - Cloud-native Azure scheduling
 - [Hangfire Documentation](https://docs.hangfire.io/) - Official Hangfire documentation
 
-## Summary
+## Hangfire Summary
 
 Hangfire is an excellent production scheduler for Brighter offering:
 - ✅ **Dashboard**: Built-in web UI for monitoring and management

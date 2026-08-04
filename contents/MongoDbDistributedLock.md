@@ -8,14 +8,14 @@ a single [Outbox Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) and
 run when you scale out. It pairs naturally with the [MongoDB
 Outbox](/contents/MongoDBOutbox.md).
 
-## Package
+## MongoDB Distributed Lock Package
 
 * **Paramore.Brighter.Locking.MongoDb**
 
 The provider stores its locks in a collection that you name through the MongoDB
-configuration — see [Provisioning](#provisioning).
+configuration — see [Provisioning](#mongodb-distributed-lock-provisioning).
 
-## Configuration
+## MongoDB Distributed Lock Configuration
 
 The MongoDB provider is configured through an `IAmAMongoDbConfiguration`, the same
 configuration type used by the MongoDB Outbox. Set its `Locking` property to a
@@ -46,7 +46,7 @@ connection provider.
 | `Name` | `string` | The collection that holds the lock documents. |
 | `TimeToLive` | `TimeSpan?` | Optional expiry for lock documents, applied through a MongoDB TTL index. |
 
-## Example
+## MongoDB Distributed Lock Example
 
 ```csharp
 var configuration = new MongoDbConfiguration("mongodb://localhost:27017", "orders")
@@ -66,7 +66,7 @@ services
     .UseOutboxSweeper(opt => { opt.BatchSize = 10; });
 ```
 
-## Provisioning
+## MongoDB Distributed Lock Provisioning
 
 The provider writes lock documents to the collection named by `Locking.Name` and relies
 on a unique index on the resource so only one instance can hold a given lock. If you set
@@ -74,7 +74,7 @@ on a unique index on the resource so only one instance can hold a given lock. If
 if an instance crashes before releasing its lock. Ensure the application's MongoDB user
 can create the collection and its indexes, or create them ahead of time.
 
-## Notes
+## MongoDB Distributed Lock Notes
 
 - Set `TimeToLive` longer than a typical Sweeper or Archiver batch so a lock is not
   expired mid-run. See [Lease Expiry vs Manual

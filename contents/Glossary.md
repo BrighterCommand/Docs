@@ -78,7 +78,7 @@ Interface: `IQueryProcessor`
 
 See: [Darker Basic Configuration](/contents/DarkerBasicConfiguration.md), [Query Pipeline and Decorators](/contents/QueryPipeline.md)
 
-## Brighter and Darker
+## Brighter and Darker Terms
 
 ### Brighter
 
@@ -247,7 +247,7 @@ A lock held in shared infrastructure (a database, blob store, and so on) that le
 
 See: [Distributed Lock](/contents/DistributedLock.md)
 
-## Messaging
+## Messaging Terms
 
 ### Producer
 
@@ -449,7 +449,7 @@ A value used to determine which partition a message should be routed to in parti
 
 See: [Request Context Improvements](/contents/DispatchingARequest.md)
 
-## Scheduling
+## Scheduler Terms
 
 ### Scheduler
 

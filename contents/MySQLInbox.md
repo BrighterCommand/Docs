@@ -2,7 +2,7 @@
 
 > **Reference** · Applies to **Brighter V10**
 
-## Usage
+## MySQL Inbox Usage
 The MySQL Inbox allows use of MySQL for [Brighter's inbox support](/contents/BrighterInboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#inbox).
 
 For this we will need the *Inbox* packages for the MySQL *Inbox*.
@@ -30,7 +30,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
 ```
 
-## Provisioning the Inbox Table
+## Provisioning the MySQL Inbox Table
 
 You have two equally valid options for creating and maintaining the Inbox table:
 

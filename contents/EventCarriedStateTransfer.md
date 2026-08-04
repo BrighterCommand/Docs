@@ -111,6 +111,6 @@ backing store. Then when a payment request comes in via BookingMadeOnAccount it 
 
 Our preference for the two may depend on the extent to which we want to allow Credit Card Payments to take a payment even if Accounts is down, as Credit Card Payments is working with a cache. we may decide that a bulkhead is valuable enough to us to use ECST over choreography via a pipeline.
 
-## Next
+## Next Steps
 
 See [Correctness in Brighter](BrighterOutboxSupport.html) for guidance on how to use Brighter's support for the Outbox pattern to ensure producer-consumer correctness.

@@ -2,7 +2,7 @@
 
 > **Reference** · Applies to **Brighter V10**
 
-## General
+## Kafka General
 
 Kafka is OSS message-oriented-middleware and is [well documented](https://kafka.apache.org/documentation/#gettingStarted). Brighter handles the details of sending to or receiving from Kafka. You may find it useful to understand the [building blocks](https://kafka.apache.org/documentation/#introduction) of the protocol. Brighter's Kafka support is implemented on top of the Confluent .NET client, and you might find the [documentation for the .NET client](https://docs.confluent.io/kafka-clients/dotnet/current/overview.html) helpful when debugging, but you should not have to interact with it directly to use Brighter (although we expose many of its configuration options).
 
@@ -19,7 +19,7 @@ A **consumer** may read from *multiple* **partitions**, but only one **consumer*
 
 In addition to the Producer API and Consumer API Kafka streams have features such as the Streams API and the Connect API. We do not use either of these from Brighter.
 
-## Connection
+## Kafka Connection
 
 The Connection to Kafka is provided by an **KafkaMessagingGatewayConnection** which allows you to configure the following:
 
@@ -80,7 +80,7 @@ The following code connects to a remote Kafka instance. The settings here will d
 
 ```
 
-## Publication
+## Kafka Publication
 
 For more on a *Publication* see the material on an *Add Producers* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#using-an-external-bus).
 
@@ -217,7 +217,7 @@ Brighter uses the Kafka AdminClient for topic creation. For this to work as expe
 	
 If you want to specify the topic through Brighter, or through your own IaaS code, we recommend always setting this setting to false; we recommend only setting it to true if you tell Brighter to assume that the infrastructure exists, as it will then be created on the first write.
 
-## Subscription
+## Kafka Subscription
 
 For more on a *Subscription* see the material on configuring the *Dispatcher* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#configuring-the-dispatcher).
 

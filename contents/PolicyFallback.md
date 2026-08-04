@@ -308,7 +308,7 @@ public class ProcessOrderHandler : RequestHandler<ProcessOrderCommand>
 }
 ```
 
-## Best Practices
+## Fallback Best Practices
 
 1. **Use Backstop Sparingly**: Only catch all exceptions (`backstop: true`) when you have comprehensive recovery logic. Otherwise, use `circuitBreaker: true` to catch only circuit breaker exceptions.
 
@@ -326,7 +326,7 @@ public class ProcessOrderHandler : RequestHandler<ProcessOrderCommand>
 
 8. **Combine with Circuit Breakers**: Fallback works well with circuit breakers to prevent cascading failures and provide graceful degradation.
 
-## Additional Resources
+## Further Reading
 
 - [Retry and Circuit Breaker](PolicyRetryAndCircuitBreaker.md)
 - [Building a Handler Pipeline](BuildingAPipeline.md)

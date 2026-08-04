@@ -139,7 +139,7 @@ var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-scheduler-role
 - `OnMissingRole.Assume` (default): Assume role exists, throw error if not found
 - `OnMissingRole.Create`: Create role if it doesn't exist
 
-## NuGet Packages
+## AWS Scheduler NuGet Packages
 
 AWS Scheduler integration is available in two versions:
 
@@ -161,7 +161,7 @@ Uses AWS SDK for .NET v3 (deprecated in AWS).
 
 **Recommendation**: Use V4 for new projects. Both packages provide identical Brighter functionality.
 
-## Configuration
+## AWS Scheduler Configuration
 
 ### Basic Configuration
 
@@ -319,7 +319,7 @@ var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-scheduler-role
 - **Tracking**: Correlate scheduled tasks with business entities
 - **Debugging**: Meaningful IDs in AWS Console
 
-## Code Examples
+## AWS Scheduler Code Examples
 
 ### Basic Scheduling with Delay
 
@@ -445,7 +445,7 @@ public class TrialService
 | **Flexibility** | Target must exist | More flexible |
 | **Recommended For** | Production messages | Requests and commands |
 
-## Comparison with Other Schedulers
+## AWS Scheduler Comparison with Other Schedulers
 
 | Feature | AWS Scheduler | Quartz.NET | Hangfire | InMemory |
 |---------|---------------|------------|----------|----------|
@@ -468,7 +468,7 @@ public class TrialService
 - Need high scalability
 - Cost-effective pay-per-use model
 
-## Best Practices
+## AWS Scheduler Best Practices
 
 ### 1. Use Direct to Target for Messages
 
@@ -598,7 +598,7 @@ var awsConnection = new AWSMessagingGatewayConnection(
 );
 ```
 
-## Troubleshooting
+## AWS Scheduler Troubleshooting
 
 ### Schedules Not Executing
 
@@ -689,7 +689,7 @@ await _scheduler.CancelAsync(oldSchedulerId);
 // AWS Scheduler is billed per schedule invocation
 ```
 
-## Migration from Other Schedulers
+## AWS Scheduler Migration from Other Schedulers
 
 ### From InMemory Scheduler
 
@@ -750,14 +750,14 @@ services.AddBrighter(options => { ... })
 - [Azure Scheduler](AzureScheduler.md) - Azure equivalent
 - [AWS SNS Configuration](AWSSQSConfiguration.md) - Configuring AWS messaging
 
-## External Links
+## AWS Scheduler External Links
 
 - [AWS EventBridge Scheduler Documentation](https://docs.aws.amazon.com/scheduler/latest/UserGuide/what-is-scheduler.html)
 - [AWS EventBridge Scheduler Pricing](https://aws.amazon.com/eventbridge/pricing/)
 - [AWS EventBridge Scheduler Quotas](https://docs.aws.amazon.com/scheduler/latest/UserGuide/scheduler-quotas.html)
 - [LocalStack EventBridge](https://docs.localstack.cloud/user-guide/aws/eventbridge/) - For local testing
 
-## Summary
+## AWS Scheduler Summary
 
 AWS EventBridge Scheduler is a cloud-native, serverless scheduling solution perfect for:
 

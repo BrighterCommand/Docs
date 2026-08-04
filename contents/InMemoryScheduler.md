@@ -31,7 +31,7 @@ The InMemory Scheduler uses .NET's `ITimerProvider` internally to schedule delay
 
 This simple approach makes it perfect for testing but unsuitable for production systems that require durability.
 
-## Architecture
+## InMemory Scheduler Architecture
 
 ```
 Your Code
@@ -114,7 +114,7 @@ public class AnalyticsService
 }
 ```
 
-## Configuration
+## InMemory Scheduler Configuration
 
 ### Basic Configuration
 
@@ -186,7 +186,7 @@ services.AddBrighter(options => { ... })
     .AutoFromAssemblies();
 ```
 
-## NuGet Package
+## InMemory Scheduler NuGet Package
 
 To use the InMemory Scheduler, install the NuGet package:
 
@@ -196,7 +196,7 @@ dotnet add package Paramore.Brighter.InMemoryScheduler
 
 **Package**: `Paramore.Brighter.InMemoryScheduler`
 
-## Code Examples
+## InMemory Scheduler Code Examples
 
 ### Basic Scheduling
 
@@ -359,7 +359,7 @@ public class SchedulingTests : IDisposable
 | **Production Ready** | No | Yes | Yes | Yes | Yes |
 | **Testing** | Ideal | Overkill | Overkill | No | No |
 
-## Best Practices
+## InMemory Scheduler Best Practices
 
 ### 1. Use for Testing Only
 
@@ -475,7 +475,7 @@ services.AddBrighter(options => { ... })
 
 **No code changes required** - just swap the scheduler factory!
 
-## Troubleshooting
+## InMemory Scheduler Troubleshooting
 
 ### Scheduled Jobs Not Executing
 
@@ -526,7 +526,7 @@ Assert.NotNull(_serviceProvider.GetService<IHandleRequestsAsync<YourCommand>>())
 - [AWS Scheduler](AwsScheduler.md) - Cloud-native AWS scheduling
 - [Azure Scheduler](AzureScheduler.md) - Cloud-native Azure scheduling
 
-## Summary
+## InMemory Scheduler Summary
 
 The InMemory Scheduler is a lightweight, zero-dependency scheduling solution perfect for:
 - **Unit and integration tests** - No external dependencies

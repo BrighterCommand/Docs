@@ -4,7 +4,7 @@
 
 This page is the how-to companion to [Box Provisioning](/contents/BoxProvisioning.md). It shows the NuGet packages you install, the call-site shapes for `UseBoxProvisioning`, the explicit and `connectionName` registration overloads, the migration-lock-timeout knob, and the per-backend quirks. Start with [Box Provisioning](/contents/BoxProvisioning.md) if you want the conceptual overview first — this page assumes you already know what the bootstrap path is and why an advisory lock is involved.
 
-## Prerequisites
+## Box Provisioning Prerequisites
 
 Before adding `UseBoxProvisioning`, confirm that:
 
@@ -13,7 +13,7 @@ Before adding `UseBoxProvisioning`, confirm that:
 - The database user your application connects with has `CREATE TABLE` and `ALTER TABLE` rights in the target schema. Box Provisioning issues DDL at startup; if your runtime account is locked down to `SELECT/INSERT/UPDATE/DELETE`, you cannot use Option A — see the *Option B* discussion on [Box Provisioning](/contents/BoxProvisioning.md#when-to-use-box-provisioning).
 - The hosting model runs `IHostedService` implementations at startup. `Microsoft.Extensions.Hosting`-based hosts (ASP.NET Core, Generic Host, Worker Service) all do; if you have a custom composition that does not start hosted services, the provisioner will not run.
 
-## NuGet packages
+## Box Provisioning NuGet Packages
 
 Install the core provisioning package plus one package per backend you provision:
 
@@ -231,7 +231,7 @@ opts.AddSpannerOutbox("BrighterDb",
 
 Spanner uses the *degenerate runner* — see [Box Provisioning](/contents/BoxProvisioning.md#per-backend-differences-to-be-aware-of). The runner can create the table on a fresh database but cannot evolve an existing one. There is no `schemaName` parameter (Spanner does not use schemas the way relational backends do), and `MigrationLockTimeout` is ignored because the runner does not use advisory locks — DDL serialisation is handled by the Spanner service.
 
-## Common pitfalls
+## Box Provisioning Common Pitfalls
 
 - **Forgetting the per-backend package.** Installing only `Paramore.Brighter.BoxProvisioning` leaves you with no `Add{Backend}*` extensions in scope. The compiler error names the missing method, but it can be confusing if you have the core package referenced and assume that is enough — every backend you provision needs its own package.
 - **Calling `UseBoxProvisioning` more than once on the same builder.** A second invocation throws `ConfigurationException` with a message naming the duplicate call. Configure every Outbox and Inbox inside a single `UseBoxProvisioning(opts => { … })` delegate — the framework guards against this because a second invocation would double-register every provisioner and the hosted service would run each migration twice.

@@ -470,7 +470,7 @@ var commandProcessor = CommandProcessorBuilder.With()
 
 ---
 
-## Best Practices
+## Retry and Circuit Breaker Best Practices
 
 1. **Use Resilience Pipelines for New Code**: Prefer `UseResiliencePipeline` over legacy `UsePolicy` for new handlers.
 
@@ -493,7 +493,7 @@ var commandProcessor = CommandProcessorBuilder.With()
 
 ---
 
-## Troubleshooting
+## Retry and Circuit Breaker Troubleshooting
 
 ### Pipeline Not Found Exception
 
@@ -524,7 +524,7 @@ resiliencePipelineRegistry.TryAddBuilder($"{handlerTypeName}.MyPipeline", /* ...
 
 ---
 
-## Additional Resources
+## Further Reading
 
 - [Polly v8 Documentation](https://www.pollydocs.org/)
 - [Polly v7 to v8 Migration Guide](https://www.pollydocs.org/migration-v8.html)

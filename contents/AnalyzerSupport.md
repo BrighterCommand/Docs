@@ -166,7 +166,7 @@ dotnet_diagnostic.BRT007.severity = none
 
 Prefer a narrow suppression with an explanatory comment over disabling the diagnostic globally.
 
-## Best Practices
+## Analyzer Best Practices
 
 - Set `Partitioner` explicitly on every `KafkaPublication`.
 - Use `Partitioner.Murmur2Random` for new publications unless you have a specific compatibility requirement.

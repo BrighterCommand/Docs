@@ -10,7 +10,7 @@ If you are using .NET Core Dependency Injection, we provide extension methods to
 
 If you are not using **HostBuilder** you will need to perform the following steps explicitly in your code.
 
-## Configuring the Dispatcher 
+## Configuring a Dispatcher for an External Bus
 
 We provide a Dispatch Builder that has a progressive interface to assist you in configuring a **Dispatcher**
 

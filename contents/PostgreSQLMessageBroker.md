@@ -4,7 +4,7 @@
 
 Brighter supports for using PostgreSQL as a message broker, enabling pub/sub messaging patterns using your existing PostgreSQL infrastructure.
 
-## Overview
+## PostgreSQL Message Broker Overview
 
 The PostgreSQL message broker uses a table-based queue approach where messages are stored in a PostgreSQL table and retrieved by consumers. This provides a lightweight messaging solution that leverages your existing PostgreSQL database without requiring additional message broker infrastructure.
 
@@ -60,7 +60,7 @@ The system uses a visibility timeout mechanism (similar to AWS SQS) where messag
 
 ---
 
-## Limitations
+## PostgreSQL Message Broker Limitations
 
 ### Performance Constraints
 
@@ -81,7 +81,7 @@ The system uses a visibility timeout mechanism (similar to AWS SQS) where messag
 
 ---
 
-## Configuration
+## PostgreSQL Message Broker Configuration
 
 ### NuGet Package
 
@@ -274,7 +274,7 @@ public class OrderCreatedEventHandler : RequestHandlerAsync<OrderCreatedEvent>
 
 ---
 
-## Configuration Options
+## PostgreSQL Message Broker Configuration Options
 
 ### PostgresPublication
 
@@ -435,7 +435,7 @@ See [Outbox Pattern](OutboxPattern.md) and [PostgreSQL Outbox](PostgresOutbox.md
 
 ---
 
-## Monitoring and Observability
+## PostgreSQL Message Broker Monitoring and Observability
 
 ### Query Queue Depth
 
@@ -496,7 +496,7 @@ services.AddOpenTelemetry()
 
 ---
 
-## Best Practices
+## PostgreSQL Message Broker Best Practices
 
 ### 1. Use JSONB for Production
 
@@ -597,7 +597,7 @@ var normalSubscription = new PostgresSubscription<NormalEvent>(
 
 ---
 
-## Troubleshooting
+## PostgreSQL Message Broker Troubleshooting
 
 ### Messages Not Being Consumed
 
@@ -650,7 +650,7 @@ var normalSubscription = new PostgresSubscription<NormalEvent>(
 
 ---
 
-## Additional Resources
+## Further Reading
 
 - [PostgreSQL Outbox](PostgresOutbox.md)
 - [PostgreSQL Inbox](PostgresInbox.md)

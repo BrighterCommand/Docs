@@ -2,7 +2,7 @@
 
 > **Reference** · Applies to **Brighter V10**
 
-## General
+## RabbitMQ General
 
 RabbitMQ is OSS message-oriented-middleware and is [well documented](https://www.rabbitmq.com/documentation.html). Brighter handles the details of sending to or receiving from RabbitMQ. You may find it useful to understand the [building blocks](https://www.rabbitmq.com/tutorials/amqp-concepts.html) of the protocol. You might find the [documentation for the .NET SDK](https://www.rabbitmq.com/dotnet-api-guide.html) helpful when debugging, but you should not have to interact with it directly to use Brighter.
 
@@ -33,7 +33,7 @@ A significant breaking change is the removal of the proactor subscription model 
 
 If your application relies on proactor subscriptions for efficient, non-blocking message consumption, you must migrate to the `Paramore.Brighter.MessagingGateway.RMQ.Async` package. This package provides a native, high-performance asynchronous consumer that integrates correctly with the `RabbitMQ.Client` v7+ API.
 
-## Connection
+## RabbitMQ Connection
 
 The Connection to RabbitMQ is provided by an **RmqMessagingGatewayConnection** which allows you to configure the following:
 
@@ -69,7 +69,7 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-## Publication
+## RabbitMQ Publication
 
 For more on a *Publication* see the material on an *Add Producers* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#using-an-external-bus).
 
@@ -138,7 +138,7 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-## Subscription
+## RabbitMQ Subscription
 
 For more on a *Subscription* see the material on configuring the *Dispatcher* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#configuring-the-dispatcher).
 

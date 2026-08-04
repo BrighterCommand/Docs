@@ -4,7 +4,7 @@
 
 Brighter V10 introduces clearer terminology for its concurrency models: **Reactor** and **Proactor**. 
 
-## Overview
+## Reactor and Proactor Overview
 
 When consuming messages from external message brokers, Brighter uses a **Performer** (the message pump) to retrieve messages and dispatch them to handlers. The Performer is single-threaded in both concurrency models, but the way it handles I/O differs significantly.
 
@@ -233,7 +233,7 @@ public class MyHandlerAsync : RequestHandlerAsync<MyCommand>  // Correct base cl
 }
 ```
 
-## Configuration
+## Reactor and Proactor Configuration
 
 ### Reactor Configuration
 
@@ -398,7 +398,7 @@ var subscription = new Subscription<OrderCommand>(
 ```
 
 
-## Best Practices
+## Reactor and Proactor Best Practices
 
 1. **CRITICAL: Match your handler implementation to your MessagePumpType:**
    - Reactor → Synchronous handlers (`IHandleRequests<T>`)
@@ -431,7 +431,7 @@ var subscription = new Subscription<OrderCommand>(
 - [Configuring the Dispatcher](HowConfiguringTheDispatcherWorks.md) - Dispatcher configuration
 - [Configuring Subscriptions](/contents/BrighterBasicConfiguration.md#configuring-the-dispatcher) - Subscription configuration
 
-## Summary
+## Reactor and Proactor Summary
 
 - **Reactor** = Blocking I/O = Lower latency per operation = Moderate throughput = Requires **synchronous** handlers
 - **Proactor** = Non-blocking I/O = Higher latency per operation = Better throughput = Requires **asynchronous** handlers

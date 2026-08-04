@@ -2,7 +2,7 @@
 
 > **Reference** · Applies to **Brighter V10**
 
-## Usage
+## EF Core Outbox Usage
 The EFCore Outbox allows integration between EF Core and [Brighter's outbox support](/contents/BrighterOutboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#outbox-support).
 
 For this we will need the *Outbox* package for EF Core. Packages for EF Core exist for the following RDBMS: MSSQL, MYSQL, Postgres, and Sqlite. Packages have the naming convention:

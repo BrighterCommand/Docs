@@ -2,7 +2,7 @@
 
 > **Reference** · Applies to **Brighter V10**
 
-## Overview
+## Sweeper Circuit Breaking Overview
 
 Sweeper Circuit Breaking is a resilience feature that prevents failures to publish to one topic from blocking attempts to publish to other topics, when publishing messages from the Outbox. When a topic repeatedly fails to publish, the circuit breaker "trips" that topic, temporarily preventing further publish attempts until a cooldown period expires.
 
@@ -42,7 +42,7 @@ When a topic fails to publish:
 - **Resource efficiency**: Avoids wasting resources on repeated failures to unhealthy topics
 - **Observability**: Tripped topics can be monitored and alerted on
 
-## Configuration
+## Sweeper Circuit Breaking Configuration
 
 ### Enabling Circuit Breaking
 
@@ -171,7 +171,7 @@ services.AddBrighter(/* configuration */)
     .UseOutboxSweeper();  // Sweeper without circuit breaking
 ```
 
-## Monitoring and Observability
+## Sweeper Circuit Breaking Monitoring and Observability
 
 ### Checking Tripped Topics
 
@@ -304,7 +304,7 @@ await commandProcessor.ClearOutboxAsync(
 );
 ```
 
-## Best Practices
+## Sweeper Circuit Breaking Best Practices
 
 ### 1. Choose Appropriate Cooldown Periods
 
@@ -384,7 +384,7 @@ Regularly test circuit breaker behavior:
 - Verify healthy topics continue processing
 - Confirm automatic recovery after cooldown
 
-## Troubleshooting
+## Sweeper Circuit Breaking Troubleshooting
 
 ### Topics Not Recovering
 
@@ -515,7 +515,7 @@ public class DistributedOutboxCircuitBreaker : IAmAnOutboxCircuitBreaker
 }
 ```
 
-## Summary
+## Sweeper Circuit Breaking Summary
 
 Sweeper Circuit Breaking provides automatic resilience for Outbox clearing operations by:
 

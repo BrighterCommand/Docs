@@ -2,10 +2,10 @@
 
 > **Reference** · Applies to **Brighter V10**
 
-## General
+## Azure Archive Provider General
 Azure Service Bus (ASB) is a fully managed enterprise message broker and is [well documented](https://docs.microsoft.com/en-us/azure/service-bus-messaging/) Brighter handles the details of sending to or receiving from ASB.  You may find it useful to understand the [concepts](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-queues-topics-subscriptions) of the ASB.
 
-## Connection
+## Azure Archive Provider Connection
 At this time Azure Blob Archive Provider only supports Token Credential for authentication
 
 ## Permissions

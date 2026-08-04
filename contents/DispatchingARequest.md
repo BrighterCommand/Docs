@@ -4,7 +4,7 @@
 
 Once you have [implemented your Request Handler](ImplementingAHandler.html), you will want to dispatch **Commands** or **Events** to that Handler.
 
-## Usage
+## Request Dispatch Usage
 
 In the following example code we register a handler, create a *Command Processor*, and then use that *Command Processor* to dispatch a request to the handler.
 
@@ -31,7 +31,7 @@ In the following example code we register a handler, create a *Command Processor
    }
 ```
 
-## Registering a Handler
+## Registering a Sync Handler
 
 In order for the *Command Processor* to find a Handler for your **Command** or **Event** you need to register the association between that **Command** or **Event** and your Handler.
 

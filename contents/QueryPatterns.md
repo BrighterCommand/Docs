@@ -2,7 +2,7 @@
 
 > **How-to** · Applies to **Darker V4**
 
-## Introduction
+## Query Pattern Introduction
 
 This guide presents common query patterns you'll encounter when building real-world applications with Darker. While [Queries and Query Objects](/contents/QueriesAndQueryObjects.md) covers the fundamentals of query design, and [Implementing a Query Handler](/contents/ImplementAQueryHandler.md) covers basic handler implementation, this document focuses on practical patterns for complex scenarios including pagination, projections, aggregations, and Entity Framework Core integration.
 
@@ -1269,7 +1269,7 @@ public async Task<IActionResult> GetProducts(
 9. **Use compiled queries** for hot-path queries
 10. **Consider read replicas** for scaling read-heavy workloads
 
-## Common Pitfalls
+## Query Pattern Common Pitfalls
 
 1. **Loading entire collections without pagination** - Always paginate large result sets
 2. **Forgetting `AsNoTracking()`** - Wastes memory and CPU for read-only queries

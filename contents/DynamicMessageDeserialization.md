@@ -2,7 +2,7 @@
 
 > **Explanation** · Applies to **Brighter V10**
 
-## Overview
+## Dynamic Deserialization Overview
 
 Brighter supports dynamic type resolution, allowing you to route multiple message types through a single channel. Instead of determining the message type at compile-time through generic parameters, you can use content-based routing where the message type is determined at runtime from metadata.
 
@@ -313,7 +313,7 @@ Dynamic message deserialization has a small performance overhead compared to Dat
 - Message mapper pipeline built on first use per type
 - Pipeline cached for subsequent messages of same type
 
-## Configuration Examples
+## Dynamic Deserialization Configuration Examples
 
 ### Kafka with CloudEvents Routing
 
@@ -406,7 +406,7 @@ var subscription = new SqsSubscription(
 );
 ```
 
-## Best Practices
+## Dynamic Deserialization Best Practices
 
 ### 1. Use CloudEvents Type for Routing
 
@@ -539,7 +539,7 @@ var subscription = new KafkaSubscription(
 | **CloudEvents Integration** | Not needed | Natural fit |
 | **When to Use** | Default, most scenarios | Multiple types, evolution |
 
-## Error Handling
+## Dynamic Deserialization Error Handling
 
 Handle unmapped message types gracefully:
 
@@ -589,7 +589,7 @@ Failed messages will go to the dead letter queue based on your failure handling 
 - [Routing](Routing.md) - Message routing in Brighter
 - [Enterprise Integration Patterns: Datatype Channel](https://www.enterpriseintegrationpatterns.com/patterns/messaging/DatatypeChannel.html)
 
-## Sample Code
+## Dynamic Deserialization Sample Code
 
 Full working examples can be found in the Brighter samples:
 

@@ -397,7 +397,7 @@ When migrating to V10, be aware of these CloudEvents-related breaking changes:
 
 See the [V10 Migration Guide](V10MigrationGuide.md) for complete migration instructions.
 
-## Best Practices
+## CloudEvents Best Practices
 
 ### 1. Choose the Right Content Mode
 

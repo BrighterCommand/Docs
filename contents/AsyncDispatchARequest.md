@@ -4,7 +4,7 @@
 
 Once you have [implemented your Request Handler](ImplementingAHandler.html), you will want to dispatch **Commands** or **Events** to that Handler.
 
-## Usage
+## Async Dispatch Usage
 
 In the following example code we register a handler, create a command processor, and then use that command processor to send a command to the handler asynchronously.
 
@@ -33,7 +33,7 @@ In the following example code we register a handler, create a command processor,
         }
 ```
 
-## Registering a Handler
+## Registering an Async Handler
 
 In order for a **Command Dispatcher** to find a Handler for your **Command** or **Event** you need to register the association between that **Command** or **Event** and your Handler.
 
@@ -43,7 +43,7 @@ Brighter's **HostBuilder** support provides **AutoFromAssemblies** to register a
 
 Brighter only supports pipelines that are solely **IHandleRequestsAsync** or **IHandleRequests**. In particular, note that middleware (attributes on your handler) must be of the same type as the rest of your pipeline. A common mistake is to **UsePolicy** when you mean **UsePolicyAsync**.
 
-## Dispatching Requests
+## Dispatching Requests Asynchronously
 
 Once you have registered your Handlers, you can dispatch requests to them. To do that you simply use the **commandProcessor.SendAsync()** (or **commandProcessor.PublishAsync()**) method passing in an instance of your command. *Send* expects one handler, *Publish* expects zero or more. (You can use **commandProcessor.DepositPostAsync** and **commandProcessor.ClearOutboxAsync** with an External Bus).
 

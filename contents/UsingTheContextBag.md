@@ -363,7 +363,7 @@ Context.Bag[RequestContextBagNames.PartitionKey] = tenantId;
 Context.Bag["Brighter-PartitionKey"] = tenantId;
 ```
 
-## Best Practices
+## Context Bag Best Practices
 
 ### 1. Use Well-Known Keys
 
@@ -455,7 +455,7 @@ await _commandProcessor.SendAsync(command, requestContext: context);
 - [Polly Resilience Pipeline](PolicyRetryAndCircuitBreaker.md) - Resilience context integration
 - [Cloud Events Support](CloudEventsSupport.md) - CloudEvents extension properties
 
-## Summary
+## Context Bag Summary
 
 The Request Context provides a powerful mechanism for passing information between handlers in a pipeline:
 
