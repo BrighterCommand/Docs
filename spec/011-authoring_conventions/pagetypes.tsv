@@ -1,106 +1,106 @@
-path	proposed	confidence	signal	verdict
-contents/AgreementDispatcher.md		review	"no signal fired (section ""Brighter Request Handlers and Middleware Pipelines"", modes: explanation,guidance,howto)"	How-to
-contents/AnalyzerSupport.md		review	"no signal fired (section ""Brighter Configuration"", modes: guidance)"	Reference
-contents/AsyncAPISupport.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,howto,reference)"	How-to
-contents/BasicConcepts.md		review	"no signal fired (section ""Overview"", modes: none)"	Reference
-contents/BoxProvisioning.md		review	"no signal fired (section ""Database Provisioning"", modes: explanation,howto)"	Explanation
-contents/BrighterBasicConfiguration.md		review	"no signal fired (section ""Brighter Configuration"", modes: howto,reference)"	How-to
-contents/ClaimCheck.md		review	"no signal fired (section ""Using an External Bus"", modes: none)"	Explanation
-contents/CloudEventsSupport.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,guidance,howto,reference)"	How-to
-contents/Compression.md		review	"no signal fired (section ""Using an External Bus"", modes: none)"	Explanation
-contents/DarkerBasicConfiguration.md		review	"no signal fired (section ""Darker Configuration"", modes: guidance,howto,reference)"	How-to
-contents/DefaultMessageMappers.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,guidance,howto,reference)"	How-to
-contents/DynamicMessageDeserialization.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,guidance,howto,reference)"	Explanation
-contents/ErrorHandlingOptions.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,reference)"	Reference
-contents/HandlerFailure.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,howto)"	Explanation
-contents/HealthChecks.md		review	"no signal fired (section ""Health Checks and Observability"", modes: none)"	How-to
-contents/InMemoryOptions.md		review	"no signal fired (section ""Brighter Configuration"", modes: explanation,howto,reference)"	Reference
-contents/Logging.md		review	"no signal fired (section ""Health Checks and Observability"", modes: none)"	Reference
-contents/MessageMappers.md		review	"no signal fired (section ""Using an External Bus"", modes: howto,reference)"	Explanation
-contents/NullableReferenceTypes.md		review	"no signal fired (section ""V10 Migration"", modes: explanation,guidance,howto,reference)"	Reference
-contents/PipelineValidation.md		review	"no signal fired (section ""Brighter Configuration"", modes: guidance,howto,reference)"	How-to
-contents/PolicyFallback.md		review	"no signal fired (section ""Brighter Request Handlers and Middleware Pipelines"", modes: guidance,howto,reference)"	How-to
-contents/QueriesAndQueryObjects.md		review	"no signal fired (section ""Darker Query Handlers and Middleware Pipelines"", modes: guidance,reference)"	Explanation
-contents/QueryPatterns.md		review	"no signal fired (section ""Darker Query Handlers and Middleware Pipelines"", modes: guidance,reference)"	How-to
-contents/QueryPipeline.md		review	"no signal fired (section ""Darker Query Handlers and Middleware Pipelines"", modes: explanation,guidance)"	Explanation
-contents/RequestValidation.md		review	"no signal fired (section ""Brighter Request Handlers and Middleware Pipelines"", modes: explanation,howto,reference)"	How-to
-contents/Routing.md		review	"no signal fired (section ""Using an External Bus"", modes: none)"	Explanation
-contents/S3LuggageStore.md		review	"no signal fired (section ""Using an External Bus"", modes: none)"	Reference
-contents/Telemetry.md		review	"no signal fired (section ""Health Checks and Observability"", modes: explanation,guidance,howto,reference)"	Reference
-contents/AWSSQSConfiguration.md	Reference	low	"SUMMARY.md section ""Guaranteed At Least Once""; but scores 3 modes (explanation,guidance,howto)"	Reference
-contents/AwsScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
-contents/AzureScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
-contents/BrighterSchedulerSupport.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Explanation
-contents/CQRSWithBrighterAndDarker.md	Explanation	low	"SUMMARY.md section ""CQRS Patterns""; but scores 3 modes (explanation,guidance,howto)"	Explanation
-contents/FAQ.md	Reference	low	design section 1: outside Diataxis, consulted not read	Reference
-contents/Glossary.md	Reference	low	design section 1: outside Diataxis, consulted not read	Reference
-contents/HangfireScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
-contents/InMemoryScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
-contents/PostgreSQLMessageBroker.md	Reference	low	"SUMMARY.md section ""Guaranteed At Least Once""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
-contents/QuartzScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 3 modes (guidance,howto,reference)"	Reference
-contents/RabbitMQConfiguration.md	Reference	low	"SUMMARY.md section ""Guaranteed At Least Once""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
-contents/ReactorAndProactor.md	Explanation	low	"SUMMARY.md section ""Under the Hood""; but scores 4 modes (explanation,guidance,howto,reference)"	Explanation
-contents/ShowMeTheCode.md		low	design section 1: a showcase; Reference fits poorly but it is not a tutorial	How-to
-contents/SweeperCircuitBreaking.md	Reference	low	"SUMMARY.md section ""Outbox and Inbox""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference
-contents/TickerQScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 3 modes (guidance,howto,reference)"	Reference
-contents/V10MigrationGuide.md	Reference	low	design section 1: consulted, so Reference not How-to	How-to
-contents/WhyBrighter.md	Explanation	low	design section 1	Explanation
-contents/AzureBlobArchiveProvider.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference
-contents/AzureBlobConfiguration.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference
-contents/AzureBlobDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/AzureServiceBusConfiguration.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference
-contents/BrighterControlAPI.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference
-contents/BrighterInboxSupport.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Explanation
-contents/BrighterOutboxSupport.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Explanation
-contents/CommandsCommandDispatcherandProcessor.md	Explanation	medium	"SUMMARY.md section ""Command, Processors and Dispatchers"""	Explanation
-contents/CustomScheduler.md	Reference	medium	"SUMMARY.md section ""Scheduler"""	How-to
-contents/DapperOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/DistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Explanation
-contents/DynamoDbDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/DynamoInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/DynamoOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/EFCoreOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/EventCarriedStateTransfer.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	Explanation
-contents/EventDrivenCollaboration.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	Explanation
-contents/FeatureSwitches.md	How-to	medium	single mode scored: howto	How-to
-contents/FirestoreDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/HowServiceActivatorWorks.md	Explanation	medium	"title ""How The Dispatcher Works"" is How-X-Works, not a how-to; but scores 3 modes (guidance,howto,reference)"	Explanation
-contents/KafkaConfiguration.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference
-contents/MSSQLInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/MSSQLOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/Microservices.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	Explanation
-contents/MongoDBInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/MongoDBOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/MongoDbDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/Monitoring.md	Reference	medium	single mode scored: reference	Reference
-contents/MsSqlDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/MySQLInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/MySQLOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/MySqlDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/OutboxPattern.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	Explanation
-contents/PolicyRetryAndCircuitBreaker.md	How-to	medium	"title ""Supporting Retry and Circuit Breaker"" opens with a gerund or imperative; but scores 3 modes (guidance,howto,reference)"	How-to
-contents/PostgresDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/PostgresInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/PostgresOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/ReplayOnSeen.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/Requests, Commands and Events.md	Explanation	medium	single mode scored: explanation	Explanation
-contents/SqliteInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/SqliteOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference
-contents/TaskQueuePattern.md	Explanation	medium	"SUMMARY.md section ""Task Queues"""	Explanation
-contents/TestDoubleOptions.md	How-to	medium	"title ""Test Double Options for Command Processor"" opens with a gerund or imperative; but scores 3 modes (guidance,howto,reference)"	How-to
-contents/UsingTheContextBag.md	How-to	medium	"title ""Passing Information Between Handlers in the Pipeline"" opens with a gerund or imperative; but scores 3 modes (guidance,howto,reference)"	How-to
-contents/AsyncDispatchARequest.md	How-to	high	"title ""Dispatching Requests Asynchronously"" opens with a gerund or imperative"	How-to
-contents/BoxProvisioningConfiguration.md	How-to	high	"title ""Configuring Box Provisioning"" opens with a gerund or imperative"	How-to
-contents/BoxProvisioningUpgrade.md	How-to	high	"title ""Upgrading Existing Deployments"" opens with a gerund or imperative"	How-to
-contents/BuildingAPipeline.md	How-to	high	"title ""Building a Pipeline of Request Handlers"" opens with a gerund or imperative"	How-to
-contents/BuildingAnAsyncPipeline.md	How-to	high	"title ""Building a Pipeline of Async Request Handlers"" opens with a gerund or imperative"	How-to
-contents/CausationTrackingStores.md	How-to	high	"title ""Implementing Causation Tracking in Your Own Store"" opens with a gerund or imperative"	How-to
-contents/DispatchingARequest.md	How-to	high	"title ""Dispatching Requests"" opens with a gerund or imperative"	How-to
-contents/HowBrighterWorks.md	Explanation	high	"title ""How The Command Processor Works"" is How-X-Works, not a how-to"	Explanation
-contents/HowConfiguringTheCommandProcessorWorks.md	Explanation	high	"title ""How Configuring the Command Processor Works"" is How-X-Works, not a how-to"	Explanation
-contents/HowConfiguringTheDispatcherWorks.md	Explanation	high	"title ""How Configuring a Dispatcher for an External Bus Works"" is How-X-Works, not a how-to"	Explanation
-contents/ImplementAQueryHandler.md	How-to	high	"title ""Implementing a Query Handler"" opens with a gerund or imperative"	How-to
-contents/ImplementingAHandler.md	How-to	high	"title ""How to Implement a Request Handler"" opens with a gerund or imperative"	How-to
-contents/ImplementingAsyncHandler.md	How-to	high	"title ""How to Implement an Asynchronous Request Handler"" opens with a gerund or imperative"	How-to
-contents/ImplementingExternalBus.md	How-to	high	"title ""Using an External Bus"" opens with a gerund or imperative"	How-to
-contents/ReturningResultsFromAHandler.md	How-to	high	"title ""Returning Results from a Handler"" opens with a gerund or imperative"	How-to
+path	proposed	confidence	signal	verdict	applies
+contents/AgreementDispatcher.md		review	"no signal fired (section ""Brighter Request Handlers and Middleware Pipelines"", modes: explanation,guidance,howto)"	How-to	Brighter V10
+contents/AnalyzerSupport.md		review	"no signal fired (section ""Brighter Configuration"", modes: guidance)"	Reference	Brighter V10
+contents/AsyncAPISupport.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,howto,reference)"	How-to	Brighter V10
+contents/BasicConcepts.md		review	"no signal fired (section ""Overview"", modes: none)"	Reference	Brighter and Darker V10
+contents/BoxProvisioning.md		review	"no signal fired (section ""Database Provisioning"", modes: explanation,howto)"	Explanation	Brighter V10
+contents/BrighterBasicConfiguration.md		review	"no signal fired (section ""Brighter Configuration"", modes: howto,reference)"	How-to	Brighter V10
+contents/ClaimCheck.md		review	"no signal fired (section ""Using an External Bus"", modes: none)"	Explanation	Brighter V10
+contents/CloudEventsSupport.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,guidance,howto,reference)"	How-to	Brighter V10
+contents/Compression.md		review	"no signal fired (section ""Using an External Bus"", modes: none)"	Explanation	Brighter V10
+contents/DarkerBasicConfiguration.md		review	"no signal fired (section ""Darker Configuration"", modes: guidance,howto,reference)"	How-to	Darker V10
+contents/DefaultMessageMappers.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,guidance,howto,reference)"	How-to	Brighter V10
+contents/DynamicMessageDeserialization.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,guidance,howto,reference)"	Explanation	Brighter V10
+contents/ErrorHandlingOptions.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,reference)"	Reference	Brighter V10
+contents/HandlerFailure.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,howto)"	Explanation	Brighter V10
+contents/HealthChecks.md		review	"no signal fired (section ""Health Checks and Observability"", modes: none)"	How-to	Brighter V10
+contents/InMemoryOptions.md		review	"no signal fired (section ""Brighter Configuration"", modes: explanation,howto,reference)"	Reference	Brighter V10
+contents/Logging.md		review	"no signal fired (section ""Health Checks and Observability"", modes: none)"	Reference	Brighter V10
+contents/MessageMappers.md		review	"no signal fired (section ""Using an External Bus"", modes: howto,reference)"	Explanation	Brighter V10
+contents/NullableReferenceTypes.md		review	"no signal fired (section ""V10 Migration"", modes: explanation,guidance,howto,reference)"	Reference	Brighter V10
+contents/PipelineValidation.md		review	"no signal fired (section ""Brighter Configuration"", modes: guidance,howto,reference)"	How-to	Brighter V10
+contents/PolicyFallback.md		review	"no signal fired (section ""Brighter Request Handlers and Middleware Pipelines"", modes: guidance,howto,reference)"	How-to	Brighter V10
+contents/QueriesAndQueryObjects.md		review	"no signal fired (section ""Darker Query Handlers and Middleware Pipelines"", modes: guidance,reference)"	Explanation	Darker V10
+contents/QueryPatterns.md		review	"no signal fired (section ""Darker Query Handlers and Middleware Pipelines"", modes: guidance,reference)"	How-to	Darker V10
+contents/QueryPipeline.md		review	"no signal fired (section ""Darker Query Handlers and Middleware Pipelines"", modes: explanation,guidance)"	Explanation	Darker V10
+contents/RequestValidation.md		review	"no signal fired (section ""Brighter Request Handlers and Middleware Pipelines"", modes: explanation,howto,reference)"	How-to	Brighter V10
+contents/Routing.md		review	"no signal fired (section ""Using an External Bus"", modes: none)"	Explanation	Brighter V10
+contents/S3LuggageStore.md		review	"no signal fired (section ""Using an External Bus"", modes: none)"	Reference	Brighter V10
+contents/Telemetry.md		review	"no signal fired (section ""Health Checks and Observability"", modes: explanation,guidance,howto,reference)"	Reference	Brighter V10
+contents/AWSSQSConfiguration.md	Reference	low	"SUMMARY.md section ""Guaranteed At Least Once""; but scores 3 modes (explanation,guidance,howto)"	Reference	Brighter V10
+contents/AwsScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference	Brighter V10
+contents/AzureScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference	Brighter V10
+contents/BrighterSchedulerSupport.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Explanation	Brighter V10
+contents/CQRSWithBrighterAndDarker.md	Explanation	low	"SUMMARY.md section ""CQRS Patterns""; but scores 3 modes (explanation,guidance,howto)"	Explanation	Brighter and Darker V10
+contents/FAQ.md	Reference	low	design section 1: outside Diataxis, consulted not read	Reference	Brighter V10
+contents/Glossary.md	Reference	low	design section 1: outside Diataxis, consulted not read	Reference	Brighter and Darker V10
+contents/HangfireScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference	Brighter V10
+contents/InMemoryScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference	Brighter V10
+contents/PostgreSQLMessageBroker.md	Reference	low	"SUMMARY.md section ""Guaranteed At Least Once""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference	Brighter V10
+contents/QuartzScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 3 modes (guidance,howto,reference)"	Reference	Brighter V10
+contents/RabbitMQConfiguration.md	Reference	low	"SUMMARY.md section ""Guaranteed At Least Once""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference	Brighter V10
+contents/ReactorAndProactor.md	Explanation	low	"SUMMARY.md section ""Under the Hood""; but scores 4 modes (explanation,guidance,howto,reference)"	Explanation	Brighter V10
+contents/ShowMeTheCode.md		low	design section 1: a showcase; Reference fits poorly but it is not a tutorial	How-to	Brighter and Darker V10
+contents/SweeperCircuitBreaking.md	Reference	low	"SUMMARY.md section ""Outbox and Inbox""; but scores 4 modes (explanation,guidance,howto,reference)"	Reference	Brighter V10
+contents/TickerQScheduler.md	Reference	low	"SUMMARY.md section ""Scheduler""; but scores 3 modes (guidance,howto,reference)"	Reference	Brighter V10
+contents/V10MigrationGuide.md	Reference	low	design section 1: consulted, so Reference not How-to	How-to	Brighter V10
+contents/WhyBrighter.md	Explanation	low	design section 1	Explanation	Brighter V10
+contents/AzureBlobArchiveProvider.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference	Brighter V10
+contents/AzureBlobConfiguration.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference	Brighter V10
+contents/AzureBlobDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/AzureServiceBusConfiguration.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference	Brighter V10
+contents/BrighterControlAPI.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference	Brighter V10
+contents/BrighterInboxSupport.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Explanation	Brighter V10
+contents/BrighterOutboxSupport.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Explanation	Brighter V10
+contents/CommandsCommandDispatcherandProcessor.md	Explanation	medium	"SUMMARY.md section ""Command, Processors and Dispatchers"""	Explanation	Brighter V10
+contents/CustomScheduler.md	Reference	medium	"SUMMARY.md section ""Scheduler"""	How-to	Brighter V10
+contents/DapperOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/DistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Explanation	Brighter V10
+contents/DynamoDbDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/DynamoInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/DynamoOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/EFCoreOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/EventCarriedStateTransfer.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	Explanation	Brighter V10
+contents/EventDrivenCollaboration.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	Explanation	Brighter V10
+contents/FeatureSwitches.md	How-to	medium	single mode scored: howto	How-to	Brighter V10
+contents/FirestoreDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/HowServiceActivatorWorks.md	Explanation	medium	"title ""How The Dispatcher Works"" is How-X-Works, not a how-to; but scores 3 modes (guidance,howto,reference)"	Explanation	Brighter V10
+contents/KafkaConfiguration.md	Reference	medium	"SUMMARY.md section ""Guaranteed At Least Once"""	Reference	Brighter V10
+contents/MSSQLInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/MSSQLOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/Microservices.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	Explanation	Brighter V10
+contents/MongoDBInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/MongoDBOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/MongoDbDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/Monitoring.md	Reference	medium	single mode scored: reference	Reference	Brighter V10
+contents/MsSqlDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/MySQLInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/MySQLOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/MySqlDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/OutboxPattern.md	Explanation	medium	"SUMMARY.md section ""Event Driven Architectures"""	Explanation	Brighter V10
+contents/PolicyRetryAndCircuitBreaker.md	How-to	medium	"title ""Supporting Retry and Circuit Breaker"" opens with a gerund or imperative; but scores 3 modes (guidance,howto,reference)"	How-to	Brighter V10
+contents/PostgresDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/PostgresInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/PostgresOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/ReplayOnSeen.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/Requests, Commands and Events.md	Explanation	medium	single mode scored: explanation	Explanation	Brighter V10
+contents/SqliteInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/SqliteOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/TaskQueuePattern.md	Explanation	medium	"SUMMARY.md section ""Task Queues"""	Explanation	Brighter V10
+contents/TestDoubleOptions.md	How-to	medium	"title ""Test Double Options for Command Processor"" opens with a gerund or imperative; but scores 3 modes (guidance,howto,reference)"	How-to	Brighter V10
+contents/UsingTheContextBag.md	How-to	medium	"title ""Passing Information Between Handlers in the Pipeline"" opens with a gerund or imperative; but scores 3 modes (guidance,howto,reference)"	How-to	Brighter V10
+contents/AsyncDispatchARequest.md	How-to	high	"title ""Dispatching Requests Asynchronously"" opens with a gerund or imperative"	How-to	Brighter V10
+contents/BoxProvisioningConfiguration.md	How-to	high	"title ""Configuring Box Provisioning"" opens with a gerund or imperative"	How-to	Brighter V10
+contents/BoxProvisioningUpgrade.md	How-to	high	"title ""Upgrading Existing Deployments"" opens with a gerund or imperative"	How-to	Brighter V10
+contents/BuildingAPipeline.md	How-to	high	"title ""Building a Pipeline of Request Handlers"" opens with a gerund or imperative"	How-to	Brighter V10
+contents/BuildingAnAsyncPipeline.md	How-to	high	"title ""Building a Pipeline of Async Request Handlers"" opens with a gerund or imperative"	How-to	Brighter V10
+contents/CausationTrackingStores.md	How-to	high	"title ""Implementing Causation Tracking in Your Own Store"" opens with a gerund or imperative"	How-to	Brighter V10
+contents/DispatchingARequest.md	How-to	high	"title ""Dispatching Requests"" opens with a gerund or imperative"	How-to	Brighter V10
+contents/HowBrighterWorks.md	Explanation	high	"title ""How The Command Processor Works"" is How-X-Works, not a how-to"	Explanation	Brighter V10
+contents/HowConfiguringTheCommandProcessorWorks.md	Explanation	high	"title ""How Configuring the Command Processor Works"" is How-X-Works, not a how-to"	Explanation	Brighter V10
+contents/HowConfiguringTheDispatcherWorks.md	Explanation	high	"title ""How Configuring a Dispatcher for an External Bus Works"" is How-X-Works, not a how-to"	Explanation	Brighter V10
+contents/ImplementAQueryHandler.md	How-to	high	"title ""Implementing a Query Handler"" opens with a gerund or imperative"	How-to	Darker V10
+contents/ImplementingAHandler.md	How-to	high	"title ""How to Implement a Request Handler"" opens with a gerund or imperative"	How-to	Brighter V10
+contents/ImplementingAsyncHandler.md	How-to	high	"title ""How to Implement an Asynchronous Request Handler"" opens with a gerund or imperative"	How-to	Brighter V10
+contents/ImplementingExternalBus.md	How-to	high	"title ""Using an External Bus"" opens with a gerund or imperative"	How-to	Brighter V10
+contents/ReturningResultsFromAHandler.md	How-to	high	"title ""Returning Results from a Handler"" opens with a gerund or imperative"	How-to	Brighter V10
