@@ -49,7 +49,7 @@ If you intend to dispatch messages to another app, via message oriented middlewa
 
 An *Internal Bus* consumer is just a handler, typically registered through Brighter's ServiceCollection integration via our HostBuilder extension. It can thus take dependencies on other registered services within your app.
 
-An *External Bus* consumer is just a handler, but typically you host it using Brighter's *Service Activator*. You configure *Service Activator* to listens to messages flowing over message oriented middleware through a **Subscription**. *Service Activator* takes care of listening to messages arriving via the middleware, and delivering them to your handler code. In this way the complexity of using middleware is abstracted away from you, and you can focus on the business logic in your handler that you want to run in response to a message.
+An *External Bus* consumer is just a handler, but typically you host it using Brighter's *Dispatcher*. You configure the *Dispatcher* to listens to messages flowing over message oriented middleware through a **Subscription**. The *Dispatcher* takes care of listening to messages arriving via the middleware, and delivering them to your handler code. In this way the complexity of using middleware is abstracted away from you, and you can focus on the business logic in your handler that you want to run in response to a message.
 
 ### Pipelines Must be Homogeneous
 
@@ -307,4 +307,4 @@ Given you may have both a **Command** and an **Event** how do we preserve that b
 
 By setting the **Message.MessageType** to **MT_COMMAND** or **MT_EVENT** you indicate whether you expect this message to be treated as a **Command** or an **Event**. We flow that information in the message headers when sending over middleware.
 
-When *Service Activator* listens to messages it expects that the **MessageType** matches the type of **IRequest**, either **Command** or **Event** that your message mapper code transforms the message into. It will then use **CommandProcessor.Send()** to dispatch messages to a single handler, or **CommandProcessor.Publish** to dispatch messages to zero or more handlers, as appropriate.
+When the *Dispatcher* listens to messages it expects that the **MessageType** matches the type of **IRequest**, either **Command** or **Event** that your message mapper code transforms the message into. It will then use **CommandProcessor.Send()** to dispatch messages to a single handler, or **CommandProcessor.Publish** to dispatch messages to zero or more handlers, as appropriate.

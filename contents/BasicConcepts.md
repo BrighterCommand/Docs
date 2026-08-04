@@ -134,6 +134,6 @@ A routing key, also called a topic is the key used by message broker to route pu
 
 ## Service Activator
 
-A Service Activator triggers execution of your code due to an external input, such as an HTTP call, or a [message](#message) sent over middleware.
+A Service Activator triggers execution of your code due to an external input, such as an HTTP call, or a [message](#message) sent over middleware. <!-- pagelint: allow-serviceactivator -->
 
-In Brighter, the *Dispatcher* acts as a Service Activator, listening for a message from middleware, which it delivers via the [command processor](#command-processor) to a [handler](#request-handler). As such, it turns messages sent over middleware to a call on your [internal bus](#internal-bus).
+In Brighter, the *Dispatcher* acts as a Service Activator, listening for a message from middleware, which it delivers via the [command processor](#command-processor) to a [handler](#request-handler). As such, it turns messages sent over middleware to a call on your [internal bus](#internal-bus). <!-- pagelint: allow-serviceactivator -->

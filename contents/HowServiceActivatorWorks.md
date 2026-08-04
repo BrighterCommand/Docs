@@ -453,12 +453,12 @@ Test and adjust based on actual load.
 
 ## Relationship to ServiceActivator Assembly
 
-The **Dispatcher** is the primary class in the `Brighter.ServiceActivator` assembly. Throughout Brighter documentation, we use the term "Dispatcher" to refer to the concept and the class. We use "ServiceActivator" only when referring to the assembly name:
+The **Dispatcher** is the primary class in the `Brighter.ServiceActivator` assembly. Throughout Brighter documentation, we use the term "Dispatcher" to refer to the concept and the class. We use "ServiceActivator" only when referring to the assembly name: <!-- pagelint: allow-serviceactivator -->
 
 - "Configure the Dispatcher to consume messages"
 - "The Dispatcher uses Performers to retrieve messages"
-- "The Brighter.ServiceActivator assembly contains the Dispatcher"
-- "Configure the ServiceActivator to consume messages" (incorrect - too vague)
+- "The Brighter.ServiceActivator assembly contains the Dispatcher" <!-- pagelint: allow-serviceactivator -->
+- "Configure the ServiceActivator to consume messages" (incorrect - too vague) <!-- pagelint: allow-serviceactivator -->
 
 ## Related Documentation
 

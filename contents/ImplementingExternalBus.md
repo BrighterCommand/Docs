@@ -72,9 +72,9 @@ public class TaskReminderCommandMessageMapper : IAmAMessageMapper<TaskReminderCo
 ```
 ## Receiving via the External Bus 
 
-A consumer reads the **Message** using the [Service Activator](http://www.enterpriseintegrationpatterns.com/MessagingAdapter.html) pattern to map between an [Event Driven Consumer](http://www.enterpriseintegrationpatterns.com/EventDrivenConsumer.html) and a Handler.
+A consumer reads the **Message** using the [Service Activator](http://www.enterpriseintegrationpatterns.com/MessagingAdapter.html) pattern to map between an [Event Driven Consumer](http://www.enterpriseintegrationpatterns.com/EventDrivenConsumer.html) and a Handler. <!-- pagelint: allow-serviceactivator -->
 
-The use of the Service Activator pattern means the complexity of the distributed task queue is hidden from you. You just write a handler as  normal, but call it via post and create a message mapper, the result is
+The use of that pattern means the complexity of the distributed task queue is hidden from you. You just write a handler as  normal, but call it via post and create a message mapper, the result is
 that your command is handled reliably, asynchronously, and in parallel with little cognitive overhead. It just works!
 
 ``` csharp

@@ -49,7 +49,7 @@ For more on a *Publication* see the material on an *Add Producers* in [Basic Con
 
 ## Subscription
 
-For more on a *Subscription* see the material on configuring *Service Activator* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#configuring-the-dispatcher).
+For more on a *Subscription* see the material on configuring the *Dispatcher* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#configuring-the-dispatcher).
 
 When 
 

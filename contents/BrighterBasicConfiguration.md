@@ -701,11 +701,11 @@ public void ConfigureServices(IServiceCollection services)
 
 A *consumer* reads messages from Message-Oriented Middleware (MoM), and a *producer* puts messages onto the MoM for the *consumer* to read.
 
-A *consumer* waits for messages to appear on the queue, reads them, and then calls your *Request Handler* code to react. The component that listens for messages and dispatches them to handlers is called a **Dispatcher**. (In Enterprise Integration Patterns terminology, this is called a [*Service Activator*](https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingAdapter.html), and the assembly name reflects this, but we use "Dispatcher" for simplicity.)
+A *consumer* waits for messages to appear on the queue, reads them, and then calls your *Request Handler* code to react. The component that listens for messages and dispatches them to handlers is called a **Dispatcher**. (In Enterprise Integration Patterns terminology, this is called a [*Service Activator*](https://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingAdapter.html), and the assembly name reflects this, but we use "Dispatcher" for simplicity.) <!-- pagelint: allow-serviceactivator -->
 
 To use Brighter's Dispatcher you will need to take a dependency on the NuGet package:
 
-* **Paramore.Brighter.ServiceActivator** (assembly name, the component is called Dispatcher)
+* `Paramore.Brighter.ServiceActivator` (assembly name, the component is called Dispatcher)
 
 ### **Dispatcher Service Collection Extensions**
 
@@ -713,8 +713,8 @@ We provide support for configuring .NET Core's **HostBuilder** as a message cons
 
 To use Brighter's Dispatcher with **HostBuilder** you will need to take a dependency on the following NuGet packages:
 
-* **Paramore.Brighter.ServiceActivator.Extensions.Hosting**
-* **Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection**
+* `Paramore.Brighter.ServiceActivator.Extensions.Hosting`
+* `Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection`
 
 These provide an extension method **AddConsumers()** that can be used to add Brighter to the .NET Core DI Framework.
 
@@ -734,7 +734,7 @@ private static IHostBuilder CreateHostBuilder(string[] args) =>
 
 if you are using .NET 6 you can make the call direction on your **HostBuilder**'s Services property.
 
-The **AddConsumers()** method takes an **`Action<ServiceActivatorOptions>`** delegate. The extension method supplies the delegate with a **ServiceActivatorOptions** object that allows you to configure how Brighter runs.
+The **AddConsumers()** method takes an **`Action<ServiceActivatorOptions>`** delegate. The extension method supplies the delegate with a `ServiceActivatorOptions` object that allows you to configure how Brighter runs.
 
 The **AddConsumers()** method returns an **IBrighterBuilder** interface. **IBrighterBuilder** is a [fluent interface](https://en.wikipedia.org/wiki/Fluent_interface) that you can use to configure Brighter *Command Processor* properties. It is discussed above at [Brighter Builder Fluent Interface](#brighter-builder-fluent-interface)) and the same options apply. We discuss one additional option that becomes important when receiving requests the *Inbox* in [Additional Brighter Builder Options](/contents/BrighterBasicConfiguration.md#inbox).
 
@@ -922,11 +922,11 @@ Typically **DbConnectionString** would obtain the connection string for the Db f
 
 To run the Dispatcher we add it as a [Hosted Service](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services?view=aspnetcore-6.0&tabs=visual-studio). 
 
-We provide the class **ServiceActivatorHostedService** for this in the NuGet package:
+We provide the class `ServiceActivatorHostedService` for this in the NuGet package:
 
-* **Paramore.Brighter.ServiceActivator.Extensions.Hosting**
+* `Paramore.Brighter.ServiceActivator.Extensions.Hosting`
 
-The **ServiceActivatorHostedService** calls the **Dispatcher.Receive** method which starts message pumps for the configured *Subscriptions*.
+The `ServiceActivatorHostedService` calls the **Dispatcher.Receive** method which starts message pumps for the configured *Subscriptions*.
 
 ``` csharp
 private static IHostBuilder CreateHostBuilder(string[] args) =>

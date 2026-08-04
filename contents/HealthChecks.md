@@ -2,11 +2,11 @@
 
 > **How-to** · Applies to **Brighter V10**
 
-Brighter provides an AspNet Core Health check for **Service Activator**
+Brighter provides an AspNet Core Health check for the **Dispatcher**
 
 ## Configure Health Checks
 
-The below will configure ASP.Net Core Health checks for Brighter's **Service Activator**, for more information on [ASP.NET Core Health Check](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks?view=aspnetcore-6.0)
+The below will configure ASP.Net Core Health checks for Brighter's **Dispatcher**, for more information on [ASP.NET Core Health Check](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks?view=aspnetcore-6.0)
 
 ```csharp
 // Web Application Builder code goes here

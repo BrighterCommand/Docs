@@ -95,7 +95,7 @@ The level of separation you choose depends on your application's complexity and 
 **External Bus Support:**
 
 - Message mappers for converting commands/events to messages
-- Service Activator for consuming messages from queues/streams
+- Dispatcher for consuming messages from queues/streams
 - Support for distributed systems and microservices
 
 ### Command Handler Example

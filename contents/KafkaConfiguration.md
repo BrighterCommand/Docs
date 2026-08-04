@@ -219,7 +219,7 @@ If you want to specify the topic through Brighter, or through your own IaaS code
 
 ## Subscription
 
-For more on a *Subscription* see the material on configuring *Service Activator* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#configuring-the-dispatcher).
+For more on a *Subscription* see the material on configuring the *Dispatcher* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#configuring-the-dispatcher).
 
 We support a number of Kafka specific *Subscription* options:
 
