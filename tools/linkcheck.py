@@ -15,7 +15,8 @@ while GitBook and GitHub do not. A link that works on the machine that wrote it
 ORPHAN catches the opposite failure: the link resolves, but no reader can reach
 the page, because it never made it into the table of contents. Anchors and file
 existence say nothing about reachability, so this is checked separately by
-walking SUMMARY.md. Pages listed in NON_CONTENT below are exempt.
+walking SUMMARY.md. Every page under contents/ must be reachable; there are no
+exemptions, so a page that is not navigable has to be either linked or deleted.
 
 Anchors are slugified with GitHub's rules, which GitBook follows: inline
 markdown is stripped, the text is lowercased, punctuation is dropped, and each
@@ -44,10 +45,6 @@ SKIP_DIRS = {'.git', '.github', '.claude', '.repomix', 'spec', 'node_modules'}
 
 # Files whose links are deliberate placeholders, not real targets.
 SKIP_FILES = {'CLAUDE.md', 'PROMPT.md'}
-
-# Pages that are not reader-facing content, so are exempt from the orphan check.
-# VersionBegin/VersionEnd are GitBook version markers, not documentation.
-NON_CONTENT = {'VersionBegin.md', 'VersionEnd.md'}
 
 TOC = 'SUMMARY.md'
 
@@ -129,8 +126,6 @@ def orphans():
         rel = os.path.relpath(p, ROOT)
         # Only pages under contents/ are navigable; SUMMARY.md itself is the TOC.
         if os.path.dirname(rel) != 'contents':
-            continue
-        if os.path.basename(rel) in NON_CONTENT:
             continue
         if rel.lower() not in listed:
             out.append(rel)
