@@ -42,7 +42,7 @@ The Connection to RabbitMQ is provided by an **RmqMessagingGatewayConnection** w
 - **Exchange**: The definition of the exchange. **Name** is the identifier for the exchange. All exchanges have a [**Type**](https://www.rabbitmq.com/tutorials/amqp-concepts.html), and the default is **ExchangeType.Direct**, but it is a string value that supports all RabbitMQ exchange types on the .NET SDK. The **Durable** flag is used to indicate if the exchange definition survives node failure or restart of the broker which defaults to *false*. **SupportDelay** indicates if the Exchange supports retry with delay, which defaults to *false*.
 - **DeadLetterExchange**: Another exchange definition, but this one is used to host any Dead Letter Queues (DLQ). This could be the same exchange, but normal practice is to use a different exchange.
 - **Heartbeat**: RabbitMQ uses a heartbeat to determine if a connection has died. This sets the interval for that heartbeat. Defaults to 20s.
-- **PersistMessages**: Should messages be saved to disk? Saving messages to disk allows them to be recovered if a node fails, defaults to *false*. See [Persistent Messages](#persistent-messages) for more details.
+- **PersistMessages**: Should messages be saved to disk? Saving messages to disk allows them to be recovered if a node fails, defaults to *false*. See [RabbitMQ Persistence Options](#rabbitmq-persistence-options) for more details.
 - **ContinuationTimeout**: RabbitMQ protocol timeouts in seconds. Defaults to 20s. See [ConnectionFactory.ContinuationTimeout](https://www.rabbitmq.com/dotnet-api-guide.html) for more information.
 
 In RabbitMQ, recreating an exiting primitive is a no-op provided the definition does not change.
@@ -68,6 +68,19 @@ public void ConfigureServices(IServiceCollection services)
         }    
 }
 ```
+
+## RabbitMQ Connection Reliability Options
+
+These are the knobs on the connection above. Each has a default, so you set only
+the ones your network obliges you to; for how to choose values, see
+[RabbitMQ Connection Stability](/contents/RabbitMQConnectionStability.md).
+
+**Configuration Options**:
+
+- **connectionRetryCount**: Number of times to retry connecting to RabbitMQ before giving up (default: 3)
+- **retryWaitInMilliseconds**: Time to wait between retry attempts (default: 1000ms)
+- **circuitBreakerTimeInMilliseconds**: Time to wait before attempting to reconnect after exceeding retry count (default: 60000ms)
+- **Heartbeat**: Interval for RabbitMQ heartbeat checks to detect dead connections (default: 20s)
 
 ## RabbitMQ Publication
 
@@ -188,41 +201,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
         })
 ```
 
-## Quorum Queues
-### What are Quorum Queues?
-
-[Quorum queues](https://www.rabbitmq.com/docs/quorum-queues) are a modern queue type introduced in RabbitMQ 3.8, designed to provide high availability and data consistency using the [Raft consensus algorithm](https://raft.github.io/). Unlike classic queues that use mirroring for high availability, quorum queues use a replicated state machine approach that ensures stronger consistency guarantees.
-
-### Classic vs Quorum Queues
-
-| Feature | Classic Queues | Quorum Queues |
-|---------|---------------|---------------|
-| **Purpose** | High throughput and low latency | High availability and data consistency |
-| **Replication** | Mirroring (optional) | Built-in Raft-based replication |
-| **Consistency** | Weaker guarantees | Strong consistency (Raft consensus) |
-| **Performance** | Higher throughput | Lower throughput, more overhead |
-| **Cluster Requirements** | Any cluster size | Requires at least 3 nodes for optimal performance |
-| **Durability** | Optional | Required (isDurable must be true) |
-| **HighAvailability Flag** | Supported (deprecated in RMQ 3+) | Not supported (highAvailability must be false) |
-| **Use Cases** | Real-time streaming, high-volume processing | Financial transactions, critical business processes |
-
-### When to Use Quorum Queues
-
-Use **Quorum Queues** when:
-
-- **Data consistency is critical**: Financial transactions, order processing, critical business logic
-- **Message durability is essential**: Messages must survive node failures
-- **You have a cluster**: Quorum queues require at least 3 nodes for optimal fault tolerance
-- **You can accept lower throughput**: The Raft consensus algorithm adds overhead
-
-Use **Classic Queues** when:
-
-- **High throughput is priority**: Real-time data streaming, high-volume message processing
-- **Low latency is required**: Time-sensitive applications
-- **Message loss is acceptable**: Non-critical notifications, telemetry data
-- **Single-node deployment**: Classic queues work well with a single node
-
-### Configuration Requirements
+## RabbitMQ Quorum Queue Requirements
 
 To use quorum queues, you must configure the subscription with:
 
@@ -231,6 +210,7 @@ To use quorum queues, you must configure the subscription with:
 - **highAvailability**: Must be `false` (quorum queues provide their own replication)
 
 ```csharp
+// ...
 var subscription = new RmqSubscription<GreetingMade>(
     new SubscriptionName("paramore.sample.salutationanalytics"),
     new ChannelName("SalutationAnalytics"),
@@ -251,67 +231,12 @@ If you attempt to create a quorum queue without meeting the configuration requir
 - `isDurable` is `true`
 - `highAvailability` is `false`
 
-### Quorum Queue Best Practices
+Why you would want a quorum queue, and what it costs, is in
+[RabbitMQ Durability](/contents/RabbitMQDurability.md); moving an existing
+subscription onto one is in
+[Migrating to Quorum Queues](/contents/RabbitMQMigrateToQuorumQueues.md).
 
-1. **Use at least 3 nodes**: Quorum queues are designed for clusters with at least 3 nodes. A single node or 2-node cluster defeats the purpose of the Raft consensus algorithm.
-
-2. **Monitor queue performance**: Quorum queues have higher overhead than classic queues. Monitor throughput and latency to ensure they meet your requirements.
-
-3. **Use for critical workflows only**: Reserve quorum queues for messages where consistency and durability are critical. Use classic queues for high-throughput, less critical workloads.
-
-4. **Consider message size**: Quorum queues replicate messages across multiple nodes, so large messages can impact network bandwidth and storage.
-
-5. **Plan for cluster capacity**: Each quorum queue replicates to multiple nodes, consuming more disk space and memory than classic queues.
-
-### Migration from Classic to Quorum Queues
-
-To migrate an existing subscription from classic to quorum queues:
-
-1. **Create a new quorum queue** with a different name
-2. **Update producers** to publish to the new queue
-3. **Deploy new consumers** subscribing to the quorum queue
-4. **Drain the classic queue** by processing remaining messages
-5. **Remove the classic queue** once drained
-
-Do not attempt to change a classic queue to a quorum queue in place, as this requires deleting and recreating the queue, which would result in message loss.
-
-### Ack and Nack
-
-We use RabbitMQ's queues to subscribe to a routing key on an exchange.
-
-When we Accept/Ack a message, in response to a handler chain completing, we Ack the message to RabbitMQ using **Channel.BasicAck**. Note that we only Ack a message once we have completed running the chain. 
-
-When we Reject/Nack a message (see [Handler Failure](/contents/HandlerFailure.md) for more on failure) then we use **Channel.Reject** to delete the message, and move it to a DLQ if there is one.
-
-Brighter has an internal buffer for messages pushed to a *Performer* (a thread running a message pump). This buffer has thread affinity (in RabbitMQ we have to Ack or Nack from the thread that received the message). When a consumer closes its connection to RabbitMQ, messages in the buffer that have not been Ack'd or Nack'd will be returned to the queue.
-
-## Persistent Messages
-
-RabbitMQ supports message persistence, which saves messages to disk to ensure they survive broker restarts or node failures. Brighter supports persistent messages through the `PersistMessages` configuration property.
-
-### What is Message Persistence?
-
-Message persistence in RabbitMQ involves two components:
-
-1. **Durable Queues**: Queue definitions that survive broker restarts
-2. **Persistent Messages**: Individual messages marked for disk storage
-
-When both components are enabled, messages will survive broker restarts. However, there is a small window between when RabbitMQ receives a message and when it's written to disk, during which messages could be lost if the broker crashes.
-
-### Enabling Persistent Messages
-
-To enable message persistence, set `PersistMessages = true` in your `RmqMessagingGatewayConnection`:
-
-```csharp
-var rmqConnection = new RmqMessagingGatewayConnection
-{
-    AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
-    Exchange = new Exchange("paramore.brighter.exchange", durable: true),
-    PersistMessages = true  // Enable message persistence
-};
-```
-
-### Configuration for Persistent Messages
+## RabbitMQ Persistence Options
 
 For full persistence, you should configure:
 
@@ -329,6 +254,7 @@ For full persistence, you should configure:
 **Complete Example**:
 
 ```csharp
+// ...
 // Producer Configuration
 services.AddBrighter(...)
     .AddProducers((configure) =>
@@ -383,186 +309,22 @@ var rmqConnection = new RmqMessagingGatewayConnection
 };
 ```
 
-### Performance Considerations
+The trade-offs these settings buy and pay for are in
+[RabbitMQ Durability](/contents/RabbitMQDurability.md).
 
-Message persistence comes with performance trade-offs:
+## RabbitMQ Ack and Nack Behaviour
 
-- **Slower throughput**: Writing to disk is slower than keeping messages in memory
-- **Increased latency**: Each message write involves disk I/O
-- **Disk space**: Persistent messages consume disk storage
-- **Fsync operations**: RabbitMQ periodically flushes to disk (configurable)
+We use RabbitMQ's queues to subscribe to a routing key on an exchange.
 
-For high-throughput applications where message loss is acceptable, consider using non-persistent messages (the default).
+When we Accept/Ack a message, in response to a handler chain completing, we Ack the message to RabbitMQ using **Channel.BasicAck**. Note that we only Ack a message once we have completed running the chain. 
 
-### When to Use Persistent Messages
+When we Reject/Nack a message (see [Handler Failure](/contents/HandlerFailure.md) for more on failure) then we use **Channel.Reject** to delete the message, and move it to a DLQ if there is one.
 
-Use **Persistent Messages** when:
+Brighter has an internal buffer for messages pushed to a *Performer* (a thread running a message pump). This buffer has thread affinity (in RabbitMQ we have to Ack or Nack from the thread that received the message). When a consumer closes its connection to RabbitMQ, messages in the buffer that have not been Ack'd or Nack'd will be returned to the queue.
 
-- **Message loss is unacceptable**: Financial transactions, critical business data
-- **Broker restarts must not lose data**: Long-running workflows, state management
-- **Regulatory requirements**: Audit trails, compliance scenarios
-- **Combined with Outbox pattern**: Ensures at-least-once delivery guarantees
+## Further Reading
 
-Do not use persistent messages when:
-
-- **High throughput is critical**: Real-time streaming, telemetry data
-- **Message loss is acceptable**: Non-critical notifications, cache updates
-- **Short message lifetime**: Messages that expire quickly
-- **Memory-based queues**: Testing, development environments
-
-### Persistent Message Best Practices
-
-1. **Use with quorum queues**: Quorum queues require persistence and provide stronger durability guarantees.
-
-2. **Enable Publisher Confirms**: Brighter uses publisher confirms by default to ensure RabbitMQ has accepted messages.
-
-3. **Monitor disk space**: Persistent messages consume disk storage. Monitor and alert on disk usage.
-
-4. **Use TTL for persistent messages**: Set a time-to-live on messages to prevent indefinite accumulation.
-
-5. **Combine with Outbox pattern**: For transactional messaging, use the Outbox pattern with persistent messages.
-
-6. **Test recovery scenarios**: Regularly test broker restart scenarios to validate persistence behavior.
-
-## Connection Stability
-
-V10 includes improvements to RabbitMQ connection handling and error recovery, making applications more resilient to network issues and broker restarts.
-
-### Improvements in V10
-
-1. **Enhanced connection pooling**: Improved connection pool management to prevent ghost connections
-2. **Better error handling**: More robust error recovery for connection failures
-3. **Automatic reconnection**: Improved logic for reconnecting after connection loss
-4. **Blocked/Unblocked event monitoring**: Automatic logging of channel blocked events (see below)
-
-### Connection Retry Configuration
-
-The `AmqpUriSpecification` provides several options for connection reliability:
-
-```csharp
-var rmqConnection = new RmqMessagingGatewayConnection
-{
-    AmpqUri = new AmqpUriSpecification(
-        uri: new Uri("amqp://guest:guest@localhost:5672"),
-        connectionRetryCount: 5,                  // Number of retry attempts
-        retryWaitInMilliseconds: 250,             // Wait between retries
-        circuitBreakerTimeInMilliseconds: 30000   // Circuit breaker timeout
-    ),
-    Exchange = new Exchange("paramore.brighter.exchange"),
-    Heartbeat = 20  // Heartbeat interval in seconds
-};
-```
-
-**Configuration Options**:
-
-- **connectionRetryCount**: Number of times to retry connecting to RabbitMQ before giving up (default: 3)
-- **retryWaitInMilliseconds**: Time to wait between retry attempts (default: 1000ms)
-- **circuitBreakerTimeInMilliseconds**: Time to wait before attempting to reconnect after exceeding retry count (default: 60000ms)
-- **Heartbeat**: Interval for RabbitMQ heartbeat checks to detect dead connections (default: 20s)
-
-### Heartbeat Configuration
-
-RabbitMQ uses heartbeats to detect dead TCP connections. If a connection doesn't send a heartbeat within the configured interval, RabbitMQ considers it dead and closes the connection.
-
-```csharp
-var rmqConnection = new RmqMessagingGatewayConnection
-{
-    AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
-    Exchange = new Exchange("paramore.brighter.exchange"),
-    Heartbeat = 30  // Check connection health every 30 seconds
-};
-```
-
-### Best Practices for Connection Stability
-
-1. **Use appropriate retry counts**: Set `connectionRetryCount` based on your network stability and failover time requirements.
-
-2. **Tune heartbeat interval**: Balance between detecting dead connections quickly (shorter interval) and network overhead (longer interval).
-
-3. **Monitor connection events**: Use structured logging to track connection failures and recoveries.
-
-4. **Handle blocked connections**: Monitor blocked/unblocked events to detect backpressure issues (see below).
-
-5. **Use connection pooling**: Brighter manages a connection pool. Avoid creating multiple `RmqMessagingGatewayConnection` instances.
-
-6. **Test network failures**: Regularly test connection resilience with network partitions and broker restarts.
-
-## Blocked and Unblocked Channel Events
-
-RabbitMQ can block connections when resources are exhausted (memory, disk space, or alarms). Brighter automatically subscribes to blocked/unblocked events and logs them for monitoring.
-
-### What are Blocked Connections?
-
-RabbitMQ blocks a connection when:
-
-- **Memory alarm triggered**: Broker memory usage exceeds the threshold
-- **Disk alarm triggered**: Broker disk space is low
-- **Resource limits**: Other broker resource limits are reached
-
-When blocked, producers cannot publish messages, and the connection is paused until resources are available.
-
-### Automatic Event Logging
-
-Brighter automatically logs blocked and unblocked events:
-
-**Blocked Event**:
-```
-[Warning] RMQMessagingGateway: Subscription to amqp://localhost:5672 blocked. Reason: {reason}
-```
-
-**Unblocked Event**:
-```
-[Information] RMQMessagingGateway: Subscription to amqp://localhost:5672 unblocked
-```
-
-### Monitoring Blocked Connections
-
-To monitor blocked connections in your application:
-
-1. **Enable structured logging**: Configure your logger to capture warnings and information logs from Brighter.
-
-2. **Alert on blocked events**: Set up alerts when connections are blocked to investigate resource issues.
-
-3. **Monitor RabbitMQ metrics**: Use RabbitMQ Management UI or Prometheus to track memory and disk usage.
-
-### Example Logging Configuration
-
-```csharp
-// Using Serilog
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .WriteTo.Console()
-    .WriteTo.Seq("http://localhost:5341")
-    .CreateLogger();
-
-// Blocked events will be logged automatically
-services.AddLogging(loggingBuilder =>
-{
-    loggingBuilder.ClearProviders();
-    loggingBuilder.AddSerilog();
-});
-```
-
-### Handling Blocked Connections in Production
-
-When a connection is blocked:
-
-1. **Check RabbitMQ status**: Use the Management UI to identify the alarm type
-2. **Investigate resource usage**: Check memory, disk, and queue depths
-3. **Increase resources**: Add more memory/disk or scale out the cluster
-4. **Adjust queue policies**: Set max lengths or TTLs to prevent unbounded growth
-5. **Monitor continuously**: Set up dashboards and alerts for RabbitMQ health
-
-### Best Practices for Blocked Connections
-
-1. **Monitor resource usage**: Regularly check RabbitMQ memory and disk usage to prevent alarms.
-
-2. **Set resource limits**: Configure memory and disk watermarks appropriately for your workload.
-
-3. **Use persistent queues carefully**: Persistent messages consume more disk space.
-
-4. **Implement queue depth limits**: Use max length policies to prevent unbounded queue growth.
-
-5. **Alert on blocked events**: Create alerts for blocked connection warnings to respond quickly.
-
-6. **Test blocking scenarios**: Regularly test how your application behaves when RabbitMQ blocks connections.
+- [RabbitMQ Durability](/contents/RabbitMQDurability.md) — why quorum queues and message persistence exist, and what each costs
+- [Migrating to Quorum Queues](/contents/RabbitMQMigrateToQuorumQueues.md) — moving an existing subscription onto a quorum queue
+- [RabbitMQ Connection Stability](/contents/RabbitMQConnectionStability.md) — configuring retry, heartbeats and blocked-connection handling
+- [Basic Configuration](/contents/BrighterBasicConfiguration.md) — the Brighter-wide configuration these options sit inside

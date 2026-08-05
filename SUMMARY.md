@@ -64,6 +64,9 @@
 ## Guaranteed At Least Once
 
  * [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)
+ * [RabbitMQ Durability: Quorum Queues and Persistence](/contents/RabbitMQDurability.md)
+ * [Migrating to Quorum Queues](/contents/RabbitMQMigrateToQuorumQueues.md)
+ * [RabbitMQ Connection Stability](/contents/RabbitMQConnectionStability.md)
  * [PostgreSQL Message Broker](/contents/PostgreSQLMessageBroker.md)
  * [AWS SNS Configuration](/contents/AWSSQSConfiguration.md)
  * [Kafka Configuration](/contents/KafkaConfiguration.md)
