@@ -256,10 +256,51 @@ Goal: a human page-type verdict for every page, then one mechanical 105-file com
   - Output: 105 files under `contents/` each gaining one banner line and one blank line below the H1; `apply_banners.py` deleted
   - Notes: **Its own commit**, carrying nothing else — a 105-file diff is reviewable only if it is genuinely mechanical, and the linter rather than the reviewer verifies uniformity. Verify: rules 1 and 2 report **zero**; `linkcheck.py` still clean (banners carrying prerequisite links add link targets to check).
 
-- [ ] **Task 3.5:** Rendered-preview sanity check
+- [x] **Task 3.5:** Rendered-preview sanity check
   - Input: the published GitBook site after the sweep reaches a published branch
   - Output: Confirmation that the banner renders as a callout below the title, and a note in this file if it does not
   - Notes: The one leftover from requirements Q1. Not a blocker — a blockquote is ordinary Markdown and nothing about it is version-specific — but worth doing once on the first page that ships, since it is now on all 105.
+
+### Task 3.5 as executed (2026-08-05)
+
+**The banner renders as intended, checked against the published site rather than a
+preview** — PR #74 merged first, so `master` was already live. 12 pages sampled across
+the corpus, including **all five that carry a Prerequisites segment**. Every one:
+
+```text
+page                                    h1    blockquote  prereq  applies
+rabbitmqdurability                      True  True        True    Brighter V10
+rabbitmqmigratetoquorumqueues           True  True        True    Brighter V10
+rabbitmqconnectionstability             True  True        True    Brighter V10
+commandprocessorconfigurationreference  True  True        True    Brighter V10
+dispatcherconfigurationreference        True  True        True    Brighter V10
+glossary                                True  True        False   Brighter V10 and Darker V4
+basicconcepts                           True  True        False   Brighter V10 and Darker V4
+whybrighter                             True  True        False   Brighter V10 and Darker V4
+showmethecode                           True  True        False   Brighter V10 and Darker V4
+kafkaconfiguration                      True  True        False   Brighter V10
+v10migrationguide                       True  True        False   Brighter V10
+faq                                     True  True        False   Brighter V10
+```
+
+GitBook emits `<h1>` … `</header>`, then the banner as the first element of the content
+body: `<blockquote class="… border-l-2 pl-6 py-3 border-tint …">`. So it is a real
+blockquote with a left border and padding — a callout below the title, which is what
+this task asked. Inside it, `**Reference**` becomes `<strong>`, the ` · ` separators
+survive as U+00B7, and the Prerequisites link is a real `<a href>`:
+`/paramore-brighter-documentation/guaranteed-at-least-once/rabbitmqconfiguration`,
+fetched and confirmed **200**.
+
+**The obvious check would have proved nothing.** Reading the page through a
+Markdown-converting fetcher returns `> **Explanation** · Applies to …` — which is
+exactly what a *correctly rendered blockquote* converts back to, and equally what a
+literal, unrendered banner would look like. The two are indistinguishable after
+conversion, and the concern behind requirements Q1 was precisely that GitBook might emit
+the banner literally. **The check had to be run against raw HTML** for the `<blockquote>`
+element, and was.
+
+Also settled: the corpus publishes **111 URLs** (`sitemap-pages.xml`) — 110 pages plus
+the index — so all five split pages are live and none is orphaned in the published tree.
 
 **Verified by:** rules 1 and 2 at zero; `linkcheck.py` clean; every verdict human-reviewed
 (AC3).
