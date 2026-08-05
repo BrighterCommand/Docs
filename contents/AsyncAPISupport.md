@@ -20,7 +20,7 @@ Brighter generates AsyncAPI 3.0 documents by inspecting your registered [subscri
 - .NET 8.0 or later
 - Two NuGet packages:
 
-```
+```bash
 dotnet add package Paramore.Brighter.AsyncAPI
 dotnet add package Paramore.Brighter.AsyncAPI.NJsonSchema
 ```

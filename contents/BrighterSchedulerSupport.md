@@ -114,7 +114,7 @@ Brighter uses two internal message types for scheduling:
 
 ### Scheduling Flow
 
-```
+```text
 Your Application
        ↓
 CommandProcessor.SendAsync(command, delay)
@@ -301,7 +301,7 @@ Brighter supports multiple scheduler implementations. Your choice depends on you
 
 ### Decision Guide
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │  Are you deploying to AWS?              │
 └──────────────┬──────────────────────────┘

@@ -149,7 +149,7 @@ which are reserved for workflow orchestration.
 
 When the Inbox recognises a request it has already handled and the action is `Replay`:
 
-```
+```text
 Duplicate PlaceOrder arrives
         │
         ▼
@@ -555,7 +555,7 @@ stores for their schema capability rather than assuming it.
 Each message is prefixed with the handler it came from — `Handler 'ProcessPaymentHandler'`.
 An unconfigured Inbox renders as `'(none)'` in the first message. The messages read:
 
-```
+```text
 OnceOnlyAction.Replay requires a causation-tracking inbox, but the configured
 inbox 'MyCustomInbox' does not implement IAmACausationTrackingInbox — Replay
 cannot find the causation id of the original handling
@@ -611,7 +611,7 @@ pipeline's context at all and falls back to a throwaway whose Bag never reaches 
 This one does leave a trace: a single warning, logged once per process the first time a
 Replay pipeline hits it.
 
-```
+```text
 A custom IRequestContext (not a RequestContext) was supplied; the causation id
 cannot flow to downstream handlers, so OnceOnlyAction.Replay will be a no-op
 ```

@@ -16,7 +16,7 @@ This approach follows the [Decorator Pattern](https://en.wikipedia.org/wiki/Deco
 
 When you call `IQueryProcessor.ExecuteAsync(query)`, Darker constructs a pipeline of decorators around your query handler based on the attributes you've applied to the handler's `ExecuteAsync` method. The execution flows through each decorator in order before reaching your handler:
 
-```
+```text
 QueryProcessor.ExecuteAsync(query)
         ↓
 [QueryLogging Decorator - Step 1]

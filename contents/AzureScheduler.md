@@ -27,7 +27,7 @@ Azure Service Bus Scheduler is recommended when:
 
 Brighter uses Azure Service Bus's native `ScheduledEnqueueTimeUtc` property through the `FireAzureScheduler` message approach:
 
-```
+```text
 Your Code → CommandProcessor.SendAsync(delay, command)
     ↓
 Brighter creates FireAzureScheduler message

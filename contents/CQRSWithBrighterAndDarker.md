@@ -307,7 +307,7 @@ When building a CQRS application, you'll use both Brighter and Darker together i
 
 Here's how Brighter and Darker fit together in a typical ASP.NET Core application:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    Web Application (ASP.NET Core)           │
 ├──────────────────────────┬──────────────────────────────────┤
@@ -537,7 +537,7 @@ public class GetOrderSummaryQueryHandler :
 
 **Scenario:** Commands write to a primary database; queries read from a replica or separate optimized read database
 
-```
+```text
 ┌────────────────┐
 │   Commands     │
 │   (Brighter)   │
@@ -580,7 +580,7 @@ public class GetOrderSummaryQueryHandler :
 
 This advanced pattern stores all state changes as a sequence of events. The query side builds read models (projections) by replaying events.
 
-```
+```text
 ┌────────────────┐
 │   Commands     │
 │   (Brighter)   │

@@ -11,7 +11,7 @@ Rules, and what each is for:
   BANNER MALFORMED    a banner is there, but not in the fixed grammar
   HEADING NOT UNIQUE  a `##` text that also appears on another page
   HEADING REPEATED    a heading text repeated within one page (H2-H4)
-  LANGUAGE TAG        a fenced block with no language (warning)
+  LANGUAGE TAG        a fenced block with no language
   SERVICEACTIVATOR    "ServiceActivator" in prose where "Dispatcher" is meant
   USING DIRECTIVES    a C# block with no `using` lines (warning, counted;
                       stays a warning under --changed if marked `// ...`)
@@ -35,9 +35,14 @@ emphasis when it builds the anchor: `## **Configuration**` and
 slug() is imported from linkcheck.py, so this tool compares exactly what the
 link checker resolves anchors against.
 
-Two strictness levels. Repo-wide, missing `using` directives are a warning with
-a count, so existing debt is visible without blocking unrelated work. Under
---changed they are an error — but only for code blocks that overlap the diff.
+Two strictness levels, and only the using-directive rule uses both. A missing
+language tag is an error everywhere: the backfill landed with spec 011 Task 7.2,
+so there is no debt for the softer level to protect, and an untagged fence today
+is a new one.
+
+Repo-wide, missing `using` directives are a warning with a count, so existing
+debt is visible without blocking unrelated work. Under --changed they are an
+error — but only for code blocks that overlap the diff.
 Block granularity, not file: a file-level rule would mean fixing a typo on a
 700-line page obliges backfilling every block on it, which penalises exactly the
 small corrections worth encouraging.
@@ -116,10 +121,11 @@ BANNER_SHAPE_RE = re.compile(r'^> \*\*[^*]+\*\* · Applies to \*\*[^*]+\*\*')
 
 BANNER_EXAMPLE = '> **Reference** · Applies to **Brighter V10**'
 
-# Rule 4 is a warning until the 185 untagged fences are backfilled, then an
-# error repo-wide. Flip this in the same commit as the backfill — spec 011
-# Task 7.2 — or the tags decay like everything else unenforced.
-LANGUAGE_TAG_IS_ERROR = False
+# Rule 4 is a repo-wide error as of spec 011 Task 7.2, flipped in the same
+# commit that tagged the last 34 untagged fences. It was a warning while the
+# backfill was outstanding; there is no backfill left, so an untagged fence is
+# now a new one, and a rule left unenforced is a rule that decays.
+LANGUAGE_TAG_IS_ERROR = True
 
 # Opening fence: up to three spaces of indent, then a run of >=3 backticks or
 # tildes, then an optional info string. A closing fence repeats the character at

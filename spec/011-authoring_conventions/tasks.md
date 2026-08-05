@@ -668,7 +668,7 @@ gone, verified by byte inspection rather than by eye.
   - Output: `spec/011-authoring_conventions/worklist.md` — Page (path + lines) · Mode score with modes named · Verdict (`split` / `keep` / `keep — outside Diátaxis`) · Proposed shape · Rationale
   - Notes: **Must stand alone without this spec in context** — Spec 010 executes against it. Seeded from the 31 pages scoring ≥3 modes, minus the two split here. **The score is a triage signal, not a verdict:** `Glossary.md` (589 lines, single mode) and `KafkaConfiguration.md` (606 lines, one mode) are the standing reminders that size and score both mislead — record them as `keep` with the reason, so 010 does not re-open the question. Pages that resisted classification in Task 3.2 go here as split candidates; pages legitimately outside Diátaxis (`FAQ.md`, `Glossary.md`, `V10MigrationGuide.md`) must **not** be recorded as split candidates.
 
-- [ ] **Task 7.2:** P1 — add language tags to the 185 untagged fences, then flip rule 4 to error
+- [x] **Task 7.2:** P1 — add language tags to the 185 untagged fences, then flip rule 4 to error
   - Input: `pagelint.py` rule 4 warnings
   - Output: Language tags across `contents/`; rule 4 promoted to repo-wide error; `CLAUDE.md` *Enforcement* updated to match
   - Notes: Mechanical enough to sit alongside the sweeps. Pick the tag from the block's content — `csharp`, `yaml`, `json`, `bash`, `text` for output dumps. Promote the rule in the **same** commit, or the tags decay like everything else unenforced.
@@ -958,3 +958,67 @@ Phases 1 and 2 are complete. `linkcheck.py` is green in CI on the untouched tree
 (run 30881245792, `107 files checked`), `pagelint.py` is written, run and reconciled,
 and it is **deliberately not in `docs.yml`** — Task 5.1 adds it once the sweeps make it
 pass. The next session starts at Task 3.1.
+
+---
+
+## Task 7.2 as executed (2026-08-05)
+
+**All 34 untagged fences carry a language, and rule 4 is a repo-wide error in the same
+commit.** `pagelint.py` drops from 836 warnings to 802, and the rule that would have let
+them come back is closed behind it.
+
+### The 34 split 1 `bash` / 33 `text`, and that is the finding
+
+Not one of the 34 was code. The single `bash` block is
+`AsyncAPISupport.md:23`, two `dotnet add package` lines. The other 33 are ASCII flow
+diagrams (the scheduler family, `CQRSWithBrighterAndDarker.md`,
+`HowServiceActivatorWorks.md`), directory-layout trees (`QueriesAndQueryObjects.md` ×4),
+validation-message dumps (`PipelineValidation.md` ×5, `ReplayOnSeen.md`) and trace-tree
+output (`Telemetry.md` ×9) — all `text`.
+
+That is not a coincidence and it is the explanation for the debt existing at all. An
+author writing C# reaches for ```` ```csharp ```` because they want the highlighting;
+an author drawing a box-and-arrow diagram has no language in mind and types a bare
+fence, because no tag is the honest answer to "what language is this?" until you know
+`text` is the convention. **The untagged population was never latent code debt** — it
+was the absence of a name for "not code".
+
+**Corroboration, not assertion:** the using-directive debt is **802 blocks across 93
+pages before and after**. Had any of the 34 held C#, tagging it `csharp` would have
+added it to rule 6's population and moved that number. It did not move.
+
+### The warning count reconciles exactly
+
+836 → 802, and 802 is the whole using-directive debt. The split PROMPT.md recorded —
+802 rule 6 + 34 rule 4 — held, and the residue after removing rule 4 is rule 6 alone.
+
+### The gate was proved red before it was trusted green
+
+Rule 4's flip was verified by breaking it on purpose: retagging `Telemetry.md:207` back
+to a bare fence produces `1 errors` and **exit 1**, with the finding printed without the
+`(warning)` label. Restored, the tree is back to `0 errors`. This is the discipline from
+Task 5.2 — a check that passes has not necessarily checked anything.
+
+`--changed origin/master` is also green and also non-vacuous: `changed_ranges` returns
+**15 files / 38 hunks**. No changed line overlaps a C# block, because every line this
+task touched is the opening fence of a `text` or `bash` block.
+
+### Rule 4's flip is unlike rule 6's, and the difference is the point
+
+Rule 6 has two strictness levels because it has 802 blocks of standing debt and a
+repo-wide error would block every unrelated edit. Rule 4 now has **no debt at all**, so
+it needs no softer level: an untagged fence today is a fence added today. The docstring
+says so, and the `LANGUAGE_TAG_IS_ERROR` comment records why the flag survives rather
+than being inlined — it is the record of a completed backfill, not a switch anyone is
+expected to flip back.
+
+`CLAUDE.md`'s ledger row moved from `warning → error once the backfill lands` to
+`error` in both columns, keeping the two-directional parity AC5 checks.
+
+### What was left alone, deliberately
+
+The **149 space-separated fences** (```` ``` csharp ````) are still space-separated.
+They are tagged, they render as C#, and rule 4 has never flagged them — see § *Measured
+baseline*. Normalising them would touch 40-odd pages to change nothing a reader or a
+tool can see, and would have buried a 34-line diff whose whole claim is that it contains
+nothing but language tags.

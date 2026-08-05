@@ -327,7 +327,7 @@ rule in only one of the two places is how the next round of decay begins:
 | Banner matches `BANNER_RE` — type in vocabulary, *Applies to* present | 2 | error | error |
 | Heading qualification, across pages (`##`, allowlist exempt) | 3a | error | error |
 | Heading qualification, within a page (`##`–`####`, allowlist exempt) | 3b | error | error |
-| Language tag on every fence | 4 | warning → error once the backfill lands | error |
+| Language tag on every fence | 4 | error | error |
 | "Dispatcher", not "ServiceActivator" or "Service Activator", in prose | 5 | error | error |
 | `using` directives in C# blocks | 6 | warning, counted | error, unless the block marks its omission `// ...` |
 | Version markers on code (❌/✅) | — | **review only** | **review only** |
