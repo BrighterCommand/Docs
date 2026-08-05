@@ -467,65 +467,156 @@ These are the only tasks producing prose, and design §12 says plainly that this
 schedule pressure should give — Spec 010 needs the conventions (Phase 1) and the worklist
 (Task 7.1), not the splits.
 
-- [ ] **Task 6.1:** Reduce `RabbitMQConfiguration.md` to its Reference core (~270 lines)
+- [x] **Task 6.1:** Reduce `RabbitMQConfiguration.md` to its Reference core (~270 lines)
   - Input: design §6a target structure, current `contents/RabbitMQConfiguration.md` (566 lines)
   - Output: General · RabbitMQ.Client v7 Support · Breaking Changes · connection/publication/subscription parameter tables · Putting It Together · configuration tables lifted from the quorum-queue, persistence, retry and heartbeat sections — **every knob, one place**
   - Notes: **Moved verbatim, not rewritten** (design §10). Any C# block that moves keeps its current form, `using` directives or not — rewriting while relocating produces a diff nobody can review, and would then oblige backfill on every block in the file under rule 6. Banner: `Reference`.
 
-- [ ] **Task 6.2:** Write `contents/RabbitMQDurability.md` (~150 lines, Explanation)
+- [x] **Task 6.2:** Write `contents/RabbitMQDurability.md` (~150 lines, Explanation)
   - Input: design §6a, the quorum-queue and persistence sections of the original
   - Output: New page — What are Quorum Queues? · Classic vs Quorum · When to Use Quorum Queues · What is Message Persistence? · When to Use Persistent Messages · Performance Considerations
   - Notes: Quorum-queue best-practice material folds into *When to Use* — **"guidance" is not a page type** (design §11). Banner: `Explanation`. Headings must be subject-qualified and globally unique from the moment the file is created; run `pagelint.py` on it before committing.
 
-- [ ] **Task 6.3:** Write `contents/RabbitMQMigrateToQuorumQueues.md` (~90 lines, How-to)
+- [x] **Task 6.3:** Write `contents/RabbitMQMigrateToQuorumQueues.md` (~90 lines, How-to)
   - Input: design §6a
   - Output: New page — Before you start (prerequisites, validation) · Migration from Classic to Quorum · Enabling Persistent Messages · Ack and Nack behaviour during migration
   - Notes: Banner: `How-to`, with a prerequisite link to `RabbitMQConfiguration.md`.
 
-- [ ] **Task 6.4:** Write `contents/RabbitMQConnectionStability.md` (~140 lines, How-to)
+- [x] **Task 6.4:** Write `contents/RabbitMQConnectionStability.md` (~140 lines, How-to)
   - Input: design §6a
   - Output: New page — Improvements in V10 · Configuring connection retry · Configuring heartbeats · Handling blocked connections in production · Monitoring and example logging configuration
   - Notes: Connection-stability best practices become **the step that implements them**, not a `## Best Practices` heading. Banner: `How-to`.
 
-- [ ] **Task 6.5:** Confirm all four `Best Practices` sections have landed somewhere
+- [x] **Task 6.5:** Confirm all four `Best Practices` sections have landed somewhere
   - Input: the original page's four `Best Practices` sections, Tasks 6.1–6.4
   - Output: A note in this file recording where each went
   - Notes: **No information loss** is a programme-level rule, and this is the split most at risk of quietly dropping guidance. None survives as a standalone `## Best Practices` heading, which also removes 4 of the 26 instances of that collision.
 
-- [ ] **Task 6.6:** Add `SUMMARY.md` entries for the three new RabbitMQ pages
+- [x] **Task 6.6:** Add `SUMMARY.md` entries for the three new RabbitMQ pages
   - Input: design §9 (before/after shown), `SUMMARY.md:66`
   - Output: Three entries under *Guaranteed At Least Once*, **beside** `RabbitMQ Configuration`
   - Notes: Beside the page they were split from — **not** in new sections. Spec 010 restructures the whole table of contents immediately afterwards and will site them properly; inventing placement now is work done twice. Run `linkcheck.py` — its ORPHAN check is what enforces "never create orphaned files", and it only fires on a whole-repo run.
 
-- [ ] **Task 6.7:** Reduce `BrighterBasicConfiguration.md` to its How-to core (~200 lines)
+- [x] **Task 6.7:** Reduce `BrighterBasicConfiguration.md` to its How-to core (~200 lines)
   - Input: design §6b, current page (1,068 lines — the largest and worst-mixed in the repo)
   - Output: Using .NET Core Dependency Injection · Configuring the Command Processor (**the one path that works**) · Putting It All Together · Running the Dispatcher · A Complete Dispatcher Example — linking out to both reference pages for every option
   - Notes: Normalise the `## **Bold Heading**` style while splitting (`## **Configuring The Command Processor**`) — it is the convention nowhere else, and `slug()` strips emphasis so anchors are unaffected either way. It costs nothing at the point the text is already moving. Banner: `How-to`.
 
-- [ ] **Task 6.8:** Write `contents/CommandProcessorConfigurationReference.md` (~630 lines)
+- [x] **Task 6.8:** Write `contents/CommandProcessorConfigurationReference.md` (~630 lines)
   - Input: design §6b — original lines 16–331, 332–349, 350–648
   - Output: New page — Command Processor Service Collection Extensions · Validating Your Configuration · Brighter Builder Fluent Interface
   - Notes: Verbatim move. Banner: `Reference`, prerequisite `BrighterBasicConfiguration.md`. At ~630 lines it exceeds `CLAUDE.md`'s 500-line guidance — correctly, because it is single-mode reference material and splitting a parameter list by size is exactly the error requirements § Mode mixing warns against.
 
-- [ ] **Task 6.9:** Write `contents/DispatcherConfigurationReference.md` (~210 lines)
+- [x] **Task 6.9:** Write `contents/DispatcherConfigurationReference.md` (~210 lines)
   - Input: design §6b — original lines 708–859, 860–918
   - Output: New page — Dispatcher Service Collection Extensions · Dispatcher Brighter Builder Fluent Interface
   - Notes: Verbatim move. Banner: `Reference`. "Dispatcher", not "ServiceActivator", in the prose — rule 5 will enforce it. **The source lines were already corrected on 2026-08-04 (`741890f`), so this move inherits backticked identifiers rather than owing the fix.**
 
-- [ ] **Task 6.10:** Fold the V10 configuration section into `V10MigrationGuide.md`
+- [x] **Task 6.10:** Fold the V10 configuration section into `V10MigrationGuide.md`
   - Input: original lines 1041–1068 (V10 Configuration Changes + Quick Migration Guide)
   - Output: `contents/V10MigrationGuide.md` **absorbing** that content; it does not survive on the split page
   - Notes: "No information loss, but no duplication either." That content belongs with the other migration material, and a reader looking for it will look there. Check for heading collisions with what the guide already has.
 
-- [ ] **Task 6.11:** Add `SUMMARY.md` entries for the two new configuration pages
+- [x] **Task 6.11:** Add `SUMMARY.md` entries for the two new configuration pages
   - Input: design §9 (before/after shown), `SUMMARY.md:9`
   - Output: Two entries under *Brighter Configuration*, beside `Basic Configuration`
   - Notes: `SUMMARY.md:9` and `:19` both read `Basic Configuration` — the Brighter one is `:9`, the Darker one `:19`. Run `linkcheck.py` for the orphan check.
 
-- [ ] **Task 6.12:** Determine and, if needed, add `.gitbook.yaml` redirects
+- [x] **Task 6.12:** Determine and, if needed, add `.gitbook.yaml` redirects
   - Input: design §6 "Redirects", `PROMPT.md` § Platform facts, the zero-width-space finding at the top of this file
-  - Output: Either a `redirects:` block, or a recorded finding that no page-level redirect is required — plus the two U+200B characters removed either way
+  - Output: Either a `redirects:` block, or a recorded finding that no page-level redirect is required — plus the two U+200B characters removed either way — **no redirect required; see *Phase 6 as executed***
   - Notes: **Establish first whether any page URL actually moves.** Both splits keep the Reference core under its original file name, so its published URL is unchanged; what breaks is *anchor-level* inbound links to sections that moved, and GitBook redirects operate on pages, not fragments. If that holds, the honest output is a recorded finding rather than a no-op stanza — the design's example (`guaranteed-at-least-once/rabbitmqconfiguration: contents/RabbitMQConfiguration.md`) points a URL at the page it already resolves to. The **new** pages' URLs derive from their `SUMMARY.md` placement, which Spec 010 changes immediately afterwards, so their redirects belong to 010. Adding the `redirects:` block is 010's deliverable; do it here only if 010 has not landed **and** a URL genuinely moves. Whatever the outcome: strip the U+200B before `structure:` and after `SUMMARY.md` and the trailing double-spaces, then **verify mechanically** — malformed indentation disables GitBook redirects silently rather than erroring, and an invisible character in a YAML key is that failure mode at its worst.
+
+### Phase 6 as executed (2026-08-05)
+
+Both splits done. `pagelint.py` **0 errors repo-wide and 0 under `--changed`**;
+`linkcheck.py` clean at **112 files**, orphan check included.
+
+| Commit | Task | Shape |
+|---|---|---|
+| `e0faceb` | — | `pagelint.py` rule 6 gains the `// ...` escape it already advertised |
+| `758f391` | 6.1–6.6 | 566 lines → 331 + 3 pages; 5 files, 389/272 |
+| *(this)* | 6.7–6.12 | 1,070 lines → 237 + 2 pages; 24 files, 972/891 |
+
+#### Design §10's "moved verbatim" premise was wrong, and it nearly failed the build
+
+§10 says a moved C# block keeps its current form, `using` directives or not,
+reasoning that rewriting one would oblige backfill under `--changed`. The premise
+is inverted: **a new page is 100% added lines, so every moved block already
+overlaps the diff and is already strict.** Across the two split candidates that
+was 42 using-less blocks — 42 hard errors the moment a PR opened.
+
+Proven before it was fixed, with a throwaway page and `git add -N`: one
+moved-verbatim block, one error, exit 1. Then proven again after: removing a
+single `// ...` marker turns its block red and the build with it.
+
+The resolution was ruled by the maintainer. Rule 6's message has always offered
+two remedies — "Add them, or mark the omission with `// ...`" — and `CLAUDE.md`'s
+*Complete code blocks* lists `// ...` among the three parts a tool can check, but
+`check_code_blocks` only ever implemented the first. It now honours the second:
+`// ...` **downgrades the finding to a warning and never silences it**, so the
+block still counts towards the debt and its message says the omission is declared,
+not fixed. Rejected: backfilling the 42 blocks (contradicts §10, and risks naming
+wrong namespaces on text that was only supposed to move) and exempting new files
+from strict rule 6 (a permanent hole — any new page could ship using-less blocks
+forever, which is the decay this spec exists to stop).
+
+The repo-wide baseline is unchanged by the escape, verified rather than assumed:
+`strict_ranges` is empty on a repo-wide run, so those findings were already
+warnings. 0 errors / 840 warnings / 804 blocks before and after.
+
+#### No information loss, checked mechanically both times
+
+Not by eye. For each split, every substantive line of the original was tested for
+verbatim presence across the resulting pages, and only the deliberate edits came
+back:
+
+- **RabbitMQ: 24 lines.** One anchor repointed in the same pass that renamed its
+  target, plus the 23 items of the four `Best Practices` sections, which §6a folds
+  rather than moves because "guidance" is not a page type. Where each went is in
+  `758f391`'s message.
+- **BrighterBasicConfiguration: 4 lines.** The 3 links stranded on the new
+  Dispatcher page — their "as discussed above" no longer had an above — and the
+  fold's lead-in, which `V10MigrationGuide.md` already states as "Builder methods
+  renamed for clarity".
+
+#### One departure from Task 6.3, deliberate
+
+Task 6.3 listed "Ack and Nack behaviour" under the migration how-to. The section
+is a general description of Brighter's consumer semantics with **no migration
+content**, so siting it on a how-to page re-mixes the modes the split exists to
+separate. It stays in the Reference core as `## RabbitMQ Ack and Nack Behaviour`;
+the how-to gained a `## Draining the Classic Queue Safely` step that makes the
+migration-specific point and links to it. Revert by moving the section if
+overruled — nothing else depends on the placement.
+
+#### Task 6.12: no redirect is required, and `.gitbook.yaml` was worse than recorded
+
+**No page-level redirect is needed.** Both splits keep the core under its original
+file name, so `RabbitMQConfiguration.md` and `BrighterBasicConfiguration.md`
+publish at unchanged URLs. The five new pages are new URLs — there is nothing to
+redirect *from*. What actually broke was **anchor-level** inbound links, and
+GitBook redirects operate on pages, not fragments; those were fixed by repointing
+the links themselves (1 in the first split, 28 in the second). The new pages'
+URLs derive from `SUMMARY.md` placement, which Spec 010 changes immediately
+afterwards, so their redirects belong to 010.
+
+The zero-width spaces were not merely cosmetic. The key was literally
+`​structure`, **not** `structure` — so GitBook has never read that block at
+all and has been falling back to its defaults, which happen to name the same two
+files, which is why nothing ever looked broken. The value was `SUMMARY.md​`
+to match, so fixing only the key would have converted a silently-ignored block
+into a silently-broken one. Both characters and the trailing double-spaces are
+gone, verified by byte inspection rather than by eye.
+
+#### Two figures worth carrying
+
+- Debt fell **804 → 802**, exactly the two `Quick Migration Guide` blocks dropped
+  as duplicates of `V10MigrationGuide.md`'s richer before/after. No block was
+  gained or lost in either move.
+- Untagged fences fell **36 → 34**: two bare fences carrying log output became
+  ```` ```text ````, which they had to, since on a new page rule 4 is a strict
+  error. Task 7.2's backfill is that much smaller.
 
 ---
 
