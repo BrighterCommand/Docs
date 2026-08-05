@@ -270,6 +270,13 @@ services.AddBrighter()
 See [Code Example Best Practices](#code-example-best-practices) for the fuller
 treatment; these three are the parts a tool can check.
 
+The third qualifies the second. A block whose `using` directives are genuinely
+elided says so with `// ...`, and rule 6 then reports it as a **warning even under
+`--changed`** — the omission is declared rather than fixed, so it is downgraded and
+never silenced. It still counts towards the debt and still says so in its own words.
+Without that, relocating a block verbatim is indistinguishable from writing a new
+one, and a page split cannot honour "move the text, do not improve it".
+
 ### llms.txt
 
 `llms.txt` at the repository root indexes the documentation for retrieval systems.
@@ -322,7 +329,7 @@ rule in only one of the two places is how the next round of decay begins:
 | Heading qualification, within a page (`##`–`####`, allowlist exempt) | 3b | error | error |
 | Language tag on every fence | 4 | warning → error once the backfill lands | error |
 | "Dispatcher", not "ServiceActivator" or "Service Activator", in prose | 5 | error | error |
-| `using` directives in C# blocks | 6 | warning, counted | error |
+| `using` directives in C# blocks | 6 | warning, counted | error, unless the block marks its omission `// ...` |
 | Version markers on code (❌/✅) | — | **review only** | **review only** |
 
 Version markers are the one convention with no rule, and deliberately so: whether two

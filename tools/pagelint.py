@@ -13,7 +13,8 @@ Rules, and what each is for:
   HEADING REPEATED    a heading text repeated within one page (H2-H4)
   LANGUAGE TAG        a fenced block with no language (warning)
   SERVICEACTIVATOR    "ServiceActivator" in prose where "Dispatcher" is meant
-  USING DIRECTIVES    a C# block with no `using` lines (warning, counted)
+  USING DIRECTIVES    a C# block with no `using` lines (warning, counted;
+                      stays a warning under --changed if marked `// ...`)
 
 The banner states the page type, the Brighter/Darker version it applies to and
 what to read first. It is a visible blockquote rather than front matter because
@@ -40,6 +41,14 @@ a count, so existing debt is visible without blocking unrelated work. Under
 Block granularity, not file: a file-level rule would mean fixing a typo on a
 700-line page obliges backfilling every block on it, which penalises exactly the
 small corrections worth encouraging.
+
+A block that marks its omission with `// ...` stays a warning even when strict.
+That is the remedy this rule's own message offers and CLAUDE.md's *Complete code
+blocks* prescribes — an incomplete block should be visibly incomplete. It is a
+declaration, not a fix, so the finding is downgraded and never silenced: the
+block still counts towards the debt and still says so, in its own words. Without
+it, moving a block verbatim between pages is indistinguishable from writing a
+new one, and a page split cannot honour "move text, do not improve it".
 
 Usage:
     python3 tools/pagelint.py                          # whole repo
@@ -124,6 +133,11 @@ CSHARP_TAGS = frozenset({'csharp', 'cs', 'c#'})
 USING_RE = re.compile(
     r'^\s*(?:global\s+)?using\s+(?:static\s+)?'
     r'[A-Za-z_][\w.]*(?:\s*=\s*[\w.<>,\[\]\s]+)?\s*;')
+
+# `// ...` marking a deliberate omission, per CLAUDE.md's *Complete code blocks*.
+# Leading indent and trailing prose are both fine — `// ... other configuration`
+# is the form the repo already uses. Block comments open the same way.
+ELISION_RE = re.compile(r'^\s*/[/*]\s*\.\.\.')
 
 INLINE_CODE_RE = re.compile(r'`[^`]*`')
 LINK_TARGET_RE = re.compile(r'\]\([^)]*\)')
@@ -370,9 +384,13 @@ def check_code_blocks(page, strict_ranges):
 
         if tag in CSHARP_TAGS:
             if not any(USING_RE.match(line) for _, line in block['body']):
-                severity = error if strict else warning
+                elided = any(ELISION_RE.match(line) for _, line in block['body'])
+                severity = error if (strict and not elided) else warning
                 findings.append(severity(
                     page.rel, block['start'], 'USING DIRECTIVES',
+                    'C# block has no `using` lines and is marked `// ...`; the '
+                    'omission is declared, not fixed, and a reader still cannot '
+                    'compile it as shown' if elided else
                     'C# block has no `using` lines; a reader cannot compile it as '
                     'shown. Add them, or mark the omission with `// ...`'))
     return findings
