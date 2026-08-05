@@ -3,7 +3,7 @@
 > **Reference** · Applies to **Brighter V10**
 
 ## EF Core Outbox Usage
-The EFCore Outbox allows integration between EF Core and [Brighter's outbox support](/contents/BrighterOutboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#outbox-support).
+The EFCore Outbox allows integration between EF Core and [Brighter's outbox support](/contents/BrighterOutboxSupport.md). The configuration is described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support).
 
 For this we will need the *Outbox* package for EF Core. Packages for EF Core exist for the following RDBMS: MSSQL, MYSQL, Postgres, and Sqlite. Packages have the naming convention:
 
@@ -22,7 +22,7 @@ Obviously, {DB} should match. In the example below we use MySql, so we would nee
 
 * **Paramore.Brighter.MySql**
 
-As described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#outbox-support), we configure Brighter to use an outbox with the Use{DB}Outbox method call.
+As described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support), we configure Brighter to use an outbox with the Use{DB}Outbox method call.
 
 As we want to use EF Core, we also call: Use{DB}TransactionConnectionProvider so that we can share your transaction scope when persisting messages to the outbox.
 

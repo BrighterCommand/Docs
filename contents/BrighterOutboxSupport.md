@@ -288,7 +288,7 @@ spec:
 
 ### Outbox Configuration
 
-Your outbox is configured as part of the Brighter extensions to ServiceCollection. See [Outbox Configuration](/contents/BrighterBasicConfiguration.md#outbox-support) for more.
+Your outbox is configured as part of the Brighter extensions to ServiceCollection. See [Outbox Configuration](/contents/CommandProcessorConfigurationReference.md#outbox-support) for more.
 
 ### Provisioning the Outbox Table
 

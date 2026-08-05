@@ -174,6 +174,13 @@ services.AddBrighter()
 2. Replace `AddServiceActivator` with `AddConsumers`
 3. Update property names: `ProducerRegistry` instead of passing directly
 
+| V9 Method | V10 Method | Purpose |
+|-----------|------------|---------|
+| `UseExternalBus()` | `AddProducers()` | Configure message producers (send/publish to external bus) |
+| `AddServiceActivator()` | `AddConsumers()` | Configure message consumers (receive from external bus) |
+
+**Terminology**: In V10, we use **"Dispatcher"** to refer to the component that dispatches messages to handlers. The assembly name remains `Paramore.Brighter.ServiceActivator` for backward compatibility, but documentation and APIs now use "Dispatcher" for clarity.
+
 ### 3. Reactor and Proactor Terminology
 
 **Breaking Change**: The `runAsync` flag on Subscription has been renamed to `MessagePumpType`.

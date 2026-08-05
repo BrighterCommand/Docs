@@ -45,7 +45,7 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-For more on a *Publication* see the material on an *Add Producers* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#using-an-external-bus).
+For more on a *Publication* see the material on an *Add Producers* in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#using-an-external-bus).
 
 ## Azure Service Bus Subscription
 

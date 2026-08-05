@@ -84,7 +84,7 @@ the ones your network obliges you to; for how to choose values, see
 
 ## RabbitMQ Publication
 
-For more on a *Publication* see the material on an *Add Producers* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#using-an-external-bus).
+For more on a *Publication* see the material on an *Add Producers* in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#using-an-external-bus).
 
 We only support one custom property on RabbitMQ which configures shutdown delay to await pending confirmations. 
 

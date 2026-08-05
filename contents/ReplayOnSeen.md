@@ -312,7 +312,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 `ActionOnExists` is set through the constructor and is read-only afterwards, so you choose
 replay when you build the configuration rather than flipping it on an existing instance.
 The remaining parameters behave exactly as they do for `Throw` and `Warn`; see
-[Inbox Configuration](/contents/BrighterBasicConfiguration.md#inbox) for the full set.
+[Inbox Configuration](/contents/DispatcherConfigurationReference.md#inbox) for the full set.
 
 `InboxScope.Commands` is the usual scope here. Replay resends a handler invocation's
 downstream messages, and it is commands — one request, one handler — where that maps

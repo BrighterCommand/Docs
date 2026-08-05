@@ -48,7 +48,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ## SQS Publication
 
-For more on a *Publication* see the material on an *Add Producers* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#using-an-external-bus).
+For more on a *Publication* see the material on an *Add Producers* in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#using-an-external-bus).
 
 Brighter's **Routing Key** represents the [SNS Topic Name](https://docs.aws.amazon.com/sns/latest/api/API_CreateTopic.html) or [SQS Queue Name](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_CreateQueue.html).
 

@@ -82,7 +82,7 @@ The following code connects to a remote Kafka instance. The settings here will d
 
 ## Kafka Publication
 
-For more on a *Publication* see the material on an *Add Producers* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#using-an-external-bus).
+For more on a *Publication* see the material on an *Add Producers* in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#using-an-external-bus).
 
 We allow you to configure properties for both Brighter and the Confluent .NET client. Because there are many properties on the Confluent .NET Client we also configure a callback to let you inspect and modify the configuration that we will pass to the client if you so desire. This can be used to add properties we do not support or adjust how we set them.
 

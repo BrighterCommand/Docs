@@ -434,7 +434,7 @@ public class MyTests
 }
 ```
 
-For more details on service provider overloads and the Options pattern, see [Service Provider Function Overloads](/contents/BrighterBasicConfiguration.md#service-provider-function-overloads) and [Using the Options Pattern](/contents/BrighterBasicConfiguration.md#using-the-options-pattern) in the Basic Configuration documentation.
+For more details on service provider overloads and the Options pattern, see [Service Provider Function Overloads](/contents/CommandProcessorConfigurationReference.md#service-provider-function-overloads) and [Using the Options Pattern](/contents/CommandProcessorConfigurationReference.md#using-the-options-pattern) in the Basic Configuration documentation.
 
 ## Complete Testing Example
 

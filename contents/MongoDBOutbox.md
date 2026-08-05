@@ -3,7 +3,7 @@
 > **Reference** · Applies to **Brighter V10**
 
 ## MongoDB Outbox Usage
-The MongoDB Outbox allows integration between MongoDB and [Brighter's outbox support](/contents/BrighterOutboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#outbox-support).
+The MongoDB Outbox allows integration between MongoDB and [Brighter's outbox support](/contents/BrighterOutboxSupport.md). The configuration is described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support).
 
 To support transactional messaging when using MongoDB requires us to use MongoDB's support for ACID transactions. You should understand best practices for using transactions with MongoDB, including replica set requirements for multi-document transactions.
 
@@ -38,7 +38,7 @@ The MongoDB Outbox supports different strategies for collection management throu
 
 ### Basic Configuration
 
-As described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#outbox-support), we configure Brighter to use an outbox with the `AddProducers` method call.
+As described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support), we configure Brighter to use an outbox with the `AddProducers` method call.
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)

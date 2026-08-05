@@ -3,7 +3,7 @@
 > **Reference** · Applies to **Brighter V10**
 
 ## MongoDB Inbox Usage
-The MongoDB Inbox allows use of MongoDB for [Brighter's inbox support](/contents/BrighterInboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#inbox).
+The MongoDB Inbox allows use of MongoDB for [Brighter's inbox support](/contents/BrighterInboxSupport.md). The configuration is described in [Dispatcher Configuration Reference](/contents/DispatcherConfigurationReference.md#inbox).
 
 For this we will need the *Inbox* packages for the MongoDB *Inbox*.
 

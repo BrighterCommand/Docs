@@ -134,7 +134,7 @@ The **Value** property of the **MessageBody** returns a string depending on the 
 
 ### Options for System.Text.Json Serialization
 
-The most common solution to serialization of the message payload is to use System.Text.Json to convert the message's metadata to JSON for sending over a messaging middleware transport. You can adjust the behavior of this serialization through our **JsonSerialisationOptions**. See [Brighter Configuration](/contents/BrighterBasicConfiguration.md#configuring-json-serialization) for more on how to set your options.
+The most common solution to serialization of the message payload is to use System.Text.Json to convert the message's metadata to JSON for sending over a messaging middleware transport. You can adjust the behavior of this serialization through our **JsonSerialisationOptions**. See [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#configuring-json-serialization) for more on how to set your options.
 
 You can then use this, when you want to set options consistently for message serialization.
 
