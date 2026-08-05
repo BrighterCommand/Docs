@@ -1,6 +1,14 @@
 name: docs
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  # Daily, for the `versions` job below. The event that invalidates a pinned
+  # version is a release in *another* repository, so a push/PR-only trigger
+  # would leave a stale pin undetected until someone happened to touch the
+  # docs. See spec/009-getting_started_tutorials/design.md § D9.
+  schedule:
+    - cron: '17 6 * * *'
 
 jobs:
   check:
@@ -33,3 +41,25 @@ jobs:
       # what makes origin/<base_ref> resolvable.
       - if: github.event_name == 'pull_request'
         run: python3 tools/pagelint.py --changed origin/${{ github.base_ref }}
+
+  # Spec 009 D9 adds tools/versioncheck.py, which diffs the versions pinned in
+  # tutorial prose against the latest non-prerelease on NuGet. The job is shaped
+  # now so landing D9 is one file, not a workflow restructure.
+  #
+  # REMOVE THE GUARD when 009 D9 lands — it exists only to keep the build green
+  # while the tool is absent, and inheriting it would silently un-gate the check.
+  # The bare invocation is deliberate: versioncheck.py exits 2 when it cannot
+  # reach NuGet, and an unreachable authority is an unchecked pin, not a pass.
+  versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          if [ -f tools/versioncheck.py ]; then
+            python3 tools/versioncheck.py
+          else
+            echo "tools/versioncheck.py not present yet (spec 009 D9) - skipping."
+          fi
