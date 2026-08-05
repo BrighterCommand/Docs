@@ -381,20 +381,80 @@ being requalified anyway.
 Goal: `pagelint.py` in CI, and `docs.yml` shaped so Spec 009's D9 is one step rather than
 a restructure.
 
-- [ ] **Task 5.1:** Add `pagelint.py` to `docs.yml`
+- [x] **Task 5.1:** Add `pagelint.py` to `docs.yml`
   - Input: design §4 (full YAML), Task 1.1 output
   - Output: `.github/workflows/docs.yml` gaining a repo-wide `pagelint.py` step and a pull-request-only `--changed origin/${{ github.base_ref }}` step
   - Notes: Only now, once the sweeps have made it pass. Either tool failing fails the build (requirements § D5). Green build with both tools closes AC6.
 
-- [ ] **Task 5.2:** Verify `--changed` actually resolves its merge-base in CI
+- [x] **Task 5.2:** Verify `--changed` actually resolves its merge-base in CI — **done via PR #73, a deliberate probe; see *Phase 5 as executed***
   - Input: the first pull-request run after Task 5.1
   - Output: Confirmation the `--changed` step ran and compared against something real
   - Notes: `actions/checkout@v4` with `fetch-depth: 0` is *expected* to make `origin/<base_ref>` available, but on a `pull_request` event the checked-out ref is a merge commit and this is worth confirming from a real run rather than assuming. **A `--changed` step that silently finds no changed ranges passes vacuously** — the worst outcome, since the strict code rules would then never fire. Deliberately provoke it: open a throwaway PR touching one C# block with no `using`, and confirm the build goes red. If `origin/<base_ref>` does not resolve, add an explicit `git fetch origin ${{ github.base_ref }}`.
 
-- [ ] **Task 5.3:** Shape `docs.yml` for Spec 009's `versioncheck.py`
+- [x] **Task 5.3:** Shape `docs.yml` for Spec 009's `versioncheck.py`
   - Input: `spec/009-getting_started_tutorials/design.md` § D9 (lines 425–478) and its Sequencing step 6
   - Output: `docs.yml` gaining a daily `schedule:` trigger and a `versions` job whose step is a no-op while `tools/versioncheck.py` is absent
   - Notes: 011 owns this file, and 009's design states plainly that D9 **adds a step to it** rather than creating a second workflow. Building it with the second gate in mind is cheaper than retrofitting. Two requirements from 009: the trigger must include a **daily schedule**, because the event that invalidates a pinned version is a release in *another repository* and a PR-only trigger leaves a stale pin undetected until someone happens to touch the docs; and exit code **`2` (authority unreachable) is not a pass**. Guard the step so the build stays green before 009 lands — `if [ -f tools/versioncheck.py ]` — and leave a comment naming 009 D9 so the guard is removed rather than inherited.
+
+### Phase 5 as executed (2026-08-05)
+
+**The linter now gates the build, and the gate is demonstrated rather than assumed.**
+Three tasks, three commits, and one throwaway pull request whose whole purpose was to
+make the build go red on demand.
+
+| Commit | Task | Shape |
+|---|---|---|
+| `492546b` | 5.1 | `docs.yml` — repo-wide `pagelint.py`, plus a pull-request-only `--changed` |
+| `56106a6` | 5.3 | `docs.yml` — daily `schedule:` and the guarded `versions` job |
+| `04de6d3` | — | `base_ref` moved out of the command line into `env` |
+
+#### Task 5.2: the vacuous pass was ruled out in both directions
+
+Run locally against `origin/master`, `--changed` reported **0 errors** — which has
+exactly the shape of the failure Task 5.2 exists to catch, so it was taken apart rather
+than accepted. `changed_ranges('origin/master')` returns **118 files and 465 hunks**, so
+the ranges were real; this branch's edits are banner lines and heading lines and
+genuinely overlap no C# block. The pass was true, not vacuous.
+
+The positive direction was then forced. Editing one character inside the using-less
+block at `AWSSQSConfiguration.md:29` turns **that block alone** into an error — the
+other fifteen blocks on the same page keep their `(warning)` suffix — and the run exits
+1.
+
+#### The `pull_request` event resolved its base, and needed no `git fetch` fallback
+
+The open question was whether `origin/<base_ref>` resolves when the checked-out ref is a
+merge commit. **PR #73** answered it: a one-character probe, opened against
+`docs/spec-011-page-banners`, closed unmerged as soon as the run was observed.
+
+- `BASE_REF: docs/spec-011-page-banners` reached the step through `env`
+- the merge-base resolved — no exit **2**, which is what `pagelint.py` returns rather
+  than passing vacuously when it cannot determine what changed
+- `1 errors, 839 warnings`, exit 1, **build red**, on `AWSSQSConfiguration.md:29`
+- the repo-wide step stayed green at `0 errors, 840 warnings` **in the same run**
+
+So the two strictness levels are independent in practice and not only in design, and
+`fetch-depth: 0` is sufficient. **The contingency `git fetch origin ${{ github.base_ref }}`
+is not needed and was not added.**
+
+#### `base_ref` does not belong on a command line
+
+`--changed origin/${{ github.base_ref }}` expanded a ref straight into `run:`.
+`git check-ref-format` rejects spaces and `~^:?*[\` but permits `;`, `&` and `$`, so
+that is a shell-injection shape even though reaching it needs write access to create the
+branch a pull request is then based on. Now passed through `env` and quoted. Low
+severity, three lines, and worth not having in the repository's only workflow.
+
+#### The `versions` guard propagates exit codes, including 2
+
+009 requires that exit **2** — NuGet unreachable — is not a pass, and a guard is an easy
+place to lose that. Checked under `bash -e {0}`, which is what Actions uses: file absent
+→ 0, and 0, 1 and 2 all propagate unchanged. A `continue-on-error:` or a trailing
+`|| true` would have silently broken it, which is why neither is there. The guard carries
+a REMOVE THIS comment naming 009 D9 — a guard inherited rather than removed un-gates the
+check silently, the same class of failure as the vacuous `--changed` pass.
+
+**AC6 is closed:** both tools run in CI, and either one failing fails the build.
 
 ---
 
