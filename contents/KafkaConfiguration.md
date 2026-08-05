@@ -1,6 +1,8 @@
 # Kafka Configuration
 
-## General
+> **Reference** · Applies to **Brighter V10**
+
+## Kafka General
 
 Kafka is OSS message-oriented-middleware and is [well documented](https://kafka.apache.org/documentation/#gettingStarted). Brighter handles the details of sending to or receiving from Kafka. You may find it useful to understand the [building blocks](https://kafka.apache.org/documentation/#introduction) of the protocol. Brighter's Kafka support is implemented on top of the Confluent .NET client, and you might find the [documentation for the .NET client](https://docs.confluent.io/kafka-clients/dotnet/current/overview.html) helpful when debugging, but you should not have to interact with it directly to use Brighter (although we expose many of its configuration options).
 
@@ -17,7 +19,7 @@ A **consumer** may read from *multiple* **partitions**, but only one **consumer*
 
 In addition to the Producer API and Consumer API Kafka streams have features such as the Streams API and the Connect API. We do not use either of these from Brighter.
 
-## Connection
+## Kafka Connection
 
 The Connection to Kafka is provided by an **KafkaMessagingGatewayConnection** which allows you to configure the following:
 
@@ -78,9 +80,9 @@ The following code connects to a remote Kafka instance. The settings here will d
 
 ```
 
-## Publication
+## Kafka Publication
 
-For more on a *Publication* see the material on an *Add Producers* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#using-an-external-bus).
+For more on a *Publication* see the material on an *Add Producers* in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#using-an-external-bus).
 
 We allow you to configure properties for both Brighter and the Confluent .NET client. Because there are many properties on the Confluent .NET Client we also configure a callback to let you inspect and modify the configuration that we will pass to the client if you so desire. This can be used to add properties we do not support or adjust how we set them.
 
@@ -179,7 +181,7 @@ We recommend setting **Partitioner** to **Partitioner.Murmur2Random** because of
 
 Note that changing the partitioner on an existing topic changes where keys land: messages with the same key may be written to different partitions before and after the change, which can break per-key ordering during the transition. Plan such a change for a deployment window where this is acceptable, or apply it when you create a new topic.
 
-### Configuration Callback
+### Publication Configuration Callback
 
 The Confluent .NET client has a range of configuration options. Some of those can be controlled through the publication. But, to allow you the full range of configuration options for the Confluent client, including new options that may appear, we provide a callback on the **KafkaProducerRegistryFactory**. The registry exposes a method, **SetConfigHook(Action<ProducerConfig> hook)**. The method takes a *delegate* (you can pass a lambda). Your delegate will be called with the *proposed* ProducerConfig (taking into account the *Publication* settings). You can adjust additional parameters at this point.
 
@@ -215,14 +217,14 @@ Brighter uses the Kafka AdminClient for topic creation. For this to work as expe
 	
 If you want to specify the topic through Brighter, or through your own IaaS code, we recommend always setting this setting to false; we recommend only setting it to true if you tell Brighter to assume that the infrastructure exists, as it will then be created on the first write.
 
-## Subscription
+## Kafka Subscription
 
-For more on a *Subscription* see the material on configuring *Service Activator* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#configuring-the-dispatcher).
+For more on a *Subscription* see the material on configuring the *Dispatcher* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#configuring-the-dispatcher).
 
 We support a number of Kafka specific *Subscription* options:
 
 - **CommitBatchSize**: We commit processed work (marked as acked or rejected) when a batch size worth of work has been completed (see [below](#offset-management)). Defaults to 10.
-- **ConfigHook**: Allows you to modify the Kafka client configuration before a consumer is created. Used to set properties that Brighter does not expose. See [Configuration Callback](#configuration-callback) below.
+- **ConfigHook**: Allows you to modify the Kafka client configuration before a consumer is created. Used to set properties that Brighter does not expose. See [Configuration Callback](#subscription-configuration-callback) below.
 - **GroupId**: Only one consumer in a group can read from a partition at any one time; this preserves ordering. We do not default this value, and expect you to set it.
 - **GroupProtocol**: Selects the Kafka consumer group protocol: `ClassicGroupProtocol` (default) or `ConsumerGroupProtocol` (KIP-848). See [Consumer Group Protocol (KIP-848)](#consumer-group-protocol-kip-848) below. Defaults to null, which uses the classic protocol.
 - **IsolationLevel**: Default to read only committed messages, change if you want to read uncommitted messages. May cause duplicates. Defaults to ReadCommitted.
@@ -270,7 +272,7 @@ The following example shows how a subscription might be configured:
 }
 ```
 
-### Configuration Callback
+### Subscription Configuration Callback
 
 Similar to producers, the Confluent .NET client for consumers has a range of configuration options. Some of those can be controlled through the subscription. But, to allow you the full range of configuration options for the Confluent client, including new options that may appear, we provide a **configHook** parameter on **KafkaSubscription**.
 

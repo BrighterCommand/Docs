@@ -1,5 +1,7 @@
 # TickerQ Scheduler
 
+> **Reference** · Applies to **Brighter V10**
+
 [TickerQ](https://github.com/Arcenox-co/TickerQ) is a high-performance, reflection-free background task scheduler for .NET that uses source generators. Brighter provides integration with TickerQ for [scheduler functionality](/contents/BrighterSchedulerSupport.md), offering a modern, lightweight alternative for distributed scheduling.
 
 ## TickerQ Overview
@@ -30,7 +32,7 @@ When you schedule a message with Brighter:
 3. At the scheduled time, TickerQ triggers the execution
 4. The `TickerQBrighterJob` dispatches the message via Brighter's Command Processor
 
-## NuGet Packages
+## TickerQ NuGet Packages
 
 Install the required NuGet packages:
 
@@ -45,7 +47,7 @@ For persistence, add the EF Core package:
 dotnet add package TickerQ.EntityFrameworkCore
 ```
 
-## Configuration
+## TickerQ Configuration
 
 ### Basic Configuration
 
@@ -129,7 +131,7 @@ builder.Services.AddTickerQ(options =>
 
 You can then access the dashboard at `{{appurl}}/dashboard`.
 
-## Code Examples
+## TickerQ Code Examples
 
 ### Basic Scheduling
 
@@ -181,7 +183,7 @@ public async Task RescheduleNotification(string schedulerId, DateTimeOffset at)
 }
 ```
 
-## Best Practices
+## TickerQ Best Practices
 
 ### 1. Use Persistence in Production
 Always configure TickerQ with a persistent store (like EF Core) for production environments. In-memory scheduling is suitable only for development or non-critical transient tasks.
@@ -189,7 +191,7 @@ Always configure TickerQ with a persistent store (like EF Core) for production e
 ### 2. Monitor via Dashboard
 Leverage the TickerQ dashboard to inspect job states, failures, and upcoming schedules. This is invaluable for debugging and operations.
 
-## Troubleshooting
+## TickerQ Troubleshooting
 
 ### Jobs Not Firing
 - **Check Host**: TickerQ runs as a hosted service. Ensure  TickerQ service started is called and the host is kept alive.
@@ -220,7 +222,7 @@ builder.Services.AddTickerQ(options =>
 - [Azure Scheduler](AzureScheduler.md) - Cloud-native Azure scheduling
 - [TickerQ Documentation](https://tickerq.net) - Official
 
-## Summary
+## TickerQ Summary
 
 TickerQ integration for Brighter offers a modern, high-performance scheduling option.
 

@@ -1,5 +1,7 @@
 # Error Handling
 
+> **Explanation** · Applies to **Brighter V10**
+
 When your handler throws an exception on the [External Bus](/contents/DispatchingARequest.md), Brighter's message pump catches it and decides what to do with the message. The default is to acknowledge the message and move on. Every other behavior — requeue, reject to a Dead Letter Queue, leave unacknowledged — requires you to opt in by throwing a specific action exception or adding middleware to your pipeline.
 
 This guide explains each error handling strategy and helps you choose the right one.
@@ -53,7 +55,7 @@ The right strategy depends on why processing failed and what you want to happen 
 
 ## Requeue with Delay (DeferMessageAction)
 
-### What It Does
+### What Requeue with Delay Does
 
 Throwing `DeferMessageAction` tells the message pump to reject the current message and requeue it on the External Bus with a delay. After the delay expires, the message becomes available for consumption again — by any consumer on that channel, not necessarily the same instance.
 
@@ -66,7 +68,7 @@ How the delay is implemented depends on the transport. Some transports support n
 
 The delay mechanism depends on a configured scheduler (`IAmARequestScheduler`). By default, Brighter supplies an `InMemoryScheduler` that holds deferred messages in memory. If the host shuts down before a deferred message fires, it is lost. For production systems that require durability, configure an external scheduler such as Quartz, Hangfire, TickerQ, or AWS Scheduler.
 
-### When to Use It
+### When to Use Requeue with Delay
 
 Use requeue with delay for transient failures where retrying the same message after a delay is likely to succeed. Typical scenarios include a downstream service that is temporarily unavailable or a rate limit that resets after a short period.
 
@@ -167,13 +169,13 @@ public class OrderHandler : RequestHandler<PlaceOrder>
 
 ## Reject to Dead Letter Queue (RejectMessageAction)
 
-### What It Does
+### What Reject to Dead Letter Queue Does
 
 Throwing `RejectMessageAction` tells the message pump to end processing and route the message to a Dead Letter Queue (DLQ). The message is preserved in the DLQ for later investigation — operators can inspect, replay, or discard it manually.
 
 If no DLQ is configured on the subscription, the message is acknowledged and discarded with a warning logged. The behavior is the same as the default, but with an explicit log entry indicating the message was rejected.
 
-### When to Use It
+### When to Use Reject to Dead Letter Queue
 
 Use `RejectMessageAction` for non-transient errors where the message should be preserved for investigation rather than silently discarded. Typical scenarios include business validation failures, corrupt data requiring manual review, or messages that reference entities that no longer exist.
 
@@ -233,13 +235,13 @@ See [Backstop Attributes](#backstop-attributes) for pipeline ordering guidance a
 
 ## Don't Acknowledge (DontAckAction)
 
-### What It Does
+### What Don't Acknowledge Does
 
 Throwing `DontAckAction` tells the message pump to leave the message unacknowledged on the channel. The transport re-delivers it after its visibility timeout expires. A configurable delay (`DontAckDelay`, default 1 second) pauses the pump before processing the next message, preventing tight-loop CPU burn when a message is repeatedly not acknowledged.
 
 Each `DontAckAction` increments the unacceptable message counter. If the counter reaches the configured `UnacceptableMessageLimit`, the pump shuts down. You can prevent shutdown by setting the `UnacceptableMessageLimit` to 0, or negative. You can also use `UnacceptableMessageLimitWindow` to control the period in which the limit is evaluated. This allows you to shut down for a burst of failures - typical if you have a poison pill message - but ignore failures that occur over time. (See below for more.)
 
-### When to Use It
+### When to Use Don't Acknowledge
 
 Use `DontAckAction` when you want the transport's native re-delivery rather than Brighter's requeue. Typical scenarios include:
 
@@ -335,7 +337,7 @@ For async handlers, use `DontAckOnErrorAsyncAttribute` instead.
 
 ## Invalid Message Handling (InvalidMessageAction)
 
-### What It Does
+### What Invalid Message Handling Does
 
 Throwing `InvalidMessageAction` tells the message pump to route the message to an invalid message channel. This separates deserialization failures ("bad message") from processing failures ("bad handler") in your monitoring.
 
@@ -345,7 +347,7 @@ The message pump routes the message using this priority:
 2. Dead Letter Queue (if no invalid message channel is configured).
 3. Acknowledge and log (if neither is configured).
 
-### When to Use It
+### When to Use Invalid Message Handling
 
 Throw `InvalidMessageAction` from a message mapper when deserialization fails due to schema mismatches, versioning issues, or malformed content. Do not throw it from a handler — use `RejectMessageAction` instead for messages that deserialize successfully but cannot be processed.
 

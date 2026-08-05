@@ -1,5 +1,7 @@
 # Compression
 
+> **Explanation** · Applies to **Brighter V10**
+
 The Compression transform helps us reduce the size of a message using a compression algorithm. It is an efficient approach to reducing the size of a payload. 
 
 We offer [gzip](https://en.wikipedia.org/wiki/Gzip) on netstandard2.0 and add [deflate](https://en.wikipedia.org/wiki/Deflate) and [brotli](https://en.wikipedia.org/wiki/Brotli) on net6+.

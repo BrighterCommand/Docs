@@ -1,8 +1,10 @@
 # Brighter Scheduler Support
 
+> **Explanation** · Applies to **Brighter V10**
+
 In distributed applications, it is often necessary to schedule messages for deferred execution—whether for implementing delayed workflows, retry mechanisms, or time-based business processes. Brighter provides built-in scheduling capabilities to handle these scenarios.
 
-## Overview
+## Brighter Scheduler Overview
 
 Brighter's scheduling support allows you to:
 
@@ -13,7 +15,7 @@ Brighter's scheduling support allows you to:
 
 Scheduling integrates seamlessly with Brighter's messaging infrastructure, supporting both in-process handlers and external message brokers.
 
-## Use Cases
+## Brighter Scheduler Use Cases
 
 Common scenarios for message scheduling include:
 
@@ -130,7 +132,7 @@ CommandProcessor dispatches your original command
 Your Handler executes
 ```
 
-### Configuration
+### Configuring a Scheduler
 
 To use scheduling, you need to configure a scheduler when setting up Brighter:
 
@@ -202,7 +204,7 @@ public class ProcessOrderHandlerAsync : RequestHandlerAsync<ProcessOrderCommand>
 }
 ```
 
-### Configuration
+### Requeue Delay Configuration
 
 Configure requeue delay in your subscription:
 
@@ -329,7 +331,7 @@ Brighter supports multiple scheduler implementations. Your choice depends on you
                │ No → Choose Quartz or Hangfire
 ```
 
-## Code Examples
+## Brighter Scheduler Code Examples
 
 ### Basic Scheduling with DateTimeOffset
 
@@ -496,7 +498,7 @@ public class ProcessPaymentHandlerAsync : RequestHandlerAsync<ProcessPaymentComm
 }
 ```
 
-## Configuration Examples
+## Brighter Scheduler Configuration Examples
 
 ### Configuring with Hangfire
 
@@ -541,7 +543,7 @@ services.AddBrighter(options =>
 .AutoFromAssemblies();
 ```
 
-## Best Practices
+## Brighter Scheduler Best Practices
 
 1. **Always store scheduler IDs** if you need to cancel or track scheduled messages
 2. **Use DateTimeOffset for absolute times** and TimeSpan for relative delays
@@ -564,7 +566,7 @@ services.AddBrighter(options =>
 - [Custom Scheduler](CustomScheduler.md) - Implementing your own scheduler
 - [Handler Failure](HandlerFailure.md) - Error handling and retry strategies
 
-## Summary
+## Brighter Scheduler Summary
 
 - Brighter provides comprehensive scheduling support for deferred message execution
 - Choose between **absolute time** (DateTimeOffset) or **relative delay** (TimeSpan)

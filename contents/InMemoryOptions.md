@@ -1,6 +1,8 @@
 # InMemory Options for Development and Testing
 
-## Overview
+> **Reference** · Applies to **Brighter V10**
+
+## InMemory Options Overview
 
 Brighter V10 provides a comprehensive suite of in-memory implementations for key components, making it easy to develop and test applications without external dependencies. These in-memory options replace databases, message brokers, and schedulers with simple, lightweight alternatives that run entirely in process.
 
@@ -35,7 +37,7 @@ The InMemory Transport provides lightweight message publishing and consumption w
 - **InMemoryMessageProducer** An implementation of `IAmAMessageProducerSync`, `IAmAMessageProducerAsync` and `IAmABulkMessageProducerAsync` that produces message to topics on the `InternalBus`.
 - **InMemoryMessageConsumer** An implementation of `IAmAMessageConsumerSync` and `IAmAMessageConsumerAsync` that consumes messages from topics on the `InternalBus`.
 
-### When to Use
+### When to Use the InMemory Transport
 
 **Perfect for**:
 
@@ -50,7 +52,7 @@ The InMemory Transport provides lightweight message publishing and consumption w
 - Internal message passing within a monolith
 - Scenarios where message loss is acceptable
 
-### Configuration
+### InMemory Transport Configuration
 
 **Internal Bus**:
 
@@ -137,7 +139,7 @@ public class Startup
 }
 ```
 
-### Limitations
+### InMemory Transport Limitations
 
 - **No persistence**: Messages are lost if the process crashes
 - **Single process**: Cannot distribute across multiple instances
@@ -163,7 +165,7 @@ The InMemoryOutbox's capacity is constrained. You can configure the limit to the
 - **EntryLimit** Defaults to 2048. Governs how many messages the InMemoryOutbox can hold.
 - **CompactionPercentage** When we hit a capacity limit, what percentage of messages should we purge. 
 
-### When to Use
+### When to Use the InMemory Outbox
 
 **Perfect for**:
 
@@ -177,7 +179,7 @@ The InMemoryOutbox's capacity is constrained. You can configure the limit to the
 - Non-critical message publishing - the InMemoryOutbox is used in place of a persistent Outbox
 - Scenarios where message loss on restart is acceptable
 
-### Configuration
+### InMemory Outbox Configuration
 
 ```csharp
 services.AddBrighter(options =>
@@ -217,7 +219,7 @@ public class CreatePersonHandler : RequestHandlerAsync<CreatePerson>
 }
 ```
 
-### Limitations
+### InMemory Outbox Limitations
 
 - **No persistence**: Messages lost on application restart
 - **No transactions**: Cannot participate in database transactions
@@ -228,7 +230,7 @@ public class CreatePersonHandler : RequestHandlerAsync<CreatePerson>
 
 The InMemory Inbox provides message deduplication without requiring a database.
 
-### When to Use
+### When to Use the InMemory Inbox
 
 **Perfect for**:
 
@@ -241,7 +243,7 @@ The InMemory Inbox provides message deduplication without requiring a database.
 - Short-lived message deduplication windows
 - Non-critical deduplication scenarios
 
-### Configuration
+### InMemory Inbox Configuration
 
 ```csharp
 var bus = new InternalBus();
@@ -262,7 +264,7 @@ services.AddBrighter(options =>
 .AutoFromAssemblies();
 ```
 
-### Example Usage
+### InMemory Inbox Example Usage
 
 ```csharp
 [UseInboxAsync(step: 0, contextKey: typeof(PersonCreatedHandler), onceOnly: true)]
@@ -285,7 +287,7 @@ public class PersonCreatedHandler : RequestHandlerAsync<PersonCreated>
 }
 ```
 
-### Limitations
+### InMemory Inbox Limitations
 
 - **No persistence**: Deduplication state lost on restart
 - **Single process**: Cannot deduplicate across instances
@@ -296,7 +298,7 @@ public class PersonCreatedHandler : RequestHandlerAsync<PersonCreated>
 
 The InMemory Scheduler provides delayed message execution without requiring Quartz, Hangfire, or cloud schedulers.
 
-### When to Use
+### When to Use the InMemory Scheduler
 
 See the complete [InMemory Scheduler](InMemoryScheduler.md) documentation for detailed information.
 
@@ -312,7 +314,7 @@ See the complete [InMemory Scheduler](InMemoryScheduler.md) documentation for de
 - Short delays (minutes, not hours/days)
 - Acceptable to lose scheduled work on restart
 
-### Configuration
+### InMemory Scheduler Configuration
 
 ```csharp
 services.AddBrighter(options =>
@@ -323,7 +325,7 @@ services.AddBrighter(options =>
 .AutoFromAssemblies();
 ```
 
-### Example Usage
+### InMemory Scheduler Example Usage
 
 ```csharp
 public class OrderService
@@ -349,7 +351,7 @@ For complete documentation, see [InMemory Scheduler](InMemoryScheduler.md).
 
 The InMemory Archive stores dispatched messages in memory for diagnostics and replay.
 
-### When to Use
+### When to Use the InMemory Archive
 
 **Perfect for**:
 
@@ -359,7 +361,7 @@ The InMemory Archive stores dispatched messages in memory for diagnostics and re
 
 **Not recommended for production** due to unbounded memory growth.
 
-### Configuration
+### InMemory Archive Configuration
 
 ```csharp
 services.AddBrighter(options =>
@@ -370,7 +372,7 @@ services.AddBrighter(options =>
 .AddProducers(/* producer configuration */);
 ```
 
-### Example Usage
+### InMemory Archive Example Usage
 
 ```csharp
 public class LargeMessageMapper : IAmAMessageMapper<LargeDataCommand>
@@ -432,7 +434,7 @@ public class MyTests
 }
 ```
 
-For more details on service provider overloads and the Options pattern, see [Service Provider Function Overloads](/contents/BrighterBasicConfiguration.md#service-provider-function-overloads) and [Using the Options Pattern](/contents/BrighterBasicConfiguration.md#using-the-options-pattern) in the Basic Configuration documentation.
+For more details on service provider overloads and the Options pattern, see [Service Provider Function Overloads](/contents/CommandProcessorConfigurationReference.md#service-provider-function-overloads) and [Using the Options Pattern](/contents/CommandProcessorConfigurationReference.md#using-the-options-pattern) in the Basic Configuration documentation.
 
 ## Complete Testing Example
 
@@ -673,7 +675,7 @@ When moving to production, replace InMemory components:
 
 **No code changes required** - just swap the registration in your DI container!
 
-## Summary
+## InMemory Options Summary
 
 Brighter V10 provides comprehensive InMemory options for all major components:
 

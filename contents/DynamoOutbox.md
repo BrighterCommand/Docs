@@ -1,7 +1,9 @@
 # DynamoDb Outbox
 
-## Usage
-The DynamoDb Outbox allows integration between DynamoDb and [Brighter's outbox support](/contents/BrighterOutboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#outbox-support).
+> **Reference** · Applies to **Brighter V10**
+
+## DynamoDb Outbox Usage
+The DynamoDb Outbox allows integration between DynamoDb and [Brighter's outbox support](/contents/BrighterOutboxSupport.md). The configuration is described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support).
 
 To support transactional messaging when using DynamoDb requires us to use DynamoDb's support for ACID transactions. You should understand best practices for using transactions with DynamoDb.
 
@@ -19,7 +21,7 @@ For this we will need the *Outbox* package for DynamoDb:
 
 See [AWS Configuration](/contents/AWSSQSConfiguration.md#migrating-from-aws-sdk-v3-to-v4) for migration guidance between v3 and v4.
 
-As described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#outbox-support), we configure Brighter to use an outbox with the Use{DB}Outbox method call.
+As described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support), we configure Brighter to use an outbox with the Use{DB}Outbox method call.
 
 As we want to use DynamoDb with the outbox, we also call: Use{DB}TransactionConnectionProvider so that we can share your transaction scope when persisting messages to the outbox.
 

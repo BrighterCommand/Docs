@@ -1,4 +1,7 @@
 # Requests, Commands and Events
+
+> **Explanation** · Applies to **Brighter V10**
+
 ## The IRequest Interface
 
 We use the term **Request** for a data object containing parameters that you want to dispatch to a handler. Brighter uses the interface **IRequest** for this concept.

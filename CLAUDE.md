@@ -119,12 +119,26 @@ The separator is ` · ` — space, U+00B7 MIDDLE DOT, space. Not a hyphen, not a
 It is fixed so the pattern can be strict:
 
 ```python
+APPLIES_TO = ('Brighter V10 and Darker V4', 'Brighter V10', 'Darker V4')
+
 BANNER_RE = re.compile(
     r'^> \*\*(Tutorial|How-to|Reference|Explanation)\*\*'      # page type
-    r' · Applies to \*\*(Brighter V10|Darker V10|Brighter and Darker V10)\*\*'
+    r' · Applies to \*\*(' + '|'.join(APPLIES_TO) + r')\*\*'   # longest first
     r'( · Prerequisites: .+)?$'                                 # optional
 )
 ```
+
+**Brighter and Darker version independently.** Brighter is on V10; Darker's latest
+release is 4.1.1. There is no "Darker V10" and there never has been — an earlier draft
+of this vocabulary said there was, which is exactly the confident-but-wrong version
+claim the banner exists to prevent. A page covering both spells out both:
+`Applies to **Brighter V10 and Darker V4**`.
+
+The vocabulary is closed rather than a version pattern, deliberately. When Brighter
+goes to V11 or Darker ships its next release, every unbumped page fails the build
+instead of quietly asserting last year's version. Change the versions in
+`APPLIES_TO` in `tools/pagelint.py` and nowhere else — this section documents that
+tuple and `apply_banners.py` imports it.
 
 **Page type** is exactly one of four values:
 
@@ -256,6 +270,13 @@ services.AddBrighter()
 See [Code Example Best Practices](#code-example-best-practices) for the fuller
 treatment; these three are the parts a tool can check.
 
+The third qualifies the second. A block whose `using` directives are genuinely
+elided says so with `// ...`, and rule 6 then reports it as a **warning even under
+`--changed`** — the omission is declared rather than fixed, so it is downgraded and
+never silenced. It still counts towards the debt and still says so in its own words.
+Without that, relocating a block verbatim is indistinguishable from writing a new
+one, and a page split cannot honour "move the text, do not improve it".
+
 ### llms.txt
 
 `llms.txt` at the repository root indexes the documentation for retrieval systems.
@@ -307,16 +328,20 @@ rule in only one of the two places is how the next round of decay begins:
 | Heading qualification, across pages (`##`, allowlist exempt) | 3a | error | error |
 | Heading qualification, within a page (`##`–`####`, allowlist exempt) | 3b | error | error |
 | Language tag on every fence | 4 | warning → error once the backfill lands | error |
-| "Dispatcher", not "ServiceActivator", in prose | 5 | error | error |
-| `using` directives in C# blocks | 6 | warning, counted | error |
+| "Dispatcher", not "ServiceActivator" or "Service Activator", in prose | 5 | error | error |
+| `using` directives in C# blocks | 6 | warning, counted | error, unless the block marks its omission `// ...` |
 | Version markers on code (❌/✅) | — | **review only** | **review only** |
 
 Version markers are the one convention with no rule, and deliberately so: whether two
 code blocks differ *by version* is a judgement about meaning, and a regex that guessed
 at it would fire on every before/after pair in the repo. It is checked in review.
 
-Rule 5 has three legitimate exceptions built in — the term is fine inside fenced
-blocks and inline code spans (`ServiceActivatorHostedService`,
+Rule 5 matches **both spellings** — `ServiceActivator` and `Service Activator`. The
+API surface uses the closed form, but prose here uses the open one just as often, and
+both are the same V9 term.
+
+It has three legitimate exceptions built in — the term is fine inside fenced blocks and
+inline code spans (`ServiceActivatorHostedService`,
 `Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection`), and a page that
 discusses the name itself opts out with a comment:
 
@@ -718,7 +743,8 @@ Before finalizing documentation, verify:
 
 **Terminology Pitfalls:**
 
-- ❌ Don't use "ServiceActivator" - prefer "Dispatcher" for V10
+- ❌ Don't use "ServiceActivator" or "Service Activator" - prefer "Dispatcher" for V10.
+  If you mean the assembly or a type, put it in `backticks`, not **bold**
 - ❌ Don't use inconsistent terms - check BasicConcepts.md and Glossary
 - ❌ Don't introduce new terms without defining them
 

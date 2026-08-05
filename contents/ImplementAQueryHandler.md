@@ -1,6 +1,8 @@
 # Implementing a Query Handler
 
-## Introduction
+> **How-to** · Applies to **Darker V4**
+
+## Query Handler Introduction
 
 Query handlers are the entry point to your query execution logic in Darker. A query handler receives a query object, executes the necessary logic to retrieve or compute the requested data, and returns the result. Query handlers are always part of an internal bus and form part of a middleware pipeline, similar to how request handlers work in Brighter.
 
@@ -235,7 +237,7 @@ Use `QueryHandler<TQuery, TResult>` only when:
 
 **Important:** For database queries, HTTP calls, file I/O, or any operation that waits on external resources, use `QueryHandlerAsync<TQuery, TResult>` instead.
 
-### Complete Example
+### Complete Synchronous Handler Example
 
 ```csharp
 using Paramore.Darker;
@@ -341,7 +343,7 @@ Use `IQueryHandler<TQuery, TResult>` directly when you need:
 - **Advanced scenarios** not covered by the base classes
 - **Conditional sync/async** execution based on runtime conditions
 
-### Complete Example
+### Complete Direct Implementation Example
 
 ```csharp
 using Paramore.Darker;
@@ -897,7 +899,7 @@ public class OrderQueryAcceptanceTests
 }
 ```
 
-## Best Practices
+## Query Handler Best Practices
 
 - **Keep handlers focused** - Each handler should have a single responsibility
 - **Use async for I/O operations** - Always prefer `QueryHandlerAsync` for database, HTTP, or file operations
@@ -910,7 +912,7 @@ public class OrderQueryAcceptanceTests
 - **Use AsNoTracking with EF Core** - Optimize read-only queries with `AsNoTracking()`
 - **Keep logic in handlers, not queries** - Query objects should be simple data containers
 
-## Common Pitfalls
+## Query Handler Common Pitfalls
 
 - **Forgetting CancellationToken parameter** - Always include the cancellation token in async methods
 - **Using wrong handler base class** - Use async handlers for I/O operations

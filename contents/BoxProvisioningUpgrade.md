@@ -1,8 +1,10 @@
 # Upgrading Existing Deployments
 
+> **How-to** · Applies to **Brighter V10**
+
 This page is for operators of a pre-existing Brighter deployment who are adopting [Database Provisioning](/contents/BoxProvisioning.md) for the first time. It describes what Brighter does when it starts against a table that was created and maintained by hand, what you should see in the logs, what to verify afterwards, and how to read the documented edge cases and the most likely failures.
 
-If your application is greenfield — that is, the Outbox and Inbox tables do not yet exist — the *fresh install* path described in [Database Provisioning](/contents/BoxProvisioning.md#how-it-works) applies, and most of this page is not relevant. Read [Configuring Box Provisioning](/contents/BoxProvisioningConfiguration.md) instead.
+If your application is greenfield — that is, the Outbox and Inbox tables do not yet exist — the *fresh install* path described in [Database Provisioning](/contents/BoxProvisioning.md#how-box-provisioning-works) applies, and most of this page is not relevant. Read [Configuring Box Provisioning](/contents/BoxProvisioningConfiguration.md) instead.
 
 ## What happens on first start
 
@@ -137,7 +139,7 @@ This matters in one specific situation: you are upgrading MSSQL across multiple 
 
 Brighter is deliberately designed around this. Every V2+ UpScript is idempotent under the lock (it checks `information_schema` before issuing the `ALTER`), so re-running the chain is safe.
 
-## Troubleshooting
+## Upgrade Troubleshooting
 
 The provisioner is fail-fast: any error short-circuits startup and wraps in `ConfigurationException`. The four failure modes below cover almost everything you will see in practice. Match on the message text — the strings below are quoted from the source.
 

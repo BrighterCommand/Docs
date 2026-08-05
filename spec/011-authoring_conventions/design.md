@@ -67,7 +67,7 @@ Formal shape, and the pattern `pagelint.py` enforces:
 ```python
 BANNER_RE = re.compile(
     r'^> \*\*(Tutorial|How-to|Reference|Explanation)\*\*'      # page type
-    r' · Applies to \*\*(Brighter V10|Darker V10|Brighter and Darker V10)\*\*'
+    r' · Applies to \*\*(' + '|'.join(APPLIES_TO) + r')\*\*'   # see note below
     r'( · Prerequisites: .+)?$'                                 # optional
 )
 ```
@@ -80,6 +80,20 @@ BANNER_RE = re.compile(
   was rejected.
 - **Prerequisites** is omitted entirely when there are none. Never
   `Prerequisites: none`.
+
+> **Corrected 2026-08-04.** This section originally fixed the vocabulary as
+> `Brighter V10 | Darker V10 | Brighter and Darker V10`, on the assumption that Darker
+> tracks Brighter's version. **It does not.** Darker's latest release is **4.1.1** and
+> its tags (4.1.1, 4.1.0, 4.0.1, 4.0.0, 3.0.0, 2.0.79) show an independent line, so
+> "Darker V10" is a version that has never existed. The banner sweep put that claim on
+> 10 pages, including `Glossary.md` and `ShowMeTheCode.md`, before it was caught.
+>
+> The vocabulary is now `APPLIES_TO = ('Brighter V10 and Darker V4', 'Brighter V10',
+> 'Darker V4')`, defined once in `tools/pagelint.py` and imported by
+> `apply_banners.py`, with `CLAUDE.md` documenting it. Darker's next release is in
+> flight and its source is ahead of what is deployed; the version segment gets bumped
+> when it lands, which is one edit to `APPLIES_TO`, one to `pagetypes.tsv`, and a
+> re-run.
 
 ### Worked examples
 

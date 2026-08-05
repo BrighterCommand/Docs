@@ -1,8 +1,10 @@
 # **Using the MSSQL Outbox**
 
+> **Reference** · Applies to **Brighter V10**
+
 The MSSQL Outbox provides a message store for the [Transactional Outbox pattern](/contents/BrighterOutboxSupport.md) using a Microsoft SQL Server database. This ensures that messages are saved within the same transaction as your business logic and published to a message broker later.
 
-## **Provisioning the Outbox Table**
+## Provisioning the MSSQL Outbox Table
 
 You have two equally valid options for creating and maintaining the Outbox table:
 
@@ -16,7 +18,7 @@ Use `MsSqlOutboxBuilder.GetDDL()` to obtain the same DDL Brighter ships, then dr
 
 Neither option is deprecated. Choose based on fit: small teams and greenfield apps benefit from startup-time provisioning; teams with DBA approval workflows or change windows often prefer to drive the same DDL through their own tooling.
 
-## **NuGet Packages**
+## MSSQL Outbox NuGet Packages
 
 To use the MSSQL Outbox, you need to install the following packages from NuGet. If you are using Entity Framework Core, you will also need the EF Core integration package.
 
@@ -30,7 +32,7 @@ For Entity Framework Core support:
 Install-Package Paramore.Brighter.MsSql.EntityFrameworkCore
 ```
 
-## **Database Table Schema**
+## MSSQL Outbox Database Table Schema
 
 The MSSQL Outbox requires a specific table in your database to store messages before they are dispatched. You can generate the necessary SQL Data Definition Language (DDL) script to create this table using the `MsSqlOutboxBuilder` helper class.
 
@@ -84,7 +86,7 @@ CREATE TABLE Outbox (
 );
 ```
 
-## **Configuration**
+## MSSQL Outbox Configuration
 
 To configure the MSSQL Outbox, you need to provide an outbox implementation in the `AddProducers` configuration when setting up Brighter.
 

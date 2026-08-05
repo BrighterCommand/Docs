@@ -1,5 +1,7 @@
 # Brighter Inbox Support
 
+> **Explanation** · Applies to **Brighter V10**
+
 ## Guaranteed, At Least Once
 
 Messaging makes the *guaranteed, at least once* promise.
@@ -70,7 +72,7 @@ There are two versions of the attribute: sync and async. Ensure that you choose 
 
 ### Inbox Configuration
 
-Your inbox is configured as part of the Brighter extensions to `IServiceCollection`. See [Inbox Configuration](/contents/BrighterBasicConfiguration.md#inbox) for more.
+Your inbox is configured as part of the Brighter extensions to `IServiceCollection`. See [Inbox Configuration](/contents/DispatcherConfigurationReference.md#inbox) for more.
 
 ### Provisioning the Inbox Table
 

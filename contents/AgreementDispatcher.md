@@ -1,6 +1,8 @@
 # Agreement Dispatcher
 
-## Overview
+> **How-to** · Applies to **Brighter V10**
+
+## Agreement Dispatcher Overview
 
 The **Agreement Dispatcher** is a pattern for routing requests to handlers dynamically based on the request's content or context, rather than using a fixed type-to-handler mapping. This pattern, described by Martin Fowler in [Patterns of Enterprise Application Architecture](https://martinfowler.com/eaaDev/AgreementDispatcher.html), enables flexible routing logic that can change based on business rules, time, geography, or other runtime conditions.
 
@@ -80,7 +82,7 @@ services.AddBrighter(options => { })
 - A/B testing or feature flags
 - Multi-tenant routing
 
-## Use Cases
+## Agreement Dispatcher Use Cases
 
 ### 1. Time-Based Routing
 
@@ -320,7 +322,7 @@ registry.RegisterAsync<MyCommand>((request, context) =>
 
 **Note**: The routing lambda itself is always synchronous. Only the handler execution is async when using `RegisterAsync`.
 
-## Limitations
+## Agreement Dispatcher Limitations
 
 ### Cannot Use AutoFromAssemblies
 
@@ -553,7 +555,7 @@ public class Startup
 }
 ```
 
-## Best Practices
+## Agreement Dispatcher Best Practices
 
 ### 1. Keep Routing Logic Simple
 
@@ -668,7 +670,7 @@ registry.Register<MyCommand>((request, context) =>
 ]);
 ```
 
-## Troubleshooting
+## Agreement Dispatcher Troubleshooting
 
 ### Handler Not Found Error
 
@@ -710,7 +712,7 @@ services.AddBrighter(options => { })
 - [Request Handlers](BuildingAPipeline.md) - Handler basics
 - [Routing](Routing.md) - Standard routing in Brighter
 
-## Sample Code
+## Agreement Dispatcher Sample Code
 
 Full working examples can be found in the Brighter samples:
 

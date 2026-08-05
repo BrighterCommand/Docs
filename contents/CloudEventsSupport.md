@@ -1,5 +1,7 @@
 # Cloud Events Support
 
+> **How-to** · Applies to **Brighter V10**
+
 ## What are CloudEvents?
 
 [CloudEvents](https://cloudevents.io/) is a [CNCF](https://www.cncf.io/) specification for describing event data in a common, standardized way. Without a standard for metadata, each messaging framework uses its own set of metadata fields, making it difficult to write interoperable code that works across different messaging systems.
@@ -395,7 +397,7 @@ When migrating to V10, be aware of these CloudEvents-related breaking changes:
 
 See the [V10 Migration Guide](V10MigrationGuide.md) for complete migration instructions.
 
-## Best Practices
+## CloudEvents Best Practices
 
 ### 1. Choose the Right Content Mode
 

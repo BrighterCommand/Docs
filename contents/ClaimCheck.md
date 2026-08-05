@@ -1,5 +1,7 @@
 # Claim Check
 
+> **Explanation** · Applies to **Brighter V10**
+
 The [Claim Check](https://www.enterpriseintegrationpatterns.com/patterns/messaging/StoreInLibrary.html) pattern helps us reduce the size of our messages, without losing information that we need to exchange. 
 
 Instead of being transmitted in the body of the message, the payload is written to a distributed file storage and a token to retrieve the payload is sent instead. The receiver can read the payload by taking the reference and requesting it from the distributed file storage. The metaphor here is a luggage check. Instead of carrying large items of luggage aboard an aircraft we check them into the hold of the aircraft. The airline gives us a claim check for our luggage, that matches a tag on the bag. This pattern is sometimes called Reference Based Messaging.

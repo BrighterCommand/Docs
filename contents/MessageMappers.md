@@ -1,5 +1,7 @@
 # Message Mappers
 
+> **Explanation** · Applies to **Brighter V10**
+
 A message mapper turns domain code into a Brighter **Message**. A Brighter **Message** has a **MessageHeader** for information about the message. Key properties are: **TimeStamp**, **Topic**, and **Id**.  The **Message** also has a **MessageBody**, which contains the payload. 
 
 The messageType parameter tells the Dispatcher that listens to this message, how to treat it, as a Command or an Event. Brighter's *Dispatcher* dispatches a **Message** using either **commandProcessor.Send()** for **MT_COMMAND** or **commandProcessor.Publish()** for **MT_EVENT**.
@@ -132,7 +134,7 @@ The **Value** property of the **MessageBody** returns a string depending on the 
 
 ### Options for System.Text.Json Serialization
 
-The most common solution to serialization of the message payload is to use System.Text.Json to convert the message's metadata to JSON for sending over a messaging middleware transport. You can adjust the behavior of this serialization through our **JsonSerialisationOptions**. See [Brighter Configuration](/contents/BrighterBasicConfiguration.md#configuring-json-serialization) for more on how to set your options.
+The most common solution to serialization of the message payload is to use System.Text.Json to convert the message's metadata to JSON for sending over a messaging middleware transport. You can adjust the behavior of this serialization through our **JsonSerialisationOptions**. See [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#configuring-json-serialization) for more on how to set your options.
 
 You can then use this, when you want to set options consistently for message serialization.
 

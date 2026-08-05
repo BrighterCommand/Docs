@@ -1,5 +1,7 @@
 # Feature Switches
 
+> **How-to** · Applies to **Brighter V10**
+
 We provide a **FeatureSwitch** Attribute and **FeatureSwitchAsync** Attribute that you can use on your **IHandleRequests\<TRequest\>.Handle()** method, and **IHandleRequests\<TRequest\>.HandleAysnc()** method. The **FeatureSwitch** Attribute and **FeatureSwitchAsync** Attribute that you have configured will determine whether or not the
 **IHandleRequests\<TRequest\>.Handle()** and **IHandleRequests\<TRequest\>.HandleAsync()** will be executed.
 

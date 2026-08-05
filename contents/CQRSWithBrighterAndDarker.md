@@ -1,6 +1,8 @@
 # CQRS with Brighter and Darker
 
-## Introduction
+> **Explanation** · Applies to **Brighter V10 and Darker V4**
+
+## CQRS Introduction
 
 Command Query Responsibility Segregation (CQRS) is an architectural pattern that separates the responsibility for handling commands (operations that change state) from queries (operations that read state). **Brighter** and **Darker** together provide a complete, production-ready CQRS solution for .NET applications, where Brighter handles the command side and Darker handles the query side.
 
@@ -93,7 +95,7 @@ The level of separation you choose depends on your application's complexity and 
 **External Bus Support:**
 
 - Message mappers for converting commands/events to messages
-- Service Activator for consuming messages from queues/streams
+- Dispatcher for consuming messages from queues/streams
 - Support for distributed systems and microservices
 
 ### Command Handler Example
@@ -1031,7 +1033,7 @@ public sealed class GetOrderDetailsQueryHandler :
 
 **Note:** In this simple example, both read and write use the same database. For eventual consistency scenarios, the `OrderPlacedEvent` would be handled by a separate event handler that updates a denormalized read model.
 
-## Best Practices
+## CQRS Best Practices
 
 **1. Use Brighter for all state changes**
 
@@ -1067,7 +1069,7 @@ Design your UI to gracefully handle scenarios where the read model hasn't caught
 - Events: `NounVerbEvent` (OrderPlacedEvent, OrderCancelledEvent)
 - Queries: `GetNounQuery` or `SearchNounQuery` (GetOrderDetailsQuery, SearchOrdersQuery)
 
-## Common Pitfalls
+## CQRS Common Pitfalls
 
 **1. Querying in command handlers**
 

@@ -1,5 +1,7 @@
 # Request Validation
 
+> **How-to** · Applies to **Brighter V10**
+
 Brighter can validate a request in its handler pipeline **before** your business
 handler runs. Validation is opt-in per handler: you mark the handler's
 `Handle`/`HandleAsync` method with `[ValidateRequest]`, and you choose *how* the
@@ -49,7 +51,7 @@ model. If you are new to that model, read
 this page assumes you understand how an attribute inserts a handler into the
 pipeline.
 
-## How It Works
+## How Request Validation Works
 
 You mark the target handler's `Handle` method with `[ValidateRequest]`:
 
@@ -98,7 +100,7 @@ and your business handler never runs.
 > Read [Error Handling](/contents/HandlerFailure.md) to choose what should happen to
 > an invalid message (requeue, reject to a Dead Letter Queue, and so on).
 
-## Quick Start
+## Request Validation Quick Start
 
 This example validates a `RegisterUser` command with **DataAnnotations** — the
 provider with the least ceremony, because the rules live on the request itself.
@@ -253,7 +255,7 @@ constraints are declared as attributes — `[Required]`, `[EmailAddress]`,
 `[Range]`, and so on — directly on the request type, so nothing else needs
 registering.
 
-The [Quick Start](#quick-start) above is a complete DataAnnotations example: the
+The [Quick Start](#request-validation-quick-start) above is a complete DataAnnotations example: the
 `RegisterUser` request carries its own `[Required]` and `[EmailAddress]`
 constraints, and registration is a single call:
 

@@ -1,5 +1,7 @@
 # Fallback
 
+> **How-to** · Applies to **Brighter V10**
+
 You may want some sort of backstop exception handler, that allows you to take compensating action, such as undoing any partially committed work, issuing a compensating transaction, or queuing work for later delivery (perhaps using the [External Bus](/contents/ImplementingExternalBus.md)).
 
 To support this we provide a **IHandleRequests\<TRequest\>Fallback** method. In the Fallback method you write your code to run in the event of failure.
@@ -306,7 +308,7 @@ public class ProcessOrderHandler : RequestHandler<ProcessOrderCommand>
 }
 ```
 
-## Best Practices
+## Fallback Best Practices
 
 1. **Use Backstop Sparingly**: Only catch all exceptions (`backstop: true`) when you have comprehensive recovery logic. Otherwise, use `circuitBreaker: true` to catch only circuit breaker exceptions.
 
@@ -324,7 +326,7 @@ public class ProcessOrderHandler : RequestHandler<ProcessOrderCommand>
 
 8. **Combine with Circuit Breakers**: Fallback works well with circuit breakers to prevent cascading failures and provide graceful degradation.
 
-## Additional Resources
+## Further Reading
 
 - [Retry and Circuit Breaker](PolicyRetryAndCircuitBreaker.md)
 - [Building a Handler Pipeline](BuildingAPipeline.md)

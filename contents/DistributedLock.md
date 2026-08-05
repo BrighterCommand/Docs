@@ -1,5 +1,7 @@
 # Distributed Lock
 
+> **Explanation** · Applies to **Brighter V10**
+
 A **distributed lock** lets multiple instances of your application coordinate so that
 only one of them performs a given task at a time. Brighter uses it to guarantee that a
 single [Outbox Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) and a single

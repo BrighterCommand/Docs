@@ -1,6 +1,14 @@
 name: docs
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  # Daily, for the `versions` job below. The event that invalidates a pinned
+  # version is a release in *another* repository, so a push/PR-only trigger
+  # would leave a stale pin undetected until someone happened to touch the
+  # docs. See spec/009-getting_started_tutorials/design.md § D9.
+  schedule:
+    - cron: '17 6 * * *'
 
 jobs:
   check:
@@ -18,7 +26,47 @@ jobs:
           python-version: '3.12'
       - run: python3 tools/linkcheck.py
 
-      # tools/pagelint.py joins this job once the banner and heading sweeps have
-      # made it pass — see spec/011-authoring_conventions/tasks.md, Task 5.1.
-      # This workflow ships running linkcheck.py alone so there is a green
-      # baseline on an untouched tree, and every later failure is attributable.
+      # Repo-wide: banner, heading uniqueness and terminology are errors on every
+      # page. The using-directive debt and the untagged fences stay warnings here,
+      # so the existing backlog is visible without blocking unrelated work.
+      - run: python3 tools/pagelint.py
+
+      # On a pull request the code rules become errors, but only for blocks that
+      # overlap the diff. Fixing a typo on a 700-line page therefore obliges
+      # nothing beyond the typo.
+      #
+      # This step must not pass vacuously. pagelint.py exits 2 — not 0 — when it
+      # cannot resolve the ref or read the diff, so an unusable history fails the
+      # build rather than reporting "no changed ranges". `fetch-depth: 0` above is
+      # what makes origin/<base_ref> resolvable.
+      #
+      # base_ref goes through env rather than straight into the command line.
+      # Git ref names may contain `;`, `&` and `$`, so a `${{ }}` expansion
+      # inside `run:` is a shell-injection shape even when the value is a
+      # branch name in this repository.
+      - if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: python3 tools/pagelint.py --changed "origin/$BASE_REF"
+
+  # Spec 009 D9 adds tools/versioncheck.py, which diffs the versions pinned in
+  # tutorial prose against the latest non-prerelease on NuGet. The job is shaped
+  # now so landing D9 is one file, not a workflow restructure.
+  #
+  # REMOVE THE GUARD when 009 D9 lands — it exists only to keep the build green
+  # while the tool is absent, and inheriting it would silently un-gate the check.
+  # The bare invocation is deliberate: versioncheck.py exits 2 when it cannot
+  # reach NuGet, and an unreachable authority is an unchecked pin, not a pass.
+  versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          if [ -f tools/versioncheck.py ]; then
+            python3 tools/versioncheck.py
+          else
+            echo "tools/versioncheck.py not present yet (spec 009 D9) - skipping."
+          fi

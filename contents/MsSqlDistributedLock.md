@@ -1,19 +1,21 @@
 # MS SQL Distributed Lock
 
+> **Reference** · Applies to **Brighter V10**
+
 The MS SQL locking provider implements Brighter's [distributed
 lock](/contents/DistributedLock.md) using SQL Server **application locks**
 (`sp_getapplock` / `sp_releaseapplock`), so a single [Outbox
 Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) and Archiver run when you
 scale out. It pairs naturally with the [MSSQL Outbox](/contents/MSSQLOutbox.md).
 
-## Package
+## MS SQL Distributed Lock Package
 
 * **Paramore.Brighter.Locking.MsSql**
 
 Application locks are a built-in SQL Server feature, so there is **no table to
-provision** — see [Provisioning](#provisioning).
+provision** — see [Provisioning](#ms-sql-distributed-lock-provisioning).
 
-## Configuration
+## MS SQL Distributed Lock Configuration
 
 Unlike the lease-based providers, the MS SQL provider does not take an options class.
 You construct it with an `MsSqlConnectionProvider`, which it uses to open the session
@@ -31,7 +33,7 @@ var lockingProvider = new MsSqlLockingProvider(new MsSqlConnectionProvider(confi
 There are no lease settings to tune — the lock is held for the lifetime of the database
 session.
 
-## Example
+## MS SQL Distributed Lock Example
 
 ```csharp
 var configuration = new RelationalDatabaseConfiguration(
@@ -50,14 +52,14 @@ services
     .UseOutboxSweeper(opt => { opt.BatchSize = 10; });
 ```
 
-## Provisioning
+## MS SQL Distributed Lock Provisioning
 
 None. SQL Server application locks live in the server and are scoped to the session that
 acquires them, so the provider needs no table or schema. The lock acquires in
 `Exclusive` mode at `Session` scope and is released when the session ends — including if
 the holding instance crashes and its connection drops.
 
-## Notes
+## MS SQL Distributed Lock Notes
 
 - Because the lock is tied to a session rather than a timed lease, there is no
   `LeaseValidity` to tune.

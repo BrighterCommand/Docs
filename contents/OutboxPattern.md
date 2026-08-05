@@ -1,5 +1,7 @@
 # Outbox Pattern Support
 
+> **Explanation** · Applies to **Brighter V10**
+
 ## Producer Correctness
 
 When a microservice changes the state for which it is the system of record, and then signals to subscribers via an event that it has changed its state, how do we ensure that subscribers receive the event and are

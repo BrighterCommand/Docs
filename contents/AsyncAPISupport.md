@@ -1,5 +1,7 @@
 # AsyncAPI Document Generation
 
+> **How-to** · Applies to **Brighter V10**
+
 Brighter can automatically generate [AsyncAPI 3.0](https://www.asyncapi.com/docs/reference/specification/v3.0.0) documents from your service's runtime configuration. This gives you machine-readable documentation of your messaging contracts — the topics your service publishes to and subscribes from, along with JSON Schema for each message type — without maintaining separate documentation that drifts out of date.
 
 ## What is AsyncAPI?
@@ -10,7 +12,7 @@ Without AsyncAPI, teams maintain messaging documentation manually — in wikis, 
 
 Brighter generates AsyncAPI 3.0 documents by inspecting your registered [subscriptions](/contents/Routing.md), publications, and message types. The generated document can be used with the broader AsyncAPI ecosystem — tools like AsyncAPI Studio for visualization, Microcks for mock generation, and code generators for consumer SDKs.
 
-## Getting Started
+## AsyncAPI Getting Started
 
 ### Prerequisites
 
@@ -149,7 +151,7 @@ When the same routing key appears in multiple sources, Brighter produces one cha
 - Same routing key as both a DI publication and an assembly-scanned `[PublicationTopic]` type → DI publication wins, assembly scan is skipped (both are `send`)
 - A subscription on a routing key does not suppress an assembly-scanned `send` on the same key — they have different actions, so both are emitted
 
-## Configuration
+## AsyncAPI Configuration
 
 ### AsyncApiOptions
 

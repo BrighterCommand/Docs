@@ -1,5 +1,7 @@
 # How Configuring the Command Processor Works
 
+> **Explanation** · Applies to **Brighter V10**
+
 Brighter does not have a dependency on an Inversion Of Control (IoC) framework. This gives you freedom to choose the DI libraries you want for your project.
 
 We follow an approach outlined by Mark Seeman in his blog on a [DI Friendly

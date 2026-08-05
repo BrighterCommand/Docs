@@ -63,6 +63,36 @@ not exist yet.
   step, links out to reference and explanation
 - An index page listing guides by goal
 
+### Content gaps handed over from Spec 011's Task 3.2 (2026-08-04)
+
+Found while classifying all 105 pages by Diátaxis mode, and confirmed by the
+maintainer. Full reasoning in
+[`spec/011-authoring_conventions/classification-notes.md`](../011-authoring_conventions/classification-notes.md).
+
+**`contents/Logging.md` is a three-line stub** — an H1 and the word `TODO`. It is
+listed in `SUMMARY.md`, so it is published, navigable and invisible to
+`linkcheck.py`'s orphan check *precisely because* it is linked. It carries a
+`Reference` banner from 011's sweep, which is a banner on nothing. Writing it is this
+spec's, and it is the clearest instance of the pattern below: the docs point at a
+subject and then say nothing about it.
+
+**Four Explanation pages have no how-to route through them.** Each explains a
+mechanism well and leaves the reader without a task-shaped path:
+
+| Explanation that exists | How-to that does not |
+|---|---|
+| `ClaimCheck.md` | How to put a large payload behind a claim check |
+| `DynamicMessageDeserialization.md` | How to route several message types down one channel |
+| `QueriesAndQueryObjects.md` | How to write a query and its handler |
+| `MessageMappers.md` | How to use the default mapper — but check `DefaultMessageMappers.md` first; it may already be that page and simply not be reachable as one |
+
+**One of these is a correctness gap, not a filing one.** The maintainer's ruling on
+`MessageMappers.md` is that its `## Transformers` section should become its own
+Explanation page, and that it **must state plainly that transforms require a custom
+mapper and form part of the pipeline**. As written, a reader can come away believing
+transforms work with the default mapper. That is wrong rather than merely
+badly-filed, so it should not wait for the rest of this spec.
+
 ## Out of Scope
 
 - Restating reference material. A guide links to the option tables from Spec 012; it

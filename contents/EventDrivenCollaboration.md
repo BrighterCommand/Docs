@@ -1,5 +1,7 @@
 # Event Driven Collaboration
 
+> **Explanation** · Applies to **Brighter V10**
+
 Event Driven Architectures (EDA) are a major use case for Brighter's External Bus-you want processes to collaborate via messaging.
 
 (For another use case, offloading work to be performed asynchronously, see [Task Queues](/contents/TaskQueuePattern.md))
@@ -96,6 +98,6 @@ So an Event Driven Architecture benefits from a lack of behavioral coupling too.
 
 (Note that if we use commands, and not events, between microservices i.e. the sender knows who should receive this instruction, we do not have temporal coupling, but we do have behavioral coupling).
 
-## Next
+## Next Steps
 
 See [Event Carried State Transfer](EventCarriedStateTransfer.html) for guidance on how to \'join\' data between two microservices, when you need data from more than one service to carry out an operation.

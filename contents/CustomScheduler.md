@@ -1,5 +1,7 @@
 # Custom Scheduler
 
+> **How-to** · Applies to **Brighter V10**
+
 To add support for a different scheduler provider, implement the appropriate interfaces based on your use case.
 
 ## Message Scheduler
@@ -8,7 +10,7 @@ The **message scheduler** is used by `IAmAMessageProducer` (sync/async) when:
 - The transport lacks native delay support, or
 - The delay exceeds the transport's threshold (e.g., AWS SQS 15-minute limit).
 
-### Implementation Steps
+### Message Scheduler Implementation Steps
 
 1. **Schedule Messages**  
    Implement `IAmAMessageSchedulerAsync` and `IAmAMessageSchedulerSync` to interface with your scheduler:
@@ -76,7 +78,7 @@ The **message scheduler** is used by `IAmAMessageProducer` (sync/async) when:
 
 The **request scheduler** is used by `IAmACommandProcessor` when methods like `Send`, `Publish`, or `Post` are called with a `DateTimeOffset` or `TimeSpan`.
 
-### Implementation Steps
+### Request Scheduler Implementation Steps
 
 1. **Schedule Requests**  
    Implement `IAmARequestSchedulerAsync` and `IAmARequestSchedulerSync`:

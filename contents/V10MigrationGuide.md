@@ -1,6 +1,8 @@
 # Brighter V10 Migration Guide
 
-## Overview
+> **How-to** · Applies to **Brighter V10**
+
+## V10 Migration Overview
 
 Brighter V10 introduces significant improvements and new features while maintaining a clear migration path from V9. This guide provides step-by-step instructions for upgrading your application to V10, addressing breaking changes, and adopting new features.
 
@@ -171,6 +173,13 @@ services.AddBrighter()
 1. Replace `UseExternalBus` with `AddProducers`
 2. Replace `AddServiceActivator` with `AddConsumers`
 3. Update property names: `ProducerRegistry` instead of passing directly
+
+| V9 Method | V10 Method | Purpose |
+|-----------|------------|---------|
+| `UseExternalBus()` | `AddProducers()` | Configure message producers (send/publish to external bus) |
+| `AddServiceActivator()` | `AddConsumers()` | Configure message consumers (receive from external bus) |
+
+**Terminology**: In V10, we use **"Dispatcher"** to refer to the component that dispatches messages to handlers. The assembly name remains `Paramore.Brighter.ServiceActivator` for backward compatibility, but documentation and APIs now use "Dispatcher" for clarity.
 
 ### 3. Reactor and Proactor Terminology
 
@@ -857,7 +866,7 @@ If you encounter issues during migration:
    - Error messages and stack traces
    - Environment details (.NET version, OS, transport)
 
-## Summary
+## V10 Migration Summary
 
 Migrating to Brighter V10 involves:
 

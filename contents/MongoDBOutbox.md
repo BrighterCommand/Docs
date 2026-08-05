@@ -1,7 +1,9 @@
 # MongoDB Outbox
 
-## Usage
-The MongoDB Outbox allows integration between MongoDB and [Brighter's outbox support](/contents/BrighterOutboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#outbox-support).
+> **Reference** · Applies to **Brighter V10**
+
+## MongoDB Outbox Usage
+The MongoDB Outbox allows integration between MongoDB and [Brighter's outbox support](/contents/BrighterOutboxSupport.md). The configuration is described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support).
 
 To support transactional messaging when using MongoDB requires us to use MongoDB's support for ACID transactions. You should understand best practices for using transactions with MongoDB, including replica set requirements for multi-document transactions.
 
@@ -13,7 +15,7 @@ For this we will need the *Outbox* package for MongoDB:
 
 * **Paramore.Brighter.MongoDb**
 
-## NuGet Packages
+## MongoDB Outbox NuGet Packages
 
 To use the MongoDB Outbox, you need to install the following packages from NuGet:
 
@@ -22,7 +24,7 @@ dotnet add package Paramore.Brighter.Outbox.MongoDb
 dotnet add package Paramore.Brighter.MongoDb
 ```
 
-## Collection Management
+## MongoDB Outbox Collection Management
 
 The MongoDB Outbox supports different strategies for collection management through the `MakeCollection` property:
 
@@ -32,11 +34,11 @@ The MongoDB Outbox supports different strategies for collection management throu
 
 **Note:** You are responsible for creating and maintaining the collection if you choose to manage it manually. This includes tasks such as adding indexes to optimize query performance and configuring Time-To-Live (TTL) indexes for automatic message cleanup.
 
-## Configuration
+## MongoDB Outbox Configuration
 
 ### Basic Configuration
 
-As described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#outbox-support), we configure Brighter to use an outbox with the `AddProducers` method call.
+As described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support), we configure Brighter to use an outbox with the `AddProducers` method call.
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
@@ -150,7 +152,7 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-## Time-To-Live (TTL) Support
+## MongoDB Outbox Time-To-Live (TTL) Support
 
 The MongoDB Outbox supports automatic message expiration using MongoDB's TTL feature. You can configure this through the `TimeToLive` property in the collection configuration:
 
@@ -245,7 +247,7 @@ public class AddGreetingHandler : RequestHandlerAsync<AddGreeting>
 }
 ```
 
-## Message Structure
+## MongoDB Outbox Message Structure
 
 The MongoDB Outbox stores messages as BSON documents with the following structure:
 
@@ -280,7 +282,7 @@ Here is an example of a message document stored in the outbox collection:
 }
 ```
 
-## Error Handling
+## MongoDB Outbox Error Handling
 
 The MongoDB Outbox will throw appropriate exceptions for various error conditions:
 

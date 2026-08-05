@@ -1,5 +1,7 @@
 # Glossary
 
+> **Reference** · Applies to **Brighter V10 and Darker V4**
+
 This glossary provides definitions for key terms used in Brighter and Darker. Terms are organized by category for easy navigation.
 
 ## Core Concepts
@@ -76,7 +78,7 @@ Interface: `IQueryProcessor`
 
 See: [Darker Basic Configuration](/contents/DarkerBasicConfiguration.md), [Query Pipeline and Decorators](/contents/QueryPipeline.md)
 
-## Brighter and Darker
+## Brighter and Darker Terms
 
 ### Brighter
 
@@ -90,7 +92,7 @@ The framework for Queries - messages that return data without updating state. Da
 
 See: [Darker Basic Configuration](/contents/DarkerBasicConfiguration.md), [CQRS with Brighter and Darker](/contents/CQRSWithBrighterAndDarker.md)
 
-## Dispatcher
+## Dispatcher and Consumers
 
 ### Dispatcher
 
@@ -245,7 +247,7 @@ A lock held in shared infrastructure (a database, blob store, and so on) that le
 
 See: [Distributed Lock](/contents/DistributedLock.md)
 
-## Messaging
+## Messaging Terms
 
 ### Producer
 
@@ -397,7 +399,7 @@ A pattern for preventing failures when posting to one topic from blocking postin
 
 See: [Sweeper Circuit Breaking](/contents/SweeperCircuitBreaking.md)
 
-## CloudEvents
+## CloudEvents and Encodings
 
 ### CloudEvents
 
@@ -447,7 +449,7 @@ A value used to determine which partition a message should be routed to in parti
 
 See: [Request Context Improvements](/contents/DispatchingARequest.md)
 
-## Scheduling
+## Scheduler Terms
 
 ### Scheduler
 

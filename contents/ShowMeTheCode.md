@@ -1,5 +1,7 @@
 # Show me the code!
 
+> **How-to** · Applies to **Brighter V10 and Darker V4**
+
 There is an old principle: show don't tell, and this introduction is about showing you what you can do with Brighter and Darker. It's not about how - more detailed documentation elsewhere shows you how to write this code. It's not about why - articles elsewhere discuss some of the reasons behind this approach. It is just, let me see how Brighter works. 
 
 ## Brighter and Darker

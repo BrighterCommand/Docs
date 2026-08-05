@@ -1,5 +1,7 @@
 # Using an External Bus 
 
+> **How-to** · Applies to **Brighter V10**
+
 Brighter provides support for an External Bus. Instead of handling a command or event, synchronously and in-process, (an Internal Event Bus) work can be dispatched to a distributed queue to be handled
 asynchronously and out-of-process. The trade-off here is between the cost of distribution (see [The Fallacies of Distributed Computing](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing).
 
@@ -70,9 +72,9 @@ public class TaskReminderCommandMessageMapper : IAmAMessageMapper<TaskReminderCo
 ```
 ## Receiving via the External Bus 
 
-A consumer reads the **Message** using the [Service Activator](http://www.enterpriseintegrationpatterns.com/MessagingAdapter.html) pattern to map between an [Event Driven Consumer](http://www.enterpriseintegrationpatterns.com/EventDrivenConsumer.html) and a Handler.
+A consumer reads the **Message** using the [Service Activator](http://www.enterpriseintegrationpatterns.com/MessagingAdapter.html) pattern to map between an [Event Driven Consumer](http://www.enterpriseintegrationpatterns.com/EventDrivenConsumer.html) and a Handler. <!-- pagelint: allow-serviceactivator -->
 
-The use of the Service Activator pattern means the complexity of the distributed task queue is hidden from you. You just write a handler as  normal, but call it via post and create a message mapper, the result is
+The use of that pattern means the complexity of the distributed task queue is hidden from you. You just write a handler as  normal, but call it via post and create a message mapper, the result is
 that your command is handled reliably, asynchronously, and in parallel with little cognitive overhead. It just works!
 
 ``` csharp

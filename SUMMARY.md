@@ -7,6 +7,8 @@
 ## Brighter Configuration
 
  * [Basic Configuration](/contents/BrighterBasicConfiguration.md)
+ * [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md)
+ * [Dispatcher Configuration Reference](/contents/DispatcherConfigurationReference.md)
  * [How Configuring the Command Processor Works](/contents/HowConfiguringTheCommandProcessorWorks.md)
  * [How Configuring a Dispatcher for an External Bus Works](/contents/HowConfiguringTheDispatcherWorks.md)
 * [InMemory Options for Development and Testing](/contents/InMemoryOptions.md)
@@ -64,6 +66,9 @@
 ## Guaranteed At Least Once
 
  * [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)
+ * [RabbitMQ Durability: Quorum Queues and Persistence](/contents/RabbitMQDurability.md)
+ * [Migrating to Quorum Queues](/contents/RabbitMQMigrateToQuorumQueues.md)
+ * [RabbitMQ Connection Stability](/contents/RabbitMQConnectionStability.md)
  * [PostgreSQL Message Broker](/contents/PostgreSQLMessageBroker.md)
  * [AWS SNS Configuration](/contents/AWSSQSConfiguration.md)
  * [Kafka Configuration](/contents/KafkaConfiguration.md)

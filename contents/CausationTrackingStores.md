@@ -1,5 +1,7 @@
 # Implementing Causation Tracking in Your Own Store
 
+> **How-to** · Applies to **Brighter V10**
+
 [Replay On Seen](/contents/ReplayOnSeen.md) needs two things from your storage: an Inbox
 that can hand back the [Causation Id](/contents/ReplayOnSeen.md#causation-id) it recorded
 when a request was first handled, and an Outbox that can find every message stored under

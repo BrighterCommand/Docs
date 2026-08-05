@@ -1,5 +1,7 @@
 # How to Implement an Asynchronous Request Handler
 
+> **How-to** · Applies to **Brighter V10**
+
 To implement an asynchronous handler, derive from **RequestHandlerAsync\<T\>** where *T* should be the **Command** or **Event** derived type that you wish to handle. Then override the base
 class **RequestHandlerAsync\<T\>.HandleAsync()** method to implement your handling for the Command or Event.
 

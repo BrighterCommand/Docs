@@ -1,5 +1,7 @@
 # Error Handling Options
 
+> **Reference** · Applies to **Brighter V10**
+
 Brighter's [message pump](/contents/HowServiceActivatorWorks.md) uses `Subscription` properties to control how it handles errors. These properties configure requeue behavior, Dead Letter Queue (DLQ) routing, and pump termination thresholds.
 
 This document covers the configuration side of error handling. For an overview of strategies and when to use each one, see [Error Handling](/contents/HandlerFailure.md).

@@ -1,12 +1,14 @@
 # Why Brighter?
 
+> **Explanation** · Applies to **Brighter V10 and Darker V4**
+
 There are many options for .NET developers looking for either a package to use as a command processor/dispatcher pattern implementation (sometimes confused with the mediator pattern) or package to use as a messaging framework. So why would you choose Brighter & Darker?
 
 ## Reactor Pattern
 
 Brighter's message dispatcher implements the [Reactor Pattern](https://en.wikipedia.org/wiki/Reactor_pattern).
 
-The Service Activator package's **Dispatcher** class acts as a *supervisor* which creates a number of **Performers**. A **Performer** is a *reactor*, a single-threaded message pump (event loop) that reads messages from a configured topic/routing key and dispatches them to a handler. The same thread that loops over the queue or stream of messages, is the thread used to run the handler code. 
+The `Paramore.Brighter.ServiceActivator` package's **Dispatcher** class acts as a *supervisor* which creates a number of **Performers**. A **Performer** is a *reactor*, a single-threaded message pump (event loop) that reads messages from a configured topic/routing key and dispatches them to a handler. The same thread that loops over the queue or stream of messages, is the thread used to run the handler code. 
 
 To scale up you increase the number of **Performers**; to scale out deploy new instances of your app, each of which will use a single-thread. (We recommend using the latter in a container environment). You can use async I/O to allow your thread to read more messages whilst a handler is I/O bound.
 

@@ -1,5 +1,7 @@
 # Quartz Scheduler
 
+> **Reference** · Applies to **Brighter V10**
+
 [Quartz.NET](https://www.quartz-scheduler.net/) is one of the most widely used enterprise-grade scheduling libraries in the .NET community. Brighter provides first-class integration with Quartz for [scheduler functionality](/contents/BrighterSchedulerSupport.md), making it an excellent choice for production systems requiring durable, distributed scheduling.
 
 ## Quartz.NET Overview
@@ -33,7 +35,7 @@ When you schedule a message with Brighter:
 5. QuartzBrighterJob dispatches the message via Brighter's Command Processor
 6. Your handler executes
 
-## NuGet Packages
+## Quartz NuGet Packages
 
 Install the required NuGet packages:
 
@@ -53,7 +55,7 @@ dotnet add package Quartz.Serialization.Json
 # Or PostgreSQL, MySQL, etc. - see Quartz documentation
 ```
 
-## Configuration
+## Quartz Configuration
 
 ### Basic Configuration
 
@@ -334,7 +336,7 @@ builder.Services.AddQuartz(q =>
 });
 ```
 
-## Code Examples
+## Quartz Code Examples
 
 ### Basic Scheduling
 
@@ -449,7 +451,7 @@ builder.Services.AddQuartz(q =>
 - Ensure clocks are synchronized across instances (NTP)
 - Monitor instance health and check-ins
 
-## Monitoring and Observability
+## Quartz Monitoring and Observability
 
 ### Quartz Listeners
 
@@ -551,7 +553,7 @@ builder.Services.AddHealthChecks()
     .AddCheck<QuartzHealthCheck>("quartz");
 ```
 
-## Best Practices
+## Quartz Best Practices
 
 ### 1. Always Use Persistent Job Store in Production
 
@@ -644,7 +646,7 @@ var scheduledTime = DateTimeOffset.Now.AddHours(1);
 "Server=localhost;Database=Quartz;Max Pool Size=50;..."
 ```
 
-## Troubleshooting
+## Quartz Troubleshooting
 
 ### Jobs Not Executing
 
@@ -705,7 +707,7 @@ clustering.CheckinInterval = TimeSpan.FromSeconds(30);
 // (indexes, isolation levels, etc.)
 ```
 
-## Migration from Other Schedulers
+## Quartz Migration from Other Schedulers
 
 ### From InMemory Scheduler
 
@@ -752,7 +754,7 @@ services.UseScheduler(provider =>
 - [Azure Scheduler](AzureScheduler.md) - Cloud-native Azure scheduling
 - [Quartz.NET Documentation](https://www.quartz-scheduler.net/documentation/index.html) - Official Quartz documentation
 
-## Summary
+## Quartz Summary
 
 Quartz.NET is an excellent production scheduler for Brighter offering:
 

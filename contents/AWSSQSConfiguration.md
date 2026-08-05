@@ -1,6 +1,8 @@
 # AWS SQS Configuration
 
-## General
+> **Reference** · Applies to **Brighter V10**
+
+## SQS General
 
 SNS and SQS are proprietary message-oriented-middleware available on the AWS platform. Both are well documented: see [SNS](https://docs.aws.amazon.com/sns/latest/dg/welcome.html) and [SQS](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html). Brighter handles the details of sending to SNS using an SQS queue for the consumer. You might find the [documentation for the AWS .NET SDK](https://docs.aws.amazon.com/sdk-for-net/) helpful when debugging, but you should not have to interact with it directly to use Brighter.
 
@@ -17,7 +19,7 @@ Brighter supports multiple AWS messaging patterns:
 
 Point-to-point scenarios can be modelled either as an SNS **topic** with one subscribing queue or as direct SQS queue communication.
 
-## Connection
+## SQS Connection
 
 The Connection to AWS is provided by an **AWSMessagingGatewayConnection**. This is a wrapper around AWS credentials and region, that allows us to create the .NET clients that abstract various AWS HTTP APIs. We require the following parameters:
 
@@ -44,9 +46,9 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-## Publication
+## SQS Publication
 
-For more on a *Publication* see the material on an *Add Producers* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#using-an-external-bus).
+For more on a *Publication* see the material on an *Add Producers* in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#using-an-external-bus).
 
 Brighter's **Routing Key** represents the [SNS Topic Name](https://docs.aws.amazon.com/sns/latest/api/API_CreateTopic.html) or [SQS Queue Name](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_CreateQueue.html).
 
@@ -259,9 +261,9 @@ var sqsPublication = new SqsPublication
 };
 ```
 
-## Subscription
+## SQS Subscription
 
-As normal with Brighter, we allow **Topic** creation from the Subscription. Because this works in the same way as the Publication see the notes under [Publication](#publication) for further detail on the options that you can configure around creation or validation.
+As normal with Brighter, we allow **Topic** creation from the Subscription. Because this works in the same way as the Publication see the notes under [Publication](#sqs-publication) for further detail on the options that you can configure around creation or validation.
 
 A subscription in Brighter represents a consumer of messages. For AWS, this can be a consumer of an SQS queue that is subscribed to an SNS topic, or a consumer of an SQS queue directly for point-to-point messaging. Both standard and FIFO queues/topics are supported.
 
@@ -399,7 +401,7 @@ By maintaining separate Brighter packages for v3 and v4, you can:
 - **Support legacy code**: Keep existing applications on v3 while new projects use v4
 - **Test thoroughly**: Validate each migration step before moving forward
 
-### AWS SDK v4 Support
+### Available Packages for SDK v3 and v4
 
 We provides complete support for AWS SDK version 4, while maintaining backwards compatibility with version 3. This allows you to migrate at your own pace without being forced to upgrade all components at once.
 
@@ -413,7 +415,7 @@ We provides complete support for AWS SDK version 4, while maintaining backwards 
 - **Paramore.Brighter.Transformers.AWS**: S3 Luggage Store with SDK v3
 - **Paramore.Brighter.Transformers.AWS.V4**: S3 Luggage Store with SDK v4
 
-See [AWS SDK v4 Support](#aws-sdk-v4-support) for migration guidance.
+See [V10 Migration Path](#v10-migration-path) for migration guidance.
 
 ## V10 Migration Path
 

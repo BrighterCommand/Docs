@@ -1,14 +1,16 @@
 # MongoDB Inbox
 
-## Usage
-The MongoDB Inbox allows use of MongoDB for [Brighter's inbox support](/contents/BrighterInboxSupport.md). The configuration is described in [Basic Configuration](/contents/BrighterBasicConfiguration.md#inbox).
+> **Reference** · Applies to **Brighter V10**
+
+## MongoDB Inbox Usage
+The MongoDB Inbox allows use of MongoDB for [Brighter's inbox support](/contents/BrighterInboxSupport.md). The configuration is described in [Dispatcher Configuration Reference](/contents/DispatcherConfigurationReference.md#inbox).
 
 For this we will need the *Inbox* packages for the MongoDB *Inbox*.
 
 * **Paramore.Brighter.Inbox.MongoDb**
 * **Paramore.Brighter.MongoDb**
 
-## Configuration
+## MongoDB Inbox Configuration
 
 ### Basic Configuration
 
@@ -125,7 +127,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 }
 ```
 
-## Collection Management
+## MongoDB Inbox Collection Management
 
 The MongoDB Inbox supports different strategies for collection management through the `MakeCollection` property:
 
@@ -133,7 +135,7 @@ The MongoDB Inbox supports different strategies for collection management throug
 - **`OnResolvingACollection.Validate`**: Validates that the collection exists, throws an exception if it doesn't
 - **`OnResolvingACollection.Create`**: Creates the collection if it doesn't exist
 
-## Time-To-Live (TTL) Support
+## MongoDB Inbox Time-To-Live (TTL) Support
 
 The MongoDB Inbox supports automatic message expiration using MongoDB's TTL feature. You can configure this through the `TimeToLive` property in the collection configuration:
 
@@ -147,7 +149,7 @@ Inbox = new MongoDbCollectionConfiguration
 
 When TTL is configured, MongoDB will automatically create a TTL index on the `TimeStamp` field and remove expired documents.
 
-## Message Structure
+## MongoDB Inbox Message Structure
 
 The MongoDB Inbox stores messages with the following structure:
 
@@ -157,7 +159,7 @@ The MongoDB Inbox stores messages with the following structure:
 - **CommandBody**: JSON serialized command data
 - **ExpireAfterSeconds**: Optional expiration time for individual messages
 
-## Error Handling
+## MongoDB Inbox Error Handling
 
 The MongoDB Inbox will throw appropriate exceptions for various error conditions:
 

@@ -1,5 +1,7 @@
 # Outbox Support
 
+> **Explanation** · Applies to **Brighter V10**
+
 Brighter supports storing messages that are sent via an External Bus in an Outbox, as per the [Outbox Pattern](/contents/OutboxPattern.md)
 
 This allows you to determine that a change to an entity owned by your application should always result in a message being sent i.e. you have Transactional Messaging.
@@ -286,7 +288,7 @@ spec:
 
 ### Outbox Configuration
 
-Your outbox is configured as part of the Brighter extensions to ServiceCollection. See [Outbox Configuration](/contents/BrighterBasicConfiguration.md#outbox-support) for more.
+Your outbox is configured as part of the Brighter extensions to ServiceCollection. See [Outbox Configuration](/contents/CommandProcessorConfigurationReference.md#outbox-support) for more.
 
 ### Provisioning the Outbox Table
 

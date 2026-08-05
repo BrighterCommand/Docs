@@ -1,5 +1,7 @@
 # Telemetry
 
+> **Reference** · Applies to **Brighter V10**
+
 Brighter provides comprehensive OpenTelemetry integration for distributed tracing across message boundaries, enabling end-to-end observability in distributed systems.
 
 ## OpenTelemetry Semantic Conventions
@@ -487,7 +489,7 @@ Dispatcher (TaskService): "orders.created process"
 
 ---
 
-## Best Practices
+## Telemetry Best Practices
 
 1. **Start with Minimal Instrumentation**: Enable `RecordRequestInformation` and `RecordMessageInformation`, disable expensive options like `RecordRequestBody`
 
@@ -538,7 +540,7 @@ V9 used custom attribute names. V10 uses OTel standard conventions:
 
 ---
 
-## Troubleshooting
+## Telemetry Troubleshooting
 
 ### Traces Not Appearing
 
@@ -585,7 +587,7 @@ V9 used custom attribute names. V10 uses OTel standard conventions:
 
 ---
 
-## Additional Resources
+## Further Reading
 
 - [OpenTelemetry Semantic Conventions for Messaging](https://opentelemetry.io/docs/specs/semconv/messaging/messaging-spans/)
 - [W3C TraceContext Specification](https://w3c.github.io/trace-context/)

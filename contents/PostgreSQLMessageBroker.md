@@ -1,12 +1,14 @@
 # PostgreSQL Message Broker
 
+> **Reference** · Applies to **Brighter V10**
+
 Brighter supports for using PostgreSQL as a message broker, enabling pub/sub messaging patterns using your existing PostgreSQL infrastructure.
 
-## Overview
+## PostgreSQL Message Broker Overview
 
 The PostgreSQL message broker uses a table-based queue approach where messages are stored in a PostgreSQL table and retrieved by consumers. This provides a lightweight messaging solution that leverages your existing PostgreSQL database without requiring additional message broker infrastructure.
 
-### How It Works
+### How the PostgreSQL Broker Works
 
 1. **Producer**: Inserts messages into a queue store table
 2. **Consumer**: Retrieves messages from the queue store table based on visibility timeout
@@ -25,7 +27,7 @@ The system uses a visibility timeout mechanism (similar to AWS SQS) where messag
 - **Simplified operations**: One less service to manage, monitor, and maintain
 - **Reduced costs**: No separate message broker licensing or infrastructure
 
-### Transactional Messaging
+### Transactional Guarantees
 
 - **Atomic operations**: Messages and business data in the same database
 - **Strong consistency**: ACID guarantees for message operations
@@ -58,7 +60,7 @@ The system uses a visibility timeout mechanism (similar to AWS SQS) where messag
 
 ---
 
-## Limitations
+## PostgreSQL Message Broker Limitations
 
 ### Performance Constraints
 
@@ -79,7 +81,7 @@ The system uses a visibility timeout mechanism (similar to AWS SQS) where messag
 
 ---
 
-## Configuration
+## PostgreSQL Message Broker Configuration
 
 ### NuGet Package
 
@@ -272,7 +274,7 @@ public class OrderCreatedEventHandler : RequestHandlerAsync<OrderCreatedEvent>
 
 ---
 
-## Configuration Options
+## PostgreSQL Message Broker Configuration Options
 
 ### PostgresPublication
 
@@ -312,7 +314,7 @@ public class OrderCreatedEventHandler : RequestHandlerAsync<OrderCreatedEvent>
 
 The PostgreSQL message broker uses a **visibility timeout** mechanism to prevent duplicate processing:
 
-### How It Works
+### How Message Visibility Works
 
 1. **Message Published**: `visible_timeout` set to `CURRENT_TIMESTAMP`
 2. **Message Retrieved**: Consumer reads messages where `visible_timeout <= CURRENT_TIMESTAMP`
@@ -345,7 +347,7 @@ PostgreSQL supports two JSON data types:
 | **Indexing** | Limited | Full indexing support |
 | **Recommendation** | Low volume | **Production use** |
 
-### Configuration
+### JSONB Configuration
 
 ```csharp
 // Use JSONB (recommended)
@@ -433,7 +435,7 @@ See [Outbox Pattern](OutboxPattern.md) and [PostgreSQL Outbox](PostgresOutbox.md
 
 ---
 
-## Monitoring and Observability
+## PostgreSQL Message Broker Monitoring and Observability
 
 ### Query Queue Depth
 
@@ -494,7 +496,7 @@ services.AddOpenTelemetry()
 
 ---
 
-## Best Practices
+## PostgreSQL Message Broker Best Practices
 
 ### 1. Use JSONB for Production
 
@@ -595,7 +597,7 @@ var normalSubscription = new PostgresSubscription<NormalEvent>(
 
 ---
 
-## Troubleshooting
+## PostgreSQL Message Broker Troubleshooting
 
 ### Messages Not Being Consumed
 
@@ -648,7 +650,7 @@ var normalSubscription = new PostgresSubscription<NormalEvent>(
 
 ---
 
-## Additional Resources
+## Further Reading
 
 - [PostgreSQL Outbox](PostgresOutbox.md)
 - [PostgreSQL Inbox](PostgresInbox.md)

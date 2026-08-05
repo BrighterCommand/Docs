@@ -1,5 +1,7 @@
 # Building a Pipeline of Request Handlers
 
+> **How-to** · Applies to **Brighter V10**
+
 Once you are using the features of Brighter to act as a [command dispatcher](CommandsCommandDispatcherAndProcessor.html#command-dispatcher) and send or publish messages to a target handler, you may want to use
 its [command processor](CommandsCommandDispatcherAndProcessor.html#command-processor) features to handle orthogonal operations.
 

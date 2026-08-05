@@ -236,22 +236,22 @@ phase — CI must stay green.
 
 Goal: a human page-type verdict for every page, then one mechanical 105-file commit.
 
-- [ ] **Task 3.1:** Generate `pagetypes.tsv` — the proposals
+- [x] **Task 3.1:** Generate `pagetypes.tsv` — the proposals
   - Input: design §1 "Assigning a page type to 105 pages", `SUMMARY.md`, `modemix.py` scores
   - Output: `spec/011-authoring_conventions/pagetypes.tsv` — 105 rows, one per page: `path` · `proposed type` · `confidence` · `signal that fired` · `human verdict` *(blank)*
   - Notes: Four signals, in order: `SUMMARY.md` section · title verb (gerund/imperative → How-to) · single-mode score from `modemix.py` · everything else to a **review queue, not a default**. A wrong page type is worse than a slow one — it tells the reader the page is something it is not. The generator may be a throwaway script beside the spec.
 
-- [ ] **Task 3.2:** Human review of every row
+- [x] **Task 3.2:** Human review of every row
   - Input: `pagetypes.tsv`, design §1 "Pages expected to need argument"
   - Output: Verdict column complete on all 105 rows
   - Notes: Budget review time on the flagged ones: `FAQ.md`, `ShowMeTheCode.md` (a showcase — Reference fits poorly, but it is not a tutorial; Spec 009 addresses the underlying problem), `WhyBrighter.md` (Explanation), `V10MigrationGuide.md` (consulted → Reference), `Glossary.md` (Reference), and the 14 four-mode pages — whose difficulty in choosing *is* the worklist signal, so capture that difficulty for Task 7.1 as you go.
 
-- [ ] **Task 3.3:** Write `apply_banners.py`
+- [x] **Task 3.3:** Write `apply_banners.py`
   - Input: design §1 "The sweep script is a separate, throwaway deliverable"
   - Output: `spec/011-authoring_conventions/apply_banners.py`
   - Notes: Reads the **verdict** column, **never** the proposal. **A blank verdict is a hard stop:** print the offending rows and exit non-zero **without writing to a single page**. Do not sweep the reviewed rows and skip the rest — half a sweep produces a 60-file diff that looks deliberate, and the missing banners then surface as linter errors with no sign that a human decision was skipped rather than a page missed. Deliberately *not* folded into `pagelint.py --fix`: the sweep is P0 and `--fix` is P1, and a design that makes a P0 step depend on a P1 tool is wrong. Lives beside the spec because it is used once; **delete it after Task 3.4**.
 
-- [ ] **Task 3.4:** Run the sweep — one mechanical commit
+- [x] **Task 3.4:** Run the sweep — one mechanical commit
   - Input: `apply_banners.py`, reviewed `pagetypes.tsv`
   - Output: 105 files under `contents/` each gaining one banner line and one blank line below the H1; `apply_banners.py` deleted
   - Notes: **Its own commit**, carrying nothing else — a 105-file diff is reviewable only if it is genuinely mechanical, and the linter rather than the reviewer verifies uniformity. Verify: rules 1 and 2 report **zero**; `linkcheck.py` still clean (banners carrying prerequisite links add link targets to check).
@@ -271,35 +271,108 @@ Goal: a human page-type verdict for every page, then one mechanical 105-file com
 Goal: rules 3a and 3b at zero, with the three content defects **merged rather than
 renamed**.
 
-- [ ] **Task 4.1:** Propose qualifiers for the 50 colliding texts
+- [x] **Task 4.1:** Propose qualifiers for the 50 colliding texts
   - Input: design §5 "Deriving the qualifier", `pagelint.py` rule 3a output
   - Output: A reviewed proposal list (scratch): page · current heading · proposed heading
   - Notes: The qualifier is the page's subject, from its H1 with filler removed. **The script proposes, a human edits** — `## Hangfire Best Practices` beats `## Hangfire Scheduler Best Practices` and no rule can tell you that. Worst offenders: `Best Practices` ×26, `Configuration` ×26 (22 plain plus 4 emphasised, which the linter's normalisation merges), `Troubleshooting` ×14, `Summary` ×14, `Usage` ×13, `Overview` ×10.
 
-- [ ] **Task 4.2:** Apply cross-page qualification — 256 instances across 50 texts
+- [x] **Task 4.2:** Apply cross-page qualification — 256 instances across 50 texts
   - Input: Task 4.1 proposals
   - Output: Edits across the affected pages under `contents/`
   - Notes: Mechanical commit, no prose changes riding along. The three allowlisted texts that repeat (`Further Reading` ×29, `Related Documentation` ×10, `See Also` ×2 — 41 instances) **stay exactly as they are**; their uniformity is a feature. **Named sub-case — the four outbox pages.** `MSSQLOutbox.md`, `MySQLOutbox.md`, `PostgresOutbox.md` and `SqliteOutbox.md` each carry the same four **emphasised** H2s: `## **Provisioning the Outbox Table**`, `## **NuGet Packages**`, `## **Database Table Schema**`, `## **Configuration**`. All 16 need qualifying, and qualifying them is the moment to drop the emphasis too — `## **Configuration**` on `PostgresOutbox.md` becomes `## PostgreSQL Outbox Configuration`, not `## **PostgreSQL Outbox Configuration**`. Bold H2s are the convention nowhere else, and `slug()` ignores emphasis, so dropping it leaves the anchor unchanged. Task 6.7 does the same thing on `BrighterBasicConfiguration.md`, the only other page with bold H2s.
 
-- [ ] **Task 4.3:** Apply within-page qualification — 34 instances across 12 pages
+- [x] **Task 4.3:** Apply within-page qualification — 34 instances across 12 pages
   - Input: the complete rule 3b table under Task 2.8 (design §3's copy is now complete too)
   - Output: Edits to those 12 pages
   - Notes: Worst is `InMemoryOptions.md` — `When to Use` ×5, `Configuration` ×5, `Example Usage` ×3, `Limitations` ×3, i.e. **12** qualifications on one page, producing `#when-to-use-1`, `#when-to-use-2` … on chunks that sit next to each other. `Example Usage` was missing from the design's original table; use the Task 2.8 copy. Within a page a duplicate is **always** a defect. `RabbitMQConfiguration.md` is on this list and Phase 6a dissolves all three of its `### Best Practices` — that happens by luck; fix it here anyway so the outcome is deliberate and the page is correct before the split.
 
-- [ ] **Task 4.4:** Repoint the 8 same-page anchor links
+- [x] **Task 4.4:** Repoint the 8 same-page anchor links — **measured 18 anchors / 28 links; 19 repointed, see *Phase 4 as executed***
   - Input: design §5 "The anchor links are all same-page" (all 8 listed with line numbers)
   - Output: Updated links in the 7 distributed-lock pages (`[Provisioning](#provisioning)`) and `FAQ.md:8` (`[Configuration](#configuration)`)
   - Notes: All 8 are **same-page** links — no file prefix — so each is fixed in the same edit that renames its heading, leaving no window in which the repo is inconsistent. Run `python3 tools/linkcheck.py` after Tasks 4.2–4.4; it reports any missed one as MISSING ANCHOR. External inbound links from blog posts cannot be fixed from here; 8 is small and will never be smaller than it is now.
 
-- [ ] **Task 4.5:** Merge the three duplicate-content pairs — **separate commit**
+- [x] **Task 4.5:** Merge the three duplicate-content pairs — **separate commit**
   - Input: design §8 "Content defects surfaced by rule 3b"
-  - Output: `contents/Glossary.md` — one `Dispatcher` entry (currently `:95` and `:393`), one `CloudEvents` entry; `contents/FAQ.md` — one "When should I use Reactor vs Proactor?" answer
+  - Output: `contents/Glossary.md` — one `Dispatcher` entry (currently `:95` and `:393`), one `CloudEvents` entry; `contents/FAQ.md` — one "When should I use Reactor vs Proactor?" answer — **premise superseded: there were no duplicate pairs, see *Phase 4 as executed*.**
   - Notes: **Do not let the mechanical pass qualify the second heading of each pair.** That turns a visible duplicate into a permanent one, hidden behind a heading that now looks intentional. A glossary with two entries for one term needs the entries merged, and the merged text reviewed as a content change — hence its own small commit. Spec 009 D12 is **waiting on the `Dispatcher` merge** before it can link `Glossary.md#dispatcher`; say so in the commit message.
 
-- [ ] **Task 4.6:** Verify the phase
+- [x] **Task 4.6:** Verify the phase
   - Input: `pagelint.py`, `linkcheck.py`
   - Output: Rules 3a and 3b at zero; `linkcheck.py` clean
   - Notes: AC4 is "no `##` heading text appears on more than one page, except the navigation allowlist" — the linter reporting zero *is* the check. Confirm the remaining rule-1/2 count is still zero, i.e. no page was edited in a way that displaced its banner.
+
+### Phase 4 as executed (2026-08-04)
+
+**`pagelint.py` reports 0 errors.** Rules 1–5 are all clean. What remains is the
+804-block using-directive debt, which is warnings and is deliberate — Phase 5 can
+proceed. `linkcheck.py` clean at 107 files throughout.
+
+| Commit | Task | Shape |
+|---|---|---|
+| `d232324` | 4.5 | 2 files, 3 headings |
+| `64dd111` | 4.3 | 10 files, 48 lines — 31 headings + 2 link fixes |
+| `0b1b841` | 4.1–4.4 | 74 files, 279 lines — 260 headings + 19 links |
+
+#### Task 4.5's premise was wrong: there were no duplicate pairs to merge
+
+Checked against the files rather than taken from the audit. `Glossary.md` **defines
+`Dispatcher` once**, not twice: the audit cited `:95` and `:393`, but `:95` is the
+`### Dispatcher` term entry and `:393` is inside the `Timeout` entry and has nothing to
+do with it. What actually collided was the *section* heading `## Dispatcher` with its
+own first term `### Dispatcher` two lines below. `CloudEvents` was the same shape.
+`FAQ.md`'s second `###` was a one-line signpost, not a second answer.
+
+So the real defect was a section heading stealing its own term's anchor — `#dispatcher`
+resolved to the section and the term got `#dispatcher-1`. Fixed by naming the sections
+for what they hold: `## Dispatcher and Consumers`, `## CloudEvents and Encodings`.
+Every term stays an H3.
+
+**Spec 009's D12 is not blocked.** It was recorded as waiting on a merge that does not
+exist, and can link `Glossary.md#dispatcher` now.
+
+#### De-duplication found two links that resolved to the wrong section
+
+The argument for rule 3a, in miniature — both had been passing `linkcheck.py` the whole
+time, because the anchor existed, just not on the section the author meant:
+
+- `KafkaConfiguration.md:227` said "See Configuration Callback **below**", but
+  `#configuration-callback` resolved to the *publication* hook above it; the
+  subscription one was `-1`.
+- `AWSSQSConfiguration.md:418` promised migration guidance and linked
+  `#aws-sdk-v4-support` — the section the line already sat in.
+
+#### Six collisions were fixed on the other page
+
+Where an anchor had inbound links, the *other* page moved. `BasicConcepts.md` keeps
+`## Command` and `## Command Processor` (8 inbound links) and `Command Patterns` takes
+`## The Command Pattern` / `## The Command Processor Pattern`;
+`BrighterBasicConfiguration.md` keeps `#configuring-the-dispatcher` (6 inbound links, 4
+of them cross-page) and `HowConfiguringTheDispatcherWorks.md` moves. **The design
+predicted 8 same-page anchor links to repoint (Task 4.4); the true figure is 18 anchors
+carrying 28 links**, and choosing which side moves cut the rewrites to 19.
+
+#### Two headings were navigation under another name
+
+`## Additional Resources` on 5 pages became `## Further Reading`, and `## Next` on 3
+became `## Next Steps` — both allowlisted spellings, so they need no qualifier. None of
+the five pages had any allowlisted heading before, so this makes them conform rather
+than merely de-collide. **No allowlist change was needed**, which was the alternative
+and would have touched both `pagelint.py` and `CLAUDE.md`.
+
+#### One page was renamed beyond its collisions
+
+`FAQ.md` has 8 category H2s, of which 4 collided, and its own table of contents lists
+all 8. Qualifying half would have left that list reading two ways at once, so all 8 took
+the `<Category> Questions` form. The TOC's link *text* was deliberately left unsuffixed
+— eight entries ending in "Questions" reads worse than it navigates.
+
+#### Left for Task 6.7
+
+`BrighterBasicConfiguration.md`'s `## **Configuring The Dispatcher**` keeps its
+emphasis. It is in the KEEP set so its linked anchor survives, and `slug()` ignores
+emphasis, so dropping the bold is anchor-neutral and belongs with the split that is
+already editing the page. The four outbox pages *did* drop theirs, because they were
+being requalified anyway.
 
 ---
 
@@ -308,20 +381,80 @@ renamed**.
 Goal: `pagelint.py` in CI, and `docs.yml` shaped so Spec 009's D9 is one step rather than
 a restructure.
 
-- [ ] **Task 5.1:** Add `pagelint.py` to `docs.yml`
+- [x] **Task 5.1:** Add `pagelint.py` to `docs.yml`
   - Input: design §4 (full YAML), Task 1.1 output
   - Output: `.github/workflows/docs.yml` gaining a repo-wide `pagelint.py` step and a pull-request-only `--changed origin/${{ github.base_ref }}` step
   - Notes: Only now, once the sweeps have made it pass. Either tool failing fails the build (requirements § D5). Green build with both tools closes AC6.
 
-- [ ] **Task 5.2:** Verify `--changed` actually resolves its merge-base in CI
+- [x] **Task 5.2:** Verify `--changed` actually resolves its merge-base in CI — **done via PR #73, a deliberate probe; see *Phase 5 as executed***
   - Input: the first pull-request run after Task 5.1
   - Output: Confirmation the `--changed` step ran and compared against something real
   - Notes: `actions/checkout@v4` with `fetch-depth: 0` is *expected* to make `origin/<base_ref>` available, but on a `pull_request` event the checked-out ref is a merge commit and this is worth confirming from a real run rather than assuming. **A `--changed` step that silently finds no changed ranges passes vacuously** — the worst outcome, since the strict code rules would then never fire. Deliberately provoke it: open a throwaway PR touching one C# block with no `using`, and confirm the build goes red. If `origin/<base_ref>` does not resolve, add an explicit `git fetch origin ${{ github.base_ref }}`.
 
-- [ ] **Task 5.3:** Shape `docs.yml` for Spec 009's `versioncheck.py`
+- [x] **Task 5.3:** Shape `docs.yml` for Spec 009's `versioncheck.py`
   - Input: `spec/009-getting_started_tutorials/design.md` § D9 (lines 425–478) and its Sequencing step 6
   - Output: `docs.yml` gaining a daily `schedule:` trigger and a `versions` job whose step is a no-op while `tools/versioncheck.py` is absent
   - Notes: 011 owns this file, and 009's design states plainly that D9 **adds a step to it** rather than creating a second workflow. Building it with the second gate in mind is cheaper than retrofitting. Two requirements from 009: the trigger must include a **daily schedule**, because the event that invalidates a pinned version is a release in *another repository* and a PR-only trigger leaves a stale pin undetected until someone happens to touch the docs; and exit code **`2` (authority unreachable) is not a pass**. Guard the step so the build stays green before 009 lands — `if [ -f tools/versioncheck.py ]` — and leave a comment naming 009 D9 so the guard is removed rather than inherited.
+
+### Phase 5 as executed (2026-08-05)
+
+**The linter now gates the build, and the gate is demonstrated rather than assumed.**
+Three tasks, three commits, and one throwaway pull request whose whole purpose was to
+make the build go red on demand.
+
+| Commit | Task | Shape |
+|---|---|---|
+| `492546b` | 5.1 | `docs.yml` — repo-wide `pagelint.py`, plus a pull-request-only `--changed` |
+| `56106a6` | 5.3 | `docs.yml` — daily `schedule:` and the guarded `versions` job |
+| `04de6d3` | — | `base_ref` moved out of the command line into `env` |
+
+#### Task 5.2: the vacuous pass was ruled out in both directions
+
+Run locally against `origin/master`, `--changed` reported **0 errors** — which has
+exactly the shape of the failure Task 5.2 exists to catch, so it was taken apart rather
+than accepted. `changed_ranges('origin/master')` returns **118 files and 465 hunks**, so
+the ranges were real; this branch's edits are banner lines and heading lines and
+genuinely overlap no C# block. The pass was true, not vacuous.
+
+The positive direction was then forced. Editing one character inside the using-less
+block at `AWSSQSConfiguration.md:29` turns **that block alone** into an error — the
+other fifteen blocks on the same page keep their `(warning)` suffix — and the run exits
+1.
+
+#### The `pull_request` event resolved its base, and needed no `git fetch` fallback
+
+The open question was whether `origin/<base_ref>` resolves when the checked-out ref is a
+merge commit. **PR #73** answered it: a one-character probe, opened against
+`docs/spec-011-page-banners`, closed unmerged as soon as the run was observed.
+
+- `BASE_REF: docs/spec-011-page-banners` reached the step through `env`
+- the merge-base resolved — no exit **2**, which is what `pagelint.py` returns rather
+  than passing vacuously when it cannot determine what changed
+- `1 errors, 839 warnings`, exit 1, **build red**, on `AWSSQSConfiguration.md:29`
+- the repo-wide step stayed green at `0 errors, 840 warnings` **in the same run**
+
+So the two strictness levels are independent in practice and not only in design, and
+`fetch-depth: 0` is sufficient. **The contingency `git fetch origin ${{ github.base_ref }}`
+is not needed and was not added.**
+
+#### `base_ref` does not belong on a command line
+
+`--changed origin/${{ github.base_ref }}` expanded a ref straight into `run:`.
+`git check-ref-format` rejects spaces and `~^:?*[\` but permits `;`, `&` and `$`, so
+that is a shell-injection shape even though reaching it needs write access to create the
+branch a pull request is then based on. Now passed through `env` and quoted. Low
+severity, three lines, and worth not having in the repository's only workflow.
+
+#### The `versions` guard propagates exit codes, including 2
+
+009 requires that exit **2** — NuGet unreachable — is not a pass, and a guard is an easy
+place to lose that. Checked under `bash -e {0}`, which is what Actions uses: file absent
+→ 0, and 0, 1 and 2 all propagate unchanged. A `continue-on-error:` or a trailing
+`|| true` would have silently broken it, which is why neither is there. The guard carries
+a REMOVE THIS comment naming 009 D9 — a guard inherited rather than removed un-gates the
+check silently, the same class of failure as the vacuous `--changed` pass.
+
+**AC6 is closed:** both tools run in CI, and either one failing fails the build.
 
 ---
 
@@ -334,71 +467,162 @@ These are the only tasks producing prose, and design §12 says plainly that this
 schedule pressure should give — Spec 010 needs the conventions (Phase 1) and the worklist
 (Task 7.1), not the splits.
 
-- [ ] **Task 6.1:** Reduce `RabbitMQConfiguration.md` to its Reference core (~270 lines)
+- [x] **Task 6.1:** Reduce `RabbitMQConfiguration.md` to its Reference core (~270 lines)
   - Input: design §6a target structure, current `contents/RabbitMQConfiguration.md` (566 lines)
   - Output: General · RabbitMQ.Client v7 Support · Breaking Changes · connection/publication/subscription parameter tables · Putting It Together · configuration tables lifted from the quorum-queue, persistence, retry and heartbeat sections — **every knob, one place**
   - Notes: **Moved verbatim, not rewritten** (design §10). Any C# block that moves keeps its current form, `using` directives or not — rewriting while relocating produces a diff nobody can review, and would then oblige backfill on every block in the file under rule 6. Banner: `Reference`.
 
-- [ ] **Task 6.2:** Write `contents/RabbitMQDurability.md` (~150 lines, Explanation)
+- [x] **Task 6.2:** Write `contents/RabbitMQDurability.md` (~150 lines, Explanation)
   - Input: design §6a, the quorum-queue and persistence sections of the original
   - Output: New page — What are Quorum Queues? · Classic vs Quorum · When to Use Quorum Queues · What is Message Persistence? · When to Use Persistent Messages · Performance Considerations
   - Notes: Quorum-queue best-practice material folds into *When to Use* — **"guidance" is not a page type** (design §11). Banner: `Explanation`. Headings must be subject-qualified and globally unique from the moment the file is created; run `pagelint.py` on it before committing.
 
-- [ ] **Task 6.3:** Write `contents/RabbitMQMigrateToQuorumQueues.md` (~90 lines, How-to)
+- [x] **Task 6.3:** Write `contents/RabbitMQMigrateToQuorumQueues.md` (~90 lines, How-to)
   - Input: design §6a
   - Output: New page — Before you start (prerequisites, validation) · Migration from Classic to Quorum · Enabling Persistent Messages · Ack and Nack behaviour during migration
   - Notes: Banner: `How-to`, with a prerequisite link to `RabbitMQConfiguration.md`.
 
-- [ ] **Task 6.4:** Write `contents/RabbitMQConnectionStability.md` (~140 lines, How-to)
+- [x] **Task 6.4:** Write `contents/RabbitMQConnectionStability.md` (~140 lines, How-to)
   - Input: design §6a
   - Output: New page — Improvements in V10 · Configuring connection retry · Configuring heartbeats · Handling blocked connections in production · Monitoring and example logging configuration
   - Notes: Connection-stability best practices become **the step that implements them**, not a `## Best Practices` heading. Banner: `How-to`.
 
-- [ ] **Task 6.5:** Confirm all four `Best Practices` sections have landed somewhere
+- [x] **Task 6.5:** Confirm all four `Best Practices` sections have landed somewhere
   - Input: the original page's four `Best Practices` sections, Tasks 6.1–6.4
   - Output: A note in this file recording where each went
   - Notes: **No information loss** is a programme-level rule, and this is the split most at risk of quietly dropping guidance. None survives as a standalone `## Best Practices` heading, which also removes 4 of the 26 instances of that collision.
 
-- [ ] **Task 6.6:** Add `SUMMARY.md` entries for the three new RabbitMQ pages
+- [x] **Task 6.6:** Add `SUMMARY.md` entries for the three new RabbitMQ pages
   - Input: design §9 (before/after shown), `SUMMARY.md:66`
   - Output: Three entries under *Guaranteed At Least Once*, **beside** `RabbitMQ Configuration`
   - Notes: Beside the page they were split from — **not** in new sections. Spec 010 restructures the whole table of contents immediately afterwards and will site them properly; inventing placement now is work done twice. Run `linkcheck.py` — its ORPHAN check is what enforces "never create orphaned files", and it only fires on a whole-repo run.
 
-- [ ] **Task 6.7:** Reduce `BrighterBasicConfiguration.md` to its How-to core (~200 lines)
+- [x] **Task 6.7:** Reduce `BrighterBasicConfiguration.md` to its How-to core (~200 lines)
   - Input: design §6b, current page (1,068 lines — the largest and worst-mixed in the repo)
   - Output: Using .NET Core Dependency Injection · Configuring the Command Processor (**the one path that works**) · Putting It All Together · Running the Dispatcher · A Complete Dispatcher Example — linking out to both reference pages for every option
   - Notes: Normalise the `## **Bold Heading**` style while splitting (`## **Configuring The Command Processor**`) — it is the convention nowhere else, and `slug()` strips emphasis so anchors are unaffected either way. It costs nothing at the point the text is already moving. Banner: `How-to`.
 
-- [ ] **Task 6.8:** Write `contents/CommandProcessorConfigurationReference.md` (~630 lines)
+- [x] **Task 6.8:** Write `contents/CommandProcessorConfigurationReference.md` (~630 lines)
   - Input: design §6b — original lines 16–331, 332–349, 350–648
   - Output: New page — Command Processor Service Collection Extensions · Validating Your Configuration · Brighter Builder Fluent Interface
   - Notes: Verbatim move. Banner: `Reference`, prerequisite `BrighterBasicConfiguration.md`. At ~630 lines it exceeds `CLAUDE.md`'s 500-line guidance — correctly, because it is single-mode reference material and splitting a parameter list by size is exactly the error requirements § Mode mixing warns against.
 
-- [ ] **Task 6.9:** Write `contents/DispatcherConfigurationReference.md` (~210 lines)
+- [x] **Task 6.9:** Write `contents/DispatcherConfigurationReference.md` (~210 lines)
   - Input: design §6b — original lines 708–859, 860–918
   - Output: New page — Dispatcher Service Collection Extensions · Dispatcher Brighter Builder Fluent Interface
-  - Notes: Verbatim move. Banner: `Reference`. "Dispatcher", not "ServiceActivator", in the prose — rule 5 will enforce it.
+  - Notes: Verbatim move. Banner: `Reference`. "Dispatcher", not "ServiceActivator", in the prose — rule 5 will enforce it. **The source lines were already corrected on 2026-08-04 (`741890f`), so this move inherits backticked identifiers rather than owing the fix.**
 
-- [ ] **Task 6.10:** Fold the V10 configuration section into `V10MigrationGuide.md`
+- [x] **Task 6.10:** Fold the V10 configuration section into `V10MigrationGuide.md`
   - Input: original lines 1041–1068 (V10 Configuration Changes + Quick Migration Guide)
   - Output: `contents/V10MigrationGuide.md` **absorbing** that content; it does not survive on the split page
   - Notes: "No information loss, but no duplication either." That content belongs with the other migration material, and a reader looking for it will look there. Check for heading collisions with what the guide already has.
 
-- [ ] **Task 6.11:** Add `SUMMARY.md` entries for the two new configuration pages
+- [x] **Task 6.11:** Add `SUMMARY.md` entries for the two new configuration pages
   - Input: design §9 (before/after shown), `SUMMARY.md:9`
   - Output: Two entries under *Brighter Configuration*, beside `Basic Configuration`
   - Notes: `SUMMARY.md:9` and `:19` both read `Basic Configuration` — the Brighter one is `:9`, the Darker one `:19`. Run `linkcheck.py` for the orphan check.
 
-- [ ] **Task 6.12:** Determine and, if needed, add `.gitbook.yaml` redirects
+- [x] **Task 6.12:** Determine and, if needed, add `.gitbook.yaml` redirects
   - Input: design §6 "Redirects", `PROMPT.md` § Platform facts, the zero-width-space finding at the top of this file
-  - Output: Either a `redirects:` block, or a recorded finding that no page-level redirect is required — plus the two U+200B characters removed either way
+  - Output: Either a `redirects:` block, or a recorded finding that no page-level redirect is required — plus the two U+200B characters removed either way — **no redirect required; see *Phase 6 as executed***
   - Notes: **Establish first whether any page URL actually moves.** Both splits keep the Reference core under its original file name, so its published URL is unchanged; what breaks is *anchor-level* inbound links to sections that moved, and GitBook redirects operate on pages, not fragments. If that holds, the honest output is a recorded finding rather than a no-op stanza — the design's example (`guaranteed-at-least-once/rabbitmqconfiguration: contents/RabbitMQConfiguration.md`) points a URL at the page it already resolves to. The **new** pages' URLs derive from their `SUMMARY.md` placement, which Spec 010 changes immediately afterwards, so their redirects belong to 010. Adding the `redirects:` block is 010's deliverable; do it here only if 010 has not landed **and** a URL genuinely moves. Whatever the outcome: strip the U+200B before `structure:` and after `SUMMARY.md` and the trailing double-spaces, then **verify mechanically** — malformed indentation disables GitBook redirects silently rather than erroring, and an invisible character in a YAML key is that failure mode at its worst.
+
+### Phase 6 as executed (2026-08-05)
+
+Both splits done. `pagelint.py` **0 errors repo-wide and 0 under `--changed`**;
+`linkcheck.py` clean at **112 files**, orphan check included.
+
+| Commit | Task | Shape |
+|---|---|---|
+| `e0faceb` | — | `pagelint.py` rule 6 gains the `// ...` escape it already advertised |
+| `758f391` | 6.1–6.6 | 566 lines → 331 + 3 pages; 5 files, 389/272 |
+| *(this)* | 6.7–6.12 | 1,070 lines → 237 + 2 pages; 24 files, 972/891 |
+
+#### Design §10's "moved verbatim" premise was wrong, and it nearly failed the build
+
+§10 says a moved C# block keeps its current form, `using` directives or not,
+reasoning that rewriting one would oblige backfill under `--changed`. The premise
+is inverted: **a new page is 100% added lines, so every moved block already
+overlaps the diff and is already strict.** Across the two split candidates that
+was 42 using-less blocks — 42 hard errors the moment a PR opened.
+
+Proven before it was fixed, with a throwaway page and `git add -N`: one
+moved-verbatim block, one error, exit 1. Then proven again after: removing a
+single `// ...` marker turns its block red and the build with it.
+
+The resolution was ruled by the maintainer. Rule 6's message has always offered
+two remedies — "Add them, or mark the omission with `// ...`" — and `CLAUDE.md`'s
+*Complete code blocks* lists `// ...` among the three parts a tool can check, but
+`check_code_blocks` only ever implemented the first. It now honours the second:
+`// ...` **downgrades the finding to a warning and never silences it**, so the
+block still counts towards the debt and its message says the omission is declared,
+not fixed. Rejected: backfilling the 42 blocks (contradicts §10, and risks naming
+wrong namespaces on text that was only supposed to move) and exempting new files
+from strict rule 6 (a permanent hole — any new page could ship using-less blocks
+forever, which is the decay this spec exists to stop).
+
+The repo-wide baseline is unchanged by the escape, verified rather than assumed:
+`strict_ranges` is empty on a repo-wide run, so those findings were already
+warnings. 0 errors / 840 warnings / 804 blocks before and after.
+
+#### No information loss, checked mechanically both times
+
+Not by eye. For each split, every substantive line of the original was tested for
+verbatim presence across the resulting pages, and only the deliberate edits came
+back:
+
+- **RabbitMQ: 24 lines.** One anchor repointed in the same pass that renamed its
+  target, plus the 23 items of the four `Best Practices` sections, which §6a folds
+  rather than moves because "guidance" is not a page type. Where each went is in
+  `758f391`'s message.
+- **BrighterBasicConfiguration: 4 lines.** The 3 links stranded on the new
+  Dispatcher page — their "as discussed above" no longer had an above — and the
+  fold's lead-in, which `V10MigrationGuide.md` already states as "Builder methods
+  renamed for clarity".
+
+#### One departure from Task 6.3, deliberate
+
+Task 6.3 listed "Ack and Nack behaviour" under the migration how-to. The section
+is a general description of Brighter's consumer semantics with **no migration
+content**, so siting it on a how-to page re-mixes the modes the split exists to
+separate. It stays in the Reference core as `## RabbitMQ Ack and Nack Behaviour`;
+the how-to gained a `## Draining the Classic Queue Safely` step that makes the
+migration-specific point and links to it. Revert by moving the section if
+overruled — nothing else depends on the placement.
+
+#### Task 6.12: no redirect is required, and `.gitbook.yaml` was worse than recorded
+
+**No page-level redirect is needed.** Both splits keep the core under its original
+file name, so `RabbitMQConfiguration.md` and `BrighterBasicConfiguration.md`
+publish at unchanged URLs. The five new pages are new URLs — there is nothing to
+redirect *from*. What actually broke was **anchor-level** inbound links, and
+GitBook redirects operate on pages, not fragments; those were fixed by repointing
+the links themselves (1 in the first split, 28 in the second). The new pages'
+URLs derive from `SUMMARY.md` placement, which Spec 010 changes immediately
+afterwards, so their redirects belong to 010.
+
+The zero-width spaces were not merely cosmetic. The key was literally
+`​structure`, **not** `structure` — so GitBook has never read that block at
+all and has been falling back to its defaults, which happen to name the same two
+files, which is why nothing ever looked broken. The value was `SUMMARY.md​`
+to match, so fixing only the key would have converted a silently-ignored block
+into a silently-broken one. Both characters and the trailing double-spaces are
+gone, verified by byte inspection rather than by eye.
+
+#### Two figures worth carrying
+
+- Debt fell **804 → 802**, exactly the two `Quick Migration Guide` blocks dropped
+  as duplicates of `V10MigrationGuide.md`'s richer before/after. No block was
+  gained or lost in either move.
+- Untagged fences fell **36 → 34**: two bare fences carrying log output became
+  ```` ```text ````, which they had to, since on a new page rule 4 is a strict
+  error. Task 7.2's backfill is that much smaller.
 
 ---
 
 ## Phase 7 — Handoff, P1, and Acceptance (design §12 step 10)
 
-- [ ] **Task 7.1:** Write `worklist.md` for Spec 010 (D8)
+- [x] **Task 7.1:** Write `worklist.md` for Spec 010 (D8)
   - Input: design §8 (column table), requirements § Mode mixing (the 31 pages scoring ≥3 modes, the 14 scoring four), classification difficulty captured in Task 3.2
   - Output: `spec/011-authoring_conventions/worklist.md` — Page (path + lines) · Mode score with modes named · Verdict (`split` / `keep` / `keep — outside Diátaxis`) · Proposed shape · Rationale
   - Notes: **Must stand alone without this spec in context** — Spec 010 executes against it. Seeded from the 31 pages scoring ≥3 modes, minus the two split here. **The score is a triage signal, not a verdict:** `Glossary.md` (589 lines, single mode) and `KafkaConfiguration.md` (606 lines, one mode) are the standing reminders that size and score both mislead — record them as `keep` with the reason, so 010 does not re-open the question. Pages that resisted classification in Task 3.2 go here as split candidates; pages legitimately outside Diátaxis (`FAQ.md`, `Glossary.md`, `V10MigrationGuide.md`) must **not** be recorded as split candidates.
@@ -417,6 +641,71 @@ schedule pressure should give — Spec 010 needs the conventions (Phase 1) and t
   - Input: requirements § Acceptance Criteria (AC1–AC8)
   - Output: A checked-off AC list appended to this file; `PROMPT.md` updated with 011's completion state and the measured baseline; `PROMPT.md` open question 3 closed
   - Notes: Walk all eight: `pagelint.py` exits 0 with the warning count recorded (AC1) · `linkcheck.py` exits 0 including orphans (AC2) · every banner human-reviewed (AC3) · no cross-page `##` collisions outside the allowlist (AC4) · `CLAUDE.md` ↔ linter parity in **both** directions and the *File Organization Pattern* no longer prescribing rejected headings (AC5) · CI green with both tools, and green on the untouched tree *before* the sweeps (AC6) · splits navigable with redirects settled (AC7) · worklist executable without re-deriving the analysis (AC8). There are eight: requirements numbered two of them "6" until this list's review renumbered them to 1–8, and design's traceability row was updated to match. Then hand to Spec 010 — it needs the conventions and the worklist, both of which now exist.
+
+### Task 7.1 as executed (2026-08-05)
+
+`worklist.md` written — **42 rows**, seeded from the ≥3-mode cohort and extended where
+the score was the wrong signal. Spec 010 is now unblocked: it needed the conventions
+(Task 1.3) and this file, and both exist.
+
+#### The cohort reconciles exactly, and one prediction in it was wrong
+
+`modemix.py` now reports **30** pages at ≥3 modes and **13** at four, against the
+approved figures of 31 and 14. Both deltas are the RabbitMQ split and nothing else —
+re-scoring every page at `335f078` and diffing against HEAD shows **only the seven
+split-affected pages changed at all**. Phase 4 qualified 260 headings across 74 files
+and moved **no page's mode score**, which is worth knowing: the qualifier words
+prefixed to a heading do not disturb the vocabulary the scorer matches on.
+
+**`BrighterBasicConfiguration.md` scored 2, not 3.** It was never in the 31, so
+`31 − 2 = 29` was never the right arithmetic; `31 − 1 = 30` is. The page was split on
+being 1,070 lines of two plainly different jobs, which the score did not show — the
+sixth of this programme's figures to be wrong, and the second time the score has been
+the weaker signal.
+
+#### The page-type tally was stale in two places
+
+`classification-notes.md` §11 recorded `Reference 48 / How-to 30 / Explanation 27`, and
+`PROMPT.md` carried that forward to `50 / 32 / 28`. Re-deriving from `pagetypes.tsv`
+gives **50 / 33 / 27**. The missing move is §10's own `QueryPipeline.md` correction:
+the tally was written before Explanation → How-to was applied and never re-derived
+afterwards. **The TSV was right throughout** — only the human summary of it drifted,
+which is the harder version to catch, because nothing disagreed with anything. Both
+places corrected; re-derive with `awk` rather than adding to a total.
+
+#### Three findings that changed rows
+
+- **The scheduler family is six pages, not seven.** `classification-notes.md` §6 counts
+  `PostgreSQLMessageBroker.md` among them. It is a **transport** (`SUMMARY.md:72`) that
+  happens to share the template, and it gets its own row.
+- **The family's six migration sections say the same thing** — "swap the factory", with
+  a before/after pair differing only in which factory it names. Six per-page how-tos
+  would be six near-copies, so the worklist calls for **one** `SwitchingSchedulers.md`.
+  Likewise the six `Comparison` sections fold up into `BrighterSchedulerSupport.md`'s
+  existing `## Choosing a Scheduler`, rather than becoming five new explanations. The
+  family resolves to 5 references + 1 how-to + 1 enriched overview, not 18 pages.
+- **Phase 6's own split created an overlap it did not check for.**
+  `HowServiceActivatorWorks.md:147` `## Dispatcher Configuration` (76 lines) now
+  duplicates `DispatcherConfigurationReference.md`, created three commits earlier. Not
+  a defect in the split — the material was always there — but it is the first thing a
+  split can do that no linter checks, and it is recorded as a fold for 010.
+
+#### Twelve rows say `keep`, and that is the point
+
+A worklist that only listed split candidates would invite 010 to re-open every page it
+omitted. `ReactorAndProactor.md` (442 lines, all four modes, one argument) and
+`TickerQScheduler.md` (234 lines on the family template with nothing to move) carry the
+reasoning for *not* splitting, alongside the two standing reminders the design named —
+`KafkaConfiguration.md` and `Glossary.md`. `FAQ.md`, `Glossary.md` and
+`V10MigrationGuide.md` are recorded as outside Diátaxis and explicitly **not** split
+candidates, as the task required.
+
+#### Three content defects surfaced while compiling it
+
+Recorded in worklist §7 rather than fixed here, since none is in this commit's scope:
+`SweeperCircuitBreaking.md:16` reads `## How It Work`; the Dispatcher overlap above;
+and `QueriesAndQueryObjects.md:746` `## Query Patterns` sits alongside a whole
+`QueryPatterns.md` page.
 
 ---
 
@@ -497,7 +786,7 @@ schedule pressure should give — Spec 010 needs the conventions (Phase 1) and t
 | 3a `HEADING NOT UNIQUE` | 256 instances / 48 texts | **262 / 50** | **prediction wrong, rule right** — see below |
 | 3b `HEADING REPEATED` | 34 across 12 pages | **34 across the same 12** | exact, and verified page by page, not just on the total |
 | 4 `LANGUAGE TAG` (warning) | 185 | **36** across 14 pages | **corpus figure wrong** — see below |
-| 5 `SERVICEACTIVATOR` | not predicted | **11** across 3 pages | all explained; needs a small fix before Task 5.1 |
+| 5 `SERVICEACTIVATOR` | not predicted | **11** across 3 pages → **28 across 12** once widened to both spellings | all explained; **cleared 2026-08-04, now 0** |
 | 6 `USING DIRECTIVES` (warning) | 663 of 796 C# blocks | **804 of 940** | **corpus figure wrong** — same cause as rule 4 |
 
 **No rule needed revising.** Phase 2's stop-rule asks whether a materially different
@@ -584,6 +873,28 @@ and 923–927 are the Dispatcher material that moves to
 `DispatcherConfigurationReference.md` at Task 6.9, whose note already says "Dispatcher,
 not ServiceActivator, in the prose — rule 5 will enforce it". Do it there; the two
 `BrighterControlAPI.md` and `HowServiceActivatorWorks.md` fixes are one line each.
+
+> **Done 2026-08-04 — `741890f`. Rule 5 is at zero; `pagelint.py` 324 → 296 errors,
+> warnings unchanged at 840.** Both the count and the plan above are superseded. The
+> count became **28 across 12 pages** once the rule was widened to `Service\s*Activator`
+> (see `classification-notes.md` §8) — the table above records only the closed-spelling
+> baseline, and its line numbers predate the banner sweep's +2.
+>
+> **The remediation deviated twice, deliberately, and both deviations are argued in
+> `classification-notes.md` §8.** `HowServiceActivatorWorks.md` took **per-line**
+> opt-outs rather than the page-level one, so the other 457 lines stay checked; and
+> `BrighterBasicConfiguration.md` was fixed **now rather than at Task 6.9**, because
+> Phase 5 precedes Phase 6 and gating CI on a page split gates it on the largest
+> remaining piece of work. Task 6.9 now inherits correct prose instead of owing it.
+>
+> §8 also records a **gap in rule 5 found while clearing it**: headings are parsed into
+> `page.headings`, never `page.prose`, so rule 5 cannot see them. Three headings carry
+> the term and all three are legitimate, so nothing is wrong today — but nothing would
+> stop a future `## Configuring Service Activator` either.
+>
+> **Ruled 2026-08-04: leave rule 5 as it is**, the risk being low enough to be a future
+> problem. The gap is accepted, not overlooked; **do not re-raise it.** Rule 5 stays a
+> prose rule, so `CLAUDE.md`'s ledger needs no change and Task 5.1 is unaffected.
 
 ### What the linter's own behaviour confirmed
 

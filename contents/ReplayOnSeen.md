@@ -1,5 +1,7 @@
 # Replay On Seen
 
+> **Reference** · Applies to **Brighter V10**
+
 When your [Inbox](/contents/BrighterInboxSupport.md) recognises a message it has already
 handled, it normally throws or logs a warning and stops — the work is done, so there is
 nothing to do. `OnceOnlyAction.Replay` changes what a duplicate means: instead of stopping,
@@ -310,12 +312,12 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 `ActionOnExists` is set through the constructor and is read-only afterwards, so you choose
 replay when you build the configuration rather than flipping it on an existing instance.
 The remaining parameters behave exactly as they do for `Throw` and `Warn`; see
-[Inbox Configuration](/contents/BrighterBasicConfiguration.md#inbox) for the full set.
+[Inbox Configuration](/contents/DispatcherConfigurationReference.md#inbox) for the full set.
 
 `InboxScope.Commands` is the usual scope here. Replay resends a handler invocation's
 downstream messages, and it is commands — one request, one handler — where that maps
 cleanly; an event delivered to several handlers is a case worth understanding before you
-opt into it, covered under [Limitations](#limitations).
+opt into it, covered under [Limitations](#replay-on-seen-limitations).
 
 A global setting still applies per handler, so a handler carrying its own `[UseInbox]`
 attribute keeps that attribute's `onceOnlyAction`, and a handler marked
@@ -773,7 +775,7 @@ For the same reason, the elapsed time between the replay event and the messages 
 Sweeper latency, not handler latency. If a cascade looks slow in your traces, look at
 `TimerInterval` and `MinimumMessageAge` before you look at your handlers.
 
-## Limitations
+## Replay On Seen Limitations
 
 Replay is a small mechanism — re-deliver messages that were already recorded — and most of
 its limitations follow from how small it is.

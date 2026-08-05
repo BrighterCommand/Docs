@@ -1,10 +1,13 @@
 # **Brighter Control API**
-The brighter control API allows direct management of a Service Activator node
+
+> **Reference** · Applies to **Brighter V10**
+
+The brighter control API allows direct management of a Dispatcher node
 
 ## Configuring the API
 
 Brighter's Package:
-- **Paramore.Brighter.ServiceActivator.Control.Api**
+- `Paramore.Brighter.ServiceActivator.Control.Api`
 
 provides an extension for ASPNet.Core's `IEndpointRouteBuilder`
 
@@ -20,10 +23,10 @@ When mapping the Brighter Control API you can pass a string to change the base r
 ## API's Provided
 
 ### Get Node Status
-You can retrieve the status of a Service Activator node by calling `GET /control/status`
+You can retrieve the status of a Dispatcher node by calling `GET /control/status`
 
 The response contains:
-    - **nodeName** : The name of the node running Service Activator
+    - **nodeName** : The name of the node running the Dispatcher
     - **availableTopics** : The Topics that this node can service
     - **subscriptions** : An array of Information about currently configured subscriptions
         - **topicName** : Name of Topic

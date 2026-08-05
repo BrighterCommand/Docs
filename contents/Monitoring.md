@@ -1,5 +1,7 @@
 # Monitoring
 
+> **Reference** · Applies to **Brighter V10**
+
 Brighter emits monitoring information from an External Bus using a configured [Control Bus](https://brightercommand.github.io/Brighter/ControlBus.html)
 
 ## Configuring Monitoring
