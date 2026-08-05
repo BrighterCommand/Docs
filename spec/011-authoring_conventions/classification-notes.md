@@ -472,8 +472,24 @@ is the first time it has been checkable at all.
 | Type | Pages |
 |---|---|
 | Reference | 48 |
-| How-to | 30 |
-| Explanation | 27 |
+| How-to | **31** |
+| Explanation | **26** |
+
+> **Corrected 2026-08-05 at Task 7.1.** This table read `How-to 30 / Explanation 27`
+> until the worklist re-derived it from `pagetypes.tsv`. The missing move is **§10's own
+> `QueryPipeline.md` correction**: the tally was written before Explanation → How-to was
+> applied, and never re-derived afterwards. `pagetypes.tsv` was right throughout — only
+> the summary of it was stale, which is the harder version to notice.
+>
+> Consequence: the 110-page distribution is **Reference 50 · How-to 33 · Explanation 27**
+> (the five Phase 6 split pages being 2 Reference, 2 How-to, 1 Explanation), not the
+> `50 / 32 / 28` that `PROMPT.md` and this file's arithmetic implied. Re-derive rather
+> than adding to a total:
+>
+> ```bash
+> awk -F'\t' 'NR>1{c[$5]++} END{for (k in c) print k, c[k]}' \
+>   spec/011-authoring_conventions/pagetypes.tsv
+> ```
 
 No page took `Tutorial`. That is correct today and is exactly the gap Spec 009 exists to
 fill — the corpus has no tutorial, which is the substance of the criticism in

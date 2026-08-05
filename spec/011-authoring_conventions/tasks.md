@@ -622,7 +622,7 @@ gone, verified by byte inspection rather than by eye.
 
 ## Phase 7 — Handoff, P1, and Acceptance (design §12 step 10)
 
-- [ ] **Task 7.1:** Write `worklist.md` for Spec 010 (D8)
+- [x] **Task 7.1:** Write `worklist.md` for Spec 010 (D8)
   - Input: design §8 (column table), requirements § Mode mixing (the 31 pages scoring ≥3 modes, the 14 scoring four), classification difficulty captured in Task 3.2
   - Output: `spec/011-authoring_conventions/worklist.md` — Page (path + lines) · Mode score with modes named · Verdict (`split` / `keep` / `keep — outside Diátaxis`) · Proposed shape · Rationale
   - Notes: **Must stand alone without this spec in context** — Spec 010 executes against it. Seeded from the 31 pages scoring ≥3 modes, minus the two split here. **The score is a triage signal, not a verdict:** `Glossary.md` (589 lines, single mode) and `KafkaConfiguration.md` (606 lines, one mode) are the standing reminders that size and score both mislead — record them as `keep` with the reason, so 010 does not re-open the question. Pages that resisted classification in Task 3.2 go here as split candidates; pages legitimately outside Diátaxis (`FAQ.md`, `Glossary.md`, `V10MigrationGuide.md`) must **not** be recorded as split candidates.
@@ -641,6 +641,71 @@ gone, verified by byte inspection rather than by eye.
   - Input: requirements § Acceptance Criteria (AC1–AC8)
   - Output: A checked-off AC list appended to this file; `PROMPT.md` updated with 011's completion state and the measured baseline; `PROMPT.md` open question 3 closed
   - Notes: Walk all eight: `pagelint.py` exits 0 with the warning count recorded (AC1) · `linkcheck.py` exits 0 including orphans (AC2) · every banner human-reviewed (AC3) · no cross-page `##` collisions outside the allowlist (AC4) · `CLAUDE.md` ↔ linter parity in **both** directions and the *File Organization Pattern* no longer prescribing rejected headings (AC5) · CI green with both tools, and green on the untouched tree *before* the sweeps (AC6) · splits navigable with redirects settled (AC7) · worklist executable without re-deriving the analysis (AC8). There are eight: requirements numbered two of them "6" until this list's review renumbered them to 1–8, and design's traceability row was updated to match. Then hand to Spec 010 — it needs the conventions and the worklist, both of which now exist.
+
+### Task 7.1 as executed (2026-08-05)
+
+`worklist.md` written — **42 rows**, seeded from the ≥3-mode cohort and extended where
+the score was the wrong signal. Spec 010 is now unblocked: it needed the conventions
+(Task 1.3) and this file, and both exist.
+
+#### The cohort reconciles exactly, and one prediction in it was wrong
+
+`modemix.py` now reports **30** pages at ≥3 modes and **13** at four, against the
+approved figures of 31 and 14. Both deltas are the RabbitMQ split and nothing else —
+re-scoring every page at `335f078` and diffing against HEAD shows **only the seven
+split-affected pages changed at all**. Phase 4 qualified 260 headings across 74 files
+and moved **no page's mode score**, which is worth knowing: the qualifier words
+prefixed to a heading do not disturb the vocabulary the scorer matches on.
+
+**`BrighterBasicConfiguration.md` scored 2, not 3.** It was never in the 31, so
+`31 − 2 = 29` was never the right arithmetic; `31 − 1 = 30` is. The page was split on
+being 1,070 lines of two plainly different jobs, which the score did not show — the
+sixth of this programme's figures to be wrong, and the second time the score has been
+the weaker signal.
+
+#### The page-type tally was stale in two places
+
+`classification-notes.md` §11 recorded `Reference 48 / How-to 30 / Explanation 27`, and
+`PROMPT.md` carried that forward to `50 / 32 / 28`. Re-deriving from `pagetypes.tsv`
+gives **50 / 33 / 27**. The missing move is §10's own `QueryPipeline.md` correction:
+the tally was written before Explanation → How-to was applied and never re-derived
+afterwards. **The TSV was right throughout** — only the human summary of it drifted,
+which is the harder version to catch, because nothing disagreed with anything. Both
+places corrected; re-derive with `awk` rather than adding to a total.
+
+#### Three findings that changed rows
+
+- **The scheduler family is six pages, not seven.** `classification-notes.md` §6 counts
+  `PostgreSQLMessageBroker.md` among them. It is a **transport** (`SUMMARY.md:72`) that
+  happens to share the template, and it gets its own row.
+- **The family's six migration sections say the same thing** — "swap the factory", with
+  a before/after pair differing only in which factory it names. Six per-page how-tos
+  would be six near-copies, so the worklist calls for **one** `SwitchingSchedulers.md`.
+  Likewise the six `Comparison` sections fold up into `BrighterSchedulerSupport.md`'s
+  existing `## Choosing a Scheduler`, rather than becoming five new explanations. The
+  family resolves to 5 references + 1 how-to + 1 enriched overview, not 18 pages.
+- **Phase 6's own split created an overlap it did not check for.**
+  `HowServiceActivatorWorks.md:147` `## Dispatcher Configuration` (76 lines) now
+  duplicates `DispatcherConfigurationReference.md`, created three commits earlier. Not
+  a defect in the split — the material was always there — but it is the first thing a
+  split can do that no linter checks, and it is recorded as a fold for 010.
+
+#### Twelve rows say `keep`, and that is the point
+
+A worklist that only listed split candidates would invite 010 to re-open every page it
+omitted. `ReactorAndProactor.md` (442 lines, all four modes, one argument) and
+`TickerQScheduler.md` (234 lines on the family template with nothing to move) carry the
+reasoning for *not* splitting, alongside the two standing reminders the design named —
+`KafkaConfiguration.md` and `Glossary.md`. `FAQ.md`, `Glossary.md` and
+`V10MigrationGuide.md` are recorded as outside Diátaxis and explicitly **not** split
+candidates, as the task required.
+
+#### Three content defects surfaced while compiling it
+
+Recorded in worklist §7 rather than fixed here, since none is in this commit's scope:
+`SweeperCircuitBreaking.md:16` reads `## How It Work`; the Dispatcher overlap above;
+and `QueriesAndQueryObjects.md:746` `## Query Patterns` sits alongside a whole
+`QueryPatterns.md` page.
 
 ---
 
