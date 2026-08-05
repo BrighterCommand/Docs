@@ -23,9 +23,10 @@ once. It has since been used three more times -- to correct two page types, and
 to retarget ten Darker version markers -- so it is kept until the verdicts are
 final. Delete it then; `pagelint.py --fix` is the durable tool.
 
-Prerequisites are omitted from every banner. The segment is optional by design,
-and choosing prerequisites is a per-page judgement that cannot be made
-mechanically -- so the sweep stays a sweep, and prerequisites get added as pages
+Prerequisites are never authored here, but an existing one is preserved. The
+segment is optional by design, and choosing prerequisites is a per-page judgement
+that cannot be made mechanically -- so the sweep stays a sweep, and prerequisites
+get added as pages
 are edited for other reasons.
 
 Re-running is safe: a first line shaped like one of our banners is REPLACED, not
@@ -93,9 +94,17 @@ def apply_to(path, text, line, dry_run):
     # vocabulary is still ours to rewrite, and is precisely what needs
     # rewriting. BANNER_RE would call it foreign and refuse.
     if nxt is not None and BANNER_SHAPE_RE.match(lines[nxt].rstrip()):
-        if lines[nxt].rstrip() == line:
+        # Carry any hand-authored Prerequisites segment across. This script does
+        # not author prerequisites -- that is a per-page judgement -- but it must
+        # not eat them either. Until Phase 6 no page exercised the segment, so a
+        # re-run was harmless; the two splits then added five pages that do, and
+        # the next re-run silently deleted all five.
+        existing = lines[nxt].rstrip()
+        cut = existing.find(' · Prerequisites: ')
+        keep = existing[cut:] if cut != -1 else ''
+        if existing == line + keep:
             return 'unchanged'
-        lines[nxt] = line
+        lines[nxt] = line + keep
         status = 'replaced'
     elif nxt is not None and lines[nxt].lstrip().startswith('>'):
         # A blockquote we did not write. Measured as 0 of 105 before the sweep;

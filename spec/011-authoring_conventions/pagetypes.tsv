@@ -104,3 +104,8 @@ contents/ImplementingAHandler.md	How-to	high	"title ""How to Implement a Request
 contents/ImplementingAsyncHandler.md	How-to	high	"title ""How to Implement an Asynchronous Request Handler"" opens with a gerund or imperative"	How-to	Brighter V10
 contents/ImplementingExternalBus.md	How-to	high	"title ""Using an External Bus"" opens with a gerund or imperative"	How-to	Brighter V10
 contents/ReturningResultsFromAHandler.md	How-to	high	"title ""Returning Results from a Handler"" opens with a gerund or imperative"	How-to	Brighter V10
+contents/RabbitMQDurability.md	Explanation	high	"split from RabbitMQConfiguration.md (spec 011, Task 6.2); single-mode by construction"	Explanation	Brighter V10
+contents/RabbitMQMigrateToQuorumQueues.md	How-to	high	"split from RabbitMQConfiguration.md (spec 011, Task 6.3); single-mode by construction"	How-to	Brighter V10
+contents/RabbitMQConnectionStability.md	How-to	high	"split from RabbitMQConfiguration.md (spec 011, Task 6.4); single-mode by construction"	How-to	Brighter V10
+contents/CommandProcessorConfigurationReference.md	Reference	high	"split from BrighterBasicConfiguration.md (spec 011, Task 6.8); single-mode by construction"	Reference	Brighter V10
+contents/DispatcherConfigurationReference.md	Reference	high	"split from BrighterBasicConfiguration.md (spec 011, Task 6.9); single-mode by construction"	Reference	Brighter V10
