@@ -31,7 +31,7 @@ public void ConfigureServices(IServiceCollection services)
 {
     if (!new CredentialProfileStoreChain().TryGetAWSCredentials("default", out var credentials)
 	{
-        throw InvalidOperationException("Missing AWS Credentials");
+        throw InvalidOperationException("Missing AWS credentials");
     }
 
     services.AddBrighter(...)
