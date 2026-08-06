@@ -30,7 +30,7 @@ Brighter provides two approaches for scheduling with AWS EventBridge Scheduler:
 
 When `UseMessageTopicAsTarget = true` (default), Brighter schedules messages directly to the target SNS topic or SQS queue:
 
-```
+```text
 Your Code → CommandProcessor.SendAsync(delay, command)
     ↓
 Brighter creates AWS EventBridge Schedule
@@ -54,7 +54,7 @@ Your Dispatcher → Handler executes
 
 When `UseMessageTopicAsTarget = false` or using request scheduler, Brighter schedules through an intermediate `FireAwsScheduler` message:
 
-```
+```text
 Your Code → CommandProcessor.SendAsync(delay, command)
     ↓
 Brighter creates AWS EventBridge Schedule

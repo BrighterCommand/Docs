@@ -62,7 +62,7 @@ In binary-mode, CloudEvents attributes are mapped to protocol headers, and the e
 - You want to inspect event metadata without deserializing the body
 
 **Example RabbitMQ message with binary CloudEvents:**
-```
+```text
 Headers:
   ce_id: "a89b61a2-5c5c-4d7e-8b8f-2e0f9c1d3e4f"
   ce_source: "https://example.com/orders"

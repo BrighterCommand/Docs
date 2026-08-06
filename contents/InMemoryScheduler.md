@@ -33,7 +33,7 @@ This simple approach makes it perfect for testing but unsuitable for production 
 
 ## InMemory Scheduler Architecture
 
-```
+```text
 Your Code
     ↓
 CommandProcessor.SendAsync(command, delay)

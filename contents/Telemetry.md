@@ -204,7 +204,7 @@ When Brighter operates as a Dispatcher (message consumer), it creates spans for 
 
 ### Example Flow
 
-```
+```text
 Dispatcher Span: "task.commands receive" (Consumer)
   └─> Message Translation (sibling)
   └─> Command Processor Span: "ProcessTaskCommand send" (Internal)
@@ -231,7 +231,7 @@ Outbox operations create child spans for database operations:
 
 ### Deposit Operation
 
-```
+```text
 deposit span (Internal)
   └─> Transform pipeline spans
   └─> Outbox add span (Database)
@@ -239,7 +239,7 @@ deposit span (Internal)
 
 ### Clear Operation
 
-```
+```text
 create/clear span (Internal)
   └─> Outbox get span (Database)
   └─> Produce message span (Producer)
@@ -262,7 +262,7 @@ Outbox and Inbox database operations follow [OTel Database Semantic Conventions]
 
 Inbox operations create child spans for deduplication checks:
 
-```
+```text
 Dispatcher receive span (Consumer)
   └─> Message translation
       └─> Inbox check span (Database)
@@ -284,7 +284,7 @@ Transform operations (Claim Check, Compression, Encryption) create child spans f
 
 ### Claim Check (S3 Example)
 
-```
+```text
 deposit span (Internal)
   └─> ClaimCheck transform span
       └─> S3 put object span (HTTP Client)
@@ -293,7 +293,7 @@ deposit span (Internal)
 
 ### Retrieve Claim
 
-```
+```text
 Message translation span
   └─> RetrieveClaim transform span
       └─> S3 get object span (HTTP Client)
@@ -317,7 +317,7 @@ Brighter automatically propagates trace context across service boundaries using 
 
 ### Message Headers
 
-```
+```text
 traceparent: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01
 tracestate: congo=t61rcWkgMzE
 ```
@@ -326,7 +326,7 @@ tracestate: congo=t61rcWkgMzE
 
 Brighter participates in existing traces. When called from an ASP.NET controller, the Command Processor span becomes a child of the ASP.NET request span:
 
-```
+```text
 ASP.NET Request: "POST /orders"
   └─> Command Processor: "ProcessOrderCommand send"
       └─> Handler: OrderHandler
@@ -463,7 +463,7 @@ await host.RunAsync();
 
 A complete distributed trace across services:
 
-```
+```text
 ASP.NET Request (OrderService): "POST /api/orders"
   └─> Command Processor: "CreateOrderCommand send"
       └─> Handler: CreateOrderCommandHandler

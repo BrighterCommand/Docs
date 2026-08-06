@@ -650,7 +650,7 @@ Use descriptive, specific names that clearly communicate the query's purpose.
 Organize query files in a way that makes them easy to find and maintain:
 
 **Option 1: Queries folder**
-```
+```text
 /Queries
     GetOrderQuery.cs
     GetCustomerQuery.cs
@@ -658,7 +658,7 @@ Organize query files in a way that makes them easy to find and maintain:
 ```
 
 **Option 2: Feature folders**
-```
+```text
 /Features
     /Orders
         GetOrderQuery.cs
@@ -669,7 +669,7 @@ Organize query files in a way that makes them easy to find and maintain:
 ```
 
 **Option 3: Colocation with handlers**
-```
+```text
 /Orders
     /Queries
         GetOrderQuery.cs
@@ -728,7 +728,7 @@ This approach reduces file count and keeps related code together.
 
 For microservices or modular monoliths, consider a shared query library:
 
-```
+```text
 /MyApp.Contracts
     /Queries
         GetOrderQuery.cs

@@ -668,17 +668,17 @@ gone, verified by byte inspection rather than by eye.
   - Output: `spec/011-authoring_conventions/worklist.md` — Page (path + lines) · Mode score with modes named · Verdict (`split` / `keep` / `keep — outside Diátaxis`) · Proposed shape · Rationale
   - Notes: **Must stand alone without this spec in context** — Spec 010 executes against it. Seeded from the 31 pages scoring ≥3 modes, minus the two split here. **The score is a triage signal, not a verdict:** `Glossary.md` (589 lines, single mode) and `KafkaConfiguration.md` (606 lines, one mode) are the standing reminders that size and score both mislead — record them as `keep` with the reason, so 010 does not re-open the question. Pages that resisted classification in Task 3.2 go here as split candidates; pages legitimately outside Diátaxis (`FAQ.md`, `Glossary.md`, `V10MigrationGuide.md`) must **not** be recorded as split candidates.
 
-- [ ] **Task 7.2:** P1 — add language tags to the 185 untagged fences, then flip rule 4 to error
+- [x] **Task 7.2:** P1 — add language tags to the 185 untagged fences, then flip rule 4 to error
   - Input: `pagelint.py` rule 4 warnings
   - Output: Language tags across `contents/`; rule 4 promoted to repo-wide error; `CLAUDE.md` *Enforcement* updated to match
   - Notes: Mechanical enough to sit alongside the sweeps. Pick the tag from the block's content — `csharp`, `yaml`, `json`, `bash`, `text` for output dumps. Promote the rule in the **same** commit, or the tags decay like everything else unenforced.
 
-- [ ] **Task 7.3:** P1 — add `--fix` to `pagelint.py`
+- [x] **Task 7.3:** P1 — add `--fix` to `pagelint.py`
   - Input: design §1 comparison table, requirements § P1
   - Output: `--fix` covering the mechanical rules: banner **version segment**, language tags
   - Notes: Scope it narrowly — `--fix` must **never** decide a page type; it cannot know one. Its reason for existing is that the V11 bump is 105 edits, and it should be one command plus a diff review rather than a page-by-page trudge. Do **not** fold `apply_banners.py`'s TSV logic in: that would leave a durable tool carrying one-off migration logic, keyed to a file that by then records a decision made years earlier.
 
-- [ ] **Task 7.4:** Acceptance pass and programme handoff
+- [x] **Task 7.4:** Acceptance pass and programme handoff
   - Input: requirements § Acceptance Criteria (AC1–AC8)
   - Output: A checked-off AC list appended to this file; `PROMPT.md` updated with 011's completion state and the measured baseline; `PROMPT.md` open question 3 closed
   - Notes: Walk all eight: `pagelint.py` exits 0 with the warning count recorded (AC1) · `linkcheck.py` exits 0 including orphans (AC2) · every banner human-reviewed (AC3) · no cross-page `##` collisions outside the allowlist (AC4) · `CLAUDE.md` ↔ linter parity in **both** directions and the *File Organization Pattern* no longer prescribing rejected headings (AC5) · CI green with both tools, and green on the untouched tree *before* the sweeps (AC6) · splits navigable with redirects settled (AC7) · worklist executable without re-deriving the analysis (AC8). There are eight: requirements numbered two of them "6" until this list's review renumbered them to 1–8, and design's traceability row was updated to match. Then hand to Spec 010 — it needs the conventions and the worklist, both of which now exist.
@@ -958,3 +958,241 @@ Phases 1 and 2 are complete. `linkcheck.py` is green in CI on the untouched tree
 (run 30881245792, `107 files checked`), `pagelint.py` is written, run and reconciled,
 and it is **deliberately not in `docs.yml`** — Task 5.1 adds it once the sweeps make it
 pass. The next session starts at Task 3.1.
+
+---
+
+## Task 7.2 as executed (2026-08-05)
+
+**All 34 untagged fences carry a language, and rule 4 is a repo-wide error in the same
+commit.** `pagelint.py` drops from 836 warnings to 802, and the rule that would have let
+them come back is closed behind it.
+
+### The 34 split 1 `bash` / 33 `text`, and that is the finding
+
+Not one of the 34 was code. The single `bash` block is
+`AsyncAPISupport.md:23`, two `dotnet add package` lines. The other 33 are ASCII flow
+diagrams (the scheduler family, `CQRSWithBrighterAndDarker.md`,
+`HowServiceActivatorWorks.md`), directory-layout trees (`QueriesAndQueryObjects.md` ×4),
+validation-message dumps (`PipelineValidation.md` ×5, `ReplayOnSeen.md`) and trace-tree
+output (`Telemetry.md` ×9) — all `text`.
+
+That is not a coincidence and it is the explanation for the debt existing at all. An
+author writing C# reaches for ```` ```csharp ```` because they want the highlighting;
+an author drawing a box-and-arrow diagram has no language in mind and types a bare
+fence, because no tag is the honest answer to "what language is this?" until you know
+`text` is the convention. **The untagged population was never latent code debt** — it
+was the absence of a name for "not code".
+
+**Corroboration, not assertion:** the using-directive debt is **802 blocks across 93
+pages before and after**. Had any of the 34 held C#, tagging it `csharp` would have
+added it to rule 6's population and moved that number. It did not move.
+
+### The warning count reconciles exactly
+
+836 → 802, and 802 is the whole using-directive debt. The split PROMPT.md recorded —
+802 rule 6 + 34 rule 4 — held, and the residue after removing rule 4 is rule 6 alone.
+
+### The gate was proved red before it was trusted green
+
+Rule 4's flip was verified by breaking it on purpose: retagging `Telemetry.md:207` back
+to a bare fence produces `1 errors` and **exit 1**, with the finding printed without the
+`(warning)` label. Restored, the tree is back to `0 errors`. This is the discipline from
+Task 5.2 — a check that passes has not necessarily checked anything.
+
+`--changed origin/master` is also green and also non-vacuous: `changed_ranges` returns
+**15 files / 38 hunks**. No changed line overlaps a C# block, because every line this
+task touched is the opening fence of a `text` or `bash` block.
+
+### Rule 4's flip is unlike rule 6's, and the difference is the point
+
+Rule 6 has two strictness levels because it has 802 blocks of standing debt and a
+repo-wide error would block every unrelated edit. Rule 4 now has **no debt at all**, so
+it needs no softer level: an untagged fence today is a fence added today. The docstring
+says so, and the `LANGUAGE_TAG_IS_ERROR` comment records why the flag survives rather
+than being inlined — it is the record of a completed backfill, not a switch anyone is
+expected to flip back.
+
+`CLAUDE.md`'s ledger row moved from `warning → error once the backfill lands` to
+`error` in both columns, keeping the two-directional parity AC5 checks.
+
+### What was left alone, deliberately
+
+The **149 space-separated fences** (```` ``` csharp ````) are still space-separated.
+They are tagged, they render as C#, and rule 4 has never flagged them — see § *Measured
+baseline*. Normalising them would touch 40-odd pages to change nothing a reader or a
+tool can see, and would have buried a 34-line diff whose whole claim is that it contains
+nothing but language tags.
+
+---
+
+## Task 7.3 as executed (2026-08-06)
+
+`--fix` repairs the banner version segment and untagged fences, and refuses everything
+else out loud. Both halves were tested against a real target rather than a synthetic
+one, and the language-tag half had **ground truth available** — the 34 fences Task 7.2
+had just tagged by hand.
+
+### The version bump was rehearsed end to end
+
+`APPLIES_TO` was temporarily moved to `('Brighter V11 and Darker V5', 'Brighter V11',
+'Darker V5')` and `--fix` run against the corpus:
+
+- **110 banners stale, 110 fixed, 0 left for a human.** 100 → `Brighter V11`,
+  5 → `Darker V5`, 5 → `Brighter V11 and Darker V5`, which reconciles with the 10
+  Darker-touching pages already identified by `pagetypes.tsv`'s `applies` column.
+- **Page types survived exactly**: 50 Reference / 33 How-to / 27 Explanation before and
+  after — the corrected tally, unmoved.
+- **All five Prerequisites segments survived.** This is the failure `apply_banners.py`
+  actually shipped (`5498cd6`), so it was the first thing checked rather than assumed.
+- **One line changed per page**: 110 files, every one `1 insertion, 1 deletion`, 109
+  hunks at line 3 and one at line 4. No collateral edits.
+- **The 17 files with no trailing newline still have none.** Byte-compared against
+  `HEAD`, not eyeballed.
+- **Idempotent**: the second run reports `Nothing to fix.`
+
+There is no migration map anywhere. A stale value names a set of products
+(`Brighter V10` names `{Brighter}`) and the fix is whichever `APPLIES_TO` entry names
+exactly that set. **One edit to the tuple is the whole bump.** Where two entries claim
+the same product set — a vocabulary *restructure* rather than a bump — it refuses
+rather than guessing.
+
+### `--fix` cannot launder a bad page type into a green build
+
+Given `> **Guide** · Applies to **Brighter V9**`, it fixes the version to
+`Brighter V11`, leaves `**Guide**` alone, and the page **still fails rule 2**. That is
+the property the narrow scope exists for. A page type cannot be recovered from the text
+and a wrong one is invisible — a page mislabelled `Reference` reads perfectly and
+misleads every reader who trusted the label. Only the version segment is ever
+substituted, so the type and Prerequisites are out of reach by construction rather than
+by care.
+
+Three refusal paths, each with its own message, all exercised: two entries claiming one
+product set; a product absent from the vocabulary; a value that is not `<Product> V<n>`
+at all.
+
+### The language-tag half: 26 of 34 right, 0 wrong, 8 declined
+
+Replaying `--fix` against the pre-Task-7.2 tree — 34 untagged fences with hand verdicts
+already recorded — gives **26 tagged `text` and 8 held back**. Every one of the 26
+matches the verdict reached by hand. **It has never produced a wrong tag; its only
+failure mode is doing nothing and saying so.**
+
+Of the 8 refusals, **one is exactly right**: `AsyncAPISupport.md:23` is `dotnet add
+package`, the single block in the whole set that took `bash` rather than `text`, and it
+was held for being a shell command. The other 7 are over-caution, 6 of them from the
+`key: value` detector firing on labelled output — `traceparent: 00-0af…`,
+`Attributes: s3.bucket…`, `Brighter: 3 handler pipelines…`. The seventh is
+`PipelineValidation.md:47`, where a validation message wraps onto a line beginning
+"public handler types.", which reads as a C# declaration at line start.
+
+That asymmetry is the design, not a shortfall. The detectors are not a classifier; they
+hold the fix back on anything code-shaped, because `text` is the only tag inferable
+from a corpus where **all 34 untagged fences were prose**. Choosing between `csharp`,
+`bash`, `json` and `yaml` is a decision belonging to whoever wrote the block. A tool
+that guessed would be wrong silently; this one is unhelpful loudly.
+
+### What was deliberately kept out
+
+- **`apply_banners.py`'s TSV lookup**, as the task specified. That is one-off migration
+  logic keyed to a file recording decisions taken years before the next person runs
+  this; folding it in leaves a durable tool quietly carrying it.
+- **Rule 6.** `--fix` cannot invent `using` directives, and writing `// ...` on a
+  reader's behalf would convert a debt into a declaration nobody made.
+- **`--fix --changed`** is rejected with exit 2. It reads as "fix what I changed", but
+  `--changed` only varies the strictness of a rule `--fix` does not repair, so the
+  combination would quietly do something other than what it says.
+
+### A stale figure noticed in passing
+
+*Audit data* records **18 of 105 files with no trailing newline**. It is now **17 of
+110** — one gained a newline during the Phase 6 splits. Nothing depends on it, and it
+is recorded here rather than fixed, because normalising the other 17 is still the
+unrelated-diff problem that left them alone in the first place.
+
+---
+
+## Task 7.4 as executed (2026-08-06) — the acceptance pass
+
+All eight criteria walked, each verified by running something rather than by recalling
+what a previous session reported. **Seven passed as they stood; AC5 failed and was
+fixed** — see below. Spec 011 is complete.
+
+| | Criterion | Verdict |
+|---|---|---|
+| AC1 | `pagelint.py` exits 0, debt recorded | **pass** — 0 errors, 802 warnings |
+| AC2 | `linkcheck.py` exits 0, orphans included | **pass** — 112 files |
+| AC3 | Every page banner human-reviewed | **pass** — 110/110, verdicts matched to banners |
+| AC4 | No cross-page `##` collisions | **pass** — 0 of 688 distinct headings |
+| AC5 | `CLAUDE.md` ↔ linter parity, both ways | **failed, then fixed** — `NO H1` |
+| AC6 | CI runs both tools, green before the sweeps | **pass** |
+| AC7 | Splits navigable, redirects settled | **pass** — no URL moved |
+| AC8 | Worklist executable by 010 | **pass** — 42 rows |
+
+### AC5 failed: the linter had a rule the ledger did not
+
+`pagelint.py` can emit **eight** rule labels; the ledger listed **seven**. The missing
+one is `NO H1`, returned by `check_banner` when a page has no title to hang a banner
+below. It is rule 1's precondition rather than a rule of its own, which is presumably
+why it was never written down — but the ledger's own claim is that *every rule maps
+back*, and this one did not.
+
+Nothing was broken by it: every page has an H1, so the rule has never fired. That is
+precisely why it survived four sessions of the ledger being read and edited. **A rule
+that never fires is invisible to everything except an enumeration**, which is the only
+reason this pass caught it. Added as its own row.
+
+The rest of AC5 holds. Rules 1–6 and the review-only row account for the other seven
+labels one-for-one, and the *File Organization Pattern* prescribes qualified headings
+(`## Kafka Subscription Configuration`) rather than the bare `## Configuration` it
+called for before Phase 1.
+
+### A second drift, found while checking AC6
+
+`docs.yml`'s comment on the repo-wide step still read "the using-directive debt **and
+the untagged fences** stay warnings here". Task 7.2 had made language tags an error two
+commits earlier and updated `CLAUDE.md` and the tool docstring, but not the workflow
+comment. Corrected. Both findings are the same shape — a true statement somewhere else
+going stale because the change was made where it was enforced, not everywhere it was
+described.
+
+### What the mechanical checks established beyond the criteria
+
+Two of these had never been run, and both could have been false without anything
+noticing:
+
+- **Every page's banner type matches its reviewed verdict in `pagetypes.tsv`** —
+  110/110, no mismatches. AC3 as written only asks that a reviewed banner exists; this
+  asks whether the corpus still agrees with the review. It does.
+- **Every page's `Applies to` matches the TSV's `applies` column** — 110/110, tallying
+  100 `Brighter V10` / 5 `Darker V4` / 5 both. The 10 Darker-touching pages are exactly
+  the set the column identifies, so the next Darker release is the one-edit bump it was
+  positioned to be.
+- **AC4 re-derived without the linter**: an independent fence-aware pass over all 110
+  pages finds **688 distinct non-navigation `##` slugs and 0 on more than one page**.
+  Confirming rule 3a with the tool that enforces rule 3a would have proved only that
+  the tool is self-consistent.
+
+### The AC1 baseline, restated for whoever shrinks it
+
+**802 C# blocks across 93 pages** carry no `using` directives. The figure at the start
+of the programme was 804 across 89; the Phase 6 splits redistributed them across more
+pages and dropped two duplicates. It is the last of 011's debts and is deliberately
+left standing — Q4's two strictness levels retire it as pages are edited, rather than
+in one sweep that would touch 93 pages to change nothing a reader can see.
+
+### AC7's redirects, stated plainly rather than ticked
+
+AC7 asks for "redirects in place for the URLs that moved". **No URL moved.** Both
+splits kept the original file name for the core page, so the five new pages are new
+URLs with nothing to redirect *from*, and `.gitbook.yaml` needs no `redirects:` block
+for them. What the splits did break was **anchor-level** links, which GitBook redirects
+cannot address at all — they operate on pages, not fragments — so all 28 were repointed
+directly in Phase 6. Adding a `redirects:` block remains Spec 010's deliverable, for
+the pages 010 moves.
+
+### Where this leaves Spec 011
+
+**Complete — 43 of 43 tasks.** Every convention it set out to establish is true of every
+page, a tool proves it, CI fails when it stops being true, and the version bump that
+would otherwise re-open 110 pages is one edit plus one command. Spec 010 is unblocked
+and has been since Task 7.1.

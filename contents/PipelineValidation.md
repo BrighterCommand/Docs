@@ -44,7 +44,7 @@ These checks apply to all Brighter applications, including those that only use t
 
 **Example error messages:**
 
-```
+```text
 Handler type 'MyNamespace.OrderHandler' is not public — Brighter only supports
 public handler types. Make the class public so the pipeline builder can find it
 
@@ -76,7 +76,7 @@ These checks apply when you configure outgoing messages with `AddProducers()`.
 
 **Example error messages:**
 
-```
+```text
 Publication.RequestType is null — Post()/Deposit() will throw ConfigurationException
 
 Publication.RequestType 'MyNamespace.OrderData' does not implement IRequest
@@ -94,7 +94,7 @@ These checks apply when you configure incoming messages with `AddConsumers()`.
 
 **Example error messages:**
 
-```
+```text
 Subscription uses Reactor (sync) pump but handler 'OrderHandler' is async —
 use Proactor for async handlers
 
@@ -113,7 +113,7 @@ The `DescribePipelines()` method logs a structured report showing how your pipel
 
 At `Information` log level, a single summary line is logged:
 
-```
+```text
 Brighter: 3 handler pipelines, 2 publications, 5 subscriptions configured
 ```
 
@@ -123,7 +123,7 @@ The summary includes counts only for the configuration paths you use. If you don
 
 At `Debug` log level, the report shows the full wiring for each configuration path. Here is an example with all three paths configured:
 
-```
+```text
 === Handler Pipelines ===
   OrderCreatedHandler (async)
     Pipeline: [DeferMessageOnErrorAsync(0)] → [UseResiliencePipelineAsync(1)] → OrderCreatedHandler

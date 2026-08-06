@@ -25,7 +25,7 @@ The `Message Pump`:
 
 ## Dispatcher Architecture
 
-```
+```text
 External Message Broker
          ↓
   [Dispatcher] (ServiceActivator assembly)
