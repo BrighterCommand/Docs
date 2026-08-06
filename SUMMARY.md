@@ -136,7 +136,7 @@
  * [V10 Migration Guide](/contents/V10MigrationGuide.md)
  * [Nullable Reference Types](/contents/NullableReferenceTypes.md)
 
-## Command, Processors and Dispatchers
+## Commands, Processors and Dispatchers
 
  * [Command, Processor and Dispatcher Patterns](/contents/CommandsCommandDispatcherandProcessor.md) 
 
