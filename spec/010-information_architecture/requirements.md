@@ -1,6 +1,6 @@
 # Spec 010: Information Architecture — Requirements
 
-**Created:** 2026-08-06 · **Status:** Draft, awaiting review
+**Created:** 2026-08-06 · **Reviewed:** 2026-08-06 · **Status:** Approved
 **Responds to:** [Docs#67](https://github.com/BrighterCommand/Docs/issues/67)
 **Depends on:** Spec 011 (complete) — `CLAUDE.md` § Page Conventions, `tools/pagelint.py`,
 and `spec/011-authoring_conventions/worklist.md`
@@ -46,8 +46,9 @@ Four consequences, each of which changes the plan the README assumed:
    *Transports* moves all **11** URLs beneath it even though no file moves and no file is
    edited. Re-titling is not cosmetic here; it is a URL change.
 2. **`contents/` is flat and stays flat.** A page's URL is a function of where it sits in
-   `SUMMARY.md`, not of its path on disk. **010 therefore moves no files.** It rewrites
-   one file, plus `.gitbook.yaml`.
+   `SUMMARY.md`, not of its path on disk. **010 therefore moves no files.** *The
+   restructure* rewrites one file, plus `.gitbook.yaml` — the splits then add pages to
+   `contents/` and entries to `SUMMARY.md`, and add no directories.
 3. **Internal links do not break.** All **763** internal links in the corpus are of the
    form `/contents/Page.md`, and all **110** distinct targets stay exactly where they are.
    Only *external, inbound* links break. This substantially reduces the risk the README
@@ -83,13 +84,82 @@ redirects:
   guaranteed-at-least-once/rabbitmqconfiguration: contents/RabbitMQConfiguration.md
 ```
 
-**One open risk.** GitBook's documentation states that *"if you're setting up a redirect
-for an old page to a new one, you will need to remove the old page in order for the
-redirect to work."* Our case is different in kind — the file is never removed, it simply
-publishes at a new URL because its section changed — so the old path ceases to exist
-without the page ceasing to exist. That should be exactly what redirects are for, but it
-is not the case the sentence describes. **Q1 below makes verifying this a gate, not an
-assumption.**
+### 2.2 The "remove the old page" sentence, read in full — it resolves in our favour
+
+An earlier draft of this section recorded the removal requirement as an open risk. **It is
+not one**, and the source it cited is what settles it. From GitBook's
+[Git Sync troubleshooting](https://gitbook.com/docs/getting-started/git-sync/troubleshooting)
+page, quoted in full and fetched as raw bytes rather than through a summariser:
+
+> It's also important to consider that **as long as a page exists for a path**, GitBook
+> won't be looking for a possible redirect. So if you're setting up a redirect for an old
+> page to a new one, you will need to remove the old page in order for the redirect to work.
+
+**The rule is the first sentence, and it is keyed on the *path*, not on the page.** The
+earlier draft quoted only the second. After a section rename no page exists for
+`guaranteed-at-least-once/rabbitmqconfiguration`, so GitBook does look for the redirect.
+"Remove the old page" is that same rule stated for the case where the file is still sitting
+on the old path — a special case of the rule, not an additional condition.
+
+Corroborated independently by the resolution order on
+[Site redirects](https://gitbook.com/docs/docs-site/site-redirects):
+
+> 1. Site content is resolved to its canonical URL by following any of the automatically
+>    created redirects.
+> 2. **If the URL cannot be resolved**, the URL is checked against section-level redirects,
+>    defined in your repository's `.gitbook.yaml` file.
+> 3. Finally, the URL is checked against site-level redirects.
+
+The fall-through to `.gitbook.yaml` is gated on the URL failing to resolve, which is
+exactly our condition.
+
+### 2.3 The risk that replaces it — automatic redirects can mask the test
+
+Same page, and this is the one that changes the plan:
+
+> Whenever pages are moved or renamed, their canonical URL changes with them. In order to
+> keep your content accessible, GitBook automatically creates a **HTTP 307** redirect from
+> the old URL to the new one.
+
+Automatic redirects are consulted **first**, before `.gitbook.yaml`. It is not established
+whether GitBook treats a Git-synced `SUMMARY.md` reorganisation as a "move" for this
+purpose. If it does, **a section-rename experiment that succeeds proves nothing about the
+redirect block** — the automatic 307 would have carried the request either way, while the
+`.gitbook.yaml` block sat silently broken, which is precisely the failure P0-3 exists to
+catch. A green result would be indistinguishable from the thing it is meant to rule out.
+
+**D0 therefore discriminates the two mechanisms rather than asking "did the old URL
+work?"** — see §7 P0-0. This is 011's *a check that passes has not necessarily checked
+anything* applied to the one experiment this spec depends on.
+
+If automatic redirects do cover Git-synced structural changes, D2 and D3 become
+belt-and-braces rather than load-bearing. That is worth knowing **before** building the
+keystone tool, not after.
+
+### 2.4 GitBook's own `.gitbook.yaml` example is contaminated — this is live, not history
+
+`.gitbook.yaml` carried two `U+200B` zero-width spaces until 2026-08-05, one of them inside
+the `structure:` key, so GitBook had never read that block at all. **The provenance is now
+established: they came from GitBook's own documentation.** Byte-inspecting the
+[Content configuration](https://gitbook.com/docs/getting-started/git-sync/content-configuration)
+page on 2026-08-06 finds `U+200B` at exactly two positions in its example —
+
+```text
+root: ./
+
+​structure:
+  readme: README.md
+  summary: SUMMARY.md​
+
+redirects:
+  previous/page: new-folder/page.md
+```
+
+— the same two characters this repository carried, and **the `redirects:` snippet sits
+inside that same contaminated code block.** Writing D2 by copying the documented example
+reintroduces the bug, into a file whose failure mode is silence.
+
+This is why P0-3 is mechanical verification and not a careful read.
 
 ---
 
@@ -128,6 +198,17 @@ Section sizes today — the shape of the problem in one table:
 **Six of nineteen sections hold exactly one page**, and the one named *Reference* is among
 them. Meanwhile *Outbox and Inbox* holds 27. Both failures are navigational: a section of
 one is not a category, and a section of 27 is not a menu.
+
+> **`SUMMARY.md:154` is one space away from silently moving three URLs.** It reads
+> ` ## Under the Hood` with a leading space that no other heading in the file has.
+> CommonMark tolerates up to three leading spaces on an ATX heading; at four it stops being
+> a heading altogether, and GitBook would fold `HowBrighterWorks.md`,
+> `HowServiceActivatorWorks.md` and `ReactorAndProactor.md` into *Task Queues* without
+> erroring. This is not hypothetical: re-deriving the section count at review with a strict
+> `^## ` returned **18 sections and five singletons**, both wrong. `urlmap.py` scores 110/110
+> because its `^\s*##\s+` is deliberately tolerant. **Normalise the line during P0-1** — and
+> note that a tolerant parser is the right choice for `urlmap.py`, since it must model what
+> GitBook does, not what the file ought to say.
 
 Named symptoms, all still true:
 
@@ -207,7 +288,13 @@ mode discipline *within* pages, which is what Spec 011 built and enforced.
 - `spec/010-information_architecture/README.md` — rationale, **stale in two places**
   (§8, Q2)
 - [Diátaxis](https://diataxis.fr/) for the four-mode vocabulary
-- GitBook `.gitbook.yaml` documentation — redirect syntax, confirmed 2026-08-06
+- GitBook, three pages, all fetched as **raw bytes** and quoted verbatim in §§2.1–2.4 —
+  [Content configuration](https://gitbook.com/docs/getting-started/git-sync/content-configuration)
+  (`.gitbook.yaml` syntax; and the U+200B source, §2.4),
+  [Git Sync troubleshooting](https://gitbook.com/docs/getting-started/git-sync/troubleshooting)
+  (the "remove the old page" rule in full, §2.2), and
+  [Site redirects](https://gitbook.com/docs/docs-site/site-redirects)
+  (resolution order and automatic 307s, §§2.2–2.3)
 - Live `sitemap-pages.xml` — the ground truth the URL model was verified against
 
 **No Brighter ADR is relevant.** All 100 ADRs in `../Brighter/docs/adr/` concern the
@@ -221,8 +308,28 @@ framework's architecture; the one with a structural-sounding name
 
 ### P0 — must have
 
+- **P0-0 Establish which redirect mechanism actually carries a moved URL, before the
+  rewrite.** A gate on everything else, and it must **discriminate** rather than merely
+  pass (§2.3). Land one section rename as a small PR, in two observable steps:
+  1. Rename the section and publish **with no entry in `redirects:`**. Request the old URL
+     and record the **HTTP status and `Location`**. A `307` here means GitBook created an
+     *automatic* redirect for a Git-synced structural change — in which case D2/D3 are
+     belt-and-braces and a later "the redirect worked" proves nothing.
+  2. Add the `.gitbook.yaml` entry and publish again. Record status and `Location` a second
+     time. Only a difference between the two steps demonstrates the block was read.
+
+  Also settle, since it is free here: **whether section-level redirects are gated by site
+  plan.** Site-*level* redirects are documented as "available on Premium and Ultimate site
+  plans"; section-level `.gitbook.yaml` redirects carry no documented gate, but the
+  published site's plan has never been confirmed and AC3 rests on it.
+
+  **A `404` at step 1 followed by a `200`/`301` at step 2 is the outcome that makes D2 and
+  D3 load-bearing.** Any other pairing changes the spec, so it is settled before design
+  rather than discovered at merge. Mirrors PR #73, which proved 011's CI gate by forcing it
+  red on purpose.
 - **P0-1 Rewrite `SUMMARY.md`** to the approved tree: fewer, intent-named sections; no
   section of one page; no section large enough to be unnavigable without a middle layer.
+  Normalise the leading space on ` ## Under the Hood` (§3) in the same pass.
 - **P0-2 Redirect map, generated not hand-written.** One entry for every page whose
   published path changes, derived by diffing the predictor's output across the two
   `SUMMARY.md` versions.
@@ -231,6 +338,13 @@ framework's architecture; the one with a structural-sounding name
   U+200B zero-width spaces until 2026-08-05, one of them *in a key*, so GitBook had never
   read the `structure:` block at all and nothing looked broken. Verify by parsing and by
   byte inspection, never by eye.
+
+  **The contamination source is live, and it is the example this deliverable will be
+  written from** (§2.4): GitBook's own `.gitbook.yaml` documentation ships those same two
+  U+200B characters, and its `redirects:` snippet sits inside the same code block. So the
+  check is not guarding against a past accident — it is guarding against the most likely way
+  D2 gets written. **Type the block, never paste it**, and assert on bytes: no character
+  outside printable ASCII anywhere in the file.
 - **P0-4 Execute the 26 split rows** in `worklist.md` §6, honouring §§3–5: the five rules
   the demonstrator splits established, the three cross-cutting decisions, and the 16 rows
   that say `keep`.
@@ -301,6 +415,7 @@ framework's architecture; the one with a structural-sounding name
 
 | ID | Deliverable | Priority |
 |---|---|---|
+| **D0** | The redirect-mechanism experiment (P0-0) — one section rename, published twice, statuses recorded; plan gating confirmed | P0, **first** |
 | **D1** | Rewritten `SUMMARY.md` | P0 |
 | **D2** | `redirects:` block in `.gitbook.yaml` | P0 |
 | **D3** | `tools/urlmap.py` — predicts published paths from a `SUMMARY.md`; diffs two revisions; emits the redirect block | P0 |
@@ -311,8 +426,12 @@ framework's architecture; the one with a structural-sounding name
 | **D8** | Per-term `BasicConcepts.md` → `Glossary.md` links | P1 |
 | **D9** | The three `worklist.md` §7 content fixes | P1 |
 
-**D3 is the keystone.** It makes D2 derivable rather than transcribed, and it is the only
-honest way to produce a redirect table for a tree this size. It should refuse to guess:
+**D0 comes before everything, including design.** It is cheap, it is the only thing that
+can invalidate D2 and D3, and §2.3 is why it must be run as a two-step comparison rather
+than a single "did the URL work" check.
+
+**D3 is the keystone** — subject to D0. It makes D2 derivable rather than transcribed, and
+it is the only honest way to produce a redirect table for a tree this size. It should refuse to guess:
 exit non-zero if a page appears in neither revision's tree, so a page dropped from
 `SUMMARY.md` fails loudly instead of silently losing its URL. Its predictor is already
 written and validated 110/110 — it needs packaging, not invention.
@@ -361,9 +480,10 @@ rather than a list here. Two placement rules bind it:
 | **AC2** | `linkcheck.py` and `pagelint.py` both report **0 errors** | CI |
 | **AC3** | Every page whose published path changed has a redirect; no redirect points at a missing file | D3 + D7 |
 | **AC4** | The redirect block is **verified mechanically** — parsed as YAML and byte-inspected for invisible characters | explicit step, not eyeball |
-| **AC5** | A sample of redirects **returns the new page on the live site** after publish | manual, post-merge — Q1 |
-| **AC6** | No section holds one page; no section is unnavigable without a middle layer | review against the final tree |
-| **AC7** | No information loss across all 26 splits, proven per split | D5, mechanically |
+| **AC5a** | **Before the rewrite:** the redirect mechanism is established by the two-step experiment, and the result **discriminates** the `.gitbook.yaml` block from an automatic 307 | D0, statuses recorded |
+| **AC5b** | **After merge:** a sample of redirects returns the new page on the live site | manual, post-merge |
+| **AC6** | No section holds one page; no section is unnavigable without a middle layer | review against the final tree — **threshold still open, Q8** |
+| **AC7** | **Per split:** every split that lands proves no information loss for that split, mechanically. **Partial completion of the 26 is a valid end state** — the spec is accepted on the splits it landed, not blocked on the ones it did not | D5, per split |
 | **AC8** | Every `worklist.md` `keep` verdict is honoured — 16 rows across 15 pages | review |
 | **AC9** | `llms.txt` covers every page with type and one-line summary, generated not hand-written | D6 |
 
@@ -371,17 +491,22 @@ rather than a list here. Two placement rules bind it:
 
 ## 13. Open questions for the maintainer
 
-**Q1 and Q7 are the two that change the shape of the spec; the rest are decisions within
-it.** Q1 should be settled by experiment before design, not by discussion.
+**Q7 changes the shape of the spec; the rest are decisions within it. Q1 was answered at
+review** and is recorded here for the trail rather than as a live question.
 
-1. **Do GitBook redirects fire for a page that still exists but publishes elsewhere?**
-   GitBook's documentation says an old page must be *removed* for its redirect to work. Our
-   pages are never removed — they change section, so the old *path* stops publishing while
-   the *page* lives on. This should be the ordinary case for redirects, but it is not the
-   case the documentation describes, and the failure mode is silent. **Recommendation: land
-   one section rename first, as a small PR, and verify the redirect on the live site before
-   committing to a 110-page rewrite.** This is the cheapest possible way to de-risk the
-   spec's dominant risk, and it mirrors how PR #73 proved the CI gate in 011.
+1. ~~**Do GitBook redirects fire for a page that still exists but publishes elsewhere?**~~
+   **Answered 2026-08-06 at review: yes, on the documentation — see §2.2.** The sentence an
+   earlier draft treated as a blocker had been quoted from its second half only. Its
+   governing clause is *"as long as a page exists **for a path**, GitBook won't be looking
+   for a possible redirect"* — keyed on the path, not the page — and the published
+   resolution order falls through to `.gitbook.yaml` precisely when a URL fails to resolve.
+   Both are our case.
+
+   **What survives is a different risk, and it inverts the experiment: §2.3.** Automatic
+   307s are consulted *before* `.gitbook.yaml`, so a rename that "works" may prove nothing
+   about the redirect block. **P0-0/D0 now runs the rename twice — without the redirect
+   entry, then with it — and compares.** Still a gate, still before design, but it is now a
+   discrimination rather than a smoke test.
 2. **The target section list.** §4 carries the README's seven buckets forward as a starting
    point, not an approval. Two things need deciding: whether *Darker* becomes a top-level
    section (it is 5 pages across 2 sections today), and how *How To* avoids becoming the
@@ -419,6 +544,33 @@ it.** Q1 should be settled by experiment before design, not by discussion.
    **If the reviewer disagrees, the clean cut is after the restructure lands** — that is a
    coherent, shippable unit on its own, and the splits become 014.
 
+   > **Ruled 2026-08-06: one spec, sequenced, and AC7 is now per-split.** The review found
+   > that "interruptible" had no force while AC7 required no information loss *across all 26
+   > splits* — the spec could not be accepted until every one landed. AC7 now accepts the
+   > splits that land and states partial completion as a valid end state, which is what makes
+   > the sequencing answer the size objection rather than just describe it.
+
+8. **What is AC6's threshold?** "No section is unnavigable without a middle layer" is
+   unfalsifiable as written. 27 pages in *Outbox and Inbox* is agreed too many; §3.1 says
+   roughly 40 in *How To* is the failure to avoid; nothing says where the line falls. A
+   stated number — say, a section over ~12 pages needs a parent page or a split — makes AC6
+   checkable instead of arguable. **Deliberately left open**: it is the concrete half of
+   Q2, and the number should be chosen against the actual candidate tree rather than in the
+   abstract.
+9. **Where does `llms.txt`'s one-line summary come from?** `CLAUDE.md` fixes the format as
+   `- [Title](path): Type — one sentence.` The type is derivable from the banner; **the
+   sentence is not derivable from anything, and no page carries one today.** AC9 says
+   "generated not hand-written" for 110+ pages, so either D6 extracts something mechanical
+   (the first sentence after the banner) and that quality is accepted, or ~136 summaries get
+   authored, which is a P1 the size of a small spec. Related: the documented format uses
+   repository paths, but a retrieval client wants the **published URL** — which `urlmap.py`
+   can now emit. Both belong to design.
+10. **Should `urlmap.py` gate CI?** D3 lands at `tools/urlmap.py`, beside the two tools that
+    already fail the build. P1-2 is currently a one-time validation, but a redirect block
+    that is complete at merge and incomplete three PRs later is the same silent failure in
+    slow motion. Making it a standing check is cheap; whether it is in scope for 010 or a
+    follow-on is a call for design.
+
 ---
 
 ## 14. A correction to `worklist.md`, recorded
@@ -453,9 +605,38 @@ would under-honour the rows whose whole purpose is to stop 010 reopening settled
 
 ---
 
-## 15. Next step
+## 15. What the review changed (2026-08-06)
 
-`/spec:review` for approval, then `/spec:design`.
+Approved with amendments. Every load-bearing figure was re-derived and **all of them held**
+— worklist 42/26/16 across 41 distinct pages, `SUMMARY.md` at 110 links and 110 distinct
+targets, 110 pages, 19 sections with every row of §3's size table exact, `urlmap.py
+--verify` returning *predicted 110, published 110, 110 agree* against the live site, and
+#67 still unanswered. **For the first time in this programme a review found no wrong
+number**, which is what §14 predicts once figures are measured rather than estimated.
+
+What changed:
+
+- **§2.2 — Q1 answered, not deferred.** The blocking quote had been read from its second
+  half. Its governing clause is path-keyed and resolves in our favour, corroborated by the
+  published resolution order.
+- **§2.3 — the replacement risk.** Automatic 307s are consulted before `.gitbook.yaml`, so
+  the original experiment could have passed vacuously. **P0-0/D0 now discriminates.**
+- **§2.4 — the U+200B provenance.** GitBook's own example is the source, it is live today,
+  and the `redirects:` snippet sits inside the contaminated block. P0-3 sharpened from a
+  general caution to a targeted one: type the block, never paste it.
+- **§3 — `SUMMARY.md:154`.** A leading space on ` ## Under the Hood`, one space from
+  silently relocating three URLs. It produced a wrong re-derivation during this very review.
+- **D0 added, AC5 split into AC5a/AC5b** so the dominant risk is verified *before* the
+  rewrite rather than after the merge.
+- **AC7 is per-split**, with partial completion an explicit valid end state — without which
+  Q7's "interruptible" was contradicted by the acceptance criteria.
+- **Q8–Q10 added** rather than decided: AC6's threshold, `llms.txt`'s summary source, and
+  whether `urlmap.py` gates CI. All three are design-phase calls.
+
+## 16. Next step
+
+`/spec:design`. **Run D0 first** — it is cheap, it gates D2 and D3, and §2.3 is the reason
+it cannot be a single-step check.
 
 **Before finalising, check [#67](https://github.com/BrighterCommand/Docs/issues/67) for a
 reply.** Diátaxis-as-authoring-discipline was explicitly flagged there for pushback.
