@@ -320,10 +320,13 @@ nothing beyond the typo, which is the point: a rule that makes small corrections
 expensive stops people making them.
 
 **The ledger.** Every convention above maps to a rule, and every rule maps back. A
-rule in only one of the two places is how the next round of decay begins:
+rule in only one of the two places is how the next round of decay begins — and the
+`NO H1` row is there because the acceptance pass found it missing, which is the exact
+failure the claim in this paragraph is meant to prevent:
 
 | Convention | Rule | Repo-wide | `--changed` |
 |---|---|---|---|
+| One H1 per file, before the banner | 1's precondition (`NO H1`) | error | error |
 | Banner present as the first non-blank line after the H1 | 1 | error | error |
 | Banner matches `BANNER_RE` — type in vocabulary, *Applies to* present | 2 | error | error |
 | Heading qualification, across pages (`##`, allowlist exempt) | 3a | error | error |

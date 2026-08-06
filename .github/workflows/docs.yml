@@ -26,9 +26,12 @@ jobs:
           python-version: '3.12'
       - run: python3 tools/linkcheck.py
 
-      # Repo-wide: banner, heading uniqueness and terminology are errors on every
-      # page. The using-directive debt and the untagged fences stay warnings here,
-      # so the existing backlog is visible without blocking unrelated work.
+      # Repo-wide: banner, heading uniqueness, terminology and language tags are
+      # errors on every page. Language tags joined that list with spec 011 Task
+      # 7.2, which tagged the last 34 untagged fences — a rule with no remaining
+      # debt needs no softer level. The using-directive debt does still have one,
+      # so it stays a counted warning here and the backlog is visible without
+      # blocking unrelated work.
       - run: python3 tools/pagelint.py
 
       # On a pull request the code rules become errors, but only for blocks that

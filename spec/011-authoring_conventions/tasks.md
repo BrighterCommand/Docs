@@ -678,7 +678,7 @@ gone, verified by byte inspection rather than by eye.
   - Output: `--fix` covering the mechanical rules: banner **version segment**, language tags
   - Notes: Scope it narrowly — `--fix` must **never** decide a page type; it cannot know one. Its reason for existing is that the V11 bump is 105 edits, and it should be one command plus a diff review rather than a page-by-page trudge. Do **not** fold `apply_banners.py`'s TSV logic in: that would leave a durable tool carrying one-off migration logic, keyed to a file that by then records a decision made years earlier.
 
-- [ ] **Task 7.4:** Acceptance pass and programme handoff
+- [x] **Task 7.4:** Acceptance pass and programme handoff
   - Input: requirements § Acceptance Criteria (AC1–AC8)
   - Output: A checked-off AC list appended to this file; `PROMPT.md` updated with 011's completion state and the measured baseline; `PROMPT.md` open question 3 closed
   - Notes: Walk all eight: `pagelint.py` exits 0 with the warning count recorded (AC1) · `linkcheck.py` exits 0 including orphans (AC2) · every banner human-reviewed (AC3) · no cross-page `##` collisions outside the allowlist (AC4) · `CLAUDE.md` ↔ linter parity in **both** directions and the *File Organization Pattern* no longer prescribing rejected headings (AC5) · CI green with both tools, and green on the untouched tree *before* the sweeps (AC6) · splits navigable with redirects settled (AC7) · worklist executable without re-deriving the analysis (AC8). There are eight: requirements numbered two of them "6" until this list's review renumbered them to 1–8, and design's traceability row was updated to match. Then hand to Spec 010 — it needs the conventions and the worklist, both of which now exist.
@@ -1108,3 +1108,91 @@ that guessed would be wrong silently; this one is unhelpful loudly.
 110** — one gained a newline during the Phase 6 splits. Nothing depends on it, and it
 is recorded here rather than fixed, because normalising the other 17 is still the
 unrelated-diff problem that left them alone in the first place.
+
+---
+
+## Task 7.4 as executed (2026-08-06) — the acceptance pass
+
+All eight criteria walked, each verified by running something rather than by recalling
+what a previous session reported. **Seven passed as they stood; AC5 failed and was
+fixed** — see below. Spec 011 is complete.
+
+| | Criterion | Verdict |
+|---|---|---|
+| AC1 | `pagelint.py` exits 0, debt recorded | **pass** — 0 errors, 802 warnings |
+| AC2 | `linkcheck.py` exits 0, orphans included | **pass** — 112 files |
+| AC3 | Every page banner human-reviewed | **pass** — 110/110, verdicts matched to banners |
+| AC4 | No cross-page `##` collisions | **pass** — 0 of 688 distinct headings |
+| AC5 | `CLAUDE.md` ↔ linter parity, both ways | **failed, then fixed** — `NO H1` |
+| AC6 | CI runs both tools, green before the sweeps | **pass** |
+| AC7 | Splits navigable, redirects settled | **pass** — no URL moved |
+| AC8 | Worklist executable by 010 | **pass** — 42 rows |
+
+### AC5 failed: the linter had a rule the ledger did not
+
+`pagelint.py` can emit **eight** rule labels; the ledger listed **seven**. The missing
+one is `NO H1`, returned by `check_banner` when a page has no title to hang a banner
+below. It is rule 1's precondition rather than a rule of its own, which is presumably
+why it was never written down — but the ledger's own claim is that *every rule maps
+back*, and this one did not.
+
+Nothing was broken by it: every page has an H1, so the rule has never fired. That is
+precisely why it survived four sessions of the ledger being read and edited. **A rule
+that never fires is invisible to everything except an enumeration**, which is the only
+reason this pass caught it. Added as its own row.
+
+The rest of AC5 holds. Rules 1–6 and the review-only row account for the other seven
+labels one-for-one, and the *File Organization Pattern* prescribes qualified headings
+(`## Kafka Subscription Configuration`) rather than the bare `## Configuration` it
+called for before Phase 1.
+
+### A second drift, found while checking AC6
+
+`docs.yml`'s comment on the repo-wide step still read "the using-directive debt **and
+the untagged fences** stay warnings here". Task 7.2 had made language tags an error two
+commits earlier and updated `CLAUDE.md` and the tool docstring, but not the workflow
+comment. Corrected. Both findings are the same shape — a true statement somewhere else
+going stale because the change was made where it was enforced, not everywhere it was
+described.
+
+### What the mechanical checks established beyond the criteria
+
+Two of these had never been run, and both could have been false without anything
+noticing:
+
+- **Every page's banner type matches its reviewed verdict in `pagetypes.tsv`** —
+  110/110, no mismatches. AC3 as written only asks that a reviewed banner exists; this
+  asks whether the corpus still agrees with the review. It does.
+- **Every page's `Applies to` matches the TSV's `applies` column** — 110/110, tallying
+  100 `Brighter V10` / 5 `Darker V4` / 5 both. The 10 Darker-touching pages are exactly
+  the set the column identifies, so the next Darker release is the one-edit bump it was
+  positioned to be.
+- **AC4 re-derived without the linter**: an independent fence-aware pass over all 110
+  pages finds **688 distinct non-navigation `##` slugs and 0 on more than one page**.
+  Confirming rule 3a with the tool that enforces rule 3a would have proved only that
+  the tool is self-consistent.
+
+### The AC1 baseline, restated for whoever shrinks it
+
+**802 C# blocks across 93 pages** carry no `using` directives. The figure at the start
+of the programme was 804 across 89; the Phase 6 splits redistributed them across more
+pages and dropped two duplicates. It is the last of 011's debts and is deliberately
+left standing — Q4's two strictness levels retire it as pages are edited, rather than
+in one sweep that would touch 93 pages to change nothing a reader can see.
+
+### AC7's redirects, stated plainly rather than ticked
+
+AC7 asks for "redirects in place for the URLs that moved". **No URL moved.** Both
+splits kept the original file name for the core page, so the five new pages are new
+URLs with nothing to redirect *from*, and `.gitbook.yaml` needs no `redirects:` block
+for them. What the splits did break was **anchor-level** links, which GitBook redirects
+cannot address at all — they operate on pages, not fragments — so all 28 were repointed
+directly in Phase 6. Adding a `redirects:` block remains Spec 010's deliverable, for
+the pages 010 moves.
+
+### Where this leaves Spec 011
+
+**Complete — 43 of 43 tasks.** Every convention it set out to establish is true of every
+page, a tool proves it, CI fails when it stops being true, and the version bump that
+would otherwise re-open 110 pages is one edit plus one command. Spec 010 is unblocked
+and has been since Task 7.1.
