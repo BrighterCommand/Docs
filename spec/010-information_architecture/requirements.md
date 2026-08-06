@@ -371,6 +371,9 @@ rather than a list here. Two placement rules bind it:
 
 ## 13. Open questions for the maintainer
 
+**Q1 and Q7 are the two that change the shape of the spec; the rest are decisions within
+it.** Q1 should be settled by experiment before design, not by discussion.
+
 1. **Do GitBook redirects fire for a page that still exists but publishes elsewhere?**
    GitBook's documentation says an old page must be *removed* for its redirect to work. Our
    pages are never removed — they change section, so the old *path* stops publishing while
@@ -396,6 +399,25 @@ rather than a list here. Two placement rules bind it:
    banner and the page's section.
 6. **P2-2, renaming `Requests, Commands and Events.md`.** Cheap inside this pass, not worth
    a pass of its own. Take it or drop it now.
+7. **Is 010 too large as scoped, and should it be split into two specs?** This is the
+   question I would most expect a reviewer to raise, so it is stated rather than left
+   implicit. As written, 010 carries a full `SUMMARY.md` rewrite, a redirect mechanism,
+   **26 page splits**, three tools (D3, D6, D7) and four content fixes. For scale: the two
+   demonstrator splits in 011 took a full session each, and 010 has twenty-six.
+
+   The two halves are genuinely separable, and §2 is why — the restructure touches
+   `SUMMARY.md` and `.gitbook.yaml` and **no page bodies at all**, while the splits touch
+   only page bodies and add SUMMARY entries. They share no file except `SUMMARY.md`.
+
+   **Recommendation: keep them one spec but sequence them as Q4 says** — restructure
+   first, splits second — and treat the split phase as interruptible. The argument for one
+   spec is the one that moved splitting out of 011 in the first place: a split page needs
+   a name, a SUMMARY entry and possibly a redirect, and doing that against a tree that is
+   about to change means touching it twice. The argument against is simply size, and
+   sequencing addresses size without reintroducing the double-touch.
+
+   **If the reviewer disagrees, the clean cut is after the restructure lands** — that is a
+   coherent, shippable unit on its own, and the splits become 014.
 
 ---
 
