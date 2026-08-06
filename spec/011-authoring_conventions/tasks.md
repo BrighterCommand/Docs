@@ -673,7 +673,7 @@ gone, verified by byte inspection rather than by eye.
   - Output: Language tags across `contents/`; rule 4 promoted to repo-wide error; `CLAUDE.md` *Enforcement* updated to match
   - Notes: Mechanical enough to sit alongside the sweeps. Pick the tag from the block's content — `csharp`, `yaml`, `json`, `bash`, `text` for output dumps. Promote the rule in the **same** commit, or the tags decay like everything else unenforced.
 
-- [ ] **Task 7.3:** P1 — add `--fix` to `pagelint.py`
+- [x] **Task 7.3:** P1 — add `--fix` to `pagelint.py`
   - Input: design §1 comparison table, requirements § P1
   - Output: `--fix` covering the mechanical rules: banner **version segment**, language tags
   - Notes: Scope it narrowly — `--fix` must **never** decide a page type; it cannot know one. Its reason for existing is that the V11 bump is 105 edits, and it should be one command plus a diff review rather than a page-by-page trudge. Do **not** fold `apply_banners.py`'s TSV logic in: that would leave a durable tool carrying one-off migration logic, keyed to a file that by then records a decision made years earlier.
@@ -1022,3 +1022,89 @@ They are tagged, they render as C#, and rule 4 has never flagged them — see §
 baseline*. Normalising them would touch 40-odd pages to change nothing a reader or a
 tool can see, and would have buried a 34-line diff whose whole claim is that it contains
 nothing but language tags.
+
+---
+
+## Task 7.3 as executed (2026-08-06)
+
+`--fix` repairs the banner version segment and untagged fences, and refuses everything
+else out loud. Both halves were tested against a real target rather than a synthetic
+one, and the language-tag half had **ground truth available** — the 34 fences Task 7.2
+had just tagged by hand.
+
+### The version bump was rehearsed end to end
+
+`APPLIES_TO` was temporarily moved to `('Brighter V11 and Darker V5', 'Brighter V11',
+'Darker V5')` and `--fix` run against the corpus:
+
+- **110 banners stale, 110 fixed, 0 left for a human.** 100 → `Brighter V11`,
+  5 → `Darker V5`, 5 → `Brighter V11 and Darker V5`, which reconciles with the 10
+  Darker-touching pages already identified by `pagetypes.tsv`'s `applies` column.
+- **Page types survived exactly**: 50 Reference / 33 How-to / 27 Explanation before and
+  after — the corrected tally, unmoved.
+- **All five Prerequisites segments survived.** This is the failure `apply_banners.py`
+  actually shipped (`5498cd6`), so it was the first thing checked rather than assumed.
+- **One line changed per page**: 110 files, every one `1 insertion, 1 deletion`, 109
+  hunks at line 3 and one at line 4. No collateral edits.
+- **The 17 files with no trailing newline still have none.** Byte-compared against
+  `HEAD`, not eyeballed.
+- **Idempotent**: the second run reports `Nothing to fix.`
+
+There is no migration map anywhere. A stale value names a set of products
+(`Brighter V10` names `{Brighter}`) and the fix is whichever `APPLIES_TO` entry names
+exactly that set. **One edit to the tuple is the whole bump.** Where two entries claim
+the same product set — a vocabulary *restructure* rather than a bump — it refuses
+rather than guessing.
+
+### `--fix` cannot launder a bad page type into a green build
+
+Given `> **Guide** · Applies to **Brighter V9**`, it fixes the version to
+`Brighter V11`, leaves `**Guide**` alone, and the page **still fails rule 2**. That is
+the property the narrow scope exists for. A page type cannot be recovered from the text
+and a wrong one is invisible — a page mislabelled `Reference` reads perfectly and
+misleads every reader who trusted the label. Only the version segment is ever
+substituted, so the type and Prerequisites are out of reach by construction rather than
+by care.
+
+Three refusal paths, each with its own message, all exercised: two entries claiming one
+product set; a product absent from the vocabulary; a value that is not `<Product> V<n>`
+at all.
+
+### The language-tag half: 26 of 34 right, 0 wrong, 8 declined
+
+Replaying `--fix` against the pre-Task-7.2 tree — 34 untagged fences with hand verdicts
+already recorded — gives **26 tagged `text` and 8 held back**. Every one of the 26
+matches the verdict reached by hand. **It has never produced a wrong tag; its only
+failure mode is doing nothing and saying so.**
+
+Of the 8 refusals, **one is exactly right**: `AsyncAPISupport.md:23` is `dotnet add
+package`, the single block in the whole set that took `bash` rather than `text`, and it
+was held for being a shell command. The other 7 are over-caution, 6 of them from the
+`key: value` detector firing on labelled output — `traceparent: 00-0af…`,
+`Attributes: s3.bucket…`, `Brighter: 3 handler pipelines…`. The seventh is
+`PipelineValidation.md:47`, where a validation message wraps onto a line beginning
+"public handler types.", which reads as a C# declaration at line start.
+
+That asymmetry is the design, not a shortfall. The detectors are not a classifier; they
+hold the fix back on anything code-shaped, because `text` is the only tag inferable
+from a corpus where **all 34 untagged fences were prose**. Choosing between `csharp`,
+`bash`, `json` and `yaml` is a decision belonging to whoever wrote the block. A tool
+that guessed would be wrong silently; this one is unhelpful loudly.
+
+### What was deliberately kept out
+
+- **`apply_banners.py`'s TSV lookup**, as the task specified. That is one-off migration
+  logic keyed to a file recording decisions taken years before the next person runs
+  this; folding it in leaves a durable tool quietly carrying it.
+- **Rule 6.** `--fix` cannot invent `using` directives, and writing `// ...` on a
+  reader's behalf would convert a debt into a declaration nobody made.
+- **`--fix --changed`** is rejected with exit 2. It reads as "fix what I changed", but
+  `--changed` only varies the strictness of a rule `--fix` does not repair, so the
+  combination would quietly do something other than what it says.
+
+### A stale figure noticed in passing
+
+*Audit data* records **18 of 105 files with no trailing newline**. It is now **17 of
+110** — one gained a newline during the Phase 6 splits. Nothing depends on it, and it
+is recorded here rather than fixed, because normalising the other 17 is still the
+unrelated-diff problem that left them alone in the first place.

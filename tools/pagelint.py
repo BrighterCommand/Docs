@@ -55,10 +55,16 @@ block still counts towards the debt and still says so, in its own words. Without
 it, moving a block verbatim between pages is indistinguishable from writing a
 new one, and a page split cannot honour "move text, do not improve it".
 
+--fix repairs the two rules that have exactly one correct answer: a banner whose
+version segment is stale against APPLIES_TO, and an untagged fence whose body
+shows no evidence of being code. It never decides a page type. See the --fix
+section below for why that boundary is where it is.
+
 Usage:
     python3 tools/pagelint.py                          # whole repo
     python3 tools/pagelint.py contents/Glossary.md     # specific pages
     python3 tools/pagelint.py --changed origin/master  # strict on changed blocks
+    python3 tools/pagelint.py --fix                    # repair, then report what is left
 
 Cross-page uniqueness is a property of the corpus, so when given explicit paths
 the tool still loads every page for context and only reports on the ones asked
@@ -403,6 +409,207 @@ def check_code_blocks(page, strict_ranges):
 
 
 # --------------------------------------------------------------------------
+# --fix — the two rules with exactly one correct answer
+# --------------------------------------------------------------------------
+#
+# A version bump is 110 banners. Retyping one segment across 110 pages is the
+# kind of trudge that gets abandoned half-done, and a half-bumped corpus is
+# worse than an un-bumped one: some pages assert the new version and some the
+# old, with nothing to distinguish a page that was considered from one that was
+# missed. That is the whole reason this exists.
+#
+# It is deliberately narrow, and the boundary is not squeamishness. It fixes
+# what has exactly one correct answer and refuses everything else out loud. It
+# must never decide a page type: that is a judgement about what a page is *for*,
+# it cannot be recovered from the text, and a wrong one is invisible — a page
+# mislabelled `Reference` reads perfectly and misleads every reader who trusted
+# the label. The same reasoning keeps apply_banners.py's TSV lookup out of here.
+# That is one-off migration logic keyed to a file recording decisions taken
+# years before the next person runs this tool; folding it in would leave a
+# durable tool quietly carrying it.
+
+Change = namedtuple('Change', 'path line before after note')
+Refusal = namedtuple('Refusal', 'path line reason')
+
+# A vocabulary entry names one or more products, each with its own version:
+# `Brighter V10`, `Darker V4`, `Brighter V10 and Darker V4`.
+VERSIONED_PRODUCT_RE = re.compile(r'^([A-Za-z][\w.]*) V(\d+)$')
+
+# Only the version segment is ever rewritten. Capturing the text either side of
+# it is what keeps the page type and any Prerequisites segment untouched --
+# the substitution cannot reach them.
+APPLIES_SEGMENT_RE = re.compile(r'(· Applies to \*\*)([^*]+)(\*\*)')
+
+
+def products_named(applies):
+    """The set of product names in a vocabulary value, or None if unparseable."""
+    names = set()
+    for part in applies.split(' and '):
+        match = VERSIONED_PRODUCT_RE.match(part.strip())
+        if not match:
+            return None
+        names.add(match.group(1))
+    return frozenset(names)
+
+
+def version_targets():
+    """Product set -> the one APPLIES_TO entry naming exactly those products.
+
+    This is how a stale banner finds its replacement without anyone writing a
+    migration map: `Brighter V10` names {Brighter}, and after the V11 bump the
+    single entry naming {Brighter} is `Brighter V11`. One edit to APPLIES_TO is
+    the whole bump.
+
+    A product set claimed by two entries is dropped rather than guessed at. That
+    only happens if the vocabulary is restructured rather than bumped, which is
+    an editorial change and wants a human.
+    """
+    by_products = defaultdict(list)
+    for entry in APPLIES_TO:
+        products = products_named(entry)
+        if products is not None:
+            by_products[products].append(entry)
+    return {p: found[0] for p, found in by_products.items() if len(found) == 1}
+
+
+def fix_banner_version(page):
+    """Retarget a stale `Applies to` segment. Never touches the type."""
+    if page.h1_line is None:
+        return [], []
+    banner_line = None
+    for lineno in range(page.h1_line + 1, len(page.lines) + 1):
+        if page.lines[lineno - 1].strip():
+            banner_line = lineno
+            break
+    if banner_line is None:
+        return [], []
+
+    text = page.lines[banner_line - 1].rstrip()
+    # BANNER_SHAPE_RE, not BANNER_RE: the banner being fixed is by definition
+    # one BANNER_RE rejects. Shape is what identifies it as ours to rewrite.
+    if not BANNER_SHAPE_RE.match(text):
+        return [], []
+    match = APPLIES_SEGMENT_RE.search(text)
+    if not match or match.group(2) in APPLIES_TO:
+        return [], []
+
+    stale = match.group(2)
+    products = products_named(stale)
+    targets = version_targets()
+    if products is None:
+        return [], [Refusal(page.rel, banner_line,
+                            f'`Applies to **{stale}**` is not `<Product> V<n>`, so '
+                            'there is nothing to map it from')]
+    if products not in targets:
+        named = ' and '.join(sorted(products))
+        return [], [Refusal(page.rel, banner_line,
+                            f'`Applies to **{stale}**` names {named}, which no single '
+                            'entry in APPLIES_TO covers; this is an editorial change, '
+                            'not a bump')]
+
+    current = targets[products]
+    fixed = APPLIES_SEGMENT_RE.sub(
+        lambda m: m.group(1) + current + m.group(3), text, count=1)
+    return [Change(page.rel, banner_line, text, fixed,
+                   f'{stale} -> {current}')], []
+
+
+# Evidence that a block is code, and so not this tool's to tag. Each entry is
+# (what it recognises, pattern); the first to match a line holds the fix back.
+CODE_EVIDENCE = (
+    ('a C# declaration', re.compile(
+        r'^\s*(using [A-Za-z_]|namespace\s|(public|private|protected|internal)\s'
+        r'|(var|await|return|throw|new)\s)')),
+    ('a statement terminator', re.compile(r'[;{}]\s*$')),
+    ('a brace', re.compile(r'^\s*[{}]')),
+    ('a shell command', re.compile(
+        r'^\s*(\$\s|(dotnet|docker|docker-compose|git|npm|yarn|curl|wget|cd|export'
+        r'|mkdir|rm|cp|sudo|apt|apt-get|brew|kubectl|helm|python3?|pip3?|bash|sh'
+        r'|make|az|aws)\b)')),
+    ('a `key: value` mapping', re.compile(r'^\s*[A-Za-z_][\w.-]*:(\s|$)')),
+)
+
+
+def infer_language(block):
+    """`text`, or None when the block looks like code.
+
+    `text` is the only tag this infers, and that is a finding rather than a
+    limitation. All 34 fences the Task 7.2 backfill had to tag by hand were
+    prose — ASCII flow diagrams, directory trees, validation-message dumps,
+    trace output — and 33 of the 34 took `text`. The reason is mechanical: an
+    author writing C# reaches for ```csharp because they want the highlighting,
+    while an author drawing a box-and-arrow diagram has no language in mind and
+    types a bare fence, because until `text` is the convention no tag is the
+    honest answer to "what language is this?".
+
+    So the detectors below are not a classifier. They exist to hold the fix back
+    on the minority case, where choosing between `csharp`, `bash`, `json` and
+    `yaml` is a decision belonging to whoever wrote the block. Being held back is
+    the safe failure, and it is reported rather than swallowed.
+    """
+    for _, line in block['body']:
+        for _, pattern in CODE_EVIDENCE:
+            if pattern.search(line):
+                return None
+    return 'text'
+
+
+def describe_evidence(block):
+    for lineno, line in block['body']:
+        for what, pattern in CODE_EVIDENCE:
+            if pattern.search(line):
+                return f'line {lineno} looks like {what}'
+    return 'it looks like code'
+
+
+def fix_language_tags(page):
+    """Tag an untagged fence `text` when nothing in it suggests code."""
+    changes, refusals = [], []
+    for block in page.blocks:
+        if block['info']:
+            continue
+        line = page.lines[block['start'] - 1]
+        if infer_language(block) is None:
+            refusals.append(Refusal(
+                page.rel, block['start'],
+                'untagged fence left alone: ' + describe_evidence(block) +
+                ', and picking between `csharp`, `bash`, `json` and `yaml` is '
+                'the author\'s call'))
+            continue
+        changes.append(Change(page.rel, block['start'], line.rstrip(),
+                              line.rstrip() + 'text', 'tagged `text`'))
+    return changes, refusals
+
+
+def apply_changes(changes):
+    """Write the changes, one file at a time, verifying every line first.
+
+    Nothing is written for a file until every line it targets is confirmed to
+    hold what the fixer read. A stale line number should abort rather than
+    half-rewrite a page — the same contract as dedupe_within.py.
+    """
+    by_path = defaultdict(list)
+    for change in changes:
+        by_path[change.path].append(change)
+
+    for rel, items in sorted(by_path.items()):
+        path = os.path.join(ROOT, rel)
+        with open(path, encoding='utf-8') as fh:
+            raw = fh.read()
+        lines = raw.splitlines(keepends=True)
+        for change in items:
+            actual = lines[change.line - 1]
+            ending = actual[len(actual.rstrip('\r\n')):]
+            if actual.rstrip('\r\n') != change.before:
+                raise RuntimeError(
+                    f'{rel}:{change.line} moved under the fix; nothing written '
+                    f'for this file')
+            lines[change.line - 1] = change.after + ending
+        with open(path, 'w', encoding='utf-8') as fh:
+            fh.write(''.join(lines))
+
+
+# --------------------------------------------------------------------------
 # Rule 5 — terminology
 # --------------------------------------------------------------------------
 
@@ -488,6 +695,7 @@ def changed_ranges(merge_base):
 
 def main(argv):
     merge_base = None
+    fix = False
     paths = []
     args = list(argv)
     while args:
@@ -498,11 +706,21 @@ def main(argv):
                       file=sys.stderr)
                 return 2
             merge_base = args.pop(0)
+        elif arg == '--fix':
+            fix = True
         elif arg.startswith('-'):
             print(f'unknown option: {arg}', file=sys.stderr)
             return 2
         else:
             paths.append(arg)
+
+    # --changed narrows which *blocks* the using-directive rule is strict about.
+    # --fix repairs neither that rule nor anything scoped to a diff, so the
+    # combination reads as "fix what I changed" and would do something else.
+    if fix and merge_base:
+        print('--fix and --changed do not combine: --changed only varies the '
+              'strictness of a rule --fix does not repair', file=sys.stderr)
+        return 2
 
     pages = load_pages()
 
@@ -530,6 +748,31 @@ def main(argv):
             print(f'--changed cannot determine what changed: {exc}',
                   file=sys.stderr)
             return 2
+
+    if fix:
+        changes, refusals = [], []
+        for rel in reported:
+            for fixer in (fix_banner_version, fix_language_tags):
+                made, held = fixer(pages[rel])
+                changes += made
+                refusals += held
+        try:
+            apply_changes(changes)
+        except RuntimeError as exc:
+            print(f'--fix aborted: {exc}', file=sys.stderr)
+            return 2
+        for change in sorted(changes):
+            print(f'{change.path}:{change.line}: FIXED: {change.note}')
+        for refusal in sorted(refusals):
+            print(f'{refusal.path}:{refusal.line}: NOT FIXED: {refusal.reason}')
+        print(f'\n{len(changes)} fixed, {len(refusals)} left for a human.'
+              if changes or refusals else '\nNothing to fix.')
+        # Re-read, so what follows reports the tree as it now stands rather than
+        # as it was found. A --fix run that printed pre-fix findings would be
+        # indistinguishable from one that fixed nothing.
+        if changes:
+            pages = load_pages()
+        print()
 
     findings = []
     for rel in reported:

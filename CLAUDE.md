@@ -305,6 +305,7 @@ Sections mirror `SUMMARY.md`. Each line is `- [Title](path): Type — one senten
 python3 tools/pagelint.py                          # whole repo
 python3 tools/pagelint.py contents/Glossary.md     # specific pages
 python3 tools/pagelint.py --changed origin/master  # strict on changed blocks
+python3 tools/pagelint.py --fix                    # repair, then report what is left
 ```
 
 Exit code is 1 when anything is an error, 0 when clean or warnings only, 2 on bad
@@ -335,6 +336,22 @@ rule in only one of the two places is how the next round of decay begins:
 Version markers are the one convention with no rule, and deliberately so: whether two
 code blocks differ *by version* is a judgement about meaning, and a regex that guessed
 at it would fire on every before/after pair in the repo. It is checked in review.
+
+**`--fix` repairs two of these and refuses the rest.** It retargets a banner whose
+*Applies to* is stale against `APPLIES_TO` — which is what makes a version bump one
+edit to that tuple plus one command — and tags an untagged fence ```` ```text ````
+when nothing in the block looks like code. It rewrites only the version segment, so
+the page type and any Prerequisites are out of its reach by construction.
+
+It **never decides a page type.** That is a judgement about what a page is *for*, it
+cannot be recovered from the text, and a wrong one is invisible: a page mislabelled
+`Reference` reads perfectly and misleads everyone who trusted the label. A banner with
+an out-of-vocabulary type gets its version fixed and still fails rule 2, which is the
+intended outcome — `--fix` cannot turn a bad page type into a green build.
+
+Where the answer is not unique it says so and changes nothing: a version naming a
+product no single `APPLIES_TO` entry covers, and a fence holding anything code-shaped,
+where choosing between `csharp`, `bash`, `json` and `yaml` belongs to whoever wrote it.
 
 Rule 5 matches **both spellings** — `ServiceActivator` and `Service Activator`. The
 API surface uses the closed form, but prose here uses the open one just as often, and
