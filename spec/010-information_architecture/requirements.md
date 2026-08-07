@@ -132,9 +132,10 @@ catch. A green result would be indistinguishable from the thing it is meant to r
 work?"** — see §7 P0-0. This is 011's *a check that passes has not necessarily checked
 anything* applied to the one experiment this spec depends on.
 
-If automatic redirects do cover Git-synced structural changes, D2 and D3 become
-belt-and-braces rather than load-bearing. That is worth knowing **before** building the
-keystone tool, not after.
+> **Measured 2026-08-06/07: they do.** The old path returned a **307** twenty-five seconds
+> after the rename merged, with no `redirects:` block in the repo. **D2 and D3 are
+> belt-and-braces, not load-bearing** — and the single-step version of this experiment
+> would have reported success while proving nothing. Full result in §16.
 
 ### 2.4 GitBook's own `.gitbook.yaml` example is contaminated — this is live, not history
 
@@ -633,10 +634,76 @@ What changed:
 - **Q8–Q10 added** rather than decided: AC6's threshold, `llms.txt`'s summary source, and
   whether `urlmap.py` gates CI. All three are design-phase calls.
 
-## 16. Next step
+## 16. D0 as executed — 2026-08-06/07, PRs #77, #78, #79
 
-`/spec:design`. **Run D0 first** — it is cheap, it gates D2 and D3, and §2.3 is the reason
-it cannot be a single-step check.
+**Both mechanisms work. §2.3's second branch is the real one, and the single-step version
+of this experiment would have proved nothing.**
+
+| Question | Answer | Evidence |
+|---|---|---|
+| Does GitBook auto-redirect a Git-synced `SUMMARY.md` rename? | **Yes** | **307** to the new path **25s** after #77 merged, with no `redirects:` block anywhere in the repo |
+| Are `.gitbook.yaml` redirects read on this site? | **Yes** | A probe key that had never existed began redirecting after #78; a control key *absent* from the block kept 404ing |
+| Does the site plan permit section-level redirects? | **Yes** | Implied by the above — no plan gate was hit |
+
+### The method mattered
+
+Shipping the rename *with* its redirect — the obvious way — would have gone green on
+GitBook's automatic 307 while proving nothing about `.gitbook.yaml`. And because step 1
+answered "yes", the **planned step 2 became untestable**: the resolution order means the
+moved path now resolves, so its redirect entry would never be consulted. Step 2 was
+redesigned mid-experiment around a **probe key for a path that had never existed**, which
+no automatic redirect can mask. The control — a key absent from the block, still 404ing —
+is what makes it a measurement.
+
+### Read the fingerprint, not the status code
+
+**Every cached response reports `200`**, including genuine 404s and genuine redirects.
+Status alone is worthless here. The discriminators:
+
+| Path class | `location:` header | Body |
+|---|---|---|
+| key **in** the redirects block | **1** | ~192.3 KB |
+| key **not** in the block | 0 | ~189.5 KB (404 shell) |
+| renamed-away path (automatic 307) | **1** | ~192.4 KB |
+| real page | 0 | **584 KB** |
+
+Only an uncached request shows the true `307`. `x-opennext-cache: HIT` plus a `location:`
+header on a `200` is a cached redirect being replayed — and **no genuine page response
+carries `location:`**, which is the cleanest single tell.
+
+### Three findings that change how D2 and D3 are built
+
+- **The redirect value is a repository path, and GitBook resolves it to wherever that page
+  *currently* publishes.** The probe pointed at
+  `contents/CommandsCommandDispatcherandProcessor.md` and landed on the **post**-rename
+  URL. **So a redirect entry does not go stale when its page moves again** — which matters
+  for a spec that will move some pages more than once, and means the block can be written
+  once rather than re-derived after every move.
+- **D2/D3 drop from load-bearing to belt-and-braces.** Automatic redirects appear to cover
+  010's whole case. **But nothing establishes that they *persist*** — they may be tied to
+  revision history, and one session cannot test that. Ship the block anyway; it is cheap
+  and it is the safety net.
+- **Redirect responses are cached with `stale-while-revalidate=2592000` — 30 days.** The
+  probe key kept redirecting for well over an hour after #79 removed it. **A wrong redirect
+  will outlive its fix at the edge**, so verify the block *before* merging, not after.
+
+### Two operational facts for the design phase
+
+- **GitBook sync latency is 25–45 seconds** from merge to published. Measured, not assumed.
+- **PyYAML is not available in this environment.** `ruby -ryaml` is, and was used for the
+  parse half of P0-3. D7's parser choice needs deciding rather than assumed — see Q10.
+
+The section rename itself was the independently-correct fix it was chosen to be: the comma
+was misplaced, and *Command, Processors and Dispatchers* is now *Commands, Processors and
+Dispatchers*. One URL of 110 moved.
+
+---
+
+## 17. Next step
+
+`/spec:design`. **D0 is done and its gate is passed** — both redirect mechanisms are
+measured and working, so the design can proceed on the URL model in §2 without further
+platform investigation. Carry §16's three findings into D2 and D3.
 
 **Before finalising, check [#67](https://github.com/BrighterCommand/Docs/issues/67) for a
 reply.** Diátaxis-as-authoring-discipline was explicitly flagged there for pushback.
