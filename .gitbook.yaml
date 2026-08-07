@@ -3,3 +3,20 @@ root: ./
 structure:
     readme: README.md
     summary: SUMMARY.md
+
+redirects:
+  # Spec 010, D0 step 2. Typed by hand, never pasted: GitBook's own published
+  # .gitbook.yaml example carries two U+200B zero-width spaces, and this file
+  # carried them until 2026-08-05, which is why GitBook never read the structure
+  # block at all. Verify this file by byte inspection, not by eye.
+
+  # The real redirect for the section renamed in #77. Belt-and-braces: D0 step 1
+  # showed GitBook already issues an automatic 307 for this path unaided.
+  command-processors-and-dispatchers/commandscommanddispatcherandprocessor: contents/CommandsCommandDispatcherandProcessor.md
+
+  # D0 probe, and the only discriminating half of this change. This path has never
+  # existed and returns 404 today, so no automatic redirect can mask the result.
+  # If it resolves after publish, .gitbook.yaml redirects are read on this site and
+  # the site plan permits them. If it still 404s, they are not, and spec 010's D2
+  # is dead. REMOVE THIS KEY once the measurement is recorded.
+  d0-probe-gitbook-yaml-redirects: contents/CommandsCommandDispatcherandProcessor.md
