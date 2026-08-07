@@ -10,13 +10,8 @@ redirects:
   # carried them until 2026-08-05, which is why GitBook never read the structure
   # block at all. Verify this file by byte inspection, not by eye.
 
-  # The real redirect for the section renamed in #77. Belt-and-braces: D0 step 1
-  # showed GitBook already issues an automatic 307 for this path unaided.
+  # The real redirect for the section renamed in #77. Kept as belt-and-braces: D0
+  # measured GitBook issuing an automatic 307 for this path unaided, so this entry
+  # is a safety net rather than the mechanism. D0's probe key confirmed that keys in
+  # this block ARE read and honoured; it was removed once measured (PR #79).
   command-processors-and-dispatchers/commandscommanddispatcherandprocessor: contents/CommandsCommandDispatcherandProcessor.md
-
-  # D0 probe, and the only discriminating half of this change. This path has never
-  # existed and returns 404 today, so no automatic redirect can mask the result.
-  # If it resolves after publish, .gitbook.yaml redirects are read on this site and
-  # the site plan permits them. If it still 404s, they are not, and spec 010's D2
-  # is dead. REMOVE THIS KEY once the measurement is recorded.
-  d0-probe-gitbook-yaml-redirects: contents/CommandsCommandDispatcherandProcessor.md
