@@ -2,18 +2,24 @@
 
 **Spec:** 005-database_migration
 **Created:** 2026-05-26
-**Status:** Draft — awaiting review
+**Status:** COMPLETE — 14/14, closed 2026-08-07
 **Design:** [design.md](./design.md)
 **Requirements:** [requirements.md](./requirements.md)
 
 ## Overview
 
-**Total tasks:** 15, grouped into 4 phases.
+**Total tasks:** 14, grouped into 4 phases. **All 14 closed** — 13 executed, and Task 3.3
+marked n/a per its own instruction (see Phase 3).
+
+> **This total read 15 until 2026-08-07, and Phase 2's row read 6 against its actual 5.**
+> Re-derived by counting checkboxes, not by trusting either figure — the same failure this
+> programme has now hit eight times. Re-derive a total; never add to one:
+> `grep -c '^- \[[ x]\] \*\*Task' spec/005-database_migration/tasks.md`
 
 | Phase | Goal | Tasks |
 |-------|------|-------|
 | Phase 1: Research & Preparation | Verify source-of-truth references before writing any prose | 3 |
-| Phase 2: Core Documentation (P0) | Ship the user-facing surface needed for someone to adopt BoxProvisioning | 6 |
+| Phase 2: Core Documentation (P0) | Ship the user-facing surface needed for someone to adopt BoxProvisioning | 5 |
 | Phase 3: Supporting Documentation (P1) | Round out glossary, upgrade story, conceptual support pages | 3 |
 | Phase 4: Polish & Review | Wire navigation, verify links, QA against the CLAUDE.md checklist | 3 |
 
@@ -105,8 +111,11 @@ These can begin once Phase 2 P0 pages are in place; 3.2 depends on 2.1 and 2.2 (
   - Depends on: 2.1, 2.2
   - **Result (2026-05-26):** `contents/BoxProvisioningUpgrade.md` written — 215 lines. All 17 design-specified headings present (H1 + 6 H2 + 4 edge-case H3 + 4 troubleshooting H3 + Rolling back + Further Reading); one extra peer H3 `### Edge-case summary` added inside `## Documented edge cases` to anchor the summary table (the design called for the table but did not give it a heading — peer H3 keeps it scannable). Both load-bearing anchors land at the documented kebab-case slugs: `#mssql-multi-version-upgrades` (H2 line 126) and `#payload-mode-mismatch-binary-vs-text-vs-json` (H3 line 91). Discriminator-gate error messages quoted verbatim from ADR 0057 §2 line 136 ("Table {name} exists but is not a Brighter outbox/inbox (missing discriminator column {column}); check your configured table name" and the unknown-schema-version companion). Includes operator SQL query + sample `__BrighterMigrationHistory` output block, three bootstrap log blocks (Information-level success, PostgreSQL retry diagnostic, Error-level failure), four troubleshooting message + remediation blocks (one per H3) — split out for grep-ability per design intent. Edge-case summary table (4 rows) follows design lines 510–516 verbatim with minor copy-edit ("Detected as V4-equivalent" → "Detected as V4" for clarity since V4 *is* the detected version). No C# in the page; cross-links to `BoxProvisioning.md` (intro + `#how-it-works` + `#per-backend-support`), `BoxProvisioningConfiguration.md` (intro + `#tuning-the-migration-lock-timeout`), 5 Glossary anchors, all 8 per-backend pages, both ADRs. Length 215 vs design estimate 240–300 — same denser-than-estimate pattern as Tasks 2.1 (151 vs 220–260) and 2.2 (246 vs 280–340); content complete with no padding.
 
-- [ ] **Task 3.3:** *(reserved — see Notes)*
+- [x] **Task 3.3:** *(reserved — n/a, closed 2026-08-07)*
   - Notes: held open in case Task 1.1 surfaces an ADR/implementation drift that materially changes the configuration page's code examples after they've been written, requiring an explicit revisit-and-refresh task. If 1.1 comes back clean, mark this task n/a and skip.
+  - **Result (2026-08-07): n/a — the condition never arose.** Task 1.1 did *not* come back clean: it found **six drift items** against ADR 0053. But it found them at the pre-flight gate, **before** any page was written, and folded them into `design.md`'s code-example tables (~line 343, ~line 717) and `BoxProvisioningConfiguration.md`'s outline pitfall list (~line 309) in the same pass. Task 2.2's result confirms every one of them reached the published page: SQLite's `enableWalMode: true`, Spanner omitting both `schemaName` and `MigrationLockTimeout`, the single-call-contract throw leading the pitfalls, and the dropped "set `MigrationLockTimeout` after `Add*`" ordering footgun removed.
+    3.3 exists for drift discovered *after* writing. **That is the case AC-T3 was designed to prevent, and it worked** — so there is nothing to revisit. Marked n/a per this task's own instruction rather than executed.
+    **Spec 005 is complete: 14/14.** Reviewed against Spec 010 before closing — of the five pages 005 owns, only `BrighterOutboxSupport.md` has further work coming, and it is a *split* on `spec/011-authoring_conventions/worklist.md` (517 lines; `Outbox Archiver` at 151 and `Complete Example` at 168 move out). A split relocates content and invalidates none of it, so 005 does not need redoing before or after the restructure.
 
 ---
 
