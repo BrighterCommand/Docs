@@ -586,6 +586,58 @@ Collected so a reviewer can overrule them in one place. **No verdict is changed*
 | 4 | `InMemoryOptions.md` | *"Merge each into the matching family page"* | Creates `InMemoryTransport.md`, `InMemoryOutbox.md`, `InMemoryInbox.md` | Three of the five family pages do not exist. Every other transport, outbox store and inbox store has one; InMemory is the missing member |
 | 5 | `SweeperCircuitBreaking.md` | Explanation / Reference core / How-to | Reference core / How-to only | The explanation is 40 lines. Same stub rule as item 3 |
 
+### 7.8 Page length is not an acceptance criterion for this spec
+
+`CLAUDE.md` says *"If a file exceeds ~500 lines, consider splitting into logical
+sub-topics"*. It is a prompt to think, not a limit, and **this design deliberately leaves
+sixteen pages above it.** A review that treats 500 lines as a threshold would reject work
+that Spec 011 already measured and ruled on.
+
+**The rule was disproved as a criterion before this spec started.** `worklist.md` §2 is
+explicit — *"Size is not the criterion either"* — and gives both counter-examples:
+`KafkaConfiguration.md` is 608 lines of a single coherent mode and is a `keep`, while
+`BrighterBasicConfiguration.md` scored **two** modes and was split anyway on being 1,070
+lines doing two plainly different jobs. **Mode mixing is the criterion. Length is a symptom
+that is right often enough to be misleading.**
+
+The sixteen pages, and why each is over:
+
+| Page | After | Why it stays large |
+|---|---:|---|
+| `CQRSWithBrighterAndDarker.md` | ~936 | Holds Spec 009's 226-line worked example. Drops to ~710 when 009 takes it — requirements §8 forbids consuming it here |
+| `V10MigrationGuide.md` | 891 | `keep` — outside Diátaxis, structurally *Before You Start → Step 1…6 → Rollback* |
+| `HangfireScheduler.md` | ~771 | Reference core of the family template. Everything separable has already left |
+| `QuartzScheduler.md` | ~732 | Same |
+| `QueryPipeline.md` | ~717 | Keeps `Available Decorators` (291) because its worklist row says so — see §11 |
+| `AwsScheduler.md` | ~701 | Same as Hangfire |
+| `CommandProcessorConfigurationReference.md` | 672 | `keep` — created by 011's own split at this size, on purpose |
+| `FAQ.md` | 649 | `keep` — outside Diátaxis |
+| `ImplementAQueryHandler.md` | ~647 | Three handler patterns (311) plus registration and error handling; splitting further separates a reader from the thing they are implementing |
+| `AzureScheduler.md` | ~633 | Same as Hangfire |
+| `KafkaConfiguration.md` | 608 | `keep` — **the standing reminder that size misleads.** 608 lines, one mode |
+| `Glossary.md` | 591 | `keep` — it is a glossary |
+| `QueriesAndQueryObjects.md` | ~580 | May fall further if `## Query Patterns` (102) proves duplicate — verified in PR 3, not assumed |
+| `PostgreSQLMessageBroker.md` | ~553 | Producer (80) and consumer (81) configuration belong side by side |
+| `AsyncAPISupport.md` | 516 | `keep` — `Complete Examples` is half the page, but the fix is editorial and is not this spec's |
+| `RequestValidation.md` | 501 | `keep` — three provider sections a reader wants side by side, each too small to stand alone |
+
+**Seven of the sixteen are `keep` rows.** Re-opening them is what `worklist.md`'s sixteen
+`keep` rows exist to prevent, and AC8 requires all sixteen to be honoured.
+
+**`BrighterSchedulerSupport.md` is the case to name explicitly**, because it is the only
+page in the corpus that *grows*. It is simultaneously a donor and a receiver: it sheds 212
+lines of how-to and takes in the six comparison sections that duplicate its existing
+`## Choosing a Scheduler`. It lands at ~400 as designed — but at **741** if §7.7's first
+deviation is overruled and the five per-technology overviews fold up too. **A family
+overview page legitimately carries more than a leaf page**, because a middle navigation
+layer needs a real page to hang it from (requirements §3.1) and that page has to earn its
+place with content. If the reviewer overrules deviation 1, the resulting 741 lines is the
+consequence of that ruling, not a defect in the split.
+
+The same applies to `BrighterOutboxSupport.md`, `BrighterInboxSupport.md` and
+`DistributedLock.md`: all four are parent pages, and shrinking them to stubs to satisfy a
+line count would hollow out the navigation the tree depends on.
+
 ---
 
 ## 8. Anchor links — the cost, measured before the work starts
