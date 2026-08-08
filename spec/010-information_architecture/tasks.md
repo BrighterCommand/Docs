@@ -278,7 +278,7 @@ read its introduction.**
 PR #82 is already open with `design.md`, `SUMMARY.target.md` and the three README
 amendments (design §12); this document joins it.
 
-- [ ] **Task 1.1:** Ratify Appendix A — the nesting of all 32 new pages
+- [x] **Task 1.1:** Ratify Appendix A — the nesting of all 32 new pages
   - Input: Appendix A of this document; `design.md` §7.6 and §15; `SUMMARY.target.md`
   - Output: maintainer's confirmation, or corrections applied to Appendix A
   - Notes: This is the item design §15 named as *not measured*. Two answers changed as a
@@ -287,13 +287,20 @@ amendments (design §12); this document joins it.
     measured depths in Appendix A's second table. **If a placement is overruled, re-run the
     depth check before accepting it** — the S3 ceiling is what makes these forced.
 
-- [ ] **Task 1.2:** Re-check [Docs#67](https://github.com/BrighterCommand/Docs/issues/67)
+- [x] **Task 1.2:** Re-check [Docs#67](https://github.com/BrighterCommand/Docs/issues/67)
   - Input: the issue thread
   - Output: a note in this file recording the state and date
   - Notes: Last checked 2026-08-08 — **two comments, both the maintainer's**, unchanged
     since 2026-08-03. Diátaxis-as-authoring-discipline was flagged there for pushback, and
     the redirect commitment is public. **Check again before PR 2 merges** (Task 2.8), not
     just here.
+  - **Done 2026-08-08.** State: **OPEN**, `updatedAt` **2026-08-03T11:43:25Z**, **2 comments,
+    both `iancooper`** — the acknowledgement and the follow-up naming #72. **No reply from
+    `RubenvanderHout`.** So nothing external constrains the design: neither of the two things
+    flagged for pushback (Diátaxis as authoring discipline, and the prose-vs-generated
+    reference distinction) has drawn one. The issue **stays open until the work lands** — do
+    not close it on spec approval. Re-check at Task 2.8, because PR 2 is the merge that moves
+    74 public URLs and is where a late objection would be most expensive.
 
 - [ ] **Task 1.3:** Merge PR #82
   - Input: PR #82 on `docs/spec-010-design`
