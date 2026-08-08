@@ -393,7 +393,7 @@ safe to interleave afterwards.
     redirect block complete at merge and incomplete three PRs later is the same silent
     failure in slow motion, which is why these gate rather than being run once.
 
-- [ ] **Task 2.8:** The pre-merge gate
+- [x] **Task 2.8:** The pre-merge gate
   - Input: the branch as it stands
   - Output: a recorded result for each of six checks
   - Notes: `linkcheck.py` clean; `pagelint.py` 0 errors; `--check-shape` green;
@@ -404,7 +404,7 @@ safe to interleave afterwards.
     `BoxProvisioning.md#when-to-use-box-provisioning`; Spec 009's rung 3 links to it and
     redirects cannot fix a fragment.
 
-- [ ] **Task 2.9:** Post-merge live sample — **AC5b**
+- [x] **Task 2.9:** Post-merge live sample — **AC5b**
   - Input: the published site, 25–45 seconds after merge
   - Output: recorded status, `location:` header and body size for a sample of the 74
   - Notes: **Every cached response reports `200`**, genuine 404s and genuine redirects
@@ -413,13 +413,80 @@ safe to interleave afterwards.
     redirect, ~189.5 KB for the 404 shell, **584 KB for a real page**. Sample the sections
     that were renamed, including the 3-segment nested paths under *Transports*.
 
-- [ ] **Task 2.10:** Re-probe PR #77's old path
+- [x] **Task 2.10:** Re-probe PR #77's old path
   - Input: `command-processors-and-dispatchers/commandscommanddispatcherandprocessor`
   - Output: a recorded observation of whether it still carries a `location:` header
   - Notes: **The one open platform unknown** — whether GitBook's automatic redirects
     *persist*. They may be tied to revision history, and one session could not test it. This
     is a measurement, not a gate: the `.gitbook.yaml` block ships regardless, because that
     is what it is for. If the header has gone, the block is the reason nothing broke.
+
+### Tasks 2.8–2.10 as executed — 2026-08-08, PR #85 merged as `1bae048`
+
+**PHASE 2 IS COMPLETE. D1, D2 and D3 are delivered and measured on the live site.**
+
+**Task 2.8 — the pre-merge gate, six checks plus two.** All green: `linkcheck.py` clean at 112
+files; `pagelint.py` 0 errors / 802 warnings, unchanged; `--check-shape` 0 failures;
+`--check-redirects` 0 failures at 75 entries and 7,673 bytes; the block holding **75 entries,
+74 of them new**; and #67 re-checked — still OPEN, `updatedAt` 2026-08-03, two comments, both
+the maintainer's. Additionally `BoxProvisioning.md#when-to-use-box-provisioning` is untouched
+and its one inbound link (from `BoxProvisioningConfiguration.md:13`) resolves.
+
+> **One check reported a pass that proves nothing, and it says so.** `pagelint.py --changed
+> origin/master` returned 0 errors, but this PR touches **no file under `contents/`**, so there
+> were no C# blocks in the diff to be strict about. That is the correct result and it is
+> **necessarily vacuous** — recorded rather than presented as evidence the gate works.
+
+**Task 2.9 — AC5b. All 74 keys redirect, and the verdict took two passes to get right.**
+Swept every key in the block:
+
+| Response | Keys | Reading |
+|---|---:|---|
+| `307`, one `location:` header | **67** | cold cache — the true status shows through |
+| `200`, one `location:` header | **7** | **warm cache** — still redirecting |
+| anything with no `location:` header | **0** | — |
+
+**The seven are exactly the paths sampled by hand minutes earlier**, which is what warmed them.
+The sweep's own pass condition required `code == "307"` and therefore labelled seven correct
+redirects `NOT REDIRECTING`. **The data was right and the verdict was wrong**, which is the trap
+requirements §16 documents — *every cached response reports 200, genuine 404s and genuine
+redirects alike; the reliable tell is the `location:` header.* The tool had the tell and the
+condition ignored it.
+
+The three fingerprint classes all reproduced, and one number has moved:
+
+| Path class | Status (cold) | `location:` | Body |
+|---|---|---:|---|
+| key in the block | **307** | 1 | ~192 KB |
+| never existed, not in the block | **404** | 0 | **189,511 bytes** |
+| a real page in the new tree | **200** | 0 | **786 KB – 1.1 MB** |
+
+The 404 shell matches the recorded ~189.5 KB to the byte. **A real page is no longer ~584 KB**
+— today it is 786 KB to 1.1 MB, so the *classes* still separate cleanly but the absolute
+figures have drifted. Compare classes, not remembered sizes. Only **one** of the 74 keys is a
+three-segment path (`guaranteed-at-least-once/azureblobarchiveprovider/azureblobconfiguration`)
+— of the nine pages publishing three deep in the old tree, eight sat under sections whose names
+deliberately did not change. `sitemap-pages.xml` stays at **111**, so no page was lost.
+
+**Task 2.10 — the probe cannot answer its own question, and that is the finding.** PR #77's old
+path still carries `location:` a day later, pointing at
+`understanding-brighter/commandscommanddispatcherandprocessor`. But **that key is in the
+`redirects:` block** — at line 17 since PR #78, and its post-#77 successor is line 49 among
+today's 74. So a `location:` header cannot distinguish *automatic redirects persisting* from
+*our own block firing*. D0's own lesson applies to the probe D0 designed: **never conclude "the
+redirect works" from a single successful request; it proves only that something redirected.**
+
+**What the probe does establish is better than what it was for.** The value at line 17 is the
+**repository** path `contents/CommandsCommandDispatcherandProcessor.md`, and the `location:`
+header names **today's** URL rather than yesterday's intermediate one. So a redirect entry
+**re-resolved itself across a second move of the same page** — predicted by D0, now measured.
+That is the property PR 5 depends on when it re-parents the two Azure Blob pages.
+
+**Whether automatic redirects persist is therefore no longer answerable at this path, and no
+longer load-bearing.** Answering it needs an old path that moved and is *absent* from the
+block, and after PR 2 there is no such path — which is exactly what shipping the block
+belt-and-braces was for. **Do not re-run this probe expecting an answer; record it as closed by
+construction.**
 
 ### Tasks 2.1–2.7 as executed — 2026-08-08
 
