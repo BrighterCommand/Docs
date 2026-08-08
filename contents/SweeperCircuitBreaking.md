@@ -13,7 +13,7 @@ This feature is particularly valuable in scenarios where:
 - **Cascade prevention**: Failing topics would otherwise block the Outbox Sweeper from processing healthy topics
 - **Resource protection**: Repeated failures to unhealthy topics consume resources without benefit
 
-## How It Work
+## How Sweeper Circuit Breaking Works
 
 The Sweeper Circuit Breaker operates at the topic level during Outbox clearing operations:
 

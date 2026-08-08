@@ -564,7 +564,7 @@ slow teaches people to ignore red builds.
 **Goal:** the three `worklist.md` §7 content defects (D9 / P1-4), and the D5 check that
 every split in phases 4–9 depends on.
 
-- [ ] **Task 3.1:** **Verify** the `QueriesAndQueryObjects.md:746` ↔ `QueryPatterns.md`
+- [x] **Task 3.1:** **Verify** the `QueriesAndQueryObjects.md:746` ↔ `QueryPatterns.md`
       duplication
   - Input: `contents/QueriesAndQueryObjects.md` `## Query Patterns` (102 lines) against the
     whole of `contents/QueryPatterns.md`; `worklist.md` §7
@@ -580,7 +580,7 @@ every split in phases 4–9 depends on.
     6.4 treats it as ordinary content and `QueriesAndQueryObjects.md` stays nearer ~579
     lines than below it.
 
-- [ ] **Task 3.2:** Fix `## How It Work` in `SweeperCircuitBreaking.md`
+- [x] **Task 3.2:** Fix `## How It Work` in `SweeperCircuitBreaking.md`
   - Input: `contents/SweeperCircuitBreaking.md:16`
   - Output: the heading reads `## How Sweeper Circuit Breaking Works`
   - Notes: A missing "s", single occurrence in the corpus. The heading is requalified in the
@@ -588,7 +588,7 @@ every split in phases 4–9 depends on.
     item 5). Grep for inbound links to `#how-it-work` before renaming — design §8 records
     none for this page, but re-derive rather than trust it.
 
-- [ ] **Task 3.3:** Fold `HowServiceActivatorWorks.md:147` into
+- [x] **Task 3.3:** Fold `HowServiceActivatorWorks.md:147` into
       `DispatcherConfigurationReference.md`
   - Input: `contents/HowServiceActivatorWorks.md` `## Dispatcher Configuration` (76 lines);
     `contents/DispatcherConfigurationReference.md`
@@ -600,7 +600,7 @@ every split in phases 4–9 depends on.
     the explanation. Run the D5 check over the union of the two pages, not over each
     separately, since this removes duplication rather than moving content.
 
-- [ ] **Task 3.4:** Write the D5 no-information-loss check
+- [x] **Task 3.4:** Write the D5 no-information-loss check
   - Input: the method both Spec 011 demonstrator splits used — every substantive line of the
     original tested for verbatim presence across the resulting pages
   - Output: `spec/010-information_architecture/noloss.py`, taking an original at a git ref
@@ -611,6 +611,156 @@ every split in phases 4–9 depends on.
     expected (folded guidance, repointed anchors, dropped duplicate prose), so the output is
     read, not merely exit-coded. **Prove it fails**: delete a line from a split result and
     confirm it is reported.
+
+### Phase 3 as executed — 2026-08-08
+
+**PHASE 3 IS COMPLETE. D9 and D5 are delivered.** 17 of 52 tasks done. Three pages touched,
+one tool added; no page created, no URL moved, `SUMMARY.md` untouched. All four gates green
+and unchanged in shape: linkcheck 112 files, `--check-shape` 0, `--check-redirects` 0 at 75
+entries. **Pagelint's debt falls 802 → 797**, which is exactly the five C# blocks Task 3.3
+removed — `contents/HowServiceActivatorWorks.md` goes from 22 ` ```csharp ` fences to 17.
+
+**Task 3.1 — NOT DUPLICATE, and that is the passing outcome.** So the `## Query Patterns`
+section stays where it is, Task 6.4 does **not** delete it, D5 does **not** need to run
+against `QueryPatterns.md`, and `QueriesAndQueryObjects.md` lands at **~579** (877 − 179 −
+119) rather than lower.
+
+The two sections pair one-to-one by subject and share no prose at all:
+
+| `QueriesAndQueryObjects.md` §`## Query Patterns` | `QueryPatterns.md` |
+|---|---|
+| `### Pattern: Pagination Query` (23) — `GetOrdersPageQuery` alone | `### Pattern: Offset-Based Pagination` (125) — the same class **plus** `PagedResult<T>`, `OrderDto`, an EF Core handler, when-to-use and trade-offs. `### Pattern: Cursor-Based Pagination` (106) has no counterpart at all |
+| `### Pattern: Search Query` (26) — `SearchProductsQuery`, constructor parameters | `### Pattern: Search with Multiple Criteria` (102) — same class name, **init-only properties**, different fields (`NameFilter`, `CategoryId`, `InStock`), plus `ProductDto` and a handler |
+| `### Pattern: Projection Query` (25) — `GetCustomerSummaryQuery` + `CustomerSummary` | `### Pattern: Simple Projection` (53) — `GetCustomerSummariesQuery` (**plural, no parameters**) + `CustomerSummaryDto` + a handler |
+| `### Pattern: Aggregation Query` (26) — `GetSalesStatisticsQuery` + `SalesStatistics` (4 fields) | `### Pattern: Summary/Statistics` (70) — same query class, `SalesStatisticsDto` with **5** fields, plus a handler |
+
+Measured rather than judged: of the section's **58 substantive lines, 32 (55%) appear
+verbatim somewhere in `QueryPatterns.md`** — and **every one of the 32 is a code fragment or
+a fence** (`PageNumber = pageNumber;`, `public int PageSize { get; }`, ` ```csharp `). **Not
+one prose line is shared.** A 55% line overlap that is 0% prose overlap is the signature of
+two pages using the same worked domain, not of one copied from the other.
+
+The relationship is **level of detail**: the page about query objects shows the query object
+*shape*; the page about patterns shows the end-to-end recipe, handler and data access
+included. That is the relationship a Reference page has with a How-to, and deleting either
+side would lose material.
+
+> **Recorded, deliberately not acted on: the two pages disagree about the same code.**
+> `SalesStatistics` against `SalesStatisticsDto`, `CustomerSummary` against
+> `CustomerSummaryDto`, and `SearchProductsQuery` declared with constructor parameters on one
+> page and init-only properties on the other. Same names, different definitions. That is a
+> divergence risk and a candidate for a later spec; it is **not** duplication, and fixing it
+> is barred here by *move the text, do not improve it* and by Appendix C's rule against
+> rewriting Darker content.
+
+**Task 3.2 — done, and the anchor check re-derived rather than trusted.** `## How It Work` →
+`## How Sweeper Circuit Breaking Works`, which is the corpus's house form (`## How Box
+Provisioning Works`, `## How Default Mappers Work`, `## How Request Validation Works`) and
+collides with no existing `##`. Design §8 records no inbound links for this page; re-derived
+across `contents/`, `SUMMARY.md` **and** `.gitbook.yaml`, `#how-it-work` appears **zero**
+times, and the string `How It Work` no longer appears anywhere in the corpus. The page stays
+at 527 lines — a heading rename is one line in, one line out.
+
+**Task 3.3 — the fold, and the duplicate copy was also wrong.** This is the finding of the
+phase. The removed block configured subscriptions with
+
+```csharp
+options.AddSubscription<MyCommand>(new Subscription<MyCommand>(...));
+```
+
+and **`AddSubscription` does not exist.** `ConsumersOptions` (`src/Paramore.Brighter.Service
+Activator.Extensions.DependencyInjection/ConsumersOptions.cs`) exposes `Subscriptions`, an
+`IEnumerable<Subscription>`; the only `AddSubscription` in the source is
+`Dispatcher.AddSubscriptionToSubscriptions`, which is **private**. The reference page's form
+is the correct one and matches the working sample at
+`samples/TaskQueue/RMQTaskQueueWithDLQ/GreetingsReceiverConsole/Program.cs:80` —
+`options.Subscriptions = subscriptions;`. **So the overlap was not merely redundant: a reader
+who followed the explanation page would not have compiled.** Duplication rots asymmetrically,
+and the copy that rots is the one nobody consults for parameters.
+
+What actually moved, which is less than the 76 lines suggests:
+
+| | |
+|---|---|
+| `HowServiceActivatorWorks.md` | **486 → 416**, not 410: the 76-line section is replaced by a 6-line pointer, so the delta is **−70** |
+| `DispatcherConfigurationReference.md` | **233 → 233** — both folds extend existing bullets, so no line is added |
+| Folded in | the **TimeOut trade-off pair** (shorter = responsive to shutdown, higher CPU; longer = lower CPU, slower shutdown), and the **ordering caveat on multiple Performers**. The reference noted ordering loss only under Proactor |
+| Not folded in | the `AddSubscription` block (does not compile), and the `messagePumpType` / `requeueCount` material, both of which the reference already covers more fully — `RequeueCount` there also points at [Handler Failure](/contents/HandlerFailure.md) |
+| Anchors | **zero** inbound links to `#dispatcher-configuration` or to any of the five sub-headings, across `contents/`, `SUMMARY.md` and `.gitbook.yaml`. Every inbound link to this page targets the page, not a fragment. No repoint |
+
+**D5 over the union returned 40 lines, and every one is accounted for**: 15 for the
+non-compiling `AddSubscription` block, 5 sub-headings, 7 `noOfPerformers` lines (3 folded
+into the reference, the rest restatement), 4 `messagePumpType`, 5 `timeOut` (2 folded), 3
+`requeueCount`, and **2 in the reference page itself** — the two bullets whose old, shorter
+text no longer exists verbatim because the fold extended them. The check names both, with
+their replacements as the nearest surviving line, which is the fold showing up as what it is.
+
+**Task 3.4 — `noloss.py`, and calibrating it produced a finding.** It takes originals at a
+git ref and results in the working tree (or at `--result-ref`), and reports every substantive
+line surviving nowhere. Both sides accept several paths, because Tasks 3.3 and 4.3 fold rather
+than move and their check is the union.
+
+Three design points, all in the docstring: a line is substantive if it holds an alphanumeric
+character; presence is set membership, not multiplicity; and **a heading is compared by the
+anchor it produces**, via `linkcheck.py`'s own `slug()`, imported rather than copied.
+That last is not a softening — a section that becomes a page promotes its headings and may
+shed their bold, and `slug()` ignores both, so the anchor survives and nothing is lost.
+Requalifying a heading under rule 3a **does** change the slug and **is** reported, which is
+exactly the class of change standing obligation 3 exists to catch. On the first demonstrator
+it accounts for 7 of 53 lines; the other 20 heading lines are genuine requalifications and
+are still reported.
+
+> **The calibration finding: 011's recorded 24 and 4 were the *prose* lines.** Run against
+> the two demonstrators (`758f391`, `df2d3a5`) this tool returns **46 and 11**, and
+> reproduces both recorded figures exactly as subsets — the 23 folded `Best Practices` items
+> plus one repointed anchor on the first, the three stranded links plus the fold's lead-in on
+> the second. The extra 22 and 7 are 20 requalified headings, 2 lines merged into surviving
+> sentences, 4 structural labels dropped in a fold, and 3 lines of the two `Quick Migration
+> Guide` blocks — the latter visible in 011's own debt figure falling 804 → 802.
+> **Nothing here contradicts 011**: every extra line is documented somewhere in its write-up,
+> just not in the D5 count. **A figure that was never wrong can still not be the whole
+> answer** — and the lines it did not cover are the anchor breaks, which is the half you would
+> choose to keep if you could only keep one.
+
+**Proved red four ways, with the mutation asserted before each result was read** — session
+15's first lesson applied:
+
+| Probe | Result |
+|---|---|
+| identity, page against itself at `HEAD` | **0 of 92** — no false positives |
+| one substantive line deleted | reported, exit 1; file restored byte-identical |
+| heading promoted a level *and* made bold | **not** reported, counted as *matched on its anchor alone* |
+| heading requalified (`## What are Quorum Queues?` → `## What RabbitMQ Quorum Queues Are`) | **reported** — the allowance is not a hole |
+
+Argument handling exits 2 for a missing `--ref`, a missing `--result`, a path absent at the
+ref, and a path given before either flag.
+
+> **A restore step ate an uncommitted edit.** The `pagelint --changed` probe below finished
+> with `git checkout -- <page>`, which restores from `HEAD` — and the page also held Task
+> 3.3's fold, uncommitted. The probe's own "restored byte-identical" assertion caught it by
+> failing, and the edit was redone and re-verified against the same D5 figure of 40.
+> **`git checkout --` is not an undo for a probe applied on top of uncommitted work**; copy
+> the file aside and restore from the copy.
+
+**`pagelint.py --changed` is *still* vacuous here, and the handover predicted otherwise.**
+`PROMPT.md` said Phase 3 is the first PR where it stops being vacuous, on the reasoning that
+Phase 2 touched no file under `contents/`. Three pages under `contents/` are touched now, and
+the run still reports 0 errors **necessarily** — because the rule is strict per *block
+overlapping the diff*, and this diff is five single prose lines:
+
+```text
+contents/DispatcherConfigurationReference.md: [(59, 59), (64, 64)]
+contents/HowServiceActivatorWorks.md:         [(149, 149), (151, 151)]
+contents/SweeperCircuitBreaking.md:           [(16, 16)]
+```
+
+No C# block overlaps any of them. **File granularity was the wrong unit for the prediction**;
+Q4's design is block granularity, deliberately, so that fixing a typo on a 700-line page
+obliges nothing. The gate was confirmed live by probe rather than inferred from a pass: a
+`using`-less C# block inserted into the changed page reported
+`HowServiceActivatorWorks.md:153: USING DIRECTIVES` as an **error** under `--changed` and a
+**warning** repo-wide. **`--changed` first bites for real in Phase 4**, which is the first
+phase to create a page — and a new page is 100% added lines, so all of its blocks are strict.
 
 ---
 
@@ -828,16 +978,19 @@ the site publishes the deployed version. Do not update behaviour from that worki
     on here. `DarkerAndBrighterPipelines.md` is thin at 53 lines and that is within the
     corpus's floor — `OutboxPattern.md` is 45 and `AzureBlobArchiveProvider.md` is 42.
 
-- [ ] **Task 6.4:** Split `QueriesAndQueryObjects.md` — **gated by Task 3.1**
+- [ ] **Task 6.4:** Split `QueriesAndQueryObjects.md` — **the Task 3.1 gate is OPEN**
   - Input: 877 lines; `Query Result Types` (179), `Validation in Query Objects` (119); and
     Task 3.1's finding on `## Query Patterns` (102)
   - Output: `QueryResultTypes.md` (Explanation) and `QueryObjectValidation.md` (How-to),
     nested under `QueriesAndQueryObjects.md`; core → ~579, or lower if 3.1 found duplication
-  - Notes: **Do not start this task before Task 3.1 returns.** If it found duplication, the
-    `## Query Patterns` section is deleted and replaced with a link to `QueryPatterns.md`,
-    and D5 runs against `QueryPatterns.md` as well as against this original. If it did not,
-    the section stays and the core lands nearer ~579. Either outcome is valid; neither
-    blocks the two extractions, which are independent of it.
+  - Notes: ~~Do not start this task before Task 3.1 returns.~~ **Task 3.1 returned
+    2026-08-08: NOT DUPLICATE.** So take the second branch — **the `## Query Patterns`
+    section stays**, it is *not* replaced by a link, **D5 does not run against
+    `QueryPatterns.md`**, and the core lands at **~579**. Only the two extractions remain,
+    and they were always independent of the gate. The evidence is in *Phase 3 as executed*:
+    the two sections pair one-to-one by subject, share 32 of 58 substantive lines verbatim
+    and **zero prose lines**, and differ in their result types on all four. Do not re-verify
+    it — but do note the divergence recorded there, which this task must not try to fix.
 
 - [ ] **Task 6.5:** Split `DarkerBasicConfiguration.md`
   - Input: 510 lines; `Darker Configuration Options` (75)
