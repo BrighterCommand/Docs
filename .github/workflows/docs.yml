@@ -52,6 +52,30 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
         run: python3 tools/pagelint.py --changed "origin/$BASE_REF"
 
+      # Spec 010 D3/D7, Q10's answer. Both read only the repository, so neither can
+      # make the build flaky. `--verify` is deliberately NOT here: it fetches the live
+      # sitemap, and a check whose failure mode is "the site was slow" teaches people
+      # to ignore red builds.
+      #
+      # --check-shape asserts design §4's S1/S2/S3 — at least 2 pages per section, at
+      # most 12 top-level entries, at most 4 URL segments — plus that no SUMMARY.md
+      # heading carries leading whitespace. It was red on the 19-section tree this
+      # spec replaced (6 singleton sections, 2 sections over 12 entries, and the
+      # leading space at SUMMARY.md:154), which is how it proved it was not vacuous.
+      #
+      # --check-redirects asserts every redirect value resolves to a file that
+      # exists, every key is a path that no longer publishes, and every byte of
+      # .gitbook.yaml is printable ASCII. That last one is not a style rule: two
+      # U+200B zero-width spaces in this repo's `structure:` key meant GitBook never
+      # read that block, silently, for months — and they came from GitBook's own
+      # published example, which still carries them.
+      #
+      # These gate rather than being run once at merge, because a redirect block that
+      # is complete at merge and incomplete three PRs later is the same silent
+      # failure in slow motion.
+      - run: python3 tools/urlmap.py --check-shape
+      - run: python3 tools/urlmap.py --check-redirects
+
   # Spec 009 D9 adds tools/versioncheck.py, which diffs the versions pinned in
   # tutorial prose against the latest non-prerelease on NuGet. The job is shaped
   # now so landing D9 is one file, not a workflow restructure.

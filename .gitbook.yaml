@@ -15,3 +15,89 @@ redirects:
   # is a safety net rather than the mechanism. D0's probe key confirmed that keys in
   # this block ARE read and honoured; it was removed once measured (PR #79).
   command-processors-and-dispatchers/commandscommanddispatcherandprocessor: contents/CommandsCommandDispatcherandProcessor.md
+
+  # Spec 010 D2, PR 2.  The 74 pages whose published path the twelve-section tree
+  # moves, emitted by `python3 tools/urlmap.py --redirects <old SUMMARY.md>` and
+  # appended programmatically from that output -- NOT pasted from GitBook's
+  # documented example, which is where this file's two U+200B zero-width spaces came
+  # from and which still carries them today.  --check-redirects asserts every byte in
+  # this file is printable ASCII, which is the assertion that would have caught them.
+  #
+  # Written once.  A value is a REPOSITORY path and GitBook resolves it to wherever
+  # that page currently publishes, so an entry does not go stale when its page moves
+  # again -- measured in D0, and it is what lets PR 5 re-parent two pages without
+  # rewriting anything here.
+  brighter-configuration/commandprocessorconfigurationreference: contents/CommandProcessorConfigurationReference.md
+  brighter-configuration/dispatcherconfigurationreference: contents/DispatcherConfigurationReference.md
+  brighter-configuration/howconfiguringthecommandprocessorworks: contents/HowConfiguringTheCommandProcessorWorks.md
+  brighter-configuration/howconfiguringthedispatcherworks: contents/HowConfiguringTheDispatcherWorks.md
+  brighter-configuration/pipelinevalidation: contents/PipelineValidation.md
+  brighter-request-handlers-and-middleware-pipelines/agreementdispatcher: contents/AgreementDispatcher.md
+  brighter-request-handlers-and-middleware-pipelines/asyncdispatcharequest: contents/AsyncDispatchARequest.md
+  brighter-request-handlers-and-middleware-pipelines/buildinganasyncpipeline: contents/BuildingAnAsyncPipeline.md
+  brighter-request-handlers-and-middleware-pipelines/buildingapipeline: contents/BuildingAPipeline.md
+  brighter-request-handlers-and-middleware-pipelines/dispatchingarequest: contents/DispatchingARequest.md
+  brighter-request-handlers-and-middleware-pipelines/featureswitches: contents/FeatureSwitches.md
+  brighter-request-handlers-and-middleware-pipelines/implementingahandler: contents/ImplementingAHandler.md
+  brighter-request-handlers-and-middleware-pipelines/implementingasynchandler: contents/ImplementingAsyncHandler.md
+  brighter-request-handlers-and-middleware-pipelines/policyfallback: contents/PolicyFallback.md
+  brighter-request-handlers-and-middleware-pipelines/policyretryandcircuitbreaker: contents/PolicyRetryAndCircuitBreaker.md
+  brighter-request-handlers-and-middleware-pipelines/requests-commands-and-events: contents/Requests, Commands and Events.md
+  brighter-request-handlers-and-middleware-pipelines/requestvalidation: contents/RequestValidation.md
+  brighter-request-handlers-and-middleware-pipelines/returningresultsfromahandler: contents/ReturningResultsFromAHandler.md
+  brighter-request-handlers-and-middleware-pipelines/usingthecontextbag: contents/UsingTheContextBag.md
+  commands-processors-and-dispatchers/commandscommanddispatcherandprocessor: contents/CommandsCommandDispatcherandProcessor.md
+  cqrs-patterns/cqrswithbrighteranddarker: contents/CQRSWithBrighterAndDarker.md
+  darker-configuration/darkerbasicconfiguration: contents/DarkerBasicConfiguration.md
+  darker-query-handlers-and-middleware-pipelines/implementaqueryhandler: contents/ImplementAQueryHandler.md
+  darker-query-handlers-and-middleware-pipelines/queriesandqueryobjects: contents/QueriesAndQueryObjects.md
+  darker-query-handlers-and-middleware-pipelines/querypatterns: contents/QueryPatterns.md
+  darker-query-handlers-and-middleware-pipelines/querypipeline: contents/QueryPipeline.md
+  database-provisioning/boxprovisioning: contents/BoxProvisioning.md
+  database-provisioning/boxprovisioningconfiguration: contents/BoxProvisioningConfiguration.md
+  database-provisioning/boxprovisioningupgrade: contents/BoxProvisioningUpgrade.md
+  event-driven-architectures/eventcarriedstatetransfer: contents/EventCarriedStateTransfer.md
+  event-driven-architectures/eventdrivencollaboration: contents/EventDrivenCollaboration.md
+  event-driven-architectures/microservices: contents/Microservices.md
+  event-driven-architectures/outboxpattern: contents/OutboxPattern.md
+  faq/faq: contents/FAQ.md
+  guaranteed-at-least-once/awssqsconfiguration: contents/AWSSQSConfiguration.md
+  guaranteed-at-least-once/azureblobarchiveprovider: contents/AzureBlobArchiveProvider.md
+  guaranteed-at-least-once/azureblobarchiveprovider/azureblobconfiguration: contents/AzureBlobConfiguration.md
+  guaranteed-at-least-once/azureservicebusconfiguration: contents/AzureServiceBusConfiguration.md
+  guaranteed-at-least-once/brightercontrolapi: contents/BrighterControlAPI.md
+  guaranteed-at-least-once/kafkaconfiguration: contents/KafkaConfiguration.md
+  guaranteed-at-least-once/postgresqlmessagebroker: contents/PostgreSQLMessageBroker.md
+  guaranteed-at-least-once/rabbitmqconfiguration: contents/RabbitMQConfiguration.md
+  guaranteed-at-least-once/rabbitmqconnectionstability: contents/RabbitMQConnectionStability.md
+  guaranteed-at-least-once/rabbitmqdurability: contents/RabbitMQDurability.md
+  guaranteed-at-least-once/rabbitmqmigratetoquorumqueues: contents/RabbitMQMigrateToQuorumQueues.md
+  outbox-and-inbox/dapperoutbox: contents/DapperOutbox.md
+  outbox-and-inbox/dynamoinbox: contents/DynamoInbox.md
+  outbox-and-inbox/dynamooutbox: contents/DynamoOutbox.md
+  outbox-and-inbox/efcoreoutbox: contents/EFCoreOutbox.md
+  outbox-and-inbox/mongodbinbox: contents/MongoDBInbox.md
+  outbox-and-inbox/mongodboutbox: contents/MongoDBOutbox.md
+  outbox-and-inbox/mssqlinbox: contents/MSSQLInbox.md
+  outbox-and-inbox/mssqloutbox: contents/MSSQLOutbox.md
+  outbox-and-inbox/mysqlinbox: contents/MySQLInbox.md
+  outbox-and-inbox/mysqloutbox: contents/MySQLOutbox.md
+  outbox-and-inbox/postgresinbox: contents/PostgresInbox.md
+  outbox-and-inbox/postgresoutbox: contents/PostgresOutbox.md
+  outbox-and-inbox/sqliteinbox: contents/SqliteInbox.md
+  outbox-and-inbox/sqliteoutbox: contents/SqliteOutbox.md
+  overview/basicconcepts: contents/BasicConcepts.md
+  overview/showmethecode: contents/ShowMeTheCode.md
+  overview/whybrighter: contents/WhyBrighter.md
+  scheduler/awsscheduler: contents/AwsScheduler.md
+  scheduler/azurescheduler: contents/AzureScheduler.md
+  scheduler/hangfirescheduler: contents/HangfireScheduler.md
+  scheduler/inmemoryscheduler: contents/InMemoryScheduler.md
+  scheduler/quartzscheduler: contents/QuartzScheduler.md
+  scheduler/tickerqscheduler: contents/TickerQScheduler.md
+  task-queues/taskqueuepattern: contents/TaskQueuePattern.md
+  under-the-hood/howbrighterworks: contents/HowBrighterWorks.md
+  under-the-hood/howserviceactivatorworks: contents/HowServiceActivatorWorks.md
+  under-the-hood/reactorandproactor: contents/ReactorAndProactor.md
+  using-an-external-bus/defaultmessagemappers: contents/DefaultMessageMappers.md
+  using-an-external-bus/errorhandlingoptions: contents/ErrorHandlingOptions.md
