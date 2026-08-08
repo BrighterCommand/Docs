@@ -1,6 +1,8 @@
 # Spec 010: Information Architecture — Tasks
 
-**Created:** 2026-08-08 · **Status:** Draft, for review
+**Created:** 2026-08-08 · **Status:** **REVIEWED AND APPROVED 2026-08-08** — five findings
+applied in place, four tallies and one omission; see **§4**. No verdict, threshold, placement
+or ruling moved.
 **Works from:** `design.md` (approved 2026-08-08, `.design-approved`) and `requirements.md`
 (approved 2026-08-06)
 **Executes against:** `spec/011-authoring_conventions/worklist.md` (42 rows, 26 `split`, 16 `keep`)
@@ -22,13 +24,21 @@ design deliberately left to this phase.
 | **2** | **The tree.** One PR, and the one that must not be partial | 10 | D1, D2, D3 |
 | **3** | Content defects, the duplication **verification**, and the split harness | 4 | D9, D5 |
 | **4** | Scheduler family — 6 rows, 2 new pages | 4 | D4 |
-| **5** | Outbox and Inbox — 4 rows, 7 new pages, 19 of the 34 anchor links | 5 | D4 |
+| **5** | Outbox and Inbox — 4 rows, **8** new pages, 24 of the 34 anchor links | 5 | D4 |
 | **6** | Darker — 5 rows, 12 new pages | 5 | D4 |
 | **7** | Using an External Bus — 4 rows, 3 new pages | 4 | D4 |
 | **8** | Transports — 2 rows, 2 new pages | 2 | D4 |
 | **9** | The rest of §6d — 5 rows, 5 new pages | 6 | D4 |
 | **10** | `llms.txt` — **re-scope D6 first; the platform already does most of it (§3)** | 4 | D6 |
 | **11** | Glossary links, the two carried-over chores, acceptance | 5 | D8, P2-1, P2-3 |
+
+> **The new-page counts in that table count what each phase *creates*, and they sum to 32.**
+> Corrected at review: phase 5 read *7 new pages*, which is the number landing in *Outbox and
+> Inbox* — design §7.6's section column — rather than the number Task 5.4 and its siblings
+> create. `InMemoryTransport.md` is created in phase 5 and files into *Transports*, so the
+> phase creates **8**. As written the column summed to 31 against Appendix A's 32, which is
+> the arithmetic that exposed it. **Appendix A is the authority on placement; this column
+> counts authorship.**
 
 **PRs 4–9 are individually shippable and individually abandonable.** AC7 is per-split and
 **partial completion is an explicit valid end state** — the maintainer's ruling. Nothing in
@@ -58,7 +68,7 @@ not at all.
   runs last among the content phases. If phases are abandoned it still runs, over a smaller
   corpus.
 
-### The standing obligations — every split task in phases 4–9 owes all six
+### The standing obligations — every split task in phases 4–9 owes all seven
 
 Do not restate these in each task; they are assumed by all of them.
 
@@ -79,6 +89,19 @@ Do not restate these in each task; they are assumed by all of them.
    A block moved verbatim that cannot carry its `using` directives marks the omission
    `// ...`, which downgrades to a warning and never silences. **Do not backfill namespaces
    you have not checked.**
+7. **Append a row to `spec/011-authoring_conventions/pagetypes.tsv` for every page created,
+   and edit the row for every page retyped.** Append; never re-sort — the file's order
+   follows no single rule and re-sorting churns 57 reviewed rows for nothing. **Added at
+   review, because nothing else in this document required it**: the TSV is 110 rows against a
+   corpus that ends at 142, `apply_banners.py` reads it, and a version bump would therefore
+   have **skipped all 32 new pages**. That is not hypothetical — Spec 011's Phase 6 splits
+   left five pages out of the TSV for exactly this reason, fixed in `5498cd6`. Session 9's two
+   parity checks (banner type ↔ `verdict`, banner version ↔ `applies`, both 110/110) would
+   have started failing on 32 pages, and **`pagelint.py` never reads the TSV, so no tool sees
+   it** — the same invisible-to-a-green-build shape as 011's AC5 failure. Two pages are
+   *retypes* rather than creations: `ReplayOnSeen.md` (Task 5.2, Reference → Explanation) and
+   `InMemoryOptions.md` (Task 5.5, Reference → How-to). The sweep now preserves a
+   *Prerequisites* segment (`5498cd6`), so re-running it after an edit is safe.
 
 ### Two conventions this document holds itself to
 
@@ -194,6 +217,58 @@ that was asked. **All of this is live on our site today, automatic, with no conf
 > page — the one this repo's `.gitbook.yaml` was written from — **still contains U+200B in
 > its `### Structure` heading today**, fetched 2026-08-08. The contamination recorded in
 > requirements §2.4 is present, not historical. **Type the block; never paste it.**
+
+---
+
+## 4. What the tasks review changed — 2026-08-08
+
+**Five findings: four tallies and one omission. No verdict, threshold, placement or ruling
+moved.** Each is corrected in place above, with a note saying what it said before. The
+figures that reproduced are listed after, so they are cited rather than recomputed.
+
+| # | Finding | Was | Is |
+|---|---|---|---|
+| 1 | Phase 5's new-page count, §1's table and the phase goal | 7 | **8** — the column summed to 31 against Appendix A's 32 |
+| 2 | Phase 5's share of the anchor links, in **three** places | 19 of 34 | **24** links, **11** of the ≈19 repoints |
+| 3 | Appendix A's depth-table introduction, contradicting its own rows | six sources, other 20 | **seven** sources, other **19** |
+| 4 | `DefaultMessageMappers.md`, Task 7.2 against Task 7.1 | 479 | **478** — the file has a trailing newline |
+| 5 | **`pagetypes.tsv` was named once in the whole document** | — | **standing obligation 7**, plus a parity line in Task 11.4 |
+
+**Finding 5 is the one that could have broken something.** Nothing required the 32 new pages
+to be added to `pagetypes.tsv`, which is 110 rows against a corpus ending at 142.
+`apply_banners.py` reads that file, so the next version bump would have skipped all 32 — the
+identical defect Spec 011's Phase 6 splits produced and `5498cd6` fixed. **No tool checks the
+parity**: `pagelint.py` never reads the TSV, so a green build says nothing about it, which is
+the same shape as 011's AC5 failure. Two *retypes* were half-covered — Task 5.2 named the TSV,
+Task 5.5 did not.
+
+**Findings 1–3 share a mechanism worth naming: each number was right about something.** Seven
+is the count of new pages landing in *Outbox and Inbox*; nineteen is the whole-spec repoint
+total; six-plus-twenty sums to the correct 26. A figure that is true of a neighbouring quantity
+survives review because it reads true in the sentence it is in. **Enumerate the table; do not
+read its introduction.**
+
+**Re-derived at review and reproduced exactly — cite these:**
+
+- **52 tasks**, and all eleven per-phase counts in §1's table
+- **Appendix A**: 32 rows, 5 top-level, 27 nested, maximum depth 4 reached by exactly two
+  pages; the section allocation reproduces design §7.6 **row for row**
+- **Appendix A's entries table: all twelve rows**, computed by applying its nesting to
+  `SUMMARY.target.md` — *Transports* 7, *Outbox and Inbox* **9**, *Scheduler* 4, maximum 10.
+  **S1, S2 and S3 all hold**, with two entries of headroom under S2
+- **All 36 quoted `##` section spans**, and **25 of 26** whole-page line counts (the 26th is
+  finding 4). Every "after" figure is consistent arithmetic on them: 517−151−169=197,
+  578−212=366, 695−365=330, 1291−985=306, 928−159−53=716, 615−245=370, 687−247=440
+- **74 moved / 36 unchanged**, recomputed from `SUMMARY.target.md` against today's `SUMMARY.md`
+- **26 split rows, 16 `keep` rows, 16 distinct `keep` pages** — §2's third finding reproduces
+- `## How It Work` at `SweeperCircuitBreaking.md:16`, the only occurrence in the corpus
+- `AWSSQSConfiguration.md` at **615** is right under both counting conventions, exactly as
+  Task 8.1 claims: the file has no trailing newline
+- `## Transformers` (119) and `## Legacy: Using Polly v7 Policies (Deprecated)` (151) are each
+  the **last** `##` on their page, which is why both notes flag the counting artefact
+- `ErrorHandlingOptions.md` is **already nested** under `HandlerFailure.md` in
+  `SUMMARY.target.md`, so Task 9.6 moves no URL and Appendix A's *only two pages re-parent*
+  holds
 
 ---
 
@@ -455,8 +530,15 @@ overview. 6 rows, 2 new pages, 8 pages touched. Design §7.1.
 
 ## Phase 5 — Outbox and Inbox (PR 5)
 
-**Goal:** 4 rows, 7 new pages, and **19 of the 34 measured inbound anchor links land here**
-— more than half the anchor cost of all 26 splits. Design §7.4, §7.5, §8.
+**Goal:** 4 rows, **8** new pages — seven landing in *Outbox and Inbox*, plus
+`InMemoryTransport.md` which files into *Transports* — and **24 of the 34 measured inbound
+anchor links land here**, carrying **11 of the ≈19 repoints**. More than half the anchor cost
+of all 26 splits sits in this phase on either measure. Design §7.4, §7.5, §8.
+
+> **Both figures corrected at review.** This read *7 new pages* and *19 of the 34*. Nineteen
+> is the **whole-spec repoint** total — the sum of design §8's *moves? yes* rows — and was
+> attributed to this phase in three places. Tasks 5.1 and 5.2 carry 16 + 8 = **24** inbound
+> links, of which 5 + 6 = **11** need repointing. The conclusion is untouched.
 
 - [ ] **Task 5.1:** Split `BrighterOutboxSupport.md`
   - Input: `## Outbox Archiver` (151) and `## Complete Example: Transactional Messaging`
@@ -539,7 +621,9 @@ overview. 6 rows, 2 new pages, 8 pages touched. Design §7.1.
     (99), `Environment-Specific Configuration` (114); page → ~330
   - Output: core keeps its filename and its *Brighter Configuration* slot, **retyped
     Reference → How-to**; five inbound links repointed
-  - Notes: What is left is a genuine testing guide, which is why the type changes. The five
+  - Notes: What is left is a genuine testing guide, which is why the type changes. **The
+    retype is a `pagetypes.tsv` edit plus a re-run of `apply_banners.py`**, as in Task 5.2 —
+    standing obligation 7. The five
     links are from `ShowMeTheCode.md`, `FAQ.md`, `V10MigrationGuide.md`, `Glossary.md` and
     `SUMMARY.md` — **re-derive them rather than trusting this list**, and check whether each
     wants the testing guide or one of the three new pages. This page was the corpus's worst
@@ -639,7 +723,8 @@ Design §7.5, `worklist.md` §5c.
     shallowest source**.
 
 - [ ] **Task 7.2:** Establish `DefaultMessageMappers.md` as the default route — §5c row 1
-  - Input: `MessageMappers.md`; `DefaultMessageMappers.md` (479 lines, already typed How-to)
+  - Input: `MessageMappers.md`; `DefaultMessageMappers.md` (**478** lines, already typed
+    How-to)
   - Output: a link and a pointer from `MessageMappers.md`; **no new page**
   - Notes: §5c calls for a "default mapper how-to" and it **already exists**. This row is
     *establish it as the default route*, not *write it*. `worklist.md` §8 lists "how to use
@@ -878,7 +963,11 @@ implement whatever the ruling leaves.
     that had never fired once, invisible to everything but an enumeration. **To check
     parity, enumerate; do not read.** AC7 is per-split: record which splits landed, and
     **partial completion is a valid end state** — the spec is accepted on the splits it
-    landed, not blocked on the ones it did not. AC8 requires all **16** `keep` rows honoured,
+    landed, not blocked on the ones it did not. **Check `pagetypes.tsv` parity by enumeration**
+    — one row per page under `contents/`, every banner *type* matching its `verdict` and every
+    banner *version* matching its `applies`. Session 9 measured 110/110 on both by hand and no
+    tool checks either, so an unfixed standing obligation 7 is invisible here unless it is
+    walked. AC8 requires all **16** `keep` rows honoured,
     naming **16 distinct pages** — see §2's third finding, and note that requirements §12 and
     §14 say fifteen. Verify by set comparison against `worklist.md`, not by eye.
 
@@ -968,9 +1057,9 @@ each intermediate path.
 
 ### What the depth measurement changed
 
-Every split source page's published depth in `SUMMARY.target.md`, via `tools/urlmap.py`.
-Six sources sit **at three segments**, and under the old S3 ceiling of 3 nothing could nest
-beneath them:
+Every split source page's published depth in `SUMMARY.target.md`, via `urlmap.py`.
+**Seven** of the 26 sources sit **at three segments**, and under the old S3 ceiling of 3
+nothing could nest beneath them:
 
 | Source page | Published path | Depth |
 |---|---|---:|
@@ -981,7 +1070,14 @@ beneath them:
 | `AwsScheduler.md` | `scheduler/brighterschedulersupport/awsscheduler` | **3** |
 | `AzureScheduler.md` | `scheduler/brighterschedulersupport/azurescheduler` | **3** |
 | `InMemoryScheduler.md` | `scheduler/brighterschedulersupport/inmemoryscheduler` | **3** |
-| *the other 20 sources* | | 2 |
+| *the other 19 sources* | | 2 |
+
+> **Corrected at review: this said "Six sources" and "the other 20", while listing seven
+> rows.** Enumerated against `SUMMARY.target.md`, it is **7 at three segments and 19 at two**,
+> summing to the 26 split sources. Six plus twenty also sums to 26, which is why nothing ever
+> looked wrong — the pair was internally consistent and both halves were off by one. Design
+> §16 finding 3 was the same shape: prose contradicting the table beneath it. **To check a
+> table, enumerate it; do not read its introduction.**
 
 **That ceiling was an assumption, and measuring it dissolved the problem.** Design §17 has
 the evidence: GitBook's own documentation publishes 30 pages at four segments, and PRs
@@ -999,7 +1095,10 @@ Where each placement stands now:
   `DefaultMessageMappers.md`, which donates 145 of its 264 lines. Now an editorial choice —
   transforms belong with mappers generally — where it used to be forced.
 
-Reproduce the depths:
+Reproduce the depths. **Before PR 2 lands, point both paths at the files that exist** —
+`spec/010-information_architecture/urlmap.py` and `SUMMARY.target.md` — because Task 2.1 has
+not yet moved the tool and Task 2.4 has not yet installed the tree. The form below is the one
+that works *after* PR 2, when `SUMMARY.md` **is** the target tree:
 
 ```bash
 python3 - <<'PY'
@@ -1062,10 +1161,19 @@ per split**, because the splits themselves add links.
 | 9.4 | `PolicyRetryAndCircuitBreaker.md` | 1 | 1 | — |
 | — | the other 19 split pages | **0** | | |
 
-**Phase 5 carries 19 of the 34** — more than half the anchor cost of the whole spec sits in
-two tasks. For scale, the `BrighterBasicConfiguration.md` split alone cost **28 repoints
-across 20 pages** in Spec 011; all 26 splits here cost ≈19, because Spec 011 counted its
-anchors *during* the work and this design counted them *before* it.
+**Phase 5 carries 24 of the 34 links and 11 of the ≈19 repoints** — more than half the anchor
+cost of the whole spec sits in two tasks on either measure. For scale, the
+`BrighterBasicConfiguration.md` split alone cost **28 repoints across 20 pages** in Spec 011;
+all 26 splits here cost ≈19, because Spec 011 counted its anchors *during* the work and this
+design counted them *before* it.
+
+> **Corrected at review: this said "Phase 5 carries 19 of the 34".** Nineteen is the
+> **whole-spec repoint** figure — the sum of design §8's *moves? yes* rows, and of the Repoint
+> column in the table above — and it had been attributed to phase 5 in three places, here and
+> twice in §1 and phase 5's own goal. The two numbers that describe phase 5 are **24** links
+> and **11** repoints. Nothing about the conclusion changes: a figure that is right about the
+> spec and wrong about the phase is the easiest kind to carry, because it reads true in both
+> sentences.
 
 **The standing obligation is `grep` before the move, not `linkcheck.py` after it.**
 `linkcheck.py` catches a broken anchor, which is worth having — but redirects cannot fix a
@@ -1105,10 +1213,15 @@ Collected because every one of these has cost a rework somewhere in this program
 - **Do not trust a green check to mean a check ran.** Prove `--check-shape`, `--check-redirects`
   and the D5 script red on purpose before trusting them green. `pagelint.py --changed`
   reporting 0 errors was indistinguishable from a vacuous run until someone forced it.
-- **Do not re-derive a figure from memory — re-derive it from the corpus.** **Fourteen**
-  figures in this programme have now been wrong — thirteen before this document, plus the
-  `keep`-row page count above. Five trace to one wrong line-counting call and two to reading
-  a total instead of enumerating it. A page's length is `len(text.splitlines())`.
+- **Do not re-derive a figure from memory — re-derive it from the corpus.** **Eighteen**
+  figures in this programme have now been wrong — thirteen before this document, the
+  `keep`-row page count above, and **four more found at this document's own review** (§4).
+  Five trace to one wrong line-counting call, three to reading a total instead of enumerating
+  it, and three to a number that was true of a neighbouring quantity. A page's length is
+  `len(text.splitlines())`. **S3 is still the only *rule* to have moved.**
+- **Do not let a page exist that `pagetypes.tsv` does not know about.** Standing obligation 7,
+  and it was missing from this document until review. The TSV is what `apply_banners.py`
+  reads, `pagelint.py` never reads it, and a green build therefore says nothing about it.
 - **Do not inherit a threshold whose stated rationale is that nobody has tried more.**
   **S3 is the first *rule* in this programme to move** — every previous correction, all
   fourteen, was a tally. It was not wrong so much as over-restrictive: *"three is the deepest
