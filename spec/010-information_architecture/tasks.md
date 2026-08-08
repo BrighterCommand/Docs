@@ -1,0 +1,993 @@
+# Spec 010: Information Architecture — Tasks
+
+**Created:** 2026-08-08 · **Status:** Draft, for review
+**Works from:** `design.md` (approved 2026-08-08, `.design-approved`) and `requirements.md`
+(approved 2026-08-06)
+**Executes against:** `spec/011-authoring_conventions/worklist.md` (42 rows, 26 `split`, 16 `keep`)
+
+**Total tasks: 51, across 11 phases.**
+
+---
+
+## 1. How this list is organised
+
+**Phase N is PR N.** Design §10 is already a task plan — eleven pull requests, each a
+coherent unit of work merged before the next branch starts. This document does not
+re-sequence it; it fills in what each PR has to do, and settles the seven things the
+design deliberately left to this phase.
+
+| Phase / PR | Goal | Tasks | Deliverables |
+|---:|---|---:|---|
+| **1** | Plan ratified, nesting pinned, #67 re-checked | 3 | this document, §12 README amendments |
+| **2** | **The tree.** One PR, and the one that must not be partial | 10 | D1, D2, D3 |
+| **3** | Content defects, the duplication **verification**, and the split harness | 4 | D9, D5 |
+| **4** | Scheduler family — 6 rows, 2 new pages | 4 | D4 |
+| **5** | Outbox and Inbox — 4 rows, 7 new pages, 19 of the 34 anchor links | 5 | D4 |
+| **6** | Darker — 5 rows, 12 new pages | 5 | D4 |
+| **7** | Using an External Bus — 4 rows, 3 new pages | 4 | D4 |
+| **8** | Transports — 2 rows, 2 new pages | 2 | D4 |
+| **9** | The rest of §6d — 5 rows, 5 new pages | 6 | D4 |
+| **10** | `llms.txt`, once the page count is stable | 3 | D6 |
+| **11** | Glossary links, the two carried-over chores, acceptance | 5 | D8, P2-1, P2-3 |
+
+**PRs 4–9 are individually shippable and individually abandonable.** AC7 is per-split and
+**partial completion is an explicit valid end state** — the maintainer's ruling. Nothing in
+this list re-introduces an all-26-splits gate: a phase that lands three of its five rows has
+landed three splits, and the spec is accepted on what it landed.
+
+**PR 2 is the exception.** It is the tree every later PR files into, so it goes in whole or
+not at all.
+
+### Dependencies
+
+```text
+1 ──> 2 ──> 3 ──> 4 ─┐
+                 ├─> 5 ─┤
+                 ├─> 6 ─┼──> 10 ──> 11
+                 ├─> 7 ─┤
+                 ├─> 8 ─┤
+                 └─> 9 ─┘
+```
+
+- **Phases 4–9 are independent of each other** and may be done in any order, or not at all.
+  They share only `SUMMARY.md`, and each touches its own lines of it.
+- **Phase 3 gates phase 6** on one point only: Task 3.1's verification must return before
+  Task 6.4 moves `QueriesAndQueryObjects.md`'s `## Query Patterns`. Task 3.4 (the D5 check)
+  gates every split task in 4–9.
+- **Phase 10 waits on 4–9** — `llms.txt` covers whatever pages exist when it runs, so it
+  runs last among the content phases. If phases are abandoned it still runs, over a smaller
+  corpus.
+
+### The standing obligations — every split task in phases 4–9 owes all six
+
+Do not restate these in each task; they are assumed by all of them.
+
+1. **Move the text; do not improve it** (`worklist.md` §4 rule 4). The only new prose this
+   spec authors is one sentence, in Task 7.1.
+2. **The core keeps its original filename** (rule 1), so no published URL moves and no
+   page-level redirect is created by a split.
+3. **Grep for every anchor before moving the heading that owns it** (rule 2). Design §8 has
+   the measured inbound table, but **re-derive per split** — it is a snapshot, not a
+   guarantee.
+4. **Every new page carries a banner** one blank line below the H1, separator ` · ` (U+00B7),
+   and a *Prerequisites* segment naming the core it came from. Every `##` heading is
+   qualified by its subject and unique across pages; the five navigation headings are exempt
+   and stay uniform.
+5. **Every new page gets a `SUMMARY.md` entry at the position Appendix A pins**, in the same
+   commit that creates it. `linkcheck.py`'s orphan check has no exemptions.
+6. **Run the D5 check (Task 3.4), then `linkcheck.py` and `pagelint.py`** after every split.
+   A block moved verbatim that cannot carry its `using` directives marks the omission
+   `// ...`, which downgrades to a warning and never silences. **Do not backfill namespaces
+   you have not checked.**
+
+### Two conventions this document holds itself to
+
+- **A page's length is `len(text.splitlines())`.** Not `wc -l`, which under-reports the 17
+  files with no trailing newline, and not `read().split("\n")`, which over-reports the 93
+  with one. This is design §16 finding 1, and it is the fifteenth lesson in `PROMPT.md`.
+- **Every "after" line count quoted below is arithmetic on today's sections**, not a count
+  of a page that exists (design §15). They are budgets, not assertions, and requalified
+  headings and new lead-ins will move them.
+
+---
+
+## 2. What this phase settled — the seven items design left open
+
+`PROMPT.md`'s handover names seven. Each is discharged here, and two of them produced a
+finding.
+
+| # | Item | Where it is settled |
+|---|---|---|
+| 1 | Where each of the 32 new pages nests | **Appendix A** — derived and measured, two findings |
+| 2 | PR 3 verifies the duplication before anything moves | **Task 3.1**, written so "not duplicate" is a passing outcome |
+| 3 | `BrighterOutboxSupport.md` is a split target *and* a parent page | **Task 5.1** |
+| 4 | `BoxProvisioning.md#when-to-use-box-provisioning` must not be requalified | **Task 2.8** and Task 11.5 — no task in this list touches that heading |
+| 5 | The `HowServiceActivatorWorks.md:147` fold | **Task 3.3** |
+| 6 | Every new page is 100% added lines | Standing obligation 6, above |
+| 7 | Verify `.gitbook.yaml` **before** merging PR 2 | **Task 2.6** and Task 2.8 |
+
+**The two findings, both from Appendix A:**
+
+- **`MigratingToPollyV8.md` cannot nest under `PolicyRetryAndCircuitBreaker.md`.** That page
+  already publishes at three segments
+  (`commands-handlers-and-pipelines/buildingapipeline/policyretryandcircuitbreaker`), so a
+  child would publish at four and breach **S3**. It becomes a *sibling* under
+  `BuildingAPipeline.md`. The same measurement forces `SwitchingSchedulers.md` top-level:
+  all five scheduler leaves it draws from are at three segments already. **The rule, stated
+  once: file a split page under the *shallowest* of its sources, and top-level in its
+  section if that is still three deep.**
+- **Design §7.6's entries column reproduces on 11 of its 12 rows.** *Outbox and Inbox* is
+  the exception: with all seven new pages nested under depth-2 parents it shows **8**
+  top-level entries, not the intended 10. §15 flagged that column as an intention rather
+  than a measurement and named 15 as the breach case; the pinned answer is 8, with four
+  entries of headroom under S2. **No threshold moves and no verdict changes** — this is the
+  ninth tally correction in this programme and, again, only a tally.
+
+**And a third finding, from enumerating rather than reading.** Requirements §12 (AC8) and
+§14 both say the 16 `keep` rows cover **fifteen** distinct pages. Enumerated, they name
+**sixteen**:
+
+```bash
+python3 - <<'PY'
+import re
+rows = [l for l in open("spec/011-authoring_conventions/worklist.md") if re.match(r'^\| `', l)]
+keep = [l for l in rows if re.search(r'\*\*keep', l)]
+pages = {p for l in keep for p in re.findall(r'`([^`]+\.md)`', l.split("|")[1])}
+print(len(keep), "rows,", len(pages), "distinct pages")   # 16 rows, 16 distinct pages
+PY
+```
+
+Two rows name `TickerQScheduler.md` (§6a and §6e) and **one row names two pages** —
+`HandlerFailure.md` + `ErrorHandlingOptions.md`, listed as a pair because the maintainer
+raised a live question about them. So 16 rows produce 17 page mentions, and deduplicating
+gives 16 pages, not 15. **Fifteen is the count of distinct *rows by subject*, not of pages.**
+Recorded here rather than edited into an approved document; **AC8's substance is untouched**
+— all 16 rows are honoured either way, and §7 touches none of them. It is the fourteenth
+wrong tally in this programme, and the fourteenth that is only a tally.
+
+---
+
+## Phase 1 — Plan (PR 1)
+
+**Goal:** the plan is ratified and merged before any file under `contents/` is touched.
+PR #82 is already open with `design.md`, `SUMMARY.target.md` and the three README
+amendments (design §12); this document joins it.
+
+- [ ] **Task 1.1:** Ratify Appendix A — the nesting of all 32 new pages
+  - Input: Appendix A of this document; `design.md` §7.6 and §15; `SUMMARY.target.md`
+  - Output: maintainer's confirmation, or corrections applied to Appendix A
+  - Notes: This is the item design §15 named as *not measured*. Two answers changed as a
+    result — `MigratingToPollyV8.md`'s sibling placement (forced by S3) and *Outbox and
+    Inbox* at 8 entries rather than 10. Neither is discretionary; both fall out of the
+    measured depths in Appendix A's second table. **If a placement is overruled, re-run the
+    depth check before accepting it** — the S3 ceiling is what makes these forced.
+
+- [ ] **Task 1.2:** Re-check [Docs#67](https://github.com/BrighterCommand/Docs/issues/67)
+  - Input: the issue thread
+  - Output: a note in this file recording the state and date
+  - Notes: Last checked 2026-08-08 — **two comments, both the maintainer's**, unchanged
+    since 2026-08-03. Diátaxis-as-authoring-discipline was flagged there for pushback, and
+    the redirect commitment is public. **Check again before PR 2 merges** (Task 2.8), not
+    just here.
+
+- [ ] **Task 1.3:** Merge PR #82
+  - Input: PR #82 on `docs/spec-010-design`
+  - Output: `design.md`, `tasks.md`, `SUMMARY.target.md` and the README amendments on
+    `master`
+  - Notes: `master` requires a review and GitHub blocks self-approval, so this is
+    `gh pr merge 82 --merge --admin`. Touches no file under `contents/`, so linkcheck stays
+    at 112 files and pagelint at 0 errors / 802 warnings.
+
+---
+
+## Phase 2 — The tree (PR 2)
+
+**Goal:** D1, D2 and D3 land together. `SUMMARY.md` becomes the twelve-section tree, 74
+redirects ship with it, and `urlmap.py` moves to `tools/` with two new checks gating CI.
+**No page body is touched by this phase at all** — that separation is what makes the splits
+safe to interleave afterwards.
+
+- [ ] **Task 2.1:** Move `urlmap.py` to `tools/`
+  - Input: `spec/010-information_architecture/urlmap.py` (validated 110/110 against the live
+    sitemap, re-verified 2026-08-06)
+  - Output: `tools/urlmap.py`; the spec copy deleted; `__pycache__` not committed
+  - Notes: D3 is *packaging, not invention*. Keep `--verify`'s exit-2-on-unreachable
+    behaviour exactly as it is — an unreachable authority is not a pass. Keep the tolerant
+    `^\s*##\s+` section regex; it must model what GitBook does, not what the file ought to
+    say.
+
+- [ ] **Task 2.2:** Add `--check-shape`
+  - Input: `design.md` §4 (S1/S2/S3) and §9.1
+  - Output: `tools/urlmap.py --check-shape`, exit 0/1
+  - Notes: Asserts **S1** every section holds ≥2 pages, **S2** ≤12 top-level entries, **S3**
+    no published path exceeds 3 segments — and that no `SUMMARY.md` heading carries leading
+    whitespace. That last assertion is P0-1's, kept because the hazard is the class and not
+    the ` ## Under the Hood` instance the new tree deletes. **Prove it fails**: temporarily
+    nest one page a level deeper and confirm S3 goes red, then revert. A check that has
+    never been red is a check nobody has tested.
+
+- [ ] **Task 2.3:** Add `--check-redirects`
+  - Input: `design.md` §9.1; requirements P0-3 and §2.4
+  - Output: `tools/urlmap.py --check-redirects`, exit 0/1
+  - Notes: Three assertions — every `redirects:` value resolves to a file that exists, every
+    key is a path that no longer publishes, and **the whole of `.gitbook.yaml` is printable
+    ASCII**. Parse the flat `key: value` block in ~15 lines of Python: PyYAML is absent from
+    this environment and `ruby -ryaml` is an accident of the machine. A YAML parser would
+    have parsed `​structure:` happily, which is the entire reason the byte check exists.
+
+- [ ] **Task 2.4:** Install the new `SUMMARY.md`
+  - Input: `spec/010-information_architecture/SUMMARY.target.md` — 145 lines, 110 links, 12
+    sections, pure ASCII, verified at design review
+  - Output: `SUMMARY.md` replaced wholesale
+  - Notes: This is D1 and it is a copy, not a rewrite — every figure in the design
+    reproduces against that file, so retyping it would put them at risk for nothing. The
+    encoded link `Requests%2C%20Commands%20and%20Events.md` stays: Q6 is dropped, and the
+    awkward filename makes the better URL (§6.3).
+
+- [ ] **Task 2.5:** Generate and **type** the `redirects:` block
+  - Input: `python3 tools/urlmap.py --redirects <old SUMMARY.md>`; requirements §2.1
+  - Output: `.gitbook.yaml` gains a `redirects:` block of **74** entries
+  - Notes: **Type the block; never paste it.** GitBook's own published `.gitbook.yaml`
+    example still carries two U+200B zero-width spaces today, with the `redirects:` snippet
+    inside the same code block — that is where this repo's went, and one of them was in a
+    *key*, so GitBook had never read the `structure:` block at all and nothing looked
+    broken. Key is the old **published** path, value is the **repository** path
+    (`contents/<FileName>.md`), no leading slashes on either side. The block is written
+    **once**: a redirect value does not go stale when its page moves again, because GitBook
+    resolves the repository path to wherever that page currently publishes (requirements
+    §16).
+
+- [ ] **Task 2.6:** Verify `.gitbook.yaml` mechanically — **AC4**
+  - Input: the file as written by Task 2.5
+  - Output: a recorded parse result and byte inspection, both clean
+  - Notes: Malformed indentation disables redirects *silently* rather than erroring. Run
+    `--check-redirects` and, independently, assert no byte outside printable ASCII anywhere
+    in the file. **Before merge, never after** — see Task 2.8.
+
+- [ ] **Task 2.7:** Wire both checks into CI
+  - Input: `.github/workflows/docs.yml`, the `check` job
+  - Output: `--check-shape` and `--check-redirects` run on every push and PR
+  - Notes: `--verify` stays **out** of CI: it depends on an external site and would make the
+    build flaky. Q10's answer is yes for the two checks that read only the repository. A
+    redirect block complete at merge and incomplete three PRs later is the same silent
+    failure in slow motion, which is why these gate rather than being run once.
+
+- [ ] **Task 2.8:** The pre-merge gate
+  - Input: the branch as it stands
+  - Output: a recorded result for each of six checks
+  - Notes: `linkcheck.py` clean; `pagelint.py` 0 errors; `--check-shape` green;
+    `--check-redirects` green; the block has **74** entries, matching design §5's measured
+    figure; and #67 re-checked for a reply (Task 1.2). **Redirects cache with
+    `stale-while-revalidate=2592000` — thirty days — so a wrong redirect outlives its fix at
+    the edge.** Also confirm no task in this PR requalified
+    `BoxProvisioning.md#when-to-use-box-provisioning`; Spec 009's rung 3 links to it and
+    redirects cannot fix a fragment.
+
+- [ ] **Task 2.9:** Post-merge live sample — **AC5b**
+  - Input: the published site, 25–45 seconds after merge
+  - Output: recorded status, `location:` header and body size for a sample of the 74
+  - Notes: **Every cached response reports `200`**, genuine 404s and genuine redirects
+    alike, so *status code alone is worthless on this site*. The tell is that no genuine
+    page response carries a `location:` header; body size separates the rest — ~192 KB for a
+    redirect, ~189.5 KB for the 404 shell, **584 KB for a real page**. Sample the sections
+    that were renamed, including the 3-segment nested paths under *Transports*.
+
+- [ ] **Task 2.10:** Re-probe PR #77's old path
+  - Input: `command-processors-and-dispatchers/commandscommanddispatcherandprocessor`
+  - Output: a recorded observation of whether it still carries a `location:` header
+  - Notes: **The one open platform unknown** — whether GitBook's automatic redirects
+    *persist*. They may be tied to revision history, and one session could not test it. This
+    is a measurement, not a gate: the `.gitbook.yaml` block ships regardless, because that
+    is what it is for. If the header has gone, the block is the reason nothing broke.
+
+---
+
+## Phase 3 — Defects, the verification, and the harness (PR 3)
+
+**Goal:** the three `worklist.md` §7 content defects (D9 / P1-4), and the D5 check that
+every split in phases 4–9 depends on.
+
+- [ ] **Task 3.1:** **Verify** the `QueriesAndQueryObjects.md:746` ↔ `QueryPatterns.md`
+      duplication
+  - Input: `contents/QueriesAndQueryObjects.md` `## Query Patterns` (102 lines) against the
+    whole of `contents/QueryPatterns.md`; `worklist.md` §7
+  - Output: a written finding recorded in this file — *duplicate* or *not duplicate*, with
+    the evidence
+  - Notes: **This is a finding, not an edit, and "not duplicate" is a passing outcome.**
+    Spec 011's Task 4.5 is the precedent and the reason this is a separate task: three
+    specified "duplicate content" defects turned out not to exist, one of the cited line
+    numbers pointed into an unrelated glossary entry, and executing them as written would
+    have destroyed correct material. **Verify the defect exists before fixing it.** If it
+    duplicates, the section is deleted and replaced with a link, and Task 6.4 runs D5
+    against `QueryPatterns.md` as well as against the split original. If it does not, Task
+    6.4 treats it as ordinary content and `QueriesAndQueryObjects.md` stays nearer ~579
+    lines than below it.
+
+- [ ] **Task 3.2:** Fix `## How It Work` in `SweeperCircuitBreaking.md`
+  - Input: `contents/SweeperCircuitBreaking.md:16`
+  - Output: the heading reads `## How Sweeper Circuit Breaking Works`
+  - Notes: A missing "s", single occurrence in the corpus. The heading is requalified in the
+    same edit because rule 3a requires it, and the section stays in the core (design §7.7
+    item 5). Grep for inbound links to `#how-it-work` before renaming — design §8 records
+    none for this page, but re-derive rather than trust it.
+
+- [ ] **Task 3.3:** Fold `HowServiceActivatorWorks.md:147` into
+      `DispatcherConfigurationReference.md`
+  - Input: `contents/HowServiceActivatorWorks.md` `## Dispatcher Configuration` (76 lines);
+    `contents/DispatcherConfigurationReference.md`
+  - Output: the overlap removed from the explanation, a link in its place; anything the
+    reference page lacks folded into it
+  - Notes: Created by Spec 011's own Phase 6 split, which did not check the explanation page
+    for overlapping configuration material. **No linter can see this** — it is why it is a
+    task and not a rule. `worklist.md` §6e types the page **keep — but fold**: do not split
+    the explanation. Run the D5 check over the union of the two pages, not over each
+    separately, since this removes duplication rather than moving content.
+
+- [ ] **Task 3.4:** Write the D5 no-information-loss check
+  - Input: the method both Spec 011 demonstrator splits used — every substantive line of the
+    original tested for verbatim presence across the resulting pages
+  - Output: `spec/010-information_architecture/noloss.py`, taking an original at a git ref
+    plus the resulting pages, and reporting every line that survives nowhere
+  - Notes: **"I read the diff" is not this check** (`worklist.md` §4 rule 4). On the two
+    demonstrators it returned 24 lines and 4 lines, and every one was a deliberate edit —
+    that signature is what a clean run looks like, not zero. Deliberate removals are
+    expected (folded guidance, repointed anchors, dropped duplicate prose), so the output is
+    read, not merely exit-coded. **Prove it fails**: delete a line from a split result and
+    confirm it is reported.
+
+---
+
+## Phase 4 — Scheduler family (PR 4)
+
+**Goal:** `worklist.md` §5a executed — five Reference cores, one shared how-to, one enriched
+overview. 6 rows, 2 new pages, 8 pages touched. Design §7.1.
+
+- [ ] **Task 4.1:** Create `SwitchingSchedulers.md`
+  - Input: the five `… Migration from Other Schedulers` sections — `HangfireScheduler.md`
+    (36), `AwsScheduler.md` (52), `QuartzScheduler.md` (38), `AzureScheduler.md` (61),
+    `InMemoryScheduler.md` (34) = **221 lines**
+  - Output: `contents/SwitchingSchedulers.md`, How-to, **top-level in *Scheduler***
+  - Notes: The five sections are near-copies — `HangfireScheduler.md:751` and
+    `AwsScheduler.md:692` differ only in which factory they name — so the matrix collapses
+    to one before/after per target under a shared preamble. Design §7.1 gives the outline:
+    `## Why You Would Switch Schedulers`, `## Switching Schedulers: What Changes and What
+    Does Not`, one **H3 per target**, `## Switching Schedulers Verification`,
+    `## Further Reading`. **Top-level placement is forced by S3**, not preferred: all five
+    donor pages already publish at three segments. Five sections merging into one page is
+    the case where rule 3b (no repeated heading within a page) bites — the H3-per-target
+    shape is what avoids it.
+
+- [ ] **Task 4.2:** Create `SchedulingAMessage.md`
+  - Input: `BrighterSchedulerSupport.md` `## Brighter Scheduler Code Examples` (167) and
+    `## Brighter Scheduler Configuration Examples` (45) = **212 lines**
+  - Output: `contents/SchedulingAMessage.md`, How-to, **top-level in *Scheduler***;
+    `BrighterSchedulerSupport.md` 578 → 366
+  - Notes: 212 lines of how-to on an Explanation page is the mode mix this row exists to
+    fix. Prerequisites segment names `[Scheduler](/contents/BrighterSchedulerSupport.md)`.
+
+- [ ] **Task 4.3:** Fold the four comparison sections into `## Choosing a Scheduler`
+  - Input: `HangfireScheduler.md` `## Comparison: Hangfire vs Quartz` (26),
+    `AwsScheduler.md` `## AWS Scheduler Comparison with Other Schedulers` (23),
+    `AzureScheduler.md` `## Azure Scheduler Comparison with Other Schedulers` (24),
+    `InMemoryScheduler.md` `## Comparison with Production Schedulers` (12) = **85 lines**;
+    `BrighterSchedulerSupport.md` `## Choosing a Scheduler` (97)
+  - Output: one merged `## Choosing a Scheduler`; `BrighterSchedulerSupport.md` lands at
+    ~400
+  - Notes: **Four sections, not six** — design §16 finding 2. `QuartzScheduler.md` has no
+    comparison section at all, and `AwsScheduler.md`'s `## Scheduling Modes Comparison` (11
+    lines) **stays in the AWS core**: it compares AWS's own two scheduling modes,
+    direct-to-target against `FireAwsScheduler`, and is not a comparison between schedulers.
+    `worklist.md` §5a and §6a say "six" and are wrong on the count for this reason; 011 is
+    closed and was not re-opened for it. **They fold by merger, not concatenation** — the
+    duplicate prose is dropped, which is the one place in this spec where text is removed
+    rather than moved, and it is removed as duplication. **Run D5 against the union** of the
+    four sections and `## Choosing a Scheduler`, not against each separately.
+
+- [ ] **Task 4.4:** Requalify, re-banner and re-file the five cores
+  - Input: `HangfireScheduler.md` (832 → ~770), `AwsScheduler.md` (775 → ~700),
+    `QuartzScheduler.md` (769 → ~731), `AzureScheduler.md` (717 → ~632),
+    `InMemoryScheduler.md` (541 → ~495)
+  - Output: five Reference cores keeping their filenames; two `SUMMARY.md` entries added for
+    Tasks 4.1–4.2
+  - Notes: **`TickerQScheduler.md` is a `keep`** — no migration section at all,
+    `Best Practices` is 8 lines, and splitting it would produce stubs. Do not touch it.
+    `InMemoryScheduler.md` keeps `## Important Warning` (16) and `## When to Use InMemory
+    Scheduler` (63): it is the scheduler you must not ship, and that is the page's most
+    valuable content. It also **receives** `InMemoryOptions.md`'s `InMemory Scheduler`
+    section (53 lines) — but that arrives in Task 5.4, so this page is edited by two PRs and
+    ~495 is before that arrival. It is four lines under 500 by arithmetic alone; a banner
+    and two lead-ins put it back over, and **that is fine** — design §7.8, page length is
+    not an acceptance criterion for this spec.
+
+---
+
+## Phase 5 — Outbox and Inbox (PR 5)
+
+**Goal:** 4 rows, 7 new pages, and **19 of the 34 measured inbound anchor links land here**
+— more than half the anchor cost of all 26 splits. Design §7.4, §7.5, §8.
+
+- [ ] **Task 5.1:** Split `BrighterOutboxSupport.md`
+  - Input: `## Outbox Archiver` (151) and `## Complete Example: Transactional Messaging`
+    (169); page is **517** lines
+  - Output: `contents/OutboxArchiver.md` (Reference) and
+    `contents/TransactionalMessagingWithTheOutbox.md` (How-to), both nested under
+    `BrighterOutboxSupport.md`; core → ~197
+  - Notes: **This page is a split target *and* one of the four parent pages** §3.1 relies on
+    for a middle navigation layer — both jobs happen to it at once, and **the core keeps its
+    filename**, as both 011 demonstrators did. It carries the heaviest anchor load in the
+    corpus: **16 inbound links across 5 anchors from 13 files.** Only three anchors move —
+    `#outbox-archiver` (3 links) and
+    `#running-the-sweeper-and-archiver-out-of-process` (1) → `OutboxArchiver.md`;
+    `#complete-example-transactional-messaging` (1) →
+    `TransactionalMessagingWithTheOutbox.md`. **`#implicit-clear` (9 links) and
+    `#you-always-need-a-sweeper` (2) stay in the core** — do not move those sections.
+    `OutboxArchiver.md` also receives `InMemoryOptions.md`'s `InMemory Archive` (47) in Task
+    5.4. Spec 005 owns this page and closed at 14/14 having checked it against 010: a split
+    relocates content and invalidates none of it.
+
+- [ ] **Task 5.2:** Split `ReplayOnSeen.md` — **Q5, the Explanation is the core**
+  - Input: 1,039 lines in three clean modes (design §7.4): Explanation 228, How-to 469,
+    Reference 311
+  - Output: `contents/TurningOnReplayOnSeen.md` (How-to, 469) and
+    `contents/ReplayOnSeenReference.md` (Reference, 311), both nested under
+    `ReplayOnSeen.md`; core keeps the filename and is **retyped Reference → Explanation**
+  - Notes: The load-bearing reason is not the mode balance — **`outbox-and-inbox/replayonseen`
+    is one of the 36 URLs this restructure does not move**, and rule 1 keeping the core's
+    filename is what preserves it. Making the how-to the core would move the concept's URL
+    to a page about switching a flag on. **8 inbound anchor links across 5 anchors from 4
+    files.** `#causation-id` (2) **stays** — Causation Id is Explanation. Moving:
+    `#when-replay-does-not-fire` and `#store-support` (4 together) →
+    `ReplayOnSeenReference.md`; `#upgrading-without-migrating` and
+    `#replay-versus-replay-skipped` (2) → `TurningOnReplayOnSeen.md`. The banner retype is a
+    `pagetypes.tsv` edit plus a re-run of `apply_banners.py`, which **now preserves a
+    Prerequisites segment** (`5498cd6`) — it used to strip them.
+
+- [ ] **Task 5.3:** Split `SweeperCircuitBreaking.md`
+  - Input: `## Usage Patterns` (61) and `## Advanced Scenarios` (71) = 132; page is **527**
+  - Output: `contents/UsingSweeperCircuitBreaking.md` (How-to), nested under
+    `SweeperCircuitBreaking.md`; core → ~395
+  - Notes: **It splits once, not twice** — design §7.7 item 5. The row implies a third page,
+    an Explanation from `Overview` (11) and `How It Work` (29); **40 lines is a stub**, and
+    `worklist.md` §6a's own TickerQ ruling is the precedent — *the family shape does not
+    oblige a split where the sections are empty*. Those two sections are the reference
+    page's necessary preamble and stay. The typo is already fixed in Task 3.2.
+
+- [ ] **Task 5.4:** Redistribute `InMemoryOptions.md` — three new pages, two donations
+  - Input: `## InMemory Transport` (118), `## InMemory Outbox` (79), `## InMemory Inbox`
+    (68), `## InMemory Scheduler` (53), `## InMemory Archive` (47); page is **695**
+  - Output: `contents/InMemoryTransport.md` (Reference, **top-level in *Transports***),
+    `contents/InMemoryOutbox.md` (Reference, nested under `BrighterOutboxSupport.md`),
+    `contents/InMemoryInbox.md` (Reference, nested under `BrighterInboxSupport.md`); the
+    scheduler section merged into the existing `InMemoryScheduler.md`; the archive section
+    merged into `OutboxArchiver.md` from Task 5.1
+  - Notes: **This is a redistribution, not a mode split** — five unrelated subjects, each
+    belonging beside its own family. Creating three of the five family pages is design §7.7
+    item 4, a deviation from the shape column's *"merge each into the matching family
+    page"*, and the reason is that **three of those family pages do not exist**: every other
+    transport has one (5), every other outbox store has one (8), every other inbox store has
+    one (6). InMemory is the missing member of each set, and a reader who wants the
+    in-memory outbox has no page to find. `InMemoryTransport.md` is top-level because every
+    other transport is; the other two nest at three segments. **Task 5.1 must land before
+    the archive donation**, and Task 4.4 before the scheduler donation if phase 4 is being
+    done — if it is not, the scheduler section merges into `InMemoryScheduler.md` as it
+    stands today.
+
+- [ ] **Task 5.5:** Retype the `InMemoryOptions.md` core and repoint its five inbound links
+  - Input: what remains — `Test Configuration Patterns` (42), `Complete Testing Example`
+    (99), `Environment-Specific Configuration` (114); page → ~330
+  - Output: core keeps its filename and its *Brighter Configuration* slot, **retyped
+    Reference → How-to**; five inbound links repointed
+  - Notes: What is left is a genuine testing guide, which is why the type changes. The five
+    links are from `ShowMeTheCode.md`, `FAQ.md`, `V10MigrationGuide.md`, `Glossary.md` and
+    `SUMMARY.md` — **re-derive them rather than trusting this list**, and check whether each
+    wants the testing guide or one of the three new pages. This page was the corpus's worst
+    within-page heading duplicate (12 instances, fixed in 011), and the catalogue shape is
+    why.
+
+---
+
+## Phase 6 — Darker (PR 6)
+
+**Goal:** 5 rows, 12 new pages — the largest phase. `worklist.md` §5b executed: Darker
+splits along the seams Brighter already has, restoring the parallel. Design §7.3.
+
+**Binding constraint for every task in this phase: Darker content is re-filed and split,
+never rewritten.** `../Darker` HEAD is `4.1.1-7-g2f76cda`, ahead of the deployed 4.1.1, and
+the site publishes the deployed version. Do not update behaviour from that working tree.
+
+- [ ] **Task 6.1:** Split `QueryPatterns.md` — the largest page in the corpus
+  - Input: 1,291 lines; `Parameterized Query Patterns` (270), `Pagination Patterns` (233),
+    `Projection Patterns` (173), `Collection and Aggregation Patterns` (162),
+    `Entity Framework Core Integration` (147)
+  - Output: `ParameterizedQueryPatterns.md`, `PaginationQueryPatterns.md`,
+    `ProjectionQueryPatterns.md`, `AggregationQueryPatterns.md`, `EFCoreQueryIntegration.md`
+    — all How-to, all nested under `QueryPatterns.md`; the hub → ~300
+  - Notes: Six independent task-shaped recipes in one file; the score of 2 badly understates
+    it. **The hub is not a stub**: it keeps the introduction, `Performance Best Practices`
+    (66), `Real-World Example: Product Catalog Query` (197), `Best Practices Summary` and
+    `Common Pitfalls`. Guidance folds into what it concerns (`worklist.md` §4 rule 3), and
+    the performance material is cross-cutting so it belongs to the hub rather than to any
+    one recipe. Five new pages sharing a parent is where rule 3a bites hardest — every `##`
+    must be qualified by *its own* page's subject, not by "Query Patterns".
+
+- [ ] **Task 6.2:** Split `ImplementAQueryHandler.md`
+  - Input: 935 lines; `Testing Query Handlers` (159), `Working with Dependencies` (130)
+  - Output: `TestingQueryHandlers.md` and `QueryHandlerDependencies.md`, both How-to, nested
+    under `ImplementAQueryHandler.md`; core → ~646
+  - Notes: Testing a handler has no business inside "implement a handler". The core stays
+    large at ~646 and that is deliberate — three handler patterns (311 lines) plus
+    registration and error handling, and splitting further separates a reader from the thing
+    they are implementing (design §7.8).
+
+- [ ] **Task 6.3:** Split `QueryPipeline.md`
+  - Input: 928 lines; `Configuring Polly Policies` (159), `Comparison with Brighter
+    Pipeline` (53)
+  - Output: `QueryPipelinePolicies.md` (How-to) and `DarkerAndBrighterPipelines.md`
+    (Explanation), nested under `QueryPipeline.md`; core → ~716
+  - Notes: This is §5b's finding executed — Brighter decomposes the same subject across
+    `BuildingAPipeline.md`, `PolicyRetryAndCircuitBreaker.md` and `PolicyFallback.md` while
+    Darker keeps it in one file. **The core keeps `Available Decorators` (291) and
+    `Decorator Patterns` (162) because its worklist row says so**; extracting the decorator
+    reference is recorded in design §11 as a candidate for a later spec and is **not** acted
+    on here. `DarkerAndBrighterPipelines.md` is thin at 53 lines and that is within the
+    corpus's floor — `OutboxPattern.md` is 45 and `AzureBlobArchiveProvider.md` is 42.
+
+- [ ] **Task 6.4:** Split `QueriesAndQueryObjects.md` — **gated by Task 3.1**
+  - Input: 877 lines; `Query Result Types` (179), `Validation in Query Objects` (119); and
+    Task 3.1's finding on `## Query Patterns` (102)
+  - Output: `QueryResultTypes.md` (Explanation) and `QueryObjectValidation.md` (How-to),
+    nested under `QueriesAndQueryObjects.md`; core → ~579, or lower if 3.1 found duplication
+  - Notes: **Do not start this task before Task 3.1 returns.** If it found duplication, the
+    `## Query Patterns` section is deleted and replaced with a link to `QueryPatterns.md`,
+    and D5 runs against `QueryPatterns.md` as well as against this original. If it did not,
+    the section stays and the core lands nearer ~579. Either outcome is valid; neither
+    blocks the two extractions, which are independent of it.
+
+- [ ] **Task 6.5:** Split `DarkerBasicConfiguration.md`
+  - Input: 510 lines; `Darker Configuration Options` (75)
+  - Output: `DarkerConfigurationReference.md` (Reference), nested under
+    `DarkerBasicConfiguration.md`; core → ~435
+  - Notes: Created **for the parallel, not for the size** — 75 lines against
+    `DispatcherConfigurationReference.md`'s 233. It inherits the
+    `BrighterBasicConfiguration.md` shape, and the core keeps `Quick Start`,
+    `Using IQueryProcessor` and `Common Configuration Patterns`. **One inbound anchor link
+    moves**: `#query-processor-lifetime` → `DarkerConfigurationReference.md`.
+
+---
+
+## Phase 7 — Using an External Bus (PR 7)
+
+**Goal:** 4 rows, 3 new pages, and **the one piece of new prose this entire spec authors**.
+Design §7.5, `worklist.md` §5c.
+
+- [ ] **Task 7.1:** Create `MessageTransforms.md` — §5c, and it carries a correctness fix
+  - Input: `MessageMappers.md` `## Transformers` (**119**) + `DefaultMessageMappers.md`
+    `## Transform Pipeline Example` (145) = **264 lines**
+  - Output: `contents/MessageTransforms.md` (Explanation), nested under `MessageMappers.md`;
+    `MessageMappers.md` 266 → ~147; `DefaultMessageMappers.md` 478 → ~333
+  - Notes: **This page must state that transforms require a custom mapper** and form part of
+    the pipeline. The ruling was explicit that this is not currently clear, and a reader can
+    today come away believing transforms work with the default mapper. **That sentence is
+    the only new prose in this spec** — everything else is moved verbatim. Note the span:
+    `## Transformers` is **119** lines, not 120; it is the last `## ` section on the page and
+    so inherited the counting artefact design §16 finding 1 corrected. **Three inbound
+    anchor links move**: `MessageMappers.md#message-transformer-factory` →
+    `MessageTransforms.md`. It nests under `MessageMappers.md` (depth 2) and not under
+    `DefaultMessageMappers.md`, which is already at three segments — **file under the
+    shallowest source**.
+
+- [ ] **Task 7.2:** Establish `DefaultMessageMappers.md` as the default route — §5c row 1
+  - Input: `MessageMappers.md`; `DefaultMessageMappers.md` (479 lines, already typed How-to)
+  - Output: a link and a pointer from `MessageMappers.md`; **no new page**
+  - Notes: §5c calls for a "default mapper how-to" and it **already exists**. This row is
+    *establish it as the default route*, not *write it*. `worklist.md` §8 lists "how to use
+    the default mapper" among the four missing how-tos for Spec 013 — this task is why that
+    one is already covered. **`## Configuration Reference` (54) stays in
+    `DefaultMessageMappers.md`** (design §7.7 item 3): it is the how-to's own configuration
+    table, and splitting it would produce a stub.
+
+- [ ] **Task 7.3:** Split `CloudEventsSupport.md`
+  - Input: 475 lines; `CloudEvents Attributes` (34), `CloudEvents Across Transports` (72) =
+    106
+  - Output: `CloudEventsReference.md` (Reference), nested under `CloudEventsSupport.md`;
+    core → ~369
+  - Notes: `worklist.md` calls this the **highest-confidence row in the file** — the shape is
+    already ruled, not proposed. The How-to core keeps the name; the required/optional/
+    extension attribute tables and the per-transport matrix are consulted rather than
+    followed, so they become Reference.
+
+- [ ] **Task 7.4:** Split `DynamicMessageDeserialization.md`
+  - Input: 597 lines; `Using CloudEvents Type for Routing` (83), `Custom Routing Strategies`
+    (63), `Handler Routing` (77), `Configuration Examples` (93) = **316**
+  - Output: `RoutingMultipleMessageTypes.md` (How-to), nested under
+    `DynamicMessageDeserialization.md`; core → ~281
+  - Notes: A how-to is known to be missing here — *how to route several message types down
+    one channel* — and **the material for it is already on the page**, so this is an
+    extraction and not new writing (`worklist.md` §8 flags it as extractable for exactly
+    this reason). The Explanation core keeps `DataType Channel Pattern`,
+    `Dynamic Message Deserialization`, `Performance Considerations` and `Comparison`. Four
+    sections merging into one page: watch rule 3b.
+
+---
+
+## Phase 8 — Transports (PR 8)
+
+**Goal:** 2 rows, 2 new pages. Design §7.2. (`InMemoryTransport.md` files into this section
+but is created in Task 5.4, with the rest of the `InMemoryOptions.md` redistribution.)
+
+- [ ] **Task 8.1:** Split `AWSSQSConfiguration.md` — the exact RabbitMQ precedent
+  - Input: **615** lines; `V10 Migration Path` (196), `AWS SDK v4 Support` (49) = **245**
+  - Output: `AWSSQSMigrateToV10.md` (How-to), nested under `AWSSQSConfiguration.md`; core →
+    ~370, keeping its name and its four `SQS *` sections
+  - Notes: 245 lines of how-to at the end of a reference page — the same shape as
+    `RabbitMQConfiguration.md`, which is why `worklist.md` calls it the exact precedent.
+    **615 is one of the three line counts that were right all along**: this file has no
+    trailing newline, so the old convention happened to agree with `splitlines()` on it.
+    **Three inbound anchor links move**: `#migrating-from-aws-sdk-v3-to-v4` →
+    `AWSSQSMigrateToV10.md`. This page also carries 16 using-less C# blocks, one of which
+    was Spec 011's probe for proving `--changed` works at block granularity — expect
+    warnings, not errors, on any block that marks its omission `// ...`.
+
+- [ ] **Task 8.2:** Split `PostgreSQLMessageBroker.md`
+  - Input: 662 lines; `Benefits` (22), `When to Use` (19), `Limitations` (21),
+    `JSON vs JSONB` (32), `Comparison with Other Transports` (16) = **110**
+  - Output: `PostgreSQLBrokerTradeOffs.md` (Explanation), nested under
+    `PostgreSQLMessageBroker.md`; core → ~552
+  - Notes: **`## Transactional Messaging` (46 lines) stays in the core** — design §7.7 item
+    2. Extracting it would produce a 46-line how-to that Spec 013 immediately supersedes:
+    the publicly committed *PostgreSQL for both transport and outbox* guide is exactly this
+    material, written properly. **Flag it to 013; do not half-extract it here.** The core
+    stays over 500 at ~552 because producer (80) and consumer (81) configuration belong side
+    by side. **This page is a transport, not a scheduler** — Spec 011's classification notes
+    listed it as the seventh member of the scheduler family; it merely shares the template.
+
+---
+
+## Phase 9 — The rest of §6d (PR 9)
+
+**Goal:** 5 rows, 5 new pages, plus one navigational fix design §11 records. Design §7.5.
+
+- [ ] **Task 9.1:** Split `CQRSWithBrighterAndDarker.md`
+  - Input: 1,144 lines; `Use Cases and Patterns` (209)
+  - Output: `CQRSUseCasesAndPatterns.md` (Explanation), nested under
+    `CQRSWithBrighterAndDarker.md`; core → ~935
+  - Notes: **The core keeps `## Example: E-Commerce Order System` (226 lines).**
+    Requirements §8 is binding — 010 must not consume material Spec 009 needs, and 226 lines
+    of end-to-end example is the closest thing the corpus has to a tutorial. The page drops
+    to ~709 when 009 takes it. **Flagged, not moved.** ~935 is the largest page after this
+    spec completes and it is deliberate.
+
+- [ ] **Task 9.2:** Split `NullableReferenceTypes.md`
+  - Input: 711 lines; `Migration Guide` (264) — more than a third of the page
+  - Output: `MigratingToNullableReferenceTypes.md` (How-to), nested under
+    `NullableReferenceTypes.md`; core → ~447
+  - Notes: **The type ruling already contains the split** — the page was typed Reference on
+    the grounds that "the migration steps are not where the durable value is". The ruling and
+    the split agree, which is why this row is low-risk.
+
+- [ ] **Task 9.3:** Split `AgreementDispatcher.md`
+  - Input: 720 lines; `Standard vs Agreement Dispatcher Routing` (74), `Use Cases` (146),
+    `Limitations` (53), `Performance Implications` (47) = **320**
+  - Output: `AgreementDispatcherRouting.md` (Explanation), nested under
+    `AgreementDispatcher.md`; core → ~400
+  - Notes: Typed How-to because "the registration syntax is the point of the page, not the
+    pattern discussion around it" — which again names the split. The core keeps
+    `Registration Syntax`, `Synchronous and Asynchronous Registration` and
+    `Complete Example`. Four sections merging into one page: watch rule 3b.
+
+- [ ] **Task 9.4:** Split `PolicyRetryAndCircuitBreaker.md`
+  - Input: 687 lines; `Migration Guide: V9 to V10` (96) and `Legacy: Using Polly v7 Policies
+    (Deprecated)` (**151**) = 247
+  - Output: `MigratingToPollyV8.md` (How-to), **a sibling under `BuildingAPipeline.md` — not
+    a child of `PolicyRetryAndCircuitBreaker.md`**; core → ~440
+  - Notes: **The placement is forced by S3, and this is the finding Appendix A produced.**
+    `PolicyRetryAndCircuitBreaker.md` already publishes at
+    `commands-handlers-and-pipelines/buildingapipeline/policyretryandcircuitbreaker` — three
+    segments — so a child would publish at four, which the live site is not known to support
+    and which `--check-shape` will reject. **One page holds both tails**: the deprecated
+    Polly v7 section is what a reader migrates *from*, and splitting them apart would leave a
+    deprecated 151-line page with no explanation of what replaces it. Note the span — the
+    legacy section is **151** lines, not 152; it is the last `## ` on the page and inherited
+    the counting artefact. **One inbound anchor link moves**: `#migration-guide-v9-to-v10` →
+    `MigratingToPollyV8.md`. The core keeps `All Available Polly v8 Strategies` (244) as its
+    reference table.
+
+- [ ] **Task 9.5:** Split `Telemetry.md`
+  - Input: 597 lines; `Configuring OpenTelemetry` (81), `Complete Configuration Example`
+    (96), `Distributed Tracing Example` (30) = **207**
+  - Output: `ConfiguringOpenTelemetry.md` (How-to), nested under `Telemetry.md`; core → ~390
+  - Notes: The Reference core keeps the per-component span tables — Command Processor,
+    Dispatcher, Outbox, Inbox and Transform Pipeline tracing. **Two inbound anchor links,
+    neither of which moves**: `#configurable-instrumentation` and `#inbox-tracing` both stay
+    in the core. Verify that before moving anything, not after.
+
+- [ ] **Task 9.6:** Make the `HandlerFailure.md` ↔ `ErrorHandlingOptions.md` relationship
+      navigational
+  - Input: both pages; `worklist.md` §6e; design §11
+  - Output: `ErrorHandlingOptions.md` nested under `HandlerFailure.md` in `SUMMARY.md`
+    (already so in `SUMMARY.target.md`), the missing reverse pointer added, and a
+    *Prerequisites* segment in `ErrorHandlingOptions.md`'s banner
+  - Notes: **They are not merged.** They are the corpus's best existing explanation/reference
+    pair, and merging them yields ~685 lines carrying two modes — which is what everything
+    else in this spec is pulling apart. Today only `ErrorHandlingOptions.md` points at
+    `HandlerFailure.md`. This is a one-line fix plus a banner segment; it is in this PR
+    because it is the only phase that touches neither page's body substantially.
+
+---
+
+## Phase 10 — `llms.txt` (PR 10)
+
+**Goal:** D6, over whatever page count phases 4–9 actually produced.
+
+- [ ] **Task 10.1:** Write `tools/llmstxt.py`
+  - Input: `CLAUDE.md` § llms.txt (the format); `design.md` §9.2; `SUMMARY.md`; each page's
+    banner
+  - Output: `tools/llmstxt.py`, generating `- [Title](path): Type — one sentence.` with
+    sections mirroring `SUMMARY.md`
+  - Notes: The type comes from the banner. **The sentence is the page's own opening
+    sentence** — the first sentence of the first non-blank prose line after the banner —
+    extracted, never invented. The generator **fails** if that sentence is missing, longer
+    than 200 characters, ends in a colon, or is byte-identical to another page's. This is
+    Q9's answer and it takes neither horn of the dilemma: a parallel table of hand-written
+    summaries would drift from the pages within a release; a sentence that lives in the page
+    cannot.
+
+- [ ] **Task 10.2:** Run it, and fix the sentences it rejects
+  - Input: the first run's failures
+  - Output: one improved opening sentence per rejected page
+  - Notes: **Expect a double-figure number of failures. That is the deliverable working, not
+    a defect in it.** A page whose opening sentence does not survive being read alone has a
+    bad opening sentence, and fixing it improves the page for every reader, not just for a
+    retrieval client. The fixes are one sentence each and they are prose, so `pagelint.py`
+    has nothing to say about them — but `linkcheck.py` still runs.
+
+- [ ] **Task 10.3:** Commit `llms.txt`, and put the `CLAUDE.md` amendment to the maintainer
+  - Input: the generated file; `design.md` §9.2's closing paragraph
+  - Output: `llms.txt` at the repository root; a decision recorded on the format question
+  - Notes: **This one is the maintainer's call.** The documented format uses repository paths
+    (`/contents/FileName.md`); a retrieval client wants the **published URL**, which
+    `urlmap.py` now emits and which was validated 110/110. The design's recommendation is
+    that `llms.txt` emits published URLs and `CLAUDE.md` § llms.txt is amended to match —
+    repository paths in a file whose entire audience is HTTP clients help nobody. Do not
+    amend `CLAUDE.md` without the ruling.
+
+---
+
+## Phase 11 — Close (PR 11)
+
+**Goal:** D8, the two chores carried over from 011, and the acceptance pass.
+
+- [ ] **Task 11.1:** D8 — per-term links from `BasicConcepts.md` into `Glossary.md`
+  - Input: `BasicConcepts.md`'s 24 terms; `Glossary.md`'s 100
+  - Output: each of the 24 linked to its matching `Glossary.md` anchor
+  - Notes: **There are zero such links today.** This replaces the withdrawn
+    `BasicConcepts.md` → `Glossary.md` merge and is purely additive. The separation is
+    deliberate and was ruled by the maintainer: `BasicConcepts.md` is a curated orientation
+    set a newcomer can read *without* working through the 100-term glossary. **Do not
+    re-open the merge.** Every link carries an `#anchor`, which puts all 24 under
+    `linkcheck.py`'s MISSING ANCHOR check — that is the point of doing it this way.
+
+- [ ] **Task 11.2:** P2-1 — normalise the 17 files with no trailing newline
+  - Input: the 17 files (re-derive the list; it was 18 of 105 before the Phase 6 splits)
+  - Output: every file under `contents/` ends with a newline
+  - Notes: Deliberately deferred from 011 so the banner diff contained nothing but banners.
+    It lands here for the same reason in reverse — a whitespace-only sweep is safe once no
+    content PR is in flight. **Re-derive the count**; it has moved once already.
+
+- [ ] **Task 11.3:** P2-3 — echo the changed-range count from `docs.yml`
+  - Input: `.github/workflows/docs.yml`
+  - Output: the `--changed` step prints how many files and hunks it examined
+  - Notes: `pagelint.py --changed` reporting 0 errors is indistinguishable from a run that
+    found no ranges to be strict about. It was real on PR #74 — 118 files, 465 hunks — but
+    the only way to know was to check locally and to force the gate red on purpose. This
+    makes a run prove its own non-vacuity instead of relying on a note in `PROMPT.md`.
+
+- [ ] **Task 11.4:** The acceptance pass — AC1 through AC9
+  - Input: `design.md` §14; `requirements.md` §12
+  - Output: a § *Acceptance pass as executed* appended to this file, one row per criterion
+    with the evidence
+  - Notes: **Walk each criterion; do not infer it from a green build.** Spec 011's own
+    acceptance pass failed AC5 and found `NO H1` missing from `CLAUDE.md`'s ledger — a rule
+    that had never fired once, invisible to everything but an enumeration. **To check
+    parity, enumerate; do not read.** AC7 is per-split: record which splits landed, and
+    **partial completion is a valid end state** — the spec is accepted on the splits it
+    landed, not blocked on the ones it did not. AC8 requires all **16** `keep` rows honoured,
+    naming **16 distinct pages** — see §2's third finding, and note that requirements §12 and
+    §14 say fifteen. Verify by set comparison against `worklist.md`, not by eye.
+
+- [ ] **Task 11.5:** The final gate
+  - Input: the whole tree
+  - Output: recorded results for five checks
+  - Notes: `python3 tools/linkcheck.py` — **this is the task the skill's own checklist asks
+    for**, and the orphan check is what enforces "never create orphaned files".
+    `python3 tools/pagelint.py` at 0 errors. `tools/urlmap.py --check-shape` and
+    `--check-redirects` green. And `--verify` against the live site **after** the last merge,
+    remembering it exits 2 rather than passing if the site is unreachable. Confirm
+    `BoxProvisioning.md#when-to-use-box-provisioning` still resolves — Spec 009's rung 3
+    links to it, `linkcheck.py` catches a break and redirects cannot.
+
+---
+
+## Appendix A — Where each of the 32 new pages nests
+
+**This is the item design §15 named as not measured, and Task 1.1 ratifies it.** The
+placements below follow from three things: design §6.1 (*a split page sits beside the page
+it came from*), S3 (*no published path exceeds 3 segments*), and the measured depth of each
+source page in `SUMMARY.target.md`.
+
+**The rule, where those three conflict:** file a split page under the **shallowest** of its
+sources; if that source is already three segments deep, the page goes **top-level in its
+section**.
+
+| # | New page | Nests under | Section | Depth | Task |
+|---:|---|---|---|---:|---|
+| 1 | `MigratingToPollyV8.md` | `BuildingAPipeline.md` **(sibling, not child)** | Commands, Handlers and Pipelines | 3 | 9.4 |
+| 2 | `AgreementDispatcherRouting.md` | `AgreementDispatcher.md` | Commands, Handlers and Pipelines | 3 | 9.3 |
+| 3 | `MessageTransforms.md` | `MessageMappers.md` | Using an External Bus | 3 | 7.1 |
+| 4 | `CloudEventsReference.md` | `CloudEventsSupport.md` | Using an External Bus | 3 | 7.3 |
+| 5 | `RoutingMultipleMessageTypes.md` | `DynamicMessageDeserialization.md` | Using an External Bus | 3 | 7.4 |
+| 6 | `InMemoryTransport.md` | *(top-level)* | Transports | 2 | 5.4 |
+| 7 | `AWSSQSMigrateToV10.md` | `AWSSQSConfiguration.md` | Transports | 3 | 8.1 |
+| 8 | `PostgreSQLBrokerTradeOffs.md` | `PostgreSQLMessageBroker.md` | Transports | 3 | 8.2 |
+| 9 | `OutboxArchiver.md` | `BrighterOutboxSupport.md` | Outbox and Inbox | 3 | 5.1 |
+| 10 | `TransactionalMessagingWithTheOutbox.md` | `BrighterOutboxSupport.md` | Outbox and Inbox | 3 | 5.1 |
+| 11 | `InMemoryOutbox.md` | `BrighterOutboxSupport.md` | Outbox and Inbox | 3 | 5.4 |
+| 12 | `InMemoryInbox.md` | `BrighterInboxSupport.md` | Outbox and Inbox | 3 | 5.4 |
+| 13 | `TurningOnReplayOnSeen.md` | `ReplayOnSeen.md` | Outbox and Inbox | 3 | 5.2 |
+| 14 | `ReplayOnSeenReference.md` | `ReplayOnSeen.md` | Outbox and Inbox | 3 | 5.2 |
+| 15 | `UsingSweeperCircuitBreaking.md` | `SweeperCircuitBreaking.md` | Outbox and Inbox | 3 | 5.3 |
+| 16 | `SwitchingSchedulers.md` | *(top-level — forced by S3)* | Scheduler | 2 | 4.1 |
+| 17 | `SchedulingAMessage.md` | *(top-level)* | Scheduler | 2 | 4.2 |
+| 18 | `ParameterizedQueryPatterns.md` | `QueryPatterns.md` | Darker | 3 | 6.1 |
+| 19 | `PaginationQueryPatterns.md` | `QueryPatterns.md` | Darker | 3 | 6.1 |
+| 20 | `ProjectionQueryPatterns.md` | `QueryPatterns.md` | Darker | 3 | 6.1 |
+| 21 | `AggregationQueryPatterns.md` | `QueryPatterns.md` | Darker | 3 | 6.1 |
+| 22 | `EFCoreQueryIntegration.md` | `QueryPatterns.md` | Darker | 3 | 6.1 |
+| 23 | `TestingQueryHandlers.md` | `ImplementAQueryHandler.md` | Darker | 3 | 6.2 |
+| 24 | `QueryHandlerDependencies.md` | `ImplementAQueryHandler.md` | Darker | 3 | 6.2 |
+| 25 | `QueryPipelinePolicies.md` | `QueryPipeline.md` | Darker | 3 | 6.3 |
+| 26 | `DarkerAndBrighterPipelines.md` | `QueryPipeline.md` | Darker | 3 | 6.3 |
+| 27 | `QueryResultTypes.md` | `QueriesAndQueryObjects.md` | Darker | 3 | 6.4 |
+| 28 | `QueryObjectValidation.md` | `QueriesAndQueryObjects.md` | Darker | 3 | 6.4 |
+| 29 | `DarkerConfigurationReference.md` | `DarkerBasicConfiguration.md` | Darker | 3 | 6.5 |
+| 30 | `ConfiguringOpenTelemetry.md` | `Telemetry.md` | Health Checks and Observability | 3 | 9.5 |
+| 31 | `MigratingToNullableReferenceTypes.md` | `NullableReferenceTypes.md` | V10 Migration | 3 | 9.2 |
+| 32 | `CQRSUseCasesAndPatterns.md` | `CQRSWithBrighterAndDarker.md` | Understanding Brighter | 3 | 9.1 |
+
+**32 pages. 3 top-level, 29 nested. Maximum depth 3 — S3 holds.**
+
+### The measurement that forced two of these
+
+Every split source page's published depth in `SUMMARY.target.md`, via `tools/urlmap.py`.
+Six sources are **already at three segments**, so nothing may nest beneath them:
+
+| Source page | Published path | Depth |
+|---|---|---:|
+| `PolicyRetryAndCircuitBreaker.md` | `commands-handlers-and-pipelines/buildingapipeline/policyretryandcircuitbreaker` | **3** |
+| `DefaultMessageMappers.md` | `using-an-external-bus/messagemappers/defaultmessagemappers` | **3** |
+| `HangfireScheduler.md` | `scheduler/brighterschedulersupport/hangfirescheduler` | **3** |
+| `QuartzScheduler.md` | `scheduler/brighterschedulersupport/quartzscheduler` | **3** |
+| `AwsScheduler.md` | `scheduler/brighterschedulersupport/awsscheduler` | **3** |
+| `AzureScheduler.md` | `scheduler/brighterschedulersupport/azurescheduler` | **3** |
+| `InMemoryScheduler.md` | `scheduler/brighterschedulersupport/inmemoryscheduler` | **3** |
+| *the other 20 sources* | | 2 |
+
+Consequences, both already carried into the tasks:
+
+- **`MigratingToPollyV8.md` becomes a sibling** of its own source, under
+  `BuildingAPipeline.md` (Task 9.4).
+- **`SwitchingSchedulers.md` goes top-level** in *Scheduler*: it draws from all five
+  three-segment scheduler leaves, so there is no source it could nest under (Task 4.1).
+- **`MessageTransforms.md` nests under `MessageMappers.md`, not `DefaultMessageMappers.md`**,
+  which donates 145 of its 264 lines but is itself at three segments (Task 7.1).
+
+Reproduce the depths:
+
+```bash
+python3 - <<'PY'
+import importlib.util
+s = importlib.util.spec_from_file_location("urlmap", "tools/urlmap.py")
+m = importlib.util.module_from_spec(s); s.loader.exec_module(m)
+paths = m.published_paths(open("SUMMARY.md").read())
+for path, f in sorted(paths.items(), key=lambda kv: -kv[0].count("/")):
+    print(path.count("/") + 1, path, f)
+PY
+```
+
+### Top-level entries after all 32 land
+
+| Section | Pages | Entries | §7.6 intended |
+|---|---:|---:|---:|
+| Get Started | 3 | 3 | 3 |
+| Commands, Handlers and Pipelines | 17 | 5 | 5 |
+| Brighter Configuration | 6 | 4 | 4 |
+| Using an External Bus | 15 | 9 | 9 |
+| Transports | 12 | 7 | 7 |
+| **Outbox and Inbox** | 39 | **8** | **10** |
+| Scheduler | 10 | 4 | 4 |
+| Darker | 17 | 5 | 5 |
+| Health Checks and Observability | 5 | 4 | 4 |
+| V10 Migration | 3 | 2 | 2 |
+| Understanding Brighter | 13 | 10 | 10 |
+| Reference | 2 | 2 | 2 |
+
+**S1 ✅** minimum 2 · **S2 ✅** maximum **10**, ceiling 12, two entries of headroom ·
+**S3 ✅** maximum depth 3.
+
+**Eleven of the twelve rows reproduce design §7.6 exactly.** *Outbox and Inbox* comes out at
+**8**, not 10, because all seven of its new pages nest under depth-2 parents and none
+becomes a top-level entry. Design §15 flagged that column as an intention rather than a
+measurement and named the breach case — *"if all seven landed top-level it would show 15 and
+breach S2's ceiling of 12"*. They do not; the answer is 8. **This is a tally correction, the
+ninth in this programme. No threshold moves, no verdict changes, and `--check-shape` (Task
+2.2) keeps it true from PR 2 onward rather than leaving it to be re-derived.**
+
+---
+
+## Appendix B — The anchor obligations, by task
+
+Design §8 measured **34 inbound anchor links across 7 of the 26 split pages; 19 pages have
+none**, and **≈19 of the 34 actually need repointing** because most linked anchors sit in
+sections that stay in the core. That table is a snapshot taken before the work — **re-derive
+per split**, because the splits themselves add links.
+
+| Task | Page | Links | Repoint | Stay |
+|---|---|---:|---:|---|
+| 5.1 | `BrighterOutboxSupport.md` | 16 | 5 | `#implicit-clear` (9), `#you-always-need-a-sweeper` (2) |
+| 5.2 | `ReplayOnSeen.md` | 8 | 6 | `#causation-id` (2) |
+| 8.1 | `AWSSQSConfiguration.md` | 3 | 3 | — |
+| 7.1 | `MessageMappers.md` | 3 | 3 | — |
+| 9.5 | `Telemetry.md` | 2 | 0 | `#configurable-instrumentation`, `#inbox-tracing` |
+| 6.5 | `DarkerBasicConfiguration.md` | 1 | 1 | — |
+| 9.4 | `PolicyRetryAndCircuitBreaker.md` | 1 | 1 | — |
+| — | the other 19 split pages | **0** | | |
+
+**Phase 5 carries 19 of the 34** — more than half the anchor cost of the whole spec sits in
+two tasks. For scale, the `BrighterBasicConfiguration.md` split alone cost **28 repoints
+across 20 pages** in Spec 011; all 26 splits here cost ≈19, because Spec 011 counted its
+anchors *during* the work and this design counted them *before* it.
+
+**The standing obligation is `grep` before the move, not `linkcheck.py` after it.**
+`linkcheck.py` catches a broken anchor, which is worth having — but redirects cannot fix a
+fragment, so a missed anchor is a real 404 into the middle of a page, and the cheapest place
+to catch it is before the heading moves.
+
+---
+
+## Appendix C — What each phase must not do
+
+Collected because every one of these has cost a rework somewhere in this programme.
+
+- **Do not re-open a `keep` row.** 16 rows naming 16 distinct pages, and AC8 requires all of
+  them honoured. `KafkaConfiguration.md` is 608 lines of a single mode and is the standing
+  reminder that size misleads.
+- **Do not review against a 500-line limit.** `CLAUDE.md` says *"consider splitting"* — a
+  prompt to think, not a threshold — and **sixteen pages stay over 500 after this spec
+  completes**, seven of them `keep` rows. Design §7.8 lists all sixteen with the reason for
+  each. **Mode mixing is the criterion.**
+- **Do not shrink the four parent pages to stubs.** `BrighterOutboxSupport.md`,
+  `BrighterInboxSupport.md`, `BrighterSchedulerSupport.md` and `DistributedLock.md` hang the
+  middle navigation layer, and GitBook offers no sub-group — a middle layer needs a real
+  page, and that page has to earn its place with content (requirements §3.1).
+- **Do not backfill `using` directives you have not checked.** The 802-block debt is Spec
+  011's AC1 baseline and shrinks only as pages are genuinely edited. Splits move blocks; they
+  do not improve them.
+- **Do not rewrite Darker page content.** Re-filing and splitting are safe; `../Darker` HEAD
+  is ahead of the deployed 4.1.1 and the site publishes the deployed version.
+- **Do not consume Spec 009's material** — `CQRSWithBrighterAndDarker.md`'s 226-line worked
+  example and `ShowMeTheCode.md`. Requirements §8 is binding.
+- **Do not write new how-tos.** The splits *extract* how-tos that already exist inside larger
+  pages. The four missing how-tos in `worklist.md` §8 and the PostgreSQL guide committed on
+  #67 belong to Spec 013.
+- **Do not add a *How To* section**, and do not create one for 013 either. A how-to lives
+  beside its subject; a *Guides* section becomes worth its place at three or more genuinely
+  cross-cutting guides, and that is 013's call (design §6.2).
+- **Do not trust a green check to mean a check ran.** Prove `--check-shape`, `--check-redirects`
+  and the D5 script red on purpose before trusting them green. `pagelint.py --changed`
+  reporting 0 errors was indistinguishable from a vacuous run until someone forced it.
+- **Do not re-derive a figure from memory — re-derive it from the corpus.** **Fifteen**
+  figures in this programme have now been wrong — thirteen before this document, plus the
+  *Outbox and Inbox* entry count and the `keep`-row page count above — and **every single one
+  was a tally, never a rule and never a verdict.** Five of them trace to one wrong
+  line-counting call, and two to reading a total instead of enumerating it. A page's length
+  is `len(text.splitlines())`.
