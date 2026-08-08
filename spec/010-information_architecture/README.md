@@ -1,7 +1,12 @@
 # Spec 010: Information Architecture Restructure
 
 **Created:** 2026-08-03
-**Status:** Requirements Phase
+**Status:** Design phase — requirements approved 2026-08-06, D0 executed 2026-08-07
+
+> **This README is the rationale, not the plan.** Where it disagrees with
+> [`requirements.md`](requirements.md) or [`design.md`](design.md), they win. Three
+> passages were stale and are corrected in place below: the *Proposed Target Structure*,
+> the redirect example, and *Out of Scope*.
 
 ## Topic Overview
 
@@ -51,6 +56,15 @@ Reference          config tables (Spec 012), Glossary, FAQ, V10 Migration
 Explanation        Under the Hood, EDA patterns, Task Queues, CQRS, Reactor/Proactor
 ```
 
+> **Superseded 2026-08-07 by [`design.md`](design.md) §3.** These seven buckets were a
+> starting point, never an approval — requirements §4 says so explicitly. Two things
+> defeated them. A *How To* section collects roughly 40 pages once Spec 013's guides land,
+> which is the *Outbox and Inbox* problem under a new name; and the buckets have nowhere to
+> put the Brighter core — handlers, pipelines, configuration and the external bus — so it
+> would all have landed in *How To* as well. **The approved shape is twelve sections and no
+> *How To* section at all**: a how-to lives beside its subject. All 110 pages are placed in
+> design §3.1.
+
 ## Scope
 
 - Rewrite `SUMMARY.md` to the agreed structure
@@ -70,22 +84,45 @@ Explanation        Under the Hood, EDA patterns, Task Queues, CQRS, Reactor/Proa
 
   ```yaml
   redirects:
-    guaranteed-at-least-once/rabbitmqconfiguration: transports/RabbitMQConfiguration.md
+    guaranteed-at-least-once/rabbitmqconfiguration: contents/RabbitMQConfiguration.md
   ```
 
   Constraints: **no leading slashes** on either side; all paths are relative to `root`;
   malformed indentation silently disables redirects rather than erroring, so the
   block needs mechanical verification rather than eyeballing.
+
+  > **Corrected 2026-08-07.** This example used to target
+  > `transports/RabbitMQConfiguration.md` — **a directory that does not exist and that this
+  > spec does not create.** The value is a path to the Markdown file *in the repository*,
+  > and `contents/` is flat and stays flat, so every target in this repo is
+  > `contents/<FileName>.md`. Requirements §2 is why no file moves on disk at all.
+  >
+  > Two facts measured on the live site since (requirements §16): GitBook resolves the
+  > value to wherever that page **currently** publishes, so an entry does not go stale when
+  > its page moves again; and **type this block, never paste it** — GitBook's own
+  > documented example carries two U+200B zero-width spaces to this day.
 - Generate `llms.txt` from the new `SUMMARY.md` (rationale in Spec 011) — the
   generator belongs here because it is derived from the tree
 - Extend `tools/linkcheck.py` to validate that redirect targets resolve
 
 ## Out of Scope
 
-- Editing page *bodies*. Splitting mixed-mode pages is
-  [Spec 011](../011-authoring_conventions/README.md). The `BasicConcepts` → `Glossary`
-  merge that this line used to except is withdrawn, so there is now no body-editing
-  carve-out at all.
+- **Writing new how-to guides** — Spec 013. The splits *extract* how-tos that already
+  exist inside larger pages; they author none.
+- **Writing tutorials** — Spec 009. This spec creates the *Get Started* section they land
+  in, and must not consume the material 009 needs.
+- **Generated configuration tables** — Spec 012.
+- **Merging `BasicConcepts.md` into `Glossary.md`** — withdrawn 2026-08-04, see below.
+- **Rewriting Darker page *content*.** Re-filing and splitting are safe; `../Darker` HEAD
+  is ahead of the deployed 4.1.1 and the site publishes the deployed version.
+- **Moving files on disk.** Requirements §2 establishes it is unnecessary.
+
+> **Corrected 2026-08-07.** This section used to read *"Editing page bodies. Splitting
+> mixed-mode pages is Spec 011."* **Splitting moved from 011 into 010 on 2026-08-03**,
+> precisely because a split page needs a name, a `SUMMARY.md` entry and possibly a
+> redirect — all files 010 is already changing. `spec/011-authoring_conventions/worklist.md`
+> names Spec 010 as its executor in its own header. **Page bodies are in scope**, for the
+> 26 splits and for the three content defects in that file's §7.
 
 ### The `BasicConcepts` merge is withdrawn (2026-08-04)
 
@@ -113,7 +150,9 @@ a second page to find. That is additive and cheap — glossary links already car
 
 ## Source Material
 
-- Current `SUMMARY.md` — 162 lines, 110 pages under `contents/`
+- Current `SUMMARY.md` — 166 lines, 110 links, 19 sections; 110 pages under `contents/`
+- [`SUMMARY.target.md`](SUMMARY.target.md) — the tree design §3 approves, 145 lines,
+  110 links, 12 sections. The file PR 2 installs, kept here so its figures reproduce
 - [Diátaxis](https://diataxis.fr/) for the four-mode vocabulary
 - GitBook `.gitbook.yaml` redirects documentation
 - `tools/linkcheck.py` — reports MISSING FILE, MISSING ANCHOR, WRONG CASE and ORPHAN;
@@ -134,16 +173,21 @@ Spec 011 normalises page bodies first, then this spec moves them.
 
 ## Risks
 
-- **URL breakage** is the dominant risk. Mitigation: redirects block plus an explicit
-  old-path → new-path table covering all 110 pages.
-- **Review size.** A full TOC rewrite is a large diff. Mitigation: get the proposed
-  `SUMMARY.md` approved at design phase, before any file moves happen.
+- ~~**URL breakage** is the dominant risk.~~ **Downgraded 2026-08-06/07, measured twice.**
+  All **763** internal links survive, because every target stays in a flat `contents/`;
+  only inbound *external* links move, and **74 of 110** do. Both redirect mechanisms were
+  proven on the live site (requirements §16). What is *not* covered is **anchor-level**
+  links, which GitBook redirects cannot address — design §8 measures those at 34 inbound,
+  ≈19 needing repointing.
+- **Review size.** A full TOC rewrite is a large diff. Mitigation: the target tree is
+  written out as `SUMMARY.target.md` and approved at design, before anything is installed;
+  and the restructure ships as one PR touching no page bodies at all.
 
 ## Status Checklist
 
-- [ ] Requirements gathered
-- [ ] Requirements reviewed and approved
-- [ ] Documentation outline created
+- [x] Requirements gathered — 2026-08-06
+- [x] Requirements reviewed and approved — 2026-08-06 (`.requirements-approved`)
+- [x] Documentation outline created — `design.md`, 2026-08-07
 - [ ] Outline reviewed and approved
 - [ ] Writing tasks identified
 - [ ] Writing complete
@@ -152,10 +196,14 @@ Spec 011 normalises page bodies first, then this spec moves them.
 
 ## Next Steps
 
-1. Agree the target section list and ordering
-2. Produce the old-path → new-path mapping for all 110 pages
-3. Confirm GitBook redirect syntax and any limits
-4. Create requirements document
+1. Review [`design.md`](design.md) — the target tree in §3, the twelve sections, and the
+   five deviations from `worklist.md`'s shape column collected in §7.7
+2. `/spec:tasks`, sequenced as design §10 lays out: restructure first, splits second
+
+Everything the first three steps of the old list asked for is done and measured:
+the section list and ordering are design §3, the old-path → new-path mapping is
+`urlmap.py --redirects` (74 entries, generated not transcribed), and the redirect syntax
+was confirmed against the live site by publishing it — requirements §16.
 
 ## Notes
 
