@@ -5,7 +5,7 @@
 (approved 2026-08-06)
 **Executes against:** `spec/011-authoring_conventions/worklist.md` (42 rows, 26 `split`, 16 `keep`)
 
-**Total tasks: 51, across 11 phases.**
+**Total tasks: 52, across 11 phases.**
 
 ---
 
@@ -27,7 +27,7 @@ design deliberately left to this phase.
 | **7** | Using an External Bus — 4 rows, 3 new pages | 4 | D4 |
 | **8** | Transports — 2 rows, 2 new pages | 2 | D4 |
 | **9** | The rest of §6d — 5 rows, 5 new pages | 6 | D4 |
-| **10** | `llms.txt`, once the page count is stable | 3 | D6 |
+| **10** | `llms.txt` — **re-scope D6 first; the platform already does most of it (§3)** | 4 | D6 |
 | **11** | Glossary links, the two carried-over chores, acceptance | 5 | D8, P2-1, P2-3 |
 
 **PRs 4–9 are individually shippable and individually abandonable.** AC7 is per-split and
@@ -156,6 +156,44 @@ gives 16 pages, not 15. **Fifteen is the count of distinct *rows by subject*, no
 Recorded here rather than edited into an approved document; **AC8's substance is untouched**
 — all 16 rows are honoured either way, and §7 touches none of them. It is the fourteenth
 wrong tally in this programme, and the fourteenth that is only a tally.
+
+---
+
+## 3. What the platform already does, measured 2026-08-08
+
+Checked while reviewing Task 10.3, and it re-scopes D6 rather than answering the question
+that was asked. **All of this is live on our site today, automatic, with no configuration.**
+
+| Endpoint | Result |
+|---|---|
+| `/llms.txt` | **200**, 27,470 bytes, `text/markdown`, **170 link entries** |
+| `/llms-full.txt` | **200**, 1,332,541 bytes — the whole corpus in one file |
+| any page + `.md` | **200**, `text/markdown` — raw source, no HTML |
+| any page + `?ask=<question>` | documented query endpoint |
+| `/~gitbook/mcp` | **405 to a GET**, so the route exists; it is an MCP server, POST-only |
+
+**Four findings, in descending order of how much they matter:**
+
+1. **59 of the 170 entries are V9, and nothing marks them.** They come from a separate
+   *V9 Paramore Brighter Documentation* space and sit in the same index as our 111. Fetching
+   both as markdown: a V10 page leads with `# Kafka Configuration` then
+   `> **Reference** · Applies to **Brighter V10**`; **the V9 page goes straight from `#
+   Basic Concepts` to `## Command` with no version marker at all.** The banner works —
+   *and the index undoes it.* Task 10.2.
+2. **The format `CLAUDE.md` specifies is already the platform's format.** GitBook's own
+   `llms.txt` emits `- [Title](url): description` on **294 of 668** entries. Ours emits
+   descriptions on **zero**, because no page has one set. Task 10.1.
+3. **We cannot serve our own `/llms.txt`.** GitBook owns that path. A generated file at the
+   repository root would live on GitHub only, competing with the canonical one — which
+   changes what D6 is *for*, and is why Task 10.3 is a ruling rather than an implementation.
+4. **Sections in the generated file are GitBook *spaces*, not our information
+   architecture** — three `##` groups, none of them our twelve. Whatever the ruling, the
+   tree this spec builds does not reach that file.
+
+> **An incidental corroboration, and it is still live.** GitBook's *Content configuration*
+> page — the one this repo's `.gitbook.yaml` was written from — **still contains U+200B in
+> its `### Structure` heading today**, fetched 2026-08-08. The contamination recorded in
+> requirements §2.4 is present, not historical. **Type the block; never paste it.**
 
 ---
 
@@ -739,41 +777,66 @@ but is created in Task 5.4, with the rest of the `InMemoryOptions.md` redistribu
 
 ---
 
-## Phase 10 — `llms.txt` (PR 10)
+## Phase 10 — `llms.txt` and LLM-facing delivery (PR 10)
 
-**Goal:** D6, over whatever page count phases 4–9 actually produced.
+**Goal:** D6 — but D6 must be re-scoped before it is built, because **the platform already
+does most of it.** See §3 for what was measured on 2026-08-08. Investigate, rule, then
+implement whatever the ruling leaves.
 
-- [ ] **Task 10.1:** Write `tools/llmstxt.py`
-  - Input: `CLAUDE.md` § llms.txt (the format); `design.md` §9.2; `SUMMARY.md`; each page's
-    banner
-  - Output: `tools/llmstxt.py`, generating `- [Title](path): Type — one sentence.` with
-    sections mirroring `SUMMARY.md`
-  - Notes: The type comes from the banner. **The sentence is the page's own opening
-    sentence** — the first sentence of the first non-blank prose line after the banner —
-    extracted, never invented. The generator **fails** if that sentence is missing, longer
-    than 200 characters, ends in a colon, or is byte-identical to another page's. This is
-    Q9's answer and it takes neither horn of the dilemma: a parallel table of hand-written
-    summaries would drift from the pages within a release; a sentence that lives in the page
-    cannot.
+- [ ] **Task 10.1:** Establish how a page description reaches GitBook's generated `llms.txt`
+  - Input: §3's measurements; GitBook's *LLM-ready docs* and *Content configuration* pages
+    (fetch the `.md` variants); the GitBook dashboard for this site
+  - Output: a written finding — the mechanism, or a statement that there is none for a
+    Git-synced space
+  - Notes: **The format `CLAUDE.md` specifies is already achievable in the platform's own
+    file** — GitBook's own `llms.txt` renders `- [Title](url): description` on 294 of its 668
+    entries, which is exactly `- [Title](path): Type — one sentence.` minus the type. Ours
+    renders **zero**. The question is only how a description is set. Front matter was ruled
+    out for the *banner* in 011 on the strength of GitbookIO/gitbook#1079, and **that ruling
+    was about rendering metadata into the page body, not about `description`** — quote the
+    whole rule, not the sentence that scared you. `Content configuration` does not document
+    front matter at all, so the answer may be the dashboard, or may not exist. **If a
+    description can be set, the one-sentence-per-page work lands at the canonical
+    `/llms.txt` URL instead of in a GitHub-only file, and D6 mostly dissolves.**
 
-- [ ] **Task 10.2:** Run it, and fix the sentences it rejects
-  - Input: the first run's failures
-  - Output: one improved opening sentence per rejected page
-  - Notes: **Expect a double-figure number of failures. That is the deliverable working, not
-    a defect in it.** A page whose opening sentence does not survive being read alone has a
-    bad opening sentence, and fixing it improves the page for every reader, not just for a
-    retrieval client. The fixes are one sentence each and they are prose, so `pagelint.py`
-    has nothing to say about them — but `linkcheck.py` still runs.
+- [ ] **Task 10.2:** Establish whether the V9 space can be excluded from the generated index
+  - Input: the GitBook dashboard; §3's measurement
+  - Output: a written finding, and a fix if one exists
+  - Notes: **This is the more consequential half.** Our `/llms.txt` lists **170** entries:
+    our 111, plus **59 from a separate *V9 Paramore Brighter Documentation* space, with no
+    discriminator between them.** Spot-checked, a V10 page's `.md` opens with our banner —
+    `> **Reference** · Applies to **Brighter V10**` — and **a V9 page has no banner at all.**
+    So the banner is doing its job on our pages while the index quietly undermines it, which
+    is the exact failure the banner exists to prevent, one level up from where 011 defended
+    against it. **Hiding pages will not help**: GitBook documents that hidden pages remain in
+    `llms-full.txt` and in the MCP server. If the space cannot be excluded, say so and record
+    it as a known limitation rather than working around it silently.
 
-- [ ] **Task 10.3:** Commit `llms.txt`, and put the `CLAUDE.md` amendment to the maintainer
-  - Input: the generated file; `design.md` §9.2's closing paragraph
-  - Output: `llms.txt` at the repository root; a decision recorded on the format question
-  - Notes: **This one is the maintainer's call.** The documented format uses repository paths
-    (`/contents/FileName.md`); a retrieval client wants the **published URL**, which
-    `urlmap.py` now emits and which was validated 110/110. The design's recommendation is
-    that `llms.txt` emits published URLs and `CLAUDE.md` § llms.txt is amended to match —
-    repository paths in a file whose entire audience is HTTP clients help nobody. Do not
-    amend `CLAUDE.md` without the ruling.
+- [ ] **Task 10.3:** Rule on D6's scope — **maintainer's call**
+  - Input: Tasks 10.1 and 10.2's findings; `design.md` §9.2; requirements P1-1, D6 and **AC9**
+  - Output: a ruling, and **AC9 amended to match if D6 narrows**
+  - Notes: The live options are *fix it at source* (descriptions on pages, V9 excluded — the
+    platform's file becomes the deliverable), *build ours anyway* as a typed, V10-only,
+    IA-sectioned file at the repository root, accepting it is **not** at the canonical URL
+    because GitBook owns `/llms.txt` and we cannot override it, or *drop the generator and
+    keep the sentence rule* (Task 10.4). **AC9 as written — "`llms.txt` covers every page
+    with type and one-line summary, generated not hand-written" — is already satisfied in
+    part by the platform**, and if D6 narrows, AC9 must narrow with it rather than being
+    quietly reinterpreted.
+
+- [ ] **Task 10.4:** Keep Q9's opening-sentence rule, wherever the index ends up
+  - Input: `design.md` §9.2
+  - Output: the check implemented — as `tools/llmstxt.py`'s validator if D6 survives Task
+    10.3, otherwise as a new `pagelint.py` rule
+  - Notes: **This part of Q9 is worth having regardless of who generates the index.** A
+    page's first sentence after the banner must exist, be under 200 characters, not end in a
+    colon, and be unique across pages. **Expect a double-figure number of failures on the
+    first run; that is the check working, not a defect in it.** A page whose opening sentence
+    does not survive being read alone has a bad opening sentence, and fixing it improves the
+    page for every reader — and now, demonstrably, for every retrieval client too, because
+    that sentence is what GitBook's `.md` variant leads with. Fixes are one sentence each.
+    If it lands as a pagelint rule, add it to `CLAUDE.md`'s ledger **and** the linter in the
+    same commit — AC5 of Spec 011 failed on exactly that parity gap.
 
 ---
 
@@ -833,6 +896,19 @@ but is created in Task 5.4, with the rest of the `InMemoryOptions.md` redistribu
 ---
 
 ## Appendix A — Where each of the 32 new pages nests
+
+> **RATIFIED 2026-08-08 (Task 1.1).** Reviewed placement by placement. With S3 measured,
+> **27 of the 32 are derivations** — each nests under its single source per design §6.1.
+> Five were decisions, all confirmed as written: `OutboxArchiver.md` and
+> `TransactionalMessagingWithTheOutbox.md` **top-level**, with `AzureBlobArchiveProvider.md`
+> and its configuration child re-parented beneath the archiver (the URL of those two moving
+> twice was raised and accepted); `InMemoryTransport.md` **top-level in *Transports***,
+> because every other transport is; and `SchedulingAMessage.md` and `SwitchingSchedulers.md`
+> **both top-level in *Scheduler***, giving four entries as design §7.6 intended — the
+> alternative buries the section's two task-shaped pages beneath six technology pages.
+> `MessageTransforms.md` **stays under `MessageMappers.md`**, which S3 used to force and is
+> now a choice: the page exists to state that **transforms require a custom mapper**, so
+> filing it beneath the *default* mapper page would undercut the correction it carries.
 
 **This is the item design §15 named as not measured, and Task 1.1 ratifies it.** The
 placements below follow from design §6.1 (*a split page sits beside the page it came from*)
