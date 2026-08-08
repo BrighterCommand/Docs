@@ -192,7 +192,7 @@ mechanical rules over `SUMMARY.md`:
 
 **S2 counts entries, not pages, and that is the whole point.** *Outbox and Inbox* holds
 32 pages and is perfectly navigable, because 21 of them are stores nested under three
-parent pages and the reader sees **10 entries**. The failure the requirements named — 27
+parent pages and the reader sees **8 entries**. The failure the requirements named — 27
 flat pages — was never about the total; it was about the flat list.
 
 Measured against the tree in §3.1:
@@ -365,16 +365,35 @@ cannot carry their `using` directives mark the omission `// ...`.
 
 **The `Comparison` sections fold up by merger, not by concatenation.**
 `BrighterSchedulerSupport.md` already carries `## Choosing a Scheduler` (97 lines). The
-six comparison sections total ~96 lines and say what it already says; they are folded
-*into* it and the duplicate prose is dropped, which is the one place in this spec where
-text is removed rather than moved — and it is removed as **duplication**, not as
-information. The no-information-loss check (D5) is run against the union of the six
-sections and `## Choosing a Scheduler`, not against each separately.
+comparison sections say what it already says; they are folded *into* it and the duplicate
+prose is dropped, which is the one place in this spec where text is removed rather than
+moved — and it is removed as **duplication**, not as information. The
+no-information-loss check (D5) is run against the union of those sections and
+`## Choosing a Scheduler`, not against each separately.
+
+**There are four such sections, totalling 85 lines, not six totalling 96.** Corrected at
+design review, and the correction matters because a name match is what produced the wrong
+figure:
+
+| Page | Section | Lines |
+|---|---|---:|
+| `HangfireScheduler.md` | `## Comparison: Hangfire vs Quartz` | 26 |
+| `AwsScheduler.md` | `## AWS Scheduler Comparison with Other Schedulers` | 23 |
+| `AzureScheduler.md` | `## Azure Scheduler Comparison with Other Schedulers` | 24 |
+| `InMemoryScheduler.md` | `## Comparison with Production Schedulers` | 12 |
+| | **Total** | **85** |
+
+`QuartzScheduler.md` has no comparison section at all, and `AwsScheduler.md` has a second
+heading matching the word — **`## Scheduling Modes Comparison` (11 lines), which stays in
+the AWS Reference core.** It compares AWS's *own* two scheduling modes, direct-to-target
+against `FireAwsScheduler`; it is not a comparison between schedulers and has no business
+in `## Choosing a Scheduler`. `worklist.md` §5a and §6a both say "six", and they are wrong
+on the count for the same reason.
 
 **Deviation, with the arithmetic — see §7.7 item 1.** The `HangfireScheduler.md` row's
 shape column also folds each page's `Overview` and `How Brighter Integrates` sections up
 into the overview. Those five pairs total **278 lines**. `BrighterSchedulerSupport.md` is
-579 lines and sheds 212, leaving 367; adding 278 + 96 would return it to **741 lines** —
+578 lines and sheds 212, leaving 366; adding 278 + 85 would return it to **729 lines** —
 larger than any page the split drains, and larger than it is today. The per-technology
 orientation therefore **stays on its own page**, where a reader who has already chosen
 Hangfire is looking. Only the comparisons fold up, which is what §5a's own conclusion
@@ -384,12 +403,12 @@ Per-page effect:
 
 | Page | Today | After | Loses |
 |---|---:|---:|---|
-| `HangfireScheduler.md` | 833 | ~771 | Migration (36), Comparison (26) |
-| `AwsScheduler.md` | 776 | ~701 | Migration (52), Comparison (23) |
-| `QuartzScheduler.md` | 770 | ~732 | Migration (38) |
-| `AzureScheduler.md` | 718 | ~633 | Migration (61), Comparison (24) |
-| `InMemoryScheduler.md` | 542 | ~496 | Migration (34), Comparison (12). **`## Important Warning` (16) and `## When to Use InMemory Scheduler` (63) stay** — it is the scheduler you must not ship |
-| `BrighterSchedulerSupport.md` | 579 | ~400 | 212 out, ~40 net in after the merge |
+| `HangfireScheduler.md` | 832 | ~770 | Migration (36), Comparison (26) |
+| `AwsScheduler.md` | 775 | ~700 | Migration (52), Comparison (23). **`## Scheduling Modes Comparison` (11) stays** — it compares AWS's own modes, not schedulers |
+| `QuartzScheduler.md` | 769 | ~731 | Migration (38). No comparison section |
+| `AzureScheduler.md` | 717 | ~632 | Migration (61), Comparison (24) |
+| `InMemoryScheduler.md` | 541 | ~495 | Migration (34), Comparison (12). **`## Important Warning` (16) and `## When to Use InMemory Scheduler` (63) stay** — it is the scheduler you must not ship |
+| `BrighterSchedulerSupport.md` | 578 | ~400 | 212 out, ~35 net in after the merge |
 | `TickerQScheduler.md` | 234 | 234 | **`keep`** — no migration section at all, `Best Practices` is 8 lines |
 
 ### 7.2 Transports — 3 new pages
@@ -411,7 +430,7 @@ material, written properly. It is flagged to 013 rather than half-extracted here
 
 ### 7.3 Darker — 12 new pages
 
-**`QueryPatterns.md` — 1,292 lines, the largest page in the corpus.** Six independent
+**`QueryPatterns.md` — 1,291 lines, the largest page in the corpus.** Six independent
 task-shaped recipes in one file; the core becomes a hub.
 
 | New page | Type | Source section | Lines |
@@ -430,13 +449,13 @@ cross-cutting, so it belongs to the hub rather than to any one recipe.
 
 | Page | New pages | Type | Source | Lines |
 |---|---|---|---|---:|
-| `ImplementAQueryHandler.md` (936 → ~647) | `TestingQueryHandlers.md` | How-to | `Testing Query Handlers` | 159 |
+| `ImplementAQueryHandler.md` (935 → ~646) | `TestingQueryHandlers.md` | How-to | `Testing Query Handlers` | 159 |
 | | `QueryHandlerDependencies.md` | How-to | `Working with Dependencies` | 130 |
-| `QueryPipeline.md` (929 → ~717) | `QueryPipelinePolicies.md` | How-to | `Configuring Polly Policies` | 159 |
+| `QueryPipeline.md` (928 → ~716) | `QueryPipelinePolicies.md` | How-to | `Configuring Polly Policies` | 159 |
 | | `DarkerAndBrighterPipelines.md` | Explanation | `Comparison with Brighter Pipeline` | 53 |
-| `QueriesAndQueryObjects.md` (878 → ~580) | `QueryResultTypes.md` | Explanation | `Query Result Types` | 179 |
+| `QueriesAndQueryObjects.md` (877 → ~579) | `QueryResultTypes.md` | Explanation | `Query Result Types` | 179 |
 | | `QueryObjectValidation.md` | How-to | `Validation in Query Objects` | 119 |
-| `DarkerBasicConfiguration.md` (511 → ~436) | `DarkerConfigurationReference.md` | Reference | `Darker Configuration Options` | 75 |
+| `DarkerBasicConfiguration.md` (510 → ~435) | `DarkerConfigurationReference.md` | Reference | `Darker Configuration Options` | 75 |
 
 `QueryPipelinePolicies.md` is §5b's finding executed: Brighter decomposes the same
 subject across `BuildingAPipeline.md`, `PolicyRetryAndCircuitBreaker.md` and
@@ -462,7 +481,7 @@ the deployed 4.1.1 and the site publishes the deployed version.
 
 ### 7.4 Q5 — `ReplayOnSeen.md`, and which mode is the core
 
-1,040 lines, banner-typed Reference, three clean modes:
+1,039 lines, banner-typed Reference, three clean modes:
 
 | Mode | Sections | Lines |
 |---|---|---:|
@@ -486,28 +505,28 @@ New: `TurningOnReplayOnSeen.md` (How-to, 469) and `ReplayOnSeenReference.md` (Re
 
 | Page | Today → core | New pages | Type | Source | Lines |
 |---|---|---|---|---|---:|
-| `CQRSWithBrighterAndDarker.md` | 1,145 → ~936 | `CQRSUseCasesAndPatterns.md` | Explanation | `Use Cases and Patterns` | 209 |
-| `NullableReferenceTypes.md` | 712 → ~448 | `MigratingToNullableReferenceTypes.md` | How-to | `Migration Guide` | 264 |
-| `AgreementDispatcher.md` | 721 → ~401 | `AgreementDispatcherRouting.md` | Explanation | `Standard vs Agreement Dispatcher Routing` (74), `Use Cases` (146), `Limitations` (53), `Performance Implications` (47) | 320 |
-| `PolicyRetryAndCircuitBreaker.md` | 688 → ~440 | `MigratingToPollyV8.md` | How-to | `Migration Guide: V9 to V10` (96), `Legacy: Using Polly v7 Policies (Deprecated)` (152) | 248 |
-| `Telemetry.md` | 598 → ~391 | `ConfiguringOpenTelemetry.md` | How-to | `Configuring OpenTelemetry` (81), `Complete Configuration Example` (96), `Distributed Tracing Example` (30) | 207 |
-| `DynamicMessageDeserialization.md` | 598 → ~282 | `RoutingMultipleMessageTypes.md` | How-to | `Using CloudEvents Type for Routing` (83), `Custom Routing Strategies` (63), `Handler Routing` (77), `Configuration Examples` (93) | 316 |
-| `SweeperCircuitBreaking.md` | 528 → ~396 | `UsingSweeperCircuitBreaking.md` | How-to | `Usage Patterns` (61), `Advanced Scenarios` (71) | 132 |
+| `CQRSWithBrighterAndDarker.md` | 1,144 → ~935 | `CQRSUseCasesAndPatterns.md` | Explanation | `Use Cases and Patterns` | 209 |
+| `NullableReferenceTypes.md` | 711 → ~447 | `MigratingToNullableReferenceTypes.md` | How-to | `Migration Guide` | 264 |
+| `AgreementDispatcher.md` | 720 → ~400 | `AgreementDispatcherRouting.md` | Explanation | `Standard vs Agreement Dispatcher Routing` (74), `Use Cases` (146), `Limitations` (53), `Performance Implications` (47) | 320 |
+| `PolicyRetryAndCircuitBreaker.md` | 687 → ~440 | `MigratingToPollyV8.md` | How-to | `Migration Guide: V9 to V10` (96), `Legacy: Using Polly v7 Policies (Deprecated)` (151) | 247 |
+| `Telemetry.md` | 597 → ~390 | `ConfiguringOpenTelemetry.md` | How-to | `Configuring OpenTelemetry` (81), `Complete Configuration Example` (96), `Distributed Tracing Example` (30) | 207 |
+| `DynamicMessageDeserialization.md` | 597 → ~281 | `RoutingMultipleMessageTypes.md` | How-to | `Using CloudEvents Type for Routing` (83), `Custom Routing Strategies` (63), `Handler Routing` (77), `Configuration Examples` (93) | 316 |
+| `SweeperCircuitBreaking.md` | 527 → ~395 | `UsingSweeperCircuitBreaking.md` | How-to | `Usage Patterns` (61), `Advanced Scenarios` (71) | 132 |
 | `BrighterOutboxSupport.md` | 517 → ~197 | `OutboxArchiver.md` | Reference | `Outbox Archiver` | 151 |
 | | | `TransactionalMessagingWithTheOutbox.md` | How-to | `Complete Example: Transactional Messaging` | 169 |
-| `CloudEventsSupport.md` | 476 → ~370 | `CloudEventsReference.md` | Reference | `CloudEvents Attributes` (34), `CloudEvents Across Transports` (72) | 106 |
-| `MessageMappers.md` | 267 → ~147 | `MessageTransforms.md` | Explanation | `Transformers` (120) + `Transform Pipeline Example` from `DefaultMessageMappers.md` (145) | 265 |
-| `DefaultMessageMappers.md` | 479 → ~334 | *(none — donates 145 lines)* | | | |
-| `InMemoryOptions.md` | 696 → ~327 | `InMemoryTransport.md` · `InMemoryOutbox.md` · `InMemoryInbox.md` | Reference | see below | 118 / 79 / 68 |
+| `CloudEventsSupport.md` | 475 → ~369 | `CloudEventsReference.md` | Reference | `CloudEvents Attributes` (34), `CloudEvents Across Transports` (72) | 106 |
+| `MessageMappers.md` | 266 → ~147 | `MessageTransforms.md` | Explanation | `Transformers` (119) + `Transform Pipeline Example` from `DefaultMessageMappers.md` (145) | 264 |
+| `DefaultMessageMappers.md` | 478 → ~333 | *(none — donates 145 lines)* | | | |
+| `InMemoryOptions.md` | 695 → ~330 | `InMemoryTransport.md` · `InMemoryOutbox.md` · `InMemoryInbox.md` | Reference | see below | 118 / 79 / 68 |
 
 **`CQRSWithBrighterAndDarker.md` keeps `## Example: E-Commerce Order System` (226
 lines).** Requirements §8 is binding: 010 must not consume material Spec 009 needs, and
 226 lines of end-to-end example is the closest thing the corpus has to a tutorial. The
-core stays large at ~936 lines and drops to ~710 when 009 takes it. **Flagged, not
+core stays large at ~935 lines and drops to ~709 when 009 takes it. **Flagged, not
 moved.**
 
 **`MigratingToPollyV8.md` holds both tails.** The deprecated Polly v7 section is what a
-reader migrates *from*; splitting them apart would leave a deprecated 152-line page with
+reader migrates *from*; splitting them apart would leave a deprecated 151-line page with
 no explanation of what replaces it, and 150 lines of deprecated material at the end of a
 current page is the defect being fixed either way.
 
@@ -580,7 +599,7 @@ Collected so a reviewer can overrule them in one place. **No verdict is changed*
 
 | # | Row | Shape says | This design does | Because |
 |---|---|---|---|---|
-| 1 | `HangfireScheduler.md` and the family | `Overview` + `How Brighter Integrates` fold up into the overview | They stay on their own pages; only `Comparison` folds up | 278 lines of per-technology orientation would take `BrighterSchedulerSupport.md` from 579 to **741** — larger than it is today. §5a's own conclusion says *one enriched overview*, not five merged ones |
+| 1 | `HangfireScheduler.md` and the family | `Overview` + `How Brighter Integrates` fold up into the overview | They stay on their own pages; only `Comparison` folds up | 278 lines of per-technology orientation would take `BrighterSchedulerSupport.md` from 578 to **729** — larger than it is today. §5a's own conclusion says *one enriched overview*, not five merged ones |
 | 2 | `PostgreSQLMessageBroker.md` | Extract `Transactional Messaging` (46) as a how-to | Stays in the core; flagged to Spec 013 | 46 lines, and 013's publicly committed *PostgreSQL for both transport and outbox* guide is this material written properly |
 | 3 | `DefaultMessageMappers.md` | `Configuration Reference` (54) becomes reference | Stays in the core | 54 lines is the how-to's own configuration table. `worklist.md` §6a: *splitting would produce stubs* |
 | 4 | `InMemoryOptions.md` | *"Merge each into the matching family page"* | Creates `InMemoryTransport.md`, `InMemoryOutbox.md`, `InMemoryInbox.md` | Three of the five family pages do not exist. Every other transport, outbox store and inbox store has one; InMemory is the missing member |
@@ -604,20 +623,20 @@ The sixteen pages, and why each is over:
 
 | Page | After | Why it stays large |
 |---|---:|---|
-| `CQRSWithBrighterAndDarker.md` | ~936 | Holds Spec 009's 226-line worked example. Drops to ~710 when 009 takes it — requirements §8 forbids consuming it here |
+| `CQRSWithBrighterAndDarker.md` | ~935 | Holds Spec 009's 226-line worked example. Drops to ~709 when 009 takes it — requirements §8 forbids consuming it here |
 | `V10MigrationGuide.md` | 891 | `keep` — outside Diátaxis, structurally *Before You Start → Step 1…6 → Rollback* |
-| `HangfireScheduler.md` | ~771 | Reference core of the family template. Everything separable has already left |
-| `QuartzScheduler.md` | ~732 | Same |
-| `QueryPipeline.md` | ~717 | Keeps `Available Decorators` (291) because its worklist row says so — see §11 |
-| `AwsScheduler.md` | ~701 | Same as Hangfire |
+| `HangfireScheduler.md` | ~770 | Reference core of the family template. Everything separable has already left |
+| `QuartzScheduler.md` | ~731 | Same |
+| `QueryPipeline.md` | ~716 | Keeps `Available Decorators` (291) because its worklist row says so — see §11 |
+| `AwsScheduler.md` | ~700 | Same as Hangfire |
 | `CommandProcessorConfigurationReference.md` | 672 | `keep` — created by 011's own split at this size, on purpose |
 | `FAQ.md` | 649 | `keep` — outside Diátaxis |
-| `ImplementAQueryHandler.md` | ~647 | Three handler patterns (311) plus registration and error handling; splitting further separates a reader from the thing they are implementing |
-| `AzureScheduler.md` | ~633 | Same as Hangfire |
+| `ImplementAQueryHandler.md` | ~646 | Three handler patterns (311) plus registration and error handling; splitting further separates a reader from the thing they are implementing |
+| `AzureScheduler.md` | ~632 | Same as Hangfire |
 | `KafkaConfiguration.md` | 608 | `keep` — **the standing reminder that size misleads.** 608 lines, one mode |
 | `Glossary.md` | 591 | `keep` — it is a glossary |
-| `QueriesAndQueryObjects.md` | ~580 | May fall further if `## Query Patterns` (102) proves duplicate — verified in PR 3, not assumed |
-| `PostgreSQLMessageBroker.md` | ~553 | Producer (80) and consumer (81) configuration belong side by side |
+| `QueriesAndQueryObjects.md` | ~579 | May fall further if `## Query Patterns` (102) proves duplicate — verified in PR 3, not assumed |
+| `PostgreSQLMessageBroker.md` | ~552 | Producer (80) and consumer (81) configuration belong side by side |
 | `AsyncAPISupport.md` | 516 | `keep` — `Complete Examples` is half the page, but the fix is editorial and is not this spec's |
 | `RequestValidation.md` | 501 | `keep` — three provider sections a reader wants side by side, each too small to stand alone |
 
@@ -626,12 +645,12 @@ The sixteen pages, and why each is over:
 
 **`BrighterSchedulerSupport.md` is the case to name explicitly**, because it is the only
 page in the corpus that *grows*. It is simultaneously a donor and a receiver: it sheds 212
-lines of how-to and takes in the six comparison sections that duplicate its existing
-`## Choosing a Scheduler`. It lands at ~400 as designed — but at **741** if §7.7's first
+lines of how-to and takes in the four comparison sections that duplicate its existing
+`## Choosing a Scheduler`. It lands at ~400 as designed — but at **729** if §7.7's first
 deviation is overruled and the five per-technology overviews fold up too. **A family
 overview page legitimately carries more than a leaf page**, because a middle navigation
 layer needs a real page to hang it from (requirements §3.1) and that page has to earn its
-place with content. If the reviewer overrules deviation 1, the resulting 741 lines is the
+place with content. If the reviewer overrules deviation 1, the resulting 729 lines is the
 consequence of that ruling, not a defect in the split.
 
 The same applies to `BrighterOutboxSupport.md`, `BrighterInboxSupport.md` and
@@ -811,7 +830,7 @@ add pages.
 - **`QueryPipeline.md`'s `Available Decorators` (291 lines)** is a reference table inside
   a how-to and would split cleanly. Its worklist row says the core keeps it, so it keeps
   it. If a later spec revisits Darker, this is the first candidate.
-- **`CQRSWithBrighterAndDarker.md` stays at ~936 lines** until Spec 009 takes its
+- **`CQRSWithBrighterAndDarker.md` stays at ~935 lines** until Spec 009 takes its
   226-line worked example.
 - **`AsyncAPISupport.md`'s `Complete Examples` is half the page** (`worklist.md` §6e) —
   the fix is editorial, not a split, and it is not this spec's.
@@ -895,18 +914,76 @@ Three corrections, all recorded in requirements §8 and §2.1:
 - **32 new pages**, 110 → **142**, derived row by row from `## `-section spans (§7)
 - **34 inbound anchor links** across 7 of the 26 split pages; 19 have none; **≈19 need
   repointing** (§8)
-- The scheduler fold-up arithmetic: 579 − 212 + 278 + 96 = **741** (§7.1)
+- The scheduler fold-up arithmetic: 578 − 212 + 278 + 85 = **729** (§7.1)
 
 **Not measured — challenge these:**
 
 - **Every "after" line count in §7 is arithmetic on today's sections**, not a count of a
   page that exists. They will move as headings are requalified and lead-ins rewritten.
+  `InMemoryScheduler.md` at ~495 is the one to watch: it is four lines under 500 by
+  arithmetic alone, so a banner and two lead-ins put it back over.
 - **The 32 is a count of pages this design decides to create**, not a prediction. If a
   reviewer overrules any of §7.7's five deviations, it changes: items 1, 2, 3 and 5 would
   add 5 pages and item 4 would remove 3.
+- **§7.6's *top-level entries* column is an intention, not a measurement.** §4's column is
+  reproducible from `SUMMARY.target.md` and was; §7.6's depends on where each of the 32 new
+  pages nests, which no file in this repo yet records. It matters at the edge: if all seven
+  of *Outbox and Inbox*'s new pages landed top-level it would show 15 entries and breach
+  S2's ceiling of 12. `--check-shape` catches that at PR time, which is the containment —
+  but the number is not evidence until the `SUMMARY.md` entries exist.
 - **Whether `## Query Patterns` in `QueriesAndQueryObjects.md` really duplicates
   `QueryPatterns.md`.** Flagged, not verified. PR 3 verifies it before anything moves.
 - **Whether GitBook's automatic redirects persist** (§11).
-- **#67 has no reply.** Checked 2026-08-07: the last two comments are both the
-  maintainer's. Diátaxis-as-authoring-discipline was flagged there for pushback, so check
-  again before PR 2 merges.
+- **#67 has no reply.** Checked 2026-08-07, and **re-checked 2026-08-08 at design review:
+  still two comments, both the maintainer's**, unchanged since 2026-08-03.
+  Diátaxis-as-authoring-discipline was flagged there for pushback, so check again before
+  PR 2 merges.
+
+---
+
+## 16. What the design review changed (2026-08-08)
+
+Five findings. **No verdict, no page count, no threshold and no ruling moved** — every
+correction was to a tally, which is the ninth time this programme has met that pattern and
+the first time it has been predicted in advance.
+
+**1. Every whole-page line count was one too high, on 23 of the 26 split rows.** The
+figures were produced with `read().split("\n")`, which counts a phantom empty final line on
+any file ending in a newline — 93 of the 110 pages. It is *correct* on the other 17, which
+is why `AWSSQSConfiguration.md` (615), `BrighterOutboxSupport.md` (517) and
+`TickerQScheduler.md` (234) were right and the rest were not. The same artefact inflates
+the span of the **last `## ` section on such a page**, and exactly two of the ~60 spans
+cited in §7 are last sections: `MessageMappers.md` `## Transformers` (120 → **119**) and
+`PolicyRetryAndCircuitBreaker.md` `## Legacy: Using Polly v7 Policies` (152 → **151**).
+Every interior span was already right, which is why 58 of 60 reproduced. All "today" and
+"after" figures are re-derived with `splitlines()`.
+
+> **The measuring convention, stated once so it does not drift again:** a page's length is
+> `len(text.splitlines())`. `wc -l` counts newlines and so under-reports the 17 files with
+> no trailing newline; `split("\n")` over-reports the 93 with one. Only `splitlines()` is
+> right for both, and `worklist.md` already used it — which is why design and worklist had
+> begun to disagree about the same pages (`QueryPipeline.md` 929 against 928).
+
+**2. The scheduler fold-up is 85 lines across four sections, not 96 across six.** The 96
+came from matching the word "Comparison", which swept in `AwsScheduler.md`'s
+`## Scheduling Modes Comparison` — a table comparing AWS's *own* two scheduling modes,
+which belongs in the AWS Reference core and not in `## Choosing a Scheduler`.
+`QuartzScheduler.md` has no comparison section at all. §7.1's per-page table had already
+excluded the AWS table, so 11 lines were sitting on both sides of the ledger. The
+arithmetic behind §7.7 item 1 becomes **578 − 212 + 278 + 85 = 729**. **The deviation
+stands**: 729 still exceeds the 578 the page is today, which was the whole argument.
+`worklist.md` §5a and §6a say "six" and are wrong on the count for the same reason.
+
+**3. §4's prose contradicted its own table** — *Outbox and Inbox* shows **8** top-level
+entries before the splits, not 10. Ten is the post-split figure from §7.6. The table and
+`SUMMARY.target.md` were right; the sentence carrying S2's argument was not.
+
+**4. §15 now admits §7.6's entries column is an intention**, not a measurement, with the
+breach case named.
+
+**5. D7 is delivered differently from the approved requirements, and this ratifies it.**
+Requirements D7 reads *"`linkcheck.py` extended to validate the redirect block"*; §9.3
+puts that validation in `urlmap.py --check-redirects` instead, because it needs the URL
+model and `linkcheck.py` has none. The deliverable is met and P1-2 is satisfied by the
+check running in CI. Recorded here rather than in §7.7, which covers only deviations from
+`worklist.md`'s shape column.
