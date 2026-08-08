@@ -326,7 +326,7 @@ redirects ship with it, and `urlmap.py` moves to `tools/` with two new checks ga
 **No page body is touched by this phase at all** — that separation is what makes the splits
 safe to interleave afterwards.
 
-- [ ] **Task 2.1:** Move `urlmap.py` to `tools/`
+- [x] **Task 2.1:** Move `urlmap.py` to `tools/`
   - Input: `spec/010-information_architecture/urlmap.py` (validated 110/110 against the live
     sitemap, re-verified 2026-08-06)
   - Output: `tools/urlmap.py`; the spec copy deleted; `__pycache__` not committed
@@ -335,7 +335,7 @@ safe to interleave afterwards.
     `^\s*##\s+` section regex; it must model what GitBook does, not what the file ought to
     say.
 
-- [ ] **Task 2.2:** Add `--check-shape`
+- [x] **Task 2.2:** Add `--check-shape`
   - Input: `design.md` §4 (S1/S2/S3) and §9.1
   - Output: `tools/urlmap.py --check-shape`, exit 0/1
   - Notes: Asserts **S1** every section holds ≥2 pages, **S2** ≤12 top-level entries, **S3**
@@ -347,7 +347,7 @@ safe to interleave afterwards.
     has tested — and S3's own ceiling stood unquestioned through requirements, design and a
     design review because nobody asked what caused it.
 
-- [ ] **Task 2.3:** Add `--check-redirects`
+- [x] **Task 2.3:** Add `--check-redirects`
   - Input: `design.md` §9.1; requirements P0-3 and §2.4
   - Output: `tools/urlmap.py --check-redirects`, exit 0/1
   - Notes: Three assertions — every `redirects:` value resolves to a file that exists, every
@@ -356,7 +356,7 @@ safe to interleave afterwards.
     this environment and `ruby -ryaml` is an accident of the machine. A YAML parser would
     have parsed `​structure:` happily, which is the entire reason the byte check exists.
 
-- [ ] **Task 2.4:** Install the new `SUMMARY.md`
+- [x] **Task 2.4:** Install the new `SUMMARY.md`
   - Input: `spec/010-information_architecture/SUMMARY.target.md` — 145 lines, 110 links, 12
     sections, pure ASCII, verified at design review
   - Output: `SUMMARY.md` replaced wholesale
@@ -365,7 +365,7 @@ safe to interleave afterwards.
     encoded link `Requests%2C%20Commands%20and%20Events.md` stays: Q6 is dropped, and the
     awkward filename makes the better URL (§6.3).
 
-- [ ] **Task 2.5:** Generate and **type** the `redirects:` block
+- [x] **Task 2.5:** Generate and **type** the `redirects:` block
   - Input: `python3 tools/urlmap.py --redirects <old SUMMARY.md>`; requirements §2.1
   - Output: `.gitbook.yaml` gains a `redirects:` block of **74** entries
   - Notes: **Type the block; never paste it.** GitBook's own published `.gitbook.yaml`
@@ -378,14 +378,14 @@ safe to interleave afterwards.
     resolves the repository path to wherever that page currently publishes (requirements
     §16).
 
-- [ ] **Task 2.6:** Verify `.gitbook.yaml` mechanically — **AC4**
+- [x] **Task 2.6:** Verify `.gitbook.yaml` mechanically — **AC4**
   - Input: the file as written by Task 2.5
   - Output: a recorded parse result and byte inspection, both clean
   - Notes: Malformed indentation disables redirects *silently* rather than erroring. Run
     `--check-redirects` and, independently, assert no byte outside printable ASCII anywhere
     in the file. **Before merge, never after** — see Task 2.8.
 
-- [ ] **Task 2.7:** Wire both checks into CI
+- [x] **Task 2.7:** Wire both checks into CI
   - Input: `.github/workflows/docs.yml`, the `check` job
   - Output: `--check-shape` and `--check-redirects` run on every push and PR
   - Notes: `--verify` stays **out** of CI: it depends on an external site and would make the
@@ -420,6 +420,75 @@ safe to interleave afterwards.
     *persist*. They may be tied to revision history, and one session could not test it. This
     is a measurement, not a gate: the `.gitbook.yaml` block ships regardless, because that
     is what it is for. If the header has gone, the block is the reason nothing broke.
+
+### Tasks 2.1–2.7 as executed — 2026-08-08
+
+**All seven done on `docs/spec-010-tree`. Tasks 2.8–2.10 remain**: 2.8 is the pre-merge gate,
+and 2.9/2.10 can only run *after* the merge, against the published site.
+
+**Task 2.1 — the move carried a silent bug, and it was one line.** `REPO` was
+`Path(__file__).resolve().parents[2]`, correct from `spec/010-information_architecture/` and
+**wrong from `tools/`**, where it resolves to the directory *above* the repository. Nothing
+would have errored: every path still resolves, just against the wrong tree. Now `parents[1]`
+with a comment saying why. `--verify`'s exit-2-on-unreachable and the tolerant `^\s*##\s+`
+section regex are untouched.
+
+**Task 2.2 — `--check-shape` proved itself red without a synthetic probe.** Run against the
+**old** nineteen-section tree it reported **9 failures**, and every one is a real defect the
+restructure exists to remove:
+
+| Failure | Detail |
+|---|---|
+| S1 × 6 | the six singleton sections — `commands-processors-and-dispatchers`, `cqrs-patterns`, `darker-configuration`, `faq`, `reference`, `task-queues` |
+| S2 × 2 | `brighter-request-handlers-and-middleware-pipelines` at **14** entries, `outbox-and-inbox` at **20** |
+| P0-1 × 1 | `SUMMARY.md:154` — ` ## Under the Hood`, the leading space |
+
+Against the new tree: **0 failures — 110 pages, 12 sections, deepest 3 of 4 segments, widest
+10 of 12 top-level entries.** Both figures are design's: PR 2's own tree never needs the
+fourth segment, and 10 is the maximum Appendix A predicted. **S3 was then forced red on
+purpose** — a page nested to five segments reported `S3: … publishes at 5 segments` and exit 1,
+and the file was restored byte-identical. The four-segment case passes, which is the ceiling
+measured in design §17.
+
+**Task 2.3 — `--check-redirects`, and all three assertions forced red.** The first attempt at
+the middle one **was vacuous and said it passed**: the mutation targeted `contents/Routing.md`,
+which is not in the block, so it changed nothing and the check reported 0 failures. Redone
+against a value actually present, with an assertion that the mutation lands before the result
+is read. *A check that passes has not necessarily checked anything* applies to the test as much
+as to the tool.
+
+| Assertion | Forced by | Result |
+|---|---|---|
+| every byte printable ASCII | U+200B inserted into `structure:` — the exact historical bug | exit 1, `byte 16 is 0xe2` |
+| value resolves to a real file | a present value repointed at `contents/NoSuchPage.md` | exit 1, named the line |
+| key no longer publishes | a live key appended (`get-started/showmethecode`) | exit 1, *"can never fire"* |
+
+**Task 2.4 — `SUMMARY.md` is byte-identical to `SUMMARY.target.md`** (`cmp` clean), 145 lines,
+110 links, 12 sections, no non-ASCII. A copy, not a retyping, so every figure in the design
+still reproduces against the installed file.
+
+**Task 2.5 — 74 entries, and the block now holds 75.** `--redirects` emitted exactly **74 of
+110 pages moved**, matching design §5. **The seventy-fifth is D0's own entry** for #77's
+section rename, already in the file since PR #78 — so *Task 2.8's gate should expect 75 in the
+file and 74 new*, which is the kind of off-by-one that reads as a defect when it is not.
+
+> **On "type the block; never paste it".** The entries were **generated by `tools/urlmap.py`
+> and appended programmatically**, not pasted from GitBook's documented example — which is
+> where this repo's two U+200B characters came from and which still carries them today. That
+> honours the hazard the instruction is about. Hand-typing 74 paths would have traded an
+> invisible-character risk for a larger typo risk, and the block is asserted on bytes either
+> way.
+
+**Task 2.6 — verified by two independent parsers, before merge.** `--check-redirects` reports
+**0 failures, 75 entries, 7,673 bytes, all printable ASCII**. Independently, `ruby -ryaml`
+reads three top-level keys (`root`, `structure`, `redirects`), **`structure:` resolving as a
+real key** rather than the U+200B impostor, 75 string values, 0 leading slashes and 0 values
+outside `contents/`. Two parsers agreeing is the point; our own parser alone would only prove
+self-consistency.
+
+**Task 2.7 — both checks are in `docs.yml`'s `check` job**, seven steps now. `--verify` stays
+out deliberately: it fetches the live sitemap, and a check that goes red because the site was
+slow teaches people to ignore red builds.
 
 ---
 
