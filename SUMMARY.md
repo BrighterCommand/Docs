@@ -75,6 +75,7 @@
  * [Azure Service Bus Configuration](/contents/AzureServiceBusConfiguration.md)
  * [Azure Blob Archive Provider](/contents/AzureBlobArchiveProvider.md)
    * [Azure Archive Provider Configuration](/contents/AzureBlobConfiguration.md)
+     * [URL Depth Probe](/contents/UrlDepthProbe.md)
  * [Brighter Control API](/contents/BrighterControlAPI.md)
 
 ## Outbox and Inbox
