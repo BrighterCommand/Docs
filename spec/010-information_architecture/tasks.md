@@ -106,22 +106,34 @@ finding.
 | 6 | Every new page is 100% added lines | Standing obligation 6, above |
 | 7 | Verify `.gitbook.yaml` **before** merging PR 2 | **Task 2.6** and Task 2.8 |
 
-**The two findings, both from Appendix A:**
+**Three findings. The first started as a constraint and ended as a measurement.**
 
-- **`MigratingToPollyV8.md` cannot nest under `PolicyRetryAndCircuitBreaker.md`.** That page
-  already publishes at three segments
-  (`commands-handlers-and-pipelines/buildingapipeline/policyretryandcircuitbreaker`), so a
-  child would publish at four and breach **S3**. It becomes a *sibling* under
-  `BuildingAPipeline.md`. The same measurement forces `SwitchingSchedulers.md` top-level:
-  all five scheduler leaves it draws from are at three segments already. **The rule, stated
-  once: file a split page under the *shallowest* of its sources, and top-level in its
-  section if that is still three deep.**
-- **Design §7.6's entries column reproduces on 11 of its 12 rows.** *Outbox and Inbox* is
-  the exception: with all seven new pages nested under depth-2 parents it shows **8**
-  top-level entries, not the intended 10. §15 flagged that column as an intention rather
-  than a measurement and named 15 as the breach case; the pinned answer is 8, with four
-  entries of headroom under S2. **No threshold moves and no verdict changes** — this is the
-  ninth tally correction in this programme and, again, only a tally.
+- **S3 was an assumption. It is now measured, and it is four segments, not three.** Pinning
+  the nesting forced `MigratingToPollyV8.md` to become a *sibling of its own source*, because
+  `PolicyRetryAndCircuitBreaker.md` already publishes at three
+  (`commands-handlers-and-pipelines/buildingapipeline/policyretryandcircuitbreaker`) and a
+  child would have breached S3. Asking **what caused S3** showed that its stated rationale
+  was the absence of evidence — *"three is the deepest the live site is known to work at"* —
+  which is a fact about our own `SUMMARY.md`, not about the platform. Measured 2026-08-08:
+  GitBook's own documentation publishes **30 pages at four segments**, and PRs #83/#84
+  established the same for this site, with the probe reverted minutes later and the tree left
+  byte-identical. **Design §4 is amended and §17 records the evidence.** Consequences:
+  `MigratingToPollyV8.md` nests under its own source, and `AzureBlobArchiveProvider.md` and
+  its configuration child nest under the new `OutboxArchiver.md`.
+- **`OutboxArchiver.md` and `TransactionalMessagingWithTheOutbox.md` are top-level**, and
+  *Outbox and Inbox* lands at **9** top-level entries. Design §7.6 intended 10; nesting all
+  seven new pages would have given 8. Nine is 10 minus `AzureBlobArchiveProvider.md`, which
+  now nests under `OutboxArchiver.md` — the archive provider belongs under the archiver, and
+  §7.6's reason for keeping it top-level was the S3 ceiling that no longer exists. §15
+  flagged this column as an intention rather than a measurement and named 15 as the breach
+  case; the pinned answer is 9, three entries under S2. **No verdict changes**, and the one
+  threshold that moved, moved because it was measured.
+- **The cost, stated rather than buried:** `AzureBlobArchiveProvider.md` and
+  `AzureBlobConfiguration.md` are **the only two pages whose URL moves twice** — to *Outbox
+  and Inbox* in PR 2, then under `OutboxArchiver.md` in PR 5, because `OutboxArchiver.md`
+  does not exist until PR 5 and PR 2 touches no page body. **PR 5 owes two extra redirect
+  entries** for the intermediate paths. Design §7.6's "no page's URL moves twice" holds for
+  the other 140.
 
 **And a third finding, from enumerating rather than reading.** Requirements §12 (AC8) and
 §14 both say the 16 `keep` rows cover **fifteen** distinct pages. Enumerated, they name
@@ -200,11 +212,13 @@ safe to interleave afterwards.
   - Input: `design.md` §4 (S1/S2/S3) and §9.1
   - Output: `tools/urlmap.py --check-shape`, exit 0/1
   - Notes: Asserts **S1** every section holds ≥2 pages, **S2** ≤12 top-level entries, **S3**
-    no published path exceeds 3 segments — and that no `SUMMARY.md` heading carries leading
-    whitespace. That last assertion is P0-1's, kept because the hazard is the class and not
-    the ` ## Under the Hood` instance the new tree deletes. **Prove it fails**: temporarily
-    nest one page a level deeper and confirm S3 goes red, then revert. A check that has
-    never been red is a check nobody has tested.
+    no published path exceeds **4 segments** — and that no `SUMMARY.md` heading carries
+    leading whitespace. That last assertion is P0-1's, kept because the hazard is the class
+    and not the ` ## Under the Hood` instance the new tree deletes. **S3 is 4, measured, not
+    3, assumed** — design §17. **Prove it fails**: temporarily nest one page to five segments
+    and confirm S3 goes red, then revert. A check that has never been red is a check nobody
+    has tested — and S3's own ceiling stood unquestioned through requirements, design and a
+    design review because nobody asked what caused it.
 
 - [ ] **Task 2.3:** Add `--check-redirects`
   - Input: `design.md` §9.1; requirements P0-3 and §2.4
@@ -410,8 +424,9 @@ overview. 6 rows, 2 new pages, 8 pages touched. Design §7.1.
   - Input: `## Outbox Archiver` (151) and `## Complete Example: Transactional Messaging`
     (169); page is **517** lines
   - Output: `contents/OutboxArchiver.md` (Reference) and
-    `contents/TransactionalMessagingWithTheOutbox.md` (How-to), both nested under
-    `BrighterOutboxSupport.md`; core → ~197
+    `contents/TransactionalMessagingWithTheOutbox.md` (How-to), both **top-level in *Outbox
+    and Inbox***; `AzureBlobArchiveProvider.md` and `AzureBlobConfiguration.md` **re-parented
+    under `OutboxArchiver.md`**; core → ~197
   - Notes: **This page is a split target *and* one of the four parent pages** §3.1 relies on
     for a middle navigation layer — both jobs happen to it at once, and **the core keeps its
     filename**, as both 011 demonstrators did. It carries the heaviest anchor load in the
@@ -424,6 +439,15 @@ overview. 6 rows, 2 new pages, 8 pages touched. Design §7.1.
     `OutboxArchiver.md` also receives `InMemoryOptions.md`'s `InMemory Archive` (47) in Task
     5.4. Spec 005 owns this page and closed at 14/14 having checked it against 010: a split
     relocates content and invalidates none of it.
+    **The re-parenting is this task's second job and it carries a redirect obligation.**
+    `AzureBlobArchiveProvider.md` and `AzureBlobConfiguration.md` land under
+    `OutboxArchiver.md` — the archive provider belongs under the archiver, and the
+    configuration child then publishes at **four segments**, which design §17 measured to
+    work. They are **the only two pages in this spec whose URL moves twice** (PR 2, then
+    here), so **add two redirect entries** for the intermediate paths
+    `outbox-and-inbox/azureblobarchiveprovider` and
+    `outbox-and-inbox/azureblobarchiveprovider/azureblobconfiguration`. Verify the additions
+    with `--check-redirects` before merging, not after — the 30-day cache is unforgiving.
 
 - [ ] **Task 5.2:** Split `ReplayOnSeen.md` — **Q5, the Explanation is the core**
   - Input: 1,039 lines in three clean modes (design §7.4): Explanation 228, How-to 469,
@@ -678,13 +702,13 @@ but is created in Task 5.4, with the rest of the `InMemoryOptions.md` redistribu
 - [ ] **Task 9.4:** Split `PolicyRetryAndCircuitBreaker.md`
   - Input: 687 lines; `Migration Guide: V9 to V10` (96) and `Legacy: Using Polly v7 Policies
     (Deprecated)` (**151**) = 247
-  - Output: `MigratingToPollyV8.md` (How-to), **a sibling under `BuildingAPipeline.md` — not
-    a child of `PolicyRetryAndCircuitBreaker.md`**; core → ~440
-  - Notes: **The placement is forced by S3, and this is the finding Appendix A produced.**
-    `PolicyRetryAndCircuitBreaker.md` already publishes at
-    `commands-handlers-and-pipelines/buildingapipeline/policyretryandcircuitbreaker` — three
-    segments — so a child would publish at four, which the live site is not known to support
-    and which `--check-shape` will reject. **One page holds both tails**: the deprecated
+  - Output: `MigratingToPollyV8.md` (How-to), **nested under
+    `PolicyRetryAndCircuitBreaker.md`**, publishing at four segments; core → ~440
+  - Notes: **This placement was the reason S3 got measured.** The page publishes at
+    `commands-handlers-and-pipelines/buildingapipeline/policyretryandcircuitbreaker/migratingtopollyv8`,
+    and until 2026-08-08 S3's ceiling of three would have forced it to be a *sibling of its
+    own source* — the obviously wrong shape, on the strength of an untested assumption.
+    Design §17 has the measurement. **One page holds both tails**: the deprecated
     Polly v7 section is what a reader migrates *from*, and splitting them apart would leave a
     deprecated 151-line page with no explanation of what replaces it. Note the span — the
     legacy section is **151** lines, not 152; it is the last `## ` on the page and inherited
@@ -811,17 +835,16 @@ but is created in Task 5.4, with the rest of the `InMemoryOptions.md` redistribu
 ## Appendix A — Where each of the 32 new pages nests
 
 **This is the item design §15 named as not measured, and Task 1.1 ratifies it.** The
-placements below follow from three things: design §6.1 (*a split page sits beside the page
-it came from*), S3 (*no published path exceeds 3 segments*), and the measured depth of each
-source page in `SUMMARY.target.md`.
+placements below follow from design §6.1 (*a split page sits beside the page it came from*)
+and S3, **now ≤4 segments, measured** — see design §17 and §2's first finding.
 
-**The rule, where those three conflict:** file a split page under the **shallowest** of its
-sources; if that source is already three segments deep, the page goes **top-level in its
-section**.
+**The rule, where a page has more than one source:** file it under the **shallowest**. Where
+it has no single source, it goes **top-level in its section**. Both are editorial choices
+now, not S3 workarounds; the ceiling only binds at five.
 
 | # | New page | Nests under | Section | Depth | Task |
 |---:|---|---|---|---:|---|
-| 1 | `MigratingToPollyV8.md` | `BuildingAPipeline.md` **(sibling, not child)** | Commands, Handlers and Pipelines | 3 | 9.4 |
+| 1 | `MigratingToPollyV8.md` | `PolicyRetryAndCircuitBreaker.md` | Commands, Handlers and Pipelines | **4** | 9.4 |
 | 2 | `AgreementDispatcherRouting.md` | `AgreementDispatcher.md` | Commands, Handlers and Pipelines | 3 | 9.3 |
 | 3 | `MessageTransforms.md` | `MessageMappers.md` | Using an External Bus | 3 | 7.1 |
 | 4 | `CloudEventsReference.md` | `CloudEventsSupport.md` | Using an External Bus | 3 | 7.3 |
@@ -829,8 +852,8 @@ section**.
 | 6 | `InMemoryTransport.md` | *(top-level)* | Transports | 2 | 5.4 |
 | 7 | `AWSSQSMigrateToV10.md` | `AWSSQSConfiguration.md` | Transports | 3 | 8.1 |
 | 8 | `PostgreSQLBrokerTradeOffs.md` | `PostgreSQLMessageBroker.md` | Transports | 3 | 8.2 |
-| 9 | `OutboxArchiver.md` | `BrighterOutboxSupport.md` | Outbox and Inbox | 3 | 5.1 |
-| 10 | `TransactionalMessagingWithTheOutbox.md` | `BrighterOutboxSupport.md` | Outbox and Inbox | 3 | 5.1 |
+| 9 | `OutboxArchiver.md` | *(top-level)* | Outbox and Inbox | 2 | 5.1 |
+| 10 | `TransactionalMessagingWithTheOutbox.md` | *(top-level)* | Outbox and Inbox | 2 | 5.1 |
 | 11 | `InMemoryOutbox.md` | `BrighterOutboxSupport.md` | Outbox and Inbox | 3 | 5.4 |
 | 12 | `InMemoryInbox.md` | `BrighterInboxSupport.md` | Outbox and Inbox | 3 | 5.4 |
 | 13 | `TurningOnReplayOnSeen.md` | `ReplayOnSeen.md` | Outbox and Inbox | 3 | 5.2 |
@@ -854,12 +877,24 @@ section**.
 | 31 | `MigratingToNullableReferenceTypes.md` | `NullableReferenceTypes.md` | V10 Migration | 3 | 9.2 |
 | 32 | `CQRSUseCasesAndPatterns.md` | `CQRSWithBrighterAndDarker.md` | Understanding Brighter | 3 | 9.1 |
 
-**32 pages. 3 top-level, 29 nested. Maximum depth 3 — S3 holds.**
+**32 pages. 5 top-level, 27 nested. Maximum depth 4 — S3 holds at its measured ceiling.**
 
-### The measurement that forced two of these
+**Two existing pages also re-parent**, in Task 5.1, and they are the only pages in the corpus
+that move without being split:
+
+| Existing page | Was (after PR 2) | Becomes (PR 5) | Depth |
+|---|---|---|---:|
+| `AzureBlobArchiveProvider.md` | top-level in *Outbox and Inbox* | under `OutboxArchiver.md` | 3 |
+| `AzureBlobConfiguration.md` | under `AzureBlobArchiveProvider.md` | unchanged parent, one deeper | **4** |
+
+They are **the only two pages whose URL moves twice**, and PR 5 owes a redirect entry for
+each intermediate path.
+
+### What the depth measurement changed
 
 Every split source page's published depth in `SUMMARY.target.md`, via `tools/urlmap.py`.
-Six sources are **already at three segments**, so nothing may nest beneath them:
+Six sources sit **at three segments**, and under the old S3 ceiling of 3 nothing could nest
+beneath them:
 
 | Source page | Published path | Depth |
 |---|---|---:|
@@ -872,14 +907,21 @@ Six sources are **already at three segments**, so nothing may nest beneath them:
 | `InMemoryScheduler.md` | `scheduler/brighterschedulersupport/inmemoryscheduler` | **3** |
 | *the other 20 sources* | | 2 |
 
-Consequences, both already carried into the tasks:
+**That ceiling was an assumption, and measuring it dissolved the problem.** Design §17 has
+the evidence: GitBook's own documentation publishes 30 pages at four segments, and PRs
+#83/#84 established the same for this site — a new page at a path that had never existed, so
+no automatic redirect could mask the result, reverted minutes later with the tree left
+byte-identical to `c4aedb5`.
 
-- **`MigratingToPollyV8.md` becomes a sibling** of its own source, under
-  `BuildingAPipeline.md` (Task 9.4).
-- **`SwitchingSchedulers.md` goes top-level** in *Scheduler*: it draws from all five
-  three-segment scheduler leaves, so there is no source it could nest under (Task 4.1).
-- **`MessageTransforms.md` nests under `MessageMappers.md`, not `DefaultMessageMappers.md`**,
-  which donates 145 of its 264 lines but is itself at three segments (Task 7.1).
+Where each placement stands now:
+
+- **`MigratingToPollyV8.md` nests under its own source** (Task 9.4), at four segments. Under
+  the old ceiling it would have been a *sibling of the page it was extracted from*.
+- **`SwitchingSchedulers.md` stays top-level** in *Scheduler* (Task 4.1) — not because of
+  S3, but because it draws from all five scheduler leaves and has no single parent.
+- **`MessageTransforms.md` stays under `MessageMappers.md`** (Task 7.1) rather than under
+  `DefaultMessageMappers.md`, which donates 145 of its 264 lines. Now an editorial choice —
+  transforms belong with mappers generally — where it used to be forced.
 
 Reproduce the depths:
 
@@ -903,7 +945,7 @@ PY
 | Brighter Configuration | 6 | 4 | 4 |
 | Using an External Bus | 15 | 9 | 9 |
 | Transports | 12 | 7 | 7 |
-| **Outbox and Inbox** | 39 | **8** | **10** |
+| **Outbox and Inbox** | 39 | **9** | **10** |
 | Scheduler | 10 | 4 | 4 |
 | Darker | 17 | 5 | 5 |
 | Health Checks and Observability | 5 | 4 | 4 |
@@ -912,15 +954,17 @@ PY
 | Reference | 2 | 2 | 2 |
 
 **S1 ✅** minimum 2 · **S2 ✅** maximum **10**, ceiling 12, two entries of headroom ·
-**S3 ✅** maximum depth 3.
+**S3 ✅** maximum depth **4**, ceiling 4, reached by exactly two pages —
+`AzureBlobConfiguration.md` and `MigratingToPollyV8.md`.
 
 **Eleven of the twelve rows reproduce design §7.6 exactly.** *Outbox and Inbox* comes out at
-**8**, not 10, because all seven of its new pages nest under depth-2 parents and none
-becomes a top-level entry. Design §15 flagged that column as an intention rather than a
-measurement and named the breach case — *"if all seven landed top-level it would show 15 and
-breach S2's ceiling of 12"*. They do not; the answer is 8. **This is a tally correction, the
-ninth in this programme. No threshold moves, no verdict changes, and `--check-shape` (Task
-2.2) keeps it true from PR 2 onward rather than leaving it to be re-derived.**
+**9**: eight today, plus `OutboxArchiver.md` and `TransactionalMessagingWithTheOutbox.md`
+top-level, minus `AzureBlobArchiveProvider.md`, which re-parents under the archiver. Design
+§15 flagged that column as an intention rather than a measurement and named the breach case
+— *"if all seven landed top-level it would show 15 and breach S2's ceiling of 12"*. They do
+not; the answer is 9, three under the ceiling. **No verdict changes, and the one threshold
+that moved, moved because it was measured.** `--check-shape` (Task 2.2) keeps all three rules
+true from PR 2 onward rather than leaving them to be re-derived.
 
 ---
 
@@ -985,9 +1029,15 @@ Collected because every one of these has cost a rework somewhere in this program
 - **Do not trust a green check to mean a check ran.** Prove `--check-shape`, `--check-redirects`
   and the D5 script red on purpose before trusting them green. `pagelint.py --changed`
   reporting 0 errors was indistinguishable from a vacuous run until someone forced it.
-- **Do not re-derive a figure from memory — re-derive it from the corpus.** **Fifteen**
+- **Do not re-derive a figure from memory — re-derive it from the corpus.** **Fourteen**
   figures in this programme have now been wrong — thirteen before this document, plus the
-  *Outbox and Inbox* entry count and the `keep`-row page count above — and **every single one
-  was a tally, never a rule and never a verdict.** Five of them trace to one wrong
-  line-counting call, and two to reading a total instead of enumerating it. A page's length
-  is `len(text.splitlines())`.
+  `keep`-row page count above. Five trace to one wrong line-counting call and two to reading
+  a total instead of enumerating it. A page's length is `len(text.splitlines())`.
+- **Do not inherit a threshold whose stated rationale is that nobody has tried more.**
+  **S3 is the first *rule* in this programme to move** — every previous correction, all
+  fourteen, was a tally. It was not wrong so much as over-restrictive: *"three is the deepest
+  the live site is known to work at"* is a record of what had been tried, and it reads
+  downstream as a finding about what is possible. It survived requirements, design and a
+  design review unchallenged, and had already bent two placements out of shape before anyone
+  asked what caused it. **When a rule's justification is the absence of evidence, that is a
+  measurement waiting to be taken** — and here it cost two PRs and about five minutes.

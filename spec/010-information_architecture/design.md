@@ -188,7 +188,7 @@ mechanical rules over `SUMMARY.md`:
 |---|---|---|
 | **S1** | Every section holds **at least 2 pages** | A section of one is not a category. Six exist today |
 | **S2** | Every section holds **at most 12 top-level entries** | This is the number the navigation shows. Nesting is the escape hatch, and §3.1 of the requirements is why: a middle layer needs a real page to hang it from |
-| **S3** | No published path exceeds **3 segments** | Three is the deepest the live site is known to work at (9 pages publish there today). Four is unverified, and this programme does not ship unverified behaviour |
+| **S3** | No published path exceeds **4 segments** | **Amended 2026-08-08 — see §17.** Four was measured on the live site, not assumed. It was 3, on the grounds that three is the deepest the site was *known* to work at; that was an evidence boundary rather than a platform limit, and it was distorting two placements |
 
 **S2 counts entries, not pages, and that is the whole point.** *Outbox and Inbox* holds
 32 pages and is perfectly navigable, because 21 of them are stores nested under three
@@ -213,8 +213,11 @@ Measured against the tree in §3.1:
 | Reference | 2 | 2 |
 
 S1 ✅ (minimum 2) · S2 ✅ (maximum 10) · S3 ✅ (maximum 3). After all 32 split pages land
-(§7.6) the worst case is *Outbox and Inbox* at 39 pages / **10** entries and
-*Understanding Brighter* unchanged at 10 — still inside S2 with two entries of headroom.
+the worst case is *Understanding Brighter* at **10** entries and *Outbox and Inbox* at 39
+pages / **9** — still inside S2 with two entries of headroom, and the deepest path is
+**4 segments**, reached by exactly two pages. Those figures are pinned per split in
+`tasks.md` Appendix A, which is where §15's *not measured* admission about this column was
+discharged; §7.6's column is superseded by it.
 
 **S1–S3 become code**, in `tools/urlmap.py --check-shape`, and gate CI — see §9.1. A rule
 a reviewer has to apply by eye is the kind of rule this programme has watched decay.
@@ -587,10 +590,20 @@ passing (P1-4).
 
 **Every new page is a child of a page already in its final position, or a new top-level
 entry. No page's URL moves twice**, which is the property Q4's sequencing exists to buy.
-`AzureBlobArchiveProvider.md` and its configuration child stay top-level in *Outbox and
-Inbox* rather than nesting under `OutboxArchiver.md` for exactly this reason — nesting
-them would either force a second move or push them to four segments, and both are avoided
-at the cost of one extra top-level entry.
+
+> **Amended 2026-08-08 — see §17, and `tasks.md` Appendix A for the pinned placements.**
+> This paragraph continued: *"`AzureBlobArchiveProvider.md` and its configuration child stay
+> top-level in Outbox and Inbox rather than nesting under `OutboxArchiver.md` for exactly
+> this reason — nesting them would either force a second move or push them to four segments,
+> and both are avoided at the cost of one extra top-level entry."*
+>
+> **Both halves of that reasoning are now spent.** Four segments was measured to work, so
+> that half is void. The second move is accepted deliberately for **these two pages alone**:
+> they move to *Outbox and Inbox* in PR 2 and re-parent under `OutboxArchiver.md` in PR 5,
+> because `OutboxArchiver.md` does not exist until PR 5 and PR 2 touches no page body. **PR 5
+> therefore owes two extra redirect entries**, for the intermediate paths
+> `outbox-and-inbox/azureblobarchiveprovider` and its child. That is the whole cost, it is
+> bounded at two pages, and the property holds for the other 140.
 
 ### 7.7 The five deviations from `worklist.md`'s shape column
 
@@ -987,3 +1000,77 @@ puts that validation in `urlmap.py --check-redirects` instead, because it needs 
 model and `linkcheck.py` has none. The deliverable is met and P1-2 is satisfied by the
 check running in CI. Recorded here rather than in §7.7, which covers only deviations from
 `worklist.md`'s shape column.
+
+---
+
+## 17. What the depth measurement changed (2026-08-08)
+
+**S3's ceiling was an untested assumption, and it has been measured. It is 4, not 3.**
+
+The original rule read *"No published path exceeds 3 segments — three is the deepest the
+live site is known to work at (9 pages publish there today). Four is unverified, and this
+programme does not ship unverified behaviour."* Read closely, that says nothing about
+GitBook. It says nothing about our site either. It is a statement about **our own
+`SUMMARY.md`**: nine pages happen to be nested one level, none is nested two, and the rule
+promoted that accident into a constraint.
+
+It then cost real navigation quality in two places, which is what prompted the measurement:
+
+- `MigratingToPollyV8.md` had to become a **sibling of its own source**, because
+  `PolicyRetryAndCircuitBreaker.md` already publishes at three.
+- `AzureBlobConfiguration.md` could not sit under `AzureBlobArchiveProvider.md` under a new
+  `OutboxArchiver.md` — the grouping those three pages obviously want.
+
+**Two measurements, the first free.**
+
+**1. The platform publishes four segments.** GitBook's own documentation has **30 pages** at
+four segments below its site root, out of 182 — for example
+`create-content/content-structure/page/tags`, which is section plus two ancestor pages plus
+page, exactly our shape. Counted from the raw `sitemap-pages.xml`, not from a summary of it.
+
+**2. So does this site.** PR #83 published one **new** page nested three levels deep, and PR
+#84 reverted it minutes later. A brand-new page at a path that had never existed was used
+deliberately — the same reasoning that made D0 a measurement rather than a hope, because **no
+automatic redirect can mask a path that never resolved before**. No existing page moved, so
+no real URL churned and no redirect cached against content a reader wants.
+
+| Observation | Result |
+|---|---|
+| Path | `guaranteed-at-least-once/azureblobarchiveprovider/azureblobconfiguration/urldepthprobe` |
+| Present in `sitemap-pages.xml` | **yes** — 112 entries, up from 111 |
+| HTTP status | `200` |
+| `location:` headers | **0** — no redirect; this is a genuine page |
+| Body size | **529,080 bytes** — a 404 shell is ~189.5 KB and a redirect ~192 KB |
+| `<title>` | `URL Depth Probe | Paramore Brighter Documentation` |
+| After revert | sitemap back to **111**; tree byte-identical to `c4aedb5` |
+
+**The status code was ignored, as it must be on this site** — every cached response reports
+`200`. The load-bearing evidence is the sitemap entry, the absent `location:` header and the
+529 KB body.
+
+`urlmap.py` needed no change: its model is
+`<slug(section)>/[<slug(ancestor)>/]*<slug(filename)>` and the `*` was never bounded. It
+predicted the four-segment path exactly.
+
+**What moves as a result:**
+
+| | Was | Now |
+|---|---|---|
+| S3 | ≤ 3 segments, assumed | **≤ 4 segments, measured** |
+| `MigratingToPollyV8.md` | sibling under `BuildingAPipeline.md` | **child of `PolicyRetryAndCircuitBreaker.md`** |
+| `AzureBlobArchiveProvider.md` + child | top-level in *Outbox and Inbox* | **nested under `OutboxArchiver.md`** |
+| *Outbox and Inbox* top-level entries | 8 or 10, depending on nesting | **9** |
+| Deepest path after all splits | 3 | **4**, reached by exactly two pages |
+
+**What does not move.** The twelve-section tree, every `keep` verdict, the 74/36 URL split,
+the 32 new pages, and PR 2's tree — whose own maximum depth is still 3, because nothing in
+the 110-page restructure needs the fourth segment. **S3 is still a rule and still gates CI**;
+it is now a navigation-quality guard with evidence behind it rather than a proxy for
+ignorance. Five segments remains untested, and GitBook's own site does not go there either.
+
+**The lesson, which is the reusable part.** A threshold justified by *"X is the deepest we
+know to work"* is a record of what has been tried, not a finding about what is possible — and
+it will be read by everyone downstream as the latter. This one survived requirements, design
+and a design review without being questioned, and cost two contorted placements before anyone
+asked what caused it. **When a rule's stated rationale is the absence of evidence, that is not
+a rationale; it is a measurement waiting to be taken.**
