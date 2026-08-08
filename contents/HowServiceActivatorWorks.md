@@ -146,79 +146,9 @@ You can use a [FallbackPolicy] to catch an exception that bubbles out of your ha
 
 ## Dispatcher Configuration
 
-### Basic Dispatcher Configuration
+You configure the Dispatcher with `AddConsumers`, and it is the *Subscription* that carries the options the mechanics above depend on: **NoOfPerformers** sets how many Performers compete for a channel, **MessagePumpType** chooses between the Reactor and Proactor patterns, **TimeOut** governs how long a read waits, and **RequeueCount** with **RequeueDelayInMilliseconds** control what happens after a handler fails.
 
-You configure the Dispatcher when setting up your service, using `AddConsumers`:
-
-```csharp
-services.AddBrighter(...)
-    .AddConsumers(options =>
-    {
-        options.AddSubscription<MyCommand>(
-            new Subscription<MyCommand>(
-                new SubscriptionName("my.subscription"),
-                channelName: new ChannelName("my.channel"),
-                routingKey: new RoutingKey("my.routing.key"),
-                messagePumpType: MessagePumpType.Proactor,  // Choose concurrency model
-                timeOut: TimeSpan.FromMilliseconds(200),
-                makeChannels: OnMissingChannel.Create,
-                requeueCount: 3,
-                requeueDelayInMilliseconds: 1000,
-                noOfPerformers: 1  // Number of concurrent message pumps
-            )
-        );
-    });
-```
-
-### Key Configuration Options
-
-#### noOfPerformers
-
-Controls how many concurrent Performers (message pumps) run for this subscription:
-
-```csharp
-noOfPerformers: 3  // Three concurrent pumps reading from the same channel
-```
-
-**Notes:**
-
-- Each Performer is single-threaded
-- Multiple Performers enable competing consumers pattern
-- Useful for high-volume scenarios
-- Consider message ordering requirements
-
-#### messagePumpType
-
-Chooses between Reactor and Proactor patterns:
-
-```csharp
-messagePumpType: MessagePumpType.Reactor   // Blocking I/O
-messagePumpType: MessagePumpType.Proactor  // Non-blocking I/O
-```
-
-**See [Reactor and Proactor](ReactorAndProactor.md) for guidance on choosing.**
-
-#### timeOut
-
-How long the Performer waits for a message before polling again:
-
-```csharp
-timeOut: TimeSpan.FromMilliseconds(200)
-```
-
-**Trade-offs:**
-
-- **Shorter timeout** → More responsive to shutdown, higher CPU usage
-- **Longer timeout** → Lower CPU usage, slower shutdown response
-
-#### requeueCount and requeueDelayInMilliseconds
-
-Control retry behavior on handler failure:
-
-```csharp
-requeueCount: 3,                           // Retry up to 3 times
-requeueDelayInMilliseconds: 1000,          // Wait 1 second between retries
-```
+Every option, with its defaults and a worked RabbitMQ example, is in [Subscriptions](/contents/DispatcherConfigurationReference.md#subscriptions).
 
 ## Dispatcher Lifecycle
 
