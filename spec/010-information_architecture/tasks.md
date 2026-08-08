@@ -302,13 +302,20 @@ amendments (design §12); this document joins it.
     not close it on spec approval. Re-check at Task 2.8, because PR 2 is the merge that moves
     74 public URLs and is where a late objection would be most expensive.
 
-- [ ] **Task 1.3:** Merge PR #82
+- [x] **Task 1.3:** Merge PR #82
   - Input: PR #82 on `docs/spec-010-design`
   - Output: `design.md`, `tasks.md`, `SUMMARY.target.md` and the README amendments on
     `master`
   - Notes: `master` requires a review and GitHub blocks self-approval, so this is
     `gh pr merge 82 --merge --admin`. Touches no file under `contents/`, so linkcheck stays
     at 112 files and pagelint at 0 errors / 802 warnings.
+  - **Done 2026-08-08.** Merged as **`25a578c`**. Six files, all under
+    `spec/010-information_architecture/`: `design.md`, `tasks.md`, `SUMMARY.target.md`,
+    `README.md` and the two approval markers. **All checks passed before the merge** — both CI
+    `check` jobs, both `versions` jobs, and both GitBook checks. Baseline on `master`
+    afterwards, unchanged: **linkcheck 112 files clean, pagelint 0 errors / 802 warnings across
+    110 pages.** **Phase 1 is complete and PR 1 is closed.** This tick could only be recorded
+    after the merge it describes, so it lands as the first commit of the phase-2 branch.
 
 ---
 
