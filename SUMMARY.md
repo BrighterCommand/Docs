@@ -102,6 +102,8 @@
   * [TickerQ](/contents/TickerQScheduler.md)
   * [Aws Scheduler](/contents/AwsScheduler.md)
   * [Azure Scheduler](/contents/AzureScheduler.md)
+* [Scheduling a Message](/contents/SchedulingAMessage.md)
+* [Switching Schedulers](/contents/SwitchingSchedulers.md)
 * [Custom Scheduler](/contents/CustomScheduler.md)
 
 ## Darker

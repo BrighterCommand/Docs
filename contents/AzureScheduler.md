@@ -374,30 +374,6 @@ public class OrderService
 }
 ```
 
-## Azure Scheduler Comparison with Other Schedulers
-
-| Feature | Azure Service Bus | AWS Scheduler | Quartz.NET | Hangfire | InMemory |
-|---------|-------------------|---------------|------------|----------|----------|
-| **Cloud Native** | ✅ Azure Only | ✅ AWS Only | ❌ | ❌ | ❌ |
-| **Managed Service** | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **Persistence** | Azure Managed | AWS Managed | Database | Database | None |
-| **Dashboard** | Azure Portal | AWS Console | Limited | Yes | No |
-| **Cancellation** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Reschedule** | ❌ (Cancel+Schedule) | ✅ | ✅ | ✅ | ✅ |
-| **Native Scheduling** | ✅ Built-in | ❌ Separate Service | ❌ | ❌ | ❌ |
-| **Cost Model** | Service Bus Pricing | Pay-per-use | Infrastructure | Infrastructure | Free |
-| **Setup Complexity** | Easy | Moderate (IAM) | Moderate | Easy | Minimal |
-| **Production Ready** | ✅ | ✅ | ✅ | ✅ | ❌ |
-| **Multi-Cloud** | ❌ | ❌ | ✅ | ✅ | ✅ |
-| **Strong Naming** | ✅ | ✅ | ✅ | ❌ | ✅ |
-
-**When to use Azure Service Bus Scheduler**:
-
-- Running on Azure infrastructure
-- Already using Azure Service Bus for messaging
-- Want simplicity (no separate scheduler service)
-- Don't need reschedule support (cancel+schedule is acceptable)
-
 ## Azure Scheduler Best Practices
 
 ### 1. Use Managed Identity in Production
@@ -618,70 +594,10 @@ public override async Task<FireAzureScheduler> HandleAsync(
 }
 ```
 
-## Azure Scheduler Migration from Other Schedulers
-
-### From InMemory Scheduler
-
-```csharp
-// Before (Development)
-services.AddBrighter(options => { ... })
-    .UseScheduler(new InMemorySchedulerFactory())
-    .AutoFromAssemblies();
-
-// After (Production on Azure)
-services.AddBrighter(options => { ... })
-    .UseScheduler(new AzureServiceBusSchedulerFactory(
-        clientProvider,
-        new RoutingKey("brighter-scheduler-topic")
-    ))
-    .AutoFromAssemblies();
-```
-
-**Additional Setup Required**:
-
-- Configure FireAzureScheduler subscription in Dispatcher
-- Create scheduler topic in Azure Service Bus
-- Configure RBAC permissions
-
-### From Quartz or Hangfire to Azure Service Bus
-
-```csharp
-// Before (Quartz)
-services.AddBrighter(options => { ... })
-    .UseScheduler(provider =>
-    {
-        var schedulerFactory = provider.GetRequiredService<ISchedulerFactory>();
-        return new QuartzSchedulerFactory(
-            schedulerFactory.GetScheduler().GetAwaiter().GetResult()
-        );
-    })
-    .AutoFromAssemblies();
-
-// After (Azure Service Bus)
-services.AddBrighter(options => { ... })
-    .UseScheduler(new AzureServiceBusSchedulerFactory(
-        clientProvider,
-        new RoutingKey("brighter-scheduler-topic")
-    ))
-    .AutoFromAssemblies();
-```
-
-**Benefits of moving to Azure Service Bus Scheduler**:
-
-- Simpler (no separate scheduler infrastructure)
-- Native Azure integration
-- Reduced operational complexity
-- No database required
-
-**Considerations**:
-
-- Must configure FireAzureScheduler subscription
-- No reschedule support (cancel + schedule instead)
-- Requires FireAzureScheduler topic in Service Bus
-
 ## Related Documentation
 
 - [Brighter Scheduler Support](BrighterSchedulerSupport.md) - Overview of scheduling in Brighter
+- [Switching Schedulers](/contents/SwitchingSchedulers.md) - Moving to or from this scheduler
 - [Azure Service Bus Configuration](AzureServiceBusConfiguration.md) - Configuring Azure Service Bus transport
 - [AWS Scheduler](AwsScheduler.md) - AWS equivalent
 - [Quartz Scheduler](QuartzScheduler.md) - Alternative for non-Azure environments

@@ -7,7 +7,7 @@ or ruling moved.
 (approved 2026-08-06)
 **Executes against:** `spec/011-authoring_conventions/worklist.md` (42 rows, 26 `split`, 16 `keep`)
 
-**Total tasks: 52, across 11 phases.**
+**Total tasks: 52, across 11 phases. 21 done — Phases 1, 2, 3 and 4.**
 
 ---
 
@@ -23,7 +23,7 @@ design deliberately left to this phase.
 | **1** | Plan ratified, nesting pinned, #67 re-checked | 3 | this document, §12 README amendments |
 | **2** | **The tree.** One PR, and the one that must not be partial | 10 | D1, D2, D3 |
 | **3** | Content defects, the duplication **verification**, and the split harness | 4 | D9, D5 |
-| **4** | Scheduler family — 6 rows, 2 new pages | 4 | D4 |
+| **4** | Scheduler family — 6 rows, 2 new pages · **DONE 2026-08-09** | 4 | D4 |
 | **5** | Outbox and Inbox — 4 rows, **8** new pages, 24 of the 34 anchor links | 5 | D4 |
 | **6** | Darker — 5 rows, 12 new pages | 5 | D4 |
 | **7** | Using an External Bus — 4 rows, 3 new pages | 4 | D4 |
@@ -769,7 +769,7 @@ phase to create a page — and a new page is 100% added lines, so all of its blo
 **Goal:** `worklist.md` §5a executed — five Reference cores, one shared how-to, one enriched
 overview. 6 rows, 2 new pages, 8 pages touched. Design §7.1.
 
-- [ ] **Task 4.1:** Create `SwitchingSchedulers.md`
+- [x] **Task 4.1:** Create `SwitchingSchedulers.md`
   - Input: the five `… Migration from Other Schedulers` sections — `HangfireScheduler.md`
     (36), `AwsScheduler.md` (52), `QuartzScheduler.md` (38), `AzureScheduler.md` (61),
     `InMemoryScheduler.md` (34) = **221 lines**
@@ -784,7 +784,7 @@ overview. 6 rows, 2 new pages, 8 pages touched. Design §7.1.
     the case where rule 3b (no repeated heading within a page) bites — the H3-per-target
     shape is what avoids it.
 
-- [ ] **Task 4.2:** Create `SchedulingAMessage.md`
+- [x] **Task 4.2:** Create `SchedulingAMessage.md`
   - Input: `BrighterSchedulerSupport.md` `## Brighter Scheduler Code Examples` (167) and
     `## Brighter Scheduler Configuration Examples` (45) = **212 lines**
   - Output: `contents/SchedulingAMessage.md`, How-to, **top-level in *Scheduler***;
@@ -792,7 +792,7 @@ overview. 6 rows, 2 new pages, 8 pages touched. Design §7.1.
   - Notes: 212 lines of how-to on an Explanation page is the mode mix this row exists to
     fix. Prerequisites segment names `[Scheduler](/contents/BrighterSchedulerSupport.md)`.
 
-- [ ] **Task 4.3:** Fold the four comparison sections into `## Choosing a Scheduler`
+- [x] **Task 4.3:** Fold the four comparison sections into `## Choosing a Scheduler`
   - Input: `HangfireScheduler.md` `## Comparison: Hangfire vs Quartz` (26),
     `AwsScheduler.md` `## AWS Scheduler Comparison with Other Schedulers` (23),
     `AzureScheduler.md` `## Azure Scheduler Comparison with Other Schedulers` (24),
@@ -810,7 +810,7 @@ overview. 6 rows, 2 new pages, 8 pages touched. Design §7.1.
     rather than moved, and it is removed as duplication. **Run D5 against the union** of the
     four sections and `## Choosing a Scheduler`, not against each separately.
 
-- [ ] **Task 4.4:** Requalify, re-banner and re-file the five cores
+- [x] **Task 4.4:** Requalify, re-banner and re-file the five cores
   - Input: `HangfireScheduler.md` (832 → ~770), `AwsScheduler.md` (775 → ~700),
     `QuartzScheduler.md` (769 → ~731), `AzureScheduler.md` (717 → ~632),
     `InMemoryScheduler.md` (541 → ~495)
@@ -825,6 +825,199 @@ overview. 6 rows, 2 new pages, 8 pages touched. Design §7.1.
     ~495 is before that arrival. It is four lines under 500 by arithmetic alone; a banner
     and two lead-ins put it back over, and **that is fine** — design §7.8, page length is
     not an acceptance criterion for this spec.
+
+### Phase 4 as executed — 2026-08-09
+
+**PHASE 4 IS COMPLETE. 21 of 52 tasks done.** Two pages created, eight touched,
+`TickerQScheduler.md` and `CustomScheduler.md` untouched. **No URL moved** — the five cores
+keep their filenames and the two new pages are new paths — so `.gitbook.yaml` is unchanged at
+75 entries and this phase owes no redirect.
+
+All five gates: linkcheck **114 files**, pagelint **0 errors / 793 warnings**, `--check-shape`
+0 at **112 pages / 12 sections / deepest 3 / widest 10**, `--check-redirects` 0,
+`pagelint --changed origin/master` **0 errors and, for the first time, non-vacuous**.
+
+**Every predicted line count reproduced exactly**, which is a first for a split phase in this
+programme. Each core is design's figure **+1**, and the +1 is the same line on all five — the
+`Switching Schedulers` entry added to *Related Documentation*:
+
+| Page | Design | Actual | |
+|---|---:|---:|---|
+| `HangfireScheduler.md` | ~770 | **771** | 832 − 36 migration − 26 comparison + 1 link |
+| `AwsScheduler.md` | ~700 | **701** | 775 − 52 − 23 + 1 |
+| `QuartzScheduler.md` | ~731 | **732** | 769 − 38 + 1 (no comparison section) |
+| `AzureScheduler.md` | ~632 | **633** | 717 − 61 − 24 + 1 |
+| `InMemoryScheduler.md` | ~495 | **496** | 541 − 34 − 12 + 1 |
+| `BrighterSchedulerSupport.md` | ~400 | **391** | 578 − 212 out, +25 net in after the merge |
+| `SwitchingSchedulers.md` | — | **166** | from 221 donated lines |
+| `SchedulingAMessage.md` | — | **233** | from 212 donated lines |
+
+Design §7.1's four measured spans — 221 migration, 85 comparison, 212 how-to, 97
+`## Choosing a Scheduler` — all reproduced against the corpus before anything was cut.
+
+#### The gate finally bit, and it needed the files staged to do it
+
+`PROMPT.md` predicted `pagelint.py --changed` would stop being vacuous in Phase 4, because a
+new page is 100% added lines. It does — **but not until the new files are added to the
+index.** `changed_ranges()` shells out to `git diff --unified=0 <base> --`, and **`git diff`
+cannot see untracked files**. The first `--changed` run here reported 0 errors while the two
+new pages contributed **no strict ranges at all** — a vacuous pass of exactly the kind session
+15's lesson warns about, one phase after the same prediction already failed once on file
+granularity.
+
+Staged, the run is real: **16 blocks strict** — 9 on `SchedulingAMessage.md`, 7 on
+`SwitchingSchedulers.md` — every one reporting the *elided* message, which is the `// ...`
+downgrade behaving as Q4 designed it.
+
+Proved red, with the mutation asserted and the file restored from a copy rather than from
+`HEAD` (session 16's lesson):
+
+| Probe | Result |
+|---|---|
+| one `// ...` removed from a new page's block | **`SwitchingSchedulers.md:52: USING DIRECTIVES`** — an *error*, exit **1** |
+| the same page, repo-wide | the same block, a **warning** |
+| restore from the copy | **byte-identical**; back to 0 errors |
+
+**This is the first real error `--changed` has produced on a real page** in this programme. It
+was also nearly missed a second way: the probe's first grep looked for the literal word
+`error` in the output, and findings do not carry it — an error is the *absence* of the
+`(warning)` suffix. Exit code 1 was the only honest signal. **Grep for the finding, not for
+the word you expect to describe it.**
+
+#### D5: 104 lines, all six groups accounted for
+
+Tasks 4.1, 4.2 and 4.3 interlock across the same six pages — 4.3 folds *from* the pages 4.1
+drains — so the check is **one invocation over the union**, not three. Running them separately
+would report each folded line as lost, which is the noise `noloss.py`'s docstring warns trains
+you to skim.
+
+```bash
+python3 spec/010-information_architecture/noloss.py --ref $(git merge-base origin/master HEAD) \
+  --original contents/BrighterSchedulerSupport.md contents/HangfireScheduler.md \
+             contents/AwsScheduler.md contents/QuartzScheduler.md \
+             contents/AzureScheduler.md contents/InMemoryScheduler.md \
+  --result   <the same six> contents/SwitchingSchedulers.md contents/SchedulingAMessage.md
+```
+
+**104 of 2,480 substantive lines survive nowhere.** Per page: Hangfire 25, AWS 21, Azure 20,
+InMemory 18, `BrighterSchedulerSupport` 11, Quartz 9 — and the six groups sum to 104 exactly:
+
+| | Lines | What |
+|---|---:|---|
+| Table rows superseded | **49** | the four incoming comparison tables and the old `### Scheduler Comparison`, replaced by one merged table |
+| Comparison headings | **4** | the four `## … Comparison …` headings the fold removes |
+| Choose/when-to-use bullets | **9** | folded into `### Scheduler Recommendations`, duplicates dropped |
+| Corrected claims | **3** | see below |
+| Requalified `##` headings | **2** | `## Brighter Scheduler Code Examples` → `## Message Scheduling Code Examples`, and the configuration pair |
+| Migration sections collapsed | **38** | five near-copies → one shared preamble plus one *after* per target |
+
+Nothing in that list is a surprise, and nothing is unexplained. The nearest-surviving-line
+column earns its place here: `| **Strong Naming** | ✅ | ✅ | ✅ | ❌ | ✅ |` against the merged
+`| **Strong Naming** | ✅ | ❌ | ✅ | ✅ | ✅ |` at 0.90 is the column reordering, visible at a
+glance and impossible to see in a diff of two tables with different column counts.
+
+**One row was dropped as genuine duplication and is worth naming:** Hangfire's
+`| **Monitoring** | ✅ Excellent (dashboard) | ⚠️ Limited |`. For those two schedulers it
+restates the `Dashboard` row, and no source states a value for the other three.
+
+#### The finding of the phase: the general page had the facts wrong, again
+
+Task 4.3 is a *merger*, so where the five tables disagreed about the same cell the merge
+forced a choice. Checked against `../Brighter` HEAD rather than adjudicated between the pages:
+
+| | Cancel | Reschedule |
+|---|---|---|
+| `AwsScheduler` (`MessageScheduler.Aws`, `.AWS.V4`) | `DeleteScheduleAsync` | `GetScheduleAsync` + `UpdateScheduleAsync` |
+| `AzureServiceBusScheduler` | `CancelScheduledMessageAsync` | **`=> Task.FromResult(false)`** — the only implementation that does not reschedule |
+| `QuartzScheduler` | `scheduler.DeleteJob` | `scheduler.RescheduleJob` |
+| `HangfireMessageScheduler` | `client.Delete` | `client.Reschedule` |
+| `InMemoryScheduler` | removes and disposes the timer | `Timer.Change` |
+
+**No implementation throws `NotImplementedException` or `NotSupportedException`.** So
+cancellation is universal, and Azure's missing reschedule is the single real limitation.
+
+`BrighterSchedulerSupport.md`'s `## Choosing a Scheduler` said **AWS `Limited`/`Limited` and
+Azure `No`/`No`** in its table, *"Limited cancellation/reschedule support"* in the AWS bullets
+and *"No direct cancellation support"* in the Azure bullets. The four technology pages'
+own tables said ✅ and were right. **This is Task 3.3's lesson repeating exactly one phase
+later: duplication rots asymmetrically, and the copy that rots is the general one nobody
+consults for a specific answer.** Three claims corrected, all of them forced by the merge.
+
+**The same wrong claim travelled into a moved page, and that one was corrected against the
+rule.** `## Brighter Scheduler Code Examples` carried *"AWS Scheduler and Azure Service Bus
+Scheduler have limited or no cancellation support"*, which moves verbatim to
+`SchedulingAMessage.md` under standing obligation 1. It was rewritten instead. **The line
+drawn, so the next phase can apply it:** a merge that forces a choice between conflicting
+copies resolves to the source; a page that would otherwise ship, in this PR, a sentence
+contradicting a table in the same PR is corrected; **everything else moves verbatim and is
+recorded.**
+
+#### Recorded, deliberately not acted on
+
+Three defects found while merging that no merge forced a choice about. Phase 3's precedent
+(the `QueriesAndQueryObjects.md` / `QueryPatterns.md` code disagreement) applies: record, do
+not fix, because *move the text, do not improve it* is what keeps a restructure PR reviewable.
+
+- **`QuartzMessageSchedulerFactory` does not exist.** The source has
+  `QuartzSchedulerFactory(IScheduler scheduler)`. The non-existent name appears in
+  `InMemoryScheduler.md`'s migration section — dropped by the collapse — **and in
+  `BrighterSchedulerSupport.md`'s `## Brighter Scheduler Configuration Examples`**, which
+  moved verbatim to `SchedulingAMessage.md` and still carries it.
+- **`HangfireMessageSchedulerFactory` takes no constructor arguments.** It exposes `Queue`,
+  `Client` and `TimeProvider` as settable properties. Both
+  `new HangfireMessageSchedulerFactory(connectionString: …)` forms in the corpus do not
+  compile; one is on the moved page.
+- **`UseScheduler` is an extension on `IBrighterBuilder`, not `IServiceCollection`.** Bare
+  `services.UseScheduler(…)` appears in the Hangfire and Quartz migration sections — where
+  the collapse forced a choice, so the merged page uses the `AddBrighter(…).UseScheduler(…)`
+  chain the AWS, Azure and InMemory sections already used. It survives elsewhere in the
+  corpus; `noloss.py` surfaced `builder.Services.UseScheduler(provider =>` as a nearest
+  surviving line, so `QuartzScheduler.md` still has one outside the split.
+
+Also unchanged: `IMessageScheduler` in the cancellation example (the interfaces are
+`IAmAMessageSchedulerSync`/`Async`), and **TickerQ is absent from every comparison table in
+the corpus**, including the merged one. Adding it would be new content.
+
+#### Two deviations from design §7.1's outline
+
+1. **Four target H3s, not five.** The outline reads *"Switching to Hangfire / Quartz / Aws /
+   Azure / InMemory"*. There is no source section for switching **to** InMemory — its own
+   section, `## Migration to Production Scheduler`, documents switching **away**, and is
+   therefore the *before* half every other target shares. Same shape as design §16 finding 2,
+   where matching on a word gave six comparison sections and enumerating gave four: **the
+   outline listed five schedulers, not five sections.** The page's shared preamble carries
+   both before-forms (from InMemory, from Quartz) and each H3 carries only the after.
+2. **No `## Switching Schedulers Verification`.** The outline calls for it; **no source
+   section supplies any material for it**, and writing one is new prose, which standing
+   obligation 1 reserves to Task 7.1. Omitted rather than invented. A later spec that writes
+   verification steps for a scheduler swap should add it.
+
+A third, smaller: `## Running Two Schedulers During a Transition` is **added** to the outline,
+because Hangfire's `### From Quartz` and Quartz's `### From Hangfire` are mirror-image
+feature-flag blocks with real content and nowhere else to go. They collapse to one block with
+*"Reverse the condition to migrate the other way."*
+
+#### Obligations 3 and 7
+
+**Obligation 3, re-derived not trusted:** *before* the split, across `contents/`, `SUMMARY.md`
+and `.gitbook.yaml`, **zero** fragment links targeted any of the six scheduler pages. Appendix
+B predicts 0 for all of them and it held — but it was re-derived, and it takes thirty seconds:
+
+```bash
+grep -rEo '\([^)]*(Hangfire|Aws|Quartz|Azure|InMemory|BrighterScheduler)[^)]*#[^)]*\)' contents/ SUMMARY.md .gitbook.yaml
+```
+
+**Run it after the split and it returns two** — `SwitchingSchedulers.md` and
+`SchedulingAMessage.md` each link to
+`BrighterSchedulerSupport.md#choosing-a-scheduler`, and both were created by this phase.
+`## Choosing a Scheduler` is a heading the fold *keeps*, so both resolve, and `linkcheck.py`
+confirms it. Recorded because the naive present-tense claim — *"zero fragment links target
+these pages"* — was written first and was already false by the time it was written.
+**Appendix B's warning that the table is a snapshot cuts both ways: the splits add links as
+well as break them.**
+
+**Obligation 7:** `pagetypes.tsv` is **112 rows plus header**, up from 110. Both new pages are
+`How-to` / `How-to` / `Brighter V10`, appended rather than re-sorted.
 
 ---
 

@@ -347,18 +347,6 @@ public class SchedulingTests : IDisposable
 }
 ```
 
-## Comparison with Production Schedulers
-
-| Feature | InMemory | Quartz.NET | Hangfire | AWS Scheduler | Azure Service Bus |
-|---------|----------|------------|----------|---------------|-------------------|
-| **Persistence** |  None |  Database |  Database | AWS | Azure |
-| **Distribution** | No | Yes | Yes | Yes | Yes |
-| **Cancellation** | Yes | Yes | Yes |  Limited | No |
-| **Dashboard** | No | Limited | Yes | AWS Console | Azure Portal |
-| **Setup Complexity** | Minimal | Moderate | Easy | ️Moderate | Easy |
-| **Production Ready** | No | Yes | Yes | Yes | Yes |
-| **Testing** | Ideal | Overkill | Overkill | No | No |
-
 ## InMemory Scheduler Best Practices
 
 ### 1. Use for Testing Only
@@ -441,40 +429,6 @@ await _commandProcessor.SendAsync(
 );  // With Quartz or Hangfire in production
 ```
 
-## Migration to Production Scheduler
-
-When moving to production, replace InMemory with a durable scheduler:
-
-### Before (Development):
-
-```csharp
-services.AddBrighter(options => { ... })
-    .UseScheduler(new InMemorySchedulerFactory())
-    .AutoFromAssemblies();
-```
-
-### After (Production with Hangfire):
-
-```csharp
-services.AddBrighter(options => { ... })
-    .UseScheduler(new HangfireMessageSchedulerFactory(
-        Configuration.GetConnectionString("Hangfire")
-    ))
-    .AutoFromAssemblies();
-```
-
-### After (Production with Quartz):
-
-```csharp
-services.AddBrighter(options => { ... })
-    .UseScheduler(new QuartzMessageSchedulerFactory(
-        Configuration.GetSection("Quartz")
-    ))
-    .AutoFromAssemblies();
-```
-
-**No code changes required** - just swap the scheduler factory!
-
 ## InMemory Scheduler Troubleshooting
 
 ### Scheduled Jobs Not Executing
@@ -521,6 +475,7 @@ Assert.NotNull(_serviceProvider.GetService<IHandleRequestsAsync<YourCommand>>())
 ## Related Documentation
 
 - [Brighter Scheduler Support](BrighterSchedulerSupport.md) - Overview of scheduling in Brighter
+- [Switching Schedulers](/contents/SwitchingSchedulers.md) - Moving to or from this scheduler
 - [Quartz Scheduler](QuartzScheduler.md) - Production scheduler with persistence
 - [Hangfire Scheduler](HangfireScheduler.md) - Production scheduler with dashboard
 - [AWS Scheduler](AwsScheduler.md) - Cloud-native AWS scheduling

@@ -240,13 +240,27 @@ Brighter supports multiple scheduler implementations. Your choice depends on you
 
 ### Scheduler Comparison
 
-| Scheduler | Production Use | Persistence | Cancellation | Reschedule | Cloud Native | Best For |
-|-----------|---------------|-------------|--------------|------------|--------------|----------|
-| **Quartz.NET** | Recommended | Database | Yes | Yes | No | General production use |
-| **Hangfire** | Recommended | Database | Yes | Yes | No | .NET applications with dashboard |
-| **AWS Scheduler** | Recommended | AWS | Limited | Limited | Yes | AWS deployments |
-| **Azure Service Bus** | Recommended | Azure | No | No | Yes | Azure deployments |
-| **InMemory** | Dev/Test Only | None | Yes | Yes | No | Testing, development |
+| Feature | Quartz.NET | Hangfire | AWS Scheduler | Azure Service Bus | InMemory |
+|---------|------------|----------|---------------|-------------------|----------|
+| **Production Use** | Recommended | Recommended | Recommended | Recommended | Dev/Test Only |
+| **Persistence** | Database | Database | AWS Managed | Azure Managed | None |
+| **Cancellation** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Reschedule** | ✅ | ✅ | ✅ | ❌ Cancel + schedule | ✅ |
+| **Cloud Native** | ❌ | ❌ | ✅ AWS only | ✅ Azure only | ❌ |
+| **Managed Service** | ❌ | ❌ | ✅ | ✅ | ❌ |
+| **Distribution and Clustering** | ✅ | ✅ | ✅ | ✅ | ❌ |
+| **Dashboard** | ⚠️ Limited/third-party | ✅ Built-in web UI | AWS Console | Azure Portal | ❌ |
+| **Setup Complexity** | ⚠️ Moderate | ✅ Easy | ⚠️ Moderate (IAM) | ✅ Easy | ✅ Minimal |
+| **Cost Model** | Infrastructure | Infrastructure | Pay-per-use | Service Bus pricing | Free |
+| **Multi-Cloud** | ✅ | ✅ | ❌ | ❌ | ✅ |
+| **Strong Naming** | ✅ | ❌ | ✅ | ✅ | ✅ |
+| **Native Scheduling** | ❌ | ❌ | ❌ Separate service | ✅ Built-in | ❌ |
+| **Automatic Retry** | ⚠️ Manual | ✅ Built-in | — | — | — |
+| **Recurring Jobs** | ⚠️ Via triggers | ✅ Native support | — | — | — |
+| **Testing** | Overkill | Overkill | ❌ | ❌ | ✅ Ideal |
+| **Best For** | General production use | .NET applications with dashboard | AWS deployments | Azure deployments | Testing, development |
+
+A dash means the scheduler pages do not compare that feature for that scheduler.
 
 ### Scheduler Recommendations
 
@@ -258,6 +272,10 @@ Brighter supports multiple scheduler implementations. Your choice depends on you
 - Supports persistent job stores (SQL, MongoDB, etc.)
 - Distributed scheduling with clustering
 - Full cancellation and reschedule support
+- You need advanced trigger types (Cron, Calendar)
+- You prefer more control over scheduling logic
+- Strong naming is required
+- Dashboard is not essential
 - See [Quartz Scheduler Documentation](QuartzScheduler.md)
 
 **Hangfire** - Best for .NET applications needing a dashboard:
@@ -266,6 +284,7 @@ Brighter supports multiple scheduler implementations. Your choice depends on you
 - Built-in web dashboard for monitoring
 - Persistent job storage (SQL Server, PostgreSQL, Redis, etc.)
 - Background job processing beyond scheduling
+- You need automatic retry handling
 - Note: `Brighter.Hangfire` assembly is NOT strong-named due to Hangfire limitations
 - See [Hangfire Scheduler Documentation](HangfireScheduler.md)
 
@@ -277,7 +296,9 @@ Brighter supports multiple scheduler implementations. Your choice depends on you
 - No infrastructure to manage
 - Direct integration with SNS/SQS
 - IAM-based security
-- Limited cancellation/reschedule support
+- Prefer serverless/managed services
+- Need high scalability
+- Cost-effective pay-per-use model
 - See [AWS Scheduler Documentation](AwsScheduler.md)
 
 **Azure Service Bus Scheduler** - Best for Azure deployments:
@@ -285,7 +306,9 @@ Brighter supports multiple scheduler implementations. Your choice depends on you
 - Built into Azure Service Bus
 - No additional infrastructure
 - Native message delay support
-- No direct cancellation support (must use separate fire scheduler topic/queue)
+- Already using Azure Service Bus for messaging
+- Want simplicity (no separate scheduler service)
+- Don't need reschedule support (cancel+schedule is acceptable)
 - See [Azure Scheduler Documentation](AzureScheduler.md)
 
 #### For Development and Testing
@@ -331,218 +354,6 @@ Brighter supports multiple scheduler implementations. Your choice depends on you
                │ No → Choose Quartz or Hangfire
 ```
 
-## Brighter Scheduler Code Examples
-
-### Basic Scheduling with DateTimeOffset
-
-Schedule a command for a specific absolute time:
-
-```csharp
-public class OrderService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
-
-    public async Task CreateOrder(Order order)
-    {
-        // Save order
-        await _repository.SaveAsync(order);
-
-        // Schedule order processing for tomorrow at 9 AM
-        var processTime = DateTime.UtcNow.Date.AddDays(1).AddHours(9);
-        var schedulerId = await _commandProcessor.SendAsync(
-            new ProcessOrderCommand { OrderId = order.Id },
-            at: new DateTimeOffset(processTime)
-        );
-
-        // Store scheduler ID for potential cancellation
-        order.ProcessSchedulerId = schedulerId;
-    }
-}
-```
-
-### Basic Scheduling with TimeSpan
-
-Schedule a command with a relative delay:
-
-```csharp
-public class RegistrationService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
-
-    public async Task RegisterUser(User user)
-    {
-        // Create user account
-        await _repository.SaveAsync(user);
-
-        // Send welcome email immediately
-        await _commandProcessor.SendAsync(new SendWelcomeEmailCommand { UserId = user.Id });
-
-        // Schedule reminder email for 24 hours later
-        await _commandProcessor.SendAsync(
-            new SendReminderEmailCommand { UserId = user.Id },
-            delay: TimeSpan.FromHours(24)
-        );
-    }
-}
-```
-
-### Scheduling with Post for External Bus
-
-Schedule a message to an external broker:
-
-```csharp
-public class NotificationService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
-
-    public async Task ScheduleNotification(NotificationRequest request)
-    {
-        // Schedule notification to be sent via external bus
-        var schedulerId = await _commandProcessor.PostAsync(
-            new NotificationEvent
-            {
-                UserId = request.UserId,
-                Message = request.Message
-            },
-            delay: request.Delay
-        );
-
-        // Return scheduler ID for tracking
-        return schedulerId;
-    }
-}
-```
-
-### Cancelling a Scheduled Message
-
-Cancel a previously scheduled message:
-
-```csharp
-public class OrderService
-{
-    private readonly IMessageScheduler _scheduler;
-
-    public async Task CancelOrder(Guid orderId)
-    {
-        var order = await _repository.GetAsync(orderId);
-
-        // Cancel the scheduled order processing
-        if (!string.IsNullOrEmpty(order.ProcessSchedulerId))
-        {
-            await _scheduler.CancelAsync(order.ProcessSchedulerId);
-        }
-
-        // Mark order as cancelled
-        order.Status = OrderStatus.Cancelled;
-        await _repository.UpdateAsync(order);
-    }
-}
-```
-
-**Note:** Cancellation support depends on your scheduler implementation. AWS Scheduler and Azure Service Bus Scheduler have limited or no cancellation support.
-
-### Retry with Exponential Backoff
-
-Implement retry logic with increasing delays:
-
-```csharp
-public class RetryService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
-
-    public async Task RetryWithBackoff(OperationCommand command, int attemptNumber)
-    {
-        // Calculate exponential backoff delay
-        var delaySeconds = Math.Pow(2, attemptNumber); // 2^attempt seconds
-        var maxDelay = TimeSpan.FromMinutes(30);
-        var delay = TimeSpan.FromSeconds(Math.Min(delaySeconds, maxDelay.TotalSeconds));
-
-        // Schedule retry
-        await _commandProcessor.SendAsync(
-            command with { AttemptNumber = attemptNumber + 1 },
-            delay: delay
-        );
-    }
-}
-```
-
-### Using Requeue with Delay in a Handler
-
-```csharp
-public class ProcessPaymentHandlerAsync : RequestHandlerAsync<ProcessPaymentCommand>
-{
-    private const int MaxRetries = 3;
-
-    public override async Task<ProcessPaymentCommand> HandleAsync(
-        ProcessPaymentCommand command,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            await _paymentGateway.ProcessAsync(command.PaymentId, cancellationToken);
-            return await base.HandleAsync(command, cancellationToken);
-        }
-        catch (PaymentGatewayUnavailableException)
-        {
-            // Throw DeferMessageAction to requeue with configured delay
-            // Subscription must have requeueCount and requeueDelayInMilliseconds configured
-            throw new DeferMessageAction();
-        }
-        catch (PaymentDeclinedException ex)
-        {
-            // Don't requeue for business logic failures
-            _logger.LogWarning(ex, "Payment declined for {PaymentId}", command.PaymentId);
-            return await base.HandleAsync(command, cancellationToken);
-        }
-    }
-}
-```
-
-## Brighter Scheduler Configuration Examples
-
-### Configuring with Hangfire
-
-```csharp
-services.AddBrighter(options =>
-{
-    options.HandlerLifetime = ServiceLifetime.Scoped;
-})
-.UseScheduler(
-    scheduler: new HangfireMessageSchedulerFactory(
-        connectionString: Configuration.GetConnectionString("Hangfire")
-    )
-)
-.AutoFromAssemblies();
-```
-
-### Configuring with Quartz.NET
-
-```csharp
-services.AddBrighter(options =>
-{
-    options.HandlerLifetime = ServiceLifetime.Scoped;
-})
-.UseScheduler(
-    scheduler: new QuartzMessageSchedulerFactory(
-        configuration: Configuration.GetSection("Quartz")
-    )
-)
-.AutoFromAssemblies();
-```
-
-### Configuring with InMemory (Development Only)
-
-```csharp
-services.AddBrighter(options =>
-{
-    options.HandlerLifetime = ServiceLifetime.Scoped;
-})
-.UseScheduler(
-    scheduler: new InMemorySchedulerFactory()
-)
-.AutoFromAssemblies();
-```
-
 ## Brighter Scheduler Best Practices
 
 1. **Always store scheduler IDs** if you need to cancel or track scheduled messages
@@ -558,6 +369,8 @@ services.AddBrighter(options =>
 
 ## Related Documentation
 
+- [Scheduling a Message](/contents/SchedulingAMessage.md) - Code and configuration examples for scheduling, cancelling and requeueing
+- [Switching Schedulers](/contents/SwitchingSchedulers.md) - Moving from one scheduler to another
 - [Quartz Scheduler](QuartzScheduler.md) - Quartz.NET scheduler configuration
 - [Hangfire Scheduler](HangfireScheduler.md) - Hangfire scheduler configuration
 - [AWS Scheduler](AwsScheduler.md) - AWS EventBridge Scheduler configuration
