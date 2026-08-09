@@ -109,3 +109,5 @@ contents/RabbitMQMigrateToQuorumQueues.md	How-to	high	"split from RabbitMQConfig
 contents/RabbitMQConnectionStability.md	How-to	high	"split from RabbitMQConfiguration.md (spec 011, Task 6.4); single-mode by construction"	How-to	Brighter V10
 contents/CommandProcessorConfigurationReference.md	Reference	high	"split from BrighterBasicConfiguration.md (spec 011, Task 6.8); single-mode by construction"	Reference	Brighter V10
 contents/DispatcherConfigurationReference.md	Reference	high	"split from BrighterBasicConfiguration.md (spec 011, Task 6.9); single-mode by construction"	Reference	Brighter V10
+contents/SchedulingAMessage.md	How-to	high	"split from BrighterSchedulerSupport.md (spec 010, Task 4.2); single-mode by construction"	How-to	Brighter V10
+contents/SwitchingSchedulers.md	How-to	high	"merged from the five scheduler migration sections (spec 010, Task 4.1); single-mode by construction"	How-to	Brighter V10

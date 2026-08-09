@@ -707,47 +707,10 @@ clustering.CheckinInterval = TimeSpan.FromSeconds(30);
 // (indexes, isolation levels, etc.)
 ```
 
-## Quartz Migration from Other Schedulers
-
-### From InMemory Scheduler
-
-```csharp
-// Before - InMemory
-services.UseScheduler(new InMemorySchedulerFactory());
-
-// After - Quartz
-services.UseScheduler(provider =>
-{
-    var factory = provider.GetRequiredService<ISchedulerFactory>();
-    var scheduler = factory.GetScheduler().GetAwaiter().GetResult();
-    return new QuartzSchedulerFactory(scheduler);
-});
-```
-
-### From Hangfire
-
-If migrating from Hangfire, you can run both schedulers during transition:
-
-```csharp
-// Run both schedulers temporarily
-services.UseScheduler(provider =>
-{
-    // Choose based on feature flag or configuration
-    if (Configuration.GetValue<bool>("UseQuartz"))
-    {
-        var factory = provider.GetRequiredService<ISchedulerFactory>();
-        return new QuartzSchedulerFactory(factory.GetScheduler().Result);
-    }
-    else
-    {
-        return new HangfireMessageSchedulerFactory(Configuration.GetConnectionString("Hangfire"));
-    }
-});
-```
-
 ## Related Documentation
 
 - [Brighter Scheduler Support](BrighterSchedulerSupport.md) - Overview of scheduling in Brighter
+- [Switching Schedulers](/contents/SwitchingSchedulers.md) - Moving to or from this scheduler
 - [InMemory Scheduler](InMemoryScheduler.md) - Lightweight scheduler for testing
 - [Hangfire Scheduler](HangfireScheduler.md) - Alternative production scheduler with dashboard
 - [AWS Scheduler](AwsScheduler.md) - Cloud-native AWS scheduling

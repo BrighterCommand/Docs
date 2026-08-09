@@ -445,29 +445,6 @@ public class TrialService
 | **Flexibility** | Target must exist | More flexible |
 | **Recommended For** | Production messages | Requests and commands |
 
-## AWS Scheduler Comparison with Other Schedulers
-
-| Feature | AWS Scheduler | Quartz.NET | Hangfire | InMemory |
-|---------|---------------|------------|----------|----------|
-| **Cloud Native** | AWS Only | ❌ | ❌ | ❌ |
-| **Serverless** | ✅ | ❌ | ❌ | ❌ |
-| **Persistence** | AWS Managed | Database | Database | None |
-| **Dashboard** | AWS Console | Limited | Yes | No |
-| **Cancellation** | ✅ | ✅ | ✅ | ✅ |
-| **Reschedule** | ✅ | ✅ | ✅ | ✅ |
-| **Cost Model** | Pay-per-use | Infrastructure | Infrastructure | Free |
-| **Setup Complexity** | Moderate (IAM) | Moderate | Easy | Minimal |
-| **Production Ready** | ✅ | ✅ | ✅ | ❌ |
-| **Multi-Cloud** | ❌ | ✅ | ✅ | ✅ |
-| **Strong Naming** | ✅ | ✅ | ❌ | ✅ |
-
-**When to use AWS Scheduler**:
-
-- Running on AWS infrastructure
-- Prefer serverless/managed services
-- Need high scalability
-- Cost-effective pay-per-use model
-
 ## AWS Scheduler Best Practices
 
 ### 1. Use Direct to Target for Messages
@@ -689,61 +666,10 @@ await _scheduler.CancelAsync(oldSchedulerId);
 // AWS Scheduler is billed per schedule invocation
 ```
 
-## AWS Scheduler Migration from Other Schedulers
-
-### From InMemory Scheduler
-
-```csharp
-// Before (Development)
-services.AddBrighter(options => { ... })
-    .UseScheduler(new InMemorySchedulerFactory())
-    .AutoFromAssemblies();
-
-// After (Production on AWS)
-services.AddBrighter(options => { ... })
-    .UseScheduler(new AwsSchedulerFactory(awsConnection, "scheduler-role")
-    {
-        SchedulerTopicOrQueue = new RoutingKey("scheduler-topic"),
-        OnConflict = OnSchedulerConflict.Overwrite
-    })
-    .AutoFromAssemblies();
-```
-
-**No code changes required** - just swap the scheduler factory!
-
-### From Quartz or Hangfire to AWS Scheduler
-
-```csharp
-// Before (Quartz)
-services.AddBrighter(options => { ... })
-    .UseScheduler(provider =>
-    {
-        var schedulerFactory = provider.GetRequiredService<ISchedulerFactory>();
-        return new QuartzSchedulerFactory(
-            schedulerFactory.GetScheduler().GetAwaiter().GetResult()
-        );
-    })
-    .AutoFromAssemblies();
-
-// After (AWS Scheduler)
-services.AddBrighter(options => { ... })
-    .UseScheduler(new AwsSchedulerFactory(awsConnection, "scheduler-role")
-    {
-        SchedulerTopicOrQueue = new RoutingKey("scheduler-topic")
-    })
-    .AutoFromAssemblies();
-```
-
-**Benefits of moving to AWS Scheduler**:
-
-- No database required
-- No server maintenance
-- Automatic scaling
-- Pay-per-use pricing
-
 ## Related Documentation
 
 - [Brighter Scheduler Support](BrighterSchedulerSupport.md) - Overview of scheduling in Brighter
+- [Switching Schedulers](/contents/SwitchingSchedulers.md) - Moving to or from this scheduler
 - [Quartz Scheduler](QuartzScheduler.md) - Alternative for non-AWS environments
 - [Hangfire Scheduler](HangfireScheduler.md) - Alternative with dashboard
 - [InMemory Scheduler](InMemoryScheduler.md) - For testing and development
