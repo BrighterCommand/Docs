@@ -5,7 +5,7 @@
 A **distributed lock** lets multiple instances of your application coordinate so that
 only one of them performs a given task at a time. Brighter uses it to guarantee that a
 single [Outbox Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) and a single
-[Outbox Archiver](/contents/BrighterOutboxSupport.md#outbox-archiver) run against an
+[Outbox Archiver](/contents/OutboxArchiver.md) run against an
 Outbox, even when you scale your application out across many processes or containers.
 
 This page explains why the lock matters, the contract it implements, the default
@@ -120,7 +120,7 @@ If you omit `opt.DistributedLock`, Brighter falls back to the in-process `InMemo
 
 For production, run the Sweeper and Archiver as a separate deployed executable rather
 than inside your producer application — see [Running the Sweeper and Archiver Out of
-Process](/contents/BrighterOutboxSupport.md#running-the-sweeper-and-archiver-out-of-process).
+Process](/contents/OutboxArchiver.md#running-the-sweeper-and-archiver-out-of-process).
 
 ## Available Providers
 

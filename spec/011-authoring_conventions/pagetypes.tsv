@@ -14,7 +14,7 @@ contents/DynamicMessageDeserialization.md		review	"no signal fired (section ""Us
 contents/ErrorHandlingOptions.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,reference)"	Reference	Brighter V10
 contents/HandlerFailure.md		review	"no signal fired (section ""Using an External Bus"", modes: explanation,howto)"	Explanation	Brighter V10
 contents/HealthChecks.md		review	"no signal fired (section ""Health Checks and Observability"", modes: none)"	How-to	Brighter V10
-contents/InMemoryOptions.md		review	"no signal fired (section ""Brighter Configuration"", modes: explanation,howto,reference)"	Reference	Brighter V10
+contents/InMemoryOptions.md		review	"no signal fired (section ""Brighter Configuration"", modes: explanation,howto,reference)"	How-to	Brighter V10
 contents/Logging.md		review	"no signal fired (section ""Health Checks and Observability"", modes: none)"	Reference	Brighter V10
 contents/MessageMappers.md		review	"no signal fired (section ""Using an External Bus"", modes: howto,reference)"	Explanation	Brighter V10
 contents/NullableReferenceTypes.md		review	"no signal fired (section ""V10 Migration"", modes: explanation,guidance,howto,reference)"	Reference	Brighter V10
@@ -82,7 +82,7 @@ contents/PolicyRetryAndCircuitBreaker.md	How-to	medium	"title ""Supporting Retry
 contents/PostgresDistributedLock.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
 contents/PostgresInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
 contents/PostgresOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
-contents/ReplayOnSeen.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
+contents/ReplayOnSeen.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Explanation	Brighter V10
 contents/Requests, Commands and Events.md	Explanation	medium	single mode scored: explanation	Explanation	Brighter V10
 contents/SqliteInbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
 contents/SqliteOutbox.md	Reference	medium	"SUMMARY.md section ""Outbox and Inbox"""	Reference	Brighter V10
@@ -111,3 +111,11 @@ contents/CommandProcessorConfigurationReference.md	Reference	high	"split from Br
 contents/DispatcherConfigurationReference.md	Reference	high	"split from BrighterBasicConfiguration.md (spec 011, Task 6.9); single-mode by construction"	Reference	Brighter V10
 contents/SchedulingAMessage.md	How-to	high	"split from BrighterSchedulerSupport.md (spec 010, Task 4.2); single-mode by construction"	How-to	Brighter V10
 contents/SwitchingSchedulers.md	How-to	high	"merged from the five scheduler migration sections (spec 010, Task 4.1); single-mode by construction"	How-to	Brighter V10
+contents/OutboxArchiver.md	Reference	high	"split from BrighterOutboxSupport.md (spec 010, Task 5.1); single-mode by construction"	Reference	Brighter V10
+contents/TransactionalMessagingWithTheOutbox.md	How-to	high	"split from BrighterOutboxSupport.md (spec 010, Task 5.1); single-mode by construction"	How-to	Brighter V10
+contents/TurningOnReplayOnSeen.md	How-to	high	"split from ReplayOnSeen.md (spec 010, Task 5.2); single-mode by construction"	How-to	Brighter V10
+contents/ReplayOnSeenReference.md	Reference	high	"split from ReplayOnSeen.md (spec 010, Task 5.2); single-mode by construction"	Reference	Brighter V10
+contents/UsingSweeperCircuitBreaking.md	How-to	high	"split from SweeperCircuitBreaking.md (spec 010, Task 5.3); single-mode by construction"	How-to	Brighter V10
+contents/InMemoryTransport.md	Reference	high	"redistributed from InMemoryOptions.md (spec 010, Task 5.4); single-mode by construction"	Reference	Brighter V10
+contents/InMemoryOutbox.md	Reference	high	"redistributed from InMemoryOptions.md (spec 010, Task 5.4); single-mode by construction"	Reference	Brighter V10
+contents/InMemoryInbox.md	Reference	high	"redistributed from InMemoryOptions.md (spec 010, Task 5.4); single-mode by construction"	Reference	Brighter V10

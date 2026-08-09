@@ -13,7 +13,7 @@ pair of optional role interfaces, and this page covers what your implementation 
 > This page is for people **writing** an Inbox or Outbox — a backend Brighter does not
 > ship, or a wrapper of your own. If you are using a Brighter-maintained store, it already
 > implements everything below; see
-> [Store Support](/contents/ReplayOnSeen.md#store-support) instead.
+> [Store Support](/contents/ReplayOnSeenReference.md#store-support) instead.
 
 Causation tracking is an **optional role interface** on each box, separate from the core
 Inbox and Outbox interfaces. A store that does not implement it keeps working exactly as
@@ -66,14 +66,14 @@ is precisely the outcome the method exists to prevent.
 `ReplayCausation` returns `false`. A duplicate arriving at an un-migrated store must not
 unwind the consumer pipeline with a schema error, and the `false` return is what lets
 Brighter record a
-[`Replay Skipped` event](/contents/ReplayOnSeen.md#replay-versus-replay-skipped) rather than
+[`Replay Skipped` event](/contents/ReplayOnSeenReference.md#replay-versus-replay-skipped) rather than
 claiming a replay that never happened.
 
 **Gate your own write path on the same answer.** If your `Add` unconditionally writes a
 Causation Id, an un-migrated store starts failing deposits the moment someone upgrades. Ask
 the same probe, and fall back to your original write when it says no. If the probe is
 expensive, memoize it — and read
-[Upgrading Without Migrating](/contents/ReplayOnSeen.md#upgrading-without-migrating) for the
+[Upgrading Without Migrating](/contents/TurningOnReplayOnSeen.md#upgrading-without-migrating) for the
 restart consequence that memoizing carries.
 
 ## A skeleton
@@ -141,7 +141,7 @@ implement the role resolves to `null` and the handler degrades to a plain skip.
 
 - [Replay On Seen](/contents/ReplayOnSeen.md) — what replay does, and how the Causation Id
   links an Inbox entry to the messages it produced
-- [Store Support](/contents/ReplayOnSeen.md#store-support) — what the Brighter-maintained
+- [Store Support](/contents/ReplayOnSeenReference.md#store-support) — what the Brighter-maintained
   stores already do, and what each needs before replay works
 - [Pipeline Validation](/contents/PipelineValidation.md) — the startup checks your
   `SupportsCausationTracking()` answer feeds

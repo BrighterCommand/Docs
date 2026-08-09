@@ -657,6 +657,6 @@ var normalSubscription = new PostgresSubscription<NormalEvent>(
 - [Outbox Pattern](OutboxPattern.md)
 - [Claim Check Pattern](ClaimCheck.md)
 - [OpenTelemetry Integration](Telemetry.md)
-- [Transactional Messaging](/contents/BrighterOutboxSupport.md#complete-example-transactional-messaging)
+- [Transactional Messaging](/contents/TransactionalMessagingWithTheOutbox.md)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [Npgsql - .NET PostgreSQL Driver](https://www.npgsql.org/)

@@ -191,4 +191,4 @@ Nothing breaks, and replay never happens:
 - **Startup warns.** `SupportsCausationTracking()` reports `false`, and [pipeline validation](/contents/PipelineValidation.md) raises a *warning* — not an error — for any handler configured with `OnceOnlyAction.Replay`.
 - **Duplicates are skipped quietly.** `ReplayCausation` returns `false` rather than throwing, so a duplicate does not fail the consumer pipeline with a DynamoDB `ValidationException`. Nothing is resent.
 
-See [When Replay Does Not Fire](/contents/ReplayOnSeen.md#when-replay-does-not-fire) for how to tell this apart from the other reasons a replay produces nothing.
+See [When Replay Does Not Fire](/contents/ReplayOnSeenReference.md#when-replay-does-not-fire) for how to tell this apart from the other reasons a replay produces nothing.

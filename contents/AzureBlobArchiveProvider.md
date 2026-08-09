@@ -3,7 +3,7 @@
 > **Reference** · Applies to **Brighter V10**
 
 ## Azure Blob Archive Provider Usage
-The Azure Blob Archive Provider is a provider for [Outbox Archiver](/contents/BrighterOutboxSupport.md#outbox-archiver).
+The Azure Blob Archive Provider is a provider for [Outbox Archiver](/contents/OutboxArchiver.md).
 
 For this we will need the *Archive* packages for the Azure *Archive Provider*.
 
