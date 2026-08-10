@@ -24,8 +24,8 @@ public class OrderService
         // Schedule order processing for tomorrow at 9 AM
         var processTime = DateTime.UtcNow.Date.AddDays(1).AddHours(9);
         var schedulerId = await _commandProcessor.SendAsync(
-            new ProcessOrderCommand { OrderId = order.Id },
-            at: new DateTimeOffset(processTime)
+            new DateTimeOffset(processTime),
+            new ProcessOrderCommand { OrderId = order.Id }
         );
 
         // Store scheduler ID for potential cancellation
@@ -54,8 +54,8 @@ public class RegistrationService
 
         // Schedule reminder email for 24 hours later
         await _commandProcessor.SendAsync(
-            new SendReminderEmailCommand { UserId = user.Id },
-            delay: TimeSpan.FromHours(24)
+            TimeSpan.FromHours(24),
+            new SendReminderEmailCommand { UserId = user.Id }
         );
     }
 }
@@ -75,12 +75,12 @@ public class NotificationService
     {
         // Schedule notification to be sent via external bus
         var schedulerId = await _commandProcessor.PostAsync(
+            request.Delay,
             new NotificationEvent
             {
                 UserId = request.UserId,
                 Message = request.Message
-            },
-            delay: request.Delay
+            }
         );
 
         // Return scheduler ID for tracking
@@ -137,8 +137,8 @@ public class RetryService
 
         // Schedule retry
         await _commandProcessor.SendAsync(
-            command with { AttemptNumber = attemptNumber + 1 },
-            delay: delay
+            delay,
+            command with { AttemptNumber = attemptNumber + 1 }
         );
     }
 }

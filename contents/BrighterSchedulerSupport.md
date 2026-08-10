@@ -49,16 +49,17 @@ public interface IAmACommandProcessor
 Specifies the **absolute time** when the message should be delivered:
 
 ```csharp
+// ...
 // Schedule for specific date and time
 var schedulerId = await commandProcessor.SendAsync(
-    new ProcessOrderCommand { OrderId = orderId },
-    at: new DateTimeOffset(2025, 1, 15, 14, 30, 0, TimeSpan.Zero)
+    new DateTimeOffset(2025, 1, 15, 14, 30, 0, TimeSpan.Zero),
+    new ProcessOrderCommand { OrderId = orderId }
 );
 
 // Schedule for 1 hour from now
 var schedulerId = await commandProcessor.SendAsync(
-    new SendReminderCommand { UserId = userId },
-    at: DateTimeOffset.UtcNow.AddHours(1)
+    DateTimeOffset.UtcNow.AddHours(1),
+    new SendReminderCommand { UserId = userId }
 );
 ```
 
@@ -67,16 +68,17 @@ var schedulerId = await commandProcessor.SendAsync(
 Specifies a **relative delay** from the current time:
 
 ```csharp
+// ...
 // Schedule for 30 minutes from now
 var schedulerId = await commandProcessor.SendAsync(
-    new ProcessPaymentCommand { TransactionId = txId },
-    delay: TimeSpan.FromMinutes(30)
+    TimeSpan.FromMinutes(30),
+    new ProcessPaymentCommand { TransactionId = txId }
 );
 
 // Schedule for 5 seconds from now (useful for retry)
 var schedulerId = commandProcessor.Send(
-    new RetryOperationCommand { AttemptNumber = 2 },
-    delay: TimeSpan.FromSeconds(5)
+    TimeSpan.FromSeconds(5),
+    new RetryOperationCommand { AttemptNumber = 2 }
 );
 ```
 
@@ -89,10 +91,11 @@ All scheduling methods return a `string` representing the **scheduler ID**. This
 - **Track** scheduled messages in your application
 
 ```csharp
+// ...
 // Save the scheduler ID for later use
 string schedulerId = await commandProcessor.SendAsync(
-    new CancelableOperationCommand { OperationId = opId },
-    delay: TimeSpan.FromMinutes(30)
+    TimeSpan.FromMinutes(30),
+    new CancelableOperationCommand { OperationId = opId }
 );
 
 // Later, cancel the scheduled message if needed
