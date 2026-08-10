@@ -1230,6 +1230,29 @@ The archive donation **is** additive: `OutboxArchiver.md` had no archive-provide
   needed the signature for an unrelated reason. **The correct form is already in the corpus**,
   on `InMemoryScheduler.md`. It is a four-line correction awaiting a ruling.
 
+#### Post-merge: `OutboxArchiver.md` publishes, but its HTML route served a cached 404
+
+Measured after PR #89 merged. `outbox-and-inbox/outboxarchiver` returned a **190,021-byte 404
+shell** — the 404 class, body containing *"404"* and *"not found"* — while:
+
+- `sitemap-pages.xml` listed it (and moved 113 → **121**, exactly the eight new pages);
+- both its children, `…/outboxarchiver/azureblobarchiveprovider` and its configuration page,
+  returned real bodies at **four segments**;
+- seven of the eight other new pages returned real bodies **in the same probe batch**;
+- a `?cb=` query string did not change the response.
+
+**`curl <path>.md` settled it**: `200`, 9,145 bytes, leading `# Outbox Archiver`. GitBook has
+the page and publishes it; only the HTML route is stale, almost certainly from this session's
+own probe landing inside the 25–45 second sync window. **Recorded as a lesson in `PROMPT.md`:
+wait for the sitemap to move before probing a new URL, and check the `.md` variant before
+concluding a page failed to publish.**
+
+**Both redirects were confirmed working on the second probe** — `outbox-and-inbox/azureblobarchiveprovider`
+and its child returned `307` with a `location:` header, and the **pre-PR-2 key**
+`guaranteed-at-least-once/azureblobarchiveprovider` still redirects too. That is D0's finding
+holding across **two** moves of the same page, which is what it predicted and had never been
+tested at.
+
 ---
 
 ## Phase 6 — Darker (PR 6)
