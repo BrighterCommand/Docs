@@ -372,6 +372,7 @@ var configuration = new RelationalDatabaseConfiguration(
 PostgreSQL message broker supports message scheduling using the visibility timeout:
 
 ```csharp
+// ...
 // Schedule message for future delivery
 var delayedEvent = new OrderReminderEvent
 {
@@ -380,8 +381,8 @@ var delayedEvent = new OrderReminderEvent
 };
 
 await _commandProcessor.PublishAsync(
-    delayedEvent,
-    delay: TimeSpan.FromHours(24)  // Deliver in 24 hours
+    TimeSpan.FromHours(24),        // Deliver in 24 hours
+    delayedEvent
 );
 ```
 
