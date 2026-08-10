@@ -201,7 +201,7 @@ See: [Outbox Support](/contents/BrighterOutboxSupport.md#implicit-clear)
 
 A background process that moves messages older than a configured age out of the Outbox into long-term storage, keeping the Outbox small. Like the Sweeper, it runs as a singleton, coordinated by a Distributed Lock on the resource named `"Archiver"`.
 
-See: [Outbox Archiver](/contents/BrighterOutboxSupport.md#outbox-archiver)
+See: [Outbox Archiver](/contents/OutboxArchiver.md)
 
 ### Claim Check
 
@@ -527,7 +527,7 @@ See: Transport-specific configuration pages
 
 An in-process transport for development and testing. Messages are stored in memory and delivered within the same process. Not durable - crashes lose messages.
 
-See: [InMemory Options](/contents/InMemoryOptions.md)
+See: [InMemory Transport](/contents/InMemoryTransport.md)
 
 ### External Bus
 

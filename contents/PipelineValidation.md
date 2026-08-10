@@ -366,7 +366,7 @@ services.AddBrighter()
     });
 ```
 
-Replay reads the Causation Id from the Inbox and hands it to the Outbox, so either box being behind is enough to stop it. [Replay On Seen](/contents/ReplayOnSeen.md#when-replay-does-not-fire) lists every finding this rule produces, along with the runtime failures that produce no startup finding at all.
+Replay reads the Causation Id from the Inbox and hands it to the Outbox, so either box being behind is enough to stop it. [Replay On Seen](/contents/ReplayOnSeenReference.md#when-replay-does-not-fire) lists every finding this rule produces, along with the runtime failures that produce no startup finding at all.
 
 ## Further Reading
 

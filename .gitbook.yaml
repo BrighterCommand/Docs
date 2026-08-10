@@ -64,6 +64,8 @@ redirects:
   guaranteed-at-least-once/awssqsconfiguration: contents/AWSSQSConfiguration.md
   guaranteed-at-least-once/azureblobarchiveprovider: contents/AzureBlobArchiveProvider.md
   guaranteed-at-least-once/azureblobarchiveprovider/azureblobconfiguration: contents/AzureBlobConfiguration.md
+  outbox-and-inbox/azureblobarchiveprovider: contents/AzureBlobArchiveProvider.md
+  outbox-and-inbox/azureblobarchiveprovider/azureblobconfiguration: contents/AzureBlobConfiguration.md
   guaranteed-at-least-once/azureservicebusconfiguration: contents/AzureServiceBusConfiguration.md
   guaranteed-at-least-once/brightercontrolapi: contents/BrighterControlAPI.md
   guaranteed-at-least-once/kafkaconfiguration: contents/KafkaConfiguration.md

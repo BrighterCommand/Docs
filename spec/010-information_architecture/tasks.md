@@ -7,7 +7,7 @@ or ruling moved.
 (approved 2026-08-06)
 **Executes against:** `spec/011-authoring_conventions/worklist.md` (42 rows, 26 `split`, 16 `keep`)
 
-**Total tasks: 52, across 11 phases. 21 done — Phases 1, 2, 3 and 4.**
+**Total tasks: 52, across 11 phases. 26 done — Phases 1 through 5.**
 
 ---
 
@@ -24,7 +24,7 @@ design deliberately left to this phase.
 | **2** | **The tree.** One PR, and the one that must not be partial | 10 | D1, D2, D3 |
 | **3** | Content defects, the duplication **verification**, and the split harness | 4 | D9, D5 |
 | **4** | Scheduler family — 6 rows, 2 new pages · **DONE 2026-08-09** | 4 | D4 |
-| **5** | Outbox and Inbox — 4 rows, **8** new pages, 24 of the 34 anchor links | 5 | D4 |
+| **5** | Outbox and Inbox — 4 rows, **8** new pages, 24 of the 34 anchor links · **DONE 2026-08-09** | 5 | D4 |
 | **6** | Darker — 5 rows, 12 new pages | 5 | D4 |
 | **7** | Using an External Bus — 4 rows, 3 new pages | 4 | D4 |
 | **8** | Transports — 2 rows, 2 new pages | 2 | D4 |
@@ -1033,7 +1033,7 @@ of all 26 splits sits in this phase on either measure. Design §7.4, §7.5, §8.
 > attributed to this phase in three places. Tasks 5.1 and 5.2 carry 16 + 8 = **24** inbound
 > links, of which 5 + 6 = **11** need repointing. The conclusion is untouched.
 
-- [ ] **Task 5.1:** Split `BrighterOutboxSupport.md`
+- [x] **Task 5.1:** Split `BrighterOutboxSupport.md`
   - Input: `## Outbox Archiver` (151) and `## Complete Example: Transactional Messaging`
     (169); page is **517** lines
   - Output: `contents/OutboxArchiver.md` (Reference) and
@@ -1062,7 +1062,7 @@ of all 26 splits sits in this phase on either measure. Design §7.4, §7.5, §8.
     `outbox-and-inbox/azureblobarchiveprovider/azureblobconfiguration`. Verify the additions
     with `--check-redirects` before merging, not after — the 30-day cache is unforgiving.
 
-- [ ] **Task 5.2:** Split `ReplayOnSeen.md` — **Q5, the Explanation is the core**
+- [x] **Task 5.2:** Split `ReplayOnSeen.md` — **Q5, the Explanation is the core**
   - Input: 1,039 lines in three clean modes (design §7.4): Explanation 228, How-to 469,
     Reference 311
   - Output: `contents/TurningOnReplayOnSeen.md` (How-to, 469) and
@@ -1079,7 +1079,7 @@ of all 26 splits sits in this phase on either measure. Design §7.4, §7.5, §8.
     `pagetypes.tsv` edit plus a re-run of `apply_banners.py`, which **now preserves a
     Prerequisites segment** (`5498cd6`) — it used to strip them.
 
-- [ ] **Task 5.3:** Split `SweeperCircuitBreaking.md`
+- [x] **Task 5.3:** Split `SweeperCircuitBreaking.md`
   - Input: `## Usage Patterns` (61) and `## Advanced Scenarios` (71) = 132; page is **527**
   - Output: `contents/UsingSweeperCircuitBreaking.md` (How-to), nested under
     `SweeperCircuitBreaking.md`; core → ~395
@@ -1089,7 +1089,7 @@ of all 26 splits sits in this phase on either measure. Design §7.4, §7.5, §8.
     oblige a split where the sections are empty*. Those two sections are the reference
     page's necessary preamble and stay. The typo is already fixed in Task 3.2.
 
-- [ ] **Task 5.4:** Redistribute `InMemoryOptions.md` — three new pages, two donations
+- [x] **Task 5.4:** Redistribute `InMemoryOptions.md` — three new pages, two donations
   - Input: `## InMemory Transport` (118), `## InMemory Outbox` (79), `## InMemory Inbox`
     (68), `## InMemory Scheduler` (53), `## InMemory Archive` (47); page is **695**
   - Output: `contents/InMemoryTransport.md` (Reference, **top-level in *Transports***),
@@ -1109,7 +1109,7 @@ of all 26 splits sits in this phase on either measure. Design §7.4, §7.5, §8.
     done — if it is not, the scheduler section merges into `InMemoryScheduler.md` as it
     stands today.
 
-- [ ] **Task 5.5:** Retype the `InMemoryOptions.md` core and repoint its five inbound links
+- [x] **Task 5.5:** Retype the `InMemoryOptions.md` core and repoint its five inbound links
   - Input: what remains — `Test Configuration Patterns` (42), `Complete Testing Example`
     (99), `Environment-Specific Configuration` (114); page → ~330
   - Output: core keeps its filename and its *Brighter Configuration* slot, **retyped
@@ -1122,6 +1122,113 @@ of all 26 splits sits in this phase on either measure. Design §7.4, §7.5, §8.
     wants the testing guide or one of the three new pages. This page was the corpus's worst
     within-page heading duplicate (12 instances, fixed in 011), and the catalogue shape is
     why.
+
+### Phase 5 as executed — 2026-08-09
+
+**PHASE 5 IS COMPLETE. 26 of 52 tasks done.** Eight pages created, ten touched. **Exactly two
+URLs move** — `AzureBlobArchiveProvider.md` and `AzureBlobConfiguration.md`, the two pages this
+spec always knew would move twice — and **both intermediate paths have a redirect entry**,
+added and verified *before* merge. `.gitbook.yaml` 75 → **77** entries, 7,673 → 7,858 bytes,
+all printable ASCII.
+
+All five gates: linkcheck **122 files**, pagelint **0 errors / 791 warnings**, `--check-shape`
+0 at **120 pages / 12 sections / deepest 4 / widest 10**, `--check-redirects` 0 at 77 entries,
+`pagelint --changed origin/master` 0 errors over **109 strict blocks**.
+
+**Three pinned figures reproduced exactly.** *Outbox and Inbox* lands at **9** top-level
+entries, the number Appendix A pinned against design §7.6's intended 10.
+`AzureBlobConfiguration.md` publishes at **four segments** — the first page in the corpus to
+reach S3's measured ceiling, and Appendix A predicted exactly it. And **Appendix B held on
+both counts**: 24 inbound anchor links across the phase's two heavy pages, of which **11 were
+repointed** (5 in Task 5.1, 6 in Task 5.2) and 13 stayed.
+
+| Page | Design | Actual | |
+|---|---:|---:|---|
+| `BrighterOutboxSupport.md` | ~197 | **264** | see the deviation below; +7 for *Further Reading* |
+| `OutboxArchiver.md` | — | **148** | 91 archiver lines + the 47-line InMemory Archive donation |
+| `TransactionalMessagingWithTheOutbox.md` | — | **179** | from 169 donated |
+| `ReplayOnSeen.md` | 259 | **263** | +4 for two *Further Reading* entries |
+| `TurningOnReplayOnSeen.md` | 469 | **475** | +6 banner and lead-in |
+| `ReplayOnSeenReference.md` | 311 | **316** | +5 banner and lead-in |
+| `SweeperCircuitBreaking.md` | ~395 | **401** | 395 on the nose, +6 for *Further Reading* |
+| `UsingSweeperCircuitBreaking.md` | — | **148** | from 132 donated |
+| `InMemoryOptions.md` | ~330 | **338** | 330 on the nose, +8 for *Further Reading* |
+| `InMemoryTransport.md` / `InMemoryOutbox.md` / `InMemoryInbox.md` | — | **129 / 89 / 78** | from 118 / 79 / 68 |
+
+#### The deviation: `## Outbox Archiver` was not all archiver
+
+`BrighterOutboxSupport.md`'s `## Outbox Archiver` spans 151 lines, and design §7.1's arithmetic
+(517 − 151 − 169 = 197) treats all 151 as archiver material. **Its last three H3s are not.**
+`### Outbox Configuration` (4 lines), `### Provisioning the Outbox Table` (4) and
+`### Outbox Builder` (52) are about configuring and provisioning the **Outbox**; none mentions
+the Archiver. They are misfiled *within the source page*, and the mechanical span measurement
+could not see it.
+
+Moving them would have put Outbox DDL on a page titled *Outbox Archiver* — **an IA defect
+created by the IA spec**. So only 198–288 moved (91 lines), and the three H3s were **promoted
+to `##` in the core**, which is where they belong. The core lands at **257 + 7 = 264** rather
+than ~197. No inbound link targets any of the three, re-derived. Same shape as design §16
+finding 2: **a span measured by heading boundaries is not a measurement of subject.**
+
+#### `ReplayOnSeen.md` had 27 internal anchors, and Appendix B does not count those
+
+This is the finding that generalises. **Appendix B counts *inbound* links from other pages. It
+does not count a page's *own* internal anchors** — and a three-way split converts every one
+that crosses a seam into a cross-page link. `ReplayOnSeen.md` carries **27 same-page anchors**
+across 14 distinct targets, more than the whole spec's inbound budget of 34.
+
+They were handled by construction rather than by hand: every heading in the original was
+mapped to its destination page via `linkcheck.py`'s `slug()`, the three ranges were asserted to
+cover every line exactly once, and each `](#slug)` was rewritten to `](/contents/<dest>.md#slug)`
+only where destination ≠ self. **Zero anchors were left unmapped**, asserted before writing.
+D5 then reported **18 lines: 1 banner retype and 17 lines carrying repointed anchors** —
+nothing else.
+
+**Carry this into Phase 6.** `QueryPipeline.md` (928) and `QueriesAndQueryObjects.md` (877)
+split five and two ways; count their internal anchors *before* starting, not after.
+
+> **And a routing error, found by mapping rather than reading.** Task 5.2's note sends
+> `#replay-versus-replay-skipped` to `TurningOnReplayOnSeen.md`. `### Replay versus Replay
+> Skipped` sits at line 731, inside `## Observability` (709–777), which is the **Reference**
+> page. Routed there instead. Design §8 has the same error. It would have shipped as a live
+> 404 into the middle of a page, which is precisely the failure Appendix B's closing paragraph
+> says redirects cannot fix.
+
+#### Task 5.4: the scheduler "merge" added nothing, and that is the finding
+
+`InMemoryOptions.md`'s `## InMemory Scheduler` (53 lines) is **entirely duplicated** by
+`InMemoryScheduler.md`, which covers every claim more fully — including *"Demos and
+proof-of-concepts"* **verbatim** at line 20. The section twice tells the reader to go to that
+page instead (lines 303 and 348). It is a page's summary of another page, and merging it into
+its own subject is a deletion.
+
+So the fold added **nothing** to `InMemoryScheduler.md`. Task 3.1's precedent inverted: *not
+duplicate* was a passing outcome there, and *entirely duplicate* is a passing outcome here —
+both are answers, and both had to be measured rather than assumed. D5 accounts for all 11
+dropped lines against the target's fuller text.
+
+The archive donation **is** additive: `OutboxArchiver.md` had no archive-provider material.
+
+#### Recorded, deliberately not acted on
+
+- **`### InMemory Archive Example Usage` is not an archive example.** It is a
+  `LargeMessageMapper` with a `[ClaimCheck]` attribute — the Claim Check pattern, nothing to do
+  with archiving. It moved to `OutboxArchiver.md` verbatim under its wrong heading. **The line
+  this phase held**: do not *newly* create a misfiling (Task 5.1's three H3s stayed put), but
+  do not silently delete content either. This block's heading relationship is pre-existing;
+  only its page changed.
+- **`SchedulingAMessage.md`, created in Phase 4, carries four non-compiling scheduling calls.**
+  `IAmACommandProcessor` declares `SendAsync<TRequest>(DateTimeOffset at, TRequest command, …)`
+  and `SendAsync<TRequest>(TimeSpan delay, TRequest command, …)` — **the time comes first**, and
+  the same holds for `PostAsync`. There is no overload taking the request first with a named
+  `at:`/`delay:` argument; the plain `SendAsync(TRequest command, …)` returns `Task`, not
+  `Task<string>`. The page therefore has `SendAsync(new ProcessOrderCommand { … }, at: …)`,
+  `SendAsync(new SendReminderEmailCommand { … }, delay: …)`, `PostAsync(new NotificationEvent
+  { … }, delay: …)` and `SendAsync(command with { … }, delay: delay)`, none of which compile.
+  Moved verbatim from `BrighterSchedulerSupport.md`, so obligation 1 was honoured — but it was
+  **not** among the three defects Phase 4 recorded, and it was found only because Task 5.4
+  needed the signature for an unrelated reason. **The correct form is already in the corpus**,
+  on `InMemoryScheduler.md`. It is a four-line correction awaiting a ruling.
 
 ---
 
