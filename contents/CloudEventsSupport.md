@@ -14,40 +14,6 @@ CloudEvents solves this problem by providing a [specification](https://github.co
 
 Brighter V10 provides full CloudEvents specification support, making it easy to build interoperable, event-driven systems.
 
-## CloudEvents Attributes
-
-CloudEvents defines both required and optional attributes for events. Brighter supports all CloudEvents attributes.
-
-### Required Attributes
-
-These attributes must be present in every CloudEvent:
-
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| **id** | String | Unique identifier for the event (Brighter message ID) |
-| **source** | URI-reference | Context in which the event occurred |
-| **type** | String | Type of event (e.g., "com.example.order.created") |
-| **specversion** | String | CloudEvents specification version (e.g., "1.0") |
-
-### Important Optional Attributes
-
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| **datacontenttype** | String | Content type of the data (e.g., "application/json") |
-| **dataschema** | URI | Schema that the data adheres to |
-| **subject** | String | Subject of the event in the context of the source |
-| **time** | Timestamp | When the event occurred |
-
-### Extension Attributes
-
-CloudEvents supports extension attributes for additional metadata:
-
-| Extension | Specification | Purpose |
-|-----------|--------------|---------|
-| **traceparent** | [Distributed Tracing](https://github.com/cloudevents/spec/blob/main/cloudevents/extensions/distributed-tracing.md) | W3C Trace Context for distributed tracing |
-| **tracestate** | [Distributed Tracing](https://github.com/cloudevents/spec/blob/main/cloudevents/extensions/distributed-tracing.md) | Vendor-specific trace information |
-| **dataref** | [DataRef](https://github.com/cloudevents/spec/blob/main/cloudevents/extensions/dataref.md) | Reference to data stored elsewhere (Claim Check pattern) |
-
 ## Content Modes
 
 CloudEvents can be transmitted in two modes, and Brighter supports both:
@@ -201,78 +167,6 @@ public class OrderCreatedMapper : IAmAMessageMapper<OrderCreated>
     }
 }
 ```
-
-## CloudEvents Across Transports
-
-Brighter maps CloudEvents to transport-specific formats automatically. The transport layer handles the conversion based on the protocol's capabilities.
-
-### RabbitMQ (AMQP 0-9-1)
-
-RabbitMQ uses **binary mode** with CloudEvents mapped to message headers:
-
-```csharp
-var publication = new Publication
-{
-    Topic = new RoutingKey("orders"),
-    RequestType = typeof(OrderCreated),
-    Source = new Uri("https://example.com/orders"),
-    Type = new CloudEventsType("com.example.order.created")
-};
-
-// Headers will include:
-// ce_id, ce_source, ce_type, ce_specversion, ce_datacontenttype
-```
-
-See: [AMQP Protocol Binding for CloudEvents](https://github.com/cloudevents/spec/blob/main/cloudevents/bindings/amqp-protocol-binding.md)
-
-### Kafka
-
-Kafka uses **binary mode** with CloudEvents in message headers:
-
-```csharp
-var publication = new Publication
-{
-    Topic = new RoutingKey("orders"),
-    RequestType = typeof(OrderCreated),
-    Source = new Uri("https://example.com/orders"),
-    Type = new CloudEventsType("com.example.order.created"),
-    PartitionKey = "customer-12345"  // Kafka partition key
-};
-```
-
-See: [Kafka Protocol Binding for CloudEvents](https://github.com/cloudevents/spec/blob/main/cloudevents/bindings/kafka-protocol-binding.md)
-
-### AWS SNS/SQS
-
-AWS SNS/SQS has limited header support, so Brighter uses **structured mode**:
-
-```csharp
-var publication = new Publication
-{
-    Topic = new RoutingKey("orders"),
-    RequestType = typeof(OrderCreated),
-    Source = new Uri("https://example.com/orders"),
-    Type = new CloudEventsType("com.example.order.created")
-};
-
-// The entire CloudEvents envelope (including data) is in the message body
-```
-
-### Azure Service Bus
-
-Azure Service Bus supports **binary mode** with headers:
-
-```csharp
-var publication = new Publication
-{
-    Topic = new RoutingKey("orders"),
-    RequestType = typeof(OrderCreated),
-    Source = new Uri("https://example.com/orders"),
-    Type = new CloudEventsType("com.example.order.created")
-};
-```
-
-See: [HTTP Protocol Binding for CloudEvents](https://github.com/cloudevents/spec/blob/main/cloudevents/bindings/http-protocol-binding.md) (Azure Service Bus follows HTTP binding)
 
 ## CloudEvents Type for Message Routing
 
@@ -462,12 +356,13 @@ services.AddBrighter(options => { })
 // No explicit mapper needed! CloudEvents handled automatically.
 ```
 
-Only create custom mappers when you need [transform pipelines](DefaultMessageMappers.md).
+Only create custom mappers when you need [transform pipelines](/contents/MessageTransforms.md).
 
 ## Further Reading
 
 - [CloudEvents Primer](https://github.com/cloudevents/spec/blob/main/cloudevents/primer.md) - Introduction to CloudEvents
 - [CloudEvents Specification](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md) - Full specification
+- [CloudEvents Reference](/contents/CloudEventsReference.md) - The attribute tables and the per-transport matrix
 - [Default Message Mappers](DefaultMessageMappers.md) - Using automatic message mapping
 - [Dynamic Message Deserialization](DynamicMessageDeserialization.md) - Content-based routing with CloudEvents
 - [OpenTelemetry Integration](Telemetry.md) - Distributed tracing with CloudEvents

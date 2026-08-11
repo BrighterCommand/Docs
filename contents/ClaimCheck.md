@@ -8,7 +8,7 @@ Instead of being transmitted in the body of the message, the payload is written 
 
 ## Claim Check and Retrieve Claim
 
-We treat the Claim Check pattern as [Transformer](/contents/MessageMappers.md#message-transformer-factory) middleware.
+We treat the Claim Check pattern as [Transformer](/contents/MessageTransforms.md#message-transformer-factory) middleware.
 
 We provide a **WrapWithAttribute** of **ClaimCheck** that will use the **ClaimCheckTransformer** to upload the body of your **Message** to a *luggage store* replacing it with a body that contains an claim check for the body, as well as setting a message header of "claim_check_header" with the claim. The trigger for this behavior can be controlled by a threshold parameter that sets the size above which the message body should be moved to the *luggage store*.
 

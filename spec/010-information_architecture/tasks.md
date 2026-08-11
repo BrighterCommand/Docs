@@ -26,7 +26,7 @@ design deliberately left to this phase.
 | **4** | Scheduler family — 6 rows, 2 new pages · **DONE 2026-08-09** | 4 | D4 |
 | **5** | Outbox and Inbox — 4 rows, **8** new pages, 24 of the 34 anchor links · **DONE 2026-08-09** | 5 | D4 |
 | **6** | Darker — 5 rows, 12 new pages · **DONE 2026-08-11** | 5 | D4 |
-| **7** | Using an External Bus — 4 rows, 3 new pages | 4 | D4 |
+| **7** | Using an External Bus — 4 rows, 3 new pages · **DONE 2026-08-11** | 4 | D4 |
 | **8** | Transports — 2 rows, 2 new pages | 2 | D4 |
 | **9** | The rest of §6d — 5 rows, 5 new pages | 6 | D4 |
 | **10** | `llms.txt` — **re-scope D6 first; the platform already does most of it (§3)** | 4 | D6 |
@@ -1492,7 +1492,7 @@ reference stays design §11's candidate for a later spec. No Darker page content
 **Goal:** 4 rows, 3 new pages, and **the one piece of new prose this entire spec authors**.
 Design §7.5, `worklist.md` §5c.
 
-- [ ] **Task 7.1:** Create `MessageTransforms.md` — §5c, and it carries a correctness fix
+- [x] **Task 7.1:** Create `MessageTransforms.md` — §5c, and it carries a correctness fix
   - Input: `MessageMappers.md` `## Transformers` (**119**) + `DefaultMessageMappers.md`
     `## Transform Pipeline Example` (145) = **264 lines**
   - Output: `contents/MessageTransforms.md` (Explanation), nested under `MessageMappers.md`;
@@ -1508,7 +1508,7 @@ Design §7.5, `worklist.md` §5c.
     `DefaultMessageMappers.md`, which is already at three segments — **file under the
     shallowest source**.
 
-- [ ] **Task 7.2:** Establish `DefaultMessageMappers.md` as the default route — §5c row 1
+- [x] **Task 7.2:** Establish `DefaultMessageMappers.md` as the default route — §5c row 1
   - Input: `MessageMappers.md`; `DefaultMessageMappers.md` (**478** lines, already typed
     How-to)
   - Output: a link and a pointer from `MessageMappers.md`; **no new page**
@@ -1519,7 +1519,7 @@ Design §7.5, `worklist.md` §5c.
     `DefaultMessageMappers.md`** (design §7.7 item 3): it is the how-to's own configuration
     table, and splitting it would produce a stub.
 
-- [ ] **Task 7.3:** Split `CloudEventsSupport.md`
+- [x] **Task 7.3:** Split `CloudEventsSupport.md`
   - Input: 475 lines; `CloudEvents Attributes` (34), `CloudEvents Across Transports` (72) =
     106
   - Output: `CloudEventsReference.md` (Reference), nested under `CloudEventsSupport.md`;
@@ -1529,7 +1529,7 @@ Design §7.5, `worklist.md` §5c.
     extension attribute tables and the per-transport matrix are consulted rather than
     followed, so they become Reference.
 
-- [ ] **Task 7.4:** Split `DynamicMessageDeserialization.md`
+- [x] **Task 7.4:** Split `DynamicMessageDeserialization.md`
   - Input: 597 lines; `Using CloudEvents Type for Routing` (83), `Custom Routing Strategies`
     (63), `Handler Routing` (77), `Configuration Examples` (93) = **316**
   - Output: `RoutingMultipleMessageTypes.md` (How-to), nested under
@@ -1540,6 +1540,144 @@ Design §7.5, `worklist.md` §5c.
     this reason). The Explanation core keeps `DataType Channel Pattern`,
     `Dynamic Message Deserialization`, `Performance Considerations` and `Comparison`. Four
     sections merging into one page: watch rule 3b.
+
+### Phase 7 as executed — 2026-08-11
+
+**PHASE 7 IS COMPLETE. 35 of 52 tasks done.** Three pages created, seven touched. **No URL
+moves** — all four cores keep their filenames and the three new pages are new paths — so
+`.gitbook.yaml` is untouched at **77** entries and this phase owes no redirect, the same shape
+as Phase 6.
+
+All five gates: linkcheck **137 files**, pagelint **0 errors / 791 warnings**, `--check-shape`
+0 at **135 pages / 12 sections / deepest 4 / widest 10**, `--check-redirects` 0 at 77 entries,
+`pagelint --changed origin/master` 0 errors with the three new files **staged**. `pagetypes.tsv`
+is **135 rows** and banner parity is **135/135**, checked both directions.
+
+**Every predicted figure reproduced, measured before a line moved.** All four whole-page
+lengths and all eight quoted `##` spans matched design §7.5 to the line, and so did all four
+arithmetic cores:
+
+| Page | Design | After the cut | Shipped | |
+|---|---:|---:|---:|---|
+| `MessageMappers.md` | ~147 | **147** | **154** | 266 − 119; +1 for Task 7.2's pointer, +6 for a *Further Reading* the page never had |
+| `DefaultMessageMappers.md` | ~333 | **333** | **334** | 478 − 145; +1 |
+| `CloudEventsSupport.md` | ~369 | **369** | **370** | 475 − 106; +1 |
+| `DynamicMessageDeserialization.md` | ~281 | **281** | **282** | 597 − 316; +1 |
+
+The three new pages land at 272 (7.1), 115 (7.3) and 326 (7.4) before the `// ...` markers, and
+at **280 / 119 / 334** after them.
+
+**Appendix A and Appendix B both held exactly.** *Using an External Bus* stays at **9**
+top-level entries and goes to **15 pages**, the row Appendix A pins, with all three new pages at
+**three segments**. Appendix B predicted **3** inbound anchor links on `MessageMappers.md`, all
+3 repointing, and 0 on the other three sources; measured before the cut, that is exactly what is
+there.
+
+#### The anchor count, done first and both kinds
+
+- **Three inbound anchors**, all `MessageMappers.md#message-transformer-factory`, at
+  `S3LuggageStore.md:17`, `ClaimCheck.md:11` and `Compression.md:11`. All three carrying pages
+  are **outside this phase's sources**, so Phase 6's finding — that a split can move the source
+  line too — does not bite here; it was checked rather than assumed.
+- **Zero same-page anchors** on any of the four sources.
+
+`### Message Transformer Factory` was deliberately **not requalified**. It is an H3, so rule 3a
+does not reach it and rule 3b is satisfied within the new page, and leaving it alone keeps the
+slug — which turns all three repoints into a pure path change, `/contents/MessageMappers.md#…`
+→ `/contents/MessageTransforms.md#…`. After the split the grep was re-run: three fragment links
+across the seven pages, all three the repointed ones, and still zero same-page anchors.
+
+#### The one piece of new prose in this spec, and why it was checked against the source
+
+Task 7.1's ruling is that `MessageTransforms.md` must state that transforms **require a custom
+mapper**. Written from the ruling alone it would have been wrong in a way no reader could catch.
+`TransformPipelineBuilder.BuildWrapPipeline` calls `FindWrapTransforms(messageMapperLease.Instance)`,
+which resolves to `GetCustomAttributes<WrapWithAttribute>(true)` on the mapper's own
+`MapToMessage` — so transforms are discovered from attributes on **the mapper you registered**.
+And `JsonMessageMapper<TRequest>`, the default, already carries `[CloudEvents(0)]`, which *is* a
+`WrapWithAttribute`. **"Default mappers run no transforms" would therefore have been false.**
+
+The sentence shipped says what is true: a transform of your own needs a custom mapper to attach
+it to, because the default mappers carry only the `[CloudEvents]` transform Brighter puts there
+and you cannot add an attribute to a type you do not own. Sources:
+`Brighter/src/Paramore.Brighter/TransformPipelineBuilder.cs:342`,
+`Brighter/src/Paramore.Brighter/Extensions/ReflectionExtensions.cs:36`,
+`Brighter/src/Paramore.Brighter/MessageMappers/JsonMessageMapper.cs:35`. It also corroborates a
+line the core already carried and keeps — `### 2. Transform Pipelines` in
+`DefaultMessageMappers.md` — which is the page that was right all along.
+
+#### Shape: two multi-section pages and one, all under the settled rule
+
+Every page here is built from **more than one** `##` section, so Phase 6's other branch applies:
+the sections **stay `##`** and no `###` is promoted. That is why this phase requalifies exactly
+**one** heading against Phase 6's thirty-five.
+
+- `MessageTransforms.md` — `## Transformers` → **`## Message Transformers`**, plus
+  `## Transform Pipeline Example` unchanged. The first is the only requalification in the phase;
+  `## Transformers` said nothing about which page it came from, which is rule 3a's editorial half.
+- `CloudEventsReference.md` — `## CloudEvents Attributes` and `## CloudEvents Across Transports`,
+  both already carrying their subject, both unique once they move.
+- `RoutingMultipleMessageTypes.md` — three unchanged, and
+  `## Dynamic Deserialization Configuration Examples` → **`## Routing Configuration Examples`**,
+  because the old qualifier names the page it left rather than the page it landed on. Nothing
+  linked to its anchor. Rule 3b holds across all four sections: nine `###` headings, no collision.
+
+**A written lead-in on one page of three.** `MessageTransforms.md` gets one, because it is where
+Task 7.1's sentence has to live. `CloudEventsReference.md` and `RoutingMultipleMessageTypes.md`
+each open on a section that brought its own introduction, so they go H1 → banner → `##` and
+spend no new prose, which is what obligation 1 reserves.
+
+#### `pagelint.py --changed` bit again, and the files were staged first
+
+**Twenty errors**, all `USING DIRECTIVES`, all on the three new pages — 8 / 4 / 8 — because every
+line of a new page is an added line and every C# block in it is therefore strict. The blocks carry
+fictional domain types (`LargeOrder`, `SensitiveOrder`, `RemovePII`) alongside real ones
+(`Publication`, `KafkaSubscription`, `WrapWithAttribute`), so under obligation 6 the omission is
+**marked `// ...`, not guessed at**. The repo-wide debt is unchanged at **791 blocks** — the
+marker downgrading and never silencing — spread from 108 pages to **111** because the splits
+created pages.
+
+#### D5: 5 lines across three invocations, every one a heading or a link
+
+| Task | Lines | Made of |
+|---|---:|---|
+| 7.1 (fold, one invocation over the union) | 3 | 1 requalified `##` · 1 link appended to a surviving sentence · 1 corrected link label |
+| 7.3 | 1 | 1 repointed link |
+| 7.4 | 1 | 1 requalified `##` |
+
+**Not one line of prose, and not one line of code, survives nowhere.** Task 7.1's check is a
+single invocation over the union of `MessageMappers.md` + `DefaultMessageMappers.md` on one side
+and those two plus `MessageTransforms.md` on the other, because §5c is a fold across two sources.
+
+#### The two corrections this PR made, under the line Phase 4 drew
+
+Both are links whose **text** named content this PR moved, which is the shape Phase 6 met and
+recorded:
+
+- **`CloudEventsSupport.md`: "Only create custom mappers when you need
+  [transform pipelines](DefaultMessageMappers.md)."** The transform pipeline material leaves
+  `DefaultMessageMappers.md` under Task 7.1 in this same PR, so the link would have shipped
+  pointing at a page that no longer holds what its text promises. Repointed to
+  `MessageTransforms.md`; the sentence is untouched.
+- **`DefaultMessageMappers.md`'s *Further Reading* called `MessageMappers.md`
+  "Legacy V9 mapper documentation".** That page ships in this PR banner'd
+  `Applies to **Brighter V10**` and, after Task 7.2, is the page the default route points *back*
+  at for the custom case — so the label contradicted another page in the same PR. Relabelled
+  "Writing a custom mapper, and the Brighter message structure".
+
+#### Recorded, and what Task 7.2 cost in prose
+
+Task 7.2 creates no page: its output is *a link and a pointer*, and that is one sentence added to
+`MessageMappers.md` plus a *Further Reading* section the page had never had. Obligation 1 reserves
+new prose to Task 7.1's sentence, and this is the one place the phase spends any beyond it —
+sanctioned by Task 7.2's own Output line, recorded here rather than left for a reader of the diff
+to wonder about.
+
+Not acted on, and not defects of this phase: `DefaultMessageMappers.md` keeps
+`## Configuration Reference` (54) — design §7.7 item 3, it is the how-to's own table and
+extracting it produces a stub. `DynamicMessageDeserialization.md` keeps
+`## Dynamic Deserialization Best Practices` (120), which is larger than any section this phase
+moved; its row does not call for it and design §7.5 does not list it.
 
 ---
 
