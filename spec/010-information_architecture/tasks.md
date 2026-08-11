@@ -25,7 +25,7 @@ design deliberately left to this phase.
 | **3** | Content defects, the duplication **verification**, and the split harness | 4 | D9, D5 |
 | **4** | Scheduler family — 6 rows, 2 new pages · **DONE 2026-08-09** | 4 | D4 |
 | **5** | Outbox and Inbox — 4 rows, **8** new pages, 24 of the 34 anchor links · **DONE 2026-08-09** | 5 | D4 |
-| **6** | Darker — 5 rows, 12 new pages | 5 | D4 |
+| **6** | Darker — 5 rows, 12 new pages · **DONE 2026-08-11** | 5 | D4 |
 | **7** | Using an External Bus — 4 rows, 3 new pages | 4 | D4 |
 | **8** | Transports — 2 rows, 2 new pages | 2 | D4 |
 | **9** | The rest of §6d — 5 rows, 5 new pages | 6 | D4 |
@@ -1242,10 +1242,16 @@ shell** — the 404 class, body containing *"404"* and *"not found"* — while:
 - a `?cb=` query string did not change the response.
 
 **`curl <path>.md` settled it**: `200`, 9,145 bytes, leading `# Outbox Archiver`. GitBook has
-the page and publishes it; only the HTML route is stale, almost certainly from this session's
-own probe landing inside the 25–45 second sync window. **Recorded as a lesson in `PROMPT.md`:
-wait for the sitemap to move before probing a new URL, and check the `.md` variant before
-concluding a page failed to publish.**
+the page and publishes it; only the HTML route was stale, from this session's own probe landing
+inside the 25–45 second sync window. **Recorded as a lesson in `PROMPT.md`: wait for the sitemap
+to move before probing a new URL, and check the `.md` variant before concluding a page failed to
+publish.**
+
+> **Measured, and no longer a supposition — corrected in PR 6.** This paragraph read *"almost
+> certainly from this session's own probe"* when it was written. After PRs #90 and #91 deployed,
+> the same HTML route returned **658,502 bytes** — a real page, in the genuine-page class, with
+> nothing about the page itself having changed in between. It was the edge cache, and a later
+> deploy invalidated it. The hedge is removed rather than left to be re-read as a finding.
 
 **Both redirects were confirmed working on the second probe** — `outbox-and-inbox/azureblobarchiveprovider`
 and its child returned `307` with a `location:` header, and the **pre-PR-2 key**
@@ -1264,7 +1270,7 @@ splits along the seams Brighter already has, restoring the parallel. Design §7.
 never rewritten.** `../Darker` HEAD is `4.1.1-7-g2f76cda`, ahead of the deployed 4.1.1, and
 the site publishes the deployed version. Do not update behaviour from that working tree.
 
-- [ ] **Task 6.1:** Split `QueryPatterns.md` — the largest page in the corpus
+- [x] **Task 6.1:** Split `QueryPatterns.md` — the largest page in the corpus
   - Input: 1,291 lines; `Parameterized Query Patterns` (270), `Pagination Patterns` (233),
     `Projection Patterns` (173), `Collection and Aggregation Patterns` (162),
     `Entity Framework Core Integration` (147)
@@ -1279,7 +1285,7 @@ the site publishes the deployed version. Do not update behaviour from that worki
     one recipe. Five new pages sharing a parent is where rule 3a bites hardest — every `##`
     must be qualified by *its own* page's subject, not by "Query Patterns".
 
-- [ ] **Task 6.2:** Split `ImplementAQueryHandler.md`
+- [x] **Task 6.2:** Split `ImplementAQueryHandler.md`
   - Input: 935 lines; `Testing Query Handlers` (159), `Working with Dependencies` (130)
   - Output: `TestingQueryHandlers.md` and `QueryHandlerDependencies.md`, both How-to, nested
     under `ImplementAQueryHandler.md`; core → ~646
@@ -1288,7 +1294,7 @@ the site publishes the deployed version. Do not update behaviour from that worki
     registration and error handling, and splitting further separates a reader from the thing
     they are implementing (design §7.8).
 
-- [ ] **Task 6.3:** Split `QueryPipeline.md`
+- [x] **Task 6.3:** Split `QueryPipeline.md`
   - Input: 928 lines; `Configuring Polly Policies` (159), `Comparison with Brighter
     Pipeline` (53)
   - Output: `QueryPipelinePolicies.md` (How-to) and `DarkerAndBrighterPipelines.md`
@@ -1301,7 +1307,7 @@ the site publishes the deployed version. Do not update behaviour from that worki
     on here. `DarkerAndBrighterPipelines.md` is thin at 53 lines and that is within the
     corpus's floor — `OutboxPattern.md` is 45 and `AzureBlobArchiveProvider.md` is 42.
 
-- [ ] **Task 6.4:** Split `QueriesAndQueryObjects.md` — **the Task 3.1 gate is OPEN**
+- [x] **Task 6.4:** Split `QueriesAndQueryObjects.md` — **the Task 3.1 gate is OPEN**
   - Input: 877 lines; `Query Result Types` (179), `Validation in Query Objects` (119); and
     Task 3.1's finding on `## Query Patterns` (102)
   - Output: `QueryResultTypes.md` (Explanation) and `QueryObjectValidation.md` (How-to),
@@ -1315,7 +1321,7 @@ the site publishes the deployed version. Do not update behaviour from that worki
     and **zero prose lines**, and differ in their result types on all four. Do not re-verify
     it — but do note the divergence recorded there, which this task must not try to fix.
 
-- [ ] **Task 6.5:** Split `DarkerBasicConfiguration.md`
+- [x] **Task 6.5:** Split `DarkerBasicConfiguration.md`
   - Input: 510 lines; `Darker Configuration Options` (75)
   - Output: `DarkerConfigurationReference.md` (Reference), nested under
     `DarkerBasicConfiguration.md`; core → ~435
@@ -1324,6 +1330,160 @@ the site publishes the deployed version. Do not update behaviour from that worki
     `BrighterBasicConfiguration.md` shape, and the core keeps `Quick Start`,
     `Using IQueryProcessor` and `Common Configuration Patterns`. **One inbound anchor link
     moves**: `#query-processor-lifetime` → `DarkerConfigurationReference.md`.
+
+### Phase 6 as executed — 2026-08-11
+
+**PHASE 6 IS COMPLETE. 31 of 52 tasks done.** Twelve pages created, five touched. **No URL
+moves** — every core keeps its filename and all twelve new pages are new paths — so
+`.gitbook.yaml` is untouched at **77** entries and this phase owes no redirect.
+
+All five gates: linkcheck **134 files**, pagelint **0 errors / 791 warnings**, `--check-shape`
+0 at **132 pages / 12 sections / deepest 4 / widest 10**, `--check-redirects` 0 at 77 entries,
+`pagelint --changed origin/master` 0 errors with the twelve new files **staged**.
+
+**Every predicted figure reproduced exactly, before a single line was moved.** All five whole
+page lengths (1,291 / 935 / 928 / 877 / 510) and all eleven quoted `##` spans matched design
+§7.3 to the line, and so did all five arithmetic cores:
+
+| Page | Design | After the cut | Shipped | |
+|---|---:|---:|---:|---|
+| `QueryPatterns.md` | ~300 | **306** | **311** | 1,291 − 985; +5 for the five recipes in *Further Reading* |
+| `ImplementAQueryHandler.md` | ~646 | **646** | **648** | +2 |
+| `QueryPipeline.md` | ~716 | **716** | **718** | +2 |
+| `QueriesAndQueryObjects.md` | ~579 | **579** | **581** | +2 |
+| `DarkerBasicConfiguration.md` | ~435 | **435** | **436** | +1 |
+
+The twelve new pages land at 281 / 244 / 186 / 173 / 160 (Task 6.1), 139 / 166 (6.2),
+170 / 61 (6.3), 192 / 127 (6.4) and 86 (6.5). `DarkerAndBrighterPipelines.md` at **61** is the
+thin page design §7.3 predicted at 53 and defended against the corpus floor; it is still above
+`OutboxPattern.md` at 45.
+
+**Appendix A and Appendix B both held exactly.** *Darker* stays at **5 top-level entries** and
+goes to **17 pages**, the row Appendix A pins, with every new page at **three segments** — this
+phase needs no fourth. Appendix B predicted **1** inbound anchor link on
+`DarkerBasicConfiguration.md` and **0** on the other four sources; measured before the cut, that
+is exactly what is there.
+
+#### The anchor count, done first and both kinds
+
+Phase 5's lesson applied in advance: the corpus was grepped for links *into* the five sources,
+and each source was grepped for `](#` links *within* itself. The total is small and the whole
+of it was known before anything moved.
+
+- **Two same-page anchors**, both in `QueryPipeline.md` at lines 234 and 358, both pointing at
+  `#configuring-polly-policies` — the one section Task 6.3 extracts. Both sit in
+  `## Available Decorators`, which stays in the core, so both cross the seam. Repointed to
+  `/contents/QueryPipelinePolicies.md`.
+- **One inbound anchor**, `QueryPatterns.md:944` → `DarkerBasicConfiguration.md#query-processor-lifetime`.
+
+**That inbound one is the finding, and Appendix B cannot see it.** Appendix B records the link
+against `DarkerBasicConfiguration.md`, and it is right: that page owns the target. What the
+table has no column for is that **both ends move in the same PR**. The target heading
+`### Query Processor Lifetime` goes to `DarkerConfigurationReference.md` (Task 6.5), *and the
+line carrying the link* sits at line 944, inside `## Entity Framework Core Integration`, which
+goes to `EFCoreQueryIntegration.md` (Task 6.1). Neither task's own row mentions the other. It
+was caught because the anchor grep ran before the cut and the repoint was then applied to the
+line **where it had landed**, not where the table said it was. **A snapshot of inbound anchors
+is indexed by target; a split can move the source too.**
+
+After the split, obligation 3's grep was re-run — the standing lesson that splits *add* links.
+Across all seventeen Darker pages there is now exactly **one** fragment link, the repointed one,
+and **zero** same-page anchors anywhere.
+
+#### The shape rule, stated because it decides thirty-five headings
+
+Every extraction here is a **single `##` section**, which is the simplest split shape in the
+spec and the one Phase 5 already settled. The rule applied, from `InMemoryOutbox.md` and
+`TransactionalMessagingWithTheOutbox.md`: **the section's `##` heading becomes the new page's
+H1 and is dropped from the body; its `###` headings promote to `##` and are requalified by the
+new page's subject.** Keeping the `##` would have restated the H1 immediately beneath itself on
+all twelve pages.
+
+Task 6.1's note called this the place rule 3a bites hardest, and it does — but not the way the
+note expects. **Not one of the 35 promoted headings collided**, checked against every `##` in
+the corpus by `pagelint.py`'s own `slug()` before any were written. The work was entirely the
+*editorial* half of rule 3a: `## Collections`, `## Dictionaries`, `## Similarities`,
+`## Differences`, `## Acceptance Tests` and `## Default Policies` are all unique and all
+unattributable, and a checker that only tests uniqueness would have passed every one.
+**Rule 3a's mechanical half and its editorial half are different jobs, and only the first has a
+tool.** They became `## Collection Query Results`, `## Dictionary Query Results`,
+`## Darker and Brighter Pipeline Similarities`, and so on.
+
+The one place it reads badly, shortened by hand as `CLAUDE.md` licenses: the five
+`QueryPatterns.md` recipes each carried a `### Pattern: X` prefix that says nothing once
+`Pattern` is the page's subject. Where the source words already carry the family
+(`Pattern: Offset-Based Pagination`) the prefix was dropped and the family kept
+(`## Offset-Based Pagination Pattern`); where they did not
+(`Pattern: Single Entity Lookup`) the family was prefixed
+(`## Parameterized Query Pattern: Single Entity Lookup`).
+
+#### A written lead-in only where the section brought none
+
+Phase 5 left two precedents side by side: `TransactionalMessagingWithTheOutbox.md` opens on the
+moved section's **own** intro paragraph, while `InMemoryOutbox.md` carries a written lead-in
+*and* the moved intro. The first draft here took the second option twelve times and produced
+six pages that open twice, saying the same thing in two voices —
+`DarkerAndBrighterPipelines.md`'s lead-in and its inherited first paragraph both said the two
+pipelines are alike but differ.
+
+So the rule, stated rather than decided page by page: **a written lead-in only where the moved
+section brought no intro of its own.** Six sections opened straight onto a `###` and get one
+(the five `QueryPatterns.md` recipes and `DarkerConfigurationReference.md`); the other six open
+on their own inherited words and the lead-in was removed. It also spends less new prose, which
+obligation 1 reserves.
+
+#### D5: 50 lines across five invocations, every one a heading or an anchor
+
+| Task | Lines | Made of |
+|---|---:|---|
+| 6.1 | 20 | 4 section headings absorbed into an H1 · 15 requalified `###` · 1 repointed anchor |
+| 6.2 | 7 | 1 · 6 · 0 |
+| 6.3 | 10 | 2 · 6 · 2 |
+| 6.4 | 10 | 1 · 9 · 0 |
+| 6.5 | 3 | 1 · 2 · 0 |
+
+**Not one line of prose, and not one line of code, survives nowhere.** Where the new H1 happens
+to slugify identically to the section heading it replaces — `## Query Result Types` becoming
+`# Query Result Types` — `noloss.py` matches it on its anchor and says so; that accounts for the
+four sections absorbed silently rather than reported.
+
+#### `pagelint.py --changed` bit again, and the files were staged first
+
+Twenty errors, all `USING DIRECTIVES`, all on new pages: every line of a new page is an added
+line, so every C# block in it is strict. They carry fictional domain types — `IOrderRepository`,
+`OrderDto`, `PagedResult<T>` — alongside `IQuery<TResult>` and Polly's `Policy`, so under
+obligation 6 the omission is **marked `// ...`, not guessed at**. The repo-wide debt is
+unchanged at **791 blocks**, which is the marker behaving as designed: it downgrades to a
+warning and never silences. It spread from 101 pages to **108**, because the splits created
+pages, not because any block got worse.
+
+The files were `git add`ed before the run. Unstaged, the twelve new pages contribute no strict
+ranges at all and the phase they exist to make strict passes vacuously.
+
+#### Recorded, and the two corrections this PR made
+
+Task 3.1's gate was **open before this phase started** and the second branch was taken as
+written: `QueriesAndQueryObjects.md`'s `## Query Patterns` (102 lines) **stays**, is not
+replaced by a link, `D5` did not run against `QueryPatterns.md` for Task 6.4, and the core lands
+at **579** — design §7.3's figure to the line. Nothing was re-verified.
+
+Two claims this PR would otherwise have shipped false, corrected under the line Phase 4 drew:
+
+- **`QueryPatterns.md`'s introduction said "this document focuses on ... pagination,
+  projections, aggregations, and Entity Framework Core integration"** — four topics this PR
+  moves off the page. Changed to "these pages focus on", one phrase, leaving the sentence and
+  its links otherwise untouched. The hub is not a stub — it keeps `Performance Best Practices`,
+  the 197-line `Real-World Example: Product Catalog Query`, the summary and the pitfalls — but
+  it now introduces a family rather than containing it.
+- **The repointed link's text named the wrong page.** `[Darker Basic Configuration](…)` retargeted
+  at `DarkerConfigurationReference.md` would have told a reader it goes somewhere it does not.
+  Retitled to `[Darker Configuration Reference]`. A link label is part of the link, and the split
+  is what made it wrong.
+
+Not acted on, and not defects of this phase: `QueryPipeline.md` keeps `Available Decorators`
+(291) and `Decorator Patterns` (162) because its worklist row says so — extracting the decorator
+reference stays design §11's candidate for a later spec. No Darker page content was rewritten;
+`../Darker` HEAD is still ahead of the deployed 4.1.1.
 
 ---
 

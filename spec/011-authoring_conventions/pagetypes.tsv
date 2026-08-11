@@ -119,3 +119,15 @@ contents/UsingSweeperCircuitBreaking.md	How-to	high	"split from SweeperCircuitBr
 contents/InMemoryTransport.md	Reference	high	"redistributed from InMemoryOptions.md (spec 010, Task 5.4); single-mode by construction"	Reference	Brighter V10
 contents/InMemoryOutbox.md	Reference	high	"redistributed from InMemoryOptions.md (spec 010, Task 5.4); single-mode by construction"	Reference	Brighter V10
 contents/InMemoryInbox.md	Reference	high	"redistributed from InMemoryOptions.md (spec 010, Task 5.4); single-mode by construction"	Reference	Brighter V10
+contents/ParameterizedQueryPatterns.md	How-to	high	"split from QueryPatterns.md (spec 010, Task 6.1); single-mode by construction"	How-to	Darker V4
+contents/PaginationQueryPatterns.md	How-to	high	"split from QueryPatterns.md (spec 010, Task 6.1); single-mode by construction"	How-to	Darker V4
+contents/ProjectionQueryPatterns.md	How-to	high	"split from QueryPatterns.md (spec 010, Task 6.1); single-mode by construction"	How-to	Darker V4
+contents/AggregationQueryPatterns.md	How-to	high	"split from QueryPatterns.md (spec 010, Task 6.1); single-mode by construction"	How-to	Darker V4
+contents/EFCoreQueryIntegration.md	How-to	high	"split from QueryPatterns.md (spec 010, Task 6.1); single-mode by construction"	How-to	Darker V4
+contents/QueryHandlerDependencies.md	How-to	high	"split from ImplementAQueryHandler.md (spec 010, Task 6.2); single-mode by construction"	How-to	Darker V4
+contents/TestingQueryHandlers.md	How-to	high	"split from ImplementAQueryHandler.md (spec 010, Task 6.2); single-mode by construction"	How-to	Darker V4
+contents/QueryPipelinePolicies.md	How-to	high	"split from QueryPipeline.md (spec 010, Task 6.3); single-mode by construction"	How-to	Darker V4
+contents/DarkerAndBrighterPipelines.md	Explanation	high	"split from QueryPipeline.md (spec 010, Task 6.3); single-mode by construction"	Explanation	Darker V4
+contents/QueryResultTypes.md	Explanation	high	"split from QueriesAndQueryObjects.md (spec 010, Task 6.4); single-mode by construction"	Explanation	Darker V4
+contents/QueryObjectValidation.md	How-to	high	"split from QueriesAndQueryObjects.md (spec 010, Task 6.4); single-mode by construction"	How-to	Darker V4
+contents/DarkerConfigurationReference.md	Reference	high	"split from DarkerBasicConfiguration.md (spec 010, Task 6.5); single-mode by construction"	Reference	Darker V4

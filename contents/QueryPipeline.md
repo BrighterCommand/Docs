@@ -231,7 +231,7 @@ The `RetryableQuery` attribute takes two parameters:
 - **Step number**: Controls when this decorator executes in the pipeline (typically after logging and fallback)
 - **Circuit breaker name**: The name of a circuit breaker policy in your policy registry
 
-When a query fails, the retry policy will attempt to execute it again based on your policy configuration (see [Configuring Polly Policies](#configuring-polly-policies)). If failures continue, the circuit breaker will open, preventing further attempts until the circuit closes again.
+When a query fails, the retry policy will attempt to execute it again based on your policy configuration (see [Configuring Polly Policies](/contents/QueryPipelinePolicies.md)). If failures continue, the circuit breaker will open, preventing further attempts until the circuit closes again.
 
 #### FallbackPolicy Decorator
 
@@ -355,7 +355,7 @@ public override async Task<OrderData> ExecuteAsync(
 }
 ```
 
-You can use different circuit breakers for different types of failures or different external dependencies. See [Configuring Polly Policies](#configuring-polly-policies) for how to define circuit breakers.
+You can use different circuit breakers for different types of failures or different external dependencies. See [Configuring Polly Policies](/contents/QueryPipelinePolicies.md) for how to define circuit breakers.
 
 ### Custom Decorators
 
@@ -537,218 +537,6 @@ For more fine-grained control, you might create separate query handlers for each
 - When different dependencies have different reliability characteristics
 - When you want to isolate failures to specific systems
 
-## Configuring Polly Policies
-
-Darker's policy decorators are powered by [Polly](https://github.com/App-vNext/Polly), a .NET resilience and transient-fault-handling library. You can configure policies to control retry behavior, circuit breaker thresholds, and timeouts.
-
-### Default Policies
-
-The simplest way to add policies is to use `AddDefaultPolicies()`:
-
-```csharp
-using Paramore.Darker;
-using Paramore.Darker.AspNetCore;
-using Paramore.Darker.Policies;
-
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddDarker()
-    .AddHandlersFromAssemblies(typeof(Program).Assembly)
-    .AddDefaultPolicies();  // Adds default retry and circuit breaker policies
-
-var app = builder.Build();
-app.Run();
-```
-
-The default policies provide:
-
-- **Default retry policy**: Retries with exponential backoff
-- **Default circuit breaker**: Opens after consecutive failures, closes after a timeout period
-
-These policies are sufficient for many applications and provide a good starting point for resilience.
-
-### Custom Policy Registry
-
-For more control over resilience policies, you can create a custom policy registry with specific retry strategies, circuit breakers, and timeout policies:
-
-```csharp
-using Paramore.Darker;
-using Paramore.Darker.AspNetCore;
-using Paramore.Darker.Policies;
-using Polly;
-using Polly.Registry;
-using System;
-
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddDarker()
-    .AddHandlersFromAssemblies(typeof(Program).Assembly)
-    .AddPolicies(ConfigurePolicies());
-
-var app = builder.Build();
-app.Run();
-
-static IPolicyRegistry<string> ConfigurePolicies()
-{
-    // Retry policy with exponential backoff
-    var defaultRetryPolicy = Policy
-        .Handle<Exception>()
-        .WaitAndRetryAsync(new[]
-        {
-            TimeSpan.FromMilliseconds(50),   // First retry after 50ms
-            TimeSpan.FromMilliseconds(100),  // Second retry after 100ms
-            TimeSpan.FromMilliseconds(150)   // Third retry after 150ms
-        });
-
-    // Circuit breaker that opens after 1 failure, stays open for 500ms
-    var defaultCircuitBreaker = Policy
-        .Handle<Exception>()
-        .CircuitBreakerAsync(
-            exceptionsAllowedBeforeBreaking: 1,
-            durationOfBreak: TimeSpan.FromMilliseconds(500));
-
-    // Specific circuit breaker for critical operations
-    var criticalCircuitBreaker = Policy
-        .Handle<Exception>()
-        .CircuitBreakerAsync(
-            exceptionsAllowedBeforeBreaking: 3,  // More tolerant
-            durationOfBreak: TimeSpan.FromSeconds(30));  // Longer break
-
-    // Register policies with names
-    var policyRegistry = new PolicyRegistry
-    {
-        { Constants.RetryPolicyName, defaultRetryPolicy },
-        { Constants.CircuitBreakerPolicyName, defaultCircuitBreaker },
-        { "CriticalCircuitBreaker", criticalCircuitBreaker }
-    };
-
-    return policyRegistry;
-}
-```
-
-### Policy Naming Convention
-
-Darker provides constants for common policy names in the `Paramore.Darker.Policies.Constants` class:
-
-- `Constants.RetryPolicyName` - Default retry policy name
-- `Constants.CircuitBreakerPolicyName` - Default circuit breaker policy name
-
-**Best practices:**
-
-- Use the provided constants for default policies
-- Use descriptive names for custom circuit breakers (e.g., "ExternalApiCircuitBreaker", "DatabaseCircuitBreaker")
-- Document your policy names in a central configuration class
-- Consider creating a constants class for policy names used across your application:
-
-```csharp
-public static class QueryPolicies
-{
-    public const string DatabaseCircuitBreaker = "DatabaseCircuitBreaker";
-    public const string ExternalApiCircuitBreaker = "ExternalApiCircuitBreaker";
-    public const string CacheCircuitBreaker = "CacheCircuitBreaker";
-}
-```
-
-### Advanced Policy Configurations
-
-Polly supports many advanced resilience patterns:
-
-**Handle specific exceptions:**
-```csharp
-var retryPolicy = Policy
-    .Handle<HttpRequestException>()
-    .Or<TimeoutException>()
-    .WaitAndRetryAsync(3, retryAttempt =>
-        TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-```
-
-**Retry with callback:**
-```csharp
-var retryPolicy = Policy
-    .Handle<Exception>()
-    .WaitAndRetryAsync(
-        new[] { TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(200) },
-        onRetry: (exception, timeSpan, retryCount, context) =>
-        {
-            // Log retry attempts
-            Console.WriteLine($"Retry {retryCount} after {timeSpan}");
-        });
-```
-
-**Circuit breaker with callbacks:**
-```csharp
-var circuitBreaker = Policy
-    .Handle<Exception>()
-    .CircuitBreakerAsync(
-        exceptionsAllowedBeforeBreaking: 5,
-        durationOfBreak: TimeSpan.FromSeconds(30),
-        onBreak: (exception, duration) =>
-        {
-            // Log when circuit opens
-            Console.WriteLine($"Circuit breaker opened for {duration}");
-        },
-        onReset: () =>
-        {
-            // Log when circuit closes
-            Console.WriteLine("Circuit breaker reset");
-        });
-```
-
-For more information on Polly policies, see the [Polly documentation](https://github.com/App-vNext/Polly) and the Brighter documentation on [Supporting Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md).
-
-## Comparison with Brighter Pipeline
-
-Darker's query pipeline shares many similarities with [Brighter's request pipeline](/contents/BuildingAPipeline.md), as both implement the same Russian Doll Model for middleware composition. However, there are some key differences to be aware of when working with both frameworks.
-
-### Similarities
-
-**Russian Doll Model:**
-Both frameworks use the same pipeline architecture where each handler/decorator wraps the next one in the chain, allowing cross-cutting concerns to execute before and after the core handler logic.
-
-**Attribute-Based Ordering:**
-Both use attributes with step numbers to control decorator execution order:
-```csharp
-// Brighter
-[RequestLogging(1)]
-[UsePolicy("RetryPolicy", 2)]
-public override Task<AddGreetingResponse> HandleAsync(AddGreetingCommand command, ...)
-
-// Darker
-[QueryLogging(1)]
-[RetryableQuery(2, "DefaultCircuitBreaker")]
-public override Task<string> ExecuteAsync(GetPersonNameQuery query, ...)
-```
-
-**Policy Integration:**
-Both integrate with Polly for resilience policies (retry, circuit breaker, timeout).
-
-**Extensible Architecture:**
-Both support custom decorators for application-specific cross-cutting concerns.
-
-### Differences
-
-**Return Values:**
-
-- **Darker**: Query handlers return results (`TResult`), and the pipeline preserves and returns these results
-- **Brighter**: Command handlers typically return `void` or the command itself; events are used to signal results
-
-**External Bus Support:**
-
-- **Brighter**: Supports external messaging through service activators, message mappers, and external bus integration
-- **Darker**: Focuses on in-process query handling only; no external messaging support
-
-**Decorator Focus:**
-
-- **Darker**: Decorators are query-specific (QueryLogging, RetryableQuery, FallbackPolicy)
-- **Brighter**: Decorators are request-specific (RequestLogging, UsePolicy, UseInbox, UseOutbox)
-
-**Use Cases:**
-
-- **Darker**: Read-side operations, queries that don't change state
-- **Brighter**: Write-side operations, commands that change state, event publishing
-
-When using both Brighter and Darker together in a CQRS architecture, you'll apply similar patterns but with framework-specific decorators. For more information on using both frameworks together, see [CQRS with Brighter and Darker](/contents/CQRSWithBrighterAndDarker.md).
-
 ## Query Pipeline Best Practices
 
 **1. Order decorators logically**
@@ -919,6 +707,8 @@ Always pass the `CancellationToken` through the pipeline to allow graceful cance
 
 ## Further Reading
 
+- [Query Pipeline Policies](/contents/QueryPipelinePolicies.md) - Configuring the Polly policies decorators use
+- [Darker and Brighter Pipelines](/contents/DarkerAndBrighterPipelines.md) - Where the two pipelines agree and differ
 - [Implementing a Query Handler](/contents/ImplementAQueryHandler.md) - Learn how to implement query handlers that use decorators
 - [Basic Configuration](/contents/DarkerBasicConfiguration.md) - Configure Darker with policies and decorators
 - [Building a Pipeline of Request Handlers](/contents/BuildingAPipeline.md) - Brighter's equivalent pipeline documentation

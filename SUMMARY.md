@@ -117,10 +117,22 @@
 ## Darker
 
 * [Darker Basic Configuration](/contents/DarkerBasicConfiguration.md)
+  * [Darker Configuration Reference](/contents/DarkerConfigurationReference.md)
 * [Queries and Query Objects](/contents/QueriesAndQueryObjects.md)
+  * [Query Result Types](/contents/QueryResultTypes.md)
+  * [Query Object Validation](/contents/QueryObjectValidation.md)
 * [How to Implement a Query Handler](/contents/ImplementAQueryHandler.md)
+  * [Query Handler Dependencies](/contents/QueryHandlerDependencies.md)
+  * [Testing Query Handlers](/contents/TestingQueryHandlers.md)
 * [Query Pipeline and Decorators](/contents/QueryPipeline.md)
+  * [Query Pipeline Policies](/contents/QueryPipelinePolicies.md)
+  * [Darker and Brighter Pipelines](/contents/DarkerAndBrighterPipelines.md)
 * [Query Patterns](/contents/QueryPatterns.md)
+  * [Parameterized Query Patterns](/contents/ParameterizedQueryPatterns.md)
+  * [Pagination Query Patterns](/contents/PaginationQueryPatterns.md)
+  * [Projection Query Patterns](/contents/ProjectionQueryPatterns.md)
+  * [Collection and Aggregation Query Patterns](/contents/AggregationQueryPatterns.md)
+  * [Entity Framework Core Query Integration](/contents/EFCoreQueryIntegration.md)
 
 ## Health Checks and Observability
 
