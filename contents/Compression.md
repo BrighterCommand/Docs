@@ -8,7 +8,7 @@ We offer [gzip](https://en.wikipedia.org/wiki/Gzip) on netstandard2.0 and add [d
 
 ## Compress and Decompress
 
-We treat Compress and Decompress as [Transformer](/contents/MessageMappers.md#message-transformer-factory) middleware.
+We treat Compress and Decompress as [Transformer](/contents/MessageTransforms.md#message-transformer-factory) middleware.
 
 We provide a **WrapWithAttribute** of **Compress** that will use the **CompressPayloadTransformer** to compress the body of your message using your choice of compression algorithm.  The claim check has a threshold, over which messages will be compressed.
 

@@ -131,3 +131,6 @@ contents/DarkerAndBrighterPipelines.md	Explanation	high	"split from QueryPipelin
 contents/QueryResultTypes.md	Explanation	high	"split from QueriesAndQueryObjects.md (spec 010, Task 6.4); single-mode by construction"	Explanation	Darker V4
 contents/QueryObjectValidation.md	How-to	high	"split from QueriesAndQueryObjects.md (spec 010, Task 6.4); single-mode by construction"	How-to	Darker V4
 contents/DarkerConfigurationReference.md	Reference	high	"split from DarkerBasicConfiguration.md (spec 010, Task 6.5); single-mode by construction"	Reference	Darker V4
+contents/MessageTransforms.md	Explanation	high	"split from MessageMappers.md and DefaultMessageMappers.md (spec 010, Task 7.1); single-mode by construction"	Explanation	Brighter V10
+contents/CloudEventsReference.md	Reference	high	"split from CloudEventsSupport.md (spec 010, Task 7.3); single-mode by construction"	Reference	Brighter V10
+contents/RoutingMultipleMessageTypes.md	How-to	high	"split from DynamicMessageDeserialization.md (spec 010, Task 7.4); single-mode by construction"	How-to	Brighter V10

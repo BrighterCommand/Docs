@@ -14,7 +14,7 @@ To use the **S3LuggageStore** you need to include the following NuGet package:
 
 See [AWS Configuration](/contents/AWSSQSConfiguration.md#migrating-from-aws-sdk-v3-to-v4) for migration guidance between v3 and v4.
 
-We then need to configure our **S3LuggageStore** and register it with our IoC container. Our **ClaimCheckTransformer** has a dependency on **IAmAStorageProviderAsync** and at runtime, when our [** **IAmAMessageTransformerFactory**](/contents/MessageMappers.md#message-transformer-factory) creates an instance it needs to be able to resolve that dependency. For this reason you need to register the implementation, in this case **S3LuggageStore** with the IoC container to allow it to resolve the dependency.
+We then need to configure our **S3LuggageStore** and register it with our IoC container. Our **ClaimCheckTransformer** has a dependency on **IAmAStorageProviderAsync** and at runtime, when our [** **IAmAMessageTransformerFactory**](/contents/MessageTransforms.md#message-transformer-factory) creates an instance it needs to be able to resolve that dependency. For this reason you need to register the implementation, in this case **S3LuggageStore** with the IoC container to allow it to resolve the dependency.
 
 We provide an extension method to **ServiceCollection** to help with this:
 
