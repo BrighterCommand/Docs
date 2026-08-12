@@ -486,7 +486,37 @@ rather than a list here. Two placement rules bind it:
 | **AC6** | No section holds one page; no section is unnavigable without a middle layer | review against the final tree — **threshold still open, Q8** |
 | **AC7** | **Per split:** every split that lands proves no information loss for that split, mechanically. **Partial completion of the 26 is a valid end state** — the spec is accepted on the splits it landed, not blocked on the ones it did not | D5, per split |
 | **AC8** | Every `worklist.md` `keep` verdict is honoured — 16 rows across 15 pages | review |
-| **AC9** | `llms.txt` covers every page with type and one-line summary, generated not hand-written | D6 |
+| **AC9** | Every page carries a one-line summary that reaches the canonical `/llms.txt`, set at source and never hand-maintained in a parallel file. **Narrowed 2026-08-12** — see below | D6, as re-scoped |
+
+> **AC9 narrowed 2026-08-12, at Task 10.3's ruling.** It read *"`llms.txt` covers every page
+> with type and one-line summary, generated not hand-written"*, and that was written before
+> anyone measured what the platform ships. **GitBook owns `/llms.txt`, generates it from the
+> published tree, and we cannot override it** — so a criterion phrased as *we generate a file*
+> was asking for the wrong artefact. What is left of the intent survives intact: every page
+> gets a summary, it is derived from the page rather than authored in parallel, and it reaches
+> a retrieval client.
+>
+> **Two clauses changed and one was dropped, deliberately:**
+>
+> - *"generated not hand-written"* becomes **"set at source"**. The point of that clause was
+>   that a parallel table drifts from the pages within a release. Front matter on the page
+>   cannot drift from the page, which satisfies the intent by a route the criterion did not
+>   anticipate.
+> - *"`llms.txt` covers every page"* becomes **"reaches the canonical `/llms.txt`"** — measured
+>   2026-08-12: our space contributes **143** of the index's 202 entries, one per page under
+>   `contents/` plus `README`, automatically.
+> - **"with type" is dropped.** The platform's line format is `- [Title](url): description`
+>   and has no type field. It could be smuggled into the description as a `Reference — ` prefix
+>   and **should not be**: the same string is the page's `<meta name="description">`,
+>   `og:description` and `twitter:description`, so the prefix would degrade every search
+>   snippet and social card to carry information a retrieval client already has — the `.md`
+>   variant leads with the H1 and then the banner, which states the type in full. **Measured,
+>   not assumed:** `…/azureblobconfiguration.md` opens `# Azure Archive Provider Configuration`
+>   then `> **Reference** · Applies to **Brighter V10**`.
+>
+> `CLAUDE.md`'s § llms.txt documents the four-part format `- [Title](path): Type — one
+> sentence.` That section now describes a file this spec does not build; **amending it is
+> Phase 11's**, and it should record the platform's format rather than an aspiration.
 
 ---
 

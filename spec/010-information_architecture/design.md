@@ -750,6 +750,24 @@ parsed `​structure:` happily. **Type the block; never paste it.**
 
 ### 9.2 D6 — `tools/llmstxt.py`, and Q9
 
+> **Superseded in its mechanism 2026-08-12, and vindicated in its rule.** `tools/llmstxt.py`
+> is **not built**: GitBook owns `/llms.txt`, generates it from the published tree, and we
+> cannot override it — measured in `tasks.md` §3, ruled at Task 10.3. **The summary now
+> travels as `description:` front matter on the page**, which GitBook reads and emits into
+> that canonical index as `- [Title](url): description`. Proven on the live site the same
+> day: one page's entry gained exactly **105 bytes** — its 103-character description plus
+> `": "` — and nothing else in the file moved.
+>
+> **Everything below about *the sentence* stands, and matters more now than when it was
+> written.** There is no generator to fail the build, so the extraction rule becomes Task
+> 10.4's check and the front matter it feeds. The paragraph's central claim — that a
+> hand-written parallel table drifts and a sentence living in the page cannot — is exactly
+> why the front-matter route is the same design by another mechanism.
+>
+> **One amendment the section asked for is now moot.** It proposed `llms.txt` emit published
+> URLs rather than repository paths, and called it the maintainer's call. The platform emits
+> published URLs already; there is no file of ours for the question to apply to.
+
 `CLAUDE.md` fixes the format as `- [Title](path): Type — one sentence.` The type comes
 from the banner. **The sentence comes from the page's own opening sentence**, and the
 generator refuses to invent one:
@@ -918,7 +936,7 @@ Three corrections, all recorded in requirements §8 and §2.1:
 | AC6 | No section of one page; none unnavigable | **S1/S2/S3** in §4, enforced by `--check-shape` |
 | AC7 | Per split, no information loss, mechanically | D5 per split. Partial completion is a valid end state |
 | AC8 | All 16 `keep` rows honoured | §7 touches none of them; §7.7 changes no verdict |
-| AC9 | `llms.txt` generated, not hand-written | §9.2 — extracted from the page, and the build fails when it cannot be |
+| AC9 | A summary per page, set at source, reaching the canonical `/llms.txt` | §9.2 **as re-scoped** — `description:` front matter carrying the page's own opening sentence, and the build fails when that sentence cannot be extracted. **Narrowed 2026-08-12**, requirements §12 |
 
 ---
 
