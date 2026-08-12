@@ -2,8 +2,9 @@
 
 > **How-to** · Applies to **Brighter V10**
 
-Once you are using the features of Brighter to act as a [command dispatcher](CommandsCommandDispatcherAndProcessor.html#command-dispatcher) and send or publish messages to a target handler, you may want to use
-its [command processor](CommandsCommandDispatcherAndProcessor.html#command-processor) features to handle orthogonal operations.
+Once Brighter is dispatching requests to your handlers, you can insert orthogonal operations into the pipeline that runs around each handler.
+
+This uses Brighter's [command processor](/contents/CommandsCommandDispatcherandProcessor.md#the-command-processor-pattern) features rather than its [command dispatcher](/contents/CommandsCommandDispatcherandProcessor.md#command-dispatcher) features.
 
 Common examples of orthogonal operations include:
 

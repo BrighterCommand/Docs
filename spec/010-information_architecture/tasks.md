@@ -2484,6 +2484,107 @@ extraction discipline moves into Task 10.4's check, which now has something to f
 - [x] **Task 10.1** — the mechanism established and measured end to end
 - [x] **Task 10.3** — ruled *fix it at source*; AC9 narrowed in all three documents
 
+### Task 10.4 as executed — 2026-08-12
+
+D6 did not survive Task 10.3, so the rule landed **as `pagelint.py` rule 7**, exactly as the
+task's fallback prescribed — and in the same commit as `CLAUDE.md`'s ledger and its two new
+convention sections, because AC5 of Spec 011 failed on precisely that parity gap.
+
+**Six labels, not four.** The four the task named — `SUMMARY MISSING`, `SUMMARY TOO LONG`,
+`SUMMARY ENDS IN COLON`, `SUMMARY NOT UNIQUE` — plus **`DESCRIPTION MISMATCH`** and
+**`DESCRIPTION UNREADABLE`**, which check the front matter against the sentence it is supposed
+to be. The ledger's first draft had that parity as *review only*, which is the one thing this
+programme has learned not to write down: **a rule with a tool for half of it will pass the
+half nobody checks.** It is mechanical, so it is mechanised.
+
+**The ruling the task asked for: the 200 characters are *rendered*.** `rendered()` strips link
+targets, brackets, code spans and emphasis before measuring. It matters more than it sounds:
+
+| | source | rendered |
+|---|---:|---:|
+| pages over the limit | 11 | **4** |
+
+Seven pages were over the limit **only by the length of URLs nobody reads**. Failing a page on
+its hrefs would have been measuring the wrong thing, and the fix — shortening real prose to
+accommodate a link target — would have made those pages worse.
+
+**The first run: 8 findings across 8 pages.** Four `SUMMARY TOO LONG`
+(`PolicyFallback.md` 249, `WhyBrighter.md` 226, `OutboxPattern.md` 211,
+`CQRSWithBrighterAndDarker.md` 205) and four `SUMMARY NOT UNIQUE` in two pairs —
+`DispatchingARequest.md`/`AsyncDispatchARequest.md` and
+`BuildingAPipeline.md`/`BuildingAnAsyncPipeline.md`, each an async page that had never been
+given its own opening line. **Zero `SUMMARY MISSING` and zero `SUMMARY ENDS IN COLON`.**
+
+**Design §9.2 predicted "a double-figure number of failures" and it is eight.** The prediction
+was made against source length, and against a corpus this spec has since improved. Recorded as
+a wrong figure rather than rounded up to meet it.
+
+> **The instrument was wrong twice in one task, in opposite directions.** A throwaway
+> measurement script written before the rule reported **15 pages** — and both of its extra
+> findings were its own. Seven were the source/rendered difference above. The other two,
+> `AwsScheduler.md` and `AzureScheduler.md` *"ending in a colon"*, were an artefact of the
+> script skipping any line starting with `*` as a list item: both pages open
+> `**AWS EventBridge Scheduler** is a fully managed…`, bold, not a bullet. The script skipped
+> the real introduction and reported the heading-follower two paragraphs down. **The corpus
+> was fine and the ruler was bent** — which is *a measurement is only as good as its
+> instrument*, met again, and the reason the scratch figure is not quoted anywhere as a result.
+
+**Proved red before trusted green, eight branches.** `SUMMARY ENDS IN COLON`,
+`SUMMARY TOO LONG`, `SUMMARY MISSING`, `DESCRIPTION MISMATCH`, and `DESCRIPTION UNREADABLE`
+three ways (unquoted, block scalar, unterminated block). `SUMMARY NOT UNIQUE` needed no probe:
+it had four live findings.
+
+> **And the red-proof refined a lesson this programme already had.** *"When you prove a check
+> red, assert that your mutation landed"* is **not strong enough.** The first three probes all
+> reported SILENT, and **all three were the probe's fault, not the rule's** — each asserted
+> only `text != orig`, which was true, while the mutation produced something the branch was
+> never meant to reject: replacing one sentence left the *next* sentence on the line, so the
+> summary no longer ended in a colon; deleting the intro paragraph simply promoted the
+> following one; the "too long" string was still under 200 rendered. **The assertion has to be
+> that the mutation produced the *input the branch rejects*** — here, by calling
+> `opening_sentence()` directly and asserting the property before running the linter. Three
+> real rules would have been recorded as broken on the strength of the weaker guard.
+
+**One defect in the rule itself, caught by its own baseline.** `front_matter_description()`
+returned `(value, lineno)` on success into a caller reading the second slot as a *reason*, so
+a page whose front matter was perfectly correct reported
+`DESCRIPTION UNREADABLE: 2` — **the check reporting its own success as a failure, with a line
+number for a message.** It was visible only because the red-proof printed a baseline first and
+the baseline was red. A run that started at the first mutation would have seen three FIREDs
+and called it proven.
+
+**Ledger parity checked by enumeration, and it found the mirror of the original defect.** Spec
+011's acceptance pass found `NO H1` in the linter and missing from `CLAUDE.md`'s ledger. Here
+it is in the ledger and **was missing from the linter's own docstring** — the same gap, the
+same rule, the other way round, four sessions later. Added. *To check parity, enumerate; do
+not read* — and enumerate **both** directions.
+
+**Two defects found in passing, recorded and deliberately not fixed. Both are Phase 11's.**
+
+1. **29 internal `.html` links across 16 pages, and `linkcheck.py` cannot see any of them.**
+   Legacy links from the pre-GitBook site — `ImplementingAHandler.html`,
+   `CommandsCommandDispatcherAndProcessor.html#command-processor` — which the link checker
+   skips because they are not `.md`. Twelve distinct targets. **Eleven have an obvious `.md`
+   counterpart and one, `QualityOfServicePatterns.html`, has no page at all**, so it is a dead
+   link that has been green in every CI run this repo has ever done. Worse, the conversion is
+   not purely mechanical: the file is `CommandsCommandDispatcherandProcessor.md`, lower-case
+   `a`, so the obvious rewrite lands on **WRONG CASE** — the fault class `linkcheck.py` exists
+   for, hidden behind an extension it does not check. **Four of the 29 were fixed here**,
+   because they sat inside sentences this task was rewriting anyway, and their anchors were
+   repointed at headings that exist (`#the-command-processor-pattern`, not
+   `#command-processor`, which never existed). The other 25 want their own PR.
+2. **`BuildingAnAsyncPipeline.md` has two H1s** — line 1 and line 8. No rule sees it: `NO H1`
+   fires only on *no* H1, and rule 3b starts at `##`. It is the H1 collision Phase 6 recorded
+   as invisible, in a page nobody split. Nothing links to the second one's anchor, so demoting
+   it is safe — but it becomes a `##` that must then be unique and qualified, which is a
+   heading pass, not a sentence fix.
+
+**Gates after:** linkcheck 144 files, pagelint **0 errors** / 791 warnings / 142 pages,
+`--check-shape` 0, `--check-redirects` 0, `--changed origin/master` 0 with everything staged.
+**The using-directive debt did not move**, as in Phases 6 through 9.
+
+- [x] **Task 10.4** — rule 7 in `pagelint.py`, `CLAUDE.md` in the same commit, 8 pages fixed
+
 ---
 
 ## Phase 11 — Close (PR 11)

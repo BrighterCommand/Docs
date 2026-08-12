@@ -7,6 +7,7 @@ for a retrieval system holding one chunk with no surrounding context.
 
 Rules, and what each is for:
 
+  NO H1               a page with no title for a banner to sit under
   BANNER MISSING      no page banner on the first non-blank line after the H1
   BANNER MALFORMED    a banner is there, but not in the fixed grammar
   HEADING NOT UNIQUE  a `##` text that also appears on another page
@@ -15,11 +16,35 @@ Rules, and what each is for:
   SERVICEACTIVATOR    "ServiceActivator" in prose where "Dispatcher" is meant
   USING DIRECTIVES    a C# block with no `using` lines (warning, counted;
                       stays a warning under --changed if marked `// ...`)
+  SUMMARY MISSING     no prose after the banner to summarise the page with
+  SUMMARY TOO LONG    an opening sentence over 200 characters, rendered
+  SUMMARY ENDS IN COLON   an opening sentence promising a list an index drops
+  SUMMARY NOT UNIQUE  two pages that introduce themselves identically
+  DESCRIPTION MISMATCH    `description:` front matter that is not that sentence
+  DESCRIPTION UNREADABLE  front matter this tool will not guess the meaning of
 
 The banner states the page type, the Brighter/Darker version it applies to and
 what to read first. It is a visible blockquote rather than front matter because
-GitBook renders front matter literally into the page body, and because a
-retrieval chunker strips front matter but keeps body text.
+a retrieval chunker strips front matter but keeps body text.
+
+  One of that sentence's two reasons used to be "because GitBook renders front
+  matter literally into the page body", and it was wrong -- or has stopped
+  being true, which from here is the same thing. Measured on a live preview
+  revision 2026-08-12 (spec 010 Phase 10): front matter is consumed, the H1
+  survives, and `description:` becomes the page's meta, og and twitter
+  description. There is even a switch, layout.description.visible, for whether
+  it also renders as a subtitle. The conclusion is untouched -- the banner
+  stays a blockquote, on the surviving reason, and it demonstrably reaches the
+  .md variant -- but a premise nobody rechecked for a year was false, so it is
+  corrected here rather than left to be inherited again.
+
+Rule 7 is the opening sentence, and it is the one rule here that is not about
+form. The other six ask whether a page is well-formed; this asks whether its
+first sentence is true and specific enough to stand alone, because that
+sentence is what a reader meets as a search snippet and what /llms.txt prints
+after the title. It cannot check truth, so it checks the three things that
+correlate with a sentence nobody reread -- too long, ends in a colon, or
+identical to another page's -- and the third is the one that earns its keep.
 
 Heading uniqueness is two rules with deliberately different scopes. Across
 pages it applies to `##` only: an H3 is read under its H2, so
@@ -153,6 +178,12 @@ ELISION_RE = re.compile(r'^\s*/[/*]\s*\.\.\.')
 
 INLINE_CODE_RE = re.compile(r'`[^`]*`')
 LINK_TARGET_RE = re.compile(r'\]\([^)]*\)')
+
+# Rule 7's ceiling, measured on what a reader sees rather than what the author
+# typed -- see rendered(). Two hundred is where design 010 §9.2 put it and it
+# has held: a sentence longer than this stops being a summary and starts being
+# the first half of a paragraph, which is no use as a search snippet.
+SUMMARY_LIMIT = 200
 OPT_OUT = '<!-- pagelint: allow-serviceactivator -->'
 
 # Both spellings. The API surface uses the closed form, but prose in this repo
@@ -644,6 +675,192 @@ def check_terminology(page):
 
 
 # --------------------------------------------------------------------------
+# Rule 7 — the opening sentence, which is also the page's summary
+# --------------------------------------------------------------------------
+
+def rendered(text):
+    """What a reader sees: link text without its target, no emphasis marks.
+
+    The 200-character limit measures this, not the markdown. A sentence can
+    carry a 90-character documentation URL that nobody reads, and failing a
+    page on the length of a href would be measuring the wrong thing. Measured
+    when this rule was written: one sentence came to 199 characters of source
+    and about 140 rendered, one character under a limit it was never really
+    near.
+    """
+    text = LINK_TARGET_RE.sub(']', text)          # [text](url) -> [text]
+    text = re.sub(r'\[([^\]]*)\]', r'\1', text)   # [text]      -> text
+    text = re.sub(r'`([^`]*)`', r'\1', text)
+    text = re.sub(r'\*\*([^*]*)\*\*', r'\1', text)
+    text = re.sub(r'\*([^*]*)\*', r'\1', text)
+    return text.strip()
+
+
+def first_sentence(text):
+    """Up to the first sentence-ending period, else the whole line.
+
+    The lookbehinds keep "e.g." and "i.e." from ending a sentence mid-clause;
+    without them a page opening "Brighter supports several brokers, e.g. Kafka."
+    would be summarised as four words.
+    """
+    match = re.search(r'(?<!\be\.g)(?<!\bi\.e)(?<!\betc)[.!?](\s|$)', text)
+    return text[:match.start() + 1].strip() if match else text.strip()
+
+
+def opening_sentence(page):
+    """(sentence, lineno), or (None, why) — the first sentence of the page body.
+
+    "First non-blank prose line after the banner": blank lines, headings,
+    blockquotes and fenced blocks are passed over; anything else is the
+    introduction, whether or not it looks like a paragraph.
+
+    A list or table stops the scan rather than being skipped, deliberately. A
+    page whose introduction is a bullet list has no opening sentence, and
+    should be told so rather than quietly summarised by a paragraph further
+    down under some later heading. Both policies were measured across the
+    corpus when this was written and both found every page a sentence, so the
+    stricter one costs nothing today and says something the day it stops
+    being true.
+    """
+    if page.h1_line is None:
+        return None, 'the page has no H1'
+    banner = None
+    for lineno in range(page.h1_line + 1, len(page.lines) + 1):
+        if page.lines[lineno - 1].strip():
+            banner = lineno
+            break
+    if banner is None:
+        return None, 'nothing follows the H1'
+
+    in_fence = False
+    for lineno in range(banner + 1, len(page.lines) + 1):
+        line = page.lines[lineno - 1]
+        match = FENCE_RE.match(line)
+        if match:
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        text = line.strip()
+        if not text or HEADING_RE.match(line) or text.startswith('>'):
+            continue
+        return (first_sentence(text), lineno), None
+    return None, 'the page has no prose after its banner'
+
+
+def front_matter_description(page):
+    """(value, None) from `description:` front matter, or (None, why|None).
+
+    Both slots are returned every time and the second is always a *reason*,
+    never a line number. An earlier draft returned the line number on success,
+    which every caller reads as "something went wrong" -- the check reported
+    its own success as a failure, with the line number as the message.
+
+    Deliberately not a YAML parser. Only the single-line, quoted form this
+    repository writes is understood, and anything else is reported rather than
+    guessed at -- a wrong guess here is worse than no check, because GitBook's
+    own failure mode for malformed front matter is silent.
+    """
+    if not page.lines or page.lines[0].strip() != '---':
+        return None, None
+    close = None
+    for lineno in range(2, len(page.lines) + 1):
+        if page.lines[lineno - 1].strip() == '---':
+            close = lineno
+            break
+    if close is None:
+        return None, 'the front matter block is never closed'
+    for lineno in range(2, close):
+        line = page.lines[lineno - 1]
+        if not line.startswith('description:'):
+            continue
+        value = line[len('description:'):].strip()
+        if value[:1] in ('>', '|'):
+            return None, ('the description uses a YAML block scalar; write it as one '
+                          'quoted line so it can be compared with the page')
+        if not (len(value) >= 2 and value[0] == value[-1] and value[0] in '"\''):
+            return None, ('the description is unquoted; GitBook fails Git Sync '
+                          'silently on an unquoted value containing a colon')
+        return value[1:-1], None
+    return None, None
+
+
+def check_summaries(pages, reported):
+    """Rule 7. Every page opens with a sentence fit to stand alone as its summary.
+
+    That sentence is not decoration. It is what GitBook's `.md` variant leads
+    with after the banner, and — once it is carried into `description:` front
+    matter — what the canonical /llms.txt prints after the page's title. A
+    reader meets it as a search snippet before they ever meet the page.
+
+    Uniqueness is checked across the corpus for the same reason `##` headings
+    are: two pages with the same opening sentence are indistinguishable in an
+    index, and the duplicate is usually a copied intro somebody forgot to
+    rewrite. On this rule's first run that is exactly what it found — a page
+    about the Azure Blob archive provider opening with a paragraph about Azure
+    Service Bus, wrong since 2023 and invisible to every other check here,
+    because nothing about it is malformed.
+    """
+    findings = []
+    by_sentence = defaultdict(list)
+
+    for rel in sorted(pages):
+        got, why = opening_sentence(pages[rel])
+        if got is None:
+            if rel in reported:
+                findings.append(error(
+                    rel, 1, 'SUMMARY MISSING',
+                    f'{why}; add an introductory sentence below the banner, so the '
+                    'page has something to be summarised by'))
+            continue
+        sentence, lineno = got
+        by_sentence[rendered(sentence)].append((rel, lineno))
+        if rel not in reported:
+            continue
+        shown = rendered(sentence)
+        if len(shown) > SUMMARY_LIMIT:
+            findings.append(error(
+                rel, lineno, 'SUMMARY TOO LONG',
+                f'the opening sentence is {len(shown)} characters rendered; '
+                f'the limit is {SUMMARY_LIMIT}. Split it — the first sentence '
+                'has to survive being read on its own, in a search result'))
+        if shown.endswith(':'):
+            findings.append(error(
+                rel, lineno, 'SUMMARY ENDS IN COLON',
+                'the opening sentence ends in a colon, so it promises a list '
+                'that an index will not print. Say what the page is about, then '
+                'introduce the list'))
+
+        # Parity with the front matter, on pages that carry one. The whole point
+        # of deriving the description from the page is that the two cannot
+        # drift; nothing enforces that unless something compares them.
+        described, why = front_matter_description(pages[rel])
+        if why:
+            findings.append(error(rel, 1, 'DESCRIPTION UNREADABLE', why))
+        elif described is not None and described != shown:
+            findings.append(error(
+                rel, lineno, 'DESCRIPTION MISMATCH',
+                'the `description:` front matter is not this page\'s opening '
+                f'sentence.\n    front matter: {described}\n    opening line: {shown}'))
+
+    for shown, where in sorted(by_sentence.items()):
+        if len(where) < 2:
+            continue
+        others = [rel for rel, _ in where]
+        for rel, lineno in where:
+            if rel not in reported:
+                continue
+            elsewhere = [o for o in others if o != rel]
+            findings.append(error(
+                rel, lineno, 'SUMMARY NOT UNIQUE',
+                'this opening sentence also opens '
+                f'{_also_in(elsewhere, limit=3)}. Two pages that introduce '
+                'themselves identically are indistinguishable in an index — and '
+                'one of them is usually about something else'))
+    return findings
+
+
+# --------------------------------------------------------------------------
 # --changed
 # --------------------------------------------------------------------------
 
@@ -781,6 +998,7 @@ def main(argv):
         findings += check_code_blocks(page, strict.get(rel, []))
         findings += check_terminology(page)
     findings += check_headings(pages, reported)
+    findings += check_summaries(pages, reported)
 
     findings.sort(key=lambda f: (f.path, f.line, f.rule))
 

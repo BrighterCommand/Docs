@@ -277,7 +277,79 @@ never silenced. It still counts towards the debt and still says so in its own wo
 Without that, relocating a block verbatim is indistinguishable from writing a new
 one, and a page split cannot honour "move the text, do not improve it".
 
+### The opening sentence
+
+Every page's first sentence after the banner has to survive being read on its own.
+
+That sentence is not decoration and it is not only for a reader who has already
+arrived. It is what GitBook's `.md` variant leads with after the banner, what the
+canonical `/llms.txt` prints after the page's title, and what a search engine shows
+as the page's snippet — all from the same string. A reader meets it before they meet
+the page.
+
+So it must exist, be **at most 200 characters as rendered**, not end in a colon, and
+not be identical to another page's.
+
+**Rendered, not as typed.** `[Configuration](/contents/BrighterBasicConfiguration.md)`
+is fourteen characters to a reader and fifty-four in the source. Measuring the source
+fails pages on the length of a URL nobody reads — seven of the eleven pages over the
+limit on the first run were over it only in that sense.
+
+**Uniqueness is the clause that earns its keep.** Two pages introducing themselves
+with the same sentence are indistinguishable in an index, and the duplicate is almost
+always a copied intro nobody rewrote. On this rule's first run it found
+`AzureBlobConfiguration.md` — the *Azure Blob* archive provider page — opening with a
+paragraph about *Azure Service Bus*, wrong since 2023 and green under every other
+check here, because nothing about it was malformed.
+
+**What it cannot do**, and this is the point of the three clauses it does check: it
+cannot tell whether a sentence is *true*. It checks the properties that correlate
+with a sentence nobody reread.
+
+### Page descriptions
+
+A page carries its summary to retrieval clients in YAML front matter, above the H1:
+
+```markdown
+---
+description: "The Azure Archive Provider writes messages swept from your Outbox into an Azure Blob Storage container."
+layout:
+  description:
+    visible: false
+---
+```
+
+**`description:` is the opening sentence with its markdown stripped**, so the two
+cannot drift — a parallel table of hand-written summaries would be stale within a
+release, and a sentence that lives in the page cannot be.
+
+**Always quote the value.** GitBook documents that an unquoted `description:`
+containing `:`, `#`, `[`, `]`, `{`, `}`, `&`, `*`, `!`, `|`, `>`, `'`, `"`, `%`, `@`
+or `` ` `` causes a **silent** Git Sync failure — the page imports with no title and
+no description, and no error anywhere. Sentences carry colons. Quote every value.
+
+**`layout.description.visible: false` is not optional.** It defaults to *visible*,
+and GitBook then renders the description as a subtitle under the H1 — so a page whose
+description was derived from its own opening sentence would print that sentence
+twice. Measured on a live preview revision: the switch takes the subtitle to zero
+while all three meta tags stay.
+
+**Front matter does not carry the banner, and that has not changed.** The banner stays
+a visible blockquote, because a retrieval chunker strips front matter and keeps body
+text. What did change is the reason that used to sit beside it: *"GitBook renders
+front matter literally into the page body"* is false — front matter is consumed and
+the H1 survives. One reason of two was wrong for a year, and the conclusion it
+supported was right anyway.
+
 ### llms.txt
+
+> **Superseded 2026-08-12, and not yet rewritten.** The format below describes a file
+> this repository does not generate. **GitBook owns `/llms.txt`**, builds it from the
+> published tree, and cannot be overridden; our space contributes 143 of its entries
+> automatically. The platform's line format is `- [Title](url): description`, with **no
+> type field** — the type reaches a reader through the banner, which the `.md` variant
+> prints one line below the H1. Spec 010 Phase 11 rewrites this section; it is left
+> standing meanwhile so the change is reviewed rather than assumed.
 
 `llms.txt` at the repository root indexes the documentation for retrieval systems.
 The format is defined here; Spec 010 owns the generator, which builds it from
@@ -334,6 +406,12 @@ failure the claim in this paragraph is meant to prevent:
 | Language tag on every fence | 4 | error | error |
 | "Dispatcher", not "ServiceActivator" or "Service Activator", in prose | 5 | error | error |
 | `using` directives in C# blocks | 6 | warning, counted | error, unless the block marks its omission `// ...` |
+| An opening sentence exists | 7 (`SUMMARY MISSING`) | error | error |
+| It is ≤ 200 characters **rendered** | 7 (`SUMMARY TOO LONG`) | error | error |
+| It does not end in a colon | 7 (`SUMMARY ENDS IN COLON`) | error | error |
+| It is unique across pages | 7 (`SUMMARY NOT UNIQUE`) | error | error |
+| `description:` front matter equals it | 7 (`DESCRIPTION MISMATCH`) | error | error |
+| That front matter is a quoted single line | 7 (`DESCRIPTION UNREADABLE`) | error | error |
 | Version markers on code (❌/✅) | — | **review only** | **review only** |
 
 Version markers are the one convention with no rule, and deliberately so: whether two

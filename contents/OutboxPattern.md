@@ -4,6 +4,8 @@
 
 ## Producer Correctness
 
+The Outbox Pattern is what stops a state change and the event announcing it from diverging.
+
 When a microservice changes the state for which it is the system of record, and then signals to subscribers via an event that it has changed its state, how do we ensure that subscribers receive the event and are
 therefore consistent with the producer?
 

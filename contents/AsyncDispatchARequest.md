@@ -2,7 +2,7 @@
 
 > **How-to** · Applies to **Brighter V10**
 
-Once you have [implemented your Request Handler](ImplementingAHandler.html), you will want to dispatch **Commands** or **Events** to that Handler.
+Once you have [implemented your async Request Handler](/contents/ImplementingAsyncHandler.md), you will want to dispatch **Commands** and **Events** to it through the Command Processor's asynchronous methods.
 
 ## Async Dispatch Usage
 

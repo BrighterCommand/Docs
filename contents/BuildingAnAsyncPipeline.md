@@ -2,8 +2,9 @@
 
 > **How-to** · Applies to **Brighter V10**
 
-Once you are using the features of Brighter to act as a [command dispatcher](CommandsCommandDispatcherAndProcessor.html#command-dispatcher) and send or publish messages to a target handler, you may want to use
-its [command processor](CommandsCommandDispatcherAndProcessor.html#command-processor) features to handle orthogonal operations.
+An async pipeline wraps an async request handler in the same orthogonal operations a synchronous pipeline uses, with attributes whose handlers await.
+
+This uses Brighter's [command processor](/contents/CommandsCommandDispatcherandProcessor.md#the-command-processor-pattern) features rather than its [command dispatcher](/contents/CommandsCommandDispatcherandProcessor.md#command-dispatcher) features.
 
 # Implementing a Pipeline
 
