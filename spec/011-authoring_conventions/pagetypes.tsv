@@ -136,3 +136,8 @@ contents/CloudEventsReference.md	Reference	high	"split from CloudEventsSupport.m
 contents/RoutingMultipleMessageTypes.md	How-to	high	"split from DynamicMessageDeserialization.md (spec 010, Task 7.4); single-mode by construction"	How-to	Brighter V10
 contents/AWSSQSMigrateToV10.md	How-to	high	"split from AWSSQSConfiguration.md (spec 010, Task 8.1); single-mode by construction"	How-to	Brighter V10
 contents/PostgreSQLBrokerTradeOffs.md	Explanation	high	"split from PostgreSQLMessageBroker.md (spec 010, Task 8.2); single-mode by construction"	Explanation	Brighter V10
+contents/CQRSUseCasesAndPatterns.md	Explanation	high	"split from CQRSWithBrighterAndDarker.md (spec 010, Task 9.1); single-mode by construction"	Explanation	Brighter V10 and Darker V4
+contents/MigratingToNullableReferenceTypes.md	How-to	high	"split from NullableReferenceTypes.md (spec 010, Task 9.2); single-mode by construction"	How-to	Brighter V10
+contents/AgreementDispatcherRouting.md	Explanation	high	"split from AgreementDispatcher.md (spec 010, Task 9.3); single-mode by construction"	Explanation	Brighter V10
+contents/MigratingToPollyV8.md	How-to	high	"split from PolicyRetryAndCircuitBreaker.md (spec 010, Task 9.4); single-mode by construction"	How-to	Brighter V10
+contents/ConfiguringOpenTelemetry.md	How-to	high	"split from Telemetry.md (spec 010, Task 9.5); single-mode by construction"	How-to	Brighter V10

@@ -102,7 +102,7 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-> **Note**: For legacy Polly v7 policies using `[UsePolicy]`, see the [migration guide](/contents/PolicyRetryAndCircuitBreaker.md#migration-guide-v9-to-v10) for updating to V10 resilience pipelines.
+> **Note**: For legacy Polly v7 policies using `[UsePolicy]`, see the [migration guide](/contents/MigratingToPollyV8.md#polly-v8-migration-guide-v9-to-v10) for updating to V10 resilience pipelines.
 
 ### Configuring Lifetimes
 

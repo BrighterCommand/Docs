@@ -19,8 +19,10 @@
   * [Request Validation](/contents/RequestValidation.md)
   * [Feature Switches](/contents/FeatureSwitches.md)
   * [Supporting Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md)
+    * [Migrating to Polly v8](/contents/MigratingToPollyV8.md)
   * [Failure and Fallback](/contents/PolicyFallback.md)
 * [Agreement Dispatcher](/contents/AgreementDispatcher.md)
+  * [Agreement Dispatcher Routing](/contents/AgreementDispatcherRouting.md)
 
 ## Brighter Configuration
 
@@ -145,11 +147,13 @@
 * [Monitoring](/contents/Monitoring.md)
 * [Health Checks](/contents/HealthChecks.md)
 * [Telemetry](/contents/Telemetry.md)
+  * [Configuring OpenTelemetry](/contents/ConfiguringOpenTelemetry.md)
 
 ## V10 Migration
 
 * [V10 Migration Guide](/contents/V10MigrationGuide.md)
 * [Nullable Reference Types](/contents/NullableReferenceTypes.md)
+  * [Migrating to Nullable Reference Types](/contents/MigratingToNullableReferenceTypes.md)
 
 ## Understanding Brighter
 
@@ -160,6 +164,7 @@
 * [Event Carried State Transfer](/contents/EventCarriedStateTransfer.md)
 * [Outbox Pattern](/contents/OutboxPattern.md)
 * [CQRS with Brighter and Darker](/contents/CQRSWithBrighterAndDarker.md)
+  * [CQRS Use Cases and Patterns](/contents/CQRSUseCasesAndPatterns.md)
 * [How the Command Processor Works](/contents/HowBrighterWorks.md)
   * [How Configuring the Command Processor Works](/contents/HowConfiguringTheCommandProcessorWorks.md)
 * [How the Dispatcher Works](/contents/HowServiceActivatorWorks.md)
