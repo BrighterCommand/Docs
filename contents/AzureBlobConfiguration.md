@@ -1,5 +1,8 @@
 ---
 description: "The Azure Archive Provider writes messages swept from your Outbox into an Azure Blob Storage container."
+layout:
+  description:
+    visible: false
 ---
 
 # Azure Archive Provider Configuration
