@@ -2388,10 +2388,62 @@ finds the H1 by scanning for the first `#` heading outside a fence, so a YAML bl
 simply prose to every rule. **That is a result in its own right:** the "fix it at source" route
 costs nothing in tooling.
 
-**What to do when the probe resolves:** curl `/llms.txt` and grep for the description string.
-Then read the page's HTML and its `.md` variant to see whether `layout.description.visible`
-defaults to rendering it into the body. Only then narrow AC9, and only then sweep the
-remaining 141 pages and the 59 on `v9`.
+**The probe resolved before merge, on GitBook's preview revision.** PR #96 builds a revision
+per push and serves it under `/~/revisions/<id>/`, which turned a merge-and-hope into a
+measurement. Two revisions were read: `TROtjgYt…` with `description:` alone, `8YSyIJrh…` with
+`layout.description.visible: false` added.
+
+**Result 1 — the mechanism works, and the discriminator is the page, not the index.**
+
+| | `TROtjgYt…` | `8YSyIJrh…` |
+|---|---:|---:|
+| `<meta …description>` tags | **3** | **3** |
+| rendered subtitle element | **1** | **0** |
+| corrected body paragraph | present | present |
+| page HTML bytes | 567,418 | 566,788 |
+
+`description:` reaches GitBook and becomes the page description: `<meta name="description">`,
+`og:description` and `twitter:description` all carry the 103-character string byte for byte.
+**The front matter is consumed rather than rendered as text, and the H1 survives** — which is
+how you know the YAML parsed, because the documented silent failure is a page with *no* title.
+
+**Result 2 — the preview's `/llms.txt` is not regenerated for a revision, and reading it as a
+negative would have been the fifth vacuous check in this programme.** The preview index shows
+the probe page with no description, which looks like a failure and is not one:
+**preview minus exactly one 33-character revision segment is byte-identical to live**
+(32,825 − 33 = 32,792). It is the published index with one reference rewritten, so it cannot
+show a description that has not been published yet. **The assertion that saved it was the
+byte comparison**, not the grep — *when a probe's assertion disagrees with its exit code, the
+assertion is the suspect*, and here the assertion had to be built before the grep could be
+read. **The index question is still open and can only be answered after merge.**
+
+**Result 3 — the question the probe was not asked, and the one that would have cost the most.**
+`layout.description.visible` **defaults to visible**, so GitBook renders the description as a
+**subtitle under the H1**. Left alone, the sweep would have made **all 142 pages open twice** —
+once as the subtitle GitBook generates from the front matter, once as the opening sentence the
+front matter was *derived from*. It is design §7's *"otherwise the page opens twice"*, arriving
+from a direction no rule in this spec was watching: not a lead-in an author wrote, but a
+duplicate the platform renders.
+
+`layout: description: visible: false` is the switch, and the second revision measures it:
+**the subtitle goes 1 → 0 while all three meta tags stay at 3.** The corrected paragraph is
+present in *both* revisions, which is the control doing its job — it proves each revision
+deployed, so the 1 → 0 is the switch and not a build that never landed.
+
+**So the sweep's unit is six lines of front matter per page, not one.** A bare `description:`
+is not a safe default at 142 pages.
+
+**What is proven, and what is not:**
+
+- **Proven:** the field parses, sets the page description, survives into three meta tags, is
+  suppressible in the body, and costs nothing in `linkcheck.py`, `pagelint.py`,
+  `--check-shape`, `--check-redirects` or `--changed`.
+- **Not proven:** that it reaches the generated `/llms.txt`. GitBook's own index carries
+  descriptions on 294 of 668 entries, so the field plainly flows through there for *some*
+  space — but *some space* is not *ours*, and this programme has been wrong before about a
+  figure that was true of a neighbouring quantity. **Grep `/llms.txt` after the merge.**
+
+**Only then** narrow AC9, and only then sweep the remaining 141 pages and the 59 on `v9`.
 
 ---
 
