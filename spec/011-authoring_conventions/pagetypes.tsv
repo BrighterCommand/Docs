@@ -134,3 +134,5 @@ contents/DarkerConfigurationReference.md	Reference	high	"split from DarkerBasicC
 contents/MessageTransforms.md	Explanation	high	"split from MessageMappers.md and DefaultMessageMappers.md (spec 010, Task 7.1); single-mode by construction"	Explanation	Brighter V10
 contents/CloudEventsReference.md	Reference	high	"split from CloudEventsSupport.md (spec 010, Task 7.3); single-mode by construction"	Reference	Brighter V10
 contents/RoutingMultipleMessageTypes.md	How-to	high	"split from DynamicMessageDeserialization.md (spec 010, Task 7.4); single-mode by construction"	How-to	Brighter V10
+contents/AWSSQSMigrateToV10.md	How-to	high	"split from AWSSQSConfiguration.md (spec 010, Task 8.1); single-mode by construction"	How-to	Brighter V10
+contents/PostgreSQLBrokerTradeOffs.md	Explanation	high	"split from PostgreSQLMessageBroker.md (spec 010, Task 8.2); single-mode by construction"	Explanation	Brighter V10
