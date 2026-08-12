@@ -2445,6 +2445,45 @@ is not a safe default at 142 pages.
 
 **Only then** narrow AC9, and only then sweep the remaining 141 pages and the 59 on `v9`.
 
+### Task 10.1 closed — the index measured after merge, 2026-08-12
+
+PR #96 merged as `c521d6b`. **The deploy was confirmed by the control before the index was
+read** — the live `.md` variant carried the corrected paragraph — and only then:
+
+```text
+- [Azure Archive Provider Configuration](https://…/azureblobconfiguration.md): The Azure
+  Archive Provider writes messages swept from your Outbox into an Azure Blob Storage container.
+```
+
+**The whole file moved by 105 bytes — the description's 103 characters plus `": "` — and that
+one line is the only diff.** 32,792 → 32,897, entries carrying a description **0 → 1** of 143.
+
+**So the format is the platform's, and `CLAUDE.md`'s minus the type.** GitBook emits
+`- [Title](url): description`. There is no type field, the type could only be smuggled in as a
+`Reference — ` prefix, and it **should not be**: that same string is the page's
+`<meta name="description">`, `og:description` and `twitter:description`, so the prefix would
+degrade every search snippet and social card to repeat something the `.md` variant already
+states one line below the H1. **AC9 is narrowed accordingly** — requirements §12 carries the
+three clause changes and why, design §14 the row, design §9.2 the supersession note.
+
+**`tools/llmstxt.py` is not built.** D6's mechanism is superseded and its rule is not: the
+extraction discipline moves into Task 10.4's check, which now has something to feed.
+
+**What Phase 10 has left, in order:**
+
+1. **Task 10.4** — implement the opening-sentence rule and fix the **15** pages still failing
+   it (16 before `AzureBlobConfiguration.md`). It must rule on *source or rendered* for the
+   200-character limit; the answer is rendered.
+2. **The sweep** — `description:` plus `layout.description.visible: false` on the remaining
+   141 pages, derived mechanically from each page's opening sentence with markdown stripped,
+   **every value quoted**.
+3. **Task 10.2's fix** — the 59 pages on `v9`, whose descriptions carry the version marker
+   their bodies lack. A separate PR: a different branch, a different space, no banners, and
+   nothing `pagelint.py` can see.
+
+- [x] **Task 10.1** — the mechanism established and measured end to end
+- [x] **Task 10.3** — ruled *fix it at source*; AC9 narrowed in all three documents
+
 ---
 
 ## Phase 11 — Close (PR 11)
