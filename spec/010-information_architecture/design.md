@@ -850,7 +850,11 @@ add pages.
 - **`HandlerFailure.md` ↔ `ErrorHandlingOptions.md` are not merged.** They are the
   corpus's best existing explanation/reference pair. This design makes the relationship
   navigational instead: `ErrorHandlingOptions.md` nests under `HandlerFailure.md`, and
-  the missing reverse pointer plus a *Prerequisites* segment is a one-line fix in PR 9.
+  ~~the missing reverse pointer~~ plus a *Prerequisites* segment is a one-line fix in PR 9.
+  **Corrected 2026-08-12 at execution: the reverse pointer was never missing.**
+  `HandlerFailure.md` has linked `ErrorHandlingOptions.md` since the page was created, and the
+  nesting landed in PR 2, so PR 9 shipped the banner segment alone. `tasks.md`
+  *Phase 9 as executed* has the trace.
 - **The 802-block `using`-directive debt** is Spec 011's AC1 baseline and shrinks only as
   pages are edited. Splits move blocks; they do not backfill them.
 - **Whether GitBook's automatic redirects persist** is still the one open platform

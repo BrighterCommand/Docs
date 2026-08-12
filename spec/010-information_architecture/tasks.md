@@ -28,7 +28,7 @@ design deliberately left to this phase.
 | **6** | Darker — 5 rows, 12 new pages · **DONE 2026-08-11** | 5 | D4 |
 | **7** | Using an External Bus — 4 rows, 3 new pages · **DONE 2026-08-11** | 4 | D4 |
 | **8** | Transports — 2 rows, 2 new pages · **DONE 2026-08-12** | 2 | D4 |
-| **9** | The rest of §6d — 5 rows, 5 new pages | 6 | D4 |
+| **9** | The rest of §6d — 5 rows, 5 new pages · **DONE 2026-08-12** | 6 | D4 |
 | **10** | `llms.txt` — **re-scope D6 first; the platform already does most of it (§3)** | 4 | D6 |
 | **11** | Glossary links, the two carried-over chores, acceptance | 5 | D8, P2-1, P2-3 |
 
@@ -1874,7 +1874,7 @@ confirming the one heading that was left alone was genuinely left alone.
 
 **Goal:** 5 rows, 5 new pages, plus one navigational fix design §11 records. Design §7.5.
 
-- [ ] **Task 9.1:** Split `CQRSWithBrighterAndDarker.md`
+- [x] **Task 9.1:** Split `CQRSWithBrighterAndDarker.md`
   - Input: 1,144 lines; `Use Cases and Patterns` (209)
   - Output: `CQRSUseCasesAndPatterns.md` (Explanation), nested under
     `CQRSWithBrighterAndDarker.md`; core → ~935
@@ -1884,7 +1884,7 @@ confirming the one heading that was left alone was genuinely left alone.
     to ~709 when 009 takes it. **Flagged, not moved.** ~935 is the largest page after this
     spec completes and it is deliberate.
 
-- [ ] **Task 9.2:** Split `NullableReferenceTypes.md`
+- [x] **Task 9.2:** Split `NullableReferenceTypes.md`
   - Input: 711 lines; `Migration Guide` (264) — more than a third of the page
   - Output: `MigratingToNullableReferenceTypes.md` (How-to), nested under
     `NullableReferenceTypes.md`; core → ~447
@@ -1892,7 +1892,7 @@ confirming the one heading that was left alone was genuinely left alone.
     the grounds that "the migration steps are not where the durable value is". The ruling and
     the split agree, which is why this row is low-risk.
 
-- [ ] **Task 9.3:** Split `AgreementDispatcher.md`
+- [x] **Task 9.3:** Split `AgreementDispatcher.md`
   - Input: 720 lines; `Standard vs Agreement Dispatcher Routing` (74), `Use Cases` (146),
     `Limitations` (53), `Performance Implications` (47) = **320**
   - Output: `AgreementDispatcherRouting.md` (Explanation), nested under
@@ -1902,7 +1902,7 @@ confirming the one heading that was left alone was genuinely left alone.
     `Registration Syntax`, `Synchronous and Asynchronous Registration` and
     `Complete Example`. Four sections merging into one page: watch rule 3b.
 
-- [ ] **Task 9.4:** Split `PolicyRetryAndCircuitBreaker.md`
+- [x] **Task 9.4:** Split `PolicyRetryAndCircuitBreaker.md`
   - Input: 687 lines; `Migration Guide: V9 to V10` (96) and `Legacy: Using Polly v7 Policies
     (Deprecated)` (**151**) = 247
   - Output: `MigratingToPollyV8.md` (How-to), **nested under
@@ -1919,7 +1919,7 @@ confirming the one heading that was left alone was genuinely left alone.
     `MigratingToPollyV8.md`. The core keeps `All Available Polly v8 Strategies` (244) as its
     reference table.
 
-- [ ] **Task 9.5:** Split `Telemetry.md`
+- [x] **Task 9.5:** Split `Telemetry.md`
   - Input: 597 lines; `Configuring OpenTelemetry` (81), `Complete Configuration Example`
     (96), `Distributed Tracing Example` (30) = **207**
   - Output: `ConfiguringOpenTelemetry.md` (How-to), nested under `Telemetry.md`; core → ~390
@@ -1928,7 +1928,7 @@ confirming the one heading that was left alone was genuinely left alone.
     neither of which moves**: `#configurable-instrumentation` and `#inbox-tracing` both stay
     in the core. Verify that before moving anything, not after.
 
-- [ ] **Task 9.6:** Make the `HandlerFailure.md` ↔ `ErrorHandlingOptions.md` relationship
+- [x] **Task 9.6:** Make the `HandlerFailure.md` ↔ `ErrorHandlingOptions.md` relationship
       navigational
   - Input: both pages; `worklist.md` §6e; design §11
   - Output: `ErrorHandlingOptions.md` nested under `HandlerFailure.md` in `SUMMARY.md`
@@ -1936,9 +1936,256 @@ confirming the one heading that was left alone was genuinely left alone.
     *Prerequisites* segment in `ErrorHandlingOptions.md`'s banner
   - Notes: **They are not merged.** They are the corpus's best existing explanation/reference
     pair, and merging them yields ~685 lines carrying two modes — which is what everything
-    else in this spec is pulling apart. Today only `ErrorHandlingOptions.md` points at
-    `HandlerFailure.md`. This is a one-line fix plus a banner segment; it is in this PR
-    because it is the only phase that touches neither page's body substantially.
+    else in this spec is pulling apart. ~~Today only `ErrorHandlingOptions.md` points at
+    `HandlerFailure.md`.~~ **False, and false when written — corrected 2026-08-12.**
+    `HandlerFailure.md` has pointed at `ErrorHandlingOptions.md` since `ac0c727` created the
+    page, six times today. The `SUMMARY.md` nesting was already done in PR 2 as well, so this
+    task reduced to the banner segment. See *Phase 9 as executed*. It is in this PR because it
+    is the only phase that touches neither page's body substantially.
+
+---
+
+### Phase 9 as executed — 2026-08-12
+
+**PHASE 9 IS COMPLETE. 43 of 52 tasks done, and this was the last content phase.** Five pages
+created, seven touched. **No URL moves** — every core keeps its filename and all five new pages
+are new paths — so `.gitbook.yaml` is untouched at **77** entries and this phase owes no
+redirect, the same shape as Phases 6, 7 and 8.
+
+All five gates: linkcheck **144 files**, pagelint **0 errors / 791 warnings**, `--check-shape`
+0 at **142 pages / 12 sections / deepest 4 / widest 10**, `--check-redirects` 0 at 77 entries,
+`pagelint --changed origin/master` 0 errors with all five new files **staged**.
+`pagetypes.tsv` is **142 rows** and banner parity is **142/142**, checked both directions.
+
+**All 32 new pages have now landed, and Appendix A's section table reproduces row for row.**
+Enumerated from `SUMMARY.md` rather than read off the table it is being checked against:
+
+| Section | Pages | Entries | Appendix A |
+|---|---:|---:|---|
+| Get Started | 3 | 3 | ✓ |
+| Commands, Handlers and Pipelines | 17 | 5 | ✓ |
+| Brighter Configuration | 6 | 4 | ✓ |
+| Using an External Bus | 15 | 9 | ✓ |
+| Transports | 12 | 7 | ✓ |
+| Outbox and Inbox | 39 | 9 | ✓ |
+| Scheduler | 10 | 4 | ✓ |
+| Darker | 17 | 5 | ✓ |
+| Health Checks and Observability | 5 | 4 | ✓ |
+| V10 Migration | 3 | 2 | ✓ |
+| Understanding Brighter | 13 | 10 | ✓ |
+| Reference | 2 | 2 | ✓ |
+
+**142 pages. S1 ✅ 2 · S2 ✅ 10 of 12 · S3 ✅ 4 of 4**, reached by exactly the two pages
+Appendix A names — and `MigratingToPollyV8.md` publishes at
+`commands-handlers-and-pipelines/buildingapipeline/policyretryandcircuitbreaker/migratingtopollyv8`,
+which is the placement that caused S3 to be measured in the first place.
+
+#### The five source measurements all reproduced, for the first time in the programme
+
+Phase 8's lesson was to re-measure the source at the ref you are cutting from. Done first, and
+**every whole-page count and every span reproduced `tasks.md` exactly** at `3f0f4dd`:
+
+| Task | Source | Lines | Spans | Sum |
+|---|---|---:|---|---:|
+| 9.1 | `CQRSWithBrighterAndDarker.md` | 1,144 | 448–656 | 209 |
+| 9.2 | `NullableReferenceTypes.md` | 711 | 166–429 | 264 |
+| 9.3 | `AgreementDispatcher.md` | 720 | 11–84 · 85–230 · 325–377 · 378–424 | 320 |
+| 9.4 | `PolicyRetryAndCircuitBreaker.md` | 687 | 377–472 · 537–687 | 247 |
+| 9.5 | `Telemetry.md` | 597 | 19–99 · 366–461 · 462–491 | 207 |
+
+**Task 9.3's naming trap is real and was met.** `Use Cases` and `Limitations` do not exist as
+strings on the page — Spec 011's `0b1b841` qualified them to `## Agreement Dispatcher Use Cases`
+and `## Agreement Dispatcher Limitations` before this design was written — so the task's spans
+are right and only its titles are pre-qualification.
+
+| Page | Was | Budget | Shipped | |
+|---|---:|---:|---:|---|
+| `CQRSWithBrighterAndDarker.md` | 1,144 | ~935 | **936** | 1,144 − 209, +1 child pointer |
+| `CQRSUseCasesAndPatterns.md` | — | 209 | **225** | +lead-in, +*Further Reading*, +2 `// ...` |
+| `NullableReferenceTypes.md` | 711 | ~447 | **448** | 711 − 264, +1 |
+| `MigratingToNullableReferenceTypes.md` | — | 264 | **298** | +22 `// ...` |
+| `AgreementDispatcher.md` | 720 | ~400 | **401** | 720 − 320, +1 |
+| `AgreementDispatcherRouting.md` | — | 320 | **346** | +11 `// ...` |
+| `PolicyRetryAndCircuitBreaker.md` | 687 | ~440 | **438** | 687 − 247 − 3, +1 — see below |
+| `MigratingToPollyV8.md` | — | 247 | **277** | +12 `// ...` |
+| `Telemetry.md` | 597 | ~390 | **391** | 597 − 207, +1 |
+| `ConfiguringOpenTelemetry.md` | — | 207 | **220** | +4 `// ...`, no lead-in |
+
+**`PolicyRetryAndCircuitBreaker.md` is the one core to land *under* budget**, at 438 against
+~440, and the three lines are accounted for: the `## Legacy` section was the **last** on the
+page and the `---` separator introducing it was left orphaned by its removal, so the separator
+and its blank line went too; the page's trailing blank line went with them. Recorded rather than
+silently absorbed, because a core landing under budget is the direction nobody checks.
+
+#### Task 9.6: the defect did not exist in the direction the design describes
+
+Design §11 and this task both say *"today only `ErrorHandlingOptions.md` points at
+`HandlerFailure.md`"*, and the remedy is *"the missing reverse pointer"*. **The reverse pointer
+is not missing and never was.** `HandlerFailure.md` carries **six** links to
+`ErrorHandlingOptions.md` — at lines 67, 137, 234, 381, 460 and one in *Further Reading* — and
+has carried five of them since `ac0c727` created the page on 2026-02-23. Traced rather than
+assumed:
+
+| Ref | Links `HandlerFailure.md` → `ErrorHandlingOptions.md` |
+|---|---:|
+| `ac0c727` (page created, 2026-02-23) | 5 |
+| `25a578c` (tasks approved) | 6 |
+| `origin/master` | 6 |
+
+The `SUMMARY.md` nesting was likewise already in place — it landed in PR 2, which is what the
+task's own parenthesis *"already so in `SUMMARY.target.md`"* was pointing at. **So two of Task
+9.6's three deliverables were already true, and the task reduces to the third**: the
+*Prerequisites* segment in `ErrorHandlingOptions.md`'s banner, which was genuinely absent and is
+now there.
+
+This is **Task 4.5's shape for the fourth time** — *verify the defect exists before fixing it* —
+and this instance is the mildest of the four, because acting on it as written would have added a
+seventh redundant link rather than destroyed anything. What makes it worth recording is *why* it
+survived: the claim is about a **direction**, both pages do link to each other, and a reader
+checking "are these two pages cross-linked?" gets a yes. **A one-directional claim needs a
+one-directional grep**; `grep -l` on the pair answers a different question.
+
+#### Shape: one single-section page, four multi-section, and a `####` case the rule had not met
+
+Phase 6's rule branched on the number of `##` sections a page is built from, and Phase 9 hit
+both branches plus one case neither had:
+
+- **Single-section** — `CQRSUseCasesAndPatterns.md` (from `## Use Cases and Patterns`) and
+  `MigratingToNullableReferenceTypes.md` (from `## Migration Guide`). Heading becomes the H1,
+  dropped from the body, `###` promoted to `##` and requalified.
+- **Multi-section** — the other three. Sections stay `##`; nothing is promoted.
+
+**`MigratingToNullableReferenceTypes.md` is the first single-section page with `####` beneath
+its `###`.** Phase 6's rule says *"promotes its `###` to `##`"* and stops there, which would have
+left five `####` sitting directly under a `##` — a skipped level, on the page's largest section.
+**The whole subtree is promoted by one**: four `###` → `##`, five `####` → `###`. That is the
+rule's evident intent rather than an extension of it, and it is written down here because the
+rule as stated does not say so.
+
+**`ConfiguringOpenTelemetry.md` hit a collision the shape rule cannot see.** It is built from
+three sections and the first is `## Configuring OpenTelemetry` — the same text as the H1 that
+Appendix A's filename pins. `pagelint.py` is silent, because rule 3b covers `##` through `####`
+and an H1 is not in that range; the page would simply have opened with its own title twice. The
+section is requalified to **`## Setting Up OpenTelemetry`**, which is what it does — add the
+`ActivitySource`, wire the SDK, pick an exporter — and is distinct from the page it sits on.
+
+**A written lead-in on four pages of five.** `ConfiguringOpenTelemetry.md` is the exception:
+`## Configuring OpenTelemetry` brought its own introductory paragraph, so the page goes H1 →
+banner → `##` and spends no new prose, exactly as `AWSSQSMigrateToV10.md` did in Phase 8. The
+other four opened straight onto a `###` or a code block and got three or four lines saying what
+the page is for and pointing back at the core.
+
+#### The anchor count, both kinds, before and after — and it was quiet
+
+**Appendix B reproduced exactly**, and so did `PROMPT.md`'s pre-flight table:
+
+| Page | Inbound fragments | Same-page | Outcome |
+|---|---:|---:|---|
+| `Telemetry.md` | 2 | 0 | **0 repoints** — `#configurable-instrumentation` (line 100) and `#inbox-tracing` (line 261) both sit in sections the core keeps. Verified by mapping heading to destination, not by trusting the note |
+| `PolicyRetryAndCircuitBreaker.md` | 1 | 0 | **1 repoint** — `CommandProcessorConfigurationReference.md:105` |
+| `HandlerFailure.md` | 1 | 7 | **0** — Task 9.6 moves no heading and no body text, confirmed before the banner was touched |
+| the other four sources | 0 | 0 | — |
+
+**Not one of the five split sources carries a same-page anchor.** Phase 5's method was run
+anyway, because that is a fact you establish rather than assume, and it is the reason this phase
+has no equivalent of Phase 8's moving-source pair. Phase 6's moving-source case does not bite
+either: the single repointing link sits on `CommandProcessorConfigurationReference.md`, a page
+outside this phase's sources.
+
+The repoint is **not** a pure path change: `## Migration Guide: V9 to V10` had to be requalified
+(it is unattributable, and `Migration Guide` is one of the corpus's most reused phrases), so the
+target became `MigratingToPollyV8.md#polly-v8-migration-guide-v9-to-v10`. Phase 7's fourth line
+— *a heading nothing needs requalified is a slug you get to keep* — pays off in the other
+direction here: `## Legacy: Using Polly v7 Policies (Deprecated)` already names its subject, was
+left alone, and kept its slug.
+
+Both greps were re-run after the cut: three fragment links across the corpus, all three
+resolving, and no link added by any of the five splits.
+
+#### Uniqueness green, attribution poor — for the fourth phase running
+
+**Every one of the eleven moving or promoted `##` headings was unique across the corpus before
+it moved.** A completely green rule-3a run was available for the taking on
+`## Pattern: Task-Based UI`, `## Step 2: Address Compiler Warnings`,
+`## Performance Implications`, `## Complete Configuration Example` and
+`## Distributed Tracing Example`. Phase 6 found this, Phase 7 and Phase 8 reproduced it, and it
+has now held for four phases: **uniqueness has a tool and attribution does not.**
+
+**Eight requalified, three left alone:**
+
+| Was | Is | Why |
+|---|---|---|
+| `### Pattern: Separate Read/Write Databases` | `## CQRS Pattern: Separate Read/Write Databases` | separate read/write databases *for what* |
+| `### Pattern: Event-Sourced Writes, Projected Reads` | `## CQRS Pattern: Event-Sourced Writes, Projected Reads` | as above |
+| `### Pattern: Task-Based UI` | `## CQRS Pattern: Task-Based UI` | as above |
+| `### Step 2: Address Compiler Warnings` | `## Step 2: Address Nullable Compiler Warnings` | which compiler warnings — they are all CS86xx |
+| `### Step 3: Update Handler Code` | `## Step 3: Update Handler Code for Nullability` | update it *how* |
+| `### Step 4: Update Message Mappers` | `## Step 4: Update Message Mappers for Nullability` | as above |
+| `## Performance Implications` | `## Agreement Dispatcher Performance Implications` | performance of what |
+| `## Migration Guide: V9 to V10` | `## Polly v8 Migration Guide: V9 to V10` | the corpus has a whole V10 migration section |
+| `## Complete Configuration Example` | `## Complete OpenTelemetry Configuration Example` | configuring what |
+| `## Distributed Tracing Example` | `## OpenTelemetry Distributed Tracing Example` | whose tracing |
+| `## Configuring OpenTelemetry` | `## Setting Up OpenTelemetry` | collided with the page's own H1 — see above |
+| `### Pattern: Simple CQRS (Same Database)` | *(promoted only)* | already names CQRS |
+| `## Standard vs Agreement Dispatcher Routing`, `## Agreement Dispatcher Use Cases`, `## Agreement Dispatcher Limitations` | *(unchanged)* | Spec 011 already qualified all three |
+| `## Legacy: Using Polly v7 Policies (Deprecated)` | *(unchanged)* | names its subject, and leaving it keeps the slug |
+
+The qualifier is each page's own established form — `CQRS Pattern: …`, `Agreement Dispatcher …`,
+`OpenTelemetry …` — so the new pages read as the same family as the cores they came from.
+
+#### One correctness fix, and it was created by the split
+
+`PolicyRetryAndCircuitBreaker.md`'s *TimeoutPolicy Obsolete Warning* ended
+*"…using Polly's Timeout strategy (see migration guide above)"*. After the cut there is no
+migration guide above; it is on another page. Corrected in place to link
+`MigratingToPollyV8.md`, under the standing line on conflicting copies — a page that would
+otherwise ship, in the same PR, a claim contradicted by another page in that PR is corrected.
+This is the same shape as Phase 6's repointed link whose *text* named the page it no longer went
+to. Every other `above`/`below` in both pages was checked and every one still resolves:
+`MigratingToPollyV8.md:149` and `:175` are internal to the moved section, and
+`PolicyRetryAndCircuitBreaker.md:340` points at examples the core keeps.
+
+#### D5: 13 lines across five invocations, twelve of them headings
+
+| Task | Lines | Made of |
+|---|---:|---|
+| 9.1 | 4 | 1 `##` dropped into the H1 · 3 requalified |
+| 9.2 | 4 | 1 `##` dropped into the H1 · 3 requalified |
+| 9.3 | 1 | 1 requalified `##` |
+| 9.4 | 2 | 1 requalified `##` · **1 prose line, the correctness fix above** |
+| 9.5 | 2 | 2 requalified `##` |
+
+**Not one line of code survives nowhere, and the single prose line is the one this write-up
+names.** `## Setting Up OpenTelemetry` does not appear in the 9.5 list — the new page's H1
+carries the original text and `noloss.py` matched it on its anchor — which is the check
+confirming the H1/H2 collision was resolved by renaming the section, not by dropping it.
+
+#### `pagelint.py --changed` bit for the fourth phase running, and hard
+
+**Fifty-one errors**, all `USING DIRECTIVES`, all on the five new pages — 22 / 12 / 11 / 4 / 2 —
+because every line of a new page is an added line and every C# block in it is therefore strict.
+The largest count this gate has produced, and again **proved live rather than by probe**: red
+with the files staged, green after the markers. Under obligation 6 and Appendix C every one is
+**marked `// ...`, not guessed at** — the blocks carry real Brighter, Polly and OpenTelemetry
+types whose namespaces were not checked. Repo-wide debt is unchanged at **791 blocks**, the
+marker downgrading and never silencing, spread from 113 pages to **118**.
+
+**The files were staged before the run.** `git diff` cannot see untracked files, and an unstaged
+run would have reported 0 errors on exactly the five pages the phase created.
+
+#### Recorded, and not acted on
+
+- **`CQRSWithBrighterAndDarker.md` keeps `## Example: E-Commerce Order System` (226 lines)** and
+  lands at **936**, the largest page left after this spec. Requirements §8 is binding; it drops
+  to ~710 when Spec 009 takes the example. **Flagged, not moved.**
+- **`AgreementDispatcherRouting.md` carries `### Agreement Dispatcher Routing`**, the same text
+  as its own H1, at the point where the source contrasted it with `### Standard 1-to-1 Routing
+  (Default)`. Rule 3b does not reach an H1 and the contrast is the section's whole point, so the
+  text moved verbatim under obligation 1.
+- **`MigratingToPollyV8.md` holds both tails**, as design §7.5 requires: the four migration steps
+  and the deprecated Polly v7 attribute a reader is migrating *from*.
+- **`QueryPipeline.md`'s `Available Decorators`** and **`AsyncAPISupport.md`'s
+  `Complete Examples`** remain design §11's recorded non-actions. Phase 9 does not touch them.
 
 ---
 
