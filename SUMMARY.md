@@ -57,8 +57,10 @@
   * [RabbitMQ Connection Stability](/contents/RabbitMQConnectionStability.md)
 * [Kafka Configuration](/contents/KafkaConfiguration.md)
 * [AWS SNS and SQS Configuration](/contents/AWSSQSConfiguration.md)
+  * [Migrating AWS SQS to V10](/contents/AWSSQSMigrateToV10.md)
 * [Azure Service Bus Configuration](/contents/AzureServiceBusConfiguration.md)
 * [PostgreSQL Message Broker](/contents/PostgreSQLMessageBroker.md)
+  * [PostgreSQL Broker Trade-Offs](/contents/PostgreSQLBrokerTradeOffs.md)
 * [InMemory Transport](/contents/InMemoryTransport.md)
 * [Brighter Control API](/contents/BrighterControlAPI.md)
 

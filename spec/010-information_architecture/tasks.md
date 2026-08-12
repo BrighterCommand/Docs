@@ -7,7 +7,7 @@ or ruling moved.
 (approved 2026-08-06)
 **Executes against:** `spec/011-authoring_conventions/worklist.md` (42 rows, 26 `split`, 16 `keep`)
 
-**Total tasks: 52, across 11 phases. 26 done — Phases 1 through 5.**
+**Total tasks: 52, across 11 phases. 37 done — Phases 1 through 8.**
 
 ---
 
@@ -27,7 +27,7 @@ design deliberately left to this phase.
 | **5** | Outbox and Inbox — 4 rows, **8** new pages, 24 of the 34 anchor links · **DONE 2026-08-09** | 5 | D4 |
 | **6** | Darker — 5 rows, 12 new pages · **DONE 2026-08-11** | 5 | D4 |
 | **7** | Using an External Bus — 4 rows, 3 new pages · **DONE 2026-08-11** | 4 | D4 |
-| **8** | Transports — 2 rows, 2 new pages | 2 | D4 |
+| **8** | Transports — 2 rows, 2 new pages · **DONE 2026-08-12** | 2 | D4 |
 | **9** | The rest of §6d — 5 rows, 5 new pages | 6 | D4 |
 | **10** | `llms.txt` — **re-scope D6 first; the platform already does most of it (§3)** | 4 | D6 |
 | **11** | Glossary links, the two carried-over chores, acceptance | 5 | D8, P2-1, P2-3 |
@@ -1686,7 +1686,7 @@ moved; its row does not call for it and design §7.5 does not list it.
 **Goal:** 2 rows, 2 new pages. Design §7.2. (`InMemoryTransport.md` files into this section
 but is created in Task 5.4, with the rest of the `InMemoryOptions.md` redistribution.)
 
-- [ ] **Task 8.1:** Split `AWSSQSConfiguration.md` — the exact RabbitMQ precedent
+- [x] **Task 8.1:** Split `AWSSQSConfiguration.md` — the exact RabbitMQ precedent
   - Input: **615** lines; `V10 Migration Path` (196), `AWS SDK v4 Support` (49) = **245**
   - Output: `AWSSQSMigrateToV10.md` (How-to), nested under `AWSSQSConfiguration.md`; core →
     ~370, keeping its name and its four `SQS *` sections
@@ -1699,7 +1699,7 @@ but is created in Task 5.4, with the rest of the `InMemoryOptions.md` redistribu
     was Spec 011's probe for proving `--changed` works at block granularity — expect
     warnings, not errors, on any block that marks its omission `// ...`.
 
-- [ ] **Task 8.2:** Split `PostgreSQLMessageBroker.md`
+- [x] **Task 8.2:** Split `PostgreSQLMessageBroker.md`
   - Input: 662 lines; `Benefits` (22), `When to Use` (19), `Limitations` (21),
     `JSON vs JSONB` (32), `Comparison with Other Transports` (16) = **110**
   - Output: `PostgreSQLBrokerTradeOffs.md` (Explanation), nested under
@@ -1711,6 +1711,162 @@ but is created in Task 5.4, with the rest of the `InMemoryOptions.md` redistribu
     stays over 500 at ~552 because producer (80) and consumer (81) configuration belong side
     by side. **This page is a transport, not a scheduler** — Spec 011's classification notes
     listed it as the seventh member of the scheduler family; it merely shares the template.
+
+### Phase 8 as executed — 2026-08-12
+
+**PHASE 8 IS COMPLETE. 37 of 52 tasks done.** Two pages created, five touched. **No URL
+moves** — both cores keep their filenames and both new pages are new paths — so
+`.gitbook.yaml` is untouched at **77** entries and this phase owes no redirect, the same shape
+as Phases 6 and 7.
+
+All five gates: linkcheck **139 files**, pagelint **0 errors / 791 warnings**, `--check-shape`
+0 at **137 pages / 12 sections / deepest 4 / widest 10**, `--check-redirects` 0 at 77 entries,
+`pagelint --changed origin/master` 0 errors with both new files **staged**. `pagetypes.tsv` is
+**137 rows** and banner parity is **137/137**, checked both directions.
+
+**Appendix A held exactly.** *Transports* lands at **12 pages and 7 top-level entries** — the
+row Appendix A pins — with both new pages at **three segments**
+(`transports/awssqsconfiguration/awssqsmigratetov10`,
+`transports/postgresqlmessagebroker/postgresqlbrokertradeoffs`).
+
+#### The finding: a source measurement overtaken by a later PR, not a wrong tally
+
+**`PostgreSQLMessageBroker.md` is 663 lines, not the 662 this task records** — and 662 was
+right when it was written. **PR #90** (`f9f042d`, the scheduling-overload fix) added one line
+to this page: a `// ...` marker inside `## Scheduled Messages`, a section that stays in the
+core. Traced rather than assumed:
+
+| Ref | Lines |
+|---|---:|
+| `25a578c` (tasks approved) | 662 |
+| `f9f042d~1` | 662 |
+| `f9f042d` (PR #90) | **663** |
+| `origin/master` | **663** |
+
+So the core budget is **553**, not ~552, and every span this task quotes still reproduces to
+the line. **This is a new shape for this programme.** Eighteen figures have been wrong and
+every one was wrong when written; this one was correct when written and a later PR moved the
+page underneath it. The remedy is not "re-derive the total" — it is **re-measure the source at
+the ref you are cutting from**, because a phase that ships months after its plan is measuring a
+different file. Appendix C's *do not re-derive a figure from memory* covers the failure but not
+this cause.
+
+`AWSSQSConfiguration.md` reproduced at **615** under both counting conventions, exactly as
+Task 8.1 claims — the file has no trailing newline — and both its spans matched: `AWS SDK v4
+Support` **49**, `V10 Migration Path` **196**, summing to **245**.
+
+| Page | Design | After the cut | Shipped | |
+|---|---:|---:|---:|---|
+| `AWSSQSConfiguration.md` | ~370 | **370** | **375** | 615 − 245; +5 for a *Further Reading* the page never had |
+| `PostgreSQLMessageBroker.md` | ~552 | **553** | **554** | 663 − 110; +1 for the child pointer |
+
+The new pages land at 249 and 114 before their *Further Reading* and `// ...` markers, and at
+**261** and **125** after them.
+
+#### The anchor count, done first and both kinds — and the second kind was the whole story
+
+**Appendix B held on what it counts.** Three inbound anchors on `AWSSQSConfiguration.md`, all
+three `#migrating-from-aws-sdk-v3-to-v4`, all three repointing:
+`S3LuggageStore.md:15`, `DynamoOutbox.md:22`, `DynamoInbox.md:16`. All three carrying pages sit
+**outside this phase's sources**, so Phase 6's moving-source case was checked and does not bite.
+`PostgreSQLMessageBroker.md` carries **zero** inbound fragment links, as predicted.
+
+**What Appendix B does not count is where the work was.** `AWSSQSConfiguration.md` carries
+**six same-page anchors**, and mapping every heading to its destination — Phase 5's method —
+splits them three ways:
+
+| Anchor | Source line | Target heading | Verdict |
+|---|---|---|---|
+| `#topicfindbyarn` ×2 | 91, 99 — core | 70 — core | core → core, untouched |
+| `#sqs-publication` | 266 — core | 49 — core | core → core, untouched |
+| `#finding-and-creating-queues` | 369 — core | 139 — core | core → core, untouched |
+| `#v10-migration-path` | 418 — **moves** | 420 — **moves** | both land on the new page; **repointed**, because the heading was requalified |
+| `#migrating-from-aws-sdk-v3-to-v4` | 429 — **moves** | 431 — **moves** | both land on the new page; **untouched**, because the H3 was not |
+
+The last two are Phase 6's finding in its benign direction — the source line and the target
+heading move **together**, so a same-page anchor stays a same-page anchor rather than breaking.
+That only holds because the map was built before the cut: read from Appendix B alone, both
+would have looked like nothing to do, and one of them was.
+
+`### Migrating from AWS SDK v3 to v4` was deliberately **not requalified** — rule 3a does not
+reach an H3, rule 3b is satisfied within the new page, and leaving it alone keeps the slug,
+which turns all three inbound repoints into a pure path change. Phase 7's fourth line, applied
+again. After the cut both greps were re-run: three fragment links across the corpus, all three
+the repointed ones, and six same-page anchors split 4 on the core and 2 on the new page, with
+no link added by the split.
+
+#### Shape: both pages multi-section, and six unqualified headings nobody's tool would have caught
+
+Both new pages are built from **more than one** `##` section, so Phase 6's second branch
+applies: the sections stay `##` and nothing is promoted.
+
+**All six moving `##` headings were unique across the corpus before they moved** — a completely
+green rule-3a run was available for the taking, on `## Benefits`, `## When to Use`,
+`## V10 Migration Path`, `## JSON vs JSONB` and `## Comparison with Other Transports`. That is
+Phase 6's third finding reproducing exactly: uniqueness has a tool, attribution does not, and
+`## Benefits` in a retrieval chunk is benefits of what?
+
+**Five requalified, one left alone:**
+
+| Was | Is | Why |
+|---|---|---|
+| `## V10 Migration Path` | `## AWS SQS V10 Migration Path` | migration path of what — the corpus has a whole V10 migration section |
+| `## Benefits` | `## PostgreSQL Message Broker Benefits` | unattributable |
+| `## When to Use` | `## When to Use the PostgreSQL Message Broker` | unattributable |
+| `## JSON vs JSONB` | `## PostgreSQL JSON vs JSONB` | a PostgreSQL storage question, not a Brighter one |
+| `## Comparison with Other Transports` | `## PostgreSQL Message Broker Compared with Other Transports` | comparison *of* what |
+| `## AWS SDK v4 Support` | *(unchanged)* | already names its subject |
+| `## PostgreSQL Message Broker Limitations` | *(unchanged)* | already qualified, and leaving it keeps the slug |
+
+The qualifier is the source page's own established form — `PostgreSQL Message Broker …` — rather
+than a shorter one invented here, so the new page's headings read as the same family as the core's.
+
+**A written lead-in on one page of two.** `PostgreSQLBrokerTradeOffs.md` opens on
+`## PostgreSQL Message Broker Benefits`, which goes straight to its first `###` and brought no
+introduction of its own, so it gets four lines saying what the page is for.
+`AWSSQSMigrateToV10.md` opens on `## AWS SDK v4 Support`, which brought its own two paragraphs,
+so it goes H1 → banner → `##` and spends no new prose.
+
+#### `pagelint.py --changed` bit for the third phase running, and the files were staged first
+
+**Seven errors**, all `USING DIRECTIVES`, all on the two new pages — 6 / 1 — because every line
+of a new page is an added line and every C# block in it is therefore strict. **The gate is
+proved live in this phase rather than by a synthetic probe**: it went red before the markers
+were added and green after. The blocks carry real AWS SDK and Brighter types
+(`AwsMessagingGatewayConnection`, `CredentialProfileStoreChain`, `FallbackCredentialsFactory`,
+`RelationalDatabaseConfiguration`) whose namespaces were **not** checked, so under obligation 6
+and Appendix C the omission is **marked `// ...`, not guessed at**. Repo-wide debt is unchanged
+at **791 blocks** — the marker downgrading and never silencing — spread from 111 pages to
+**113**.
+
+#### D5: 6 lines across two invocations, every one a requalified heading or its anchor
+
+| Task | Lines | Made of |
+|---|---:|---|
+| 8.1 | 2 | 1 requalified `##` · 1 same-page anchor repointed in the same pass |
+| 8.2 | 4 | 4 requalified `##` |
+
+**Not one line of prose, and not one line of code, survives nowhere.**
+`## PostgreSQL Message Broker Limitations` does not appear in the 8.2 list, which is the check
+confirming the one heading that was left alone was genuinely left alone.
+
+#### Recorded, and not acted on
+
+- **`AWSSQSConfiguration.md` had no *Further Reading* at all**, so the core would have shipped
+  with no pointer to its own child — `See [V10 Migration Path](#v10-migration-path)` left with
+  the section that owned it. Five lines added, the same shape as Phase 7's `MessageMappers.md`,
+  and recorded here rather than left for a reader of the diff to wonder about.
+- **`AWSSQSMigrateToV10.md:12–13` has no blank line before `### FIFO Queue Support`.** A
+  pre-existing defect at `AWSSQSConfiguration.md:378`, moved verbatim under obligation 1. It
+  renders today and it renders after the move.
+- **`## Transactional Messaging` (46 lines) stays in the PostgreSQL core**, design §7.7 item 2,
+  **flagged to Spec 013** and not half-extracted. So does `## Scheduled Messages`, which is
+  where PR #90's line went.
+- **`contents/ReturningResultsFromAHandler.md` opens with a blank line before its H1.** Found by
+  the banner-parity check, which assumed the H1 was line 1 and was wrong about the script rather
+  than the page; `pagelint.py` accepts it, since rule 1 asks only what the first non-blank line
+  *after* the H1 is. Nothing to do with this phase, recorded because the next parity check will
+  meet it too.
 
 ---
 
