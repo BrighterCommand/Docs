@@ -2250,6 +2250,149 @@ implement whatever the ruling leaves.
     If it lands as a pagelint rule, add it to `CLAUDE.md`'s ledger **and** the linter in the
     same commit — AC5 of Spec 011 failed on exactly that parity gap.
 
+### Phase 10, the investigation — 2026-08-12
+
+**Tasks 10.1 and 10.2 are researched, 10.3 is ruled, and 10.4 is measured.** What remains is
+one live probe, PR'd below, and the implementation the ruling leaves.
+
+**§3's endpoint table re-measured today, after Phase 9.** It has moved, and the lesson that
+says so is *re-measure at the ref you are cutting from*:
+
+| | 2026-08-08 | 2026-08-12 |
+|---|---:|---:|
+| `/llms.txt` bytes | 27,470 | **32,792** |
+| link entries | 170 | **202** |
+| ours | 111 | **143** — 142 `contents/` pages + `README` |
+| V9 space | 59 | **59** |
+| entries carrying a description | 0 | **0** |
+
+**All 32 pages Phases 4 through 9 created are already indexed**, hours after PR #95 merged, so
+the platform's index tracks `SUMMARY.md` automatically and *master's Git Sync is provably
+live today*. The file has also **gained a trailer** since 2026-08-08 — `# Agent Instructions`
+and `## Querying This Documentation`, documenting the `?ask=` endpoint. Nobody configured that
+either.
+
+**Task 10.1 — the mechanism exists, and it is not on the page the spec had been reading.**
+`Content configuration` does not document front matter at all, which is why §3 could not find
+it. The authority is **GitBook's own skill bundle**, `GitbookIO/gitbook-skills`, at
+`skills/write-docs/references/frontmatter.md` — fetched raw from GitHub, and published as
+`gitbook.com/docs/skill/write-docs`:
+
+- **`description:` in YAML front matter is a supported page field** on Git-synced markdown,
+  alongside `icon:`, `hidden:`, `vars:`, `if:`, `cover:` and `layout:`.
+- **`layout.description.visible` is a separate boolean** controlling whether the description
+  *renders into the page body*. That is precisely the axis 011's front-matter ruling turned
+  on: **GitbookIO/gitbook#1079 was about metadata rendering into the body, and the platform
+  now has a switch for exactly that.** Quote the whole rule, not the sentence that scared you.
+- **The gotcha is GitBook's own, and it is silent.** An unquoted `description:` containing
+  `:`, `#`, `[`, `]`, `{`, `}`, `&`, `*`, `!`, `|`, `>`, `'`, `"`, `%`, `@` or `` ` `` causes
+  *"silent failures in Git Sync — the page imports without a title or description with no
+  error message."* Our summaries are sentences and sentences carry colons. **Quote every
+  value, always**, and note that this failure mode is invisible to `pagelint.py`,
+  `linkcheck.py` and `urlmap.py` alike — the page still renders, just wrong.
+
+**What is documented is not measured.** Nothing establishes that the field reaches *our*
+generated `/llms.txt`, and *a vendor's own example can be the bug*. Hence the probe.
+
+**Task 10.2 — the V9 space is this repository, on the `v9` branch.** Measured, not assumed:
+`Docs@v9` at `0548c8f`, last committed 2025-10-31, carries **59 markdown files under
+`contents/`** — exactly the 59 entries in the index — and the published
+`…/v9-paramore-brighter-documentation/overview/basicconcepts.md` reproduces the branch source
+byte for byte, `# Basic Concepts` straight into `## Command`, with no banner. So the content
+**is ours to edit**, and the discriminator can be put where the problem is.
+
+- **There is no exclusion mechanism, and that is now checked rather than assumed.** Confirmed
+  against `llm-ready-docs`, `site-sections`, `seo`, and GitBook's own `?ask=` endpoint:
+  inclusion follows *published*, with no per-space or per-section toggle. **Hiding does not
+  help** — GitBook documents that hidden pages stay in `llms-full.txt` and in the MCP server.
+- **The fix is therefore at source, not at the index**, which is the same shape as the ruling
+  Task 10.3 took: give the 59 V9 pages a `description:` that names the version, so the
+  discriminator lands *in the index line itself* — the exact place a retrieval client reads.
+- **Incidental, and a real defect: `v9`'s `.gitbook.yaml` still carries the contamination.**
+  77 bytes, **2 × U+200B**, in `structure:` and after `SUMMARY.md` — the vendor bug
+  requirements §2.4 recorded and session 7's `6661073` fixed on `master`. `master`'s is
+  **7,858 bytes and pure ASCII**; `v9`'s never was. Nothing visibly broke, because both keys
+  hold their default values — which is exactly how it survived on `master` too.
+
+> **The vendor bug is worse than recorded, and still live.** Requirements §2.4 counts **two**
+> U+200B in GitBook's *Content configuration* page. Fetched 2026-08-12 it holds **six U+200B
+> and six U+200C** — twelve zero-width characters, across the `.gitbook.yaml` block, the
+> `### Structure` heading *and* the `SUMMARY.md` example block, which requirements §2.4 does
+> not mention at all. **Type config; never paste it** — and the blast radius is larger than
+> the one block we knew about.
+
+**Task 10.3 — ruled by the maintainer, 2026-08-12: fix it at source.** Of the three live
+options, *build ours anyway* and *drop the generator* were both declined. Descriptions are set
+on the pages, the V9 pages gain version-marked ones, and **GitBook's canonical `/llms.txt`
+becomes the deliverable** rather than a GitHub-only file competing with it. **AC9 must narrow
+to match** — from *"`llms.txt` covers every page with type and one-line summary, generated not
+hand-written"* to descriptions set at source and carried by the canonical index. That
+amendment lands with the probe's result, not before it: **AC9 is not narrowed on a mechanism
+nobody has watched work.**
+
+**Task 10.4 — measured today, and design §9.2's prediction held.** Extracting the first
+sentence of the first non-blank prose line after the banner, across all 142 pages:
+
+| Test | Failing |
+|---|---:|
+| no summary extractable | **0** |
+| longer than 200 characters | 12 |
+| ends in a colon | 2 |
+| not unique across pages | 6 pages in 3 groups |
+| **distinct failing pages** | **16 of 142** |
+
+*"Expect a double-figure number of failures"* — sixteen. **Every page yields a sentence**,
+which is the half that was not certain.
+
+**And on its first run the rule found a defect no other check in this programme can see.**
+`AzureBlobConfiguration.md` — the *Azure Blob* archive provider's configuration page — opened
+with a paragraph about **Azure Service Bus**, copied verbatim from
+`AzureServiceBusConfiguration.md`, where it is correct. It has been wrong since `96d7b546` on
+**2023-04-04**. `linkcheck.py`, `pagelint.py`, `--check-shape` and `--check-redirects` are all
+green on it and always were: the links resolve, the banner is well-formed, the heading is
+unique and qualified, the fences are tagged. **Only the uniqueness half of the opening-sentence
+rule disagreed**, and it disagreed because the sentence was byte-identical to another page's.
+Checked against `src/Paramore.Brighter.Archive.Azure/AzureBlobArchiveProvider.cs` before it was
+rewritten: the provider implements `IAmAnArchiveProvider` and writes to a `BlobContainerClient`.
+Nothing to do with Service Bus.
+
+**Two things this raises that are recorded and deliberately not fixed here:**
+
+1. **The 200-character limit does not say whether it measures source or rendered text.** The
+   first draft of the replacement sentence came out at **199** characters — one under — and
+   would have been about 140 rendered, because the extractor counts `[text](url)` in full. A
+   page can fail on the length of a URL nobody reads. The sentence was shortened rather than
+   left on the boundary, but **Task 10.4's implementation has to rule on this**, and the answer
+   should be *rendered*, because that is what a retrieval client sees.
+2. **The page's `## Options` list is incomplete** against the source: `MaxConcurrentUploads`
+   (default 8) and `MaxUploadSize` (default 50 MB) are on
+   `AzureBlobArchiveProviderOptions` and on no page. **Left for Phase 11**, so the probe PR
+   stays legible as a probe. Recorded here rather than fixed, which is the standing line on
+   content found in passing.
+
+**The probe, and why it carries a control.** One page, `AzureBlobConfiguration.md`, changed
+twice in one commit:
+
+- **The probe:** a quoted `description:` front-matter block, byte-identical to the page's new
+  opening sentence with its markdown stripped, 103 characters, pure ASCII.
+- **The control:** the wrong intro paragraph replaced with a correct one. **This is what makes
+  a negative result readable.** If the description does not appear, a body change that *has*
+  appeared proves the deploy landed and the mechanism failed; without it the two are
+  indistinguishable, which is the vacuous-pass shape this programme has now met four times.
+  Unlike D0's probe key, the control is a fix worth keeping, so nothing has to be reverted.
+
+**All four gates were re-run with front matter present and none of them moved** — linkcheck
+144 files, pagelint 0 errors / 791 warnings / 142 pages, `--check-shape` and
+`--check-redirects` 0, and `--changed origin/master` 0 with the file staged. `pagelint.py`
+finds the H1 by scanning for the first `#` heading outside a fence, so a YAML block above it is
+simply prose to every rule. **That is a result in its own right:** the "fix it at source" route
+costs nothing in tooling.
+
+**What to do when the probe resolves:** curl `/llms.txt` and grep for the description string.
+Then read the page's HTML and its `.md` variant to see whether `layout.description.visible`
+defaults to rendering it into the body. Only then narrow AC9, and only then sweep the
+remaining 141 pages and the 59 on `v9`.
+
 ---
 
 ## Phase 11 — Close (PR 11)
