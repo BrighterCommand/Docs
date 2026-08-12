@@ -1,9 +1,16 @@
+---
+description: "The Azure Archive Provider writes messages swept from your Outbox into an Azure Blob Storage container."
+layout:
+  description:
+    visible: false
+---
+
 # Azure Archive Provider Configuration
 
 > **Reference** · Applies to **Brighter V10**
 
 ## Azure Archive Provider General
-Azure Service Bus (ASB) is a fully managed enterprise message broker and is [well documented](https://docs.microsoft.com/en-us/azure/service-bus-messaging/) Brighter handles the details of sending to or receiving from ASB.  You may find it useful to understand the [concepts](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-queues-topics-subscriptions) of the ASB.
+The Azure Archive Provider writes messages swept from your [Outbox](/contents/BrighterOutboxSupport.md) into an Azure Blob Storage container. You configure it with the container's URI, a [token credential](https://learn.microsoft.com/en-us/dotnet/api/azure.core.tokencredential), and the options below.
 
 ## Azure Archive Provider Connection
 At this time Azure Blob Archive Provider only supports Token Credential for authentication
