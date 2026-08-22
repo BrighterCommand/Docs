@@ -1,3 +1,10 @@
+---
+description: "Documentation for the Brighter and Darker projects."
+layout:
+  description:
+    visible: false
+---
+
 # Brighter and Darker Documentation
 
 Documentation for the [Brighter](https://github.com/BrighterCommand/Brighter) and [Darker](https://github.com/BrighterCommand/Darker) projects.
