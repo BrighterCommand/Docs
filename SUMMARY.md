@@ -16,10 +16,6 @@
  * [Azure Archive Provider Configuration](/contents/AzureBlobConfiguration.md)
  * [Brighter Control API](/contents/BrighterControlAPI.md)
 
-## Darker Configuration
-
- * [Basic Configuration](/contents/DarkerBasicConfiguration.md)
-
 ## Brighter Request Handlers and Middleware Pipelines
 
  * [Building an Async Pipeline of Request Handlers](/contents/BuildingAnAsyncPipeline.md)
@@ -56,13 +52,8 @@
  * [Dynamo Inbox](/contents/DynamoInbox.md)
  * [Azure Blob Archive Provider](/contents/AzureBlobArchiveProvider.md)
 
-## Darker Query Handlers and Middleware Pipelines
-
- * [How to Implement a Query Handler](/contents/ImplementAQueryHandler.md)
-
 ## Health Checks and Observability
 
- * [Logging](/contents/Logging.md)
  * [Monitoring](/contents/Monitoring.md)
  * [Health Checks](/contents/HealthChecks.md)
  * [Telemetry](/contents/Telemetry.md)
