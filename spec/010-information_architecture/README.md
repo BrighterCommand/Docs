@@ -1,7 +1,14 @@
 # Spec 010: Information Architecture Restructure
 
 **Created:** 2026-08-03
-**Status:** Design phase — requirements approved 2026-08-06, D0 executed 2026-08-07
+**Status:** **COMPLETE 2026-08-22 — 56 of 56 tasks, all eleven phases, AC1 through AC9 walked.**
+Requirements approved 2026-08-06, D0 executed 2026-08-07, design approved 2026-08-08, tasks
+approved 2026-08-08. The acceptance pass and its evidence are in
+[`tasks.md`](tasks.md) § *The acceptance pass as executed*.
+
+> **The list grew from 52 tasks to 56 at Phase 11**, when four findings session 22 had
+> recorded in prose became numbered tasks. Nothing was re-planned; a paragraph is not a box,
+> and only a box gets walked at acceptance.
 
 > **This README is the rationale, not the plan.** Where it disagrees with
 > [`requirements.md`](requirements.md) or [`design.md`](design.md), they win. Three
