@@ -287,8 +287,8 @@ canonical `/llms.txt` prints after the page's title, and what a search engine sh
 as the page's snippet — all from the same string. A reader meets it before they meet
 the page.
 
-So it must exist, be **at most 200 characters as rendered**, not end in a colon, and
-not be identical to another page's.
+So it must exist, be **at most 200 characters as rendered**, end in terminal
+punctuation, not end in a colon, and not be identical to another page's.
 
 **Rendered, not as typed.** `[Configuration](/contents/BrighterBasicConfiguration.md)`
 is fourteen characters to a reader and fifty-four in the source. Measuring the source
@@ -399,6 +399,7 @@ failure the claim in this paragraph is meant to prevent:
 | Convention | Rule | Repo-wide | `--changed` |
 |---|---|---|---|
 | One H1 per file, before the banner | 1's precondition (`NO H1`) | error | error |
+| …and no *second* H1 | 1's precondition (`EXTRA H1`) | error | error |
 | Banner present as the first non-blank line after the H1 | 1 | error | error |
 | Banner matches `BANNER_RE` — type in vocabulary, *Applies to* present | 2 | error | error |
 | Heading qualification, across pages (`##`, allowlist exempt) | 3a | error | error |
@@ -409,6 +410,7 @@ failure the claim in this paragraph is meant to prevent:
 | An opening sentence exists | 7 (`SUMMARY MISSING`) | error | error |
 | It is ≤ 200 characters **rendered** | 7 (`SUMMARY TOO LONG`) | error | error |
 | It does not end in a colon | 7 (`SUMMARY ENDS IN COLON`) | error | error |
+| It ends in terminal punctuation | 7 (`SUMMARY NOT A SENTENCE`) | error | error |
 | It is unique across pages | 7 (`SUMMARY NOT UNIQUE`) | error | error |
 | `description:` front matter equals it | 7 (`DESCRIPTION MISMATCH`) | error | error |
 | That front matter is a quoted single line | 7 (`DESCRIPTION UNREADABLE`) | error | error |
