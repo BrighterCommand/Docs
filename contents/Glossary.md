@@ -43,6 +43,13 @@ Example: `GetPersonNameQuery`, `GetOrderDetailsQuery`, `SearchProductsQuery`
 
 See: [Queries and Query Objects](/contents/QueriesAndQueryObjects.md), [CQRS with Brighter and Darker](/contents/CQRSWithBrighterAndDarker.md)
 
+### Result
+
+The value a Query returns. A Query Handler produces the Result and the Query Processor hands it back
+to the caller; a Query declares the type it returns by implementing `IQuery<TResult>`.
+
+See: [Query Result Types](/contents/QueryResultTypes.md)
+
 ### Query Object
 
 A pattern where query parameters are encapsulated in an object that implements `IQuery<TResult>`. The Query Object pattern separates the definition of a query from its execution, enabling middleware pipelines and testability.
@@ -66,6 +73,14 @@ See: [Query Pipeline and Decorators](/contents/QueryPipeline.md)
 A middleware component that wraps query handlers to add cross-cutting functionality. Common decorators include `QueryLogging`, `RetryableQuery`, and `FallbackPolicy`.
 
 See: [Query Pipeline and Decorators](/contents/QueryPipeline.md)
+
+### Command-Query Separation (CQS)
+
+The principle that a method either changes state or reports it, never both, so a Query never has the
+side-effect of an update. Brighter handles the Commands and Events that change state and Darker the
+Queries that report it: the split between the two frameworks is this principle made structural.
+
+See: [CQRS with Brighter and Darker](/contents/CQRSWithBrighterAndDarker.md)
 
 ## Processors
 
@@ -216,6 +231,15 @@ A pattern for handling large messages. Instead of sending the entire message thr
 
 See: [Default Message Mappers](/contents/DefaultMessageMappers.md), [S3 Luggage Store](/contents/S3LuggageStore.md)
 
+### Request-Reply
+
+A pattern in which a request for work has a matching response. Because Brighter and Darker enforce
+Command-Query Separation between them, a request that changes state is a Command with an Event
+describing the change, while a request for state is a Query returning a Result. A common shape is to
+change state through Brighter and read the result of that change back through Darker.
+
+See: [Returning Results from a Handler](/contents/ReturningResultsFromAHandler.md)
+
 ## Database Provisioning
 
 ### BoxProvisioning
@@ -297,6 +321,62 @@ The wire format representation of a Request. Contains headers (metadata) and bod
 Class: `Message`
 
 See: [Message Mappers](/contents/MessageMappers.md)
+
+### Message Oriented Middleware (MoM)
+
+The class of software that delivers a Message from one process to another. Brighter reaches it
+through a Transport, and supports only broker-based middleware rather than point-to-point; for
+point-to-point semantics, configure a routing table entry that delivers to a single queue or stream.
+
+See: [The Task Queue Pattern](/contents/TaskQueuePattern.md)
+
+### Message Queue
+
+Middleware that delivers Messages via a queue. A consumer locks a message, processes it and
+acknowledges it, at which point it is deleted; other consumers read past a locked message, which is
+what makes competing consumers possible. A nack releases the lock and makes the message visible
+again, sometimes after a delay.
+
+Examples: SQS, AMQP 0-9-1 (RabbitMQ), AMQP 1.0 (Azure Service Bus)
+
+See: [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)
+
+### Event Stream
+
+Middleware that delivers Messages via a stream. A consumer reads from an offset and stores its own
+position, so it can resume where it left off or reset and re-read; it neither locks nor deletes what
+it reads. Partitioning a stream lets consumers scale.
+
+Examples: Kafka, Kinesis, Redis Streams
+
+See: [Kafka Configuration](/contents/KafkaConfiguration.md)
+
+### Dead Letter Queue (DLQ)
+
+A queue holding messages that could not be processed, kept for investigation rather than discarded.
+Brighter routes a message there when a handler throws `RejectMessageAction`, and when the requeue
+count is exceeded on a subscription that names one. RabbitMQ and Azure Service Bus provide a DLQ
+natively; for other transports Brighter produces the rejected message to a separate channel.
+
+See: [Error Handling Options](/contents/ErrorHandlingOptions.md)
+
+### Nack (Negative Acknowledgment)
+
+Telling the transport that a message was not processed successfully. Throwing `DontAckAction` from a
+handler has the message pump apply the transport's own not-acknowledged behaviour: RabbitMQ requeues,
+SQS resets the visibility timeout, Azure Service Bus releases the lock, and a stream transport such
+as Kafka simply does not commit the offset. Contrast `DeferMessageAction`, which schedules a requeue
+with a delay, and `RejectMessageAction`, which ends processing.
+
+See: [Error Handling](/contents/HandlerFailure.md)
+
+### Poison Message
+
+A message that fails every time it is delivered. Left alone it blocks the message pump in a
+failure-requeue-failure loop, so `RequeueCount` on the Subscription caps the attempts before the
+message is rejected.
+
+See: [Error Handling](/contents/HandlerFailure.md)
 
 ## Routing
 

@@ -2815,7 +2815,7 @@ total; never subtract from one either.**
 > both right** — design §16 finding 1's lesson, arriving through a filename rather than a
 > newline.
 
-- [ ] **Task 11.1:** D8 — per-term links from `BasicConcepts.md` into `Glossary.md`
+- [x] **Task 11.1:** D8 — per-term links from `BasicConcepts.md` into `Glossary.md`
   - Input: `BasicConcepts.md`'s 24 terms; `Glossary.md`'s 100
   - Output: each of the 24 linked to its matching `Glossary.md` anchor
   - Notes: **There are zero such links today.** This replaces the withdrawn
@@ -2824,6 +2824,62 @@ total; never subtract from one either.**
     set a newcomer can read *without* working through the 100-term glossary. **Do not
     re-open the merge.** Every link carries an `#anchor`, which puts all 24 under
     `linkcheck.py`'s MISSING ANCHOR check — that is the point of doing it this way.
+  - **Done 2026-08-22.** All 24 linked — but **nine of them had nothing to link to**, and
+    the maintainer ruled *write the entries*. See *Task 11.1 as executed*, below.
+
+### Task 11.1 as executed — 2026-08-22
+
+**The task presupposed a mapping that did not exist.** *"Each of the 24 linked to its
+matching `Glossary.md` anchor"* reads as bookkeeping; it is a claim about the Glossary, and
+it was **wrong for nine of the 24**. Mapped by slug against the Glossary's 81 entries:
+
+| | Terms |
+|---|---|
+| Matched exactly | 12 |
+| Matched under a different spelling | 3 — `Message Mappers`→`Message Mapper`, `Routing Key (Topic)`→`Routing Key`, `Service Activator`→`ServiceActivator` |
+| **No entry at all** | **9** — Dead Letter Queue (DLQ), Command-Query Separation (CQS), Event Stream, Message Oriented Middleware (MoM), Message Queue, Nack, Poison Message, Result, Request-Reply |
+
+**`Middleware` was the near-miss worth naming.** A loose match offers it for *Message
+Oriented Middleware*, and the Glossary's entry reads *"a handler that wraps other handlers"*
+— pipeline middleware, the opposite end of the system. **A slug that nearly matches is not a
+term that matches**, and a linker working from string distance would have pointed the reader
+at the wrong concept while every check stayed green.
+
+**Ruled by the maintainer: write the nine.** They are Brighter's own vocabulary — a
+messaging framework's glossary with no entry for *dead letter queue*, *nack* or *poison
+message* is missing the words a reader arrives with. Written into the categories that already
+existed (six into *Messaging Terms*, two into *Core Concepts*, `Request-Reply` into
+*Patterns*), in the house format, and **checked against the Brighter source rather than
+paraphrased from `BasicConcepts.md`**: `RejectMessageAction`, `DontAckAction` and
+`DeferMessageAction` are three distinct dispositions in `Paramore.Brighter/Actions/`, and
+their XML docs are where the DLQ entry's *"when the requeue count is exceeded"* and the Nack
+entry's per-transport list come from. `RequeueCount` is a `Subscription` property, checked at
+`Subscription.cs:109`. The Glossary is **81 entries → 90**.
+
+**The link line goes at the end of each section, and that placement is load-bearing.** A
+page's `description:` front matter is derived from its opening sentence, so a pointer
+inserted directly under `## Command` would have become `BasicConcepts.md`'s public
+description — the platform-default duplication of Phase 10, arriving from the other
+direction. Appended, the opening sentence is untouched and the front matter still matches it.
+
+**One more link fault, found on the page this task was editing.** `BasicConcepts.md` carried
+`[query processor](#)` — **a link to nothing**, which reaches a reader as a live link and
+reached `linkcheck.py` as a same-page link with an empty anchor, so the anchor test skipped
+it for having nothing to look up. It is the third thing this tool has walked past in two
+tasks, and the same shape as the other two: *not malformed, therefore not examined*. Now
+`EMPTY TARGET`, and red on the untouched corpus before the fix, which is exactly one
+occurrence — the one on this page. **The rule is worth more than the fix**: an empty link is
+what a half-finished edit leaves behind, and nothing else in this repository would notice.
+
+**`ServiceActivator` is in backticks**, because the Glossary entry it points at defines it as
+*"the assembly name for the Dispatcher component"* — an identifier, which is what `CLAUDE.md`
+says to do and what stops rule 5 firing on a link this task created. Worth noting for
+whoever meets it next: **rule 5 does not read headings**, only prose, so `### ServiceActivator`
+sits in the Glossary unreported. That is defensible — it is the assembly's name — but it is
+unchecked rather than approved.
+
+**Gates after:** linkcheck **144 files, clean**; pagelint 0 errors / **791** warnings / 142
+pages; `--check-shape` 0; `--check-redirects` 0 at 77 entries.
 
 - [ ] **Task 11.2:** P2-1 — normalise the files with no trailing newline — **14**, re-derived
   - Input: the 14 files (measured at `3178d68`; it was 18 of 105 before the Phase 6 splits,

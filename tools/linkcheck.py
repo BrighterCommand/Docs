@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Check internal markdown links across the documentation.
 
-Reports five kinds of breakage:
+Reports six kinds of breakage:
 
   MISSING FILE    the link target file does not exist
   MISSING ANCHOR  the file exists, but no heading in it slugifies to the anchor
   WRONG CASE      the target exists only under different capitalisation
   LEGACY HTML     a link to a `.html` path, which the published site never serves
+  EMPTY TARGET    a link whose target is `#` or empty -- it goes nowhere
   ORPHAN          a published page nothing in SUMMARY.md links to
 
 LEGACY HTML is the fault class this tool used to *create*. Only `.md` targets
@@ -198,6 +199,14 @@ def check(paths):
             target = unquote(raw.strip())
             if target.startswith(('http://', 'https://', 'mailto:')):
                 continue
+            # `[text](#)` is a link that goes nowhere. It reaches a reader as a
+            # live link, and it used to reach this checker as a same-page link
+            # with an empty anchor, which the anchor test below skips because
+            # there is nothing to look up. Nothing about it is malformed; it
+            # simply points at no heading on any page.
+            if not target.strip('#').strip():
+                problems.append(('EMPTY TARGET', rel_src, lineno, raw, label))
+                continue
             if HTML_RE.search(target.split('#')[0]):
                 problems.append(
                     ('LEGACY HTML', rel_src, lineno, raw,
@@ -255,7 +264,8 @@ def main(argv):
         print(f"No broken internal links ({len(paths)} files checked).")
         return 0
 
-    for kind in ('MISSING FILE', 'WRONG CASE', 'MISSING ANCHOR', 'LEGACY HTML'):
+    for kind in ('MISSING FILE', 'WRONG CASE', 'MISSING ANCHOR', 'LEGACY HTML',
+                 'EMPTY TARGET'):
         rows = [p for p in problems if p[0] == kind]
         if not rows:
             continue
