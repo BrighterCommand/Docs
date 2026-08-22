@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). We provide a FeatureSwitch Attribute and FeatureSwitchAsync Attribute that you can use on your IHandleRequests<TRequest>.Handle() method, and…"
+---
+
 # Feature Switches
 
 We provide a **FeatureSwitch** Attribute and **FeatureSwitchAsync** Attribute that you can use on your **IHandleRequests\<TRequest\>.Handle()** method, and **IHandleRequests\<TRequest\>.HandleAysnc()** method. The **FeatureSwitch** Attribute and **FeatureSwitchAsync** Attribute that you have configured will determine whether or not the

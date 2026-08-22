@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). You may want some sort of backstop exception handler, that allows you to take compensating action, such as undoing any partially committed work, issuing a compensating…"
+---
+
 # Fallback
 
 You may want some sort of backstop exception handler, that allows you to take compensating action, such as undoing any partially committed work, issuing a compensating transaction, or queuing work for later delivery (perhaps using the [External Bus](/contents/ImplementingExternalBus.md)).

@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). Event Driven Architectures (EDA) are a major use case for Brighter's External Bus-you want processes to collaborate via messaging."
+---
+
 # Event Driven Collaboration
 
 Event Driven Architectures (EDA) are a major use case for Brighter's External Bus-you want processes to collaborate via messaging.

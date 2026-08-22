@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The Dapper Outbox allows integration between Dapper and Brighter's outbox support."
+---
+
 # Dapper Outbox
 
 ## Usage

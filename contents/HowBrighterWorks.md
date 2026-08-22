@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). You don't need to understand how Brighter works under the hood to use it, but if you want to debug, or contribute to the project, it can help to know what is going on."
+---
+
 # How The Command Processor Works
 
 You don\'t need to understand how Brighter works under the hood to use it, but if you want to debug, or contribute to the project, it can help to know what is going on.

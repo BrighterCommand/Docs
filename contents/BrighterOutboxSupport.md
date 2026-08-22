@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). Brighter supports storing messages that are sent via an External Bus in an Outbox, as per the Outbox Pattern"
+---
+
 # Outbox Support
 
 Brighter supports storing messages that are sent via an External Bus in an Outbox, as per the [Outbox Pattern](/contents/OutboxPattern.md)

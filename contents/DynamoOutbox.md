@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The DynamoDb Outbox allows integration between DynamoDb and Brighter's outbox support."
+---
+
 # DynamoDb Outbox
 
 ## Usage

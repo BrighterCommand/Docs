@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). Brighter emits monitoring information from an External Bus using a configured Control Bus"
+---
+
 # Monitoring
 
 Brighter emits monitoring information from an External Bus using a configured [Control Bus](https://brightercommand.github.io/Brighter/ControlBus.html)

@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). RabbitMQ is OSS message-oriented-middleware and is well documented."
+---
+
 # RabbitMQ Configuration
 
 ## General

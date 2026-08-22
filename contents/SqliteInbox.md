@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The Sqlite Inbox allows use of Sqlite for Brighter's inbox support."
+---
+
 # Sqlite Inbox
 
 ## Usage

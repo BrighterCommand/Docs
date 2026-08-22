@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). We use the term Request for a data object containing parameters that you want to dispatch to a handler."
+---
+
 # Requests, Commands and Events
 ## The IRequest Interface
 

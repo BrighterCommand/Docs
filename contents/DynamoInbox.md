@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The DynamoDb Inbox allows use of DynamoDb for Brighter's inbox support."
+---
+
 # Dynamo Inbox
 
 ## Usage

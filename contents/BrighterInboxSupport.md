@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). Messaging makes the guaranteed, at least once promise."
+---
+
 # Brighter Inbox Support
 
 ## Guaranteed, At Least Once

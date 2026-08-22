@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). A message mapper turns domain code into a Brighter Message."
+---
+
 # Message Mappers
 
 A message mapper turns domain code into a Brighter **Message**. A Brighter **Message** has a **MessageHeader** for information about the message. Key properties are: **TimeStamp**, **Topic**, and **Id**.  The **Message** also has a **MessageBody**, which contains the payload. 

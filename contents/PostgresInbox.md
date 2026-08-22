@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The Postgres Inbox allows use of Postgres for Brighter's inbox support."
+---
+
 # Postgres Inbox
 
 ## Usage

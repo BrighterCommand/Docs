@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). In order to receive messages from Message Oriented Middleware (MoM) such as RabbitMQ or Kafka you have to configure a Dispatcher."
+---
+
 # How Configuring a Dispatcher for an External Bus Works
 
 In order to receive messages from Message Oriented Middleware (MoM) such as RabbitMQ or Kafka you have to configure a *Dispatcher*. The *Dispatcher* works with a *Command Processor* to deliver messages read from a queue or stream to your *Request Handler*. You write a Request Handler as you would for a request sent over an Internal Bus, and hook it up to Message Oriented Middleware via a *Dispatcher*. 

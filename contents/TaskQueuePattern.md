@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The Task Queue Pattern let's you use an External Bus to handle work asynchronously."
+---
+
 # The Task Queue Pattern
 
 The Task Queue Pattern let's you use an External Bus to handle work asynchronously. It is a common use of an External Bus outside of using it for an [Event Driven Architecture](/contents/EventDrivenCollaboration.md).

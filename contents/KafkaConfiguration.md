@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). Kafka is OSS message-oriented-middleware and is well documented."
+---
+
 # Kafka Configuration
 
 ## General

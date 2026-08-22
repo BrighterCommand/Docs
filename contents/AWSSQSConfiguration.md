@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). SNS and SQS are proprietary message-oriented-middleware available on the AWS platform."
+---
+
 # AWS SQS Configuration
 
 ## General

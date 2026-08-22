@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). Brighter provides an AspNet Core Health check for Service Activator"
+---
+
 # Health Checks
 
 Brighter provides an AspNet Core Health check for **Service Activator**

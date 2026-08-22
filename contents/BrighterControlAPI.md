@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The brighter control API allows direct management of a Service Activator node"
+---
+
 # **Brighter Control API**
 The brighter control API allows direct management of a Service Activator node
 

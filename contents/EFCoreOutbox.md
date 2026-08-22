@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The EFCore Outbox allows integration between EF Core and Brighter's outbox support."
+---
+
 # EF Core Outbox
 
 ## Usage

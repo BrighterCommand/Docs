@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The MSSQL Inbox allows use of MSSQL for Brighter's inbox support."
+---
+
 # MSSQL Inbox
 
 ## Usage

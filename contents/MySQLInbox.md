@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The MySQL Inbox allows use of MySQL for Brighter's inbox support."
+---
+
 # MySQL Inbox
 
 ## Usage

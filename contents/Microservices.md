@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). It is possible to think of microservices as 3rd generation SOA."
+---
+
 # Microservices
 
 It is possible to think of microservices as 3rd generation SOA. First generation SOA was SOAP based web services. 2nd generation SOA was messaging, sometimes over SOAP, but also over middleware, often an
