@@ -22,10 +22,10 @@ This in turn leads to a set of questions that we need to answer about common sce
 If we don\'t allow return values, what do you do on failure?
 
 -   The basic failure strategy is to throw an exception. This will terminate the request handling pipeline.
--   If you want *Internal Bus* support for [Retry, and Circuit Breaker](PolicyRetryAndCircuitBreaker.html) you can use our support for [Polly](https://github.com/App-vNext/Polly) Policies
+-   If you want *Internal Bus* support for [Retry, and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md) you can use our support for [Polly](https://github.com/App-vNext/Polly) Policies
 -   If you want to Requeue (with Delay) to an *External Bus*, you should throw a **DeferMessageAction** exception.
--   Finally you can use our support for a [Fallback](PolicyFallback.html) handler to provide backstop exception handling.
--   You can also build your own exception handling into your [Pipeline](BuildingAPipeline.html).
+-   Finally you can use our support for a [Fallback](/contents/PolicyFallback.md) handler to provide backstop exception handling.
+-   You can also build your own exception handling into your [Pipeline](/contents/BuildingAPipeline.md).
 
 We discuss these options in more detail in [Handler Failure](/contents/HandlerFailure.md).
 

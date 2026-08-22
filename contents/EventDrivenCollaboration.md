@@ -107,4 +107,4 @@ So an Event Driven Architecture benefits from a lack of behavioral coupling too.
 
 ## Next Steps
 
-See [Event Carried State Transfer](EventCarriedStateTransfer.html) for guidance on how to \'join\' data between two microservices, when you need data from more than one service to carry out an operation.
+See [Event Carried State Transfer](/contents/EventCarriedStateTransfer.md) for guidance on how to \'join\' data between two microservices, when you need data from more than one service to carry out an operation.

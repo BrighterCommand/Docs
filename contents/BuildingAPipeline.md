@@ -23,12 +23,12 @@ Common examples of orthogonal operations include:
 -   Supporting re-sequencing of messages
 -   Handling exceptions
 -   [Providing Timeout, Retry, and Circuit Breaker
-    support](QualityOfServicePatterns.html)
+    support](/contents/PolicyRetryAndCircuitBreaker.md)
 -   Providing undo support, or rollback
 
 ## The Pipes and Filters Architectural Style
 
-To handle these orthogonal concerns our [command processor](CommandsCommandDispatcherAndProcessor.html#command-processor) uses a pipes and filters architectural style: the filters are where
+To handle these orthogonal concerns our [command processor](/contents/CommandsCommandDispatcherandProcessor.md#the-command-processor-pattern) uses a pipes and filters architectural style: the filters are where
 processing occurs, they do not share state with other filters, nor do they know about adjacent filters. The pipe is the connector between the filters in our case this is provided by the
 **IHandleRequests\<TRequest\>** interface which has a method **IHandleRequests\<TRequest\> Successor** that allows us to chain filters together.
 

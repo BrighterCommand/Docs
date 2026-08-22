@@ -20,7 +20,7 @@ By adding the **FeatureSwitch** Attribute or **FeatureSwitchAsync** Attribute, y
 -   not execute the handler, this is **FeatureSwitchStatus.Off**.
 -   detemine whether to run the handler based on a **Feature Switch
     Registry**, [creating of which is described
-    later](FeatureSwitches.html#building-a-config-for-feature-switches-with-fluentconfigregistrybuilder).
+    later](/contents/FeatureSwitches.md#building-a-config-for-feature-switches-with-fluentconfigregistrybuilder).
 
 In the following example, **MyFeatureSwitchedHandler** will only be run if it has been configured in the **Feature Switch Registry** and set to **FeatureSwitchStatus.On**.
 

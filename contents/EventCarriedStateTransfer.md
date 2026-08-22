@@ -120,4 +120,4 @@ Our preference for the two may depend on the extent to which we want to allow Cr
 
 ## Next Steps
 
-See [Correctness in Brighter](BrighterOutboxSupport.html) for guidance on how to use Brighter's support for the Outbox pattern to ensure producer-consumer correctness.
+See [Correctness in Brighter](/contents/BrighterOutboxSupport.md) for guidance on how to use Brighter's support for the Outbox pattern to ensure producer-consumer correctness.

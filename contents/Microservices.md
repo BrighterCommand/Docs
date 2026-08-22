@@ -53,4 +53,4 @@ For our microservices to communicate we need to agree on the protocols we will u
 
 ## Next Steps
 
-See [Event Driven Collaboration](EventDrivenCollaboration.html) for guidance on how to integrate microservices using events.
+See [Event Driven Collaboration](/contents/EventDrivenCollaboration.md) for guidance on how to integrate microservices using events.
