@@ -15,9 +15,13 @@ A command is an instruction to carry out work. It exercises the domain and resul
 
 An [event](#event) may be used to indicate the outcome of a command.
 
+*Glossary: [Command](/contents/Glossary.md#command)*
+
 ## Dead Letter Queue (DLQ)
 
 A queue where messages that cannot be processed are sent for later investigation. When Brighter rejects a message (via `RejectMessageAction` or after exceeding the requeue count), and a DLQ is configured on the subscription, the message is routed there instead of being discarded. Some transports (RabbitMQ, Azure Service Bus) provide native DLQ support; for others, Brighter manages the DLQ by producing the rejected message to a separate channel.
+
+*Glossary: [Dead Letter Queue (DLQ)](/contents/Glossary.md#dead-letter-queue-dlq)*
 
 ## Command Processor
 
@@ -25,9 +29,13 @@ In Brighter, a command processor allows you to use the *Command Pattern* to sepa
 
 The Command Processor may dispatch to an [Internal Bus](#internal-bus) or an [External Bus](#external-bus).
 
+*Glossary: [Command Processor](/contents/Glossary.md#command-processor)*
+
 ## Command-Query Separation (CQS)
 
 Command-Query separation is the principle that because a [query](#query) should never have the unexpected *side-effect* of updating state, a query should clearly be distinguished from a [command](#request). A query reports on the state of a domain, a command changes it. 
+
+*Glossary: [Command-Query Separation (CQS)](/contents/Glossary.md#command-query-separation-cqs)*
 
 ## Event
 
@@ -35,11 +43,15 @@ An event is a fact. The domain may be updated to reflect the fact represented by
 
 An event may be used to indicate the outcome of a [command](#command).
 
+*Glossary: [Event](/contents/Glossary.md#event)*
+
 ## Event Stream
 
 In [message oriented middleware](#message-oriented-middleware-mom), an event stream delivers [messages](#message) (or records) via a stream. A consumer reads the stream at a specific offset from the start. Consumers can store their offsets to resume reading the stream for where they left off, or reset their offset to re-read a stream. Consumers neither lock, nor delete messages from the stream. For consuming apps to scale, the stream can be partitioned, allowing offsets to be maintained of a partition of the stream. By using separate consumer threads or processes to read a partition, an application can ensure that it is able to reduce the latency of reading the stream.
 
 Examples: Kafka, Kinesis, Redis Streams
+
+*Glossary: [Event Stream](/contents/Glossary.md#event-stream)*
 
 ## External Bus 
 
@@ -47,13 +59,19 @@ An external bus allows a [command](#command) or [event](#event) to be turned int
 
 Brighter also offers a [service activator](#service-activator) to listen for messages published to a queue or stream and forward them to an [internal bus](#internal-bus) within another process.
 
+*Glossary: [External Bus](/contents/Glossary.md#external-bus)*
+
 ## Internal Bus 
 
-A [command](#command), [event](#event) or [query](#query) is executed in-process, passed from the [command processor](#command-processor) or [query processor](#) to a [handler](#request-handler) [pipeline](#pipeline).
+A [command](#command), [event](#event) or [query](#query) is executed in-process, passed from the [command processor](#command-processor) or [query processor](#query-processor) to a [handler](#request-handler) [pipeline](#pipeline).
+
+*Glossary: [Internal Bus](/contents/Glossary.md#internal-bus)*
 
 ## Message
 
 A message is a packet of data sent over message-oriented-middleware. It's on-the-wire representation is defined by the protocol used by [message-oriented-middleware](#message-oriented-middleware-mom).
+
+*Glossary: [Message](/contents/Glossary.md#message)*
 
 ## Message Oriented Middleware (MoM)
 
@@ -63,11 +81,15 @@ Brighter abstracts a specific type of message-oriented middleware by a *Transpor
 
 For simplicity, Brighter only supports transports that have a broker configuration, not point-to-point. If you need point-to-point semantics, configure your routing table entry so that it only delivers to one consuming queue or stream.
 
+*Glossary: [Message Oriented Middleware (MoM)](/contents/Glossary.md#message-oriented-middleware-mom)*
+
 ## Message Mappers
 
 A message mapper turns domain code into a message: a header and a body, or turns a message into domain code. Because [message oriented middleware](#message-oriented-middleware-mom) typically looks in a header for routing information, it is also where you add routing information via the header.
 
 Each individual transport has code to turn a Brighter format message into a message oriented middleware compatible message, and vice versa, so your code only needs to translate to and from the Brighter format.
+
+*Glossary: [Message Mapper](/contents/Glossary.md#message-mapper)*
 
 ## Message Queue
 
@@ -75,9 +97,13 @@ In [message oriented middleware](#message-oriented-middleware-mom), a message qu
 
 Examples: SQS, AMQP 0-9-1 (Rabbit MQ), AMQP 1-0 (Azure Service Bus).
 
+*Glossary: [Message Queue](/contents/Glossary.md#message-queue)*
+
 ## Nack (Negative Acknowledgment)
 
 A signal to the transport that a message was not successfully processed. The transport's behavior on nack varies: RabbitMQ requeues the message, SQS resets its visibility timeout, Azure Service Bus releases the lock, and stream-based transports like Kafka simply do not commit the offset. In Brighter, throwing `DontAckAction` from a handler triggers a nack.
+
+*Glossary: [Nack (Negative Acknowledgment)](/contents/Glossary.md#nack-negative-acknowledgment)*
 
 ## Pipeline
 
@@ -85,19 +111,27 @@ A pipeline is a sequence of [handlers](#request-handler) that respond to a [requ
 
 Brighter and Darker's pipelines use a "Russian Doll Model" that is, each handler in the pipeline encompasses the call to the next handler, allowing the handler chain to behave like a call stack. 
 
+*Glossary: [Pipeline](/contents/Glossary.md#pipeline)*
+
 ## Poison Message
 
 A message that repeatedly fails processing. Without safeguards, a poison message blocks the message pump in an infinite failure-requeue-failure loop. Brighter prevents this with `RequeueCount`, which limits the number of requeue attempts before the message is rejected. The default behavior — acknowledging on failure — also prevents poison messages by ensuring the pump always moves on.
 
+*Glossary: [Poison Message](/contents/Glossary.md#poison-message)*
+
 ## Query
 
 A query asks the domain for facts. The [result](#result) of the query reports these facts - the state of the domain. A query does not change the state of the domain, for that use a [request](#request).
+
+*Glossary: [Query](/contents/Glossary.md#query)*
 
 ## Query Handler
 
 A handler is the entry point to domain code. It receives a query and returns a [result](#result) to the caller. A handler is always part of an [internal bus](#internal-bus). As such a handler forms part of a [pipeline](#pipeline).
 
 It is analogous to a method on an ASP.NET Controller.
+
+*Glossary: [Query Handler](/contents/Glossary.md#query-handler)*
 
 ## Query Processor
 
@@ -107,19 +141,27 @@ The Query Processor dispatches to an [Internal Bus](#internal-bus).
 
 The Query Processor returns a [result](#result).
 
+*Glossary: [Query Processor](/contents/Glossary.md#query-processor)*
+
 ## Result
 
 The return value from a [query](#query). The result is returned from a [query handler](#query-handler) and exposed to the caller via the [QueryProcessor](#query-processor).
 
+*Glossary: [Result](/contents/Glossary.md#result)*
+
 ## Request
 
 In Brighter, either a [command](#command) or an [event](#event), a request for the domain to (potentially) change state in response to an instruction or new facts.
+
+*Glossary: [Request](/contents/Glossary.md#request)*
 
 ## Request Handler 
 
 A handler is the entry point to domain code. It receives a request, which may be a [command](#command) or an [event](#event). A handler is always part of an [internal bus](#internal-bus) even when the call to the handler was triggered by a [service activator](#service-activator) receiving a [message](#message) sent by another process to an [external bus](#external-bus). As such a handler forms part of a [pipeline](#pipeline).
 
 It is analogous to a method on an ASP.NET Controller.
+
+*Glossary: [Request Handler](/contents/Glossary.md#request-handler)*
 
 ## Request-Reply
 
@@ -135,12 +177,18 @@ A common approach is to change state via Brighter and query for the results of t
 
 If the call to Brighter results in a new entity, and the id for the new entity was not given to the command (for example it relies on the Database generating the id), a common problem is how to then request the details of that newly created entity via Darker. A simple solution is to update the command with the id (as a conceptual *out* parameter), and then retrieve it from there to use in the Darker query. See [update a field on a command](/contents/ReturningResultsFromAHandler.md#update-a-field-on-the-command) for more. 
 
+*Glossary: [Request-Reply](/contents/Glossary.md#request-reply)*
+
 ## Routing Key (Topic)
 
 A routing key, also called a topic is the key used by message broker to route published messages to a subscriber.
+
+*Glossary: [Routing Key](/contents/Glossary.md#routing-key)*
 
 ## Service Activator
 
 A Service Activator triggers execution of your code due to an external input, such as an HTTP call, or a [message](#message) sent over middleware. <!-- pagelint: allow-serviceactivator -->
 
 In Brighter, the *Dispatcher* acts as a Service Activator, listening for a message from middleware, which it delivers via the [command processor](#command-processor) to a [handler](#request-handler). As such, it turns messages sent over middleware to a call on your [internal bus](#internal-bus). <!-- pagelint: allow-serviceactivator -->
+
+*Glossary: [`ServiceActivator`](/contents/Glossary.md#serviceactivator)*

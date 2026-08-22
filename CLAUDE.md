@@ -496,7 +496,7 @@ When unclear about a feature:
 ### Cross-Linking Documentation
 
 **Verifying links:** `python3 tools/linkcheck.py` checks every internal link in
-the published docs. It reports five faults:
+the published docs. It reports six faults:
 
 - **MISSING FILE** — the target does not exist
 - **MISSING ANCHOR** — the file exists, but no heading slugifies to the anchor
@@ -507,6 +507,9 @@ the published docs. It reports five faults:
   site, and until Spec 010 Phase 11 the checker *skipped* them for not ending
   in `.md` — so 23 of them, one naming a page that has never existed, were
   green in every run it had ever made
+- **EMPTY TARGET** — a link written `[text](#)`, which goes nowhere. It reaches
+  a reader as a live link and reached the checker as a same-page link with no
+  anchor to look up
 - **ORPHAN** — a page under `contents/` that `SUMMARY.md` never links to
 
 **A link's text may wrap across lines**, and the checker reads whole files rather
