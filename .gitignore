@@ -2,3 +2,10 @@ build/
 _build/
 env/
 .vscode/
+# Local working notes, gitignored on master and never intended to be committed.
+# They arrived here in the merge of #109, from a working tree checked out of master.
+PROMPT.md
+
+# Python bytecode, same route.
+__pycache__/
+*.pyc
