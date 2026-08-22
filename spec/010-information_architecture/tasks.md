@@ -3056,7 +3056,7 @@ its place immediately, since a prose-only PR of this size is exactly the run tha
 indistinguishable from a real one. **No URL moves and no redirect is owed**: every rewrite
 changes a link's *target*, not any page's path.
 
-- [ ] **Task 11.8:** `BuildingAnAsyncPipeline.md` has two H1s
+- [x] **Task 11.8:** `BuildingAnAsyncPipeline.md` has two H1s
   - Input: the page, lines 1 and 8
   - Output: one H1, and the demoted heading unique and qualified
   - Notes: No rule sees it. `NO H1` fires only on *no* H1 and rule 3b starts at `##`, so the
@@ -3066,6 +3066,57 @@ changes a link's *target*, not any page's path.
     demoting is safe, but a demoted H1 becomes a `##` that must then be unique across pages
     and qualified by its subject. **Consider whether the rule should exist**: this is one
     page today, and one page is how the last un-enforced convention started.
+  - **Done 2026-08-22.** Demoted, qualified, and the rule exists. See below.
+
+### Task 11.8 as executed — 2026-08-22
+
+**The rule should exist, and the argument for it is the demotion itself.** `NO H1` fires on
+*none* and rule 3b starts at `##`, so a second H1 was checked by nothing — and what a second
+H1 buys its author is **exemption from every rule a section heading obeys**. Demoting this one
+proves it: as `# Implementing a Pipeline` it was fine, and as `## Implementing a Pipeline` it
+would have **collided with `BuildingAPipeline.md:52`**, which carries that heading already.
+The page escaped rule 3a by claiming to be a title. It is now
+`## Implementing an Async Pipeline`, unique and qualified; nothing linked the old anchor,
+checked before the edit.
+
+**`EXTRA H1` is an error repo-wide from the same commit**, which the corpus permits: one page
+carried the defect and it is fixed here, so the rule lands at zero — the same shape as rule 4,
+which became a repo-wide error once Task 7.2 had cleared its debt. `CLAUDE.md`'s ledger gains
+the row in the same commit, because a rule in only one of the two places is how the next round
+of decay begins.
+
+> **And enumerating the ledger for that row found the gap it was meant to prevent — for the
+> third time, in the third direction.** Spec 011's acceptance pass found `NO H1` in the linter
+> and missing from `CLAUDE.md`. Phase 10 found it in `CLAUDE.md` and missing from the linter's
+> own docstring, and its write-up says *"enumerate **both** directions"*. **`SUMMARY NOT A
+> SENTENCE` was in neither** — added to the code by that very session's sweep, four defects
+> deep in a list, and never written down anywhere else. The session that drew the lesson is the
+> session that broke it again, in the same file, within the same phase. **A parity check is
+> only true of the moment it ran**; what makes it hold is running it whenever a label is added,
+> which is now Task 11.4's job and this row's precedent.
+
+**One more thing on this page that no tool sees, and it is the last of the 2022 conversion.**
+
+```text
+[RequestHandlerAsync\<T\>
+\<https://…/RequestHandlerAsync.cs\>]{.title-ref}\_\_.
+```
+
+That is reStructuredText that `pandoc` did not finish converting, and a reader sees it
+verbatim — braces, backslashes and all — where a link should be. **`linkcheck.py` cannot fail
+it because it is not a link**, which is the same sentence as the `.html` finding and the
+`(#)` one, for the third time in this phase. Repaired to the ordinary markdown form the
+*preceding line* already uses, with the target confirmed against
+`Brighter/src/Paramore.Brighter/RequestHandlerAsync.cs`.
+
+**No rule was added for it**, deliberately. `{.title-ref}` occurs **once** in 142 pages, the
+conversion that produced it happened once in 2022, and nothing in this repository can produce
+another. A rule guarding a door nobody can open is a rule the next reader has to understand
+before they may ignore it. The `.html` links earned one because 23 of them survived; this
+earned a fix.
+
+**Gates after:** linkcheck **144 files, clean**; pagelint **0 errors** / 791 warnings / 142
+pages; `--check-shape` 0; `--check-redirects` 0 at 77 entries.
 
 - [ ] **Task 11.9:** `README.md`'s front matter is enforced by nothing
   - Input: `README.md`; `pagelint.py`'s `load_pages()`

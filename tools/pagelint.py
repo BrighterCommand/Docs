@@ -8,6 +8,7 @@ for a retrieval system holding one chunk with no surrounding context.
 Rules, and what each is for:
 
   NO H1               a page with no title for a banner to sit under
+  EXTRA H1            a second H1: a section heading written a level too high
   BANNER MISSING      no page banner on the first non-blank line after the H1
   BANNER MALFORMED    a banner is there, but not in the fixed grammar
   HEADING NOT UNIQUE  a `##` text that also appears on another page
@@ -19,6 +20,7 @@ Rules, and what each is for:
   SUMMARY MISSING     no prose after the banner to summarise the page with
   SUMMARY TOO LONG    an opening sentence over 200 characters, rendered
   SUMMARY ENDS IN COLON   an opening sentence promising a list an index drops
+  SUMMARY NOT A SENTENCE  an opening sentence with no terminal punctuation
   SUMMARY NOT UNIQUE  two pages that introduce themselves identically
   DESCRIPTION MISMATCH    `description:` front matter that is not that sentence
   DESCRIPTION UNREADABLE  front matter this tool will not guess the meaning of
@@ -316,6 +318,22 @@ def check_banner(page):
         return [error(page.rel, 1, 'NO H1',
                       'page has no H1; every page needs a title before a banner')]
 
+    # NO H1's mirror, and it was invisible for the same reason in reverse: that
+    # rule fires only on *none*, and rule 3b starts at `##`, so a second H1 was
+    # checked by nothing at all. One page carried one. A second H1 is a section
+    # heading written a level too high -- it claims to be the page's title, it
+    # is exempt from the uniqueness and qualification rules every real section
+    # obeys, and GitBook renders it indistinguishably from the real title.
+    extra = [lineno for level, _, lineno in page.headings
+             if level == 1 and lineno != page.h1_line]
+    findings = [
+        error(page.rel, lineno, 'EXTRA H1',
+              'a page has exactly one H1, its title. Demote this to `##` and '
+              'qualify it by the page\'s subject -- as a `##` it must also be '
+              'unique across pages, which is the check it has been escaping')
+        for lineno in extra
+    ]
+
     banner_line = None
     for lineno in range(page.h1_line + 1, len(page.lines) + 1):
         if page.lines[lineno - 1].strip():
@@ -323,20 +341,20 @@ def check_banner(page):
             break
 
     if banner_line is None:
-        return [error(page.rel, page.h1_line, 'BANNER MISSING',
+        return findings + [error(page.rel, page.h1_line, 'BANNER MISSING',
                       f'nothing follows the H1; add a banner below it, e.g.\n    {BANNER_EXAMPLE}')]
 
     text = page.lines[banner_line - 1].rstrip()
     if not text.startswith('>'):
-        return [error(page.rel, banner_line, 'BANNER MISSING',
+        return findings + [error(page.rel, banner_line, 'BANNER MISSING',
                       f'add a banner below the H1, e.g.\n    {BANNER_EXAMPLE}')]
     if not BANNER_RE.match(text):
-        return [error(page.rel, banner_line, 'BANNER MALFORMED',
+        return findings + [error(page.rel, banner_line, 'BANNER MALFORMED',
                       'banner must read `> **<type>** · Applies to **<product> V10**'
                       '[ · Prerequisites: <links>]`, where <type> is one of '
                       f'{", ".join(PAGE_TYPES)} and the separator is " · " (U+00B7).'
                       f'\n    e.g. {BANNER_EXAMPLE}')]
-    return []
+    return findings
 
 
 # --------------------------------------------------------------------------

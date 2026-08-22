@@ -13,7 +13,7 @@ An async pipeline wraps an async request handler in the same orthogonal operatio
 
 This uses Brighter's [command processor](/contents/CommandsCommandDispatcherandProcessor.md#the-command-processor-pattern) features rather than its [command dispatcher](/contents/CommandsCommandDispatcherandProcessor.md#command-dispatcher) features.
 
-# Implementing a Pipeline
+## Implementing an Async Pipeline
 
 The first step in building a pipeline is to decide that we want an orthogonal operation in our pipeline. Let us assume that we want to do command sourcing.
 
@@ -25,8 +25,7 @@ The limitation here is that you can only make assumptions about the type you rec
 Although it is possible to implement the
 [IHandleRequestsAsync](https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/IHandleRequestsAsync.cs)
 interface directly, we recommend deriving your handler from
-[RequestHandlerAsync\<T\>
-\<https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/RequestHandlerAsync.cs\>]{.title-ref}\_\_.
+[RequestHandlerAsync\<T\>](https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/RequestHandlerAsync.cs).
 
 Let us assume that we want to log all requests travelling through the pipeline. (We provide this for you in the Brighter.CommandProcessor packages so this for illustration only). We could implement a generic
 handler as follows:
