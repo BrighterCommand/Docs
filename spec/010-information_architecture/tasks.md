@@ -30,7 +30,25 @@ design deliberately left to this phase.
 | **8** | Transports — 2 rows, 2 new pages · **DONE 2026-08-12** | 2 | D4 |
 | **9** | The rest of §6d — 5 rows, 5 new pages · **DONE 2026-08-12** | 6 | D4 |
 | **10** | `llms.txt` — **re-scope D6 first; the platform already does most of it (§3)** | 4 | D6 |
-| **11** | Glossary links, the two carried-over chores, acceptance | 5 | D8, P2-1, P2-3 |
+| **11** | Glossary links, the two carried-over chores, **the four items Phase 10 added**, acceptance | **9** | D8, P2-1, P2-3 |
+
+> **The list grew from 52 tasks to 56, and Phase 11 from five to nine.** The four are Tasks
+> 11.6–11.9, added 2026-08-22 from findings session 22 made while doing something else. **Not
+> re-planning: bookkeeping.** Each was already written down in Phase 10's prose and each was
+> already obligatory; a paragraph is not a box, and only a box gets walked at the acceptance
+> pass.
+>
+> **Re-derived, not incremented** — `grep -c '^- \[.\] \*\*Task'` returns **56**, of which 48
+> are ticked, and the phase column above sums to 56 independently.
+>
+> **It returned 56 at `3178d68` too, and meant something else.** There were 52 tasks then, and
+> **Phase 10 recorded each of its four twice** — the definition box left open while a second
+> ticked line was appended to the write-up — so four of those 56 were duplicates and four of
+> the nine "open" boxes were finished work. Adding four real tasks and collapsing four
+> duplicates leaves the total exactly where it was. `PROMPT.md`'s *47 of 52* was never wrong
+> because it was read off the phase table rather than the boxes. **The two ways of counting
+> this list disagreed by four for a fortnight while both printed a plausible number**; they
+> now agree, which is the only reason Task 11.4 can enumerate rather than read.
 
 > **The new-page counts in that table count what each phase *creates*, and they sum to 32.**
 > Corrected at review: phase 5 read *7 new pages*, which is the number landing in *Outbox and
@@ -2195,7 +2213,7 @@ run would have reported 0 errors on exactly the five pages the phase created.
 does most of it.** See §3 for what was measured on 2026-08-08. Investigate, rule, then
 implement whatever the ruling leaves.
 
-- [ ] **Task 10.1:** Establish how a page description reaches GitBook's generated `llms.txt`
+- [x] **Task 10.1:** Establish how a page description reaches GitBook's generated `llms.txt`
   - Input: §3's measurements; GitBook's *LLM-ready docs* and *Content configuration* pages
     (fetch the `.md` variants); the GitBook dashboard for this site
   - Output: a written finding — the mechanism, or a statement that there is none for a
@@ -2211,7 +2229,7 @@ implement whatever the ruling leaves.
     description can be set, the one-sentence-per-page work lands at the canonical
     `/llms.txt` URL instead of in a GitHub-only file, and D6 mostly dissolves.**
 
-- [ ] **Task 10.2:** Establish whether the V9 space can be excluded from the generated index
+- [x] **Task 10.2:** Establish whether the V9 space can be excluded from the generated index
   - Input: the GitBook dashboard; §3's measurement
   - Output: a written finding, and a fix if one exists
   - Notes: **This is the more consequential half.** Our `/llms.txt` lists **170** entries:
@@ -2224,7 +2242,7 @@ implement whatever the ruling leaves.
     `llms-full.txt` and in the MCP server. If the space cannot be excluded, say so and record
     it as a known limitation rather than working around it silently.
 
-- [ ] **Task 10.3:** Rule on D6's scope — **maintainer's call**
+- [x] **Task 10.3:** Rule on D6's scope — **maintainer's call**
   - Input: Tasks 10.1 and 10.2's findings; `design.md` §9.2; requirements P1-1, D6 and **AC9**
   - Output: a ruling, and **AC9 amended to match if D6 narrows**
   - Notes: The live options are *fix it at source* (descriptions on pages, V9 excluded — the
@@ -2236,7 +2254,7 @@ implement whatever the ruling leaves.
     part by the platform**, and if D6 narrows, AC9 must narrow with it rather than being
     quietly reinterpreted.
 
-- [ ] **Task 10.4:** Keep Q9's opening-sentence rule, wherever the index ends up
+- [x] **Task 10.4:** Keep Q9's opening-sentence rule, wherever the index ends up
   - Input: `design.md` §9.2
   - Output: the check implemented — as `tools/llmstxt.py`'s validator if D6 survives Task
     10.3, otherwise as a new `pagelint.py` rule
@@ -2481,8 +2499,8 @@ extraction discipline moves into Task 10.4's check, which now has something to f
    their bodies lack. A separate PR: a different branch, a different space, no banners, and
    nothing `pagelint.py` can see.
 
-- [x] **Task 10.1** — the mechanism established and measured end to end
-- [x] **Task 10.3** — ruled *fix it at source*; AC9 narrowed in all three documents
+**Task 10.1 closed** — the mechanism established and measured end to end.
+**Task 10.3 closed** — ruled *fix it at source*; AC9 narrowed in all three documents.
 
 ### Task 10.4 as executed — 2026-08-12
 
@@ -2583,7 +2601,7 @@ not read* — and enumerate **both** directions.
 `--check-shape` 0, `--check-redirects` 0, `--changed origin/master` 0 with everything staged.
 **The using-directive debt did not move**, as in Phases 6 through 9.
 
-- [x] **Task 10.4** — rule 7 in `pagelint.py`, `CLAUDE.md` in the same commit, 8 pages fixed
+**Task 10.4 closed** — rule 7 in `pagelint.py`, `CLAUDE.md` in the same commit, 8 pages fixed.
 
 ### The sweep as executed — 2026-08-22
 
@@ -2754,13 +2772,48 @@ pure ASCII before writing: **173 bytes, zero non-ASCII**. *Type config; never pa
 **Phase 10 is complete — Tasks 10.1, 10.2, 10.3 and 10.4.** What remains in this spec is
 **Phase 11, close**.
 
-- [x] **Task 10.2** — the finding written, and the fix shipped and measured
+**Task 10.2 closed** — the finding written, and the fix shipped and measured.
 
 ---
 
 ## Phase 11 — Close (PR 11)
 
-**Goal:** D8, the two chores carried over from 011, and the acceptance pass.
+**Goal:** D8, the two chores carried over from 011, the four items Phase 10's close
+added, and the acceptance pass.
+
+> **Phase N = PR N held for ten phases. Phase 11 breaks it, deliberately.** The four
+> items below arrived from Phase 10's investigation and share nothing with each other or
+> with the three chores — a legacy-link rewrite, a heading demotion, a conventions rewrite
+> and a linter boundary. Bundling them would produce one PR nobody can review as a unit and
+> whose revert takes the others with it. **Phase 11 is a sequence of PRs, each merged before
+> the next branch starts**, which is the rule the eleven-PR plan was expressing in the first
+> place. The acceptance pass (11.4) and the final gate (11.5) go last, together.
+
+**Re-derived at the phase's open, 2026-08-22, and two of the three inherited counts had
+moved.** Every figure below was measured at `3178d68` rather than carried:
+
+| Item | Recorded | Measured | Why |
+|---|---|---|---|
+| Files with no trailing newline (11.2) | 17 | **14** | The task said to re-derive; the splits and the description sweep rewrote files |
+| Internal `.html` links (11.7) | 25 across ~15 pages, 12 targets | **23 across 13 pages, 11 targets** | Phase 10's *29 across 16, 12 targets* reproduces exactly at `e7c9d71`. It then fixed **six** and recorded four, so the remainder was carried as 29−4 |
+| `BasicConcepts.md` terms to link (11.1) | 24 | see Task 11.1 | Re-derived when the task runs |
+
+**The `.html` row is a familiar shape** — no ordinal is claimed for it, because the running
+count of wrong tallies is itself a running total nobody has re-derived since session 14:
+the count *taken* was right and the count *derived from it* was not. `6675615`
+removed six link instances — two sentences, each duplicated across three pages — while its
+write-up says four. Nobody added wrong; the subtrahend was never measured. **Re-derive a
+total; never subtract from one either.**
+
+> **And the instrument was wrong before the figure was.** The first pass at re-deriving
+> this drove `git ls-tree -r --name-only <ref> contents/` through `.split()`, which breaks
+> **`contents/Requests, Commands and Events.md`** — the one page in the corpus whose
+> filename contains spaces — into three non-existent paths that silently contribute
+> nothing. It reported 22 links where the working tree has 23, and the two disagreed by
+> exactly the one link on that page. Caught because the working-tree count was taken first
+> and by a different method. **Two tools that disagree by one about the same corpus are not
+> both right** — design §16 finding 1's lesson, arriving through a filename rather than a
+> newline.
 
 - [ ] **Task 11.1:** D8 — per-term links from `BasicConcepts.md` into `Glossary.md`
   - Input: `BasicConcepts.md`'s 24 terms; `Glossary.md`'s 100
@@ -2772,20 +2825,45 @@ pure ASCII before writing: **173 bytes, zero non-ASCII**. *Type config; never pa
     re-open the merge.** Every link carries an `#anchor`, which puts all 24 under
     `linkcheck.py`'s MISSING ANCHOR check — that is the point of doing it this way.
 
-- [ ] **Task 11.2:** P2-1 — normalise the 17 files with no trailing newline
-  - Input: the 17 files (re-derive the list; it was 18 of 105 before the Phase 6 splits)
+- [ ] **Task 11.2:** P2-1 — normalise the files with no trailing newline — **14**, re-derived
+  - Input: the 14 files (measured at `3178d68`; it was 18 of 105 before the Phase 6 splits,
+    and 17 when this task was written)
   - Output: every file under `contents/` ends with a newline
   - Notes: Deliberately deferred from 011 so the banner diff contained nothing but banners.
     It lands here for the same reason in reverse — a whitespace-only sweep is safe once no
     content PR is in flight. **Re-derive the count**; it has moved once already.
 
-- [ ] **Task 11.3:** P2-3 — echo the changed-range count from `docs.yml`
+- [x] **Task 11.3:** P2-3 — echo the changed-range count from `docs.yml`
   - Input: `.github/workflows/docs.yml`
   - Output: the `--changed` step prints how many files and hunks it examined
   - Notes: `pagelint.py --changed` reporting 0 errors is indistinguishable from a run that
     found no ranges to be strict about. It was real on PR #74 — 118 files, 465 hunks — but
     the only way to know was to check locally and to force the gate red on purpose. This
     makes a run prove its own non-vacuity instead of relying on a note in `PROMPT.md`.
+  - **Done 2026-08-22.** The report went into `pagelint.py`, not into `docs.yml`, so a local
+    run proves its own non-vacuity too — the run before a push is precisely the one the note
+    in `PROMPT.md` was standing in for. `describe_scope()` prints four figures and the fourth
+    is the load-bearing one:
+
+    ```text
+    --changed origin/master: 149 file(s), 192 hunk(s) in the diff; 142 page(s) under
+    contents/, 5 code block(s) strict.
+    ```
+
+    **Files and hunks describe the diff; blocks describe what the diff reached.** Those are
+    the description sweep's real numbers, and they are the argument for the fourth column:
+    149 files changed and the strict rule saw **five** blocks. The task as written asked for
+    files and hunks, which on that PR would have read as overwhelming coverage of a rule that
+    was almost entirely idle. When the figure is zero the run says so in a sentence, and names
+    the unstaged-new-file case, because that is the shape the same prediction failed in twice.
+
+    **Red-proofed by mutation, on a page held out of the diff and restored from a copy.** A
+    prose line changed → `1 page, 0 blocks strict`, exit 0. One line inside the C# block at
+    `AWSSQSConfiguration.md:36`, which carries no `using` and no `// ...` → `1 page, 1 block
+    strict`, exit **1**, with the error naming line 36. The counter tracks the rule rather
+    than the diff, which is the whole claim. The probe asserted its mutation landed before
+    reading any result, and asserted the restore was byte-identical after — both because this
+    programme has been burnt by each.
 
 - [ ] **Task 11.4:** The acceptance pass — AC1 through AC9
   - Input: `design.md` §14; `requirements.md` §12
@@ -2814,6 +2892,60 @@ pure ASCII before writing: **173 bytes, zero non-ASCII**. *Type config; never pa
     remembering it exits 2 rather than passing if the site is unreachable. Confirm
     `BoxProvisioning.md#when-to-use-box-provisioning` still resolves — Spec 009's rung 3
     links to it, `linkcheck.py` catches a break and redirects cannot.
+
+### The four items Phase 10 added — Tasks 11.6 to 11.9
+
+Each was found while doing something else in session 22, recorded there in prose, and is
+numbered here so it is a box rather than a paragraph. **None is optional.** They share one
+property worth naming: *every one of them is invisible to a green build*, which is why they
+are in a spec about enforcement at all.
+
+- [ ] **Task 11.6:** Rewrite `CLAUDE.md`'s § llms.txt to the format the platform ships
+  - Input: `CLAUDE.md` § *llms.txt*, carrying a SUPERSEDED note since `991fd03`; §3 above
+  - Output: the section describes `/llms.txt` as GitBook builds it, and the SUPERSEDED note
+    is gone because there is nothing left for it to warn about
+  - Notes: The section still specifies a file **this repository does not generate and
+    cannot**. GitBook owns `/llms.txt`, builds it from the published tree, and our space
+    contributes its entries automatically. The platform's line format is
+    `- [Title](url): description` with **no type field** — the type reaches a reader through
+    the banner, which the `.md` variant prints one line below the H1. **Do not restore the
+    type field to the format**; AC9 was narrowed for exactly that reason and design §14
+    records it. Keep the section's *purpose* — a reader needs to know where the index comes
+    from and what governs a page's line in it — and drop the generator that was never built.
+
+- [ ] **Task 11.7:** The 23 internal `.html` links, and the two blind spots that hid them
+  - Input: the 23 links across 13 pages, 11 targets, measured at `3178d68`
+  - Output: every internal link resolves as `.md`; `linkcheck.py` reports an internal `.html`
+    link rather than skipping it
+  - Notes: Legacy links from the pre-GitBook site. **`linkcheck.py` skips anything not
+    ending `.md`**, so these have been green in every CI run this repository has ever done —
+    including **`QualityOfServicePatterns.html`, which has no page at all**. The rewrite is
+    **not mechanical**: the file is `CommandsCommandDispatcher`***a***`ndProcessor.md`, so
+    the obvious conversion lands on **WRONG CASE**, the fault class the checker exists for,
+    hidden behind an extension it does not read. And some anchors never existed —
+    `#command-processor` is really `#the-command-processor-pattern`. **Check every anchor
+    against the target's headings; do not carry the fragment across.**
+
+- [ ] **Task 11.8:** `BuildingAnAsyncPipeline.md` has two H1s
+  - Input: the page, lines 1 and 8
+  - Output: one H1, and the demoted heading unique and qualified
+  - Notes: No rule sees it. `NO H1` fires only on *no* H1 and rule 3b starts at `##`, so the
+    page is green with a structure the conventions forbid. It is the same H1/H2 collision
+    Phase 6 recorded as invisible, in a page **nobody split** — so it did not arrive with the
+    restructure and would have outlived it. Nothing links the second one's anchor, so
+    demoting is safe, but a demoted H1 becomes a `##` that must then be unique across pages
+    and qualified by its subject. **Consider whether the rule should exist**: this is one
+    page today, and one page is how the last un-enforced convention started.
+
+- [ ] **Task 11.9:** `README.md`'s front matter is enforced by nothing
+  - Input: `README.md`; `pagelint.py`'s `load_pages()`
+  - Output: either the rule reaches it, or the boundary is recorded where someone will read it
+  - Notes: `pagelint.py` reads `contents/` only — a boundary that exists so the banner rules
+    do not fire on files that are not documentation pages. But `README.md` **is** a published
+    page: it is the site root, it is the 143rd entry in `/llms.txt`, and its `description:`
+    is hand-written. It is correct today and **no rule will notice if it stops being**. Note
+    that it takes the *description* rules and not the *banner* ones — the root of a site does
+    not carry a page type — so this is a scope question about rule 7, not about rule 1.
 
 ---
 
