@@ -13,7 +13,7 @@
  * [AWS SNS Configuration](/contents/AWSSQSConfiguration.md)
  * [Kafka Configuration](/contents/KafkaConfiguration.md)
  * [Azure Service Bus Configuration](/contents/AzureServiceBusConfiguration.md)
- * [Azure Archive Provider Configuration](/contents/)
+ * [Azure Archive Provider Configuration](/contents/AzureBlobConfiguration.md)
  * [Brighter Control API](/contents/BrighterControlAPI.md)
 
 ## Darker Configuration
@@ -23,7 +23,7 @@
 ## Brighter Request Handlers and Middleware Pipelines
 
  * [Building an Async Pipeline of Request Handlers](/contents/BuildingAnAsyncPipeline.md)
- * [Basic Configuration](/contents/DarkerBasicConfiguration.md)
+ * [How to Implement a Request Handler](/contents/ImplementingAHandler.md)
  * [How to Implement an Async Request Handler](/contents/ImplementingAsyncHandler.md)
  * [Requests, Commands and an Events](/contents/Requests%2C%20Commands%20and%20Events.md)
  * [Dispatching Requests](/contents/DispatchingARequest.md)
@@ -31,6 +31,9 @@
  * [Returning results from a Handler](/contents/ReturningResultsFromAHandler.md)
  * [Using an External Bus](/contents/ImplementingExternalBus.md)
  * [Message Mappers](/contents/MessageMappers.md)
+ * [Claim Check](/contents/ClaimCheck.md)
+ * [Compression](/contents/Compression.md)
+ * [S3 Luggage Store](/contents/S3LuggageStore.md)
  * [Routing](/contents/Routing.md)
  * [Building a Pipeline of Request Handlers](/contents/BuildingAPipeline.md)
  * [Passing information between Handlers in the Pipeline](/contents/UsingTheContextBag.md)
@@ -51,6 +54,7 @@
  * [Postgres Inbox](/contents/PostgresInbox.md)
  * [Sqlite Inbox](/contents/SqliteInbox.md)
  * [Dynamo Inbox](/contents/DynamoInbox.md)
+ * [Azure Blob Archive Provider](/contents/AzureBlobArchiveProvider.md)
 
 ## Darker Query Handlers and Middleware Pipelines
 
@@ -66,15 +70,6 @@
 ## Command, Processors and Dispatchers
 
  * [Command, Processor and Dispatcher Patterns](/contents/CommandsCommandDispatcherandProcessor.md)
-
-## Scheduler
-
- * [Scheduler](/contents/BrighterSchedulerSupport.md)
- * [Hangfire](/contents/HangfireScheduler.md)
- * [Quartz](/contents/Quartzcheduler.md)
- * [Aws Scheduler](/contents/AwsScheduler.md)
- * [Azure Scheduler](/contents/AzureScheduler.md)
- * [Custom Scheduler](/contents/CustomScheduler.md)
 
 ## Under the Hood
 
