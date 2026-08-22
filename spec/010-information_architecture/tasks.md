@@ -2956,7 +2956,7 @@ numbered here so it is a box rather than a paragraph. **None is optional.** They
 property worth naming: *every one of them is invisible to a green build*, which is why they
 are in a spec about enforcement at all.
 
-- [ ] **Task 11.6:** Rewrite `CLAUDE.md`'s § llms.txt to the format the platform ships
+- [x] **Task 11.6:** Rewrite `CLAUDE.md`'s § llms.txt to the format the platform ships
   - Input: `CLAUDE.md` § *llms.txt*, carrying a SUPERSEDED note since `991fd03`; §3 above
   - Output: the section describes `/llms.txt` as GitBook builds it, and the SUPERSEDED note
     is gone because there is nothing left for it to warn about
@@ -3118,7 +3118,7 @@ earned a fix.
 **Gates after:** linkcheck **144 files, clean**; pagelint **0 errors** / 791 warnings / 142
 pages; `--check-shape` 0; `--check-redirects` 0 at 77 entries.
 
-- [ ] **Task 11.9:** `README.md`'s front matter is enforced by nothing
+- [x] **Task 11.9:** `README.md`'s front matter is enforced by nothing
   - Input: `README.md`; `pagelint.py`'s `load_pages()`
   - Output: either the rule reaches it, or the boundary is recorded where someone will read it
   - Notes: `pagelint.py` reads `contents/` only — a boundary that exists so the banner rules
@@ -3127,6 +3127,90 @@ pages; `--check-shape` 0; `--check-redirects` 0 at 77 entries.
     is hand-written. It is correct today and **no rule will notice if it stops being**. Note
     that it takes the *description* rules and not the *banner* ones — the root of a site does
     not carry a page type — so this is a scope question about rule 7, not about rule 1.
+
+
+### Tasks 11.6 and 11.9 as executed — 2026-08-22
+
+**Both are the same task from opposite ends: a convention nothing was checking.** 11.6 is a
+section describing a file that does not exist; 11.9 is a file no section's rule reaches.
+
+**Task 11.6 — the `llms.txt` section, rewritten from a measurement.** It described a
+generator this spec cancelled, under a SUPERSEDED note that had stood since `991fd03`. It now
+describes the file GitBook actually serves, measured live at the moment of writing: **56,527
+bytes, 201 entries, 201 with a description** — 143 from this space, 58 from `v9` — plus a
+trailing *Agent Instructions* section the platform appends, which documents a `?ask=` query
+endpoint nothing in this programme had recorded.
+
+**Writing it turned up a third source nobody had pinned down.** A line is
+`- [Title](url): description`, and its three parts come from three different places:
+
+| Part | Source | How it was established |
+|---|---|---|
+| URL slug | the **filename** | Phase 10, the hard way: repointing an entry at a real file moved the URL |
+| **Title** | the **`SUMMARY.md` entry text**, not the H1 | **Measured here.** 32 pages spell the two differently — `AWS SNS and SQS Configuration` against an H1 of `AWS SQS Configuration` — and the index uses the `SUMMARY.md` text on **all 32** |
+| description | the page's front matter | 201 of 201 |
+
+Nobody had asked where the title came from, because on 110 of the 142 pages the two agree
+and either answer looks right. **The discriminating cases were free to find and are the only
+ones that answer the question** — the same shape as the slug correction, which was settled by
+the seven entries where filename and title disagreed.
+
+> **One claim in the first draft of that section was wrong, and it was wrong in the direction
+> this programme keeps failing in.** It said every `v9` description opens with *"Superseded"*.
+> The prefix is **`Brighter V9 (superseded).`**, and the example URL was written for a space
+> root that does not exist — `v9`'s pages publish *under* this space's path. Both were
+> plausible reconstructions of work done a session earlier. **Checked against the bytes and
+> corrected before the commit**, which is the only reason this reads as a note rather than a
+> finding.
+
+**And checking it found three pages that are not there.** All 58 `v9` entries carry the
+prefix; **three carry nothing else** — `DarkerBasicConfiguration.md`, `ImplementAQueryHandler.md`
+and `Logging.md`, whose bodies are an H1 and, in two cases, the word `TODO`. Phase 10's sweep
+behaved correctly: there was no opening sentence to append, so it appended nothing. **The
+empty description is the symptom; the empty page is the defect**, and it is the same defect as
+master's `Logging.md`, which the maintainer ruled *write it*. Left for a ruling rather than
+decided here — see the note at the end of this section.
+
+**Task 11.9 — `README.md` now takes rule 7, and the reason it could not before is the
+interesting part.** The boundary was never a policy: `opening_sentence()` **skips the line
+after the H1**, because on all 142 pages that line is the banner. On the README that line *is*
+the opening sentence. Point the existing rule at the file unchanged and it summarises the site
+root with its **second paragraph**, then reports the front matter — which is correct — as a
+`DESCRIPTION MISMATCH`. A rule extended without reading it would have failed loudly on a
+correct page, which is the better of the two outcomes and still wrong.
+
+Root pages take **rule 7 and nothing else**, and are excluded from the cross-page uniqueness
+*corpus* as well as from its reporting, so no page can be reported as colliding with a page
+that is exempt. `--fix` gets the same narrowing: all three repairs are no-ops on `README.md`
+today, but by accident rather than by intent, and an accident is not a boundary.
+
+**Red-proofed on four branches, with the extractor called directly first.** That first step is
+the one the corpus made necessary: rule 7 was green on 142 pages while reading the wrong input
+on twenty of them, so a probe that only watches the tool fire proves the wrong thing.
+
+| Probe | Result |
+|---|---|
+| the extractor, called directly | line **10**, `"Documentation for the Brighter and Darker projects."` — the real sentence, not the second paragraph |
+| baseline | clean, exit 0 |
+| description drifted from the sentence | `DESCRIPTION MISMATCH`, exit 1 |
+| description unquoted | `DESCRIPTION UNREADABLE`, exit 1 |
+| opening sentence deleted | `DESCRIPTION MISMATCH`, exit 1 |
+
+The last row is worth keeping: deleting the sentence does **not** give `SUMMARY MISSING`,
+because the next paragraph becomes the summary and mismatches the front matter instead. On a
+page with more than one paragraph, *"no opening sentence"* surfaces as a mismatch. The page was
+copied aside and restored byte-identically, asserted both ways.
+
+**The corpus is 143 pages to `pagelint.py` from this commit**, and every figure in this
+document quoting 142 refers to `contents/` alone. Task 11.4 counts both.
+
+> **Outstanding, and it is a maintainer's call:** the three empty `v9` pages above. The
+> precedent is Phase 10, which **removed** six empty scheduler pages from `v9`'s `SUMMARY.md`
+> because GitBook published them as empty pages competing in search with the real V10 docs.
+> These three differ in one way that matters: those six documented a feature V9 does not have,
+> while these document features it does — they were simply never written. Removing them takes
+> away a navigation entry a reader may expect to find; leaving them publishes two pages whose
+> body is `TODO`.
 
 ---
 

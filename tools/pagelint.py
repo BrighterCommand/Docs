@@ -129,6 +129,18 @@ from linkcheck import ROOT, HEADING_RE, md_files, slug  # noqa: E402  reuse, do 
 # not pages and carry no banner.
 PAGES_DIR = 'contents'
 
+# Repo-root files that GitBook nevertheless publishes as pages. README.md is the
+# site root and the 143rd entry in /llms.txt, so its `description:` reaches a
+# reader exactly like any other page's -- and until spec 010 Task 11.9 nothing
+# checked it, because this tool read contents/ and stopped.
+#
+# They take rule 7 and nothing else. A root page carries no banner (rules 1 and
+# 2 would be asking it to declare a page type it does not have) and stands
+# outside the heading-qualification convention, whose whole purpose is to
+# attribute a chunk to the page it came from -- which for the site root is
+# circular. Everything about the opening sentence applies unchanged.
+ROOT_PAGES = frozenset({'README.md'})
+
 # Canonical. CLAUDE.md quotes this list verbatim; the two must not drift.
 # Their repetition is a feature: it makes the end of every page predictable.
 NAV_ALLOWLIST = frozenset({
@@ -232,6 +244,7 @@ class Page:
         self.path = path
         self.rel = rel
         self.lines = lines
+        self.is_root = rel in ROOT_PAGES
         self.headings = []      # (level, text, lineno)
         self.blocks = []        # dicts: info, start, end, body
         self.prose = []         # (lineno, text) outside fences
@@ -300,7 +313,7 @@ def load_pages():
     pages = {}
     for path in md_files():
         rel = os.path.relpath(path, ROOT)
-        if os.path.dirname(rel) != PAGES_DIR:
+        if os.path.dirname(rel) != PAGES_DIR and rel not in ROOT_PAGES:
             continue
         with open(path, encoding='utf-8') as fh:
             lines = fh.read().splitlines()
@@ -393,6 +406,11 @@ def check_headings(pages, reported):
     # 3a: which pages carry each normalised H2 text.
     pages_by_slug = defaultdict(set)
     for rel, page in pages.items():
+        # Root pages are outside this convention, so they must not be inside its
+        # corpus either: a page colliding with README.md would be reported
+        # against a rule README.md is exempt from.
+        if page.is_root:
+            continue
         for level, text, _ in page.headings:
             if level == 2 and not is_nav(text):
                 pages_by_slug[slug(text)].add(rel)
@@ -890,8 +908,14 @@ def opening_sentence(page):
     if banner is None:
         return None, 'nothing follows the H1'
 
+    # Past the banner, or from the H1 on a root page, which has none. Getting
+    # this wrong is silent rather than loud: the extractor would take the
+    # opening sentence *for* the banner, skip it, and summarise the page with
+    # its second paragraph -- which then mismatches the front matter derived
+    # from the first.
+    scan_from = page.h1_line if page.is_root else banner
     in_fence = False
-    for lineno in range(banner + 1, len(page.lines) + 1):
+    for lineno in range(scan_from + 1, len(page.lines) + 1):
         line = page.lines[lineno - 1]
         match = FENCE_RE.match(line)
         if match:
@@ -1122,7 +1146,7 @@ def describe_scope(merge_base, ranges, pages, reported):
                for start, end in ranges[rel])
     )
     line = (f'--changed {merge_base}: {files} file(s), {hunks} hunk(s) in the '
-            f'diff; {len(strict_pages)} page(s) under {PAGES_DIR}/, '
+            f'diff; {len(strict_pages)} documentation page(s), '
             f'{blocks} code block(s) strict.')
     if not blocks:
         line += ('\n  No code block overlaps the diff, so the strict rules are '
@@ -1196,7 +1220,9 @@ def main(argv):
     if fix:
         changes, refusals = [], []
         for rel in reported:
-            for fixer in (fix_banner_version, fix_language_tags, fix_description):
+            fixers = ((fix_description,) if pages[rel].is_root
+                      else (fix_banner_version, fix_language_tags, fix_description))
+            for fixer in fixers:
                 made, held = fixer(pages[rel])
                 changes += made
                 refusals += held
@@ -1221,10 +1247,13 @@ def main(argv):
     findings = []
     for rel in reported:
         page = pages[rel]
+        # A root page takes rule 7 only -- see ROOT_PAGES.
+        if page.is_root:
+            continue
         findings += check_banner(page)
         findings += check_code_blocks(page, strict.get(rel, []))
         findings += check_terminology(page)
-    findings += check_headings(pages, reported)
+    findings += check_headings(pages, [r for r in reported if not pages[r].is_root])
     findings += check_summaries(pages, reported)
 
     findings.sort(key=lambda f: (f.path, f.line, f.rule))
