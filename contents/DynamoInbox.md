@@ -23,6 +23,13 @@ For this we will need the *Inbox* packages for the DynamoDb *Inbox*.
 See [AWS SQS Migration](/contents/AWSSQSMigrateToV10.md#migrating-from-aws-sdk-v3-to-v4) for migration guidance between v3 and v4.
 
 ``` csharp
+using Amazon.DynamoDBv2;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox.DynamoDB;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
         .ConfigureServices(hostContext, services) =>

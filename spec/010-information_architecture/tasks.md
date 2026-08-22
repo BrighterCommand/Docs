@@ -2904,6 +2904,39 @@ pages; `--check-shape` 0; `--check-redirects` 0 at 77 entries.
     newline. Asserted per file during the sweep. Under `wc -l` all 14 would have gained a line,
     which is exactly the instrument design §16 finding 1 ruled against.
 
+  - **PR #110 was merged with its `--changed` check failing, and that is the finding.** The
+    sweep put one byte at the end of 14 files. On two of them that byte falls **inside a C#
+    code block**, which made the block overlap the diff, which made rule 6 **strict** on it —
+    `DynamoInbox.md:25` and `ImplementingExternalBus.md:87`, two errors. **The gate behaved
+    exactly as designed**: block granularity means *you touched this block, so it is yours now*,
+    and a trailing newline is a touch.
+
+    **It was missed twice, both times by truncating output rather than by any tool being
+    wrong.** Locally the run was piped through `head -1`, which shows the scope line Task 11.3
+    had just added and hides the error summary two lines below it. On CI, `gh pr checks --watch`
+    was read through `tail -3`, and the failing **`pull_request`** row sat above the tail while
+    the **`push`** rows below it passed — the push event does not run `--changed` at all, so the
+    two runs on the same commit legitimately disagree. **Two different truncations of two
+    different outputs, agreeing on a wrong answer.** Then `--admin` merged past the failing
+    required check, which is what `--admin` does.
+
+    **The irony is exact: Task 11.3 built the report that printed the evidence.** The run said
+    `14 documentation page(s), 4 code block(s) strict` — the first PR in this phase where that
+    figure was not zero, and the number nobody read.
+
+    **Fixed in the follow-up PR, and the two remedies differ because the blocks do.**
+    `DynamoInbox.md` gets **real `using` directives**, each namespace verified in the Brighter
+    source rather than guessed — `Paramore.Brighter.Inbox.DynamoDB` is spelled with a capital
+    `B` in the namespace while the *package* on the same page is `...DynamoDb`, and the first
+    draft of the fix got that wrong. `ImplementingExternalBus.md` gets **`// ...`**, because its
+    block is V9-era code calling `LogProvider` and `ILog`, **which do not exist anywhere in the
+    V10 source** — inventing directives for them would have asserted something false to make a
+    build green. The debt moves **791 → 790**: one block leaves it, one declares itself.
+
+    **Proved by reproducing the failure, not by asserting the fix.** The same command at the
+    same base — `--changed 2c8e456^1` — reports **4 code blocks strict** either way, and **2
+    errors at `2c8e456`** against **0** with the fix.
+
 - [x] **Task 11.3:** P2-3 — echo the changed-range count from `docs.yml`
   - Input: `.github/workflows/docs.yml`
   - Output: the `--changed` step prints how many files and hunks it examined
@@ -2974,7 +3007,7 @@ it was.
 | # | Criterion | Verdict | Evidence |
 |---|---|---|---|
 | **AC1** | `SUMMARY.md` links every page, zero orphans | **met** | `linkcheck.py`: **144 files, clean, 0 orphans**. `SUMMARY.md` links **142** pages under `contents/`, against 142 on disk. Corroborated live: `urlmap.py --verify` reports **predicted 142, published 142, 142 agree** |
-| **AC2** | `linkcheck.py` and `pagelint.py` at 0 errors | **met** | **0 and 0**, the second across **143** pages — 142 plus `README.md`, which Task 11.9 brought into scope. 791 warnings, all of them the declared using-directive debt |
+| **AC2** | `linkcheck.py` and `pagelint.py` at 0 errors | **met** | **0 and 0**, the second across **143** pages — 142 plus `README.md`, which Task 11.9 brought into scope. **790** warnings, all of them the declared using-directive debt (791 when this pass first ran; the `--changed` follow-up below retired one) |
 | **AC3** | Every moved page has a redirect; none points at a missing file | **met, and checked for completeness rather than validity** | `--redirects` re-run against the pre-Phase-2 `SUMMARY.md` (`1bae048^`) emits **74** moved paths. **Every one is in `.gitbook.yaml`, with the same target: zero moved-but-not-redirected.** All 77 targets exist on disk |
 | **AC4** | The block is verified mechanically | **met** | `--check-redirects`: **0 failures, 77 entries, 7,858 bytes, all printable ASCII**, in CI on every PR since Phase 2 |
 | **AC5a** | The mechanism discriminates | **met at D0** | PRs #77/#78/#79, requirements §16. Not re-run — the question is unanswerable now by construction, and that was the point of shipping belt-and-braces |
@@ -3025,11 +3058,12 @@ in a hurry. **Nothing is wrong with the page; something is wrong with reaching f
 
 ### Task 11.5 — the final gate
 
-Run at `2c8e456`, after the last merge:
+Run at `2c8e456` after the last merge, and **re-run after the `--changed` follow-up** that
+PR #110 turned out to owe — the only figure that moved is the debt, 791 to 790:
 
 ```text
 python3 tools/linkcheck.py                  No broken internal links (144 files checked).
-python3 tools/pagelint.py                   0 errors, 791 warnings (791 blocks / 118 pages), 143 pages
+python3 tools/pagelint.py                   0 errors, 790 warnings (790 blocks / 117 pages), 143 pages
 python3 tools/urlmap.py --check-shape       0 failures — 142 pages, 12 sections, deepest 4, widest 10
 python3 tools/urlmap.py --check-redirects   0 failures — 77 entries, 7858 bytes, printable ASCII
 python3 tools/urlmap.py --verify            predicted 142, published 142, 142 agree

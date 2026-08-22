@@ -85,6 +85,7 @@ The use of that pattern means the complexity of the distributed task queue is hi
 that your command is handled reliably, asynchronously, and in parallel with little cognitive overhead. It just works!
 
 ``` csharp
+// ...
 public class MailTaskReminderHandler : RequestHandler<TaskReminderCommand>
 {
     private readonly IAmAMailGateway _mailGateway;
