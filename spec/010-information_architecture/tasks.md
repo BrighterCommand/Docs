@@ -2697,6 +2697,65 @@ than left for someone to discover. It takes our space to **143 of 143**.
 > hiding it costs nothing; on `v9` rendering it is the only way the marker reaches a reader
 > who never looks at the index.
 
+### Phase 10 closed — measured 2026-08-22
+
+**Both spaces are fully described**, measured on the live canonical index after both merges,
+with the deploy confirmed by a control first — `README`'s own description appearing, which
+could only come from `master`:
+
+| Section of `/llms.txt` | Before Phase 10 | After |
+|---|---|---|
+| *Paramore Brighter Documentation* | 0 of 143 | **143 of 143** |
+| *V9 Paramore Brighter Documentation* | 0 of 59 | **58 of 58** |
+| file bytes | 27,470 | **56,527** |
+
+**And it settled the question the preview could not.** GitBook built a preview revision for
+every `master` PR this session and **none** for the `v9` PR, which was evidence and not proof
+about whether that space still synced. It does: the V9 descriptions are in the index, and they
+exist nowhere but that branch.
+
+**The V9 space also now maps 1:1 — 57 SUMMARY entries, 57 files**, where it had published 59
+pages from a SUMMARY naming **seven files that did not exist** while **six real pages were
+never linked**. Six of the seven were the whole `## Scheduler` section, copied from `master`
+for a feature V9 does not have; GitBook published all six as empty pages competing in search
+with the real V10 scheduler docs. Removed. Five previously invisible pages now publish,
+including `ImplementingAHandler.md` — *"How to Implement a Request Handler"* — which had been
+displaced by a duplicate entry that GitBook never published, because a page can sit at only
+one place in a tree.
+
+> **A prediction stated confidently in a commit message, a PR body and this file, and it was
+> wrong.** The claim was that **GitBook slugs a page from its `SUMMARY.md` title**, so
+> repointing the *Azure Archive Provider Configuration* entry at `AzureBlobConfiguration.md`
+> would fill the existing URL without moving it. Measured after the merge:
+> `…/azure-archive-provider-configuration` is **gone**, replaced by
+> `…/azureblobconfiguration`.
+>
+> **The model is the other way round: the slug comes from the FILENAME, and falls back to the
+> title only when no file exists.** That is precisely why the seven fileless entries carried
+> title-shaped slugs — `aws-scheduler`, `azure-archive-provider-configuration` — while all
+> fifty-one real pages carried filename-shaped ones — `awssqsconfiguration`,
+> `howconfiguringthecommandprocessorworks`. **The evidence was in the URL list printed before
+> the prediction was made**, and the two shapes sit next to each other in it.
+>
+> The fileless entries were the *exception* being read as the *rule* — which is the same
+> mistake as *"three is the deepest the live site is known to work at"*, a fact about our own
+> `SUMMARY.md` mistaken for a fact about GitBook. **This is the second rule in this programme
+> to move, and both moved because a property of our data was read as a property of the
+> platform.**
+>
+> One redirect covers it. The six removed scheduler URLs get none, deliberately: scheduling
+> does not exist in V9, so nothing in that space is a correct target, and a redirect to an
+> unrelated page is worse than a 404.
+
+**`v9`'s `.gitbook.yaml` was retyped, not edited** — it still carried the two U+200B that
+`master` shed in session 7, and this change adds a key to it. Typed from scratch and asserted
+pure ASCII before writing: **173 bytes, zero non-ASCII**. *Type config; never paste it.*
+
+**Phase 10 is complete — Tasks 10.1, 10.2, 10.3 and 10.4.** What remains in this spec is
+**Phase 11, close**.
+
+- [x] **Task 10.2** — the finding written, and the fix shipped and measured
+
 ---
 
 ## Phase 11 — Close (PR 11)
