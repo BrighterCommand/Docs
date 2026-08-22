@@ -72,6 +72,11 @@ Block granularity, not file: a file-level rule would mean fixing a typo on a
 700-line page obliges backfilling every block on it, which penalises exactly the
 small corrections worth encouraging.
 
+A --changed run opens by reporting what it examined -- files, hunks, pages and,
+the figure that matters, how many code blocks the diff reached. `0 errors` from
+a run that made nothing strict is the same line as `0 errors` from one that did,
+and the difference is not recoverable afterwards. See describe_scope().
+
 A block that marks its omission with `// ...` stays a warning even when strict.
 That is the remedy this rule's own message offers and CLAUDE.md's *Complete code
 blocks* prescribes — an incomplete block should be visibly incomplete. It is a
@@ -1073,6 +1078,43 @@ def changed_ranges(merge_base):
     return ranges
 
 
+def describe_scope(merge_base, ranges, pages, reported):
+    """What a --changed run actually examined, in its own words.
+
+    `0 errors` from --changed is indistinguishable from a run that found no
+    ranges to be strict about, and both print the same line. That ambiguity has
+    already been read the wrong way twice in this repository: once when a diff
+    of five prose lines was expected to make the gate bite, and once when two
+    brand-new pages contributed no ranges at all because git diff cannot see an
+    unstaged file. Neither run was wrong; both looked exactly like a real one.
+
+    So the run reports its own scope. The load-bearing figure is the last one:
+    the strict rules are per *code block*, so a diff spanning a hundred files
+    of prose makes them strict about nothing. Files and hunks describe the
+    diff; blocks describe what the diff reached.
+    """
+    files = len(ranges)
+    hunks = sum(len(v) for v in ranges.values())
+    strict_pages = [rel for rel in reported if ranges.get(rel)]
+    blocks = sum(
+        1
+        for rel in strict_pages
+        for block in pages[rel].blocks
+        if any(start <= block['end'] and block['start'] <= end
+               for start, end in ranges[rel])
+    )
+    line = (f'--changed {merge_base}: {files} file(s), {hunks} hunk(s) in the '
+            f'diff; {len(strict_pages)} page(s) under {PAGES_DIR}/, '
+            f'{blocks} code block(s) strict.')
+    if not blocks:
+        line += ('\n  No code block overlaps the diff, so the strict rules are '
+                 'vacuous on this run — a pass here says nothing about them. '
+                 'That is legitimate for a prose-only change; if you expected '
+                 'otherwise, check that new files are staged, since git diff '
+                 'cannot see an untracked one.')
+    return line
+
+
 # --------------------------------------------------------------------------
 
 def main(argv):
@@ -1130,6 +1172,8 @@ def main(argv):
             print(f'--changed cannot determine what changed: {exc}',
                   file=sys.stderr)
             return 2
+        print(describe_scope(merge_base, strict, pages, reported))
+        print()
 
     if fix:
         changes, refusals = [], []
