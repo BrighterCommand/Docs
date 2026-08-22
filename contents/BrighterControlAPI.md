@@ -1,8 +1,15 @@
+---
+description: "The Brighter Control API allows direct management of a Dispatcher node."
+layout:
+  description:
+    visible: false
+---
+
 # **Brighter Control API**
 
 > **Reference** · Applies to **Brighter V10**
 
-The brighter control API allows direct management of a Dispatcher node
+The Brighter Control API allows direct management of a Dispatcher node.
 
 ## Configuring the API
 

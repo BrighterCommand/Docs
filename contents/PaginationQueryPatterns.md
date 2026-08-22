@@ -1,3 +1,10 @@
+---
+description: "How to page through a large result set in Darker, by offset and by cursor, with the trade-offs of each."
+layout:
+  description:
+    visible: false
+---
+
 # Pagination Query Patterns
 
 > **How-to** · Applies to **Darker V4** · Prerequisites: [Query Patterns](/contents/QueryPatterns.md)

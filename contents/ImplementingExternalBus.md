@@ -1,3 +1,10 @@
+---
+description: "Brighter provides support for an External Bus."
+layout:
+  description:
+    visible: false
+---
+
 # Using an External Bus 
 
 > **How-to** · Applies to **Brighter V10**

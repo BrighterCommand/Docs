@@ -1,10 +1,17 @@
+---
+description: "Every option for configuring a Brighter Dispatcher, in one place."
+layout:
+  description:
+    visible: false
+---
+
 # Dispatcher Configuration Reference
 
 > **Reference** · Applies to **Brighter V10** · Prerequisites: [Basic Configuration](/contents/BrighterBasicConfiguration.md)
 
-Every option for configuring a Brighter **Dispatcher** — the service collection
-extensions that register it, its subscriptions, gateway connections, channel
-factories and lifetimes, and the Inbox option that matters when receiving
+Every option for configuring a Brighter **Dispatcher**, in one place. That covers the
+service collection extensions that register it, its subscriptions, gateway connections,
+channel factories and lifetimes, and the Inbox option that matters when receiving
 requests.
 
 This page is consulted rather than read through. For the one path that works,

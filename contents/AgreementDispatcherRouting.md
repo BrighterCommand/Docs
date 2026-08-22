@@ -1,3 +1,10 @@
+---
+description: "Why you would route a request by its content rather than its type, what that buys you, and what it costs."
+layout:
+  description:
+    visible: false
+---
+
 # Agreement Dispatcher Routing
 
 > **Explanation** · Applies to **Brighter V10** · Prerequisites: [Agreement Dispatcher](/contents/AgreementDispatcher.md)

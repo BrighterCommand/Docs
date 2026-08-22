@@ -1,3 +1,10 @@
+---
+description: "TickerQ is a high-performance, reflection-free background task scheduler for .NET that uses source generators."
+layout:
+  description:
+    visible: false
+---
+
 # TickerQ Scheduler
 
 > **Reference** · Applies to **Brighter V10**

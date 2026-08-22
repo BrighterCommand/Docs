@@ -1,3 +1,10 @@
+---
+description: "This FAQ addresses common questions about using Brighter and Darker, organized by category."
+layout:
+  description:
+    visible: false
+---
+
 # Frequently Asked Questions
 
 > **Reference** · Applies to **Brighter V10**

@@ -1,3 +1,10 @@
+---
+description: "The Dapper Outbox allows integration between Dapper and Brighter's outbox support."
+layout:
+  description:
+    visible: false
+---
+
 # Dapper Outbox
 
 > **Reference** · Applies to **Brighter V10**

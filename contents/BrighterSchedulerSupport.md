@@ -1,3 +1,10 @@
+---
+description: "In distributed applications, it is often necessary to schedule messages for deferred execution—whether for implementing delayed workflows, retry mechanisms, or time-based business processes."
+layout:
+  description:
+    visible: false
+---
+
 # Brighter Scheduler Support
 
 > **Explanation** · Applies to **Brighter V10**

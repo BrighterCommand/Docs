@@ -1,3 +1,10 @@
+---
+description: "The InMemory Scheduler is a lightweight, timer-based scheduling implementation provided by Brighter for testing, development, and demonstration purposes."
+layout:
+  description:
+    visible: false
+---
+
 # InMemory Scheduler
 
 > **Reference** · Applies to **Brighter V10**

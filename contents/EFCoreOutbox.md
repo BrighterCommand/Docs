@@ -1,3 +1,10 @@
+---
+description: "The EFCore Outbox allows integration between EF Core and Brighter's outbox support."
+layout:
+  description:
+    visible: false
+---
+
 # EF Core Outbox
 
 > **Reference** · Applies to **Brighter V10**

@@ -1,3 +1,10 @@
+---
+description: "Once you have implemented your async Request Handler, you will want to dispatch Commands and Events to it through the Command Processor's asynchronous methods."
+layout:
+  description:
+    visible: false
+---
+
 # Dispatching Requests Asynchronously
 
 > **How-to** · Applies to **Brighter V10**

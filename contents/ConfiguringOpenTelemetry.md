@@ -1,3 +1,10 @@
+---
+description: "The OpenTelemetry SDK can be configured to listen to Activities emitted by Brighter."
+layout:
+  description:
+    visible: false
+---
+
 # Configuring OpenTelemetry
 
 > **How-to** · Applies to **Brighter V10** · Prerequisites: [Telemetry](/contents/Telemetry.md)

@@ -1,3 +1,10 @@
+---
+description: "A distributed lock lets multiple instances of your application coordinate so that only one of them performs a given task at a time."
+layout:
+  description:
+    visible: false
+---
+
 # Distributed Lock
 
 > **Explanation** · Applies to **Brighter V10**

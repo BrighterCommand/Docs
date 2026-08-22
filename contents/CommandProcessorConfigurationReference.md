@@ -1,9 +1,16 @@
+---
+description: "Every option for configuring a Brighter Command Processor, in one place."
+layout:
+  description:
+    visible: false
+---
+
 # Command Processor Configuration Reference
 
 > **Reference** · Applies to **Brighter V10** · Prerequisites: [Basic Configuration](/contents/BrighterBasicConfiguration.md)
 
-Every option for configuring a Brighter **Command Processor** — the service
-collection extensions, the validation Brighter applies to them, and the
+Every option for configuring a Brighter **Command Processor**, in one place. That covers
+the service collection extensions, the validation Brighter applies to them, and the
 `IBrighterBuilder` fluent interface that configures an External Bus, an Outbox
 and JSON serialisation.
 

@@ -1,3 +1,10 @@
+---
+description: "This page is what you read when deciding whether to use PostgreSQL as a broker at all: what it buys you, where it runs out, how it stores a payload, and how it compares with the dedicated brokers."
+layout:
+  description:
+    visible: false
+---
+
 # PostgreSQL Broker Trade-Offs
 
 > **Explanation** · Applies to **Brighter V10** · Prerequisites: [PostgreSQL Message Broker](/contents/PostgreSQLMessageBroker.md)

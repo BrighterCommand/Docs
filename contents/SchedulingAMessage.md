@@ -1,3 +1,10 @@
+---
+description: "This page shows you how to schedule a message or request for deferred execution, how to cancel one you have already scheduled, and how to configure each scheduler for the job."
+layout:
+  description:
+    visible: false
+---
+
 # Scheduling a Message
 
 > **How-to** · Applies to **Brighter V10** · Prerequisites: [Scheduler](/contents/BrighterSchedulerSupport.md)

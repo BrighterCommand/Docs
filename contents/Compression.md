@@ -1,3 +1,10 @@
+---
+description: "The Compression transform helps us reduce the size of a message using a compression algorithm."
+layout:
+  description:
+    visible: false
+---
+
 # Compression
 
 > **Explanation** · Applies to **Brighter V10**

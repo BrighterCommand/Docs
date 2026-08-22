@@ -1,3 +1,10 @@
+---
+description: "The MongoDB locking provider implements Brighter's distributed lock by writing lock documents to a MongoDB collection, so a single Outbox Sweeper and Archiver run when you scale out."
+layout:
+  description:
+    visible: false
+---
+
 # MongoDB Distributed Lock
 
 > **Reference** · Applies to **Brighter V10**

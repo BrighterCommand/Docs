@@ -1,3 +1,10 @@
+---
+description: "The Agreement Dispatcher is a pattern for routing requests to handlers dynamically based on the request's content or context, rather than using a fixed type-to-handler mapping."
+layout:
+  description:
+    visible: false
+---
+
 # Agreement Dispatcher
 
 > **How-to** · Applies to **Brighter V10**

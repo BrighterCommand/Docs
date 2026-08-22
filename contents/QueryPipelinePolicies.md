@@ -1,3 +1,10 @@
+---
+description: "Darker's policy decorators are powered by Polly, a .NET resilience and transient-fault-handling library."
+layout:
+  description:
+    visible: false
+---
+
 # Query Pipeline Policies
 
 > **How-to** · Applies to **Darker V4** · Prerequisites: [Query Pipeline and Decorators](/contents/QueryPipeline.md)

@@ -1,3 +1,10 @@
+---
+description: "This page is the procedure: what to switch on, what you must thread through your code, what to check before you enable it, and a worked example."
+layout:
+  description:
+    visible: false
+---
+
 # Turning On Replay On Seen
 
 > **How-to** · Applies to **Brighter V10** · Prerequisites: [Replay On Seen](/contents/ReplayOnSeen.md)

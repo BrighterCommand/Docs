@@ -1,3 +1,10 @@
+---
+description: "BoxProvisioning is the Brighter library that creates and migrates your Outbox and Inbox tables at application startup."
+layout:
+  description:
+    visible: false
+---
+
 # Box Provisioning
 
 > **Explanation** · Applies to **Brighter V10**

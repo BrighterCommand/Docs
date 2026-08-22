@@ -1,3 +1,10 @@
+---
+description: "Brighter can validate a request in its handler pipeline before your business handler runs."
+layout:
+  description:
+    visible: false
+---
+
 # Request Validation
 
 > **How-to** · Applies to **Brighter V10**

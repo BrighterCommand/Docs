@@ -1,3 +1,10 @@
+---
+description: "CloudEvents is a CNCF specification for describing event data in a common, standardized way."
+layout:
+  description:
+    visible: false
+---
+
 # Cloud Events Support
 
 > **How-to** · Applies to **Brighter V10**

@@ -418,11 +418,19 @@ Version markers are the one convention with no rule, and deliberately so: whethe
 code blocks differ *by version* is a judgement about meaning, and a regex that guessed
 at it would fire on every before/after pair in the repo. It is checked in review.
 
-**`--fix` repairs two of these and refuses the rest.** It retargets a banner whose
+**`--fix` repairs three of these and refuses the rest.** It retargets a banner whose
 *Applies to* is stale against `APPLIES_TO` — which is what makes a version bump one
-edit to that tuple plus one command — and tags an untagged fence ```` ```text ````
-when nothing in the block looks like code. It rewrites only the version segment, so
+edit to that tuple plus one command — tags an untagged fence ```` ```text ```` when
+nothing in the block looks like code, and writes a page's `description:` front matter
+from its own opening sentence. It rewrites only the version segment, so
 the page type and any Prerequisites are out of its reach by construction.
+
+The description repair is what swept all 142 pages, and it refuses in two cases rather
+than guessing. It refuses when the sentence it would copy **fails rule 7**, so `--fix`
+cannot manufacture a description the linter then rejects — nor, worse, one it accepts.
+And it refuses when **the H1 is not on line 1**: GitBook reads front matter only at the
+very first byte of a file, so a block written under a leading blank line is not front
+matter at all, and the page simply has no description with nothing to say so.
 
 It **never decides a page type.** That is a judgement about what a page is *for*, it
 cannot be recovered from the text, and a wrong one is invisible: a page mislabelled

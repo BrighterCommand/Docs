@@ -1,3 +1,10 @@
+---
+description: "V10 enables nullable reference types across all Brighter projects, providing improved type safety and helping prevent null reference exceptions."
+layout:
+  description:
+    visible: false
+---
+
 # Nullable Reference Types
 
 > **Reference** · Applies to **Brighter V10**

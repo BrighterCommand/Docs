@@ -1,3 +1,10 @@
+---
+description: "The MongoDB Outbox allows integration between MongoDB and Brighter's outbox support."
+layout:
+  description:
+    visible: false
+---
+
 # MongoDB Outbox
 
 > **Reference** · Applies to **Brighter V10**

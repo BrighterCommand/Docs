@@ -80,10 +80,19 @@ block still counts towards the debt and still says so, in its own words. Without
 it, moving a block verbatim between pages is indistinguishable from writing a
 new one, and a page split cannot honour "move text, do not improve it".
 
---fix repairs the two rules that have exactly one correct answer: a banner whose
-version segment is stale against APPLIES_TO, and an untagged fence whose body
-shows no evidence of being code. It never decides a page type. See the --fix
-section below for why that boundary is where it is.
+--fix repairs the three rules that have exactly one correct answer: a banner
+whose version segment is stale against APPLIES_TO, an untagged fence whose body
+shows no evidence of being code, and a missing `description:` front matter,
+which is the page's own opening sentence with its markdown stripped. It never
+decides a page type. See the --fix section below for why that boundary is where
+it is.
+
+The description repair refuses whenever the sentence it would copy fails rule 7,
+so --fix cannot manufacture a description the linter then rejects -- nor, worse,
+one it accepts. It also refuses when the H1 is not on line 1: GitBook reads front
+matter only at the very first byte, and a block written under a leading blank
+line is not front matter at all. That failure is silent, which is why it is a
+refusal rather than a best effort.
 
 Usage:
     python3 tools/pagelint.py                          # whole repo
@@ -545,6 +554,98 @@ def fix_banner_version(page):
                    f'{stale} -> {current}')], []
 
 
+def yaml_quote(value):
+    """A YAML scalar for `value`, or None when the answer is not unique.
+
+    Double quotes by default, so the apostrophes in "Brighter's" need no
+    thought. Single quotes when the value itself contains a double quote --
+    EventCarriedStateTransfer.md opens by naming a paper in quotes. Refuses
+    when it contains both, or a backslash, rather than guessing at an escape:
+    GitBook's failure mode for malformed front matter is a page that imports
+    with no title and no error, so a wrong guess here is invisible.
+    """
+    if '\\' in value:
+        return None
+    if '"' not in value:
+        return '"' + value + '"'
+    if "'" not in value:
+        return "'" + value + "'"
+    return None
+
+
+def fix_description(page):
+    """Write `description:` front matter from the page's own opening sentence.
+
+    This qualifies for --fix on the same test as the other two repairs: there
+    is exactly one correct answer and it is derivable from the page. It refuses
+    whenever the sentence itself would fail rule 7, so --fix cannot manufacture
+    a description that the linter then rejects -- or worse, accept one.
+    """
+    got, why = opening_sentence(page)
+    if got is None:
+        return [], [Refusal(page.rel, 1, f'{why}, so there is no sentence to describe it with')]
+    sentence, lineno = got
+    shown = rendered(sentence)
+
+    if len(shown) > SUMMARY_LIMIT or shown.endswith(':') \
+            or not shown.endswith(('.', '!', '?')):
+        return [], [Refusal(page.rel, lineno,
+                            'the opening sentence does not satisfy rule 7; fix the '
+                            'sentence and the description follows from it')]
+
+    quoted = yaml_quote(shown)
+    if quoted is None:
+        return [], [Refusal(page.rel, lineno,
+                            'the opening sentence contains a backslash, or both quote '
+                            'characters, so its YAML scalar is not unique')]
+
+    existing, unreadable = front_matter_description(page)
+    if unreadable:
+        return [], [Refusal(page.rel, 1, unreadable)]
+
+    if existing is not None:
+        if existing == shown:
+            return [], []
+        for line in range(1, len(page.lines) + 1):
+            if page.lines[line - 1].startswith('description:'):
+                return [Change(page.rel, line, page.lines[line - 1],
+                               'description: ' + quoted,
+                               'description retargeted at the opening sentence')], []
+        return [], [Refusal(page.rel, 1, 'the description moved under the fix')]
+
+    if page.lines and page.lines[0].strip() == '---':
+        return [], [Refusal(page.rel, 1,
+                            'the page has front matter but no `description:`; adding a key '
+                            'to a block someone else wrote is an editorial change')]
+
+    # GitBook requires front matter at the very first byte of the file. A page
+    # with a blank line before its H1 would take the block at line 2, where it
+    # is not front matter at all -- and the failure is silent, because the page
+    # still renders and simply has no description. Caught on
+    # ReturningResultsFromAHandler.md, the one page in the corpus that opens
+    # with a newline.
+    if page.h1_line != 1:
+        return [], [Refusal(page.rel, 1,
+                            f'the H1 is on line {page.h1_line}, so front matter written '
+                            'above it would not be the first bytes of the file, and '
+                            'GitBook would ignore it')]
+
+    # No front matter at all: the block goes above the H1, and carries the
+    # layout switch with it. Without `visible: false` GitBook renders the
+    # description as a subtitle, and the page then opens with the same sentence
+    # twice -- once as the subtitle, once as the paragraph it was taken from.
+    h1 = page.lines[page.h1_line - 1]
+    block = ('---\n'
+             f'description: {quoted}\n'
+             'layout:\n'
+             '  description:\n'
+             '    visible: false\n'
+             '---\n'
+             '\n') + h1
+    return [Change(page.rel, page.h1_line, h1, block,
+                   'description written from the opening sentence')], []
+
+
 # Evidence that a block is code, and so not this tool's to tag. Each entry is
 # (what it recognises, pattern); the first to match a line holds the fix back.
 CODE_EVIDENCE = (
@@ -658,8 +759,16 @@ def check_terminology(page):
             line.strip() == OPT_OUT for line in page.lines):
         return []
 
+    # Front matter is not prose, and reading it as prose double-reports. The
+    # `description:` value is the opening sentence with its code spans stripped,
+    # so an assembly name legitimately in backticks -- `Brighter.ServiceActivator`
+    # on HowServiceActivatorWorks.md -- arrives here bare and fires a rule the
+    # body it came from already passes. DESCRIPTION MISMATCH keeps the two
+    # equal, so checking the body checks both.
     findings = []
     for lineno, line in page.prose:
+        if lineno <= front_matter_end(page):
+            continue
         if OPT_OUT in line:
             continue
         stripped = LINK_TARGET_RE.sub(']()', INLINE_CODE_RE.sub('``', line))
@@ -693,18 +802,44 @@ def rendered(text):
     text = re.sub(r'`([^`]*)`', r'\1', text)
     text = re.sub(r'\*\*([^*]*)\*\*', r'\1', text)
     text = re.sub(r'\*([^*]*)\*', r'\1', text)
+    # Markdown backslash escapes are punctuation to a reader and backslashes to
+    # everyone else. EventCarriedStateTransfer.md opens with an escaped quote,
+    # and without this the description written from it carries the backslashes
+    # into the page's meta tags and the published index.
+    text = re.sub(r'\\([\\`*_{}\[\]()#+\-.!"<>|\'])', r'\1', text)
     return text.strip()
+
+
+# Sentence-enders that are not. Kept explicit rather than clever: a page opening
+# "Data on the Outside vs. Data on the Inside" was being summarised as
+# "In his white paper "Data on the Outside vs." -- accepted by every clause of
+# rule 7, because a truncated sentence is short, unique and ends in a period.
+ABBREVIATIONS = frozenset({
+    'e.g', 'i.e', 'etc', 'vs', 'cf', 'approx', 'viz', 'resp', 'al', 'ca',
+    'inc', 'ltd', 'co', 'corp', 'fig', 'no', 'dr', 'mr', 'mrs', 'ms', 'st',
+    'jr', 'sr',
+})
+
+TRAILING_WORD_RE = re.compile(r'([A-Za-z.]+)$')
 
 
 def first_sentence(text):
     """Up to the first sentence-ending period, else the whole line.
 
-    The lookbehinds keep "e.g." and "i.e." from ending a sentence mid-clause;
-    without them a page opening "Brighter supports several brokers, e.g. Kafka."
-    would be summarised as four words.
+    A period ends a sentence unless the word before it is an abbreviation or a
+    single initial. Guessing the other way -- treating every period as a
+    boundary -- produces a summary that passes all of rule 7's checks and is
+    nonsense, which is the worst of both: enforced, and wrong.
     """
-    match = re.search(r'(?<!\be\.g)(?<!\bi\.e)(?<!\betc)[.!?](\s|$)', text)
-    return text[:match.start() + 1].strip() if match else text.strip()
+    for match in re.finditer(r'[.!?](\s|$)', text):
+        word = TRAILING_WORD_RE.search(text[:match.start()])
+        token = word.group(1) if word else ''
+        if token.lower().rstrip('.') in ABBREVIATIONS:
+            continue
+        if re.fullmatch(r'[A-Za-z]', token):      # an initial: "Pat J. Helland"
+            continue
+        return text[:match.start() + 1].strip()
+    return text.strip()
 
 
 def opening_sentence(page):
@@ -744,8 +879,29 @@ def opening_sentence(page):
         text = line.strip()
         if not text or HEADING_RE.match(line) or text.startswith('>'):
             continue
-        return (first_sentence(text), lineno), None
+        # The whole paragraph, not the line. Prose here is hard-wrapped, so a
+        # sentence routinely runs past a newline -- and a line-at-a-time reader
+        # returns a fragment that passes every clause of rule 7 by being short,
+        # unique and punctuation-free. Measured before this was fixed: 20 of
+        # 142 summaries were truncated mid-sentence, four of them mid-link.
+        para = [text]
+        for follow in range(lineno + 1, len(page.lines) + 1):
+            nxt = page.lines[follow - 1]
+            if not nxt.strip() or HEADING_RE.match(nxt) or FENCE_RE.match(nxt):
+                break
+            para.append(nxt.strip())
+        return (first_sentence(' '.join(para)), lineno), None
     return None, 'the page has no prose after its banner'
+
+
+def front_matter_end(page):
+    """Line number of the closing `---`, or 0 when the page has no front matter."""
+    if not page.lines or page.lines[0].strip() != '---':
+        return 0
+    for lineno in range(2, len(page.lines) + 1):
+        if page.lines[lineno - 1].strip() == '---':
+            return lineno
+    return 0
 
 
 def front_matter_description(page):
@@ -824,12 +980,21 @@ def check_summaries(pages, reported):
                 f'the opening sentence is {len(shown)} characters rendered; '
                 f'the limit is {SUMMARY_LIMIT}. Split it — the first sentence '
                 'has to survive being read on its own, in a search result'))
+        # Colon first, then the general case. A colon IS a missing terminal
+        # stop, so the other order makes this branch unreachable and silently
+        # retires a rule -- the specific message has the specific remedy.
         if shown.endswith(':'):
             findings.append(error(
                 rel, lineno, 'SUMMARY ENDS IN COLON',
                 'the opening sentence ends in a colon, so it promises a list '
                 'that an index will not print. Say what the page is about, then '
                 'introduce the list'))
+        elif not shown.endswith(('.', '!', '?')):
+            findings.append(error(
+                rel, lineno, 'SUMMARY NOT A SENTENCE',
+                f'the page opens with "{shown[:60]}…", which has no terminal '
+                'punctuation. An index prints it as the page\'s whole description, '
+                'so a fragment reads as a truncation of something better'))
 
         # Parity with the front matter, on pages that carry one. The whole point
         # of deriving the description from the page is that the two cannot
@@ -969,7 +1134,7 @@ def main(argv):
     if fix:
         changes, refusals = [], []
         for rel in reported:
-            for fixer in (fix_banner_version, fix_language_tags):
+            for fixer in (fix_banner_version, fix_language_tags, fix_description):
                 made, held = fixer(pages[rel])
                 changes += made
                 refusals += held

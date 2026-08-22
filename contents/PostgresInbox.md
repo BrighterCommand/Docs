@@ -1,3 +1,10 @@
+---
+description: "The Postgres Inbox allows use of Postgres for Brighter's inbox support."
+layout:
+  description:
+    visible: false
+---
+
 # Postgres Inbox
 
 > **Reference** · Applies to **Brighter V10**

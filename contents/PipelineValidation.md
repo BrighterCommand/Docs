@@ -1,3 +1,10 @@
+---
+description: "Brighter can validate your pipeline configuration at startup, catching common mistakes before any messages are sent or consumed."
+layout:
+  description:
+    visible: false
+---
+
 # Pipeline Validation and Diagnostics
 
 > **How-to** · Applies to **Brighter V10**

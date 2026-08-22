@@ -1,3 +1,10 @@
+---
+description: "An async pipeline wraps an async request handler in the same orthogonal operations a synchronous pipeline uses, with attributes whose handlers await."
+layout:
+  description:
+    visible: false
+---
+
 # Building a Pipeline of Async Request Handlers
 
 > **How-to** · Applies to **Brighter V10**

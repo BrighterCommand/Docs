@@ -1,3 +1,10 @@
+---
+description: "The Sqlite Inbox allows use of Sqlite for Brighter's inbox support."
+layout:
+  description:
+    visible: false
+---
+
 # Sqlite Inbox
 
 > **Reference** · Applies to **Brighter V10**

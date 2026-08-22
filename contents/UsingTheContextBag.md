@@ -1,3 +1,10 @@
+---
+description: "A key constraint of the Pipes and Filters architectural style is that Filters do not share state."
+layout:
+  description:
+    visible: false
+---
+
 # Passing Information Between Handlers in the Pipeline
 
 > **How-to** · Applies to **Brighter V10**

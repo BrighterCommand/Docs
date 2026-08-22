@@ -1,3 +1,10 @@
+---
+description: "AWS EventBridge Scheduler is a fully managed, serverless service on AWS that allows you to create, run, and manage scheduled tasks at scale."
+layout:
+  description:
+    visible: false
+---
+
 # AWS Scheduler
 
 > **Reference** · Applies to **Brighter V10**

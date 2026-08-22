@@ -1,3 +1,10 @@
+---
+description: "CloudEvents defines both required and optional attributes for events."
+layout:
+  description:
+    visible: false
+---
+
 # CloudEvents Reference
 
 > **Reference** · Applies to **Brighter V10** · Prerequisites: [Cloud Events Support](/contents/CloudEventsSupport.md)

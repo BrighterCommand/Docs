@@ -1,3 +1,10 @@
+---
+description: "When your handler throws an exception on the External Bus, Brighter's message pump catches it and decides what to do with the message."
+layout:
+  description:
+    visible: false
+---
+
 # Error Handling
 
 > **Explanation** · Applies to **Brighter V10**

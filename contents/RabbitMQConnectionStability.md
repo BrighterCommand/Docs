@@ -1,3 +1,10 @@
+---
+description: "V10 includes improvements to RabbitMQ connection handling and error recovery, making applications more resilient to network issues and broker restarts."
+layout:
+  description:
+    visible: false
+---
+
 # RabbitMQ Connection Stability
 
 > **How-to** · Applies to **Brighter V10** · Prerequisites: [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)

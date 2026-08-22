@@ -1,3 +1,10 @@
+---
+description: "Query recipes that take parameters: looking up a single entity, filtering a list, and searching on several criteria at once."
+layout:
+  description:
+    visible: false
+---
+
 # Parameterized Query Patterns
 
 > **How-to** · Applies to **Darker V4** · Prerequisites: [Query Patterns](/contents/QueryPatterns.md)

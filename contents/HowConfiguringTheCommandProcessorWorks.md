@@ -1,3 +1,10 @@
+---
+description: "Brighter does not have a dependency on an Inversion Of Control (IoC) framework."
+layout:
+  description:
+    visible: false
+---
+
 # How Configuring the Command Processor Works
 
 > **Explanation** · Applies to **Brighter V10**

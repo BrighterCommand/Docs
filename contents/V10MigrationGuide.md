@@ -1,3 +1,10 @@
+---
+description: "Brighter V10 introduces significant improvements and new features while maintaining a clear migration path from V9."
+layout:
+  description:
+    visible: false
+---
+
 # Brighter V10 Migration Guide
 
 > **How-to** · Applies to **Brighter V10**

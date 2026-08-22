@@ -1,3 +1,10 @@
+---
+description: "Configuration is the most labor-intensive part of using Brighter."
+layout:
+  description:
+    visible: false
+---
+
 # Basic Configuration
 
 > **How-to** · Applies to **Brighter V10**

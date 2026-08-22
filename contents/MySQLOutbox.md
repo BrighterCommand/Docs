@@ -1,3 +1,10 @@
+---
+description: "The MySQL Outbox provides a message store for the Transactional Outbox pattern using a MySQL database."
+layout:
+  description:
+    visible: false
+---
+
 # **Using the MySQL Outbox**
 
 > **Reference** · Applies to **Brighter V10**

@@ -1,3 +1,10 @@
+---
+description: "Command Query Responsibility Segregation (CQRS) separates the handling of commands, which change state, from queries, which read it."
+layout:
+  description:
+    visible: false
+---
+
 # CQRS with Brighter and Darker
 
 > **Explanation** · Applies to **Brighter V10 and Darker V4**

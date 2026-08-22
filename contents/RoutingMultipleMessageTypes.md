@@ -1,3 +1,10 @@
+---
+description: "The most common approach for dynamic deserialization is using the CloudEvents type attribute."
+layout:
+  description:
+    visible: false
+---
+
 # Routing Multiple Message Types
 
 > **How-to** · Applies to **Brighter V10** · Prerequisites: [Dynamic Message Deserialization](/contents/DynamicMessageDeserialization.md)

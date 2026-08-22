@@ -1,3 +1,10 @@
+---
+description: 'In his white paper "Data on the Outside vs. Data on the Inside", Pat Helland classifies data according to whether it exists inside a service boundary or outside that boundary.'
+layout:
+  description:
+    visible: false
+---
+
 # Event Carried State Transfer (ECST)
 
 > **Explanation** · Applies to **Brighter V10**

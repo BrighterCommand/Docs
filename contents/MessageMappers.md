@@ -1,3 +1,10 @@
+---
+description: "A message mapper turns domain code into a Brighter Message."
+layout:
+  description:
+    visible: false
+---
+
 # Message Mappers
 
 > **Explanation** · Applies to **Brighter V10**

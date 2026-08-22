@@ -1,3 +1,10 @@
+---
+description: "How to run Darker queries against Entity Framework Core: tracking, eager loading, handler lifetime and compiled queries."
+layout:
+  description:
+    visible: false
+---
+
 # Entity Framework Core Query Integration
 
 > **How-to** · Applies to **Darker V4** · Prerequisites: [Query Patterns](/contents/QueryPatterns.md)

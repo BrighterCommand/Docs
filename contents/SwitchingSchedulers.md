@@ -1,3 +1,10 @@
+---
+description: "This page shows you how to move an existing application from one Brighter scheduler to another."
+layout:
+  description:
+    visible: false
+---
+
 # Switching Schedulers
 
 > **How-to** · Applies to **Brighter V10** · Prerequisites: [Scheduler](/contents/BrighterSchedulerSupport.md)

@@ -1,3 +1,10 @@
+---
+description: "This glossary provides definitions for key terms used in Brighter and Darker."
+layout:
+  description:
+    visible: false
+---
+
 # Glossary
 
 > **Reference** · Applies to **Brighter V10 and Darker V4**

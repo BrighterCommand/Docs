@@ -1,3 +1,10 @@
+---
+description: "Once you have implemented your Request Handler, you will want to dispatch Commands and Events to it synchronously, through the Command Processor."
+layout:
+  description:
+    visible: false
+---
+
 # Dispatching Requests
 
 > **How-to** · Applies to **Brighter V10**

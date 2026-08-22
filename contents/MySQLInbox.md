@@ -1,3 +1,10 @@
+---
+description: "The MySQL Inbox allows use of MySQL for Brighter's inbox support."
+layout:
+  description:
+    visible: false
+---
+
 # MySQL Inbox
 
 > **Reference** · Applies to **Brighter V10**

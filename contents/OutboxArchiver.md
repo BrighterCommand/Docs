@@ -1,3 +1,10 @@
+---
+description: "The Outbox Archiver is a background service that monitors an Outbox and moves messages older than a certain age into long-term storage, keeping your Outbox small."
+layout:
+  description:
+    visible: false
+---
+
 # Outbox Archiver
 
 > **Reference** · Applies to **Brighter V10** · Prerequisites: [Outbox Support](/contents/BrighterOutboxSupport.md)

@@ -1,3 +1,10 @@
+---
+description: "Azure Service Bus (ASB) is a fully managed enterprise message broker and is well documented Brighter handles the details of sending to or receiving from ASB."
+layout:
+  description:
+    visible: false
+---
+
 # Azure Service Bus Configuration
 
 > **Reference** · Applies to **Brighter V10**

@@ -1,3 +1,10 @@
+---
+description: "Kafka is OSS message-oriented-middleware and is well documented."
+layout:
+  description:
+    visible: false
+---
+
 # Kafka Configuration
 
 > **Reference** · Applies to **Brighter V10**

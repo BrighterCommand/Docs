@@ -1,3 +1,10 @@
+---
+description: "Brighter is a Command Processor and supports a pipeline of Handlers to handle orthogonal requests."
+layout:
+  description:
+    visible: false
+---
+
 # Supporting Retry and Circuit Breaker
 
 > **How-to** · Applies to **Brighter V10**

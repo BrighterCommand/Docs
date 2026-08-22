@@ -1,8 +1,15 @@
+---
+description: "Brighter provides an AspNet Core Health check for the Dispatcher."
+layout:
+  description:
+    visible: false
+---
+
 # Health Checks
 
 > **How-to** · Applies to **Brighter V10**
 
-Brighter provides an AspNet Core Health check for the **Dispatcher**
+Brighter provides an AspNet Core Health check for the **Dispatcher**.
 
 ## Configure Health Checks
 

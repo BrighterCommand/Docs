@@ -1,3 +1,10 @@
+---
+description: "The Postgres locking provider implements Brighter's distributed lock using PostgreSQL advisory locks, so a single Outbox Sweeper and Archiver run when you scale out."
+layout:
+  description:
+    visible: false
+---
+
 # Postgres Distributed Lock
 
 > **Reference** · Applies to **Brighter V10**

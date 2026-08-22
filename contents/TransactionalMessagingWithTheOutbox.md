@@ -1,3 +1,10 @@
+---
+description: "This section provides a complete example showing both producer and consumer using transactional messaging with the Outbox and Inbox patterns."
+layout:
+  description:
+    visible: false
+---
+
 # Transactional Messaging with the Outbox
 
 > **How-to** · Applies to **Brighter V10** · Prerequisites: [Outbox Support](/contents/BrighterOutboxSupport.md)

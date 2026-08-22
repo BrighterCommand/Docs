@@ -1,3 +1,10 @@
+---
+description: "Query handlers are the entry point to your query execution logic in Darker."
+layout:
+  description:
+    visible: false
+---
+
 # Implementing a Query Handler
 
 > **How-to** · Applies to **Darker V4**

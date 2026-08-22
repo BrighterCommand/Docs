@@ -1,3 +1,10 @@
+---
+description: "The in-process Outbox: flushing, compaction, configuration and limits."
+layout:
+  description:
+    visible: false
+---
+
 # InMemory Outbox
 
 > **Reference** · Applies to **Brighter V10** · Prerequisites: [InMemory Options for Development and Testing](/contents/InMemoryOptions.md)

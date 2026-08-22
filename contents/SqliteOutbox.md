@@ -1,3 +1,10 @@
+---
+description: "The SQLite Outbox provides a message store for the Transactional Outbox pattern using a SQLite database."
+layout:
+  description:
+    visible: false
+---
+
 # **Using the SQLite Outbox**
 
 > **Reference** · Applies to **Brighter V10**

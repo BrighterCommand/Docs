@@ -1,3 +1,10 @@
+---
+description: "Brighter can automatically generate AsyncAPI 3.0 documents from your service's runtime configuration."
+layout:
+  description:
+    visible: false
+---
+
 # AsyncAPI Document Generation
 
 > **How-to** · Applies to **Brighter V10**
