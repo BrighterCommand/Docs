@@ -2,7 +2,7 @@
 
 > **How-to** · Applies to **Brighter V10**
 
-Once you have [implemented your Request Handler](ImplementingAHandler.html), you will want to dispatch **Commands** or **Events** to that Handler.
+Once you have [implemented your Request Handler](/contents/ImplementingAHandler.md), you will want to dispatch **Commands** and **Events** to it synchronously, through the Command Processor.
 
 ## Request Dispatch Usage
 

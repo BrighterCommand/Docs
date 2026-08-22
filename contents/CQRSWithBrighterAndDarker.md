@@ -4,7 +4,7 @@
 
 ## CQRS Introduction
 
-Command Query Responsibility Segregation (CQRS) is an architectural pattern that separates the responsibility for handling commands (operations that change state) from queries (operations that read state). **Brighter** and **Darker** together provide a complete, production-ready CQRS solution for .NET applications, where Brighter handles the command side and Darker handles the query side.
+Command Query Responsibility Segregation (CQRS) separates the handling of commands, which change state, from queries, which read it. **Brighter** and **Darker** together provide a complete, production-ready CQRS solution for .NET applications, where Brighter handles the command side and Darker handles the query side.
 
 This separation allows you to optimize each side independently: write operations can focus on business logic validation and consistency, while read operations can be optimized for performance and specific client needs. Both frameworks use the same architectural patterns (request handlers, middleware pipelines, policy-based resilience), making it easier for teams to work with both sides of a CQRS architecture using consistent patterns.
 
