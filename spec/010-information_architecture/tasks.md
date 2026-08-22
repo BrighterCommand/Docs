@@ -2663,9 +2663,39 @@ pages, `--check-shape` 0, `--check-redirects` 0 at 77 entries, `--changed origin
 with all 142 staged. **The using-directive debt did not move** — 791, as through Phases 6
 to 9.
 
-**What is left in Phase 10:** Task 10.2's *fix* — the 59 pages on `v9`, whose descriptions
-carry the version marker their bodies lack. A separate PR: a different branch, a different
-space, no banners, and nothing `pagelint.py` can see.
+**Measured on the live index after the merge, with the deploy confirmed by the control
+first** — `Logging.md`, a page that did not exist before, publishing:
+
+| Section of `/llms.txt` | Entries | Carrying a description |
+|---|---:|---:|
+| *Paramore Brighter Documentation* | 143 | **142** |
+| *V9 Paramore Brighter Documentation* | 59 | **0** |
+| **Total** | **202** | **142** |
+
+The file went **32,897 → 49,170 bytes**. **AC9 is met for our space** on the measurement it
+was narrowed to, and the two remaining gaps are both nameable rather than residual.
+
+**The 143rd is `README.md`**, the site root. It is a page in the index and in the tree, and it
+is **outside every rule here**, because `pagelint.py` reads `contents/` only — a boundary that
+exists so the banner rules do not fire on a file that is not a documentation page. Its front
+matter is therefore written by hand and **enforced by nothing**, which is said here rather
+than left for someone to discover. It takes our space to **143 of 143**.
+
+**What is left in Phase 10:** Task 10.2's *fix* — the 59 pages on `v9`.
+
+> **Their descriptions are the one place a type-or-version prefix is right, and the reasoning
+> is the mirror of Task 10.3's.** AC9 dropped *"with type"* because the type is recoverable
+> from the page: the `.md` variant prints the banner one line under the H1, so a prefix would
+> only degrade the search snippet to repeat it. **On a V9 page the version is recoverable from
+> nothing** — that is precisely what Task 10.2 measured, *"the V9 page has no banner at all"*.
+> A prefix there carries information that exists nowhere else, and "superseded" is exactly
+> what a reader arriving from a search engine needs to see first. **Same rule, opposite
+> answer, because the facts are opposite.**
+>
+> And for the same reason the `layout.description.visible: false` switch is **deliberately
+> omitted on `v9`**: on `master` the description duplicates a sentence already on the page, so
+> hiding it costs nothing; on `v9` rendering it is the only way the marker reaches a reader
+> who never looks at the index.
 
 ---
 
