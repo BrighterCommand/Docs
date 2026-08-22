@@ -1,3 +1,10 @@
+---
+description: "A transform is middleware in the mapping pipeline, and Brighter finds it by reflecting over the attributes on your mapper's MapToMessage and MapToRequest methods."
+layout:
+  description:
+    visible: false
+---
+
 # Message Transforms
 
 > **Explanation** · Applies to **Brighter V10** · Prerequisites: [Message Mappers](/contents/MessageMappers.md)

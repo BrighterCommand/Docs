@@ -1,10 +1,16 @@
+---
+description: "We use Command-Query separation so a Command does not have a return value and CommandDispatcher.Send() does not return anything."
+layout:
+  description:
+    visible: false
+---
 
 # Returning Results from a Handler
 
 > **How-to** · Applies to **Brighter V10**
 
 We use [Command-Query
-separation](https://martinfowler.com/bliki/CommandQuerySeparation.html) so a Command does not have return value and **CommandDispatcher.Send()** does not return anything. Our project Darker provides a Query Processor that can be used to return results in response to queries. You can use both together to provide CQRS.
+separation](https://martinfowler.com/bliki/CommandQuerySeparation.html) so a Command does not have a return value and **CommandDispatcher.Send()** does not return anything. Our project Darker provides a Query Processor that can be used to return results in response to queries. You can use both together to provide CQRS.
 
 This in turn leads to a set of questions that we need to answer about common scenarios:
 

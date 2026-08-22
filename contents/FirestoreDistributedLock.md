@@ -1,3 +1,10 @@
+---
+description: "The Firestore locking provider implements Brighter's distributed lock using Google Cloud Firestore, so a single Outbox Sweeper and Archiver run when you scale out."
+layout:
+  description:
+    visible: false
+---
+
 # Firestore Distributed Lock
 
 > **Reference** · Applies to **Brighter V10**

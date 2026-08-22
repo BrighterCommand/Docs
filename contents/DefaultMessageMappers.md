@@ -1,3 +1,10 @@
+---
+description: "You do not need to implement IAmAMessageMapper for every message type."
+layout:
+  description:
+    visible: false
+---
+
 # Default Message Mappers
 
 > **How-to** · Applies to **Brighter V10**

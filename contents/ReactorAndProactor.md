@@ -1,3 +1,10 @@
+---
+description: "Brighter V10 introduces clearer terminology for its concurrency models: Reactor and Proactor."
+layout:
+  description:
+    visible: false
+---
+
 # Reactor and Proactor: Concurrency Models
 
 > **Explanation** · Applies to **Brighter V10**

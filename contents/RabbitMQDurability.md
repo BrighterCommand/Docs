@@ -1,3 +1,10 @@
+---
+description: "RabbitMQ offers two independent durability mechanisms, and they answer different questions."
+layout:
+  description:
+    visible: false
+---
+
 # RabbitMQ Durability: Quorum Queues and Persistence
 
 > **Explanation** · Applies to **Brighter V10** · Prerequisites: [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)

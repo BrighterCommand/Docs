@@ -1,3 +1,10 @@
+---
+description: "To implement a handler, derive from RequestHandler<T> where T should be the Command or Event derived type that you wish to handle."
+layout:
+  description:
+    visible: false
+---
+
 # How to Implement a Request Handler
 
 > **How-to** · Applies to **Brighter V10**

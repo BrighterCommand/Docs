@@ -1,3 +1,10 @@
+---
+description: "The in-process Inbox: when to use it, how to configure it, and its limits."
+layout:
+  description:
+    visible: false
+---
+
 # InMemory Inbox
 
 > **Reference** · Applies to **Brighter V10** · Prerequisites: [InMemory Options for Development and Testing](/contents/InMemoryOptions.md)

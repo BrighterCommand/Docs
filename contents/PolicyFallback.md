@@ -1,3 +1,10 @@
+---
+description: "A Fallback is a backstop exception handler, which runs when a request has failed and lets you take compensating action."
+layout:
+  description:
+    visible: false
+---
+
 # Fallback
 
 > **How-to** · Applies to **Brighter V10**

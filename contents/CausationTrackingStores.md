@@ -1,11 +1,18 @@
+---
+description: "Replay On Seen needs two things from your storage."
+layout:
+  description:
+    visible: false
+---
+
 # Implementing Causation Tracking in Your Own Store
 
 > **How-to** · Applies to **Brighter V10**
 
-[Replay On Seen](/contents/ReplayOnSeen.md) needs two things from your storage: an Inbox
-that can hand back the [Causation Id](/contents/ReplayOnSeen.md#causation-id) it recorded
-when a request was first handled, and an Outbox that can find every message stored under
-that Causation Id and make it outstanding again. A **Causation Id** is the value shared by
+[Replay On Seen](/contents/ReplayOnSeen.md) needs two things from your storage. It needs
+an Inbox that can hand back the [Causation Id](/contents/ReplayOnSeen.md#causation-id) it
+recorded when a request was first handled, and an Outbox that can find every message stored
+under that Causation Id and make it outstanding again. A **Causation Id** is the value shared by
 an Inbox entry and every Outbox message the handler produced during that invocation; it
 defaults to the handled request's own `Id`. Brighter asks for both capabilities through a
 pair of optional role interfaces, and this page covers what your implementation has to do.

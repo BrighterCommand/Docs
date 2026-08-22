@@ -1,3 +1,10 @@
+---
+description: "Azure Service Bus includes native support for scheduled message delivery using the ScheduledEnqueueTimeUtc property."
+layout:
+  description:
+    visible: false
+---
+
 # Azure Service Bus Scheduler
 
 > **Reference** · Applies to **Brighter V10**

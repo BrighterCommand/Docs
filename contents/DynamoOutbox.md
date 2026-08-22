@@ -1,3 +1,10 @@
+---
+description: "The DynamoDb Outbox allows integration between DynamoDb and Brighter's outbox support."
+layout:
+  description:
+    visible: false
+---
+
 # DynamoDb Outbox
 
 > **Reference** · Applies to **Brighter V10**

@@ -1,3 +1,10 @@
+---
+description: "SNS and SQS are proprietary message-oriented-middleware available on the AWS platform."
+layout:
+  description:
+    visible: false
+---
+
 # AWS SQS Configuration
 
 > **Reference** · Applies to **Brighter V10**

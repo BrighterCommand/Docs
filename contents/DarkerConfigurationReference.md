@@ -1,3 +1,10 @@
+---
+description: "The options AddDarker and AddHandlersFromAssemblies take: the query processor's service lifetime, and the strategies available for registering handlers."
+layout:
+  description:
+    visible: false
+---
+
 # Darker Configuration Reference
 
 > **Reference** · Applies to **Darker V4** · Prerequisites: [Basic Configuration](/contents/DarkerBasicConfiguration.md)

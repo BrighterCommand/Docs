@@ -1,3 +1,10 @@
+---
+description: "The DynamoDB locking provider implements Brighter's distributed lock on top of Amazon DynamoDB, so a single Outbox Sweeper and Archiver run when you scale out."
+layout:
+  description:
+    visible: false
+---
+
 # DynamoDB Distributed Lock
 
 > **Reference** · Applies to **Brighter V10**

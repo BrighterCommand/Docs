@@ -1,3 +1,10 @@
+---
+description: "Brighter's message pump uses Subscription properties to control how it handles errors."
+layout:
+  description:
+    visible: false
+---
+
 # Error Handling Options
 
 > **Reference** · Applies to **Brighter V10** · Prerequisites: [Error Handling](/contents/HandlerFailure.md)

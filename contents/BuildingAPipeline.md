@@ -1,3 +1,10 @@
+---
+description: "Once Brighter is dispatching requests to your handlers, you can insert orthogonal operations into the pipeline that runs around each handler."
+layout:
+  description:
+    visible: false
+---
+
 # Building a Pipeline of Request Handlers
 
 > **How-to** · Applies to **Brighter V10**

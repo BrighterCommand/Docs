@@ -1,3 +1,10 @@
+---
+description: "This guide presents common query patterns you'll encounter when building real-world applications with Darker."
+layout:
+  description:
+    visible: false
+---
+
 # Query Patterns
 
 > **How-to** · Applies to **Darker V4**

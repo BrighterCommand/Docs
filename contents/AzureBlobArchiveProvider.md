@@ -1,3 +1,10 @@
+---
+description: "The Azure Blob Archive Provider is a provider for Outbox Archiver."
+layout:
+  description:
+    visible: false
+---
+
 # Azure Blob Archive Provider
 
 > **Reference** · Applies to **Brighter V10**

@@ -1,3 +1,10 @@
+---
+description: "It is possible to think of microservices as 3rd generation SOA."
+layout:
+  description:
+    visible: false
+---
+
 # Microservices
 
 > **Explanation** · Applies to **Brighter V10**

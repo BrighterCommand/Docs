@@ -1,3 +1,10 @@
+---
+description: "Four shapes a CQRS system takes in practice, from a single database with two models to event-sourced writes with projected reads."
+layout:
+  description:
+    visible: false
+---
+
 # CQRS Use Cases and Patterns
 
 > **Explanation** · Applies to **Brighter V10 and Darker V4** · Prerequisites: [CQRS with Brighter and Darker](/contents/CQRSWithBrighterAndDarker.md)

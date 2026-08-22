@@ -1,3 +1,10 @@
+---
+description: "The result type specified in IQuery<TResult> can be any C# type."
+layout:
+  description:
+    visible: false
+---
+
 # Query Result Types
 
 > **Explanation** · Applies to **Darker V4** · Prerequisites: [Queries and Query Objects](/contents/QueriesAndQueryObjects.md)

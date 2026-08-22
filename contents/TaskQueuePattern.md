@@ -1,3 +1,10 @@
+---
+description: "The Task Queue Pattern let's you use an External Bus to handle work asynchronously."
+layout:
+  description:
+    visible: false
+---
+
 # The Task Queue Pattern
 
 > **Explanation** · Applies to **Brighter V10**

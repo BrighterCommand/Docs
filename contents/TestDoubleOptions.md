@@ -1,3 +1,10 @@
+---
+description: "When handlers depend on IAmACommandProcessor to publish events or send commands, you need a way to verify those interactions in tests."
+layout:
+  description:
+    visible: false
+---
+
 # Test Double Options for Command Processor
 
 > **How-to** · Applies to **Brighter V10**

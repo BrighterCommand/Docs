@@ -1,3 +1,10 @@
+---
+description: "How to return only the fields a caller needs: simple projections, projections across joins, and calculated fields."
+layout:
+  description:
+    visible: false
+---
+
 # Projection Query Patterns
 
 > **How-to** · Applies to **Darker V4** · Prerequisites: [Query Patterns](/contents/QueryPatterns.md)

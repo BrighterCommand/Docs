@@ -1,3 +1,10 @@
+---
+description: "The Claim Check pattern helps us reduce the size of our messages, without losing information that we need to exchange."
+layout:
+  description:
+    visible: false
+---
+
 # Claim Check
 
 > **Explanation** · Applies to **Brighter V10**

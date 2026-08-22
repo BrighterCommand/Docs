@@ -1,3 +1,10 @@
+---
+description: "The S3LuggageStore is an implementation of IAmAStorageProviderAsync for AWS S3 Object Storage."
+layout:
+  description:
+    visible: false
+---
+
 # S3 Luggage Store
 
 > **Reference** · Applies to **Brighter V10**

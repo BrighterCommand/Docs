@@ -1,3 +1,10 @@
+---
+description: "To add support for a different scheduler provider, implement the appropriate interfaces based on your use case."
+layout:
+  description:
+    visible: false
+---
+
 # Custom Scheduler
 
 > **How-to** · Applies to **Brighter V10**

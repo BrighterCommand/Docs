@@ -1,3 +1,10 @@
+---
+description: "This page is the how-to companion to Box Provisioning."
+layout:
+  description:
+    visible: false
+---
+
 # Configuring Box Provisioning
 
 > **How-to** · Applies to **Brighter V10**

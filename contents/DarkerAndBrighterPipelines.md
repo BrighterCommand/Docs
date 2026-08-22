@@ -1,3 +1,10 @@
+---
+description: "Darker's query pipeline shares many similarities with Brighter's request pipeline, as both implement the same Russian Doll Model for middleware composition."
+layout:
+  description:
+    visible: false
+---
+
 # Darker and Brighter Pipelines
 
 > **Explanation** · Applies to **Darker V4** · Prerequisites: [Query Pipeline and Decorators](/contents/QueryPipeline.md)

@@ -1,3 +1,10 @@
+---
+description: "Brighter provides comprehensive OpenTelemetry integration for distributed tracing across message boundaries, enabling end-to-end observability in distributed systems."
+layout:
+  description:
+    visible: false
+---
+
 # Telemetry
 
 > **Reference** · Applies to **Brighter V10**

@@ -1,3 +1,10 @@
+---
+description: "The Query Pipeline in Darker provides a powerful way to add cross-cutting concerns to your query handlers without modifying the handler code itself."
+layout:
+  description:
+    visible: false
+---
+
 # Query Pipeline and Decorators
 
 > **How-to** · Applies to **Darker V4**

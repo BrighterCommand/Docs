@@ -1,3 +1,10 @@
+---
+description: "How to return whole collections, counts, and summary statistics from a query handler."
+layout:
+  description:
+    visible: false
+---
+
 # Collection and Aggregation Query Patterns
 
 > **How-to** · Applies to **Darker V4** · Prerequisites: [Query Patterns](/contents/QueryPatterns.md)

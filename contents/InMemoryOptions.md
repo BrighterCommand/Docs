@@ -1,3 +1,10 @@
+---
+description: "Brighter V10 provides a comprehensive suite of in-memory implementations for key components, making it easy to develop and test applications without external dependencies."
+layout:
+  description:
+    visible: false
+---
+
 # InMemory Options for Development and Testing
 
 > **How-to** · Applies to **Brighter V10**

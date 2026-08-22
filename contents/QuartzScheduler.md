@@ -1,3 +1,10 @@
+---
+description: "Quartz.NET is one of the most widely used enterprise-grade scheduling libraries in the .NET community."
+layout:
+  description:
+    visible: false
+---
+
 # Quartz Scheduler
 
 > **Reference** · Applies to **Brighter V10**

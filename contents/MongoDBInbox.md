@@ -1,3 +1,10 @@
+---
+description: "The MongoDB Inbox allows use of MongoDB for Brighter's inbox support."
+layout:
+  description:
+    visible: false
+---
+
 # MongoDB Inbox
 
 > **Reference** · Applies to **Brighter V10**

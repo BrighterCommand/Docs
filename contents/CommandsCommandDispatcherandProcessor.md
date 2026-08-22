@@ -1,3 +1,10 @@
+---
+description: "The Command design pattern encapsulates a request as an object, allowing reuse, queuing or logging of requests, or undoable operations."
+layout:
+  description:
+    visible: false
+---
+
 # Command Patterns
 
 > **Explanation** · Applies to **Brighter V10**

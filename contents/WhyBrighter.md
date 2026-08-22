@@ -1,3 +1,10 @@
+---
+description: "Brighter and Darker are two of many options open to a .NET developer who needs a command processor, a command dispatcher, or a messaging framework."
+layout:
+  description:
+    visible: false
+---
+
 # Why Brighter?
 
 > **Explanation** · Applies to **Brighter V10 and Darker V4**

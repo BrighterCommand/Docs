@@ -1,3 +1,10 @@
+---
+description: "The Outbox Pattern is what stops a state change and the event announcing it from diverging."
+layout:
+  description:
+    visible: false
+---
+
 # Outbox Pattern Support
 
 > **Explanation** · Applies to **Brighter V10**

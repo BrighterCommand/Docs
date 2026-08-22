@@ -1,3 +1,10 @@
+---
+description: "The DynamoDb Inbox allows use of DynamoDb for Brighter's inbox support."
+layout:
+  description:
+    visible: false
+---
+
 # Dynamo Inbox
 
 > **Reference** · Applies to **Brighter V10**

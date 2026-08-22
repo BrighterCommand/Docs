@@ -1,3 +1,10 @@
+---
+description: "Sweeper Circuit Breaking is a resilience feature that prevents failures to publish to one topic from blocking attempts to publish to other topics, when publishing messages from the Outbox."
+layout:
+  description:
+    visible: false
+---
+
 # Sweeper Circuit Breaking
 
 > **Reference** · Applies to **Brighter V10**

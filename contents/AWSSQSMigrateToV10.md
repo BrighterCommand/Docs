@@ -1,3 +1,10 @@
+---
+description: "Brighter provides support for both version 3 and version 4 of the AWS SDK for .NET through separate NuGet packages."
+layout:
+  description:
+    visible: false
+---
+
 # Migrating AWS SQS to V10
 
 > **How-to** · Applies to **Brighter V10** · Prerequisites: [AWS SQS Configuration](/contents/AWSSQSConfiguration.md)

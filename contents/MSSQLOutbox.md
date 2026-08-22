@@ -1,3 +1,10 @@
+---
+description: "The MSSQL Outbox provides a message store for the Transactional Outbox pattern using a Microsoft SQL Server database."
+layout:
+  description:
+    visible: false
+---
+
 # **Using the MSSQL Outbox**
 
 > **Reference** · Applies to **Brighter V10**

@@ -1,3 +1,10 @@
+---
+description: "Darker is the query-side counterpart to Brighter, implementing the Query Object pattern for CQRS (Command Query Responsibility Segregation) architectures."
+layout:
+  description:
+    visible: false
+---
+
 # Basic Configuration
 
 > **How-to** · Applies to **Darker V4**

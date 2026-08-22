@@ -1,3 +1,10 @@
+---
+description: "We use the term Request for a data object containing parameters that you want to dispatch to a handler."
+layout:
+  description:
+    visible: false
+---
+
 # Requests, Commands and Events
 
 > **Explanation** · Applies to **Brighter V10**

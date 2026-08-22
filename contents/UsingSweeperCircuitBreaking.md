@@ -1,3 +1,10 @@
+---
+description: "How to wire circuit breaking into an Outbox Sweeper, tune its cooldown, and extend it with your own or a distributed breaker."
+layout:
+  description:
+    visible: false
+---
+
 # Using Sweeper Circuit Breaking
 
 > **How-to** · Applies to **Brighter V10** · Prerequisites: [Sweeper Circuit Breaking](/contents/SweeperCircuitBreaking.md)

@@ -1,3 +1,10 @@
+---
+description: "The Query Object pattern separates the parameters of a query from the execution of that query."
+layout:
+  description:
+    visible: false
+---
+
 # Queries and Query Objects
 
 > **Explanation** · Applies to **Darker V4**

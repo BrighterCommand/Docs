@@ -1,3 +1,10 @@
+---
+description: "To implement an asynchronous handler, derive from RequestHandlerAsync<T> where T should be the Command or Event derived type that you wish to handle."
+layout:
+  description:
+    visible: false
+---
+
 # How to Implement an Asynchronous Request Handler
 
 > **How-to** · Applies to **Brighter V10**

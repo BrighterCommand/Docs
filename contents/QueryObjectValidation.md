@@ -1,3 +1,10 @@
+---
+description: "Query objects should validate their parameters to ensure they receive valid data."
+layout:
+  description:
+    visible: false
+---
+
 # Query Object Validation
 
 > **How-to** · Applies to **Darker V4** · Prerequisites: [Queries and Query Objects](/contents/QueriesAndQueryObjects.md)

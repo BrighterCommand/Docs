@@ -1,3 +1,10 @@
+---
+description: "Query handlers typically need dependencies like repositories, database contexts, or services to execute queries."
+layout:
+  description:
+    visible: false
+---
+
 # Query Handler Dependencies
 
 > **How-to** · Applies to **Darker V4** · Prerequisites: [Implementing a Query Handler](/contents/ImplementAQueryHandler.md)

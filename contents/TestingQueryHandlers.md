@@ -1,3 +1,10 @@
+---
+description: "Query handlers are easy to test because they have clear inputs (queries) and outputs (results), with dependencies that can be mocked or replaced."
+layout:
+  description:
+    visible: false
+---
+
 # Testing Query Handlers
 
 > **How-to** · Applies to **Darker V4** · Prerequisites: [Implementing a Query Handler](/contents/ImplementAQueryHandler.md)

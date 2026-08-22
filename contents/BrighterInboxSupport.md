@@ -1,3 +1,10 @@
+---
+description: "Messaging makes the guaranteed, at least once promise."
+layout:
+  description:
+    visible: false
+---
+
 # Brighter Inbox Support
 
 > **Explanation** · Applies to **Brighter V10**

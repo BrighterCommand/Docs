@@ -1,3 +1,10 @@
+---
+description: "This page is for operators of a pre-existing Brighter deployment who are adopting Database Provisioning for the first time."
+layout:
+  description:
+    visible: false
+---
+
 # Upgrading Existing Deployments
 
 > **How-to** · Applies to **Brighter V10**

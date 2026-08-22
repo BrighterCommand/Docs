@@ -1,3 +1,10 @@
+---
+description: "This guide moves an existing Brighter subscription from a classic queue to a quorum queue, and enables message persistence alongside it."
+layout:
+  description:
+    visible: false
+---
+
 # Migrating to Quorum Queues
 
 > **How-to** · Applies to **Brighter V10** · Prerequisites: [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)

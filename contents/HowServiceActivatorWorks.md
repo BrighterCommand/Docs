@@ -1,8 +1,15 @@
+---
+description: "The Dispatcher is the component in the Brighter.ServiceActivator assembly that orchestrates your Performers."
+layout:
+  description:
+    visible: false
+---
+
 # How The Dispatcher Works
 
 > **Explanation** · Applies to **Brighter V10**
 
-The **Dispatcher** is the component in the `Brighter.ServiceActivator` assembly orchestrates your `Performers`. Each `Performer` is a single-thread that runs a `MessagePump`. The `MessagePump` consumes messages from streams or queues, calls a `IAmAMessageMapper` or `IAmAMessageMapperAsync` to map them to a C# type and then dispatches that type to your registered `IHandleRequests` or `IHandleRequestsAsync`. The Command Processor handles in-process request dispatching, and the Dispatcher orchestrates the threads that provide external message consumption and routing.
+The **Dispatcher** is the component in the `Brighter.ServiceActivator` assembly that orchestrates your `Performers`. Each `Performer` is a single-thread that runs a `MessagePump`. The `MessagePump` consumes messages from streams or queues, calls a `IAmAMessageMapper` or `IAmAMessageMapperAsync` to map them to a C# type and then dispatches that type to your registered `IHandleRequests` or `IHandleRequestsAsync`. The Command Processor handles in-process request dispatching, and the Dispatcher orchestrates the threads that provide external message consumption and routing.
 
 ## Dispatcher Overview
 

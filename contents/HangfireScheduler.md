@@ -1,3 +1,10 @@
+---
+description: "Hangfire is one of the most widely used background job processing libraries in the .NET community, featuring a built-in monitoring dashboard."
+layout:
+  description:
+    visible: false
+---
+
 # Hangfire Scheduler
 
 > **Reference** · Applies to **Brighter V10**

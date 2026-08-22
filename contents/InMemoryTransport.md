@@ -1,3 +1,10 @@
+---
+description: "The in-process transport: when to use it, how to configure it, a complete example, and its limits."
+layout:
+  description:
+    visible: false
+---
+
 # InMemory Transport
 
 > **Reference** · Applies to **Brighter V10** · Prerequisites: [InMemory Options for Development and Testing](/contents/InMemoryOptions.md)

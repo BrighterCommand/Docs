@@ -1,3 +1,10 @@
+---
+description: "RabbitMQ is OSS message-oriented-middleware and is well documented."
+layout:
+  description:
+    visible: false
+---
+
 # RabbitMQ Configuration
 
 > **Reference** · Applies to **Brighter V10**

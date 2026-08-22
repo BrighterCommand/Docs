@@ -1,3 +1,10 @@
+---
+description: "Brighter provides Roslyn analyzers that detect common configuration and message-mapping mistakes while you write and build your application."
+layout:
+  description:
+    visible: false
+---
+
 # Analyzer Support
 
 > **Reference** · Applies to **Brighter V10**

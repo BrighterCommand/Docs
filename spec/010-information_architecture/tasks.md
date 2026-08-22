@@ -2585,6 +2585,88 @@ not read* — and enumerate **both** directions.
 
 - [x] **Task 10.4** — rule 7 in `pagelint.py`, `CLAUDE.md` in the same commit, 8 pages fixed
 
+### The sweep as executed — 2026-08-22
+
+**142 of 142 pages carry a `description:`, and the whole sweep is one command.** The
+generator is not a script under `spec/`; it is a **third `--fix` repair** in `pagelint.py`,
+which qualifies on `--fix`'s own stated test — exactly one correct answer, derivable from the
+page. That keeps the convention maintainable after this spec closes: a new page gets its
+description from the tool that already checks it.
+
+**Reading the data before sweeping it found four defects, three of them in the rule.** Rule 7
+had passed at 0 errors across 142 pages the day before. Dumping all 142 extracted sentences
+and reading them is what disagreed:
+
+1. **The extractor read one line, and this corpus hard-wraps its prose.** **20 of 142
+   summaries were truncated mid-sentence**, four of them mid-link — `ReturningResultsFromAHandler.md`
+   summarised as *"We use [Command-Query"*, eight `…DistributedLock.md` pages as
+   *"…implements Brighter's [distributed"*. **Every one passed rule 7**, by being short,
+   unique and free of a trailing colon. Fixed by joining the paragraph. **The fix immediately
+   surfaced six genuine `SUMMARY TOO LONG` findings that truncation had been hiding**, which is
+   the measure of how vacuous the green run was.
+2. **`first_sentence` broke at "vs."** `EventCarriedStateTransfer.md` became *"In his white
+   paper "Data on the Outside vs."* — a truncation that is short, unique and ends in a period,
+   so all three clauses accepted it. An explicit `ABBREVIATIONS` set, plus single initials,
+   replaced a lookbehind that only knew "e.g.", "i.e." and "etc.".
+3. **`rendered()` left markdown backslash escapes in**, so `\"` and `\'` would have gone into
+   meta tags and the public index as backslashes.
+4. **Five pages had no terminal punctuation at all**, which no clause tested. Added as
+   `SUMMARY NOT A SENTENCE` — and **ordered *after* the colon check**, because a colon is also
+   a missing full stop and the other order silently retires a rule the task explicitly asked
+   for.
+
+> **The lesson underneath all four: rule 7 was green on 142 pages and wrong about 20 of them.**
+> A rule that measures a fragment measures it correctly. *A check that passes has not
+> necessarily checked anything* — met here not on a new gate, as in Phase 4, but on a gate
+> that had already been proved red on four branches. **Proving a rule fires does not prove it
+> reads the right input.**
+
+**The fifth defect was content, and it was the reason the fourth clause was worth adding.**
+`contents/Logging.md` — published, linked from `SUMMARY.md`, in `/llms.txt` — had a body
+consisting of the word **`TODO`**, and Spec 011's banner sweep had given it a banner, so it
+looked like a Reference page. **Ruled by the maintainer: write it.** Logging is genuinely
+undocumented; no other page carries a `## …Logging` section. The page was written from source
+— `ApplicationLogging` is a static holder whose default `LoggerFactory` has **no providers**,
+`AddBrighter` and `AddConsumers` each resolve `ILoggerFactory` with `GetService`, not
+`GetRequiredService`, and 124 files hold a `static readonly` logger built once at type
+initialisation, which is why a factory assigned late is never seen. Its type stays `Reference`,
+so `pagetypes.tsv` needed no row change — standing obligation 7 satisfied by not moving.
+
+**Two defects the sweep itself created, both caught before the commit:**
+
+- **A page whose front matter would never be read.** `ReturningResultsFromAHandler.md` begins
+  with a **newline** before its H1 — the only page in the corpus that does — so the block
+  landed on line 2. GitBook reads front matter only at the very first byte, so the page would
+  have rendered perfectly with no description and nothing anywhere to say so. `--fix` now
+  **refuses when the H1 is not on line 1**, and the leading newline was removed by hand.
+- **Rule 5 firing on a description derived from compliant prose.**
+  `HowServiceActivatorWorks.md` opens with `` `Brighter.ServiceActivator` `` in backticks —
+  legitimate, and rule 5 exempts code spans. But `rendered()` *strips* the backticks, so the
+  description carried the bare word and rule 5 fired on line 2. **Front matter is now excluded
+  from `page.prose`**, which loses nothing: `DESCRIPTION MISMATCH` keeps the description equal
+  to the sentence, so checking the body checks both.
+
+**Both of those sentences also had grammar errors** — *"the component in the assembly
+orchestrates your Performers"* and *"a Command does not have return value"* — which had sat
+unread for years and were about to become two pages' public descriptions. **A sentence
+promoted to a description gets read properly for the first time.**
+
+**Validated independently of the tool that wrote them.** `pagelint.py` parses front matter
+with a deliberately naive reader, so a green run proves nothing about YAML. Re-parsed with
+**PyYAML in a throwaway venv**: **142 of 142 parse, all carry a `description` and
+`layout.description.visible: false`, none is a duplicate**, longest 196 characters, shortest
+43. *A test can be vacuous in exactly the way a check can* — so the check was not its own
+witness.
+
+**Gates after the sweep:** linkcheck 144 files, pagelint **0 errors** / 791 warnings / 142
+pages, `--check-shape` 0, `--check-redirects` 0 at 77 entries, `--changed origin/master` 0
+with all 142 staged. **The using-directive debt did not move** — 791, as through Phases 6
+to 9.
+
+**What is left in Phase 10:** Task 10.2's *fix* — the 59 pages on `v9`, whose descriptions
+carry the version marker their bodies lack. A separate PR: a different branch, a different
+space, no banners, and nothing `pagelint.py` can see.
+
 ---
 
 ## Phase 11 — Close (PR 11)

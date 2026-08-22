@@ -1,3 +1,10 @@
+---
+description: "Which stores support Replay On Seen, the cases where it does not fire, the events it emits, and its limitations."
+layout:
+  description:
+    visible: false
+---
+
 # Replay On Seen Reference
 
 > **Reference** · Applies to **Brighter V10** · Prerequisites: [Replay On Seen](/contents/ReplayOnSeen.md)

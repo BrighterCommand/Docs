@@ -1,3 +1,10 @@
+---
+description: "In order to receive messages from Message Oriented Middleware (MoM) such as RabbitMQ or Kafka you have to configure a Dispatcher."
+layout:
+  description:
+    visible: false
+---
+
 # How Configuring a Dispatcher for an External Bus Works
 
 > **Explanation** · Applies to **Brighter V10**

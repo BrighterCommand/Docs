@@ -1,3 +1,10 @@
+---
+description: "When your Inbox recognises a message it has already handled, it normally throws or logs a warning and stops — the work is done, so there is nothing to do."
+layout:
+  description:
+    visible: false
+---
+
 # Replay On Seen
 
 > **Explanation** · Applies to **Brighter V10**

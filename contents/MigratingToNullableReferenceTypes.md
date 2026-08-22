@@ -1,9 +1,16 @@
+---
+description: "Four steps to turn nullable reference types on in a project that uses Brighter."
+layout:
+  description:
+    visible: false
+---
+
 # Migrating to Nullable Reference Types
 
 > **How-to** · Applies to **Brighter V10** · Prerequisites: [Nullable Reference Types](/contents/NullableReferenceTypes.md)
 
-Four steps to turn nullable reference types on in a project that uses Brighter: enable the
-feature, work through the compiler warnings it raises, and update your handlers and message
+Four steps to turn nullable reference types on in a project that uses Brighter. Enable the
+feature, work through the compiler warnings it raises, then update your handlers and message
 mappers for the annotations. [Nullable Reference Types](/contents/NullableReferenceTypes.md)
 explains what the annotations mean and how Brighter's own API is annotated.
 

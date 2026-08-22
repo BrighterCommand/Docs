@@ -1,3 +1,10 @@
+---
+description: "A producer routes messages to subscribers by setting a Topic on the MessageHeader."
+layout:
+  description:
+    visible: false
+---
+
 # Routing
 
 > **Explanation** · Applies to **Brighter V10**

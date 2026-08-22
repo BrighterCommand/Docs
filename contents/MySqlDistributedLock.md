@@ -1,3 +1,10 @@
+---
+description: "The MySQL locking provider implements Brighter's distributed lock using MySQL's named locks (GET_LOCK / RELEASE_LOCK), so a single Outbox Sweeper and Archiver run when you scale out."
+layout:
+  description:
+    visible: false
+---
+
 # MySQL Distributed Lock
 
 > **Reference** · Applies to **Brighter V10**

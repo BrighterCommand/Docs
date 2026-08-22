@@ -1,3 +1,10 @@
+---
+description: "There is an old principle: show don't tell, and this introduction is about showing you what you can do with Brighter and Darker."
+layout:
+  description:
+    visible: false
+---
+
 # Show me the code!
 
 > **How-to** · Applies to **Brighter V10 and Darker V4**

@@ -1,10 +1,17 @@
+---
+description: "Both tails of the Polly story in one place."
+layout:
+  description:
+    visible: false
+---
+
 # Migrating to Polly v8
 
 > **How-to** · Applies to **Brighter V10** · Prerequisites: [Supporting Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md)
 
-Both tails of the Polly story in one place: the four steps that take a V9 handler using
+Both tails of the Polly story in one place. Four steps take a V9 handler using
 `[UsePolicy]` to a V10 handler using `[UseResiliencePipeline]`, and the deprecated Polly v7
-attribute itself, kept because it is what you are migrating *from*.
+attribute is kept here because it is what you are migrating *from*.
 [Supporting Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md) is the
 current reference.
 

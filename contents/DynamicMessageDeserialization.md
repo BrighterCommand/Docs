@@ -1,3 +1,10 @@
+---
+description: "Brighter supports dynamic type resolution, allowing you to route multiple message types through a single channel."
+layout:
+  description:
+    visible: false
+---
+
 # Dynamic Message Deserialization
 
 > **Explanation** · Applies to **Brighter V10**

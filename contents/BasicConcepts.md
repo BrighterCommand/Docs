@@ -1,3 +1,10 @@
+---
+description: "A command is an instruction to carry out work."
+layout:
+  description:
+    visible: false
+---
+
 # Basic Concepts
 
 > **Reference** · Applies to **Brighter V10 and Darker V4**

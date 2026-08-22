@@ -1,3 +1,10 @@
+---
+description: "The MSSQL Inbox allows use of MSSQL for Brighter's inbox support."
+layout:
+  description:
+    visible: false
+---
+
 # MSSQL Inbox
 
 > **Reference** · Applies to **Brighter V10**

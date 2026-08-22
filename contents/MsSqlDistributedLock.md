@@ -1,11 +1,18 @@
+---
+description: "The MS SQL locking provider implements Brighter's distributed lock using SQL Server application locks (sp_getapplock / sp_releaseapplock)."
+layout:
+  description:
+    visible: false
+---
+
 # MS SQL Distributed Lock
 
 > **Reference** · Applies to **Brighter V10**
 
 The MS SQL locking provider implements Brighter's [distributed
 lock](/contents/DistributedLock.md) using SQL Server **application locks**
-(`sp_getapplock` / `sp_releaseapplock`), so a single [Outbox
-Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) and Archiver run when you
+(`sp_getapplock` / `sp_releaseapplock`). That keeps a single [Outbox
+Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) and Archiver running when you
 scale out. It pairs naturally with the [MSSQL Outbox](/contents/MSSQLOutbox.md).
 
 ## MS SQL Distributed Lock Package
