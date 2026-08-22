@@ -2936,7 +2936,7 @@ pages; `--check-shape` 0; `--check-redirects` 0 at 77 entries.
     reading any result, and asserted the restore was byte-identical after — both because this
     programme has been burnt by each.
 
-- [ ] **Task 11.4:** The acceptance pass — AC1 through AC9
+- [x] **Task 11.4:** The acceptance pass — AC1 through AC9
   - Input: `design.md` §14; `requirements.md` §12
   - Output: a § *Acceptance pass as executed* appended to this file, one row per criterion
     with the evidence
@@ -2953,7 +2953,7 @@ pages; `--check-shape` 0; `--check-redirects` 0 at 77 entries.
     naming **16 distinct pages** — see §2's third finding, and note that requirements §12 and
     §14 say fifteen. Verify by set comparison against `worklist.md`, not by eye.
 
-- [ ] **Task 11.5:** The final gate
+- [x] **Task 11.5:** The final gate
   - Input: the whole tree
   - Output: recorded results for five checks
   - Notes: `python3 tools/linkcheck.py` — **this is the task the skill's own checklist asks
@@ -2963,6 +2963,88 @@ pages; `--check-shape` 0; `--check-redirects` 0 at 77 entries.
     remembering it exits 2 rather than passing if the site is unreachable. Confirm
     `BoxProvisioning.md#when-to-use-box-provisioning` still resolves — Spec 009's rung 3
     links to it, `linkcheck.py` catches a break and redirects cannot.
+
+
+### The acceptance pass as executed — 2026-08-22 (Tasks 11.4 and 11.5)
+
+**Walked criterion by criterion, not inferred from a green build.** Every figure below was
+measured at `2c8e456` while writing this section. Where a criterion could be checked two ways,
+it was.
+
+| # | Criterion | Verdict | Evidence |
+|---|---|---|---|
+| **AC1** | `SUMMARY.md` links every page, zero orphans | **met** | `linkcheck.py`: **144 files, clean, 0 orphans**. `SUMMARY.md` links **142** pages under `contents/`, against 142 on disk. Corroborated live: `urlmap.py --verify` reports **predicted 142, published 142, 142 agree** |
+| **AC2** | `linkcheck.py` and `pagelint.py` at 0 errors | **met** | **0 and 0**, the second across **143** pages — 142 plus `README.md`, which Task 11.9 brought into scope. 791 warnings, all of them the declared using-directive debt |
+| **AC3** | Every moved page has a redirect; none points at a missing file | **met, and checked for completeness rather than validity** | `--redirects` re-run against the pre-Phase-2 `SUMMARY.md` (`1bae048^`) emits **74** moved paths. **Every one is in `.gitbook.yaml`, with the same target: zero moved-but-not-redirected.** All 77 targets exist on disk |
+| **AC4** | The block is verified mechanically | **met** | `--check-redirects`: **0 failures, 77 entries, 7,858 bytes, all printable ASCII**, in CI on every PR since Phase 2 |
+| **AC5a** | The mechanism discriminates | **met at D0** | PRs #77/#78/#79, requirements §16. Not re-run — the question is unanswerable now by construction, and that was the point of shipping belt-and-braces |
+| **AC5b** | A post-merge sample returns the new page | **met** | **11 of the 77 keys probed**, every *first* request a **307** whose `location:` is the path `urlmap.py` predicts. Controls both ways: a real page is `200` with no `location:`, a never-existing path `404` with none |
+| **AC6** | No section of one page; none unnavigable | **met** | `--check-shape`: **0 failures — 142 pages, 12 sections, deepest 4 of 4 segments, widest 10 of 12 entries.** S1, S2 and S3 all hold, with two entries of headroom under S2 |
+| **AC7** | Per split, no information loss, mechanically | **met, and complete rather than partial** | **26 split rows, 26 distinct sources, every one still on disk** under its original filename — rule 1 held, so no split moved a URL. **32 pages created**, derived by set difference against `4001b0a`, the commit that closed 011: **110 → 142**. `noloss.py` ran per split and is kept at `spec/010-information_architecture/noloss.py` |
+| **AC8** | All 16 `keep` rows honoured | **met** | Set comparison, not eye: **52 scored rows, 16 `keep` rows, 16 distinct pages**, all present. **The `keep` set and the 26 split sources are disjoint** — the direct form of "honoured", checked rather than argued |
+| **AC9** | A summary per page, set at source, reaching the canonical `/llms.txt` | **met** | Live: **143 of 143** entries from this space carry a description; **198 of 198** across both spaces. Set at source — each is the page's own opening sentence — and **rule 7 fails the build** when that sentence cannot be extracted |
+
+**Standing obligation 7, enumerated in both directions.** `pagetypes.tsv` is **142 rows, 142
+pages, no duplicates, nothing in one that is not in the other**. Banner *type* against
+`verdict`: **142/142**. Banner *version* against `applies`: **142/142**. No tool checks either,
+which is why this is walked rather than assumed — and it is the check that would have failed
+silently had any phase forgotten its row.
+
+**AC8 confirms §2's third finding and leaves the approved documents wrong.** Requirements §12
+and §14 say the 16 rows name **fifteen** pages; enumerated, they name **sixteen**. Recorded
+here rather than edited into an approved document, as §2 ruled. AC8's substance is untouched:
+all 16 rows are honoured under either count.
+
+#### Three things the pass found that were not on its list
+
+**1. The 404 shell has drifted again, and the classes still separate.** The fingerprint table
+said **189,511 bytes** in August and was corrected once already. Measured today: a
+never-existing path returns **223,618**, a real page **639,747** to **900,240**. *Compare
+classes, not remembered sizes* — third time, and the discriminator that has never moved is
+still the right one: **no genuine page response carries a `location:` header.**
+
+**2. A redirect's status code is not stable across requests, and `.md` reports it as missing.**
+The first request to a redirected path returns `307`; **the second returns `200`** with a
+227,547-byte body carrying the *destination's* `<title>` — the edge serving the redirect shell.
+The reader lands correctly either way, but a probe run twice gives two different answers, and
+**only the first is the mechanism**. Worse for anyone reaching for the tool Phase 5 recommended:
+`curl <old-path>.md` returns **`# Page Not Found`** for a path that redirects perfectly.
+Phase 5's lesson was *"if an HTML route 404s on a page the sitemap lists, check `.md` before
+concluding anything"*; its mirror is that **`.md` says Page Not Found for every redirected
+path**, and that is not evidence of a broken redirect. **Probe cold, once, and read the
+`location:` header.**
+
+**3. One filename with spaces defeated three ad-hoc measurements in a single session.**
+`contents/Requests, Commands and Events.md` broke a `git ls-tree | split()` count (silently
+dropping a page), and a `^  (\S+): (\S+)$` scan of `.gitbook.yaml` **twice** — its redirect
+target contains spaces, so 74 read as 73 and 77 as 76 on both sides of a comparison that
+therefore still balanced. **Every repository tool handles it correctly**: `urlmap.py` emits it,
+`linkcheck.py` resolves it, and Task 11.7 deliberately kept spaces legal in a link target for
+exactly this page. The corpus has one such filename and it has now caught three scripts written
+in a hurry. **Nothing is wrong with the page; something is wrong with reaching for `\S+`.**
+
+### Task 11.5 — the final gate
+
+Run at `2c8e456`, after the last merge:
+
+```text
+python3 tools/linkcheck.py                  No broken internal links (144 files checked).
+python3 tools/pagelint.py                   0 errors, 791 warnings (791 blocks / 118 pages), 143 pages
+python3 tools/urlmap.py --check-shape       0 failures — 142 pages, 12 sections, deepest 4, widest 10
+python3 tools/urlmap.py --check-redirects   0 failures — 77 entries, 7858 bytes, printable ASCII
+python3 tools/urlmap.py --verify            predicted 142, published 142, 142 agree
+```
+
+**`BoxProvisioning.md#when-to-use-box-provisioning` resolves** — the anchor spec 009's rung 3
+depends on, which `linkcheck.py` catches and a redirect cannot. The heading is
+`## When to use Box Provisioning`, lower-case *use*: a grep for the capitalised form returns
+nothing, which is a reminder that **the anchor is the thing to check, not the sentence you
+remember**. Checked through `linkcheck.py`'s own `slug()`, the same function GitBook's anchors
+are compared against.
+
+**`--verify` is the one gate not in CI**, deliberately: it fetches the live sitemap, and a
+check whose failure mode is *"the site was slow"* teaches people to ignore red builds. It exits
+2 rather than passing when the site is unreachable, so it cannot pass vacuously either.
 
 ### The four items Phase 10 added — Tasks 11.6 to 11.9
 
