@@ -2913,7 +2913,7 @@ are in a spec about enforcement at all.
     records it. Keep the section's *purpose* — a reader needs to know where the index comes
     from and what governs a page's line in it — and drop the generator that was never built.
 
-- [ ] **Task 11.7:** The 23 internal `.html` links, and the two blind spots that hid them
+- [x] **Task 11.7:** The 23 internal `.html` links, and the two blind spots that hid them
   - Input: the 23 links across 13 pages, 11 targets, measured at `3178d68`
   - Output: every internal link resolves as `.md`; `linkcheck.py` reports an internal `.html`
     link rather than skipping it
@@ -2922,9 +2922,83 @@ are in a spec about enforcement at all.
     including **`QualityOfServicePatterns.html`, which has no page at all**. The rewrite is
     **not mechanical**: the file is `CommandsCommandDispatcher`***a***`ndProcessor.md`, so
     the obvious conversion lands on **WRONG CASE**, the fault class the checker exists for,
-    hidden behind an extension it does not read. And some anchors never existed —
-    `#command-processor` is really `#the-command-processor-pattern`. **Check every anchor
-    against the target's headings; do not carry the fragment across.**
+    hidden behind an extension it does not read. And some anchors have gone stale —
+    `#command-processor` is now `#the-command-processor-pattern`. **Check every anchor
+    against the target's headings; do not carry the fragment across.** *(As written, this
+    task said that anchor "never existed". It existed from 2022 until `0b1b841` renamed the
+    heading sixteen days ago — see the execution note below.)*
+  - **Done 2026-08-22.** All 23 rewritten, `linkcheck.py` clean at 144 files, and the rule
+    that would have caught them is now in the tool. See *Task 11.7 as executed*, below.
+
+### Task 11.7 as executed — 2026-08-22
+
+**The rule was red on an untouched tree before a link moved**, which is the one red-proof
+this programme never has to manufacture: `LEGACY HTML (23)`, exit 1, on `3178d68` plus the
+rule. No mutation, no probe, nothing to assert had landed — the corpus was the fixture.
+
+**There were two blind spots, and only one of them was known.** The recorded one is that
+`linkcheck.py` resolves `.md` and skips every other extension, so a `.html` link was not
+merely unchecked but **reported as fine**. The second was found while re-deriving the
+count:
+
+> **`linkcheck.py` extracted links a line at a time, and this corpus hard-wraps its prose.**
+> **27 links were invisible to it** — 21 internal `.md` links and a same-page anchor, four
+> external, and **two of the `.html` ones**. So the blind spots overlapped: the grep Phase 10
+> counted with was per-line too, which is why *"29, twelve targets"* and the truth agree on
+> the total and not on the pages. **Every one of the 21 internal links resolves today**,
+> checked one by one before the extractor changed, so nothing was hiding behind it — but
+> `linkcheck.py` has been reporting *"144 files checked"* while never reading 27 of the links
+> in them. **A checker's coverage is a measurement, not a property of having run it.**
+
+Extraction is now whole-file with `re.DOTALL`. The label cannot cross a `]` and the target
+cannot cross a newline, so neither a stray bracket in prose nor an unclosed `](` can swallow
+what follows. **Spaces stay legal inside a target**, because one page in this corpus is
+`Requests, Commands and Events.md` and `SUMMARY.md` links it by that name — tightening the
+pattern to `[^)\s]+` would have made that page an ORPHAN, a false positive manufactured by a
+fix for a false negative. A fault is reported at the line carrying the **target**, not the
+line the text opens on, because that is the line you edit.
+
+**Nineteen of the 23 were conversion; two were judgement; two more were the trap.**
+
+| Link | Ruling |
+|---|---|
+| `BuildingAPipeline.md:26` → `QualityOfServicePatterns.html` | **No such page, ever.** Text reads *"Providing Timeout, Retry, and Circuit Breaker support"* → `/contents/PolicyRetryAndCircuitBreaker.md`, whose own line 14 calls those three *"patterns to support Quality of Service"* — the page absorbed the title |
+| `BuildingAPipeline.md:31` → `…AndProcessor.html#command-processor` | Both halves wrong. File is `CommandsCommandDispatcher`***a***`ndProcessor.md`; the heading is `## The Command Processor Pattern`, so the anchor is `#the-command-processor-pattern` |
+
+> **The inherited reason for that second one was wrong, and checking it took one command.**
+> Phase 10 recorded — and `PROMPT.md` repeated — that `#command-processor` *"never existed"*.
+> It existed for four years. `## Command Processor` was written into that page by `21a08e8`
+> on **2022-03-15** and requalified to `## The Command Processor Pattern` by **`0b1b841`**,
+> Spec 011's own cross-page heading pass, on 2026-08-04. `git log -p --follow` over the
+> file's heading lines shows both spellings and the moment one replaced the other.
+>
+> **So the link was correct when it was written, and this programme broke it** — sixteen days
+> ago, in the commit that qualified 260 headings, and behind an extension that made it
+> invisible to the checker which would otherwise have said so immediately. It is Phase 9's
+> naming trap again (`Use Cases` and `Limitations` were pre-qualification titles too), with
+> the roles reversed: there the *plan* was stale against the corpus, here the *corpus* went
+> stale against a link. **The remedy is unchanged and the diagnosis is not** — *"a dead anchor
+> nobody ever had"* invites you to delete the fragment; *"an anchor we renamed"* tells you to
+> repoint it, which is what a reader of that sentence still needs.
+
+The other two are `FeatureSwitches.md:23` and `PolicyRetryAndCircuitBreaker.md:14`, both
+**self-links** carrying anchors — the shape most likely to be waved through, since a page
+linking itself looks harmless. Both anchors were checked against their own page's headings
+and both resolve.
+
+**`html_advice()` resolves the counterpart rather than swapping the extension**, and the
+case above is why. A rule that reported a fault and then advised a second one would be worse
+than no rule: the obvious rewrite of that link lands on `WRONG CASE`, the exact fault class
+this tool exists for. It also **refuses to carry the anchor across**, saying *re-derive it*
+instead — these links predate the headings they point into, and an anchor that survives a
+rewrite is an anchor nobody checked.
+
+**Gates after:** linkcheck **144 files, clean**; pagelint 0 errors / **791** warnings / 142
+pages; `--check-shape` 0; `--check-redirects` 0 at 77 entries; `--changed origin/master` 0,
+reporting **14 files, 33 hunks, 13 pages, 0 code blocks strict** — Task 11.3's report earning
+its place immediately, since a prose-only PR of this size is exactly the run that used to be
+indistinguishable from a real one. **No URL moves and no redirect is owed**: every rewrite
+changes a link's *target*, not any page's path.
 
 - [ ] **Task 11.8:** `BuildingAnAsyncPipeline.md` has two H1s
   - Input: the page, lines 1 and 8

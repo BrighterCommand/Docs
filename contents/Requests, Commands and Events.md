@@ -30,7 +30,7 @@ not, then we have a failure condition (and I am thirsty and cranky). If I say \"
 
 So choosing between **Command** or **Event** effects how the **Command Dispatcher** routes requests.
 
-See [Dispatching a Request](DispatchingARequest.html) for more on how to dispatch **Requests** to handlers.
+See [Dispatching a Request](/contents/DispatchingARequest.md) for more on how to dispatch **Requests** to handlers.
 
 ## Message Definitions and Independent Deployability
 

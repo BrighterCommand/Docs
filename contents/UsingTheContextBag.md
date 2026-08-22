@@ -40,7 +40,7 @@ public class MyContextAwareCommandHandler : RequestHandler<MyCommand>
 }
 ```
 
-Internally we use the **Context Bag** in a number of the Quality of Service supporting Attributes we provide. See [Fallback](PolicyFallback.html) for example.
+Internally we use the **Context Bag** in a number of the Quality of Service supporting Attributes we provide. See [Fallback](/contents/PolicyFallback.md) for example.
 
 ## Request Context Capabilities
 

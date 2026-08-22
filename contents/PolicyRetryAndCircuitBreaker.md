@@ -9,13 +9,13 @@ layout:
 
 > **How-to** · Applies to **Brighter V10**
 
-Brighter is a [Command Processor](https://www.goparamore.io/control-bus-and-data-bus/) and supports a [pipeline of Handlers to handle orthogonal requests](BuildingAPipeline.html).
+Brighter is a [Command Processor](https://www.goparamore.io/control-bus-and-data-bus/) and supports a [pipeline of Handlers to handle orthogonal requests](/contents/BuildingAPipeline.md).
 
-Amongst the valuable uses of orthogonal requests is patterns to support Quality of Service in a distributed environment: [Timeout, Retry, and Circuit Breaker](PolicyRetryAndCircuitBreaker.html#using-brighters-useresiliencepipeline-attribute).
+Amongst the valuable uses of orthogonal requests is patterns to support Quality of Service in a distributed environment: [Timeout, Retry, and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md#using-brighters-useresiliencepipeline-attribute).
 
 Even if you don't believe that you are writing a distributed system that needs this protection, consider that as soon as you have multiple processes, such as a database server, you are distributed.
 
-Brighter uses [Polly](https://github.com/App-vNext/Polly) to support Retry and Circuit-Breaker. Through our [Russian Doll Model](BuildingAPipeline.html) we are able to run the target handler in the context of a Policy Handler, that catches exceptions, and applies a Policy on how to deal with them.
+Brighter uses [Polly](https://github.com/App-vNext/Polly) to support Retry and Circuit-Breaker. Through our [Russian Doll Model](/contents/BuildingAPipeline.md) we are able to run the target handler in the context of a Policy Handler, that catches exceptions, and applies a Policy on how to deal with them.
 
 ## Polly v8 Resilience Pipelines
 

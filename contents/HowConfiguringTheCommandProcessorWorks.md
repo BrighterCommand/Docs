@@ -91,7 +91,7 @@ internal class HandlerFactory : IAmAHandlerFactory
 
 ## Policy Registry and Resilience Pipelines
 
-If you intend to use [Polly](https://github.com/App-vNext/Polly) to support [Retry and Circuit-Breaker](PolicyRetryAndCircuitBreaker.html) then you will need to register your policies or resilience pipelines.
+If you intend to use [Polly](https://github.com/App-vNext/Polly) to support [Retry and Circuit-Breaker](/contents/PolicyRetryAndCircuitBreaker.md) then you will need to register your policies or resilience pipelines.
 
 ### Resilience Pipeline Registry (Recommended)
 
@@ -157,7 +157,7 @@ public override TaskReminderCommand Handle(TaskReminderCommand command)
 
 > **⚠️ DEPRECATED**: The following approach uses Polly v7 policies, which are deprecated in favor of Polly v8 resilience pipelines.
 
-If you intend to use a [Polly](https://github.com/App-vNext/Polly) Policy to support [Retry and Circuit-Breaker](PolicyRetryAndCircuitBreaker.html) then you will need to register the Policies in the **Policy Registry**.
+If you intend to use a [Polly](https://github.com/App-vNext/Polly) Policy to support [Retry and Circuit-Breaker](/contents/PolicyRetryAndCircuitBreaker.md) then you will need to register the Policies in the **Policy Registry**.
 
 This is just the Polly **PolicyRegistry**.
 
@@ -224,7 +224,7 @@ public override TaskReminderCommand Handle(TaskReminderCommand command)
 
 ## Request Context Factory
 
-You need to provide a factory to give us instances of a [Context](UsingTheContextBag.html). If you have no implementation to use, just use the default **InMemoryRequestContextFactory**. Typically you would replace ours if you wanted to support initializing the context outside of our pipeline, for tracing for example.
+You need to provide a factory to give us instances of a [Context](/contents/UsingTheContextBag.md). If you have no implementation to use, just use the default **InMemoryRequestContextFactory**. Typically you would replace ours if you wanted to support initializing the context outside of our pipeline, for tracing for example.
 
 ## Command Processor Builder
 

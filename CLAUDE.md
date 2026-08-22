@@ -496,13 +496,23 @@ When unclear about a feature:
 ### Cross-Linking Documentation
 
 **Verifying links:** `python3 tools/linkcheck.py` checks every internal link in
-the published docs. It reports four faults:
+the published docs. It reports five faults:
 
 - **MISSING FILE** — the target does not exist
 - **MISSING ANCHOR** — the file exists, but no heading slugifies to the anchor
 - **WRONG CASE** — the target exists only under different capitalisation. macOS
   and Windows resolve these; GitBook does not, so they 404 once published
+- **LEGACY HTML** — a link to a `.html` path. The published site serves none:
+  every page has an extensionless URL. These are survivals from the pre-GitBook
+  site, and until Spec 010 Phase 11 the checker *skipped* them for not ending
+  in `.md` — so 23 of them, one naming a page that has never existed, were
+  green in every run it had ever made
 - **ORPHAN** — a page under `contents/` that `SUMMARY.md` never links to
+
+**A link's text may wrap across lines**, and the checker reads whole files rather
+than lines so that it sees one when it does. Extracted per line, 27 links in this
+corpus were invisible to it — including that dead one. Report a fault at the line
+carrying the **target**, which is where you fix it, not where the text opens.
 
 Pass file paths to check just those files; orphans are only reported on a
 whole-repo run, since that check needs every page in view. It exits non-zero
