@@ -2881,13 +2881,28 @@ unchecked rather than approved.
 **Gates after:** linkcheck **144 files, clean**; pagelint 0 errors / **791** warnings / 142
 pages; `--check-shape` 0; `--check-redirects` 0 at 77 entries.
 
-- [ ] **Task 11.2:** P2-1 — normalise the files with no trailing newline — **14**, re-derived
+- [x] **Task 11.2:** P2-1 — normalise the files with no trailing newline — **14**, re-derived
   - Input: the 14 files (measured at `3178d68`; it was 18 of 105 before the Phase 6 splits,
     and 17 when this task was written)
   - Output: every file under `contents/` ends with a newline
   - Notes: Deliberately deferred from 011 so the banner diff contained nothing but banners.
     It lands here for the same reason in reverse — a whitespace-only sweep is safe once no
     content PR is in flight. **Re-derive the count**; it has moved once already.
+  - **Done 2026-08-22.** **14 files**, re-derived twice: once when the phase opened and again
+    at the head the sweep cut from, because the phase's own five PRs had edited 17 pages in
+    between. Both returned 14 — the edits were to link targets and headings, none of which is
+    a file's last line.
+
+    **The diff is provably nothing but newlines.** Each file grew by **exactly one byte**,
+    asserted as `after == before + b"\n"` before the next file was touched, and `git diff -U0`
+    re-adds all 14 removed lines verbatim — 14 removed, 14 added, compared as lists and equal.
+    A whitespace sweep is the one change nobody reads closely, which is the argument for
+    asserting it rather than reviewing it.
+
+    **No line count in this document moves**, and that is a property of the convention rather
+    than luck: a page's length is `len(text.splitlines())`, which is unchanged by a trailing
+    newline. Asserted per file during the sweep. Under `wc -l` all 14 would have gained a line,
+    which is exactly the instrument design §16 finding 1 ruled against.
 
 - [x] **Task 11.3:** P2-3 — echo the changed-range count from `docs.yml`
   - Input: `.github/workflows/docs.yml`
