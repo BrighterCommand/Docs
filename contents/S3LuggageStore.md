@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The S3LuggageStore is an implementation of IAmAStorageProviderAsync for AWS S3 Object Storage."
+---
+
 # S3 Luggage Store
 
 The **S3LuggageStore** is an implementation of **IAmAStorageProviderAsync** for AWS S3 Object Storage. It allows use of the [Claim Check](/contents/ClaimCheck.md) *Transformer* with S3 Object Storage as the *Luggage Store*.

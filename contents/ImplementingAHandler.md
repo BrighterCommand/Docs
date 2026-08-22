@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). To implement a handler, derive from RequestHandler<T> where T should be the Command or Event derived type that you wish to handle."
+---
+
 # How to Implement a Request Handler
 
 To implement a handler, derive from RequestHandler\<T\> where T should be the **Command** or **Event** derived type that you wish to handle. Then override the base class Handle() method to implement your handling

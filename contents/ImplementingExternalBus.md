@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). Brighter provides support for an External Bus."
+---
+
 # Using an External Bus 
 
 Brighter provides support for an External Bus. Instead of handling a command or event, synchronously and in-process, (an Internal Event Bus) work can be dispatched to a distributed queue to be handled

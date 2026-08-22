@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). Brighter is a Command Processor and supports a pipeline of Handlers to handle orthogonal requests."
+---
+
 # Supporting Retry and Circuit Breaker
 
 Brighter is a [Command Processor](https://www.goparamore.io/control-bus-and-data-bus/) and

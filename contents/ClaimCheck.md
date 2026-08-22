@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The Claim Check pattern helps us reduce the size of our messages, without losing information that we need to exchange."
+---
+
 # Claim Check
 
 The [Claim Check](https://www.enterpriseintegrationpatterns.com/patterns/messaging/StoreInLibrary.html) pattern helps us reduce the size of our messages, without losing information that we need to exchange. 

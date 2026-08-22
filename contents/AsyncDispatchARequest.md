@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). Once you have implemented your Request Handler, you will want to dispatch Commands or Events to that Handler."
+---
+
 # Dispatching Requests Asynchronously
 
 Once you have [implemented your Request Handler](ImplementingAHandler.html), you will want to dispatch **Commands** or **Events** to that Handler.

@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). Brighter does not have a dependency on an Inversion Of Control (IoC) framework."
+---
+
 # How Configuring the Command Processor Works
 
 Brighter does not have a dependency on an Inversion Of Control (IoC) framework. This gives you freedom to choose the DI libraries you want for your project.

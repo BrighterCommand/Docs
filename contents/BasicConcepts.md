@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). A command is an instruction to carry out work."
+---
+
 # Basic Concepts
 
 ## Command

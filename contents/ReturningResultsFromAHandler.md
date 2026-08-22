@@ -1,3 +1,6 @@
+---
+description: "Brighter V9 (superseded). We use Command-Query separation so a Command does not have return value and CommandDispatcher.Send() does not return anything."
+---
 
 # Returning Results from a Handler
 

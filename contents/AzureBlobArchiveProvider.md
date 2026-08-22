@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The Azure Blob Archive Provider is a provider for Outbox Archiver."
+---
+
 # Azure Blob Archive Provider
 
 ## Usage

@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). There are many options for .NET developers looking for either a package to use as a command processor/dispatcher pattern implementation (sometimes confused with the…"
+---
+
 # Why Brighter?
 
 There are many options for .NET developers looking for either a package to use as a command processor/dispatcher pattern implementation (sometimes confused with the mediator pattern) or package to use as a messaging framework. So why would you choose Brighter & Darker?

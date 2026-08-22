@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). When should you use an asynchronous pipeline to handle work and when should you use an External Bus."
+---
+
 # FAQ
 
 ## Asynchronous or External Bus

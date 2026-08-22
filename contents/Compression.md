@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The Compression transform helps us reduce the size of a message using a compression algorithm."
+---
+
 # Compression
 
 The Compression transform helps us reduce the size of a message using a compression algorithm. It is an efficient approach to reducing the size of a payload. 

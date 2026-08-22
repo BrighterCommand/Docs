@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). The Command design pattern encapsulates a request as an object, allowing reuse, queuing or logging of requests, or undoable operations."
+---
+
 # Command Patterns
 
 ## Command

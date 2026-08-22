@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). When a Request is passed to RequestHandler.Handle() it runs in your application code."
+---
+
 # Failure and Dead Letter Queues
 
 When a *Request* is passed to **RequestHandler.Handle()** it runs in your application code. If your application code fails, you have a number of options:

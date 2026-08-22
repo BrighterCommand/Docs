@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). Documentation for the Brighter and Darker projects."
+---
+
 # Brighter and Darker Documentation
 
 Documentation for the [Brighter](https://github.com/BrighterCommand/Brighter) and [Darker](https://github.com/BrighterCommand/Darker) projects.

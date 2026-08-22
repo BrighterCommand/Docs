@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). When a microservice changes the state for which it is the system of record, and then signals to subscribers via an event that it has changed its state, how do we ensure…"
+---
+
 # Outbox Pattern Support
 
 ## Producer Correctness

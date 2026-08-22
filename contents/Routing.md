@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). A producer routes messages to subscribers by setting a Topic on the MessageHeader."
+---
+
 # Routing
 
 ### Routing Messages

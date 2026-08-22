@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). Starting in version 9.2.1 Brighter now supports Open Telemetry Tracing"
+---
+
 # Telemetry
 
 Starting in version 9.2.1 Brighter now supports Open Telemetry Tracing

@@ -1,3 +1,7 @@
+---
+description: "Brighter V9 (superseded). Once you are using the features of Brighter to act as a command dispatcher and send or publish messages to a target handler, you may want to use its command processor…"
+---
+
 # Building a Pipeline of Async Request Handlers
 
 Once you are using the features of Brighter to act as a [command dispatcher](CommandsCommandDispatcherAndProcessor.html#command-dispatcher) and send or publish messages to a target handler, you may want to use
