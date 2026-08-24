@@ -250,8 +250,25 @@ to `Brighter.slnx`, and the acceptance check for AC4 is presence in the solution
 CI run that names the new projects — not presence in the directory.** Standing Brighter
 obligation 2 carries it.
 
-Reporting `TodoApi` upstream is out of scope for this spec and is not ours to fix; note it on
-the first sample PR as an observation and leave it there.
+~~Reporting `TodoApi` upstream is out of scope for this spec~~ — **raised 2026-08-24 at the
+maintainer's direction**, rather than left as an observation on a later PR:
+**[Brighter#4272](https://github.com/BrighterCommand/Brighter/issues/4272)** for the defect,
+**[#4274](https://github.com/BrighterCommand/Brighter/pull/4274)** fixing it (five lines of
+`Brighter.slnx`; the sample builds clean, so nothing was keeping it out), and
+**[#4273](https://github.com/BrighterCommand/Brighter/issues/4273)** for a CI guard that fails
+the build when any `.csproj` is unreferenced.
+
+**None of the three is a 009 deliverable.** Do not track them in this list and do not block a
+phase on them. Standing Brighter obligation 2 holds whether or not the guard ever lands — it
+is what makes AC4 true for *our* samples.
+
+> **Read #4273 before writing a guard here.** Two details in it each cost a wrong answer
+> first. Compare against **`git ls-files`, not `find`**: `find` reads the working filesystem,
+> so on a case-insensitive macOS checkout it reports
+> `src/Paramore.Brighter.MessageScheduler.Aws` where the repository — and Linux CI — both have
+> `.AWS`. That phantom mismatch does not exist on the runner, and it was nearly published as a
+> second finding. And **scope the whole repo**: `.csproj` files live under five top-level
+> directories, not just `samples/`.
 
 ### 2.5 The pin is 10.7.0 today, and the two authorities agree
 
@@ -562,8 +579,10 @@ teaching purpose, which is the whole argument for a new sample rather than an ed
   - Output: a merged Brighter PR; the CI log naming the new projects
   - Notes: AC4 is *merged*, not *opened*. If it stalls beyond a couple of weeks, **say so on
     #67** rather than letting the thread go quiet — and do not work around it by inlining the
-    sample into the page, which fails AC4 rather than satisfying it. Note the `TodoApi`
-    observation (§2.4) on this PR.
+    sample into the page, which fails AC4 rather than satisfying it. **`master` may be red for
+    reasons that are not yours** — it was on 2026-08-24, on one `net10.0` test in
+    `Paramore.Brighter.Transforms.Adaptors.Tests` — so read *which* check failed before
+    concluding anything about your sample.
 
 ---
 
