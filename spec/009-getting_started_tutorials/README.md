@@ -146,12 +146,19 @@ parallel** with the others. Agreed order across the programme is
 - [x] Requirements reviewed and approved (2026-08-03)
 - [x] Documentation outline created (`design.md`, 2026-08-03)
 - [x] Outline reviewed and approved (2026-08-03; six findings applied, D12 added)
-- [ ] Writing tasks identified
+- [x] Writing tasks identified (`tasks.md`, 2026-08-23; reviewed and approved 2026-08-24 —
+      39 tasks across 12 phases)
 - [ ] Writing complete
 - [ ] Documentation reviewed
 - [ ] Spec closed
 
 ## Next Steps
+
+**Spent 2026-08-24 — the next step is `tasks.md` Phase 2.** All three items below were
+resolved during requirements and design and the list was never updated; the checklist above
+is the current state. Kept rather than deleted because it records what this spec did not yet
+know on 2026-08-03. Note item 2 says *three* tutorials: the ladder is **four** rungs, settled
+at design.
 
 1. Resolve the tutorial-code hosting question above
 2. Confirm the three-tutorial ladder is the right shape and ordering

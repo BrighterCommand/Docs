@@ -7,7 +7,8 @@ moved. See § *Re-derive the total* and Task 3.5.
 applied) and `requirements.md` (approved 2026-08-03)
 **Executes against:** a corpus that **Spec 010 moved after this spec was approved** — see §2.
 
-**Total tasks: 39, across 12 phases. 1 done — Task 1.1.**
+**Total tasks: 39, across 12 phases. 3 done — Phase 1 complete, 2026-08-24.** Re-derived,
+not incremented: `grep -c '^- \[x\] \*\*Task'` says 3 and `'^- \[ \]'` says 36.
 
 ---
 
@@ -382,23 +383,47 @@ misled.
   - Output: `spec/009-getting_started_tutorials/tasks.md`; `.tasks-approved` on approval
   - Notes: `spec/.current-spec` was repointed from 010 to 009 as part of this task
 
-- [ ] **Task 1.2:** Add dated pointers from the two places in `design.md` a writer would be
-      misled by
+- [x] **Task 1.2:** Add dated pointers from the two places in `design.md` a writer would be
+      misled by — **DONE 2026-08-24, and it was three places, not two**
   - Input: §2.1 and §2.2 above
   - Output: one line beneath design's *SUMMARY.md Changes* Before/After block pointing at
     §2.1; one line beneath the D12 anchor table pointing at §2.2
   - Notes: **Pointers only** — do not rewrite the blocks. The stale text is evidence of when
     it was written, and §2 is where the correction lives. Do not touch the eight page lengths
     of §2.8: no writer reads a line count as an instruction.
+  - **What it found:** a **third** place, `design.md` § D2 (`:266–268`), which tells the
+    writer *"do not link before it lands"* about `#dispatcher`. That merge landed, and it is
+    the only sentence in the document instructing a writer **not** to do something that is
+    now safe — the exact criterion this phase's preamble states for a permitted pointer, so
+    it took one. **Task 6.1 already carries the correction**, which is why the task was
+    written as two: the writer following the *task list* was never at risk. The writer
+    following `design.md` § D2, which is Task 6.1's own stated Input, was. **A count inside a
+    task is a claim about the corpus like any other, and this list said to re-derive totals
+    rather than inherit them** — §1 says it about its own 39. It did not occur to anyone that
+    *"the two places"* in a task body is the same kind of number.
+  - The D12 pointer sits below the table **and** its *Confirmed present* list, not between
+    them: the stale line numbers §2.2 corrects (`#partition-key` at `:444`, now `:533`) are
+    in the list, so a pointer above it would have left them unflagged.
 
-- [ ] **Task 1.3:** Re-check [#67](https://github.com/BrighterCommand/Docs/issues/67) and
-      tick the README
+- [x] **Task 1.3:** Re-check [#67](https://github.com/BrighterCommand/Docs/issues/67) and
+      tick the README — **DONE 2026-08-24**
   - Input: the issue thread
   - Output: a line in this document recording the state; `README.md` § Status Checklist gains
     *Writing tasks identified*
   - Notes: **Checked 2026-08-23 — open, no reply from the issue author since 2026-08-03.**
     Requirements § Notes makes this a precondition on the ladder's shape, so it is a box, not
     a habit. Re-check once more before Phase 12 comments on the issue.
+  - **State 2026-08-24: unchanged, and the ladder's shape stands.** #67 is **OPEN**, two
+    comments, both `iancooper`, `updatedAt` **2026-08-03T11:43:25Z** — the thread has not
+    moved in three weeks. **PR #72 was checked too**, because that is the other place
+    pushback was invited: **MERGED**, one comment (ours), **zero reviews**. So the two
+    positions flagged for pushback — Diátaxis as authoring discipline, and prose-vs-generated
+    reference — are unchallenged rather than endorsed, and nothing obliges a change of shape.
+  - `README.md` § *Next Steps* was **marked spent** in the same commit. Its three items were
+    all resolved during requirements and design and it had gone stale directly beneath the
+    checklist that contradicts it — including *"the three-tutorial ladder"*, when the ladder
+    is four rungs. Marked, not deleted, on §2's own principle: stale text is evidence of when
+    it was written.
 
 ---
 
