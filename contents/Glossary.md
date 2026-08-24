@@ -330,6 +330,17 @@ point-to-point semantics, configure a routing table entry that delivers to a sin
 
 See: [The Task Queue Pattern](/contents/TaskQueuePattern.md)
 
+### At-Least-Once
+
+The delivery guarantee messaging makes: a message arrives one or more times, never zero times. It
+follows from a sender being unable to tell a lost message from a lost acknowledgement — so it
+retries. The [Outbox](#outbox) and its [Sweeper](#sweeper) retry until the broker confirms; a stream
+transport retries by re-reading the [offsets](#offset) it never committed. Duplicates are therefore
+normal rather than exceptional: make handlers idempotent, or keep an [Inbox](#inbox) so a message
+you have already seen is discarded.
+
+See: [Guaranteed, At Least Once](/contents/BrighterInboxSupport.md#guaranteed-at-least-once)
+
 ### Message Queue
 
 Middleware that delivers Messages via a queue. A consumer locks a message, processes it and
@@ -350,6 +361,39 @@ it reads. Partitioning a stream lets consumers scale.
 Examples: Kafka, Kinesis, Redis Streams
 
 See: [Kafka Configuration](/contents/KafkaConfiguration.md)
+
+### Partition
+
+One of the ordered logs a stream is divided into. Order is guaranteed *within* a partition and
+nowhere else, and only one consumer in a [consumer group](#consumer-group) reads a given partition at
+a time — which is what lets a stream scale past a single reader without losing order. A
+[Partition Key](#partition-key) is the value that chooses the partition; the partition is the log it
+chooses. Messages sharing a key therefore share a partition, and so keep their order relative to one
+another.
+
+See: [Kafka Configuration](/contents/KafkaConfiguration.md#kafka-general)
+
+### Consumer Group
+
+The consumers that share a group id and so share the work of reading a topic. Kafka assigns each
+[partition](#partition) to exactly one member, so a group scales up to the partition count and no
+further, and a rebalance moves partitions between members when the pool changes. Each group tracks
+its own [offsets](#offset), which is why two groups read the same topic independently. Brighter does
+not default the group id — a Kafka Subscription must set it.
+
+See: [Kafka Configuration](/contents/KafkaConfiguration.md#kafka-subscription)
+
+### Offset
+
+A consumer's position in a [partition](#partition). Brighter turns the Confluent client's auto-store
+and auto-commit off and manages offsets itself: it stores one when a request is acked, and commits
+them in batches of `CommitBatchSize` — **10 by default** — or when the sweep interval elapses,
+whichever comes first. So a crash loses whatever is still buffered and the
+[consumer group](#consumer-group) is served those records again. That is where a stream transport's
+[at-least-once](#at-least-once) delivery comes from, and why a handler reading a stream must be
+prepared to see a message twice.
+
+See: [Kafka Configuration](/contents/KafkaConfiguration.md#offset-management)
 
 ### Dead Letter Queue (DLQ)
 
