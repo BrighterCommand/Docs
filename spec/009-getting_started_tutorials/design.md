@@ -267,6 +267,11 @@ sample in `samples/Tutorials/02-FirstMessage/` keeps using the Brighter root fil
 is defined **twice** in `Glossary.md` (`:95` and `:393`), one of the duplicates Spec 011
 step 6 merges. Take whichever anchor survives that merge; do not link before it lands.
 
+**Unblocked 2026-08-24 — see `tasks.md` §2.2.** That merge landed: there is one
+`### Dispatcher`, at `:119`, and rung 2 may link `#dispatcher` directly. The instruction
+above is the only one in this document that tells a writer *not* to do something now safe,
+which is why it takes a pointer even though §2.1 and §2.2 name only two.
+
 **The `ServiceActivator` collision.** The consumer needs
 `using Paramore.Brighter.ServiceActivator.Extensions.Hosting;` and registers
 `ServiceActivatorHostedService`. The prose says *Dispatcher* throughout, per
@@ -403,6 +408,10 @@ Confirmed present, link as-is: `#command` (`:13`), `#event` (`:21`),
 `#command-processor` (`:63`), `#handler` (`:115`), `#outbox` (`:168`), `#sweeper`
 (`:192`), `#subscription` (`:256`), `#publication` (`:262`), `#routing-key` (`:294`),
 `#reactor` (`:328`), `#message-pump` (`:352`), `#partition-key` (`:444`).
+
+**Re-measured 2026-08-23 — cite `tasks.md` §2.2's table, not the line numbers above.** The
+verdicts hold: all five terms are still absent and all twelve anchors still resolve. The
+line numbers do not — `Glossary.md` is 678 lines now and `#partition-key` is at `:533`.
 
 **Why this is a 009 deliverable and not a 010/013 one.** Requirements § Out of Scope
 rules that a target page *explaining a concept badly* is another spec's defect. A term
@@ -567,6 +576,11 @@ requirements § Q1, and **each page states it in one line** so nobody trips over
  * [Basic Concepts](/contents/BasicConcepts.md)
  * [Why Brighter?](/contents/WhyBrighter.md)
 ```
+
+**Superseded 2026-08-24 — see `tasks.md` §2.1 for what the file looks like now.** Neither
+block above describes `SUMMARY.md` today: Spec 010 replaced the nineteen-section tree, and
+section 1 is *already* called `## Get Started`. The five entries join that section; no
+section is created.
 
 Numbered display text is deliberate — the ladder only works if its order is visible in
 the navigation. **Each entry lands in the same commit as its page**: rung 4 and
