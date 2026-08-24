@@ -333,6 +333,11 @@ appendix.
 [Box Provisioning](/contents/Glossary.md#box-provisioning). The first two exist; the last
 two **do not** — D12 adds them.
 
+**Corrected 2026-08-24 at Phase 2.** Three of the four exist. Write the fourth as
+**`Glossary.md#boxprovisioning`** — the closed-form anchor Spec 005 settled and four existing
+links use. `#box-provisioning` resolves to nothing and fails `linkcheck.py`; it was proved
+so end-to-end before this line was written. `#at-least-once` is the one D12 adds here.
+
 **Cross-links out:** `BrighterOutboxSupport.md`, and
 `BoxProvisioning.md#when-to-use-box-provisioning` — the Option A / Option B choice the
 tutorial takes silently, surfaced in *Further Reading* where a reader in a regulated
@@ -409,9 +414,16 @@ Confirmed present, link as-is: `#command` (`:13`), `#event` (`:21`),
 (`:192`), `#subscription` (`:256`), `#publication` (`:262`), `#routing-key` (`:294`),
 `#reactor` (`:328`), `#message-pump` (`:352`), `#partition-key` (`:444`).
 
-**Re-measured 2026-08-23 — cite `tasks.md` §2.2's table, not the line numbers above.** The
-verdicts hold: all five terms are still absent and all twelve anchors still resolve. The
-line numbers do not — `Glossary.md` is 678 lines now and `#partition-key` is at `:533`.
+**Re-measured 2026-08-23 — cite `tasks.md` §2.2's table, not the line numbers above.** All
+twelve anchors still resolve; the line numbers do not, and they have since moved again
+because Phase 2 inserted entries above them. **Cite anchors, never line numbers.**
+
+**Corrected 2026-08-24 at Phase 2 — this table is right about four terms and wrong about
+the fifth.** `Box Provisioning` is **not** absent: Spec 005 defined it as `### BoxProvisioning`
+under `## Database Provisioning`, and four links across two pages already point at
+`#boxprovisioning`. Only the *anchor spelling* above is absent. **D12 adds four entries, not
+five, and every link to this term is `Glossary.md#boxprovisioning`** — including D3's list
+in § D2/D3 above. See `tasks.md` Task 2.2.
 
 **Why this is a 009 deliverable and not a 010/013 one.** Requirements § Out of Scope
 rules that a target page *explaining a concept badly* is another spec's defect. A term

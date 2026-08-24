@@ -7,8 +7,8 @@ moved. See § *Re-derive the total* and Task 3.5.
 applied) and `requirements.md` (approved 2026-08-03)
 **Executes against:** a corpus that **Spec 010 moved after this spec was approved** — see §2.
 
-**Total tasks: 39, across 12 phases. 3 done — Phase 1 complete, 2026-08-24.** Re-derived,
-not incremented: `grep -c '^- \[x\] \*\*Task'` says 3 and `'^- \[ \]'` says 36.
+**Total tasks: 39, across 12 phases. 6 done — Phases 1 and 2 complete, 2026-08-24.**
+Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 6 and `'^- \[ \]'` says 33.
 
 ---
 
@@ -209,6 +209,17 @@ through `linkcheck.py`'s own `slug()`, over `Glossary.md` at 678 lines and 109 h
 **Design's line numbers for those twelve are stale** — it records `#partition-key` at `:444`
 and it is at `:533` — but every anchor resolves, which is the property that matters. Cite the
 table above, not design's.
+
+> **Corrected at Phase 2, 2026-08-24 — read this row as *"the anchor is absent"*, which is
+> all it ever measured.** `#box-provisioning` does not resolve and never did. **The term
+> does**: `### BoxProvisioning` has been at `Glossary.md:245` since Spec 005, with four
+> inbound links to `#boxprovisioning`. **D12 adds four entries, not five**, and every link to
+> that term uses the closed-form anchor. A slug lookup cannot tell an absent term from a
+> differently-spelled one, and this table ran nothing else. See Task 2.2.
+>
+> **And the line numbers in the table above are themselves stale now** — Phase 2 inserted
+> entries above four of the twelve. That is the second time in two phases this document has
+> had to say it: **cite anchors, not line numbers.**
 
 **`#dispatcher` is unblocked.** Design § D2 says `Dispatcher` is defined twice
 (`Glossary.md:95` and `:393`) and tells the writer not to link it until 011 step 6 merges
@@ -436,7 +447,7 @@ out, which only works if the targets exist.
 a link to the page that treats it properly. Nor may it re-open the `BasicConcepts.md` →
 `Glossary.md` merge, which the maintainer withdrew 2026-08-04.
 
-- [ ] **Task 2.1:** Add the three Kafka terms
+- [x] **Task 2.1:** Add the three Kafka terms — **DONE 2026-08-24**
   - Input: design § D12; `KafkaConfiguration.md`; §2.8's verified source citations for the
     offset numbers
   - Output: `partition`, `consumer group`, `offset` in `contents/Glossary.md`
@@ -444,21 +455,80 @@ a link to the page that treats it properly. Nor may it re-open the `BasicConcept
     say how they relate. `offset` states that commits are batched at `commitBatchSize`,
     default 10, so a crash redelivers up to a batch — that is rung 4's at-least-once point
     and the entry should not soften it.
+  - **As shipped:** `### Partition`, `### Consumer Group`, `### Offset`, all under
+    `## Messaging Terms` immediately after `### Event Stream`, which already introduces all
+    three in prose. `Partition` says how it relates to the existing `Partition Key` — the key
+    chooses, the partition is what it chooses. `Offset` states the batch commit and names the
+    default: **verified in the Brighter source**, `commitBatchSize = 10` at
+    `KafkaMessageConsumer.cs:122` and `KafkaSubscription.cs:203`, and the XML doc at
+    `KafkaMessageConsumer.cs:92` says in its own words that a crash means the group processes
+    those records again. **No line numbers reached the page** — a glossary entry that cited
+    them would be stale at the next Brighter commit, and §2.6 says that tree is 140 commits
+    past the release.
 
-- [ ] **Task 2.2:** Add `at-least-once` and `Box Provisioning`
+- [x] **Task 2.2:** Add `at-least-once` and `Box Provisioning` — **DONE 2026-08-24, and it
+      added one entry, not two**
   - Input: design § D12; `BrighterOutboxSupport.md`; `BoxProvisioning.md`
   - Output: both entries in `contents/Glossary.md`
   - Notes: `Box Provisioning` summarises and links `BoxProvisioning.md` — it does not restate
     the three paths. `at-least-once` is linked from both rung 3 and rung 4, so it must read
     correctly for a reader who has met neither Kafka nor the Outbox.
+  - **`Box Provisioning` was not absent, and adding it would have been the defect.**
+    `Glossary.md:245` has carried `### BoxProvisioning` since Spec 005 — under a whole
+    `## Database Provisioning` section, with a fuller definition than this task would have
+    written, and **four inbound links across two pages already point at `#boxprovisioning`**
+    (`BoxProvisioning.md:12`, `:196`, `BoxProvisioningUpgrade.md:222`). Spec 005's own
+    `tasks.md:103` names that anchor spelling as a decision, not an accident. A second entry
+    would have recreated the `Dispatcher`-defined-twice defect **that Spec 011 had to spend a
+    task merging, and that §2.2 celebrates being rid of four paragraphs above this one.**
+    **Remedy: nothing is added and every link to the term is `Glossary.md#boxprovisioning`.**
+    Design's D12 table and its D3 glossary list both carry a dated correction.
+  - **How §2.2 got it wrong, which is the part worth keeping.** §2.2 is not careless — it is
+    exactly right about what it measured. It resolved five *anchors* through
+    `linkcheck.py`'s `slug()` and reported all five absent, **and all five are absent**.
+    `#box-provisioning` genuinely does not resolve. What no query asked is whether the
+    **term** was absent, and a slug lookup cannot answer that: `Box Provisioning` and
+    `BoxProvisioning` are the same term and different slugs, so the one instrument in use
+    was constitutionally unable to see the entry sitting there. **This programme already
+    knew to ask what a figure counted rather than whether it is right** — the new face is
+    that a *lookup* counts too, and an absent anchor and an absent term are different
+    findings that look identical in the output. The tell was free and nobody ran it:
+    `grep -i box contents/Glossary.md`.
+  - `at-least-once` shipped as `### At-Least-Once`, placed after
+    `### Message Oriented Middleware (MoM)` because at-least-once is the promise MoM makes —
+    `BrighterInboxSupport.md:14` says exactly that. It reaches the Outbox, streams and the
+    Inbox in three clauses, so it reads for a reader who has met none of them, and links
+    `#outbox`, `#sweeper`, `#offset` and `#inbox` rather than explaining any of them.
 
-- [ ] **Task 2.3:** Verify the anchors, in both directions
+- [x] **Task 2.3:** Verify the anchors, in both directions — **DONE 2026-08-24**
   - Input: `tools/linkcheck.py`'s `slug()`
   - Output: evidence in this document that all five new anchors resolve, and that the twelve
     of §2.2 still do
   - Notes: **Enumerate; do not read.** Rule 3b also applies — the five new headings must not
     collide with anything already on a 678-line page. `pagelint.py` catches that, and
     `linkcheck.py` catches nothing about a heading nobody links yet, so run both.
+  - **Forward — the four new anchors resolve, and the fifth spelling does not.** `Glossary.md`
+    is **722 lines, 114 headings, 114 distinct slugs, no collisions**, so rule 3b is satisfied
+    by enumeration as well as by `pagelint.py`'s 0 errors. `#at-least-once` `:333` ·
+    `#partition` `:365` · `#consumer-group` `:376` · `#offset` `:386`.
+  - **Proved end-to-end, not by the slug function alone.** *"`linkcheck.py` catches nothing
+    about a heading nobody links yet"* is the task's own warning, and resolving slugs with the
+    same `slug()` the checker imports would have answered *"does my arithmetic agree with
+    itself"*. So six probe links were appended to `contents/FAQ.md`, the mutation asserted to
+    have landed, and `linkcheck.py` run: **exactly one MISSING ANCHOR, the `#box-provisioning`
+    control**, exit 1. The four new anchors and `#boxprovisioning` passed as real link targets.
+    `FAQ.md` was restored **from a copy taken beforehand and asserted byte-identical** — never
+    `git checkout --`, which restores from `HEAD` and would have discarded the staged
+    `Glossary.md` alongside the probe.
+  - **Backward — the twelve of §2.2 all still resolve, and four of them moved.**
+    `#routing-key` `383 → 427`, `#reactor` `417 → 461`, `#message-pump` `441 → 485`,
+    `#partition-key` `533 → 577`, because Phase 2 inserted above them. §2.2 told the reader to
+    cite its table rather than design's line numbers; **§2.2's own line numbers are now stale
+    in the same way**, one phase later. The anchors are the durable record. **Cite anchors.**
+  - Gates after the edit: `linkcheck.py` clean at 144 files; `pagelint.py` **0 errors, 790
+    warnings, 143 pages** — the debt is unmoved, as it must be, since a glossary entry carries
+    no C# block; `--changed origin/master` reached **1 page and 0 code blocks** and said so,
+    which is the honest result for prose and not a pass to lean on; both `urlmap.py` checks 0.
 
 ---
 
@@ -694,7 +764,12 @@ link), Phase 7 (AC4).
     Provisioning is Option A of two; the tutorial takes it without discussion and surfaces
     the choice in *Further Reading* via
     `BoxProvisioning.md#when-to-use-box-provisioning`, whose anchor resolves (§2.2). Link
-    `#outbox`, `#sweeper`, `#at-least-once`, `#box-provisioning`.
+    `#outbox`, `#sweeper`, `#at-least-once`, **`#boxprovisioning`** — closed form, corrected
+    2026-08-24 at Phase 2. The kebab-case spelling this task originally carried resolves to
+    nothing; Spec 005 settled the glossary anchor and four links already use it. Note the two
+    are genuinely different targets and both are correct here:
+    `BoxProvisioning.md#when-to-use-box-provisioning` is a *page section*,
+    `Glossary.md#boxprovisioning` is the *term*.
 
 - [ ] **Task 8.2:** `SUMMARY.md` entry, `pagetypes.tsv` row, banner naming rung 2
   - Input: §2.1's block
