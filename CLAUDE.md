@@ -74,6 +74,17 @@ headings now carry their subject. `## Configuration` appears on 26 pages, which
 makes every one of them a worse search result and every extracted chunk
 unattributable. See [Heading qualification](#heading-qualification).
 
+**Tutorial pages use `## Step N: …` headings in place of step 4's skeleton**, and that
+is a convention rather than an exception to be tidied away later. A tutorial is a
+sequence a reader executes once, not a reference they consult; Key Concepts /
+Configuration / Best Practices imposes a shape that fights the order the reader needs.
+The steps take everything else in the pattern — H1, banner, introduction, then
+*Further Reading* — and they satisfy [heading qualification](#heading-qualification)
+on their own terms, because a step heading names what that step does
+(`## Step 4: Wire Up Brighter`) and is unique across pages. This seeks no exemption
+from any rule in the [ledger](#the-ledger); it records why these pages look different.
+`contents/TutorialFirstCommand.md` is the first of them.
+
 ### SUMMARY.md Management
 
 **Critical:** Always update SUMMARY.md when adding or reorganizing documentation.

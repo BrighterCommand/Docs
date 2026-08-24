@@ -141,3 +141,4 @@ contents/MigratingToNullableReferenceTypes.md	How-to	high	"split from NullableRe
 contents/AgreementDispatcherRouting.md	Explanation	high	"split from AgreementDispatcher.md (spec 010, Task 9.3); single-mode by construction"	Explanation	Brighter V10
 contents/MigratingToPollyV8.md	How-to	high	"split from PolicyRetryAndCircuitBreaker.md (spec 010, Task 9.4); single-mode by construction"	How-to	Brighter V10
 contents/ConfiguringOpenTelemetry.md	How-to	high	"split from Telemetry.md (spec 010, Task 9.5); single-mode by construction"	How-to	Brighter V10
+contents/TutorialFirstCommand.md	Tutorial	high	"spec 009 D1, rung 1; tutorial by construction — one path, numbered steps, measured run"	Tutorial	Brighter V10

@@ -1,5 +1,6 @@
 ## Get Started
 
+* [1. Your First Command](/contents/TutorialFirstCommand.md)
 * [Why Brighter?](/contents/WhyBrighter.md)
 * [Basic Concepts](/contents/BasicConcepts.md)
 * [Show me the code!](/contents/ShowMeTheCode.md)
