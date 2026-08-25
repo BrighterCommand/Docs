@@ -7,10 +7,10 @@ moved. See § *Re-derive the total* and Task 3.5.
 applied) and `requirements.md` (approved 2026-08-03)
 **Executes against:** a corpus that **Spec 010 moved after this spec was approved** — see §2.
 
-**Total tasks: 39, across 12 phases. 16 done — Phases 1, 2 and 3 complete 2026-08-24;
-Phase 4 complete 2026-08-25.**
-Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 16 and `'^- \[ \] \*\*Task'`
-says 23. The phase table's Tasks column still sums to **39** independently.
+**Total tasks: 39, across 12 phases. 22 done — Phases 1, 2 and 3 complete 2026-08-24;
+Phases 4, 5 and 6 complete 2026-08-25.**
+Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 22 and `'^- \[ \] \*\*Task'`
+says 17. The phase table's Tasks column still sums to **39** independently.
 
 ---
 
@@ -936,7 +936,7 @@ The extras being dropped — Serilog, `CustomPublicationFinder`, the second even
 explicit scheduler — are *why that sample exists*; removing them there would destroy its
 teaching purpose, which is the whole argument for a new sample rather than an edit in place.
 
-- [ ] **Task 5.1:** Build `samples/Tutorials/02-FirstMessage`
+- [x] **Task 5.1:** Build `samples/Tutorials/02-FirstMessage` — **DONE 2026-08-25**
   - Input: `../Brighter/samples/TaskQueue/RMQTaskQueue/`; `docker-compose-rmq.yaml`
   - Output: a sender, a receiver console, and the shared event type, under
     `samples/Tutorials/02-FirstMessage/`
@@ -944,14 +944,14 @@ teaching purpose, which is the whole argument for a new sample rather than an ed
     `ProjectReference` into `../../../src/` like every other sample, and no `Version`
     attributes on third-party references — central package management (requirements § Q1).
 
-- [ ] **Task 5.2:** Register the new projects in `Brighter.slnx`
+- [x] **Task 5.2:** Register the new projects in `Brighter.slnx` — **DONE 2026-08-25**
   - Input: §2.4; the existing `<Folder Name="/samples/…">` structure
   - Output: a `<Project Path="samples/Tutorials/02-FirstMessage/…" />` entry per project,
     under a `/samples/Tutorials/` folder
   - Notes: **this is the step that makes AC4 true.** Without it the sample is in `samples/`
     and not in the build, which is the state `TodoApi` is in today.
 
-- [ ] **Task 5.3:** Open the PR and confirm CI builds the new projects
+- [x] **Task 5.3:** Open the PR and confirm CI builds the new projects — **DONE 2026-08-25**
   - Input: a branch off `origin/master` (§2.6)
   - Output: a merged Brighter PR; the CI log naming the new projects
   - Notes: AC4 is *merged*, not *opened*. If it stalls beyond a couple of weeks, **say so on
@@ -960,6 +960,21 @@ teaching purpose, which is the whole argument for a new sample rather than an ed
     reasons that are not yours** — it was on 2026-08-24, on one `net10.0` test in
     `Paramore.Brighter.Transforms.Adaptors.Tests` — so read *which* check failed before
     concluding anything about your sample.
+  - **Merged 2026-08-25 as [Brighter#4275](https://github.com/BrighterCommand/Brighter/pull/4275)**,
+    squashed to `0e617177c` on Brighter `master` — matching how that repository's recent content
+    PRs land. **AC4 is therefore satisfied on its own terms: merged, not opened.** At the merge
+    the PR stood at **24 checks passing, 1 failing, 2 skipped**, and the one failure was read
+    rather than counted: `aws-ci`, **190 `TopicLimitExceededException` lines**, an SNS quota in
+    the test account that no pull request can fix. **`rabbitmq-async-ci` and `rabbitmq-sync-ci`
+    both passed**, which is the transport this rung actually uses.
+  - **The squash was verified by content, not assumed.** A squash leaves the four branch commits
+    non-ancestors of `master`, so `git log origin/master..<branch>` still lists them and looks
+    like an unmerged branch. The check that settles it is
+    `git diff origin/master <branch> -- samples/Tutorials Brighter.slnx`, which returned **0
+    lines**. Only then were the branch and its worktree removed.
+  - **All three projects are named in `Brighter.slnx` on `master`** — `Greetings`,
+    `GreetingsSender`, `GreetingsReceiver`, under a `/samples/Tutorials/02-FirstMessage/` folder
+    alongside the README.
 
 ---
 
@@ -970,7 +985,7 @@ teaching purpose, which is the whole argument for a new sample rather than an ed
 **This phase must not:** ship before Phase 5 merges (AC4), and must not tell the reader to
 fetch a file from a repository they have never cloned.
 
-- [ ] **Task 6.1:** Write `contents/TutorialFirstMessage.md`
+- [x] **Task 6.1:** Write `contents/TutorialFirstMessage.md` — **DONE 2026-08-25**
   - Input: design § D2 (outline, six code examples); the merged D5 sample
   - Output: `contents/TutorialFirstMessage.md`, ~260 lines
   - Notes: **the compose file is inlined in the page** (~12 lines, `rabbitmq:management`, the
@@ -979,20 +994,88 @@ fetch a file from a repository they have never cloned.
     the `using` block: prose says Dispatcher, the API says `ServiceActivator`, and a beginner
     who meets the mismatch unexplained concludes they are on the wrong page. Link
     `#dispatcher` — unblocked, see §2.2.
+  - **As shipped: 440 lines, against design's estimated ~260** — measured with
+    `wc -l`, after a first note in this very file guessed "293" and was corrected by running it.
+    The overshoot is all verbatim material rather than prose: the four code blocks reproduce the
+    sample in full (AC3), and two `text` blocks carry both terminals' output (AC2). Neither is
+    compressible without breaking the acceptance criterion that requires it. **Rungs 3 and 4
+    should expect the same overshoot**, and design's per-page line estimates should be read as
+    prose budgets, not page lengths. Compose file inlined at 10 lines as design requires; the
+    `ServiceActivator` sentence sits at the receiver's package block, where a reader meets the
+    name for the first time — in the `dotnet add package` lines, which is *earlier* than the
+    `using` block design anticipated, because the package names carry the old name too.
+  - **The four C# blocks are byte-identical to the four sample files** minus the licence region
+    (AC3's documented elision), asserted mechanically by extracting the page's ```` ```csharp ````
+    blocks and diffing each against the file that ran — not by eye. A first draft had trimmed
+    three of the sample's comments into prose, which would have broken the promise
+    `samples/Tutorials/02-FirstMessage/README.md` makes explicitly: *"Every code block on the page
+    is this code."* The diff is what caught it.
 
-- [ ] **Task 6.2:** `SUMMARY.md` entry, `pagetypes.tsv` row, banner with its *Prerequisites*
-      segment
+- [x] **Task 6.2:** `SUMMARY.md` entry, `pagetypes.tsv` row, banner with its *Prerequisites*
+      segment — **DONE 2026-08-25**
   - Input: §2.1's block
   - Output: the entry, the row, and a banner naming rung 1
   - Notes: the *Prerequisites* link is an ordinary internal link and `linkcheck.py` checks it.
     `apply_banners.py` **preserves** a Prerequisites segment as of `5498cd6` — it used to
     strip them — so a later sweep will not eat it.
+  - **As shipped:** the five entries join the existing `## Get Started` section per §2.1, rung 2
+    directly under rung 1. `pagetypes.tsv` goes 144 → **145 rows**, appended rather than
+    re-sorted. Banner carries the *Prerequisites* segment naming rung 1, and `linkcheck.py`
+    checks that link like any other.
 
-- [ ] **Task 6.3:** Clean-machine timed run, two terminals (AC1, AC2)
+- [x] **Task 6.3:** Clean-machine timed run, two terminals (AC1, AC2) — **DONE 2026-08-25**
   - Input: the page as written
   - Output: both terminals' output captured **verbatim** into the page; a measured duration
   - Notes: also walk step 6 — the exchange and queue visible at `localhost:15672` — since a
     reader who cannot see them has diverged and needs to know it there.
+  - **Run as a reader would run it**, against **released 10.7.0 packages** rather than the
+    `ProjectReference` the sample uses — which is the point of this task, and the third of the
+    three partial guarantees in requirements § Q1. All four NuGet cache locations were
+    redirected and **asserted empty by `dotnet nuget locals all --list` before the run**;
+    afterwards the HTTP cache held **144 files / 45 MB**, which is the positive evidence that
+    bytes crossed the network rather than a directory merely being extracted into.
+  - **Measured: 20.4s to create the three projects and add the packages, 2.3s to build both
+    apps — 23s of machine work.** Docker image pull is excluded and stated as excluded on the
+    page, because it depends on the reader's connection.
+  - **Step 6 was walked against the management API, not eyeballed**: exchange
+    `paramore.brighter.exchange` is type **`direct`**, queue `greeting.event` is
+    `durable: false`, `auto_delete: false`, and the binding carries routing key
+    `greeting.event`. The `direct` type is why the page says the routing key must match exactly.
+  - **The wire format independently re-confirms the defect behind Brighter#4277**, this time on
+    a *released* package rather than tip-of-tree source: the body is
+    `{"greeting":…,"correlationId":null,"id":…}` with `mediaType: application/json` — plain JSON
+    from `JsonMessageMapper<T>`, **not** a CloudEvents envelope, which is what 13 XML
+    doc-comment lines in `src/` still claim.
+
+> **Phase 6's durable results, so nobody re-derives them.**
+>
+> **`Microsoft.Extensions.Hosting 9.0.0` — rung 1's pin — does not build on rung 2.**
+> `Paramore.Brighter.ServiceActivator.Extensions.Hosting 10.7.0` depends on
+> `Microsoft.Extensions.Hosting (>= 10.0.10)`, so the receiver fails restore with
+> **`error NU1605: Detected package downgrade`**. This was found by *running the page's own
+> commands*, not by reading them: the pin was copied forward from rung 1 on the reasonable
+> assumption that a host package is a host package. **Rung 2 pins `10.0.10` in both projects**
+> — uniform across the two rather than only where it is forced, so a reader is never asked why
+> two sibling apps disagree — and the page says why in one sentence. **Rungs 3 and 4 inherit
+> this**: they also reference the Dispatcher's hosting package.
+>
+> **A queue-depth probe run too early reports the wrong number, and the wrong number is 0.**
+> Verifying *"stop the receiver, send anyway, the message waits"*, the queue read
+> `messages: 0, consumers: 1` immediately after the receiver was killed and **still 0** right
+> after the send — which reads as *the message was lost*, the opposite of the truth. RabbitMQ
+> had handed it to the not-yet-reaped consumer as unacknowledged; five seconds later it was
+> requeued and the depth was **1**. This is the programme's *"wait on the value you want, never
+> on the absence of the one you don't"* in a new place, and the tell was that `consumers` still
+> said 1 for a process that had already exited. **Re-read a broker's counters after the
+> connection is actually gone.**
+>
+> **All three legs of the ordering warning were re-measured here rather than inherited**, on a
+> genuinely fresh broker (`docker compose down -v`): sender-first prints
+> `Published greeting.event` and exits **0** with no queue in existence and the message
+> discarded; the receiver then starts and creates the queue at **0 messages** having received
+> nothing; a second sender run delivers. The page carries **both halves** — that order matters
+> the first time, and that it stops mattering afterwards, because `autoDelete: false` keeps the
+> queue alive once the receiver has run once.
 
 ---
 

@@ -1,6 +1,7 @@
 ## Get Started
 
 * [1. Your First Command](/contents/TutorialFirstCommand.md)
+* [2. Your First Message Over a Broker](/contents/TutorialFirstMessage.md)
 * [Why Brighter?](/contents/WhyBrighter.md)
 * [Basic Concepts](/contents/BasicConcepts.md)
 * [Show me the code!](/contents/ShowMeTheCode.md)
