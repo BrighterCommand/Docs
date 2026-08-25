@@ -154,11 +154,13 @@ parallel** with the others. Agreed order across the programme is
 
 ## Next Steps
 
-**Spent 2026-08-24 — the next step is `tasks.md` Phase 2.** All three items below were
-resolved during requirements and design and the list was never updated; the checklist above
-is the current state. Kept rather than deleted because it records what this spec did not yet
-know on 2026-08-03. Note item 2 says *three* tutorials: the ladder is **four** rungs, settled
-at design.
+**Spent 2026-08-24 — for the current position read `tasks.md`'s phase table, not this
+section.** It named Phase 2 and was stale by Phase 3; a pointer at one phase rots every time
+a phase lands, and `tasks.md` re-derives its own tally rather than incrementing it. All three
+items below were resolved during requirements and design and the list was never updated; the
+checklist above is the current state. Kept rather than deleted because it records what this
+spec did not yet know on 2026-08-03. Note item 2 says *three* tutorials: the ladder is
+**four** rungs, settled at design.
 
 1. Resolve the tutorial-code hosting question above
 2. Confirm the three-tutorial ladder is the right shape and ordering

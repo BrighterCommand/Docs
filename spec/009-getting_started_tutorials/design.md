@@ -477,6 +477,15 @@ source: the pin's job is to match what `dotnet add package` gives the reader, an
 is what answers that command — `release_notes.md` is Brighter's record of it, one step
 removed.
 
+**Settled 2026-08-25 at Phase 4 — it is queried once per *package*, not once.** *"The
+package the tutorials pin"* was written when no tutorial page existed; rung 1 pins **two**
+(`Paramore.Brighter` and `Paramore.Brighter.Extensions.DependencyInjection`), so the phrase
+has no referent. Per-package is what the paragraph above already asks for, since
+`dotnet add package` resolves against the id it is given. The two are not interchangeable:
+the ids list **123** and **111** versions respectively, and twelve 7.x/8.x versions exist
+only for the first. They agree at the tip today, which is precisely the state in which a
+single-id query looks correct indefinitely. See `tasks.md` Task 4.1.
+
 `--release-notes PATH` remains as an **offline fallback**, reading the latest release
 heading from a local `release_notes.md`, so the tool still runs on a train. When both
 are available the NuGet answer wins; a disagreement is reported, not silently resolved,
