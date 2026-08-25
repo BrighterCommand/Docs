@@ -7,8 +7,9 @@ moved. See § *Re-derive the total* and Task 3.5.
 applied) and `requirements.md` (approved 2026-08-03)
 **Executes against:** a corpus that **Spec 010 moved after this spec was approved** — see §2.
 
-**Total tasks: 39, across 12 phases. 6 done — Phases 1 and 2 complete, 2026-08-24.**
-Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 6 and `'^- \[ \]'` says 33.
+**Total tasks: 39, across 12 phases. 11 done — Phases 1, 2 and 3 complete, 2026-08-24.**
+Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 11 and `'^- \[ \] \*\*Task'`
+says 28. The phase table's Tasks column still sums to **39** independently.
 
 ---
 
@@ -542,24 +543,105 @@ unchanged — 3 files, 114 lines, verified present today — which is what makes
 rung nothing upstream can stall. If the sample turns out to need a change, that is a finding
 to record, not a change to make quietly.
 
-- [ ] **Task 3.1:** Run `HelloWorld` and settle the `host.Run()` question by observation
+- [x] **Task 3.1:** Run `HelloWorld` and settle the `host.Run()` question by observation —
+      **DONE 2026-08-24. Decision: the page drops it.**
   - Input: `../Brighter/samples/CommandProcessor/HelloWorld/`
   - Output: a recorded decision — drop `host.Run()` in the page's version and explain why the
     sample keeps it, or tell the reader to press Ctrl+C
   - Notes: design says **decide at writing time by running it; do not guess**. A tutorial
     whose last step leaves the reader at a hung prompt has failed at the last step, which is
     the failure mode this spec exists to prevent.
+  - **Observed, not inferred.** `dotnet run` in the sample printed the pipeline lines, then
+    `Hello Ian`, then `Application started. Press Ctrl+C to shut down.` and **sat there** —
+    still running at 45 seconds, killed by hand. The greeting arrives *before* the host
+    starts, so `Send` completes and `host.Run()` contributes nothing but the block. Design's
+    worry was right.
+  - **Why it contributes nothing, checked in the source rather than assumed:**
+    `AddBrighter().AutoFromAssemblies()` registers **no `IHostedService`**. The only two in
+    `Paramore.Brighter.Extensions.DependencyInjection` are `BrighterValidationHostedService`
+    and `BrighterDiagnosticHostedService`, and both are registered from
+    `BrighterPipelineValidationExtensions.cs:96` and `:129` — **opt-in methods `AddBrighter`
+    does not call.** So the host is asked to run with nothing to run.
+  - **The near-miss, and it is Phase 2's lesson wearing different clothes.** Asking which
+    siblings share the shape, `git grep "host.Run()"` over
+    `samples/CommandProcessor/**/Program.cs` matched **one file of three** — and the draft
+    finding written from that was *"`HelloWorld` is an outlier among its own siblings"*, which
+    is **false**. `HelloWorldAsync` and `HelloWorldInternalBus` both end
+    `await host.RunAsync()`. One term, two spellings, and the query was well-formed and
+    answering a different question — exactly `Box Provisioning` against `BoxProvisioning` one
+    phase earlier. **Reading the two files settled in ten seconds what the grep had got
+    backwards.**
+  - **So the page's sentence is the true one:** all three samples run the host, and
+    `HelloWorldInternalBus` genuinely needs to, because it registers
+    `ServiceActivatorHostedService` and consumes. `HelloWorld` inherits the shape from a
+    sibling that needs it. The page keeps the sample's code to the line and drops that one
+    line, saying why — **the second documented page/sample divergence, alongside the
+    `.csproj`** (standing obligation 7). **No change was made to Brighter**, per this phase's
+    *must not*.
 
-- [ ] **Task 3.2:** Write `contents/TutorialFirstCommand.md`
+- [x] **Task 3.2:** Write `contents/TutorialFirstCommand.md` — **DONE 2026-08-24**
   - Input: design § D1 (outline, five code examples, glossary links); the sample's three
     `.cs` files
   - Output: `contents/TutorialFirstCommand.md`, ~180 lines
   - Notes: blocks start at the first `using`, below the ~25-line MIT `#region Licence` —
     AC3's documented exception. The `.csproj` divergence gets its one line. Link
     `#command`, `#handler`, `#command-processor`; all three resolve (§2.2).
+  - **As shipped: 222 lines** (`len(text.splitlines())`, the house convention), **7 code
+    blocks — 3 `csharp`, 1 `xml`, 2 `bash`, 1 `text`.** Design estimated ~180.
+    Design's outline is followed step for step; the `xml` block is the extra one, and it earns
+    its place as Step 1's **expected result** (standing obligation 1 requires every step to
+    state one, and for "add three packages" the result *is* those three `PackageReference`
+    lines). The three C# blocks reproduce the sample below its licence region, to the line,
+    with the single `host.Run()` deletion of Task 3.1.
+  - **All three C# blocks carry real `using` directives and none uses the `// ...` escape**,
+    so the page adds **nothing** to the using-directive debt: it stayed at 790 across a page
+    count that went 143 → 144. AC1's baseline is unmoved by construction rather than by luck.
+  - **The pin was re-derived at writing time, as §2.5 insists, not carried from §2.5.**
+    `api.nuget.org/v3-flatcontainer/paramore.brighter/index.json`, highest non-prerelease:
+    **10.7.0**, and `paramore.brighter.extensions.dependencyinjection` agrees at 10.7.0. The
+    third package, `Microsoft.Extensions.Hosting 9.0.0`, is deliberately **not** a
+    `Paramore.Brighter` line, so D9 will leave it alone — design § D9 restricts its scan to
+    lines mentioning `Paramore.Brighter`, and this page is the first real test of that.
+  - **Design's D1 outline links rung 2 and rung 2 does not exist yet.** Written as outlined,
+    the page carried two `/contents/TutorialFirstMessage.md` links and would have failed
+    `linkcheck.py` with **MISSING FILE** — standing obligation 3 states the rule for a page's
+    *own* `SUMMARY.md` entry, and this is the same rule pointing outward. Both were rewritten
+    to name the next rung without linking it. **Every rung has this problem with the rung
+    above it**, so Phases 6, 8 and 11 each inherit it: link *down* the ladder freely, never
+    *up*. The upward links are Phase 9's to add, when `GetStarted.md` lists what exists.
+  - **The page's code was proved to be the code that ran, not merely code that looks like
+    it.** After the last edit, the three `csharp` blocks were extracted from the published
+    markdown and compared byte for byte against the three `.cs` files in the timed run's
+    working directory: **all three identical**. The `xml` block was compared against the
+    `<ItemGroup>` the three `dotnet add package` commands actually generated: **identical**.
+    This is the check AC2 and AC3 are really asking for. *"Test all code examples"* is
+    normally satisfied by having run something similar at some point; here the artefact that
+    compiled and the artefact that publishes are provably the same bytes, and the comparison
+    is one script that any later phase can re-run.
+  - **Four reader-facing claims were checked against the Brighter source rather than
+    asserted, and two of them were wrong as first drafted:**
+    - *"`AutoFromAssemblies()` scans the assemblies of your application"* — too vague to be
+      useful and slightly wrong. It scans `AppDomain.CurrentDomain.GetAssemblies()`, skipping
+      dynamic assemblies and anything named `System.*`, `Microsoft.*` or `Paramore.Brighter*`
+      (`ServiceCollectionBrighterBuilder.cs:116`). The page now says that, which is also what
+      makes the *"`Found 0 pipelines`"* troubleshooting line meaningful.
+    - *"`Send` is the entire API surface for dispatch … rung 2 swaps in a broker and this
+      line does not change"* — **false, and it was a promise about a page not yet written.**
+      Rung 2 uses `Post`. Rewritten to say what is true: your code never names a handler, and
+      the method you choose decides how the request travels.
+    - *"The pipeline is built per request, not per application"* — **true**, and worth
+      keeping because a reader can see it in the output. `Send` constructs a
+      `PipelineBuilder<T>` inside a `using` and calls `Build` on every invocation
+      (`CommandProcessor.cs:317-321`).
+    - *"`Post` sends it over a broker"* — true, and the corpus already says so in those words
+      at `DispatchingARequest.md:249`, so the page links there rather than re-explaining.
+  - **Four link texts were retitled to match their targets' H1s** (`Building a Pipeline of
+    Request Handlers`, `Basic Configuration`, `Dispatching Requests` ×2). `linkcheck.py`
+    cannot see this — the targets resolved either way — and a link whose text does not match
+    the page it lands on is the sort of thing only reading catches.
 
-- [ ] **Task 3.3:** Land the page's `SUMMARY.md` entry, its `pagetypes.tsv` row, and assert
-      the `Tutorial` banner type actually passes
+- [x] **Task 3.3:** Land the page's `SUMMARY.md` entry, its `pagetypes.tsv` row, and assert
+      the `Tutorial` banner type actually passes — **DONE 2026-08-24**
   - Input: §2.1's block; §2.3
   - Output: one `SUMMARY.md` line under `## Get Started`; one appended `pagetypes.tsv` row;
     a green `pagelint.py` naming this page
@@ -567,16 +649,79 @@ to record, not a change to make quietly.
     `> **Tutorial** · …`, so confirm rule 1 and rule 2 accept it rather than inferring it from
     a whole-repo `0 errors`. Run `--changed` with the page **staged**, and read the code-block
     count in its scope line.
+  - **Landed as §2.1 settled it**: `* [1. Your First Command](/contents/TutorialFirstCommand.md)`
+    is the **first** entry of the existing `## Get Started`, above the three orientation
+    pages; no section was created. `pagetypes.tsv` went **143 → 144 rows**, appended not
+    re-sorted, `verdict` = `Tutorial` and `applies` = `Brighter V10`. Section width went
+    3 → 4 of 12, so S2 is untroubled, and `--check-shape` reports the tree at 143 pages.
+  - **The assertion, three ways, because a repo-wide `0 errors` is a silence.**
+    First, `BANNER_RE` was called **directly** on the literal banner string and asserted to
+    match with `group(1) == 'Tutorial'` — the vocabulary's never-fired alternative, fired.
+    Then two red-proofs on the page itself, each asserting the mutation produced *the input
+    the branch rejects* before the tool ran: `**Tutorial**` → `**Walkthrough**`, asserted
+    `BANNER_RE.match(...) is None`, gave **BANNER MALFORMED, exit 1**; the banner deleted
+    outright, asserted the first non-blank line after the H1 was no longer a banner, gave
+    **BANNER MISSING, exit 1**. Restored from a copy taken aside — never `git checkout --` —
+    and asserted **byte-identical**.
+  - **So the page is read, and `Tutorial` is accepted rather than skipped.** *"A rule that
+    never fires is invisible to everything but an enumeration"* is why this was worth five
+    minutes at the first page rather than a surprise at Phase 12.
+  - **An incidental confirmation worth keeping**: the banner-deleted proof also raised
+    **DESCRIPTION MISMATCH**, reporting the opening line as *"handler through Brighter's
+    Command Processor…"* — rule 7's extractor skipping the line after the H1, which on this
+    page is the banner and, with the banner gone, was the first line of a hard-wrapped
+    sentence. Exactly the documented behaviour, and it proves **rule 7 reads this page too**;
+    the unmutated page raises nothing, so the `description:` front matter equals the rendered
+    opening sentence.
+  - **Gates, with the page staged.** `linkcheck.py` clean at **145 files**; `pagelint.py`
+    **0 errors, 790 warnings, 144 pages**; both `urlmap.py` checks **0**. And
+    `--changed origin/master` reported **4 files, 4 hunks, 1 documentation page, 7 code
+    blocks strict** — **the first non-vacuous strict run this spec has had.** Phases 1 and 2
+    reached 0 code blocks and said so; six of Spec 010's phases were vacuous for three
+    different reasons. All 7 blocks passed rule 6 on their own `using` directives.
+  - **Predicted URL, from the tool rather than guessed**: `get-started/tutorialfirstcommand`
+    (`python3 tools/urlmap.py | grep -i tutorialfirstcommand`). **Probe it once after the
+    sync, not in an until-loop** — a wrong path and an unsynced page are the same silence.
 
-- [ ] **Task 3.4:** Clean-machine timed run (AC1, AC2)
+- [x] **Task 3.4:** Clean-machine timed run (AC1, AC2) — **DONE 2026-08-24**
   - Input: the page as written
   - Output: a measured duration recorded in this document and reflected on the page
   - Notes: **follow the page's own `dotnet add package` lines, not the sample's project
     references** — that divergence is exactly what this run exists to exercise. Fresh clone,
     empty NuGet cache. Adjust the page to the measurement, never the reverse; the 10-minute
     figure is an estimate until this task replaces it.
+  - **Measured, following the page's own commands, against released 10.7.0 packages:**
 
-- [ ] **Task 3.5:** Write the `## Step N:` deviation into `CLAUDE.md`
+    | Step | Cold |
+    |---|---:|
+    | `dotnet new console -n HelloWorld -f net9.0` | 2.8s |
+    | three `dotnet add package` | 6.2s |
+    | writing the three `.cs` files | 0.1s |
+    | `dotnet run` (cold build) | 1.9s |
+    | **total machine time** | **10.9s** |
+
+    `0 Error(s)`, exit code **0**, and the process **returns to the prompt** — which is Task
+    3.1's decision holding up under the reader's own path rather than the sample's.
+  - **`NUGET_PACKAGES` alone does not give you a cold run, and the first measurement was
+    wrong because of it.** Redirecting the global packages folder to an empty directory
+    produced a plausible **9.0s** total with **4.5s** of restore — and that restore was served
+    from the machine's **HTTP cache**, `~/.local/share/NuGet/http-cache`, which is a
+    *separate* location `NUGET_PACKAGES` does not touch. The directory really did go from 0
+    files to 195 MB, so every cheap check agreed it was cold. Redone with all four locations
+    redirected (`NUGET_PACKAGES`, `NUGET_HTTP_CACHE_PATH`, `NUGET_SCRATCH`,
+    `NUGET_PLUGINS_CACHE_PATH`), each verified empty by `dotnet nuget locals all --list`
+    **before** the run: restore went 4.5s → **6.2s** and the http-cache went 0 → **113 files**,
+    which is the proof that bytes crossed the network. **An empty cache is a claim about one
+    directory; "cold" is a claim about four.**
+  - **What the number means for the page, which is not what design assumed.** 10.9 seconds of
+    machine time says the tooling is not the reader's cost — reading and typing is. So the
+    page keeps **"about ten minutes"** as the reader figure and, rather than asserting it,
+    states the measured 11 seconds beside it and turns it into a **diagnostic**: *if your
+    restore takes minutes rather than seconds, the problem is your package feed, not this
+    tutorial.* Design's *"time targets are measured, not asserted"* is honoured by publishing
+    what was actually measured, and by not passing off a machine timing as a reader timing.
+
+- [x] **Task 3.5:** Write the `## Step N:` deviation into `CLAUDE.md` — **DONE 2026-08-24**
   - Input: design § Style Notes; `CLAUDE.md` § *File Organization Pattern*
   - Output: a sentence in `CLAUDE.md` recording that tutorial pages use `## Step N: …`
     headings in place of the Key Concepts / Configuration / Best Practices skeleton, and why
@@ -587,6 +732,18 @@ to record, not a change to make quietly.
     exception is at risk from every sweep run in between. The headings still satisfy rule 3 —
     they are subject-qualified and unique — so this records a convention, it does not seek an
     exemption.
+  - **Landed as a paragraph inside `CLAUDE.md` § *File Organization Pattern***, immediately
+    below the note explaining why headings carry their subject — the nearest place a reader
+    meets the skeleton it deviates from. It states what the deviation is, why a sequence
+    resists a reference skeleton, that the step headings satisfy heading qualification on
+    their own terms, that **no exemption from the ledger is sought**, and it names
+    `contents/TutorialFirstCommand.md` as the first page taking it.
+  - **The non-obvious half is what the deviation does *not* touch.** Everything else in the
+    pattern still applies — H1, banner, introduction, *Further Reading* unqualified from the
+    navigation allowlist — so the page is a normal page with steps in the middle, which is
+    why `pagelint.py` needed no change and why the ledger acquires no new row. Had this gone
+    unwritten, the risk was never that a sweep would break the page: it is that someone would
+    read `## Step 4: Wire Up Brighter` as an *unqualified* heading and "fix" it.
 
 ---
 
