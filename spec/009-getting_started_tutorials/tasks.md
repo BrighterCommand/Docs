@@ -7,10 +7,10 @@ moved. See § *Re-derive the total* and Task 3.5.
 applied) and `requirements.md` (approved 2026-08-03)
 **Executes against:** a corpus that **Spec 010 moved after this spec was approved** — see §2.
 
-**Total tasks: 39, across 12 phases. 15 done — Phases 1, 2 and 3 complete 2026-08-24; Phase
-4's first four 2026-08-25, with Task 4.5 open until its CI run is read.**
-Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 15 and `'^- \[ \] \*\*Task'`
-says 24. The phase table's Tasks column still sums to **39** independently.
+**Total tasks: 39, across 12 phases. 16 done — Phases 1, 2 and 3 complete 2026-08-24;
+Phase 4 complete 2026-08-25.**
+Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 16 and `'^- \[ \] \*\*Task'`
+says 23. The phase table's Tasks column still sums to **39** independently.
 
 ---
 
@@ -888,12 +888,42 @@ which is the same shape of defect as the gate itself.
     does not fire. *When an assertion disagrees with the tool, the assertion is the suspect* —
     Task 4.2's own note, earned twice in one phase.
 
-- [ ] **Task 4.5:** Confirm the gate's first CI run is not vacuous
+- [x] **Task 4.5:** Confirm the gate's first CI run is not vacuous — **DONE 2026-08-25, PR
+      #117. It scanned a real page and examined four real pins.**
   - Input: the PR's own checks
   - Output: evidence that the run scanned `TutorialFirstCommand.md` and examined ≥1 pin
   - Notes: `gh pr checks` lists a `push` row and a `pull_request` row per commit and they
     legitimately disagree. **Read the whole output**, and re-check with
     `gh run list --json conclusion` *after* merging, not only before.
+  - **Six checks, all six read, none truncated**: two GitBook, `check` ×2 and `versions` ×2 —
+    one of each per event. All pass. The `tail -3` that merged a red build in session 23 is
+    the reason the whole list is quoted rather than the last lines of it.
+  - **The evidence is the step's own output, taken from the job log** — identical on both the
+    `push` and `pull_request` rows, so the two events agree here rather than legitimately
+    disagreeing as they do for `pagelint --changed`:
+
+    ```text
+    5 page(s) listed, 1 found, 4 not written yet, 4 pin(s) examined.
+      skipped (does not exist yet): contents/TutorialFirstMessage.md
+      skipped (does not exist yet): contents/TutorialDurableOutbox.md
+      skipped (does not exist yet): contents/TutorialStreamingWithKafka.md
+      skipped (does not exist yet): contents/GetStarted.md
+      NuGet (Paramore.Brighter): 10.7.0
+      NuGet (Paramore.Brighter.Extensions.DependencyInjection): 10.7.0
+
+    0 stale pins of 4 examined across 1 page(s).
+    ```
+
+    **`1 found` and `4 pin(s) examined` are the two figures that make the pass mean
+    something**, and they are why §2.9 moved D9 from design's step 6 to here: landed before
+    rung 1, the identical green would have read `0 found, 0 pin(s) examined`. §2.7's rule
+    that those two runs must not print the same line is doing its job on its first CI run.
+  - **NuGet is reachable from a GitHub Actions runner** — an assumption design made and
+    nothing had tested, and the failure mode would have been a daily exit 2. Both queries
+    resolved on the runner, so the per-package fetch is not a CI liability.
+  - **The step fails the build on a non-zero exit**, not merely reports one: the log shows
+    `shell: /usr/bin/bash -e {0}`, and the invocation is bare, so exit 1 and exit 2 both
+    reach the runner.
 
 ---
 
