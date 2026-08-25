@@ -83,14 +83,23 @@ jobs:
       - run: python3 tools/urlmap.py --check-shape
       - run: python3 tools/urlmap.py --check-redirects
 
-  # Spec 009 D9 adds tools/versioncheck.py, which diffs the versions pinned in
-  # tutorial prose against the latest non-prerelease on NuGet. The job is shaped
-  # now so landing D9 is one file, not a workflow restructure.
+  # Spec 009 D9. tools/versioncheck.py diffs the versions pinned in tutorial
+  # prose against the latest non-prerelease on NuGet, per package.
   #
-  # REMOVE THE GUARD when 009 D9 lands — it exists only to keep the build green
-  # while the tool is absent, and inheriting it would silently un-gate the check.
-  # The bare invocation is deliberate: versioncheck.py exits 2 when it cannot
-  # reach NuGet, and an unreachable authority is an unchecked pin, not a pass.
+  # The `if [ -f tools/versioncheck.py ]` guard that stood here until D9 landed
+  # is GONE, and must stay gone: it existed only to keep the build green while
+  # the tool was absent, and a guard that outlives its tool silently un-gates
+  # the check it was protecting.
+  #
+  # The invocation is bare for the same reason. versioncheck.py exits 2 when it
+  # cannot reach NuGet, and an unreachable authority is an unchecked pin rather
+  # than a pass — so no `|| true`, and no swallowing the exit code in a shell
+  # pipeline.
+  #
+  # This job keeps BOTH triggers. The daily `schedule:` above is not belt and
+  # braces: the event that invalidates a pin is a release in another
+  # repository, so a PR-only trigger would leave a stale pin undetected until
+  # someone happened to touch the docs.
   versions:
     runs-on: ubuntu-latest
     steps:
@@ -98,9 +107,4 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: |
-          if [ -f tools/versioncheck.py ]; then
-            python3 tools/versioncheck.py
-          else
-            echo "tools/versioncheck.py not present yet (spec 009 D9) - skipping."
-          fi
+      - run: python3 tools/versioncheck.py

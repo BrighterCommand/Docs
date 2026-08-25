@@ -7,9 +7,10 @@ moved. See § *Re-derive the total* and Task 3.5.
 applied) and `requirements.md` (approved 2026-08-03)
 **Executes against:** a corpus that **Spec 010 moved after this spec was approved** — see §2.
 
-**Total tasks: 39, across 12 phases. 11 done — Phases 1, 2 and 3 complete, 2026-08-24.**
-Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 11 and `'^- \[ \] \*\*Task'`
-says 28. The phase table's Tasks column still sums to **39** independently.
+**Total tasks: 39, across 12 phases. 16 done — Phases 1, 2 and 3 complete 2026-08-24;
+Phase 4 complete 2026-08-25.**
+Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 16 and `'^- \[ \] \*\*Task'`
+says 23. The phase table's Tasks column still sums to **39** independently.
 
 ---
 
@@ -757,7 +758,7 @@ which Spec 011 owns and which already carries the slot. And it must not leave th
 `if [ -f tools/versioncheck.py ]` guard in place — inheriting it silently un-gates the check,
 which is the same shape of defect as the gate itself.
 
-- [ ] **Task 4.1:** Write `tools/versioncheck.py`
+- [x] **Task 4.1:** Write `tools/versioncheck.py` — **DONE 2026-08-25**
   - Input: design § D9 — patterns, NuGet authority, `--release-notes` fallback, exit codes;
     §2.7 for the vacuity contract; `tools/linkcheck.py` for house shape
   - Output: `tools/versioncheck.py`
@@ -766,8 +767,34 @@ which is the same shape of defect as the gate itself.
     deliberately. Prints scope before verdict; missing page skipped and announced; existing
     page with zero pins is exit 1; exit 2 is not a pass. When both authorities are available
     and disagree, report it rather than resolving it.
+  - **As shipped: 352 lines, stdlib only**, `TUTORIAL_PAGES` holding all five pages of the
+    ladder including `GetStarted.md`. On the tree today: *5 page(s) listed, 1 found, 4 not
+    written yet, 4 pin(s) examined* → `0 stale pins of 4 examined across 1 page(s)`. §2.7's
+    contract is met on every clause, and the four absent rungs are named individually rather
+    than counted.
+  - **It resolves per package, not once for `paramore.brighter` — and this is a settlement of
+    something design left under-determined, not a reversal of it.** Design § D9 says the
+    authority is *"NuGet, queried once for the package the tutorials pin"*, written on
+    2026-08-03 when no tutorial page existed. Rung 1 pins **two** packages, so "the package"
+    has no referent. Per-package is what design's own stated rationale asks for — *"the pin's
+    job is to match what `dotnet add package` gives the reader"*, and that command resolves
+    against the id it is given.
+  - **Measured rather than assumed, because the two ids are not interchangeable.**
+    `Paramore.Brighter` lists **123** versions and
+    `Paramore.Brighter.Extensions.DependencyInjection` **111**; twelve 7.x/8.x versions
+    (7.1.0 … 8.1.1399) exist only for the first and four 1.x/2.x only for the second. They
+    agree at the tip today, at 10.7.0, which is exactly the state in which a single-id query
+    looks correct forever. Each id is fetched once however many times it is pinned.
+  - **`Microsoft.Extensions.Hosting 9.0.0` is left alone, and that is now demonstrated rather
+    than predicted.** Task 3.2 flagged rung 1 as D9's first real test of the
+    `Paramore.Brighter`-only restriction. The page carries **six** version-shaped strings
+    across lines 47–62; the tool examines **four**, skipping `--version 9.0.0` at line 49 and
+    `Version="9.0.0"` at line 60. The match is scoped to a *line*, because both pin forms
+    carry the id and the number together — a page-wide match would attribute a version to
+    whichever package name happened to sit nearest it.
 
-- [ ] **Task 4.2:** Prove it red before trusting it green
+- [x] **Task 4.2:** Prove it red before trusting it green — **DONE 2026-08-25. 6/6 branches
+      fired, and the probe found a defect the exit codes could not.**
   - Input: Task 4.1's tool; `TutorialFirstCommand.md` as a real, non-empty input
   - Output: a red-proof recorded here — a stale pin, a page with no pins, and an unreachable
     authority, each forced separately
@@ -776,15 +803,56 @@ which is the same shape of defect as the gate itself.
     rule-7 red-proofs reported SILENT and all three were the probe's fault. Restore from a
     copy taken aside, never `git checkout --`, and assert byte-identity afterwards. When an
     assertion disagrees with the exit code, the assertion is the suspect.
+  - **Kept as `spec/009-getting_started_tutorials/redproof_versioncheck.py`**, re-runnable,
+    the same precedent as 010's `noloss.py`. Its `REPO` is derived from `__file__` rather
+    than hard-coded — `urlmap.py` shipped a `parents[2]` that was right where it was written
+    and silently wrong one directory later.
 
-- [ ] **Task 4.3:** Remove the guard and wire the gate in
+    | # | Branch forced | Precondition asserted before the run | Expect | Got |
+    |---|---|---|---:|---:|
+    | — | BASELINE, tree unmutated | `pins()` returns 4 pins | 0 | **0** |
+    | 1 | stale pin | 2 pins now read 9.0.0 against a live NuGet 10.7.0 | 1 | **1** |
+    | 2 | page exists, pins nothing | page still on disk **and** `pins() == []` | 1 | **1** |
+    | 3 | authority unreachable, no fallback | `nuget_latest()` returns `None` | 2 | **2** |
+    | 4 | unreachable **with** `--release-notes` | NuGet still down, fixture parses 10.7.0 | 0 | **0** |
+    | 5 | both authorities, disagreeing | NuGet 10.7.0 vs fixture 10.6.0 | 0 | **0** |
+
+  - **Branch 2 is where a careless probe fails**, and the assertion says so in two parts: the
+    branch rejects a page that **exists** and pins **nothing**, so deleting the page would
+    have exercised the *skip* path instead and reported a rule broken that is not.
+  - **Branch 5 asserts on the output, not only the exit code.** Exit 0 is the correct verdict
+    — the pins do match the authority that governs them — but it is only *defensible* if the
+    disagreement was reported, so the probe requires the literal `AUTHORITIES DISAGREE` in
+    stdout. A silent 0 there would be the tool resolving what design says it must report.
+  - **The defect the probe found is not one any exit code could show.** All six branches
+    already fired; reading branch 3's *output* showed **four** `could not reach NuGet` lines
+    for **two** packages. The memo keyed on `latest`, which an unreachable package never
+    enters, so each id was re-queried once per **pin** rather than once per package — on a
+    real outage that is N HTTP timeouts at 20s each, not one. Fixed with a separate `asked`
+    set; re-run prints two lines for two packages. **This is *read the whole output* arriving
+    from a new direction**: the programme has been caught by truncating output and by
+    trusting a green check, but not before by a probe that was green on every assertion it
+    made and wrong about something it had not thought to assert.
+  - **The page survived**: `sha256 de759052…95b92` before, and byte-identical after all five
+    mutations, restored from the copy aside each time.
+
+- [x] **Task 4.3:** Remove the guard and wire the gate in — **DONE 2026-08-25**
   - Input: `.github/workflows/docs.yml`, `versions:` job at line 94, guard at 102–106
   - Output: the job runs `python3 tools/versioncheck.py` unconditionally
   - Notes: the job keeps **both** triggers — pull request and the daily `schedule:` — because
     the event this catches happens in another repository. A PR-only trigger leaves a stale
     pin undetected until someone happens to touch the docs.
+  - **The guard is gone and the comment that replaces it says why it must stay gone**, so the
+    next person to meet a red `versions` job does not reintroduce it. No second workflow was
+    created: still one file, still two jobs.
+  - **Verified by parsing the file, not by reading it** — malformed YAML disables things
+    silently in this repository's experience. `yaml.safe_load` gives jobs `['check',
+    'versions']`, triggers `['push', 'pull_request', 'schedule']` with `cron: '17 6 * * *'`
+    intact, and `versions`' steps as `checkout@v4`, `setup-python@v5`,
+    `'python3 tools/versioncheck.py'` — a bare command, no `|| true`, no shell pipeline to
+    swallow exit 2.
 
-- [ ] **Task 4.4:** Write `RELEASE_CHECKLIST.md`
+- [x] **Task 4.4:** Write `RELEASE_CHECKLIST.md` — **DONE 2026-08-25**
   - Input: design § D11 outline
   - Output: `RELEASE_CHECKLIST.md` at the repository root, ~50 lines
   - Notes: the run table carries a **date column**, so *"when was rung 3 last actually run?"*
@@ -792,13 +860,70 @@ which is the same shape of defect as the gate itself.
     it is a maintainer document, deliberately absent from `SUMMARY.md`. **Confirm
     `linkcheck.py`'s orphan check does not object** — it covers `contents/` only. If it does
     object, the file moves; the check is not loosened.
+  - **As shipped: 79 lines**, following design's four-section outline. Longer than the ~50
+    estimated, and the excess is one section: the clean-machine definition carries the
+    four-cache procedure below, which is the difference between a measurement and a warm run
+    reported as cold.
+  - **The run table has two columns design's sketch did not**: *Against*, naming the Brighter
+    release the run was made against, and the rungs not yet written are listed as rows rather
+    than omitted. A missing row and an unverified rung look identical; a row reading *not yet
+    written* cannot be mistaken for either.
+  - **Rung 1's row is filled from Phase 3's evidence, not re-run**: 10.7.0, 2026-08-25
+    (`faeac68`), 11s of machine time. The column is create-restore-build-run, deliberately not
+    the ten minutes the page quotes a reader — the page's figure is mostly reading, and this
+    one is the part a slow feed or a broken sample moves.
+  - **The four-cache lesson now lives in the repository instead of in a session's notes.**
+    `NUGET_PACKAGES` moves the global packages folder only; the bytes come from a separate
+    HTTP cache the variable does not touch. All four of `NUGET_PACKAGES`,
+    `NUGET_HTTP_CACHE_PATH`, `NUGET_SCRATCH`, `NUGET_PLUGINS_CACHE_PATH` are redirected,
+    verified empty with `dotnet nuget locals all --list` **before** the run, and the HTTP
+    cache is asserted to have **filled** afterwards — an isolated cache that stayed empty and
+    a bypassed cache are indistinguishable from the outside.
+  - **The orphan check was confirmed by reading its scope, not by inferring it from a green
+    run**, and the first attempt at that got it backwards: `'RELEASE_CHECKLIST.md' in
+    md_files()` returned `False`, which looks like a finding and is a bug in the assertion —
+    `md_files()` yields **absolute** paths. Corrected, both halves hold: the file **is**
+    link-checked (146 files, up from 145) and `orphans()` skips it by construction, at
+    `if os.path.dirname(rel) != 'contents': continue`. It stays at root; design's contingency
+    does not fire. *When an assertion disagrees with the tool, the assertion is the suspect* —
+    Task 4.2's own note, earned twice in one phase.
 
-- [ ] **Task 4.5:** Confirm the gate's first CI run is not vacuous
+- [x] **Task 4.5:** Confirm the gate's first CI run is not vacuous — **DONE 2026-08-25, PR
+      #117. It scanned a real page and examined four real pins.**
   - Input: the PR's own checks
   - Output: evidence that the run scanned `TutorialFirstCommand.md` and examined ≥1 pin
   - Notes: `gh pr checks` lists a `push` row and a `pull_request` row per commit and they
     legitimately disagree. **Read the whole output**, and re-check with
     `gh run list --json conclusion` *after* merging, not only before.
+  - **Six checks, all six read, none truncated**: two GitBook, `check` ×2 and `versions` ×2 —
+    one of each per event. All pass. The `tail -3` that merged a red build in session 23 is
+    the reason the whole list is quoted rather than the last lines of it.
+  - **The evidence is the step's own output, taken from the job log** — identical on both the
+    `push` and `pull_request` rows, so the two events agree here rather than legitimately
+    disagreeing as they do for `pagelint --changed`:
+
+    ```text
+    5 page(s) listed, 1 found, 4 not written yet, 4 pin(s) examined.
+      skipped (does not exist yet): contents/TutorialFirstMessage.md
+      skipped (does not exist yet): contents/TutorialDurableOutbox.md
+      skipped (does not exist yet): contents/TutorialStreamingWithKafka.md
+      skipped (does not exist yet): contents/GetStarted.md
+      NuGet (Paramore.Brighter): 10.7.0
+      NuGet (Paramore.Brighter.Extensions.DependencyInjection): 10.7.0
+
+    0 stale pins of 4 examined across 1 page(s).
+    ```
+
+    **`1 found` and `4 pin(s) examined` are the two figures that make the pass mean
+    something**, and they are why §2.9 moved D9 from design's step 6 to here: landed before
+    rung 1, the identical green would have read `0 found, 0 pin(s) examined`. §2.7's rule
+    that those two runs must not print the same line is doing its job on its first CI run.
+  - **NuGet is reachable from a GitHub Actions runner** — an assumption design made and
+    nothing had tested, and the failure mode would have been a daily exit 2. Both queries
+    resolved on the runner, so the per-package fetch is not a CI liability.
+  - **The step fails the build on a non-zero exit**, not merely reports one: the log shows
+    `shell: /usr/bin/bash -e {0}`, and the invocation is bare, so exit 1 and exit 2 both
+    reach the runner.
 
 ---
 
