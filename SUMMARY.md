@@ -1,5 +1,6 @@
 ## Get Started
 
+* [Get Started with Brighter](/contents/GetStarted.md)
 * [1. Your First Command](/contents/TutorialFirstCommand.md)
 * [2. Your First Message Over a Broker](/contents/TutorialFirstMessage.md)
 * [3. Adding a Durable Outbox](/contents/TutorialDurableOutbox.md)

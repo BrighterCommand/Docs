@@ -421,8 +421,8 @@ The handler did not change in any way that matters, and it now runs in another p
 
 What you still do not have is durability. The message existed only in RabbitMQ: if the sender
 had crashed between writing its data and publishing, the two would have disagreed permanently.
-The next rung puts an Outbox in the same transaction as your business data, so the message is
-either stored with it or not at all.
+[The next rung](/contents/TutorialDurableOutbox.md) puts an Outbox in the same transaction as
+your business data, so the message is either stored with it or not at all.
 
 ## Further Reading
 
