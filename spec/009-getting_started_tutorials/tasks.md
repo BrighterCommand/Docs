@@ -7,10 +7,13 @@ moved. See § *Re-derive the total* and Task 3.5.
 applied) and `requirements.md` (approved 2026-08-03)
 **Executes against:** a corpus that **Spec 010 moved after this spec was approved** — see §2.
 
-**Total tasks: 39, across 12 phases. 22 done — Phases 1, 2 and 3 complete 2026-08-24;
-Phases 4, 5 and 6 complete 2026-08-25.**
-Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 22 and `'^- \[ \] \*\*Task'`
-says 17. The phase table's Tasks column still sums to **39** independently.
+**Total tasks: 39, across 12 phases. 28 done — Phases 1, 2 and 3 complete 2026-08-24;
+Phases 4, 5 and 6 complete 2026-08-25; Phases 7 and 8 complete 2026-08-26.**
+Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 28 and `'^- \[ \] \*\*Task'`
+says 11. The phase table's Tasks column still sums to **39** independently.
+
+**Phase 7's three boxes are ticked here, in Phase 8's PR, and that is the pattern**: a tick is
+a Docs commit, and Phase 7 was a Brighter PR that could not carry one.
 
 ---
 
@@ -1019,8 +1022,10 @@ fetch a file from a repository they have never cloned.
     `apply_banners.py` **preserves** a Prerequisites segment as of `5498cd6` — it used to
     strip them — so a later sweep will not eat it.
   - **As shipped:** the five entries join the existing `## Get Started` section per §2.1, rung 2
-    directly under rung 1. `pagetypes.tsv` goes 144 → **145 rows**, appended rather than
-    re-sorted. Banner carries the *Prerequisites* segment naming rung 1, and `linkcheck.py`
+    directly under rung 1. `pagetypes.tsv` goes 143 → **144 rows** — *corrected 2026-08-26 at
+    Phase 8, which re-derived it from history: 143 data rows at `bbd054a`, 144 at `cc4f9f6`.
+    The figure written here was `PROMPT.md`'s, and `PROMPT.md`'s was the count **after** this
+    task ran* — appended rather than re-sorted. Banner carries the *Prerequisites* segment naming rung 1, and `linkcheck.py`
     checks that link like any other.
 
 - [x] **Task 6.3:** Clean-machine timed run, two terminals (AC1, AC2) — **DONE 2026-08-25**
@@ -1087,7 +1092,7 @@ fetch a file from a repository they have never cloned.
 two transports — plus migration assemblies, telemetry and a README step that hand-edits an
 absolute database path is four forks and a manual step before the first message moves.
 
-- [ ] **Task 7.1:** Build `samples/Tutorials/03-DurableOutbox`
+- [x] **Task 7.1:** Build `samples/Tutorials/03-DurableOutbox`
   - Input: D5; `AddGreetingHandlerAsync.cs` for the transaction shape (design § item 5,
     verified still present §2.8); `OutboxFactory.cs:75` for registration;
     `docker-compose-postgres.yaml`
@@ -1098,12 +1103,12 @@ absolute database path is four forks and a manual step before the first message 
     feature being taught. The `Greeting` table is created by the sample's own startup code;
     `UseBoxProvisioning` owns the Outbox table and nothing else, and the two must not blur.
 
-- [ ] **Task 7.2:** Register the new projects in `Brighter.slnx`
+- [x] **Task 7.2:** Register the new projects in `Brighter.slnx`
   - Input: §2.4
   - Output: the entries, under `/samples/Tutorials/`
   - Notes: as Task 5.2. The check is presence in the solution, not in the directory.
 
-- [ ] **Task 7.3:** Open the PR and confirm CI builds it
+- [x] **Task 7.3:** Open the PR and confirm CI builds it
   - Input: a branch off `origin/master`
   - Output: a merged Brighter PR; CI green, naming the new projects
   - Notes: a reviewer should be able to diff 03 against 02 and see exactly what a durable
@@ -1121,7 +1126,7 @@ configuration trivia; **step 7 is the page**, because the reader queries two tab
 nothing in either. Gates: Phase 2 (two of its glossary anchors), Phase 6 (the Prerequisites
 link), Phase 7 (AC4).
 
-- [ ] **Task 8.1:** Write `contents/TutorialDurableOutbox.md`
+- [x] **Task 8.1:** Write `contents/TutorialDurableOutbox.md`
   - Input: design § D3 (outline, eight code examples); the merged D6 sample
   - Output: `contents/TutorialDurableOutbox.md`, ~300 lines
   - Notes: state plainly that the database user needs `CREATE TABLE` and `ALTER TABLE` rights
@@ -1135,18 +1140,82 @@ link), Phase 7 (AC4).
     are genuinely different targets and both are correct here:
     `BoxProvisioning.md#when-to-use-box-provisioning` is a *page section*,
     `Glossary.md#boxprovisioning` is the *term*.
+  - **As shipped: 658 lines** (`len(text.splitlines())`, re-derived after the last prose edit
+    rather than carried from the draft), against design's ~300. As with rung 2
+    the overshoot is verbatim material and none of it is compressible: three C# blocks totalling
+    **255 lines** carry the whole of `GreetingsSender`, and AC3 requires them byte-identical.
+    Read design's per-page estimates as prose budgets — the prose here is about 300 lines.
+  - **Three C# blocks, and all three asserted byte-identical to the merged sample** at
+    `10351e970`, minus the licence region: `Program.cs` 139, `AddGreeting.cs` 27,
+    `AddGreetingHandlerAsync.cs` 89. Done by extracting the page's ```` ```csharp ```` blocks and
+    diffing each against `git show`, not by reading them side by side — Phase 6 established that
+    reading does not catch it.
+  - **The `Greeting` DDL is a ```` ```sql ```` block, deliberately.** It lives inside a C# raw
+    string literal in the sample, so lifting it as SQL de-indents it; a non-C# block is outside
+    AC3 by construction, which keeps the byte-identity claim above unqualified.
+  - **Step 3 was written before step 4 so the two-owners point lands with the DDL**, not after
+    the whole of `Program.cs` has gone past. The alternative — showing the
+    `CreateGreetingTableAsync` span in step 3 and again inside the full file in step 4 —
+    duplicates twenty lines to say the same thing.
+  - **Links as the task specifies:** `#outbox`, `#sweeper`, `#at-least-once`, `#boxprovisioning`
+    (closed form), plus `#command` and `#handler`; and out to
+    `BoxProvisioning.md#when-to-use-box-provisioning`, `PostgresOutbox.md`,
+    `BrighterOutboxSupport.md`, `OutboxPattern.md`,
+    `TransactionalMessagingWithTheOutbox.md`. **`PostgresOutbox.md` is the addition design's
+    cross-link list does not name and should** — it is the page that answers the
+    `IAmARelationalDatabaseConfiguration` registration, which Phase 7 spent an evening
+    rediscovering. **`OutboxSweeper.md` does not exist**; the Sweeper's own page is
+    `BrighterOutboxSupport.md`, and a first draft linked the imaginary one.
 
-- [ ] **Task 8.2:** `SUMMARY.md` entry, `pagetypes.tsv` row, banner naming rung 2
+- [x] **Task 8.2:** `SUMMARY.md` entry, `pagetypes.tsv` row, banner naming rung 2
   - Input: §2.1's block
   - Output: the entry, the row, the banner
   - Notes: as Task 6.2.
+  - **As shipped:** `* [3. Adding a Durable Outbox](/contents/TutorialDurableOutbox.md)` joins
+    `## Get Started` directly under rung 2, per §2.1. `pagetypes.tsv` goes 144 → **145 rows**,
+    appended rather than re-sorted. The banner's *Prerequisites* segment names rung 2 and
+    `linkcheck.py` checks it like any other link.
+  - **Four of the six gates moved, and by the amounts §2.1 predicts**: linkcheck 147 → **148**,
+    pagelint 145 → **146**, `--check-shape` 144 → **145**, `versioncheck.py` **10 pins across 2
+    pages → 15 across 3**. `--check-redirects` is **unchanged at 77 entries**, which is §2.1's
+    "re-ordering inside a section moves no URL" asserted rather than assumed. **The 790
+    using-directive warnings did not move** — all three C# blocks carry their `using` lines.
 
-- [ ] **Task 8.3:** Clean-machine timed run — **both** paths (AC1, AC2)
+- [x] **Task 8.3:** Clean-machine timed run — **both** paths (AC1, AC2)
   - Input: the page as written
   - Output: verbatim output for the happy path *and* the failure path; a measured duration
   - Notes: the failure path is run, not reasoned about. Query both tables after the throw and
     capture what comes back — a reader who is told "you will find neither" and finds one has
     been misled by the page that was supposed to prove the point.
+  - **Run from the page's own code, not the sample's.** The three `.cs` files were extracted
+    from the *page* and written into the project, so a transcription error would have failed
+    the build rather than shipping. The compose file was extracted from the page the same way.
+  - **The starting point is a reader's, not a clean machine's.** All four NuGet cache locations
+    were redirected and asserted empty, then rung 2's solution was built — which is the state a
+    reader of this page is in. The http-cache went 0 → 127 files building rung 2 and **127 →
+    141** adding rung 3's six packages, which is the positive evidence that the new packages
+    came over the network.
+  - **Measured: 9.2s for the six `dotnet add package` lines, 1.3s to build.** No `NU1605`:
+    `Microsoft.Extensions.Hosting 10.0.10`, inherited from rung 2, satisfies everything rung 3
+    adds. **`Npgsql` is pinned at 10.0.2**, which is what Brighter's own central package
+    management resolves for `net9.0` — 10.0.3 exists but is the `net10.0` row.
+  - **Preconditions asserted before either path ran**: `\dt` returned *Did not find any tables*
+    and `rabbitmq-diagnostics check_running` reported fully booted. That is what makes the
+    results below mean anything.
+  - **Happy path, caught mid-flight.** `Greeting` one row, `Outbox` one row with **`dispatched`
+    NULL** — the page's best single screenshot — then dispatched and received. Sweep delay read
+    off the row's own columns: **10.035179s**, a third observation agreeing with Phase 7's
+    10.06s. Still *"about ten seconds"*; three observations are not a distribution.
+  - **Failure path.** `--fail` throws after both writes and before the commit: **neither table
+    gained a row**, `This greeting will not survive` is in neither, and the receiver stayed
+    silent — asserted by counting `^Received:` in its log, still exactly 1.
+  - **`Greeting.Id` skips a number, confirmed here rather than inherited.** A third run after
+    the failure got id **3**, not 2. Postgres allocates from the sequence before the rollback.
+  - **A finding the sample's README does not carry: `Save request` is logged on the failing
+    run too.** `DepositPostAsync` really did write the Outbox row, inside a transaction that
+    then rolled back, so the log says the message was saved and the table says it was not. The
+    page says so, because a reader comparing the two listings will notice and conclude the
+    page is wrong.
 
 ---
 

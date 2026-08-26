@@ -143,3 +143,4 @@ contents/MigratingToPollyV8.md	How-to	high	"split from PolicyRetryAndCircuitBrea
 contents/ConfiguringOpenTelemetry.md	How-to	high	"split from Telemetry.md (spec 010, Task 9.5); single-mode by construction"	How-to	Brighter V10
 contents/TutorialFirstCommand.md	Tutorial	high	"spec 009 D1, rung 1; tutorial by construction — one path, numbered steps, measured run"	Tutorial	Brighter V10
 contents/TutorialFirstMessage.md	Tutorial	high	"spec 009 D2, rung 2; tutorial by construction — one path, numbered steps, measured two-terminal run"	Tutorial	Brighter V10
+contents/TutorialDurableOutbox.md	Tutorial	high	"spec 009 D3, rung 3; tutorial by construction — one path, numbered steps, measured happy-path and failure-path runs"	Tutorial	Brighter V10
