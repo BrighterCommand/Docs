@@ -145,3 +145,4 @@ contents/TutorialFirstCommand.md	Tutorial	high	"spec 009 D1, rung 1; tutorial by
 contents/TutorialFirstMessage.md	Tutorial	high	"spec 009 D2, rung 2; tutorial by construction — one path, numbered steps, measured two-terminal run"	Tutorial	Brighter V10
 contents/TutorialDurableOutbox.md	Tutorial	high	"spec 009 D3, rung 3; tutorial by construction — one path, numbered steps, measured happy-path and failure-path runs"	Tutorial	Brighter V10
 contents/GetStarted.md	Tutorial	medium	"spec 009 D10, the ladder's landing page; not itself a build, but the entry point to the three tutorials and typed with them"	Tutorial	Brighter V10
+contents/TutorialStreamingWithKafka.md	Tutorial	high	"spec 009 D8, rung 4; tutorial by construction — one path, numbered steps, measured single-consumer and rebalanced two-consumer runs"	Tutorial	Brighter V10

@@ -1,5 +1,5 @@
 ---
-description: "Brighter's tutorials are a ladder: three rungs, each one a working application, each one adding a single capability to the rung below it."
+description: "Brighter's tutorials are a ladder: four rungs, each one a working application, each one adding a single capability to the rung below it."
 layout:
   description:
     visible: false
@@ -9,10 +9,10 @@ layout:
 
 > **Tutorial** · Applies to **Brighter V10**
 
-Brighter's tutorials are a ladder: three rungs, each one a working application, each one adding
+Brighter's tutorials are a ladder: four rungs, each one a working application, each one adding
 a single capability to the rung below it. You start with a request dispatched to a handler
-inside one process, and finish with a message written to a database transaction and delivered
-after that transaction commits. Every rung runs, and every rung is code the next one builds on.
+inside one process, and finish with a partitioned Kafka stream shared out across two copies of
+the same consumer. Every rung runs, and every rung is code another one builds on.
 
 ## The Brighter Tutorial Ladder
 
@@ -21,12 +21,14 @@ after that transaction commits. Every rung runs, and every rung is code the next
 | [1. Your First Command](/contents/TutorialFirstCommand.md) | a [command](/contents/Glossary.md#command), a [handler](/contents/Glossary.md#handler), and the [Command Processor](/contents/Glossary.md#command-processor) that connects them | 10 minutes | no |
 | [2. Your First Message Over a Broker](/contents/TutorialFirstMessage.md) | a second process, RabbitMQ between the two, and an [event](/contents/Glossary.md#event) that crosses it | 20 minutes | RabbitMQ |
 | [3. Adding a Durable Outbox](/contents/TutorialDurableOutbox.md) | Postgres, one transaction covering your data *and* the message, and the [Sweeper](/contents/Glossary.md#sweeper) that dispatches it afterwards | 25 minutes | RabbitMQ and Postgres |
+| [4. Streaming with Kafka](/contents/TutorialStreamingWithKafka.md) | Kafka in place of RabbitMQ, a topic split into [partitions](/contents/Glossary.md#partition), and a [consumer group](/contents/Glossary.md#consumer-group) that divides them between two processes | 30 minutes | Kafka |
 
 Those times are mostly reading and typing. The machine work — creating projects, restoring
 packages, building — was measured on a clean machine with an empty NuGet package cache at
-**11 seconds** for rung 1, **23 seconds** for rung 2, and **9.2 seconds** to add rung 3's
-packages plus **1.3 seconds** to build. Pulling the Docker images the first time takes longer
-and depends on your connection.
+**11 seconds** for rung 1, **23 seconds** for rung 2, **9.2 seconds** to add rung 3's packages
+plus **1.3 seconds** to build, and **5.2 seconds** to swap rung 4's package plus **3.1 seconds**
+to build. Pulling the Docker images the first time takes longer and depends on your
+connection.
 
 The rungs join up like this:
 
@@ -35,17 +37,22 @@ The rungs join up like this:
   receiver.
 - **Rung 3 keeps rung 2's solution** and changes only the sender. If you intend to do rung 3,
   do not delete rung 2's work.
+- **Rung 4 branches from rung 2 as well, not from rung 3.** A durable Outbox and a partitioned
+  transport are independent choices, so rung 4 swaps rung 2's broker and leaves its plain `Post`
+  alone. Because rung 3 edits rung 2's sender in place, copy that solution aside before you
+  start rung 4 — or rebuild its three projects.
 
 Start at rung 1. If you already know how a request reaches a handler, rung 2 is the first one
-with a broker in it — but it assumes rung 1's vocabulary rather than repeating it.
+with a broker in it — but it assumes rung 1's vocabulary rather than repeating it. Rungs 3 and 4
+can be taken in either order.
 
 ## What You Need Installed for the Ladder
 
 - **The .NET 9 SDK.** Check with `dotnet --version`.
-- **Docker Desktop**, for rungs 2 and 3 only. Rung 1 is deliberately in-process.
-- **Free ports**: **5672** and **15672** for RabbitMQ on rung 2, and **5432** for Postgres on
-  rung 3. If something else is already listening, the container starts and your application
-  does not connect.
+- **Docker Desktop**, for rungs 2, 3 and 4. Rung 1 is deliberately in-process.
+- **Free ports**: **5672** and **15672** for RabbitMQ on rungs 2 and 3, **5432** for Postgres on
+  rung 3, and **9092** for Kafka on rung 4. If something else is already listening, the
+  container starts and your application does not connect.
 
 Every `Paramore.Brighter*` package these pages install is pinned to the same version, so every
 `dotnet add package` line you will meet has this shape:
@@ -74,11 +81,13 @@ choice. When you want the choices themselves:
 - **Configure it properly.** [Basic Configuration](/contents/BrighterBasicConfiguration.md)
   covers what `AddBrighter()`, `AddProducers()` and `AddConsumers()` accept beyond the
   defaults these pages used, and each transport has its own reference page —
-  [RabbitMQ](/contents/RabbitMQConfiguration.md) is the one rung 2 configured.
+  [RabbitMQ](/contents/RabbitMQConfiguration.md) and
+  [Kafka](/contents/KafkaConfiguration.md) are the two the ladder configured.
 - **Understand why it works that way.** [The Task Queue Pattern](/contents/TaskQueuePattern.md)
   and [Outbox Pattern Support](/contents/OutboxPattern.md) explain the two patterns rungs 2
   and 3 built, and [Reactor and Proactor](/contents/ReactorAndProactor.md) explains the
-  concurrency model behind the [message pump](/contents/Glossary.md#message-pump).
+  concurrency model behind the [message pump](/contents/Glossary.md#message-pump) that rung 4
+  leans on for its ordering.
 - **Take it to production.** [Brighter Outbox Support](/contents/BrighterOutboxSupport.md) and
   [Transactional Messaging with the Outbox](/contents/TransactionalMessagingWithTheOutbox.md)
   pick up where rung 3 stops, with an Inbox on the consuming side.
