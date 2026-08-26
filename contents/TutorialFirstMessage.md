@@ -119,6 +119,9 @@ broker is what makes that distinction pay.
 > properties — so a get-only `Greeting` would arrive as an empty string, with no error
 > anywhere. If your receiver prints `Received:` and nothing else, this is why.
 
+**Expected result:** `dotnet build Greetings` reports `0 Error(s)`. Nothing runs yet — a class
+library has nothing to run, and neither process exists.
+
 ## Step 3: Build the Sender
 
 ```bash
@@ -202,6 +205,10 @@ Three things are new since rung 1:
 > the broker, or a confirm window that lapses, surfaces as a log line rather than an exception —
 > so this message prints either way. Rung 3 is where the message stops depending on this process
 > staying alive to be delivered at all.
+
+**Expected result:** `dotnet build GreetingsSender` reports `0 Error(s)`. Do not run it yet —
+on a brand-new broker there is no queue until the receiver has declared one, and step 5 starts
+the two in the order that works.
 
 ## Step 4: Build the Receiver
 
@@ -316,6 +323,8 @@ await host.RunAsync();
   and needs no locking. See [Reactor and Proactor](/contents/ReactorAndProactor.md).
 - **`host.RunAsync()`, which rung 1 did not have.** Now there *is* something to host: the
   Dispatcher runs until you stop it.
+
+**Expected result:** all three projects build, `0 Error(s)`.
 
 ## Step 5: Run Both Processes
 

@@ -167,6 +167,8 @@ to every subscriber instead, and `Post` when you want it sent over a broker — 
 > here it would leave you at a prompt that never returns. Keep it when your app has
 > something to host — a consumer, a web server — which is what the sample's siblings do.
 
+**Expected result:** still `0 Error(s)`. Now there is something to run, which is step 5.
+
 ## Step 5: Run Your First Command
 
 ```bash
