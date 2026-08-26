@@ -2,6 +2,7 @@
 
 * [1. Your First Command](/contents/TutorialFirstCommand.md)
 * [2. Your First Message Over a Broker](/contents/TutorialFirstMessage.md)
+* [3. Adding a Durable Outbox](/contents/TutorialDurableOutbox.md)
 * [Why Brighter?](/contents/WhyBrighter.md)
 * [Basic Concepts](/contents/BasicConcepts.md)
 * [Show me the code!](/contents/ShowMeTheCode.md)
