@@ -637,7 +637,8 @@ Your handler gained a transaction and one extra write. The system gained a guara
 - **Brighter owns one table and you own the other.** Provisioning creates the Outbox; `Greeting`
   was yours to create, and your schema stays yours.
 
-The next rung changes the transport rather than the guarantee: Kafka, where messages are
+The next rung changes the transport rather than the guarantee:
+[Streaming with Kafka](/contents/TutorialStreamingWithKafka.md), where messages are
 partitioned, consumers form a group, and ordering is something you get per key rather than
 per topic.
 

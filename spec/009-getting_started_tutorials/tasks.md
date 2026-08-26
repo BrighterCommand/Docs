@@ -7,14 +7,18 @@ moved. See § *Re-derive the total* and Task 3.5.
 applied) and `requirements.md` (approved 2026-08-03)
 **Executes against:** a corpus that **Spec 010 moved after this spec was approved** — see §2.
 
-**Total tasks: 39, across 12 phases. 30 done — Phases 1, 2 and 3 complete 2026-08-24;
-Phases 4, 5 and 6 complete 2026-08-25; Phases 7, 8 and 9 complete 2026-08-26.**
-Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 30 and `'^- \[ \] \*\*Task'`
-says 9. The phase table's Tasks column still sums to **39** independently.
+**Total tasks: 39, across 12 phases. 36 done — Phases 1, 2 and 3 complete 2026-08-24;
+Phases 4, 5 and 6 complete 2026-08-25; Phases 7, 8, 9, 10 and 11 complete 2026-08-26.**
+Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 36 and `'^- \[ \] \*\*Task'`
+says 3. The phase table's Tasks column still sums to **39** independently.
+
+**Only Phase 12 remains** — the acceptance pass and the close.
 
 **Phase 7's three boxes were ticked in Phase 8's PR, and that is the pattern**: a tick is
-a Docs commit, and Phase 7 was a Brighter PR that could not carry one. **Phase 10's will be
-ticked in Phase 11's**, for the same reason.
+a Docs commit, and Phase 7 was a Brighter PR that could not carry one. **Phase 10's were ticked
+in Phase 11's**, for the same reason — so the six boxes in this document's Phases 10 and 11 all
+landed in one Docs commit, and the pattern is now spent: no phase after this one is a Brighter
+PR.
 
 ---
 
@@ -1107,7 +1111,10 @@ absolute database path is four forks and a manual step before the first message 
 - [x] **Task 7.2:** Register the new projects in `Brighter.slnx`
   - Input: §2.4
   - Output: the entries, under `/samples/Tutorials/`
-  - Notes: as Task 5.2. The check is presence in the solution, not in the directory.
+  - Notes: as Task 5.2.
+  - **Checked with `git ls-files`, never `find`** (§2.4): 252 tracked `.csproj`, 251 named in
+    the solution, and the single unregistered project is the pre-existing #4272 `TodoApi` —
+    a control, not a finding. The check is presence in the solution, not in the directory.
 
 - [x] **Task 7.3:** Open the PR and confirm CI builds it
   - Input: a branch off `origin/master`
@@ -1311,7 +1318,7 @@ numbering lives in the display text and not in the file names.
 which obliges **synchronous** equivalents; `KafkaTaskQueue` supplies only the `…Async` pair,
 and that widened delta is the argument for a separate sample.
 
-- [ ] **Task 10.1:** Build `samples/Tutorials/04-Kafka`
+- [x] **Task 10.1:** Build `samples/Tutorials/04-Kafka` — **DONE 2026-08-26**
   - Input: D5; `../Brighter/samples/TaskQueue/KafkaTaskQueue/`; `docker-compose-kafka.yaml`
   - Output: the sample — transport → Kafka, 3-partition topic, `PartitionKey` set on the
     producer, `groupId` on the subscription, `MessagePumpType.Reactor`, sync handler and
@@ -1319,16 +1326,45 @@ and that widened delta is the argument for a separate sample.
   - Notes: `KafkaSubscription` already defaults to `MessagePumpType.Reactor`
     (`:298`, re-verified §2.8), so the default is the teaching point rather than an override
     to explain.
+  - **As shipped: no message mapper at all, and design's D7 row is wrong about this.** The row
+    says "async handler/mapper → **sync**", a delta measured against `KafkaTaskQueue` — but D7
+    is derived from **D5**, which has neither. `JsonMessageMapper<T>` is the registered default
+    for *both* the sync and the async path
+    (`ServiceCollectionMessageMapperRegistryBuilder.cs:47-50`) and already sets
+    `partitionKey: Context.GetPartitionKey()` (`JsonMessageMapper.cs:50`), so the sender sets
+    `context.Bag[RequestContextBagNames.PartitionKey]` and passes the context to `Post`.
+    **`contents/DispatchingARequest.md:89` and `:162` already documented this route** — the
+    corpus had the answer before the sample was written, again.
+  - **Three plausible partition keys collided, and one consumer hid it completely.** `alice`,
+    `bob` and `carol` all hash to partition 2 (`crc32(key) % 3`, librdkafka's
+    `ConsistentRandom`), so all nine greetings arrived in send order and the sample looked
+    perfect while demonstrating nothing. Exposed only by asking the broker with
+    `kafka-console-consumer.sh --property print.partition=true`. **`alice`, `grace`, `mia` land
+    on 2, 0, 1**, checked against the broker rather than calculated.
+  - **Three of seven files are byte-identical to rung 2's**, asserted with `cmp`:
+    `GreetingEvent.cs`, `Greetings.csproj`, `GreetingEventHandler.cs`. **Rung 4 changes both
+    ends** where rung 3 changed only the sender.
 
-- [ ] **Task 10.2:** Register the new projects in `Brighter.slnx`
+- [x] **Task 10.2:** Register the new projects in `Brighter.slnx` — **DONE 2026-08-26**
   - Input: §2.4
   - Output: the entries, under `/samples/Tutorials/`
   - Notes: as Task 5.2.
 
-- [ ] **Task 10.3:** Open the PR and confirm CI builds it
+- [x] **Task 10.3:** Open the PR and confirm CI builds it — **DONE 2026-08-26**
   - Input: a branch off `origin/master`
   - Output: a merged Brighter PR; CI green
   - Notes: as Task 5.3.
+  - **[Brighter#4280](https://github.com/BrighterCommand/Brighter/pull/4280), squashed to
+    `b100bffd5`.** Four commits and **three review rounds**; content verified by
+    `git diff origin/master <branch> -- samples/Tutorials Brighter.slnx` → **0 lines**.
+  - **`build` went pass / fail / fail / pass on this one PR**, every failure identical and
+    every one diagnosed rather than assumed: #4276's `JustSayingPropertySerializationTests`
+    on `net9.0` while `net10.0` passed 30/30. **`postgres-ci` went red once and green on the
+    re-run** against an identical Postgres surface — a *third* flake, newly recorded. `aws-ci`
+    is the standing SNS quota failure, red on master too (`TopicLimitExceededException` ×190).
+  - **The stable `LAG 1` found here went up as
+    [Brighter#4281](https://github.com/BrighterCommand/Brighter/issues/4281)**, re-searched
+    immediately before filing. Not a 009 deliverable.
 
 ---
 
@@ -1344,7 +1380,7 @@ pump per performer, hence per group member** — `noOfPerformers` defaults to 1
 which its single thread drains sequentially. Nor may it run the `noOfPerformers = 3`
 experiment in the body: that is a fork, and it belongs to `ReactorAndProactor.md`.
 
-- [ ] **Task 11.1:** Write `contents/TutorialStreamingWithKafka.md`
+- [x] **Task 11.1:** Write `contents/TutorialStreamingWithKafka.md` — **DONE 2026-08-26**
   - Input: design § D8 (eight steps); the merged D7 sample; §2.8's verified offset numbers
   - Output: `contents/TutorialStreamingWithKafka.md`, ~320 lines
   - Notes: step 8 is the honest at-least-once statement — offsets batch at `commitBatchSize`
@@ -1352,21 +1388,60 @@ experiment in the body: that is a fork, and it belongs to `ReactorAndProactor.md
     silently lose position, but a crash redelivers up to a batch. Ordering holds *per key*,
     because the key selects the partition. Link `#partition`, `#consumer-group`, `#offset`,
     `#partition-key`, `#reactor`.
+  - **As shipped: 587 lines against design's ~320**, the same shape of overshoot as rungs 2 and
+    3 and for the same reason — two C# blocks totalling **157 lines** carry both `Program.cs`
+    files and AC3 requires them verbatim. **Design's per-page estimates are prose budgets.**
+  - **Step 8 says both halves, and design's step-8 note only has one.** Verification item 2 is
+    right that offsets are committed for revoked partitions so position is not *lost* — and the
+    natural inference that nothing is *redelivered* is false. Measured: **nothing at all is
+    committed** immediately after nine messages (`CURRENT-OFFSET -`), because
+    `commitBatchSize` is 10; the **30-second `sweepUncommittedOffsetsInterval`** commits, and
+    leaves `LAG 1` per partition **stably**. A rebalance then redelivers **one message per
+    partition**.
+  - **Ordering is demonstrated at step 5, before the second instance exists.** The receiver
+    prints the nine greetings *grouped by recipient* rather than in send order, so the absence
+    of a global order and the presence of a per-key one are both visible with one consumer.
+    Design put ordering at step 7; it arrives earlier and for free.
+  - **`DispatchingARequest.md` is missing from design's D8 cross-link list and is now in
+    *Further Reading*** — it is the page that documents the request-context partition key.
 
-- [ ] **Task 11.2:** `SUMMARY.md` entry, `pagetypes.tsv` row, banner naming **both** rungs
+- [x] **Task 11.2:** `SUMMARY.md` entry, `pagetypes.tsv` row, banner naming **both** rungs — **DONE 2026-08-26**
   - Input: §2.1's block; design § Reading order
   - Output: the entry, the row, and a banner whose *Prerequisites* segment names rungs 2
     **and** 3
   - Notes: banner, *Before You Start* and the ladder diagram must all say the same two rungs.
     An earlier draft of design said it three different ways, which a reader reads as a mistake
     in the ladder itself.
+  - **`pagetypes.tsv` goes 146 → 147 rows**, appended rather than re-sorted, re-derived with
+    `awk 'NR>1' | wc -l` at this commit rather than incremented from a neighbouring document.
+  - **Three things this task did not list and the phase owed anyway.** `GetStarted.md` said
+    *"three rungs"* in eight places including its `description:` front matter — Phase 9 wrote it
+    that way deliberately, because rung 4 had not shipped, and shipping it is what makes the
+    landing page stale. Rung 3's closing paragraph **named Kafka without linking it**, the one
+    upward link Phase 9 deferred here. And the ladder now needs port **9092** listed, which
+    Task 9.1's note asked for and Phase 9 correctly refused.
 
-- [ ] **Task 11.3:** Clean-machine timed run, including the rebalance (AC1, AC2)
+- [x] **Task 11.3:** Clean-machine timed run, including the rebalance (AC1, AC2) — **DONE 2026-08-26**
   - Input: the page as written
   - Output: both terminals' rebalance output captured verbatim; a measured duration
   - Notes: the second consumer instance is a second copy of the app, not a second broker
     (Q2). This is the run most likely to overshoot its estimate; adjust the page to the
     measurement.
+  - **Measured on a genuinely cold cache** — all four NuGet locations redirected and asserted
+    empty first. Baseline is a reader's: rung 2 built from packages, http-cache 0 → **127
+    files**, which independently reproduces Phase 8's figure. Then rung 4's package swap
+    **127 → 149** (22 new files, the positive evidence that bytes crossed the network):
+    **5.2s** to swap the package on both projects, **3.1s** to build.
+  - **The page's own fences were extracted and run, not the sample's** — Phase 8's method.
+    Both `Program.cs` blocks are `cmp`-identical to the merged sample below its licence region,
+    the ```` ```yaml ```` compose block passes `docker compose config`, and every quoted output
+    was captured from running exactly those files: the assignment line, the nine grouped
+    receipts, the partition/key listing, both offset tables, both rebalance logs and the
+    two-consumer step 7.
+  - **Step 7's block order is not deterministic, and the page now says so.** The instance
+    holding two partitions drains them in whatever order it polls, so grace's block and alice's
+    block swap between runs — observed both ways. What never varies is the order *within* a
+    block, which is the only thing the page claims.
 
 ---
 
