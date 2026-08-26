@@ -7,13 +7,14 @@ moved. See § *Re-derive the total* and Task 3.5.
 applied) and `requirements.md` (approved 2026-08-03)
 **Executes against:** a corpus that **Spec 010 moved after this spec was approved** — see §2.
 
-**Total tasks: 39, across 12 phases. 28 done — Phases 1, 2 and 3 complete 2026-08-24;
-Phases 4, 5 and 6 complete 2026-08-25; Phases 7 and 8 complete 2026-08-26.**
-Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 28 and `'^- \[ \] \*\*Task'`
-says 11. The phase table's Tasks column still sums to **39** independently.
+**Total tasks: 39, across 12 phases. 30 done — Phases 1, 2 and 3 complete 2026-08-24;
+Phases 4, 5 and 6 complete 2026-08-25; Phases 7, 8 and 9 complete 2026-08-26.**
+Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 30 and `'^- \[ \] \*\*Task'`
+says 9. The phase table's Tasks column still sums to **39** independently.
 
-**Phase 7's three boxes are ticked here, in Phase 8's PR, and that is the pattern**: a tick is
-a Docs commit, and Phase 7 was a Brighter PR that could not carry one.
+**Phase 7's three boxes were ticked in Phase 8's PR, and that is the pattern**: a tick is
+a Docs commit, and Phase 7 was a Brighter PR that could not carry one. **Phase 10's will be
+ticked in Phase 11's**, for the same reason.
 
 ---
 
@@ -1227,7 +1228,7 @@ link), Phase 7 (AC4).
 exists; if Kafka slips, it lists three rungs and the ladder still stands, which is why the
 numbering lives in the display text and not in the file names.
 
-- [ ] **Task 9.1:** Write `contents/GetStarted.md`
+- [x] **Task 9.1:** Write `contents/GetStarted.md` — **DONE 2026-08-26**
   - Input: design § D10 outline
   - Output: `contents/GetStarted.md`, ~90 lines
   - Notes: the four sections are *The Ladder* (rung, what you add, time, needs Docker), *What
@@ -1236,13 +1237,69 @@ numbering lives in the display text and not in the file names.
     sentence** lives in the third: the ladder is for building something,
     `ShowMeTheCode.md` is the two-minute look at what Brighter code reads like. Times come
     from the measured runs of Tasks 3.4, 6.3 and 8.3 — not from design's estimates.
+  - **As shipped: 95 lines, four sections plus *Further Reading*, three rungs.** The first
+    estimate in this spec that did not overshoot — rungs 2 and 3 overshot because AC3 obliges
+    them to carry a sample verbatim, and this page carries no sample.
+  - **The times come from the three pages, which is where the measurements landed**, not from
+    this document: 10 / 20 / 25 minutes reader-facing, and **11s, 23s, 9.2s + 1.3s** of machine
+    work, each quoted from the rung's own *Before You Start*. So the landing page and the rung
+    cannot disagree without one of them being edited.
+  - **Port 9092 is not listed, and that is this phase's must-not being honoured rather than an
+    omission.** The task note above was written when four rungs were assumed; 9092 is Kafka's
+    port and Kafka has not shipped. *What You Need Installed* names **5672/15672** (rung 2) and
+    **5432** (rung 3), and Docker for **rungs 2 and 3**, not 2–4.
+  - **The page pins a version, and it has to.** `versioncheck.py`'s `TUTORIAL_PAGES` lists
+    `contents/GetStarted.md` (Phase 4 put it there), and **a listed page that exists and pins
+    nothing is exit 1** — so a landing page with no `dotnet add package` line would have gone
+    red the moment it was created. Found by reading the tool before writing the page rather
+    than by the gate afterwards. It carries one line,
+    `dotnet add package Paramore.Brighter --version 10.7.0`, presented as the shape every
+    `Paramore.Brighter*` line on the ladder takes — which is true and is worth a reader
+    knowing. **The pin was re-derived at writing time**, not carried: NuGet's highest
+    non-prerelease for `paramore.brighter` is **10.7.0** (123 versions), and
+    `…extensions.dependencyinjection` agrees.
+  - **Design's `## Just Want to See the Code?` shipped as `## Just Want to See Brighter
+    Code?`** — the outline's heading is unique but unattributable in a retrieval chunk, which
+    is exactly what heading qualification exists to prevent. The other three are
+    `## The Brighter Tutorial Ladder`, `## What You Need Installed for the Ladder` and
+    `## Where to Go After the Ladder`.
+  - **The upward links Phase 3 deferred to this phase are in.** Rung 1's closing paragraph now
+    links *the next rung* to `TutorialFirstMessage.md`, and rung 2's to
+    `TutorialDurableOutbox.md`. **Rung 3's closing paragraph still names Kafka without linking
+    it**, because rung 4 does not exist — the same rule pointing the same way, and Phase 11
+    inherits that one link.
+  - **The page type is `Tutorial`, per approved design, and the confidence in `pagetypes.tsv`
+    is `medium` rather than `high`.** It is a front door rather than something you build, and
+    `Reference` is arguable; it is typed with the ladder it opens. Recorded here so the
+    judgement is visible rather than implied by a green build.
 
-- [ ] **Task 9.2:** Execute §2.1's `SUMMARY.md` block and append the row
+- [x] **Task 9.2:** Execute §2.1's `SUMMARY.md` block and append the row — **DONE 2026-08-26**
   - Input: §2.1
   - Output: `## Get Started` holding the ladder above the three orientation pages; one
     appended `pagetypes.tsv` row
   - Notes: re-ordering inside a section moves no URL (§2.1), so `--check-redirects` should be
     unchanged at 77 entries — assert that rather than assuming it. S2 goes 3 → 8 of 12.
+  - **One entry was added, not five.** §2.1's block is the finished section; rungs 1, 2 and 3
+    joined it in Phases 3, 6 and 8, so this task contributed
+    `* [Get Started with Brighter](/contents/GetStarted.md)` at the top and nothing else. Rung
+    4's line is Task 11.2's.
+  - **S2 goes 6 → 7 of 12, not 3 → 8**, and both figures are right about different moments:
+    §2.1 measured the section before Phase 3 and counted the finished ladder including Kafka.
+    The widest section is still **10 of 12** and unchanged. *(This is the programme's "a total
+    needs a ref" arriving in the smallest possible way — §2.1's 3 is stamped 2026-08-23.)*
+  - **`--check-redirects` is unchanged at 77 entries and 7858 bytes**, asserted rather than
+    assumed, which is §2.1's "re-ordering inside a section moves no URL" holding for a fourth
+    time.
+  - **`pagetypes.tsv` goes 145 → 146 rows, appended rather than re-sorted.** `PROMPT.md` says
+    144; it is stamped before rung 3 shipped and is right about that moment. Re-derived here
+    with `awk 'NR>1' | wc -l` rather than incremented.
+  - **Four gates moved and two did not.** linkcheck 148 → **149 files**, pagelint 146 → **147
+    pages**, `--check-shape` 145 → **146 pages**, `versioncheck.py` **15 pins across 3 pages →
+    16 across 4**. Unmoved: `--check-redirects` at 77, and the **790 using-directive warnings**
+    — the page's one fenced block is `bash`, so it adds no debt. `--changed origin/master`
+    reports **5 files, 5 hunks, 3 pages, 1 code block strict**: non-vacuous, and exit 0.
+  - **Predicted publication path, with the tool rather than by guessing:**
+    `get-started/getstarted`.
 
 ---
 

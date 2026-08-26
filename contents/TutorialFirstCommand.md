@@ -207,7 +207,8 @@ did that work, and all three scale up unchanged:
   handler — and runs it. Attributes decide what goes into it.
 
 What you have not got yet is durability or another process. Nothing left this application,
-so nothing survived it. That is the next rung, which sends the same shape of request over
+so nothing survived it. That is
+[the next rung](/contents/TutorialFirstMessage.md), which sends the same shape of request over
 RabbitMQ to a consumer running separately.
 
 ## Further Reading
