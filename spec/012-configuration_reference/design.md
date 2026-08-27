@@ -1,7 +1,9 @@
 # Design: Spec 012 — Configuration Reference Tables
 
 **Created:** 2026-08-27
-**Status:** Design Phase — awaiting review
+**Status:** **Approved 2026-08-27.** Its four §13 questions were answered by the
+maintainer the same day and applied throughout; two of them grew the spec by three pages
+and no options, and one amended requirements §12's AC4.
 **Requirements:** `spec/012-configuration_reference/requirements.md`, approved 2026-08-27
 and merged as `9df5e89`. It supersedes the README on every point of fact. This design
 supersedes nothing — where it measures something the requirements asserted, it says so
@@ -33,6 +35,12 @@ to design, and this document answers them:
 | 4 | The shape of each **new** page, which is not uniform and cannot be templated | §8 |
 | 5 | Where the **shared relational options table** lives, given seventeen components take it | §8.4 |
 | 6 | The **order** the work goes in, with the checker before the tables §14 asks for | §14 |
+
+**Its four review questions were answered on 2026-08-27, the day they were asked** (§13),
+and two of them grew the spec: `RelationalDatabaseConfigurationReference.md` is
+commissioned as D15, and the Firestore and Spanner **inbox** pages as D16.
+**Three more pages and zero more options** — every option on the three is a link to a
+table somewhere else. AC4's schedule clause is dropped, amending requirements §12.
 
 It also records six measurements taken while designing, each of which changes what
 someone would do. They are collected in §12; four of them qualify a figure the
@@ -108,8 +116,8 @@ type a table names (§5), so its scope is the union of the tables 012 writes.
 
 ### 3.1 File hierarchy
 
-**Eight pages are created** and one tool; everything else edits a page that already
-exists. `+` is new, `~` is edited, and the option counts are §7's.
+**Ten pages are created** and one tool; everything else edits a page that already exists.
+`+` is new, `~` is edited, and the option counts are §7's.
 
 ```text
 tools/
@@ -146,11 +154,15 @@ contents/
 + FirestoreOutbox.md                            7 options, 1 table
 + SpannerOutbox.md                              0 options, 0 tables + a link (§8.5)
 
+  the two NEW inbox pages                       D16 — §13.4, zero options
++ FirestoreInbox.md                             0 options; links FirestoreOutbox.md's table
++ SpannerInbox.md                               0 options; links the relational table
+
 ~ outbox / inbox pages                      D7  — 8 pages, 35 options
 ~ distributed lock pages                    D8  — 7 pages, 8 own options + 3 links
 ~ scheduler pages                           D9  — 6 pages, 25 options   (§12.1)
 ~ ReactorAndProactor.md, HandlerFailure.md  D10 — the §3.4 corrections
-~ SUMMARY.md                                D14 — eight entries (§9)
+~ SUMMARY.md                                D14 — ten entries (§9)
 ```
 
 ### 3.2 Reading order
@@ -375,10 +387,12 @@ Unguarded, and the guard that would keep the build green while the tool is absen
 never be added — 009's D9 earned that: *a guard that outlives its tool silently un-gates
 the check.*
 
-> ### One deviation from AC4 is proposed, and it needs review
+> ### AC4's schedule clause is dropped — ruled 2026-08-27
 >
-> **AC4 requires the job on pull request *and* on a schedule. This design proposes
-> push/PR only**, on the requirements' own §13.3 reasoning.
+> **AC4 required the job on pull request *and* on a schedule. It runs on push and pull
+> request only**, on the requirements' own §13.3 reasoning. Ruled by the maintainer at
+> design review (§13.2), and **requirements §12's AC4 is amended to match** rather than
+> left contradicting the tool.
 >
 > `optioncheck` reflects over a **pinned** package, so nothing outside this repository
 > can change its verdict. A scheduled run over an unchanged repository and an unchanged
@@ -392,8 +406,8 @@ the check.*
 > commit here. Same family, opposite trigger, and requirements §13.3 draws that
 > distinction in so many words two sections before AC4 asks for the schedule anyway.
 >
-> **Recommendation: drop the schedule clause from AC4.** If review prefers to keep it,
-> the cost is a periodic exit-2 flake and the mitigation is a retry, never a `|| true`.
+> **The clause is struck rather than deleted from AC4**, so that a reader who arrives at
+> the acceptance criteria finds the ruling instead of an unexplained absence.
 
 ---
 
@@ -463,7 +477,9 @@ the Sync client has no such parameter. §13 question 3 asks review to confirm.
 | `DynamoDbInboxConfiguration` | 1 | `DynamoInbox.md` |
 | `OutboxCircuitBreakerOptions` | 1 | `SweeperCircuitBreaking.md` — already has this table |
 | `RelationalDatabaseConfiguration` | 8 | **`RelationalDatabaseConfigurationReference.md`** (§8.4) |
-| *(Spanner)* | **0** | **`SpannerOutbox.md`** (new) — links the relational table (§8.5) |
+| *(Spanner outbox)* | **0** | **`SpannerOutbox.md`** (new) — links the relational table (§8.5) |
+| *(Firestore inbox)* | **0** | **`FirestoreInbox.md`** (new, D16) — links `FirestoreOutbox.md`'s table |
+| *(Spanner inbox)* | **0** | **`SpannerInbox.md`** (new, D16) — links the relational table |
 
 **Seventeen components take `RelationalDatabaseConfiguration`, and none of them declares
 an options type of its own.** Measured at `10.7.0` by grepping for the interface in the
@@ -563,8 +579,10 @@ layout:
 ## Further Reading
 ```
 
-**All thirty proposed `##` headings were checked against the corpus and none collides**,
-so rule 3a is satisfied by construction rather than discovered at the gate.
+**All thirty-seven proposed `##` headings across the ten new pages were checked against
+the corpus and none collides**, so rule 3a's mechanical half is satisfied by construction
+rather than discovered at the gate. Its editorial half is not mechanical, and §8.4 records
+where this design nearly failed it.
 
 | Page | Tables | Options | Budget |
 |---|---|---|---|
@@ -635,12 +653,18 @@ Reference pages a reader already finds there.
 # Relational Database Configuration Reference
 > **Reference** · Applies to **Brighter V10** · Prerequisites: [Basic Configuration](...)
 
-## Relational Database Configuration Options     the 8-option table
-## Which Components Take This Configuration      the seventeen, by family, linked
-## Registering the Configuration                 IAmARelationalDatabaseConfiguration —
-                                                 links PostgresOutbox.md, which shows it twice
+## Relational Database Configuration Options        the 8-option table
+## Which Components Take the Relational Configuration   the seventeen, by family, linked
+## Registering the Relational Configuration         IAmARelationalDatabaseConfiguration —
+                                                    links PostgresOutbox.md, which shows it twice
 ## Further Reading
 ```
+
+**Two of those headings were `## Which Components Take This Configuration` and
+`## Registering the Configuration` in a draft.** Both are unique across the corpus, so
+rule 3a's *tooled* half passes on them — and both are unattributable in a retrieval chunk,
+which is the entire reason the convention exists. *A rule with a tool for half of it will
+pass the half nobody checks*, and this design nearly shipped the illustration.
 
 Budget ~140 lines. **This is D15, and an eighth `SUMMARY.md` entry beyond the seven
 requirements §10 commits to.** §13 question 1 puts it to review rather than absorbing it
@@ -678,6 +702,23 @@ reviewer reads.
 
 Budgets ~120 and ~110.
 
+**`FirestoreInbox.md` and `SpannerInbox.md` — D16, ruled at §13.4 — take the same two
+shapes one family over**, and neither carries a table: the Firestore inbox takes
+`FirestoreConfiguration`, documented on `FirestoreOutbox.md`, and the Spanner inbox takes
+the relational configuration, documented at §8.4.
+
+```markdown
+# Firestore Inbox                          # Spanner Inbox
+## Firestore Inbox Configuration           ## Spanner Inbox Configuration
+   links FirestoreOutbox.md's table           links RelationalDatabaseConfigurationReference.md
+## Provisioning the Firestore Inbox        ## Provisioning the Spanner Inbox
+## Further Reading                         ## Further Reading
+```
+
+Budgets ~100 each, and both are **Prerequisites: [Inbox Support](/contents/BrighterInboxSupport.md)**.
+**These two pages are the cleanest statement of §10's rule in the spec**: four
+sections, no table, and everything they document is a link.
+
 ### 8.6 The edited pages — D4, D5, D6, D7, D8, D9, D10
 
 Additive, per requirements §3.2: each named surface gains a marker and a table under a
@@ -698,7 +739,9 @@ qualified heading, in the section that already discusses it. Two cautions throug
 
 ### 9.1 The diff
 
-Eight entries: requirements §10's seven, plus D15 (§8.4).
+**Ten entries**: requirements §10's seven, plus D15 (§8.4) and D16's two (§8.5), all three
+commissioned at design review. **Five are top-level and five are nested**, which is what
+keeps §9.2 from getting worse.
 
 ```diff
  ## Brighter Configuration
@@ -725,16 +768,26 @@ Eight entries: requirements §10's seven, plus D15 (§8.4).
 ```
 
 ```diff
+ * [Outbox Support](/contents/BrighterOutboxSupport.md)
+   ...
    * [MongoDb Outbox](/contents/MongoDBOutbox.md)
 +  * [Firestore Outbox](/contents/FirestoreOutbox.md)
 +  * [Spanner Outbox](/contents/SpannerOutbox.md)
    * [InMemory Outbox](/contents/InMemoryOutbox.md)
+ ...
+ * [Inbox Support](/contents/BrighterInboxSupport.md)
+   ...
+   * [MongoDb Inbox](/contents/MongoDBInbox.md)
++  * [Firestore Inbox](/contents/FirestoreInbox.md)
++  * [Spanner Inbox](/contents/SpannerInbox.md)
+   * [InMemory Inbox](/contents/InMemoryInbox.md)
 ```
 
 MSSQL sits beside PostgreSQL because they are the same idea; the other four follow in the
-order requirements §10 lists them. **The two outbox entries are nested**, like every other
-store, so they add nothing to that section's top-level count, and **D15 is nested** under
-*Basic Configuration* like the two Reference pages it joins.
+order requirements §10 lists them. **The four store entries are nested**, like every other
+store, so they add nothing to that section's top-level count, and each sits immediately
+before its family's InMemory entry — matching the order the two families already use.
+**D15 is nested** under *Basic Configuration*, like the two Reference pages it joins.
 
 ### 9.2 The five transport entries take *Transports* to exactly S2's ceiling
 
@@ -762,9 +815,9 @@ nothing. That has held five times, and adding to a section is the same operation
 ### 9.3 The entry text is what reaches `/llms.txt`
 
 The `SUMMARY.md` title, not the H1, is what the index prints — the two disagree on 32
-pages today. All eight entries above are written to equal their page's H1, so nothing here
-relies on a difference and nothing relies on the title-fallback, which applies only to
-entries with no file behind them.
+pages today. All ten entries above are written to equal their page's H1, so nothing here relies on a
+difference and nothing relies on the title-fallback, which applies only to entries with no
+file behind them.
 
 ---
 
@@ -932,36 +985,65 @@ side; §3.6 records the README's inbox list as *"Holds"*, and against six stores
 The maintainer's §13.2 ruling — *same rule as the transports, both get pages* — points
 straight at them.
 
-**Recommendation in §13 question 4: two more pages, `FirestoreInbox.md` and
-`SpannerInbox.md`, on the same rule and with the same asymmetry** — Firestore links
-`FirestoreConfiguration` on its outbox page, Spanner links the relational table. Both are
-small, because neither introduces a type. Declining is also coherent: the inbox is a much
-smaller surface than the outbox, and *"a documentation set cannot un-assert by omission"*
-(§13.1) has less force where nothing in the corpus asserts these stores exist at all.
+**Ruled at §13.4: two more pages, `FirestoreInbox.md` and `SpannerInbox.md`, on the same
+rule and with the same asymmetry** — Firestore links `FirestoreConfiguration` on its
+outbox page, Spanner links the relational table. They are **D16**, and they cost two pages
+and zero options.
+
+**The general shape, and it is the reason this was worth looking for:** a ruling made
+about one family is a claim about a *rule*, and the cheapest way to test it is to point
+it at the neighbouring family before anyone else does. §13.2 of the requirements settled
+the outbox side; nobody asked what the inbox side looked like, and it took one
+`git ls-tree` to find out that it looked identical.
 
 ---
 
-## 13. Questions for review
+## 13. Questions for review — ALL FOUR ANSWERED 2026-08-27
 
-Four. The first two change what gets built; the fourth adds two small pages.
+**Answered by the maintainer on the day they were asked, and kept struck rather than
+deleted**, because each changed a section and a reader of that section deserves to find
+the ruling behind it. Two of the four grew the spec.
 
-1. **D15 — a ninth new page and an eighth `SUMMARY.md` entry.** §8.4 proposes
-   `RelationalDatabaseConfigurationReference.md` so that eight relational options are
-   documented once rather than thirteen times. It is beyond the scope requirements §10
-   commits to. **Recommendation: yes** — the alternatives are thirteen copies (the drift
-   012 exists to stop) or a Reference table on an Explanation page (the mode discipline
-   011 exists to keep).
-2. **AC4's schedule clause.** §6.5 proposes push/PR only, on the requirements' own §13.3
-   reasoning: a pinned checker cannot change its answer without a commit, so a scheduled
-   run can only repeat yesterday's verdict or report a NuGet outage. **Recommendation:
-   drop the clause.**
-3. **RabbitMQ's Sync client — one table or two?** §7.2 proposes one, the Async client's,
-   with `queueType` flagged as Async-only. Two would be 23 near-duplicate rows for one
-   parameter's difference. **Recommendation: one.**
-4. **Firestore and Spanner inboxes — two more pages?** §12.6 measures the same gap on the
-   inbox side that §13.2 closed on the outbox side. **Recommendation: yes**, as P1 beside
-   D13, and they are the cheapest pages in the spec because neither introduces a
-   configuration type.
+### 13.1 ~~D15 — a ninth new page and an eighth `SUMMARY.md` entry?~~
+
+**Answered: yes, build it.** `RelationalDatabaseConfigurationReference.md` (§8.4) carries
+the eight relational options once instead of thirteen times. The alternatives were
+thirteen copies — the drift 012 exists to stop — or a Reference table on an Explanation
+or How-to page, which is the mode discipline 011 exists to keep.
+
+### 13.2 ~~AC4's schedule clause?~~
+
+**Answered: drop it.** `optioncheck` runs on push and pull request only.
+**Requirements §12's AC4 is amended accordingly**, and this is the second time a ruling
+has edited that approved document — the first was §13's own three.
+
+The reasoning is the requirements' own §13.3: a **pinned** checker cannot change its
+answer without a commit here, so a scheduled run can only repeat the last PR verdict or
+exit **2** because NuGet was briefly unreachable. That is the failure mode
+`urlmap.py --verify` is deliberately kept out of CI for. `versioncheck.py` keeps its
+schedule for the opposite reason — it resolves *latest*, so a release elsewhere changes
+its answer with no commit here. **Same family contract, opposite trigger; do not reason
+about the two together.**
+
+### 13.3 ~~RabbitMQ's Sync client — one table or two?~~
+
+**Answered: one** — the Async client's, which is the V10 default, with `queueType`'s row
+saying the Sync client has no such parameter. Two tables would be 23 near-duplicate rows
+for a one-parameter difference.
+
+### 13.4 ~~Firestore and Spanner inboxes — two more pages?~~
+
+**Answered: yes, on the same rule as §13.2 of the requirements.** `FirestoreInbox.md` and
+`SpannerInbox.md` join D13 as **D16**, with the same asymmetry the outbox pair has:
+Firestore links `FirestoreConfiguration` on its outbox page, Spanner links the relational
+table. Neither introduces a configuration type, so they are the cheapest pages in the
+spec — **two pages and zero options**, which is the shape §7.2.1 already measured for the
+five transports and is worth noticing a second time.
+
+**The cost of the four answers, stated the way requirements §14 states its own:
+three more pages, two more `SUMMARY.md` entries than the eight this design opened with,
+and zero additional options.** Every option on the three new pages is a link to a table
+somewhere else.
 
 ---
 
@@ -980,7 +1062,7 @@ the next branch starts:
 | 4 | **D15** — the relational reference page | Thirteen pages link it, so it precedes D6, D7 and D8 |
 | 5 | **D6** — the five documented transports, 186 options | Existing pages; the checker is proven by now |
 | 6 | **D12** — the five new transport pages, 151 options | §14's ordering obligation, satisfied |
-| 7 | **D13** — Firestore and Spanner outboxes (and the inboxes, if §13 question 4 says yes) | Small, and Spanner depends on D15 existing |
+| 7 | **D13 + D16** — the Firestore and Spanner outbox *and* inbox pages, four pages and zero options | Small, and three of the four depend on D15 existing. One PR: they are one decision (§13.4) and share every link |
 | 8 | **D7 + D8** — outbox, inbox and lock pages, including §12.2's twelve-table normalisation | The largest editing phase, and the one that most needs the checker to already be trusted |
 | 9 | **D9** — schedulers, 25 options | The family §12.1 found; nothing depends on it |
 | 10 | **D10** — the two stale cross-cutting tables | Last, because it is the one *corrective* rather than additive edit, and diffing it against `survey.py` is easiest once every transport has a page to check against |
@@ -1001,10 +1083,10 @@ it is checking the untooled criterion while the work is still small enough to fi
 | AC2 | §6 | `optioncheck` exit 0 |
 | AC3 | §6.2; phase 2's red-proof | The route that reads constructor parameters |
 | AC3b | §6.2; phase 2's red-proof | `EmptyChannelDelay`, whose signature says `null` |
-| AC4 | §6.5 | **One deviation proposed** — push/PR only; §13 question 2 |
+| AC4 | §6.5 | **Amended 2026-08-27** — push/PR only, schedule clause struck; §13.2 |
 | AC5 | §6.5 | Exit 2, red-proof with the package source removed |
-| AC6 | §8.1–8.3, §9 | Five new pages, five entries, the orphan check |
-| AC6b | §8.5 | Firestore with a table, Spanner without |
+| AC6 | §8.1–8.3, §9 | Five new transport pages, five entries, the orphan check |
+| AC6b | §8.5 | Firestore with a table, Spanner without — **and the same pair one family over**, §13.4 |
 | AC7 | phase 10 | Diffed against `survey.py` at the release ref — after phase 1 fixes it |
 | AC8 | §10, §14 | No tool; walked per phase |
 | AC9 | every phase | The six gates, whose values at `9df5e89` are in PROMPT's state block |
@@ -1015,7 +1097,7 @@ it is checking the untooled criterion while the work is still small enough to fi
 | §5.2's synthesis residue | §6.3 sized; §5.1's `manual:` key makes it countable |
 | §7.1's table format | §4, and §12.2 measures how far the corpus is from it |
 | §7.2.1's five pages | §8.1–8.3, and §8.2 records why they are not uniform |
-| §7.3 item 6 — Firestore and Spanner | §8.5, and §12.6 finds the same gap one family over |
+| §7.3 item 6 — Firestore and Spanner | §8.5; §12.6 found the same gap one family over and §13.4 closed it |
 | §7.3 item 10 — the residue named per option | §5.1's `manual:` declarations, printed in the scope line |
-| §10's `SUMMARY.md` entries | §9, plus D15 in §8.4 flagged for review |
+| §10's `SUMMARY.md` entries | §9 — seven, plus D15 and D16's two, all ruled at §13 |
 | §14's "checker before the tables" | phases 2 and 6 |
