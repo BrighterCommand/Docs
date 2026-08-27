@@ -1,7 +1,10 @@
 # Spec 009: Getting Started Tutorials
 
 **Created:** 2026-08-03
-**Status:** Requirements Phase
+**Status:** **COMPLETE 2026-08-27** — 40/40 tasks, 12 phases, AC1–AC8 walked. The four-rung
+ladder and its landing page are live under `get-started/`; the three companion samples are
+merged in `../Brighter` under `samples/Tutorials/`. What it shipped, and the acceptance
+evidence, is in `tasks.md` § *The acceptance pass as executed*.
 
 ## Topic Overview
 
@@ -147,10 +150,12 @@ parallel** with the others. Agreed order across the programme is
 - [x] Documentation outline created (`design.md`, 2026-08-03)
 - [x] Outline reviewed and approved (2026-08-03; six findings applied, D12 added)
 - [x] Writing tasks identified (`tasks.md`, 2026-08-23; reviewed and approved 2026-08-24 —
-      39 tasks across 12 phases)
-- [ ] Writing complete
-- [ ] Documentation reviewed
-- [ ] Spec closed
+      39 tasks across 12 phases, **40 after Phase 12 added Task 12.4**)
+- [x] Writing complete (2026-08-26 — all twelve deliverables merged; Docs PRs #114–#121,
+      Brighter PRs #4275, #4278, #4280)
+- [x] Documentation reviewed (2026-08-27 — AC1–AC8 walked with evidence in `tasks.md`
+      § *The acceptance pass as executed*; AC7 was found unmet and repaired under Task 12.4)
+- [x] Spec closed (2026-08-27)
 
 ## Next Steps
 

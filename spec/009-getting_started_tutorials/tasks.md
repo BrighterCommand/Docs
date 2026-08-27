@@ -7,12 +7,18 @@ moved. See § *Re-derive the total* and Task 3.5.
 applied) and `requirements.md` (approved 2026-08-03)
 **Executes against:** a corpus that **Spec 010 moved after this spec was approved** — see §2.
 
-**Total tasks: 39, across 12 phases. 36 done — Phases 1, 2 and 3 complete 2026-08-24;
-Phases 4, 5 and 6 complete 2026-08-25; Phases 7, 8, 9, 10 and 11 complete 2026-08-26.**
-Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 36 and `'^- \[ \] \*\*Task'`
-says 3. The phase table's Tasks column still sums to **39** independently.
+**Total tasks: 40, across 12 phases. ALL 40 DONE — Phases 1, 2 and 3 complete 2026-08-24;
+Phases 4, 5 and 6 complete 2026-08-25; Phases 7, 8, 9, 10 and 11 complete 2026-08-26; Phase 12
+complete 2026-08-27.** Re-derived, not incremented: `grep -c '^- \[x\] \*\*Task'` says 40 and
+`'^- \[ \] \*\*Task'` says 0. The phase table's Tasks column sums to **40** independently.
 
-**Only Phase 12 remains** — the acceptance pass and the close.
+**It was 39 until the acceptance pass, and 38 before the tasks review.** Task 12.4 was added
+when AC7's walk found a criterion unmet; both figures were re-derived afterwards rather than
+incremented. See § *Re-derive the total* at the end of Phase 12.
+
+**THE SPEC IS COMPLETE.** All four rungs, the landing page, the version gate and the release
+checklist are merged and live; AC1–AC8 are walked with evidence in § *The acceptance pass as
+executed*.
 
 **Phase 7's three boxes were ticked in Phase 8's PR, and that is the pattern**: a tick is
 a Docs commit, and Phase 7 was a Brighter PR that could not carry one. **Phase 10's were ticked
@@ -47,7 +53,7 @@ the repository they land in.
 | **9** | Docs | The ladder's landing page (P1) | 2 | D10 |
 | **10** | **Brighter** | Rung 4's sample (P1) | 3 | D7 |
 | **11** | Docs | **Rung 4** — Kafka (P1) | 3 | D8 |
-| **12** | Docs | Acceptance — AC1–AC8 walked — and close | 3 | — |
+| **12** | Docs | Acceptance — AC1–AC8 walked — and close | 4 | — |
 
 **Re-derive the total, do not increment it.** `grep -c '^- \[.\] \*\*Task' tasks.md` is the
 authority; the phase column above sums to 39 independently. Spec 010 carried two counting
@@ -1454,15 +1460,26 @@ and AC7 (prerequisites, pins, expected output, hand-off) have no tool behind the
 a convention has a mechanical half and an editorial half, a green build is evidence about the
 mechanical half only*.
 
-- [ ] **Task 12.1:** Walk AC1–AC8, one at a time, with evidence per shipped rung
+- [x] **Task 12.1:** Walk AC1–AC8, one at a time, with evidence per shipped rung —
+  **DONE 2026-08-27**
   - Input: this document's recorded runs and timings; the merged Brighter PRs
   - Output: an *acceptance pass as executed* section here, in 010's format
   - Notes: AC1 and AC2 are the recorded clean-machine runs; AC3 is walked by eye against each
     sample's `.cs` below its licence region, with the `.csproj` exception noted; AC4 is
     **presence in `Brighter.slnx` plus a green CI run**, not presence in `samples/` (§2.4);
     AC8 is walked by following each page using only the links it offers.
+  - **AC3 was walked mechanically rather than by eye, and that is what found the third
+    exception.** Extracting all 12 ```` ```csharp ```` blocks and diffing each against the
+    sample file below its licence region gives **11 byte-identical and one deviation** — rung
+    1's `Program.cs`, which drops `host.Run()`. Design names two AC3 exceptions and this is a
+    third; the page declares it in a blockquote of its own, so nothing is hidden from a reader,
+    but the approved list is incomplete. **By eye this would have been a shrug**; the diff is
+    what turned it into a finding.
+  - **AC7 was the one criterion a green build could never have reached, and walking it found a
+    real gap.** See the acceptance pass below and Task 12.4.
 
-- [ ] **Task 12.2:** Enumerate the parity that no tool checks, and run every gate
+- [x] **Task 12.2:** Enumerate the parity that no tool checks, and run every gate —
+  **DONE 2026-08-27**
   - Input: `pagetypes.tsv`; the banners; the five gates plus `versioncheck.py`
   - Output: recorded numbers for all six gates, and a page-by-page parity check in **both
     directions** — every new page has a row, every new row has a page, type matches banner,
@@ -1476,14 +1493,158 @@ mechanical half only*.
     back-references*. Enumerate the new warnings by page and check each against that rule; a
     C# block in these pages that simply lacks its `using` directives **is** a defect in this
     spec's own work.
+  - **The warning question had a stronger answer than the note anticipated: 790 did not move
+    at all.** The five pages carry **12 C# blocks between them and contribute zero warnings**,
+    so there is nothing "above 790" to adjudicate and no `// ...` back-reference was ever
+    needed. The zero is not vacuous — 12 blocks were examined and every one supplies its
+    `using` directives.
+  - **The note's own expected figure was wrong, and it is the neighbouring-total lesson for a
+    third time.** *"Expect 143 + one per shipped page"* predicts **148**; the file holds
+    **147**. `pagetypes.tsv` was **142 rows at `c401375`**, the commit that closed 010 and the
+    last to touch the file before this spec started — so 143 was already the count **after
+    rung 1 shipped**, quoted as a *before*. Traced ref by ref: 142 at `c401375`, **143** at
+    `faeac68` (rung 1), 144 at `cc4f9f6`, 145 at `7a8d436`, 146 at `b517d89`, **147** at
+    `dbd2f27`. 142 + 5 pages = 147, which is what is on disk.
 
-- [ ] **Task 12.3:** Close
+- [x] **Task 12.4:** Repair what AC7's walk found — **DONE 2026-08-27**
+  - Input: the AC7 row of the acceptance pass below
+  - Output: an *Expected result* on the 11 steps that had none, each one **measured by
+    replaying the page's own fences**, not asserted
+  - Notes: **this task did not exist when the list was approved.** It is the second time this
+    spec has grown a task rather than absorbed the work silently — Task 3.5 was the first, at
+    the tasks review — and the total is **re-derived below, not incremented**. It is here
+    because an acceptance pass that finds a criterion unmet and changes nothing is not an
+    acceptance pass; the alternative on the table was to record AC7 as partially met and close
+    on it, and that was declined.
+
+- [x] **Task 12.3:** Close — **DONE 2026-08-27**
   - Input: the acceptance pass
   - Output: `README.md` checklist completed; `PROMPT.md`'s board updated; a comment on #67
     naming what shipped
   - Notes: #67 stays **open** — 012 and 013 still owe it. Say plainly which rungs shipped and
     which did not; a partial ladder honestly described is the valid end state design
     anticipated. Re-check the thread for a reply before commenting (Task 1.3).
+  - **#67 re-checked 2026-08-27, for the third time.** Still **OPEN**, still **two comments,
+    both ours**, `updatedAt` still `2026-08-03T11:43:25Z` — the issue author has not replied
+    since the ladder was promised. So the two positions flagged for pushback remain
+    **unchallenged rather than endorsed**, exactly as Task 1.3 recorded, and nothing obliges a
+    change of shape.
+
+---
+
+### The acceptance pass as executed — 2026-08-27 (Tasks 12.1, 12.2 and 12.4)
+
+**Walked criterion by criterion, not inferred from a green build.** Every figure below was
+measured while writing this section, against `fc3839c` for the corpus and Brighter
+`b100bffd5` for the samples. Where a criterion could be checked two ways, it was.
+
+| # | Criterion | Verdict | Evidence |
+|---|---|---|---|
+| **AC1** | Executed end to end on a clean machine, following the page's own `dotnet add package` lines rather than the sample's project references | **met, 4 of 4 rungs** | Rung 1 (Task 3.4): all four NuGet locations redirected and **asserted empty by `dotnet nuget locals all --list` before the run**; http-cache 0 → **113 files**. Rung 2 (6.3): 0 → **144 files / 45 MB**. Rung 3 (8.3): baseline is *a reader's* — rung 2 built first, 0 → **127**, then **127 → 141** adding rung 3's six packages. Rung 4 (11.3): the same reader baseline **independently reproduced 127**, then **127 → 149**. The rising http-cache count is the positive evidence that bytes crossed the network; an empty directory afterwards and a bypassed one look identical |
+| **AC2** | The run was timed and the page's stated duration is within sight of it | **met, 4 of 4** | Machine time **10.9s / 23s / 9.2s + 1.3s / 5.2s + 3.1s**. Every page states **both** figures — a reader duration (10 / 20 / 25 / 30 minutes) and the measured machine time beside it — which is Task 3.4's ruling that a machine timing must not be passed off as a reader timing. `GetStarted.md` quotes the same four durations **from the rung pages themselves**, so the two cannot drift without one being edited |
+| **AC3** | Every C# block compiles and matches the companion sample's `.cs` | **met, with three exceptions, one of them undeclared** | Walked **mechanically**: all **12** ```` ```csharp ```` blocks extracted and diffed against the sample file below its licence region. **11 byte-identical.** The twelfth is rung 1's `Program.cs`, which drops `host.Run()` — see below |
+| **AC4** | The companion sample builds in Brighter's CI, and its PR merged **before** the page shipped | **met, 3 of 3 samples, on one run** | All **9** tutorial `.csproj` are in `Brighter.slnx` — set comparison against the 9 on disk, **empty both ways** — and `HelloWorld.csproj` was already there. The **`build` job passed** on Brighter `master` run **`33006727508`** at `b100bffd5`, naming all nine plus `HelloWorld` at `bin/Release/net9.0`. Ordering asserted from merge timestamps, not assumed: **#4275 19:15Z < #118 21:14Z**, **#4278 09:06Z < #119 13:22Z**, **#4280 19:44Z < #121 20:54Z** |
+| **AC5** | `linkcheck.py` clean across the repo, orphan check included | **met** | **No broken internal links, 150 files checked**, 0 orphans. Corroborated live at each publication: rung 3's 5 cross-links and 6 glossary anchors, the landing page's **23 of 23**, rung 4's **18 of 18** |
+| **AC6** | `versioncheck.py` passes | **met, and non-vacuously** | **0 stale pins of 18 examined across 5 pages** — 5 listed, 5 found, **0 not yet written**, so `TUTORIAL_PAGES` is fully populated for the first time. Eleven distinct package ids resolved against NuGet, all **10.7.0**. It prints its scope before its verdict precisely so that `0 stale pins` of 0 and of 18 cannot read alike |
+| **AC7** | The page states prerequisites, pinned versions, expected output at each step, and a hand-off | **met after repair — see Task 12.4** | Prerequisites **5/5** (banner segment plus *Before You Start*); pins **5/5**, all 18 under AC6; hand-off **5/5** (*Further Reading*, plus a link down the ladder and, since Phase 9, up it). *Expected output* was **15 of 26 steps** on the walk and is **26 of 26** now |
+| **AC8** | A reader can complete it without visiting any page other than those the tutorial links to | **met** | Walked by following each page using only its own links. The five pages offer **97 internal links to 42 distinct targets**, every one resolving — 42 is the *union*, and summing the five pages' own distinct counts gives 82, which is a different quantity and not this one. **18 distinct `Glossary.md` anchors** are exercised across the ladder, including all four D12 added — `#at-least-once`, `#partition`, `#consumer-group`, `#offset` — plus `#boxprovisioning`, the fifth that turned out never to have been missing. The strongest evidence is structural rather than a link count: **rungs 3 and 4 were built and run from the page's own extracted fences**, with no recourse to any other page |
+
+**Standing obligation 4, enumerated in both directions.** `pagetypes.tsv` is **147 rows, 147
+pages under `contents/`, no duplicates, and nothing in one that is not in the other**. Banner
+*type* against `verdict`: **147/147**. Banner *version* against `applies`: **147/147**. No tool
+checks any of this — `pagelint.py` never opens the file — so it is walked or it is not checked.
+
+**The six gates, at the head of this phase and again after Task 12.4's edits:**
+
+```text
+linkcheck.py                No broken internal links (150 files checked).
+pagelint.py                 0 errors, 790 warnings (117 pages), 148 pages
+urlmap.py --check-shape     0 — 147 pages, 12 sections, deepest 4, widest 10
+urlmap.py --check-redirects 0 — 77 entries, 7858 bytes, printable ASCII
+versioncheck.py             0 stale pins of 18 examined across 5 page(s).
+urlmap.py --verify          predicted 147, published 147, 147 agree
+```
+
+**Identical before and after**, which is the point: Task 12.4 added prose to four pages and
+moved no gate. **The 790 warnings did not move either, and the five pages contribute none of
+them** — 12 C# blocks examined, every one carrying its `using` directives.
+
+**`--changed` reached 0 code blocks on this PR, and that is stated rather than glossed.** The
+run reports *"4 file(s), 12 hunk(s) in the diff; 4 documentation page(s), 0 code block(s)
+strict"* and says in its own words that the strict rules are vacuous. Legitimate for a
+prose-only change — and recorded here because a vacuous pass and a real one print the same
+`0 errors`, which this programme has been caught by three times.
+
+#### Five things the pass found that were not on its list
+
+**1. AC3 has a third exception, and design names two.** Approved design documents the `.csproj`
+divergence (Q1) and the licence-region elision. The corpus ships a third: **rung 1's
+`Program.cs` drops `host.Run()`**, because `AddBrighter().AutoFromAssemblies()` registers no
+`IHostedService` and the line would leave a reader at a prompt that never returns. The page
+declares it in a blockquote of its own, so **no reader is misled and the approved list is still
+incomplete** — recorded here rather than edited into an approved document, as §2 rules. The
+other 11 blocks are byte-identical, so the exception is exactly one line on exactly one page.
+
+**2. AC7 was the criterion no gate could reach, and walking it found a real gap.** Read step by
+step, **15 of 26 steps stated an observable result**; the 11 that did not were every
+code-writing and package-adding step on rungs 2–4, plus rung 1's step 4. Rung 1 alone had
+already solved this, using *"still `0 Error(s)`"* for steps where nothing runs — so the bar
+existed and three pages did not clear it. **This is the mechanical-half/editorial-half lesson
+arriving on a criterion rather than a convention**: every one of those 11 steps sat on a page
+that was green under all six gates.
+
+**3. Writing the repair required measuring it, and a blanket "still builds" would have been
+false three times.** The obvious fix — copy rung 1's line onto the 11 steps — asserts a build
+state, so each state was **measured by replaying the page's own fences** into a fresh
+package-referenced solution and building after every step. Three steps do **not** compile, by
+design:
+
+| Rung | Step | Measured state after the step |
+|---|---|---|
+| 3 | 4 Configure the Outbox | `GreetingsSender` fails: `error CS0246: The type or namespace name 'GreetingsSender' could not be found` — the `using GreetingsSender;` line names a namespace `AddGreeting.cs` declares, and that file arrives in step 5 |
+| 4 | 2 Swap the Transport | **Both** apps fail: `error CS0234: The type or namespace name 'RMQ' does not exist in the namespace 'Paramore.Brighter.MessagingGateway'` — the package is gone and the code still names it |
+| 4 | 3 Send with a Partition Key | Sender builds; **receiver still fails** with the same `CS0234` until step 4 |
+
+Rung 2 builds clean at every step, and so does rung 1. **The reader was previously left to meet
+`CS0234` with nothing on the page acknowledging it** — an error that looks exactly like a broken
+tutorial and is not one. So the repair is worth more than the uniformity that motivated it, and
+**it is the "verify the fix" lesson paying for itself**: the remedy that follows obviously from a
+correct diagnosis was wrong in three of eleven places, and one replay was the whole cost of
+finding out.
+
+**4. Four of the five recorded page line counts were stale, and none of them was ever wrong.**
+This document and `PROMPT.md` record 222 / 440 / 658 / 95 / 587, each correct **at the commit
+that created the page**. At `fc3839c` they are **223 / 440 / 659 / 104 / 587**: Phase 9 added
+the upward links to rungs 1 and 2, and Phase 11 added rung 3's Kafka link and took `GetStarted.md`
+from three rungs to four. **The ladder is the one structure in this programme guaranteed to
+invalidate its own earlier measurements**, because completing a set obliges you to re-edit
+everything that described it as incomplete — which Phase 11 already recorded as a general shape
+and which is here again, pointed at line counts. *A total needs a ref*: 587 lines is not a fact,
+**587 lines at `dbd2f27`** is.
+
+**5. Brighter `master` is red at `b100bffd5`, on two jobs, and neither is ours.** The
+workflow-level verdict is `failure`, which as ever means only that *something* failed — the job
+breakdown is **20 green including `build`**, 1 skipped (`release`), and 2 red. `aws-ci` is the
+standing `TopicLimitExceededException` SNS-quota failure. **`tickerq` is new and is not
+recorded anywhere in this programme**: `Paramore.Brighter.TickerQ.Tests.TickerQSchedulerMessageAsyncTests.When_scheduler_a_message_with_a_datetimeoffset_async`,
+failing `Assert.Empty()` on a collection that was not empty — a scheduler timing test under
+`tests/`, touching nothing any tutorial sample compiles. **One observation is not a
+classification**, so it is recorded as red-and-unexplained rather than called a fourth flake;
+the discriminator, as always here, is a re-run. **AC4's evidence is unaffected** — `build` is
+the job that compiles the samples and `build` passed.
+
+### Re-derive the total — it is 40, not 39
+
+Task 12.4 did not exist when this list was approved. **Re-derived, not incremented:**
+
+```bash
+grep -c '^- \[x\] \*\*Task' tasks.md   # 40
+grep -c '^- \[ \] \*\*Task' tasks.md   # 0
+```
+
+The phase table's Tasks column sums to **40** independently once Phase 12's row reads 4. Two
+counting methods are kept for the reason §1 gives: 010 carried two that disagreed by four for a
+fortnight while both printed a plausible number.
 
 ---
 
@@ -1503,7 +1664,7 @@ mechanical half only*.
 | AC4 sample PR merged first | 5.3, 7.3, 10.3; **and §2.4** |
 | AC5 `linkcheck.py` clean | standing obligation 5; 12.2 |
 | AC6 `versioncheck.py` passes | 4.2, 4.5, 12.2 |
-| AC7 prerequisites, pins, output, hand-off | standing obligations 1 and 8; 12.1 |
+| AC7 prerequisites, pins, output, hand-off | standing obligations 1 and 8; 12.1, **12.4** |
 | AC8 completable without unlinked pages | 2; 12.1 |
 | Q1 version pinning | standing obligation 7; §2.5 |
 | Q4 Reactor for Kafka | 10.1, 11.1 |

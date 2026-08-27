@@ -97,6 +97,9 @@ this stops failing:
 docker exec kafka /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092
 ```
 
+**Expected result:** `docker ps` shows one container running, and the command above succeeds
+rather than failing to connect.
+
 ## Step 2: Swap the Transport
 
 Both processes talk to the broker, so both change. Remove RabbitMQ and add Kafka:
@@ -118,6 +121,11 @@ know which broker they are running over.
 Your `.csproj` files show `PackageReference` with a pinned version. The sample in the Brighter
 repository uses `ProjectReference` into the source tree instead, which is the one place page and
 sample differ on purpose.
+
+**Expected result — neither app builds, and that is correct.** Both report
+`error CS0234: The type or namespace name 'RMQ' does not exist in the namespace
+'Paramore.Brighter.MessagingGateway'`. You have taken away the transport their code still names;
+steps 3 and 4 replace that code. `Greetings` is untouched and still builds.
 
 ## Step 3: Send with a Partition Key
 
@@ -246,6 +254,9 @@ properly.
 **`Post` is unchanged.** No Outbox, no transaction — rung 3's guarantee is orthogonal to this
 one, and combining them is a decision you make per service rather than a step on this ladder.
 
+**Expected result:** `GreetingsSender` builds now, `0 Error(s)`. `GreetingsReceiver` still fails
+with step 2's `CS0234` — it is step 4's turn.
+
 ## Step 4: Consume as a Reactor
 
 Replace `GreetingsReceiver/Program.cs` with this:
@@ -333,6 +344,9 @@ what changes if you raise `noOfPerformers`.
 **`GreetingEventHandler.cs` does not change at all** — it is rung 2's file, byte for byte. A
 handler does not know what transport delivered its message, and that is the whole benefit of
 having one.
+
+**Expected result:** all three projects build, `0 Error(s)`. Step 2's `CS0234` is gone from both
+apps.
 
 ## Step 5: Watch One Consumer Take All Three Partitions
 

@@ -115,6 +115,9 @@ Five of the six are Brighter's. Two are worth pausing on:
   Postgres directly — the `Greeting` table is yours, and creating it is your code's job. See
   step 3.
 
+**Expected result:** `GreetingsSender.csproj` carries six more `PackageReference` lines, and
+all three projects still build with `0 Error(s)`. No code has changed yet.
+
 ## Step 3: Create the Greeting Table
 
 **Two tables will live in this database and they have different owners.** Brighter's
@@ -133,6 +136,9 @@ create table if not exists Greeting (
 
 The sample runs that in plain ADO.NET at the bottom of `Program.cs`, deliberately not through
 Brighter, because it is not Brighter's table. You will see it in the next step.
+
+**Expected result:** nothing to check — you have written no code and the table does not exist
+yet. Step 4 adds the code that creates it.
 
 ## Step 4: Configure the Outbox
 
@@ -310,6 +316,12 @@ Both Sweeper values are the defaults, spelled out because the delay they produce
 this rung teaches: a message is picked up on the first tick that finds it at least
 `MinimumMessageAge` old.
 
+**Expected result — the one step on this page where the sender does *not* build.**
+`dotnet build GreetingsSender` reports
+`error CS0246: The type or namespace name 'GreetingsSender' could not be found`. That is the
+`using GreetingsSender;` line above: the namespace belongs to `AddGreeting.cs`, which you write
+in step 5. The other two projects still build.
+
 ## Step 5: Write and Deposit in One Transaction
 
 Rung 2's sender called `Post` straight from `Main`. A transaction needs somewhere to live, and
@@ -462,6 +474,9 @@ only one write as far as the database is concerned.
 > contents rather than a formality. See
 > [Transactional Messaging with the Outbox](/contents/TransactionalMessagingWithTheOutbox.md)
 > for the version you would ship.
+
+**Expected result:** all three projects build again, `0 Error(s)` — step 4's `CS0246` is gone
+now that the namespace it named exists.
 
 ## Step 6: Run It
 
