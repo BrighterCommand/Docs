@@ -7,6 +7,11 @@ env/
 __pycache__/
 *.py[cod]
 
+# spec/012's probes are a real .NET project, so this repository now has build
+# output in it. The project is kept and re-runnable; its bin/ and obj/ are not.
+bin/
+obj/
+
 # Session resume state — local Claude Code working notes
 PROMPT.md
 
