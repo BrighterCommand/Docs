@@ -1,7 +1,14 @@
 # Spec 012: Configuration Reference Tables
 
 **Created:** 2026-08-03
-**Status:** Requirements Phase
+**Status:** Requirements Phase — `requirements.md` written 2026-08-27, awaiting review
+
+> **This README is stamped 2026-08-03 and `requirements.md` supersedes it on every point
+> of fact.** It was written against a tree Spec 010 has since changed and a scope list
+> the source no longer matches — the transport list names six of the ten that ship at
+> `10.7.0`, and its *Default extraction* bullet describes one of the three shapes
+> defaults actually come in. §3.6 of `requirements.md` tabulates the disagreements; the
+> *rationale* below is unaffected and still stands.
 
 ## Topic Overview
 
@@ -93,19 +100,23 @@ same spirit as `tools/linkcheck.py`.
 This makes the tables self-policing: the day someone changes `BufferSize`'s default in
 Brighter, our build tells us the docs are wrong rather than a user discovering it.
 
-Implementation questions for the requirements phase:
+Implementation questions for the requirements phase — **answered 2026-08-27; full
+reasoning in `requirements.md` §5. Do not re-raise them:**
 
-- **Language.** Reflection over .NET assemblies is natural in C#, but the repo's
-  existing tooling is Python (`linkcheck.py`) and this repo has no .NET build. Options:
-  a small C# tool run via `dotnet run`, or Python parsing the source with a C# grammar
-  (more fragile). Leaning C#.
-- **Default extraction.** Defaults set in property initialisers are readable by
-  reflection on an instantiated options object; defaults set in constructors or applied
-  later in a builder are harder. Scope the checker to what it can determine reliably,
-  and mark the rest as manually verified rather than silently missing them.
-- **Assembly source.** Reference the sibling `../Brighter` checkout, or restore
-  published NuGet packages for a pinned version? The latter is more reproducible and
-  matches what users actually consume.
+- ~~**Language.**~~ **C#**, run via `dotnet run`. Reflection over .NET assemblies is
+  native there, and the Python alternative would have to *evaluate* default expressions
+  such as `TimeSpan.FromMilliseconds(500)` that reflection simply reads.
+- ~~**Assembly source.**~~ **Restored NuGet packages, pinned.** It is what readers
+  consume, and — the load-bearing reason — **it runs in CI**, which a sibling checkout
+  cannot. Measured on the day of the decision: `../Brighter` is on another agent's
+  branch, **173 commits past `10.7.0`**, so it is not a reproducible authority either.
+- **Default extraction** — the bullet below was **half right, and the wrong half is
+  load-bearing.** Property initialisers are indeed readable from an instantiated object.
+  But there are **three** shapes, not two, and the third is a trap: 60% of Brighter's
+  defaulted constructor parameters default to `null` in the signature and get their real
+  value from a `??` in the constructor body. A checker reading the signature documents
+  those as `null` — **wrong, not merely missing**, which is the one failure this whole
+  drift strategy exists to prevent. See `requirements.md` §5.1.
 
 ## Risks
 
@@ -117,7 +128,7 @@ Implementation questions for the requirements phase:
 
 ## Status Checklist
 
-- [ ] Requirements gathered
+- [x] Requirements gathered — `requirements.md`, 2026-08-27
 - [ ] Requirements reviewed and approved
 - [ ] Documentation outline created
 - [ ] Outline reviewed and approved
@@ -133,10 +144,19 @@ Spec numbers are identifiers, not a sequence. Programme order is
 
 ## Next Steps
 
-1. Agree the table format and required columns
-2. Choose the checker's implementation language and assembly source
-3. Prioritise surfaces (transports first — highest traffic)
-4. Create requirements document
+~~1. Agree the table format and required columns~~ — **proposed** in `requirements.md`
+§7.1; agreed at review, not here.
+~~2. Choose the checker's implementation language and assembly source~~ — **answered**,
+see above.
+~~4. Create requirements document~~ — **done 2026-08-27.**
+
+What is actually next:
+
+1. **Review `requirements.md`** (`/spec:review`). Three questions in its §13 need a
+   maintainer, and the first changes the size of the spec: **five shipping transports
+   have no configuration page** — GCP Pub/Sub and RocketMQ with zero corpus presence,
+   MQTT, Redis and MSSQL asserted in comparison tables with no page behind them.
+2. Then the design phase, prioritising surfaces (core and transports first).
 
 ## Notes
 
