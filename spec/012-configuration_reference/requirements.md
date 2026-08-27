@@ -1,7 +1,8 @@
 # Requirements: Spec 012 — Configuration Reference Tables
 
 **Created:** 2026-08-27
-**Status:** Requirements Phase — awaiting review
+**Status:** Requirements Phase — §13's three questions answered by the maintainer
+2026-08-27 and applied throughout; awaiting approval
 **Supersedes on every point of fact:** `spec/012-configuration_reference/README.md`,
 written 2026-08-03 against a tree Spec 010 has since changed and a scope list the
 source no longer matches. §3 records where the two disagree.
@@ -211,8 +212,8 @@ When 012 closes:
 2. **`tools/optioncheck`** runs in CI and exits non-zero when a table and the assembly
    disagree — an option documented but gone, present but undocumented, or a default
    that differs.
-3. **The five undocumented transports are either documented or explicitly declared out
-   of scope in writing**, so the gap is a decision rather than an oversight.
+3. **All ten shipping transports have a configuration page**, the five of §3.3 included.
+   Decided at review 2026-08-27 — §13.1.
 4. **The stale cross-cutting tables of §3.4 are corrected**, and brought under the
    checker where their content allows.
 5. No option table restates *why* an option exists. That is explanation, and Spec 011's
@@ -317,6 +318,9 @@ So the three shapes are:
   a real finding, exit 2 when the authority is unreachable — which is not a pass** —
   and it **prints its scope before its verdict**, because `0 mismatches` of 0 tables
   and of 619 options must not print the same line.
+- **It gates the build.** Decided at review 2026-08-27 (§13.3): exit 1 fails CI, the
+  same as every other gate in this repository. §13.3 records why the objection that
+  prompted the question does not apply.
 
 **Still open, and it is a scoping question rather than a blocker:** which defaults the
 checker declares itself unable to determine. Defaults applied later by a builder, or
@@ -377,13 +381,54 @@ Rules, each of which the checker can enforce or deliberately cannot:
    additive work (§3.2).
 4. **The five documented transports** — RabbitMQ, Kafka, AWS SNS/SQS, Azure Service
    Bus, PostgreSQL. Subscription, publication and connection tables per transport.
-5. **A written decision on the five undocumented transports** (§3.3). A one-line entry
-   in this spec's tasks either commissions a page or records why not.
+5. **The five undocumented transports** (§3.3) — GCP Pub/Sub, RocketMQ, MQTT, Redis and
+   MSSQL. **A page each, with tables.** Decided at review 2026-08-27; see §7.2.1 for
+   what that costs.
+
+#### 7.2.1 What commissioning the five costs, measured
+
+**It does not add a single option.** `survey.py` walks all of `src/`, so those types
+were inside the 619 from the first run — what the decision changes is the number of
+*pages*, not the size of the surface. The five carry **151 of the 619 options, 24%**,
+and the largest of them is larger than any transport now documented:
+
+| Transport | Surfaces | Options |
+|---|---|---|
+| GCP Pub/Sub | `GcpPubSubSubscription` (33 ctor params), `GcpMessagingGatewayConnection` (7), `GcpPublication` (3) | **43** |
+| Redis | `RedisSubscription` (19), `RedisMessagingGatewayConfiguration` (14) | **33** |
+| RocketMQ | `RocketMqSubscription` (22), `RocketMessagingGatewayConnection` (4), `RocketMqPublication` (3) | **29** |
+| MQTT | `MqttSubscription` (19), `MQTTMessagingGatewayConfiguration` (8) | **27** |
+| MSSQL | `MsSqlSubscription` (19) | **19** |
+| **Total** | | **151** |
+
+`GcpPubSubSubscription`'s 33 constructor parameters make it the **widest subscription
+in the codebase** — wider than `KafkaSubscription`'s 30 — with 30 defaulted and **19 of
+those defaulting to `null`**, which is §5.1's third shape at its worst. The transport
+with no corpus presence at all is the one whose table the checker is most needed for.
+
+**Five new pages is five banners, five opening sentences, five `SUMMARY.md` entries and
+five orphan-check passes**, and each page needs prose around its tables — a bare table
+under an H1 is not a page. §10 is revised accordingly. **What none of them needs is a
+tutorial or a running broker**: these are `Reference` pages describing an options
+surface, and §8's exclusion of explanatory content applies to them as it does to the
+five that already exist.
 
 ### 7.3 P1 — should have
 
 6. **Outboxes and inboxes** — the eight outbox stores and six inbox stores that have
-   pages, plus a decision on Firestore and Spanner.
+   pages, **plus new pages for Firestore and Spanner**, decided at review 2026-08-27
+   under the same rule as the transports (§13.2). **The two are not the same job**, and
+   the difference was measured rather than assumed:
+   - **Firestore has a configuration type** — `FirestoreConfiguration`, 7 settable
+     properties — so its page has a table of its own.
+   - **Spanner has none.** At `10.7.0` it ships an outbox, an inbox, provisioning and a
+     connection provider, and **no `*Configuration` type anywhere in
+     `src/Paramore.Brighter*.Spanner*`**: `SpannerOutbox` takes
+     `IAmARelationalDatabaseConfiguration` (`SpannerOutbox.cs:32`), the shared relational
+     config. So Spanner's page **links** the relational options table rather than
+     restating it, and carries what is genuinely Spanner-specific — provisioning and
+     the connection provider. **Do not write it a table it does not have**; a duplicated
+     table is the drift this spec exists to stop, authored on purpose.
 7. **Distributed locks** — 7 of 7 have pages and five already have tables; this is
    normalisation to the §7.1 format rather than new work.
 8. **Schedulers** — 6 providers plus custom.
@@ -418,9 +463,12 @@ Rules, each of which the checker can enforce or deliberately cannot:
   `Outbox.DynamoDB.V4`, `Locking.DynamoDB.V4` and `Transformers.AWS.V4` mirror their
   siblings for a different AWS SDK major. One table per surface, with the difference
   noted in prose where one exists.
-- **Writing the five missing transport pages** *as part of this spec*, unless §7.2 item
-  5 decides otherwise at review. Tables for pages that do not exist is a different
-  spec's work — most likely 013's.
+> **This list is one shorter than the draft reviewed on 2026-08-27.** It carried
+> *"writing the five missing transport pages, unless §7.2 item 5 decides otherwise at
+> review"*. **Review decided otherwise** (§13.1), so the five are now P0 work in §7.2
+> and Firestore and Spanner are P1 work in §7.3. The bullet is recorded here rather
+> than deleted, because an out-of-scope list that silently loses an entry is how a
+> scope decision becomes invisible.
 
 ---
 
@@ -439,26 +487,54 @@ Rules, each of which the checker can enforce or deliberately cannot:
 | D9 | Scheduler pages (edit) | P1 |
 | D10 | `contents/ReactorAndProactor.md`, `contents/HandlerFailure.md` (edit) | The §3.4 corrections |
 | D11 | `spec/012-configuration_reference/survey.py` | **Already built.** The source survey behind §2 and §3 |
+| D12 | Five **new** transport pages | GCP Pub/Sub, RocketMQ, MQTT, Redis, MSSQL. P0 per §7.2 item 5; 151 options between them, sized in §7.2.1 |
+| D13 | Two **new** outbox pages | Firestore (own config type) and Spanner (**no config type** — links the relational table). P1 per §7.3 item 6 |
+| D14 | `SUMMARY.md` (edit) | Seven entries, which D12 and D13 make unavoidable. §10 |
 
 **D11 exists as of this document.** It is a *source* survey, not the checker, and says
 so in its own docstring — it sizes the work and records the two shapes. D1 is the tool
 that gates CI.
 
+**D12–D14 are the review of 2026-08-27**, and they are the only deliverables here that
+create pages rather than edit them. **Do not read the D-count as the task count**: D12
+is five pages and D13 is two, so fourteen rows describe twenty-one artefacts. 009's
+PROMPT block on deliverable counts is the precedent — *the row count is the authority
+for rows, and it is not a count of anything else.*
+
 ---
 
 ## 10. `SUMMARY.md` changes
 
-**Most of 012 adds no page and therefore no entry.** The tables land on pages that are
-already in the tree, which is what makes this spec cheaper than its 619 rows suggest.
+**Revised at review 2026-08-27.** The draft of this section said *"most of 012 adds no
+page and therefore no entry"* and made entries conditional on §7.2 item 5. **Item 5
+commissioned the pages**, so seven entries are now certain:
 
-Entries are needed only if §7.2 item 5 commissions transport pages, or if P2 item 12's
-index page is built. Both would join existing sections — *Transports* and *Brighter
-Configuration* respectively — and neither moves a URL, since slugs are filename-derived
-and re-ordering inside a section moves nothing. §2.1 of 009's tasks has now held on that
-point five times.
+| Entry | Section | From |
+|---|---|---|
+| GCP Pub/Sub Configuration | *Transports* | D12 |
+| RocketMQ Configuration | *Transports* | D12 |
+| MQTT Configuration | *Transports* | D12 |
+| Redis Configuration | *Transports* | D12 |
+| MSSQL Message Broker | *Transports* | D12 |
+| Firestore Outbox | *Outbox* | D13 |
+| Spanner Outbox | *Outbox* | D13 |
 
-If pages are added, `linkcheck.py`'s orphan check is what enforces the entry, and it
-runs on every PR.
+An eighth joins *Brighter Configuration* if P2 item 12's index page is built.
+
+**The rest of the spec still adds no entry**, and that remains what makes 619 rows
+affordable: the tables land on pages already in the tree.
+
+**No entry moves a URL.** Slugs are filename-derived, so re-ordering inside a section
+moves nothing — §2.1 of 009's tasks has held on that point five times, and adding to a
+section is the same operation.
+
+**`linkcheck.py`'s orphan check is what enforces the entry**, and it runs on every PR.
+Seven new pages is seven chances to forget, which is precisely the case the check
+exists for.
+
+> **The title in `SUMMARY.md` is what reaches `/llms.txt`, not the H1**, and the two
+> disagree on 32 pages today. Choose the seven entry texts deliberately: they are the
+> titles a retrieval client sees. `CLAUDE.md`'s *llms.txt* section is the authority.
 
 ---
 
@@ -498,7 +574,8 @@ runs on every PR.
 | AC3b | It reports a body-coalesced default as its real value, never as `null` | A red-proof on `EmptyChannelDelay`, whose signature says `null` and whose value is 500 ms (§5.1) |
 | AC4 | `optioncheck` runs in CI, unguarded, on PR and on a schedule | `.github/workflows/docs.yml`, and a green run naming the job |
 | AC5 | Exit 2 (authority unreachable) is distinguishable from exit 0 | Red-proof with the package source removed |
-| AC6 | The five undocumented transports have a written decision | A section in `tasks.md`, not an absence |
+| AC6 | All ten shipping transports have a configuration page, and each of the five new ones carries its tables | Walked page by page; `linkcheck.py` reports no orphan and `pagelint.py` no error on any of the five |
+| AC6b | Firestore has an outbox page with a table; Spanner has one **without** | Spanner's links the relational options table rather than restating it (§7.3 item 6) |
 | AC7 | The §3.4 stale tables match the shipped transport set | Diffed against `survey.py` output at the release ref |
 | AC8 | No table restates rationale | Review; there is no tool for this and §12's note says so |
 | AC9 | The six existing gates stay green | The six commands in PROMPT's *state* block |
@@ -513,19 +590,55 @@ walked early rather than at the acceptance pass.
 
 ---
 
-## 13. Open questions for the maintainer
+## 13. Questions for the maintainer — ALL THREE ANSWERED 2026-08-27
 
-1. **The five undocumented transports (§3.3) — document, or declare unsupported?** GCP
-   Pub/Sub and RocketMQ have zero corpus presence; MQTT, Redis and MSSQL are asserted in
-   comparison tables with no page behind them. The middle three are the awkward case:
-   the docs already make claims about them. **This shapes §7.2 item 5 and is the one
-   question that changes the size of the spec.**
-2. **Firestore and Spanner outboxes (§3.5)** — same question, smaller. Both are named in
-   `BoxProvisioning*.md`, so a reader can provision a store they cannot configure.
-3. **Does the checker gate the build, or report?** `versioncheck.py` gates, and its
-   failure is the signal. `optioncheck` failing on the day Brighter ships a new default
-   would redden every PR until someone bumps the pin — which is the intended behaviour
-   for `versioncheck.py` and may be too aggressive at 619 rows.
+**Answered, applied throughout, and kept rather than deleted**, because each answer
+changed a section and a reader of that section deserves to find the ruling behind it.
+The questions are struck; the answers are not.
+
+### 13.1 ~~The five undocumented transports — document, or declare unsupported?~~
+
+**Answered: document all five.** GCP Pub/Sub, RocketMQ, MQTT, Redis and MSSQL each get
+a configuration page in 012. This was the option that grows the spec most, and it was
+taken over the two cheaper ones — correcting only the comparison tables, or covering
+only the three transports the corpus already makes claims about.
+
+**It is the largest of the three questions and it is the one that changes the size of
+the spec**, as the draft predicted. What the draft did not know, and §7.2.1 now
+measures, is the shape of the cost: **the option count does not move at all** — those
+types were always inside the 619 — while the page count goes up by five, and one of
+those five (`GcpPubSubSubscription`, 33 constructor parameters) is the widest
+subscription Brighter ships.
+
+The reading that supports it: *declare unsupported* was never really available. All ten
+transports ship, and `ReactorAndProactor.md` already tells a reader that Redis supports
+both APIs natively. A documentation set cannot un-assert that by omission — it can only
+leave the reader at the dead end §3.3 describes.
+
+### 13.2 ~~Firestore and Spanner outboxes — same question, smaller?~~
+
+**Answered: same rule as the transports — both get pages.** §7.3 item 6 carries it, and
+records the one way the two differ, which was measured rather than assumed: **Firestore
+has a `FirestoreConfiguration` and Spanner has no configuration type at all.** Spanner's
+page therefore links the shared relational options table instead of restating it.
+
+### 13.3 ~~Does the checker gate the build, or report?~~
+
+**Answered: it gates**, exit 1 failing CI like every other gate here. §5.2 carries it.
+
+**The objection in the original question does not apply, and the reason is worth
+keeping.** The draft worried that *"`optioncheck` failing on the day Brighter ships a
+new default would redden every PR until someone bumps the pin"*. It cannot: §5 pins the
+package, so the checker reflects over `10.7.0` until a human changes that pin. **Brighter
+shipping 10.8.0 does not move it.** The red arrives at the pin bump — a deliberate
+`RELEASE_CHECKLIST.md` step (D3), performed by someone who is at that moment looking for
+exactly this information.
+
+**This is the opposite of `versioncheck.py`, and the two should not be reasoned about
+together.** `versioncheck.py` resolves the *latest* version from NuGet, so it is
+designed to go red on its own when Brighter ships — that failure is its signal.
+`optioncheck` resolves a *pinned* version, so it never goes red on its own. Same family
+contract, opposite trigger.
 
 **Not open, and recorded so it is not re-raised:** the checker's language and assembly
 source. Answered 2026-08-27 — **C#, restored NuGet packages, pinned** — with the
@@ -541,6 +654,12 @@ reasoning in §5.
 - **The volume parallelises well and the review does not.** Each surface is independent,
   so tasks fan out cleanly; 619 rows of review load is the real constraint, and it is an
   argument for the checker landing before the bulk of the tables rather than after.
+- **The 2026-08-27 review grew the spec by seven pages and by zero options.** Worth
+  stating in those terms, because the two costs are unrelated and the second is the one
+  a reader would expect to move. The added load is authoring — banners, opening
+  sentences, `SUMMARY.md` entries, prose around the tables — not surveying. **Design
+  should sequence the five transport pages after the checker exists**, so their tables
+  are the first written under a gate rather than the last brought under one.
 - **This spec's own numbers are stamped `10.7.0`.** When Brighter ships 10.8.0 they are
   claims about a previous release. Re-run `survey.py --ref 10.8.0` rather than reasoning
   from the table in §2 — *a total needs a ref, not just a derivation*, and this document
