@@ -55,7 +55,25 @@ LINK_RE = re.compile(r"^(\s*)\*\s*\[(.+?)\]\((/contents/[^)]+)\)")
 # a section may hold any number of pages so long as its top level stays readable,
 # which is how Outbox and Inbox carries 39 pages behind 9 entries.
 MIN_PAGES_PER_SECTION = 2      # S1
-MAX_TOP_LEVEL_ENTRIES = 12     # S2
+MAX_TOP_LEVEL_ENTRIES = 20     # S2 — RAISED from 12 on 2026-08-27, spec 012 design.
+# S2 is the SECOND rule in this programme to move, and it moved for the same reason S3
+# did.  Its stated rationale was "this is the number the navigation shows" (010 design
+# §4) -- a claim about GitBook, made in the one place the number appears, with nothing
+# behind it.  The measured table four lines below that sentence says our widest section
+# was **10**, so 12 was our own data plus two, wearing a platform fact's clothes.
+#
+# Measured 2026-08-27, the way S3 was: GitBook's own documentation is 182 pages in 13
+# sections and its widest section shows **10** top-level entries -- create-content
+# carries 55 pages behind those 10.  So nothing anywhere establishes a platform limit
+# at 12, at 20, or at any number; what the external corpus shows is an *editorial*
+# habit of nesting, which is what the failure message recommends and what S2 exists to
+# prompt.  The threshold is therefore an editorial budget and is documented as one.
+#
+# Raised because ten shipping transports are PEERS, not a hierarchy: a reader picks one
+# and never reads the others, so a family parent page would add a click to every visit.
+# The alternative -- nesting them -- costs a published URL per page (nesting adds a path
+# segment), so it is cheap for a family that does not exist yet and expensive for one
+# that does.  See CLAUDE.md § The two kinds of nesting.
 MAX_URL_SEGMENTS = 4           # S3 — MEASURED 2026-08-08, design §17, not assumed.
 # S3 was 3 until it was measured, on a rationale that was the absence of evidence:
 # "three is the deepest the live site is known to work at".  That is a fact about our
@@ -221,7 +239,9 @@ def cmd_check_shape():
         if len(entries) > MAX_TOP_LEVEL_ENTRIES:
             failures.append(
                 f"S2: section {section!r} shows {len(entries)} top-level entries, "
-                f"maximum {MAX_TOP_LEVEL_ENTRIES} — nest some under a parent page")
+                f"maximum {MAX_TOP_LEVEL_ENTRIES} — nest the peers under a family "
+                f"parent page (this MOVES their URLs; see CLAUDE.md § The two kinds "
+                f"of nesting)")
 
     for path in sorted(paths):
         segments = path.count("/") + 1

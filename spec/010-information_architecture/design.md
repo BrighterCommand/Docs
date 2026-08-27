@@ -15,7 +15,7 @@ predicted**:
 | Decision | Answer | Derived how |
 |---|---|---|
 | The target tree (Q2) | **12 sections**, down from 19 | §3, and every one of the 110 pages is placed |
-| Section-size threshold (Q8) | **≤ 12 top-level entries per section, ≥ 2 pages, ≤ 3 URL segments** | §4 |
+| Section-size threshold (Q8) | **≤ ~~12~~ 20 top-level entries per section, ≥ 2 pages, ≤ ~~3~~ 4 URL segments** | §4 — both ceilings amended after measurement; see the S2 and S3 rows |
 | URL churn (Q3) | **74 of 110 URLs move; 36 do not** | measured, §5 |
 | Pages the 26 splits create | **32**, taking the corpus 110 → **142** | §7, row by row |
 | Anchor links to repoint | **34 inbound anchor links on 7 of the 26 pages**; 19 pages have none | measured, §8 |
@@ -187,7 +187,7 @@ mechanical rules over `SUMMARY.md`:
 | # | Rule | Rationale |
 |---|---|---|
 | **S1** | Every section holds **at least 2 pages** | A section of one is not a category. Six exist today |
-| **S2** | Every section holds **at most 12 top-level entries** | This is the number the navigation shows. Nesting is the escape hatch, and §3.1 of the requirements is why: a middle layer needs a real page to hang it from |
+| **S2** | Every section holds **at most ~~12~~ 20 top-level entries** | ~~This is the number the navigation shows.~~ **Amended 2026-08-27 — spec 012 design §9.2.** That rationale was a claim about GitBook with nothing behind it, and the measured table below says our widest section was **10**, so 12 was our own data plus two. GitBook's own 182-page docs also top out at **10**, by nesting — so no platform limit is established at any number and S2 is an **editorial budget**. Nesting is still the escape hatch, and §3.1 of the requirements is why: a middle layer needs a real page to hang it from |
 | **S3** | No published path exceeds **4 segments** | **Amended 2026-08-08 — see §17.** Four was measured on the live site, not assumed. It was 3, on the grounds that three is the deepest the site was *known* to work at; that was an evidence boundary rather than a platform limit, and it was distorting two placements |
 
 **S2 counts entries, not pages, and that is the whole point.** *Outbox and Inbox* holds
@@ -212,7 +212,8 @@ Measured against the tree in §3.1:
 | Understanding Brighter | 12 | 10 |
 | Reference | 2 | 2 |
 
-S1 ✅ (minimum 2) · S2 ✅ (maximum 10) · S3 ✅ (maximum 3). After all 32 split pages land
+S1 ✅ (minimum 2) · S2 ✅ (maximum 10 — **and that 10 is where S2's 12 came from**, see the
+row above) · S3 ✅ (maximum 3). After all 32 split pages land
 the worst case is *Understanding Brighter* at **10** entries and *Outbox and Inbox* at 39
 pages / **9** — still inside S2 with two entries of headroom, and the deepest path is
 **4 segments**, reached by exactly two pages. Those figures are pinned per split in
