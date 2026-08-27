@@ -1,8 +1,9 @@
 # Requirements: Spec 012 — Configuration Reference Tables
 
 **Created:** 2026-08-27
-**Status:** Requirements Phase — §13's three questions answered by the maintainer
-2026-08-27 and applied throughout; awaiting approval
+**Status:** Approved 2026-08-27 (reviewed; §13's three questions answered by the
+maintainer and applied throughout — the first commissions five transport pages and
+grew the spec)
 **Supersedes on every point of fact:** `spec/012-configuration_reference/README.md`,
 written 2026-08-03 against a tree Spec 010 has since changed and a scope list the
 source no longer matches. §3 records where the two disagree.
