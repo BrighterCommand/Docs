@@ -1,7 +1,10 @@
 # Spec 012: Configuration Reference Tables
 
 **Created:** 2026-08-03
-**Status:** Requirements Phase — `requirements.md` written 2026-08-27, awaiting review
+**Status:** **Design APPROVED 2026-08-27; the next phase is TASKS.** `requirements.md`
+approved 2026-08-27 and merged as `9df5e89`; `design.md` approved the same day, its four
+review questions answered — which added **D15** and **D16** and struck AC4's schedule
+clause. Three more pages, zero more options.
 
 > **This README is stamped 2026-08-03 and `requirements.md` supersedes it on every point
 > of fact.** It was written against a tree Spec 010 has since changed and a scope list
@@ -129,9 +132,9 @@ reasoning in `requirements.md` §5. Do not re-raise them:**
 ## Status Checklist
 
 - [x] Requirements gathered — `requirements.md`, 2026-08-27
-- [ ] Requirements reviewed and approved
-- [ ] Documentation outline created
-- [ ] Outline reviewed and approved
+- [x] Requirements reviewed and approved — 2026-08-27, merged as `9df5e89`
+- [x] Documentation outline created — `design.md`, 2026-08-27
+- [x] Outline reviewed and approved — 2026-08-27, four questions answered
 - [ ] Writing tasks identified
 - [ ] Writing complete
 - [ ] Documentation reviewed
@@ -162,4 +165,3 @@ What is actually next:
 
 - Verify every default against source. A wrong default in a reference table is worse
   than an absent one.
-</content>

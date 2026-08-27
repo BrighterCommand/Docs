@@ -3,7 +3,10 @@
 **Created:** 2026-08-27
 **Status:** Approved 2026-08-27 (reviewed; §13's three questions answered by the
 maintainer and applied throughout — the first commissions five transport pages and
-grew the spec)
+grew the spec). **Amended 2026-08-27 at design review**, which struck AC4's schedule
+clause and added **D15** and **D16** — three pages, ten `SUMMARY.md` entries, and zero
+additional options. Every amendment is marked in place; `design.md` §13 carries the
+rulings.
 **Supersedes on every point of fact:** `spec/012-configuration_reference/README.md`,
 written 2026-08-03 against a tree Spec 010 has since changed and a scope list the
 source no longer matches. §3 records where the two disagree.
@@ -430,6 +433,12 @@ five that already exist.
      restating it, and carries what is genuinely Spanner-specific — provisioning and
      the connection provider. **Do not write it a table it does not have**; a duplicated
      table is the drift this spec exists to stop, authored on purpose.
+
+   > **The same rule reaches two more pages, ruled at design review 2026-08-27.** The
+   > inbox family ships **eight** stores at `10.7.0` and has seven pages: **Firestore and
+   > Spanner inboxes have none either.** This section is right about the outbox family and
+   > was silent about the inbox one, and §3.6 records the README's six-store inbox list as
+   > *"Holds"* — against six stores it did. **D16** closes it, on this item's own rule.
 7. **Distributed locks** — 7 of 7 have pages and five already have tables; this is
    normalisation to the §7.1 format rather than new work.
 8. **Schedulers** — 6 providers plus custom.
@@ -490,7 +499,9 @@ five that already exist.
 | D11 | `spec/012-configuration_reference/survey.py` | **Already built.** The source survey behind §2 and §3 |
 | D12 | Five **new** transport pages | GCP Pub/Sub, RocketMQ, MQTT, Redis, MSSQL. P0 per §7.2 item 5; 151 options between them, sized in §7.2.1 |
 | D13 | Two **new** outbox pages | Firestore (own config type) and Spanner (**no config type** — links the relational table). P1 per §7.3 item 6 |
-| D14 | `SUMMARY.md` (edit) | Seven entries, which D12 and D13 make unavoidable. §10 |
+| D14 | `SUMMARY.md` (edit) | ~~Seven~~ **ten** entries — D12, D13, and D15/D16 below. §10 |
+| D15 | `contents/RelationalDatabaseConfigurationReference.md` | **Added at design review 2026-08-27.** The 8 relational options, documented once instead of thirteen times: **seventeen components across four families** take `RelationalDatabaseConfiguration`, including the MSSQL *and* PostgreSQL transports. `design.md` §8.4 |
+| D16 | Two **new** inbox pages | **Added at design review 2026-08-27.** Firestore and Spanner inboxes ship at `10.7.0` and have no page — the same gap §13.2 closed on the outbox side. Neither introduces a configuration type, so it is two pages and **zero options**. `design.md` §12.6 |
 
 **D11 exists as of this document.** It is a *source* survey, not the checker, and says
 so in its own docstring — it sizes the work and records the two shapes. D1 is the tool
@@ -519,8 +530,19 @@ commissioned the pages**, so seven entries are now certain:
 | MSSQL Message Broker | *Transports* | D12 |
 | Firestore Outbox | *Outbox* | D13 |
 | Spanner Outbox | *Outbox* | D13 |
+| **Relational Database Configuration Reference** | *Brighter Configuration* | **D15** |
+| **Firestore Inbox** | *Inbox* | **D16** |
+| **Spanner Inbox** | *Inbox* | **D16** |
 
-An eighth joins *Brighter Configuration* if P2 item 12's index page is built.
+**Three more were added at design review 2026-08-27**, taking it to ten. An eleventh joins
+*Brighter Configuration* if P2 item 12's index page is built — **and it cannot join
+*Transports***, which the five transport entries take to exactly twelve top-level entries,
+S2's ceiling. Measured in `design.md` §9.2 before the diff was written.
+
+**Five of the ten are nested and five are top-level**, which is what keeps the ceiling
+above from getting worse: the four store pages nest under *Outbox Support* and *Inbox
+Support*, and D15 nests under *Basic Configuration* beside the two Reference pages it
+joins.
 
 **The rest of the spec still adds no entry**, and that remains what makes 619 rows
 affordable: the tables land on pages already in the tree.
@@ -573,13 +595,23 @@ exists for.
 | AC2 | Every documented default matches the assembly | `optioncheck` exit 0 |
 | AC3 | `optioncheck` reads constructor parameters as well as properties | A red-proof that a changed ctor default is caught — **not** merely that the tool runs |
 | AC3b | It reports a body-coalesced default as its real value, never as `null` | A red-proof on `EmptyChannelDelay`, whose signature says `null` and whose value is 500 ms (§5.1) |
-| AC4 | `optioncheck` runs in CI, unguarded, on PR and on a schedule | `.github/workflows/docs.yml`, and a green run naming the job |
+| AC4 | `optioncheck` runs in CI, unguarded, on push and PR ~~and on a schedule~~ | `.github/workflows/docs.yml`, and a green run naming the job |
 | AC5 | Exit 2 (authority unreachable) is distinguishable from exit 0 | Red-proof with the package source removed |
 | AC6 | All ten shipping transports have a configuration page, and each of the five new ones carries its tables | Walked page by page; `linkcheck.py` reports no orphan and `pagelint.py` no error on any of the five |
 | AC6b | Firestore has an outbox page with a table; Spanner has one **without** | Spanner's links the relational options table rather than restating it (§7.3 item 6) |
 | AC7 | The §3.4 stale tables match the shipped transport set | Diffed against `survey.py` output at the release ref |
 | AC8 | No table restates rationale | Review; there is no tool for this and §12's note says so |
 | AC9 | The six existing gates stay green | The six commands in PROMPT's *state* block |
+
+> **AC4's schedule clause was struck at design review, 2026-08-27**, and is struck rather
+> than deleted so a reader finds the ruling instead of an absence. The reason is §13.3
+> above, one section down: `optioncheck` reflects over a **pinned** package, so a
+> scheduled run cannot change its answer without a commit here — it can only repeat the
+> last PR verdict, or exit **2** because NuGet was briefly unreachable. That is the
+> failure mode `urlmap.py --verify` is deliberately kept out of CI for.
+> **This document asked for the schedule two sections after explaining why the pin makes
+> one pointless**, which is the tell nobody looked for at requirements review. Full
+> reasoning in `design.md` §6.5 and §13.2.
 
 **AC3 and AC8 are the two worth naming here.** AC3 is the criterion §2 exists to
 create — a checker that passes while blind to 43% of the surface is the vacuous green
