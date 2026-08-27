@@ -54,8 +54,9 @@ requirements state correctly, and two find work the requirements do not list:
   (§12.5). So **619 is a floor.**
 - **Only one of the corpus's 44 documented option rows is already in the §7.1 shape**,
   and two of the twelve tables are not option tables at all (§12.2).
-- **Adding the five transport pages takes *Transports* to exactly 12 top-level entries,
-  which is S2's ceiling** (§9.2).
+- **Adding the five transport pages took *Transports* to exactly 12 top-level entries,
+  which was S2's ceiling — so S2 was measured, and moved to 20** (§9.2). It is the second
+  rule in this programme to move, and for the same reason S3 did.
 - **MSSQL-as-a-transport is a second Spanner case** — it takes the shared relational
   configuration and has no connection type of its own (§8.3).
 - **The inbox family ships Firestore and Spanner stores with no page**, exactly mirroring
@@ -789,25 +790,51 @@ store, so they add nothing to that section's top-level count, and each sits imme
 before its family's InMemory entry — matching the order the two families already use.
 **D15 is nested** under *Basic Configuration*, like the two Reference pages it joins.
 
-### 9.2 The five transport entries take *Transports* to exactly S2's ceiling
-
-Measured before writing the diff rather than discovered at the gate:
+### 9.2 The five transport entries filled S2's old ceiling, so S2 was measured and moved
 
 | Section | Top-level entries now | After D12 |
 |---|---|---|
 | Transports | 7 | **12** |
 
-`urlmap.py --check-shape` fails at `len(entries) > 12` (`tools/urlmap.py:221`), so **12
-passes with zero headroom.** Three consequences, all belonging in the tasks phase rather
-than being rediscovered:
+`urlmap.py --check-shape` failed at `len(entries) > 12`, so D12 landed on the ceiling
+exactly, with **zero headroom** — the eleventh transport Brighter ships would have failed
+the build. Found before writing the diff rather than at the gate, which is what made it
+cheap to do the next part properly.
 
-1. **The P2 index page of requirements §7.4 item 12 cannot go in *Transports*.** It
-   belongs in *Brighter Configuration*, which has four entries.
-2. **The eleventh transport Brighter ships forces a nesting decision**, and there is no
-   *Transports* overview page to nest under. Recorded, not solved — 012 does not create
-   one.
-3. **`--check-shape` is what will say so**, on every PR, so the failure is loud rather
-   than silent. That is the good case.
+**S2's rationale did not survive being read.** The number appears exactly once as a value
+(`tools/urlmap.py:58`) and once as a justification — 010 design §4's *"This is the number
+the navigation shows"* — and that is a claim about GitBook with nothing behind it. **The
+measured table four lines below that sentence says our own widest section was 10.** So 12
+was our data plus two, wearing a platform fact's clothes: precisely the shape that made
+**S3 the first rule in this programme to move**, where *"three is the deepest the live site
+is known to work at"* turned out to be a fact about our `SUMMARY.md`.
+
+**So the evidence was fetched, the way S3's was.** GitBook's own documentation, counted
+from its raw `sitemap-pages.xml` rather than through a summarising fetch: **182 pages, 13
+sections, widest section 10 top-level entries** — and its largest section,
+*create-content*, holds **55 pages behind those 10**. Nothing there establishes a break at
+12, at 20, or at any number. What it establishes is an *editorial habit of nesting*, which
+is what S2's failure message recommends and what S2 exists to prompt.
+
+**S2 is therefore an editorial budget, is documented as one, and is raised to 20**
+(`tools/urlmap.py:58`, amended 2026-08-27; 010 design §4's row is struck in place, as S3's
+was). **Red-proved before being trusted**: 21 entries fires it, exit 1, with the probe
+asserting it had produced input over the threshold *before* reading the verdict — the
+first attempt was vacuous twice over, once because nine entries pointing at one file
+dedupe to one path, and once because Transports is 7 today rather than the 12 this section
+projects.
+
+**Why raised rather than re-parented.** Ten transports are **peers**: a reader picks one
+and never reads the other nine, so a family parent page would add a click to every visit to
+buy tidiness in a sidebar. And retrofitting one is not free — **nesting a page moves its
+published URL**, so re-parenting the five documented transports costs five redirects.
+`CLAUDE.md` § *The two kinds of nesting* records the general rule this produced: sub-topic
+nesting absorbs detail, family nesting absorbs peers, and only the second controls a
+section's width — which is why *Outbox and Inbox* carries 39 pages behind 9 entries.
+
+**What remains true after the raise:** the P2 index page of requirements §7.4 item 12
+still belongs in *Brighter Configuration* (four entries), which is where requirements §10
+already files it — the ceiling was never what decided that.
 
 No entry moves a URL: slugs are filename-derived, so ordering within a section moves
 nothing. That has held five times, and adding to a section is the same operation.

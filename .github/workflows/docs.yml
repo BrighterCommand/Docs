@@ -65,7 +65,7 @@ jobs:
       # to ignore red builds.
       #
       # --check-shape asserts design §4's S1/S2/S3 — at least 2 pages per section, at
-      # most 12 top-level entries, at most 4 URL segments — plus that no SUMMARY.md
+      # most 20 top-level entries, at most 4 URL segments — plus that no SUMMARY.md
       # heading carries leading whitespace. It was red on the 19-section tree this
       # spec replaced (6 singleton sections, 2 sections over 12 entries, and the
       # leading space at SUMMARY.md:154), which is how it proved it was not vacuous.

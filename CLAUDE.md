@@ -106,6 +106,56 @@ from any rule in the [ledger](#the-ledger); it records why these pages look diff
 
 **Orphaned Files:** Never create documentation files that aren't linked from SUMMARY.md
 
+### The two kinds of nesting
+
+`SUMMARY.md` nesting does two different jobs, and only one of them absorbs growth. The
+distinction matters because **nesting a page changes its published URL** — GitBook derives
+the path from the tree, so a page moved under a parent gains a segment and its old URL has
+to be redirected.
+
+**Sub-topic nesting** puts detail under the page it elaborates:
+
+```markdown
+* [RabbitMQ Configuration](/contents/RabbitMQConfiguration.md)
+  * [RabbitMQ Durability: Quorum Queues and Persistence](/contents/RabbitMQDurability.md)
+```
+
+It absorbs *detail*. It does nothing about the number of transports.
+
+**Family nesting** puts peers under an overview page for the family:
+
+```markdown
+* [Outbox Support](/contents/BrighterOutboxSupport.md)
+  * [MSSQL Outbox](/contents/MSSQLOutbox.md)
+  * [MySQL Outbox](/contents/MySQLOutbox.md)
+```
+
+It absorbs *peers*, and it is the only thing that does. It is why *Outbox and Inbox*
+carries **39 pages behind 9 top-level entries** while *Transports* carries 12 pages behind
+7 — the outbox family has three parent pages and the transports have none.
+
+**So, for a section that will keep growing:**
+
+1. **Create the family parent page before the family gets big.** Retrofitting one moves a
+   URL per page and needs a `.gitbook.yaml` redirect for each. Cheap at zero pages,
+   expensive at ten.
+2. **A parent must be a real page, not a stub.** A middle navigation layer needs something
+   to hang it from; a placeholder that says "choose a transport below" wastes a click on
+   every visit.
+3. **Do not nest peers a reader chooses between exactly once.** Someone picks one transport
+   and never reads the other nine. Nesting those behind a parent adds a click to every
+   visit to buy tidiness in a sidebar. That is why the ten transports stay flat and why
+   `MAX_TOP_LEVEL_ENTRIES` was raised rather than the family being re-parented.
+
+**`MAX_TOP_LEVEL_ENTRIES` (S2, `tools/urlmap.py`) is an editorial budget, not a platform
+limit, and nothing has ever established otherwise.** It was 12 on the stated grounds that
+*"this is the number the navigation shows"*; measured 2026-08-27, GitBook's own 182-page
+documentation has a widest section of **10**, and its 55-page *create-content* section
+holds those 55 behind 10 entries by nesting. There is no evidence of a break at any
+number — what the external corpus shows is the habit above, not a ceiling. Raise the
+budget when a flat list of peers is the right answer; reach for a family parent when the
+list is a dump nobody decided on.
+
 ## Page Conventions
 
 Every page under `contents/` follows the conventions below, and
