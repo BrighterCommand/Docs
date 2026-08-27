@@ -1,0 +1,120 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- net9.0, matching the runtime design §6.5 pins for the `options` CI job. -->
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Paramore.Docs.Probes</RootNamespace>
+    <AssemblyName>probes</AssemblyName>
+    <!-- Probe 1.3 loads every referenced package assembly by name. A package
+         whose types are never mentioned in source is otherwise trimmed out of
+         the output directory by the build, and the probe would then report a
+         load failure that is an artefact of the build rather than a conflict. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- The probes deliberately construct types with obsolete members and read
+         defaults off them; a warning is not a finding here. -->
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
+  </PropertyGroup>
+
+  <!-- THE PINNED SURFACE PACKAGE LIST.
+       10.7.0 throughout — the version every figure in this spec is stamped at
+       (tasks.md §2.6). Task 2.1 carries this list into `optioncheck.csproj`
+       verbatim rather than re-deriving it, so that the repository holds one
+       proven list instead of two that can differ silently.
+
+       NO `.V4` PACKAGES. Requirements §8 puts them out of scope as separate
+       surfaces, and they are exactly the pairs that would put two AWS SDK
+       majors in one process (design §6.4). -->
+  <ItemGroup Label="Core — design §7.1">
+    <PackageReference Include="Paramore.Brighter" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection" Version="10.7.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Transports — design §7.2">
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.RMQ.Async" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.RMQ.Sync" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.Kafka" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.AWSSQS" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.AzureServiceBus" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.Postgres" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.GcpPubSub" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.Redis" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.RocketMQ" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.MQTT" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.MsSql" Version="10.7.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Outbox, inbox and box provisioning — design §7.3">
+    <PackageReference Include="Paramore.Brighter.Outbox.DynamoDB" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MongoDb" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Firestore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MsSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MySql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.PostgreSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Spanner" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Sqlite" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Hosting" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.DynamoDB" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.MongoDb" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.Firestore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.MsSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.MySql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.Postgres" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.Spanner" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.Sqlite" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.MsSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.MySql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.PostgreSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.Spanner" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.Sqlite" Version="10.7.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Relational configuration hosts — design §7.3 and §12.4">
+    <PackageReference Include="Paramore.Brighter.MsSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MySql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.PostgreSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Spanner" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Sqlite" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MongoDb" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Firestore" Version="10.7.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Locks — design §7.4">
+    <PackageReference Include="Paramore.Brighter.Locking.DynamoDB" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Locking.Azure" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Locking.PostgresSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Locking.MongoDb" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Locking.Firestore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Locking.MsSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Locking.MySql" Version="10.7.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Schedulers — design §7.5">
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.AWS" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.Azure" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.Hangfire" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.Quartz" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.TickerQ" Version="10.7.0" />
+  </ItemGroup>
+
+  <!-- Design §7.6 files these under P2 and 012 does not schedule their pages
+       (bar `AsyncAPISupport.md`, which task 8.4 owns). They are here because
+       §6.3's synthesis table counts their types — `AWSS3Connection` and
+       `S3LuggageOptions` are two of its four "objects the tool must build" —
+       so probe 1.4 cannot reproduce that table without them. They also carry
+       three more third-party SDKs into the process, which is what probe 1.3
+       is looking for. -->
+  <ItemGroup Label="Luggage, archive and AsyncAPI — design §7.6">
+    <PackageReference Include="Paramore.Brighter.Transformers.AWS" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Transformers.Azure" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Transformers.Gcp" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Transformers.MongoGridFS" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Archive.Azure" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.AsyncAPI" Version="10.7.0" />
+  </ItemGroup>
+
+</Project>

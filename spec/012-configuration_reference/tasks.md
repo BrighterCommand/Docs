@@ -294,7 +294,7 @@ twelve tables.
 *correct* design §7's counts in place — the floors are marked `†` there and §12.5 explains
 them; what this phase produces is a fixed tool and a fresh run, recorded here.
 
-- [ ] **Task 1.1:** Write this task list and take it through review
+- [x] **Task 1.1:** Write this task list and take it through review
   - Input: `design.md` (§7 the mapping, §14 the phases, §12 the errata), `requirements.md`
     (§9 deliverables, §12 acceptance criteria), `spec/009-getting_started_tutorials/tasks.md`
     §1 as the structural model
@@ -302,7 +302,7 @@ them; what this phase produces is a fixed tool and a fresh run, recorded here.
   - Notes: `spec/.current-spec` already reads `012-configuration_reference` and both approval
     markers exist, so no repointing is needed — unlike 009, where it was part of Task 1.1
 
-- [ ] **Task 1.2:** Probe the body-coalesced default — instantiate `Subscription`, read
+- [x] **Task 1.2:** Probe the body-coalesced default — instantiate `Subscription`, read
       `EmptyChannelDelay` back, assert 500 ms
   - Input: requirements §5.1 (`Subscription.cs:208`, `:236` at `10.7.0`); design §6.2
   - Output: `spec/012-configuration_reference/probes/` — a small C# project, kept and
@@ -315,7 +315,7 @@ them; what this phase produces is a fixed tool and a fresh run, recorded here.
     spec's central premise is wrong and phase 2 changes shape — say so loudly rather than
     proceeding.
 
-- [ ] **Task 1.3:** Probe the package load — reference every surface package at `10.7.0` in one
+- [x] **Task 1.3:** Probe the package load — reference every surface package at `10.7.0` in one
       project and instantiate one type from each
   - Input: design §6.4; the package list implied by §7.2, §7.3, §7.4 and §7.5
   - Output: the same probes project, extended; a recorded verdict — clean, or the conflicting
@@ -328,7 +328,7 @@ them; what this phase produces is a fixed tool and a fresh run, recorded here.
     not isolate native dependencies; and **not `MetadataLoadContext`**, which cannot
     instantiate.
 
-- [ ] **Task 1.4:** Re-derive design §6.3's synthesis table **by construction**
+- [x] **Task 1.4:** Re-derive design §6.3's synthesis table **by construction**
   - Input: design §6.3's table — 24 types, 48 required parameters, 20 of the 24 needing only
     strings, enums and the three subscription arguments
   - Output: the recorded result of actually constructing each of the 24; the four that need a
@@ -338,7 +338,7 @@ them; what this phase produces is a fixed tool and a fresh run, recorded here.
     of the running tool**. `HandlerConfiguration` is the one of the four that is P0 and on D4,
     so its factory is phase 2's problem and not P2's.
 
-- [ ] **Task 1.5:** Teach `survey.py` to read C# primary constructors, and re-run it at
+- [x] **Task 1.5:** Teach `survey.py` to read C# primary constructors, and re-run it at
       `--ref 10.7.0`
   - Input: design §12.5 — `widest_ctor` matches `public TypeName(` *inside* a class body; 13
     surface types, 40 parameters; `PostgresLockingProviderOptions` and
@@ -350,6 +350,100 @@ them; what this phase produces is a fixed tool and a fresh run, recorded here.
     `optioncheck` is unaffected — a primary constructor is just a constructor to reflection —
     so this task changes no design decision; it changes what a writer would copy. **Quote the
     new figures with the ref or not at all.**
+
+### Phase 1 as executed — 2026-08-28, 5/5
+
+**The full record is `probes/README.md`**, which carries the tables, the
+reconciliations and the method. This is the summary and the four numbers a later phase
+needs. Everything is stamped at Brighter **`10.7.0`** and re-runnable:
+`dotnet run --project spec/012-configuration_reference/probes`.
+
+**1. The premise holds.** `emptyChannelDelay` is `null` by `ParameterInfo` and **500 ms**
+on the instance. Phase 2 does not change shape. And the shape is not uniform, which is the
+part that could not be read off the source: of `Subscription`'s six `null` signature
+defaults, **four come back as a value and two really are null** — so `null` in a signature
+means *both* "no default" and "the default is assigned below", and nothing distinguishes
+them until the object exists.
+
+**2. The packages do not fight, and `optioncheck` can be one project.** 64 Brighter
+assemblies and 65 third-party assemblies in one process; one type instantiated from each
+package for real. **Design §6.4's fallback is not needed.**
+
+> **The conflict §6.4 predicted is real and it is a different pair.** Not AWS —
+> **`RabbitMQ.Client`, loaded at 7.0.0.0 while `RMQ.Sync` was built against 6.0.0.0.**
+> Exactly **one of `RMQ.Sync`'s 57 types** fails to load, and it is not one 012
+> documents: both `RmqSubscription` types construct, and the probe re-derives design
+> §7.2's ruling from the assemblies — **Async 24 params with `queueType`, Sync 23
+> without**. Left alone deliberately. If it ever bites, drop `RMQ.Sync` from the
+> checker's `csproj`; 012 binds no type in it.
+
+**3. The synthesis burden is bigger in one way and smaller in another, and design §6.3 is
+superseded on both.** Measured **34 types and 70 required parameters**, against §6.3's 24
+and 48 — §6.3 subtracted **four** `.V4` duplicates where there are **six**, and it was
+parsed by a `survey.py` that task 1.5 then found five defects in. **The rebuilt parser and
+the running probe now agree exactly at 34 / 70.**
+
+- **Thirteen constructors reject their own defaults** — every subscription type in the
+  product. All thirteen need `requestType`, `messagePumpType` **and `makeChannels`
+  supplied**; `KafkaSubscription` needs six such parameters. A synthesiser using only
+  the parameters that carry no default builds **19 of 34**; adding defaulted `enum` and
+  `Type` parameters takes it to **32**. **Phase 2 must budget for this and design does
+  not name it.**
+- **Two types need a hand-written factory, not four** — `AzureBlobArchiveProviderOptions`
+  and `S3LuggageOptions`. The other three build because their unbuildable parameters are
+  *reference* types and `null` is accepted. **That is a new obligation, not a saving:** a
+  `null`-built instance reads defaults correctly *unless a constructor body derives one
+  from the missing object*, so phase 2 decides that per type, and where it cannot the
+  answer is `manual:` — which declares and counts — never a silent pass.
+
+**4. `survey.py` is rebuilt, and at `10.7.0` the corpus is 72 configuration types and 628
+reader-facing options** — against the **67 and 619** every document in this spec quotes.
+Both figures were floors, as design §12.1 and §12.5 said, and both were also *wrong* in
+places rather than merely low. **Quote them with the ref or not at all.**
+
+The task asked for one fix. Probe 1.4 found two more of the same kind and a new
+reflection oracle found two beyond that — five in all, every one of them a number rather
+than an error:
+
+| Defect | What it cost |
+|---|---|
+| Primary constructors invisible (design §12.5) | `InMemorySubscription` **2 → 17**; two types absent from the population entirely |
+| The class was assumed to be the file | `RocketMqSubscription.cs` declares **`RocketSubscription`**; `AWSMessagingGatewayConfiguration.cs` declares **`AWSMessagingGatewayConnection`**; the MQTT file declares three types |
+| Properties counted per file, not per class | `RmqMessagingGatewayConnection` **19 → 11** — the other 8 belong to `AmqpUriSpecification` and `Exchange`, which share its file |
+| A generic argument contains a space — `Dictionary<string, object>?` never matched | `Publication` **8 → 10**, and three more |
+| `private set`, `internal set` and `static` counted as reader-facing | `ProducersConfiguration` **26 → 22**, and two more |
+
+> **The oracle is the method worth keeping.** `survey.py --tsv` and
+> `probes -- counts` print the same quantity, one by parsing source and one by
+> reflecting over the assemblies. The first diff had **nine** disagreements, every one a
+> parser defect and none visible any other way. It now reads **`survey 72, reflection 68,
+> both 63, disagree 0`** — the nine the survey sees alone are `.V4`, the five reflection
+> sees alone carry zero options. **Run that diff after any change to `survey.py`.**
+
+**Two type NAMES in design §7 do not exist, and that matters more than any count.** A
+marker binds a fully-qualified type, so `RocketMqSubscription` (really
+**`RocketSubscription`**, 23 not 22) and `MQTTMessagingGatewayConfiguration` (really
+**`MqttMessagingGatewayConfiguration`**, 7 not 8) would each have failed in phase 6 with
+*the type is gone*. Loud, but late, and free to know now. **`D4 is 47 options over 5
+tables` becomes 45.**
+
+> **§2.9 of this document inherits an overstatement from design §12.5, and its verdict is
+> untouched.** §12.5's *"13 surfaces, 40 parameters"* is additive, and the convention is
+> **`max(props, ctor)`**. Measured with the primary constructor readable, **three of the
+> thirteen move** — `InMemorySubscription` and the two that were absent. The rest do not,
+> because **a C# primary constructor on a class assigns to properties rather than
+> creating them**: `AzureBlobLockingProviderOptions`'s two parameters are two of its three
+> properties. §2.9's instruction — *never infer from an unmarked row that its figure is a
+> total* — is right and is what caught this, applied to §2.9 itself.
+
+**Two things neither instrument counts**, both for the phase that meets them: **public
+fields** (`AzureBlobLockingProviderOptions.StorageLocationFunc` has a default and is
+invisible to both), and **surface types whose name says otherwise** — `AmqpUriSpecification`
+and `Exchange` are RabbitMQ configuration a reader writes by hand, and **phase 5 owns**
+whether `RabbitMQConfiguration.md` gains a table for them.
+
+**Phase 1 wrote no table, created no page and did not touch `SUMMARY.md`.** The six gates
+in §2.8 are unmoved, as they must be.
 
 ---
 
