@@ -31,7 +31,20 @@ namespace Paramore.Docs.OptionCheck;
 /// </summary>
 internal static class Synthesise
 {
-    internal sealed record Result(object? Instance, IReadOnlySet<string> Supplied, string? Error)
+    /// <param name="Supplied">
+    /// Defaulted parameters the constructor would not accept its own default for.
+    /// Their instance value is the checker's argument, so the `Default` column
+    /// owes a `manual:` declaration rather than a number.
+    /// </param>
+    /// <param name="Injected">
+    /// EVERY parameter the synthesiser passed a value for, required ones
+    /// included. On a property-driven type this is the set whose properties read
+    /// back the checker's own arguments — a required `int` parameter assigned to
+    /// a property would otherwise be reported as a default of 1, which is the
+    /// tool documenting itself in the one column it exists to get right.
+    /// </param>
+    internal sealed record Result(
+        object? Instance, IReadOnlySet<string> Supplied, IReadOnlySet<string> Injected, string? Error)
     {
         public bool Ok => Instance is not null;
     }
@@ -52,16 +65,16 @@ internal static class Synthesise
         // `HandlerConfiguration` is the one of §6.3's four that is P0 — it is on
         // D4, phase 3 — so it gets a factory here rather than a declaration.
         if (Factory(type) is { } made)
-            return new Result(made, new HashSet<string>(StringComparer.Ordinal), null);
+            return new Result(made, EmptySet, EmptySet, null);
 
         var ctor = Widest(type);
         if (ctor is null)
-            return new Result(null, EmptySet, "no public constructor");
+            return new Result(null, EmptySet, EmptySet, "no public constructor");
 
         if (ctor.GetParameters().Length == 0)
         {
-            try { return new Result(ctor.Invoke([]), EmptySet, null); }
-            catch (Exception ex) { return new Result(null, EmptySet, Explain(ex)); }
+            try { return new Result(ctor.Invoke([]), EmptySet, EmptySet, null); }
+            catch (Exception ex) { return new Result(null, EmptySet, EmptySet, Explain(ex)); }
         }
 
         // Pass 1 — required parameters only. Every defaulted parameter keeps its
@@ -69,14 +82,14 @@ internal static class Synthesise
         // the product's own.
         var pass1 = TryInvoke(ctor, supply: p => !p.HasDefaultValue);
         if (pass1.Instance is not null)
-            return new Result(pass1.Instance, EmptySet, null);
+            return new Result(pass1.Instance, EmptySet, pass1.Injected, null);
 
         // Pass 2 — supply defaulted parameters too, where there is a value to
         // supply. Needed only where the constructor body validates a defaulted
         // parameter, which no parse of a signature can see.
         var pass2 = TryInvoke(ctor, supply: _ => true);
         if (pass2.Instance is null)
-            return new Result(null, EmptySet, pass1.Error ?? pass2.Error);
+            return new Result(null, EmptySet, EmptySet, pass1.Error ?? pass2.Error);
 
         // Necessity: put each defaulted parameter pass 2 supplied back to its own
         // default and keep the removal if the type still builds.
@@ -97,19 +110,21 @@ internal static class Synthesise
         // build, fall back to pass 2's — a larger `manual:` obligation is honest;
         // a value the checker invented is not.
         return final.Instance is not null
-            ? new Result(final.Instance, needed, null)
-            : new Result(pass2.Instance, pass2.Supplied, null);
+            ? new Result(final.Instance, needed, final.Injected, null)
+            : new Result(pass2.Instance, pass2.Supplied, pass2.Injected, null);
     }
 
     private static readonly IReadOnlySet<string> EmptySet = new HashSet<string>(StringComparer.Ordinal);
 
-    private sealed record Attempt(object? Instance, IReadOnlySet<string> Supplied, string? Error);
+    private sealed record Attempt(
+        object? Instance, IReadOnlySet<string> Supplied, IReadOnlySet<string> Injected, string? Error);
 
     private static Attempt TryInvoke(ConstructorInfo ctor, Func<ParameterInfo, bool> supply)
     {
         var parameters = ctor.GetParameters();
         var args = new object?[parameters.Length];
         var supplied = new HashSet<string>(StringComparer.Ordinal);
+        var injected = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var p in parameters)
         {
@@ -130,14 +145,19 @@ internal static class Synthesise
             }
 
             if (value is null && !IsNullable(p))
-                return new Attempt(null, supplied, $"cannot synthesise {Pretty(p.ParameterType)} {p.Name}");
+                return new Attempt(null, supplied, injected,
+                    $"cannot synthesise {Pretty(p.ParameterType)} {p.Name}");
 
             args[p.Position] = value;
-            if (p.Name is not null && p.HasDefaultValue) supplied.Add(p.Name);
+            if (p.Name is not null)
+            {
+                injected.Add(p.Name);
+                if (p.HasDefaultValue) supplied.Add(p.Name);
+            }
         }
 
-        try { return new Attempt(ctor.Invoke(args), supplied, null); }
-        catch (Exception ex) { return new Attempt(null, supplied, Explain(ex)); }
+        try { return new Attempt(ctor.Invoke(args), supplied, injected, null); }
+        catch (Exception ex) { return new Attempt(null, supplied, injected, Explain(ex)); }
     }
 
     /// <summary>A value for a parameter type, or null where the synthesiser has none.</summary>

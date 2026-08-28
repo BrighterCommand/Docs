@@ -692,7 +692,7 @@ that carry **zero** tables today — 012's premise confirmed at the highest-traf
 (requirements §3.2): each named surface gains a marker and a table under a qualified heading,
 in the section that already discusses it.
 
-- [ ] **Task 3.1:** `CommandProcessorConfigurationReference.md` — `AddProducers` and
+- [x] **Task 3.1:** `CommandProcessorConfigurationReference.md` — `AddProducers` and
       `AddBrighter`
   - Input: design §7.1; `ProducersConfiguration` (26), `BrighterOptions` (9) at `10.7.0`
   - Output: `## AddProducers Options` and `## AddBrighter Options`, each with its marker and
@@ -702,7 +702,7 @@ in the section that already discusses it.
     `Option` is the property name here and the parameter-versus-property hazard does not
     arise — **check that rather than assuming it.**
 
-- [ ] **Task 3.2:** `CommandProcessorConfigurationReference.md` — publication, handlers,
+- [x] **Task 3.2:** `CommandProcessorConfigurationReference.md` — publication, handlers,
       pipeline validation
   - Input: `Publication` (8), `HandlerConfiguration` (2), `BrighterPipelineValidationOptions`
     (2)
@@ -712,7 +712,7 @@ in the section that already discusses it.
     table is the one phases 5 and 6 link *up* to. Get its wording right before five transport
     pages point at it. `HandlerConfiguration` is the P0 member of task 2.4's factory list.
 
-- [ ] **Task 3.3:** `DispatcherConfigurationReference.md` — subscription, global inbox,
+- [x] **Task 3.3:** `DispatcherConfigurationReference.md` — subscription, global inbox,
       `AddConsumers`
   - Input: `Subscription` (17), `InboxConfiguration` (5), `ConsumersOptions` (4)
   - Output: `## Subscription Options`, `## Global Inbox Options`, `## AddConsumers Options`
@@ -722,7 +722,7 @@ in the section that already discusses it.
     highest-traffic Reference pages. **Rule 5 is an error and this is the page most likely to
     want the assembly name**: backticks for a real type or assembly, "Dispatcher" in prose.
 
-- [ ] **Task 3.4:** Verify phase 3 — `optioncheck`, the six gates, and the AC8 walk
+- [x] **Task 3.4:** Verify phase 3 — `optioncheck`, the six gates, and the AC8 walk
   - Input: the 73 descriptions written above
   - Output: `optioncheck` exit 0 with a scope naming 8 tables and 73 rows; the six gates; a
     recorded AC8 verdict
@@ -730,6 +730,136 @@ in the section that already discusses it.
     describes or argues; one sentence, present tense, rationale linked rather than restated.
     `git add` before `pagelint --changed`, and read its scope line — these pages have C# blocks
     and standing obligation 8 applies.
+
+### Phase 3 as executed — 2026-08-28, 4/4
+
+**Eight tables, 71 rows, on the two pages that carried none.** `optioncheck` reports
+**9 tables, 72 rows, 9 types across 3 pages** with the phase 2 seed, exit 0.
+
+**The phase is 71 options, not the 73 the phase table says.** D4's 47 became **45** at phase
+1 — `ProducersConfiguration` 26 → 22 and `Publication` 8 → 10 — and D5's 26 held exactly.
+Every figure was re-derived from the type when its table was written, which is standing
+obligation 3, and the phase table above is left as approved.
+
+**The tables, and what each cost:**
+
+| Table | Type | Rows | `manual:` |
+|---|---|---:|---:|
+| `## AddBrighter Options` | `BrighterOptions` | 9 | 2 |
+| `## Pipeline Validation Options` | `BrighterPipelineValidationOptions` | 2 | 0 |
+| `## AddProducers Options` | `ProducersConfiguration` | 22 | 1 |
+| `## Publication Options` | `Publication` | 10 | 0 |
+| `## Handler Configuration Options` | `HandlerConfiguration` | 2 | 0 |
+| `## Subscription Options` | `Subscription` | 17 | 3 |
+| `## AddConsumers Options` | `ConsumersOptions` | 4 | 1 |
+| `## Global Inbox Options` | `InboxConfiguration` | 5 | 2 |
+
+**Nine `manual:` declarations across 71 rows — 13%, and that is the residue requirements
+§7.3 asked to be measured rather than estimated.** Every one is the same shape: a default
+assigned in a constructor body as an *object*, which has no printable value —
+an `InMemoryInbox`, an `InMemoryRequestContextFactory`, an empty `ProducerRegistry` — or a
+parameter the constructor refuses its own default for. **This is requirements §5.1's third
+shape with an object on the end of it**, and neither the requirements nor the design names
+that variant: §5.1's example coalesces to a `TimeSpan`, which prints.
+
+### The ledger — two entries, both on `CommandProcessorConfigurationReference.md`
+
+Standing obligation 10 says record the mismatch before fixing it. **Neither was found by
+`optioncheck`**, which is worth as much as the entries: both are in a **bullet list**, and
+the tool reads tables. They were found by writing the correct table beside the prose.
+
+1. **`MaxOutstandingMessages` and `MaxOutStandingCheckIntervalMilliSeconds` were documented
+   as publication options.** They are on `ProducersConfiguration`, not `Publication` — the
+   `Publication` type has neither. A reader following that list sets them on the wrong
+   object.
+2. **`MaxOutStandingCheckIntervalMilliSeconds` is not the name of anything.** The member is
+   `MaxOutStandingCheckInterval` and it is a `TimeSpan`; the `MilliSeconds` suffix is a V9
+   spelling that survived on the page.
+
+Both bullets are corrected in place and the section now points at the two tables. **This is
+012's premise, on the highest-traffic Reference page in the corpus, found in the first phase
+that wrote a table.**
+
+> **A third finding, in Brighter rather than here, and out of scope for this repository.**
+> `Publication.Type`'s doc comment says the default is
+> *"goparamore.io.Paramore.Brighter.Message for backward compatibility"*; the code assigns
+> `CloudEventsType.Empty` and the constructed instance reads back empty. The page says what
+> the assembly does and notes the disagreement. `src/` is outside this programme's
+> exception, so this is a Brighter issue if anyone raises one — the same shape as
+> [Brighter#4277](https://github.com/BrighterCommand/Brighter/issues/4277).
+
+### What phase 3 changed in the instrument, and why each was forced
+
+**`optioncheck --describe <type>…`** prints what a table for a type owes, in the four
+columns, with the descriptions empty. Standing obligation 3 is *write the table from the
+type*, and before this the only way to learn a default was to write a wrong one and read the
+mismatch — transcription by trial and error, sixty-odd tables still to come.
+
+> **The objection is circularity**: a table pasted from the tool agrees with the tool by
+> construction, so AC2 proves nothing. It does not bite, and the reason is worth stating.
+> `Option`, `Type` and `Default` **are** the assembly's truth by definition — design §6.2
+> makes the default readable only from an instance, so a human writing that column is
+> transcribing this output or guessing. And **AC2's subject is drift**: today's table against
+> tomorrow's assembly, which no agreement today can fake. The column the tool cannot supply
+> is the one carrying meaning, and it is left blank on purpose.
+
+**Two defects in the checker, both found by pointing it at types phase 2 never met:**
+
+1. **A property fed by a required constructor argument read back the checker's own value.**
+   The ctor route already handled this; the property route only caught string-shaped
+   sentinels, so an `int` of 1 or an enum would have been published as a default. The
+   synthesiser now reports **every** parameter it injected, not only the defaulted ones, and
+   a property assigned from one is `manual:`.
+2. **A value whose printable form is empty rendered as nothing**, which is indistinguishable
+   from a blank cell — and a blank `Default` is a finding in its own right, so no table for
+   `Publication` could ever have gone green. It renders `empty` now, and a table may write
+   `""` instead.
+
+**`pagelint.py` rule 5 gained a fourth exception: an HTML comment.**
+`ConsumersOptions` lives in `Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection`,
+so its marker carries the V9 name **by construction** and cannot put it in backticks — the
+marker's grammar takes a bare type name. Task 3.3 predicted this page would be the one to
+want it. The exemption rests on the same argument as the fenced-block and code-span ones,
+and phase 2 measured it rather than assuming: **an HTML comment publishes as nothing.** It
+is not the opt-out comment and does not replace it — this is *the word is not on the page*,
+where the opt-out is *the page is about the word*. **Red-proved**: a bare
+`The Service Activator reads messages` appended to the same page still errors, and the page
+was restored byte-identical.
+
+### AC8, walked
+
+**Every one of the 71 descriptions is one sentence, present tense, and states what the option
+does rather than why.** Swept mechanically as well as read: no cell contains *because*, *so
+that*, *should*, *prefer*, *recommend* or *note that*, none contains two sentences, and all
+71 open with a capital and end in a full stop. Where rationale was worth having it is in
+prose **after** the table — `PolicyRegistry` being obsolete, `ShutdownTimeout` being the one
+to raise for long-running handlers, `null` on the producers configuration usually meaning
+Brighter supplies something itself.
+
+**Two things the tables say that no reader could have got from the prose**, both from
+standing obligation 1's *the spelling the reader types*: on `Subscription`,
+`subscriptionName` is the `Name` property and `getRequestType` is `MapRequestType` — **two
+parameters whose property differs by more than case**, which the page now says in as many
+words. And `Publication.Source` reads back `http://goparamore.io/`, with the trailing slash
+`Uri` normalises in, where the source says `http://goparamore.io`.
+
+**Placement worked.** Standing obligation 8's cheapest defence — put the table where the
+diff cannot reach a code block — held: `pagelint --changed` reports **0 code blocks strict**
+across 28 hunks, and says so in its own words rather than passing quietly.
+
+**The six gates are unmoved to the digit**: link 150, pagelint 0 errors / 790 warnings / 148
+pages, shape 147 / 12 / widest 10 of 20, redirects 77 / 7858, versioncheck 0 stale of 18
+across 5, `--verify` 147/147/147. **No page was created**, so `SUMMARY.md` is untouched and
+none of the four page-count gates could move. The phase 2 red-proof still fires **8/8** after
+the checker changes.
+
+> **Phase 2's publication check, recorded here because it was measured after that PR
+> merged** — the pattern where a phase's evidence lands in the following PR.
+> `outbox-and-inbox/sweepercircuitbreaking` returned **200, 14,711 bytes**, the normalised
+> row published as written, and **`grep -c optioncheck` over the published `.md` variant is
+> 0**. Design §5's first reason for the marker — *"it is invisible to readers"* — rested on
+> the `<!-- pagelint: allow-serviceactivator -->` precedent, and it is now measured for this
+> marker too. It is also what licenses the rule 5 exemption above.
 
 ---
 

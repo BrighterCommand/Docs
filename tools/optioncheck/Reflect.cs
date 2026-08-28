@@ -133,6 +133,16 @@ internal static class Reflect
         if (!built.Ok)
             return new Member(property.Name, declared, null, $"the type could not be constructed: {built.Error}");
 
+        // The property is assigned from a constructor parameter the synthesiser
+        // had to invent a value for, so what it reads back is the checker's
+        // argument. The sentinel check in WithValue catches the string-shaped
+        // ones; this catches an `int` of 1 or an enum, which look exactly like a
+        // real default and are the more dangerous half.
+        if (built.Injected.Contains(property.Name))
+            return new Member(property.Name, declared, null,
+                "this property is set from a constructor parameter the checker had to supply, "
+                + "so the instance reads back that argument rather than a default");
+
         return WithValue(property.Name, declared, () => property.GetValue(built.Instance));
     }
 
@@ -200,6 +210,10 @@ internal static class Reflect
         if (canonical.StartsWith('"') && canonical.EndsWith('"') && canonical.Length >= 2)
             forms.Add(canonical[1..^1]);
 
+        // `empty` is this tool's word for a value that renders as nothing. An
+        // author writing the pair of quotes means the same thing.
+        if (canonical == "empty") forms.Add("\"\"");
+
         if (typeName is not null && canonical is not "null")
             forms.Add($"{typeName}.{canonical}");
 
@@ -227,9 +241,15 @@ internal static class Reflect
     private static string? Printable(object value)
     {
         var text = value.ToString();
-        return text is null || text == value.GetType().FullName || text == value.GetType().ToString()
-            ? null
-            : text;
+
+        if (text is null || text == value.GetType().FullName || text == value.GetType().ToString())
+            return null;
+
+        // A value whose printable form is empty is not blank, it is empty — and
+        // the two must not look the same, because standing obligation 1 makes a
+        // blank cell a finding in its own right. `Publication.Type` is the case:
+        // a CloudEventsType that renders as nothing at all.
+        return text.Trim().Length == 0 ? "empty" : text;
     }
 
     /// <summary>The declared type with its nullable annotation: `TimeSpan?`, never `TimeSpan`.</summary>

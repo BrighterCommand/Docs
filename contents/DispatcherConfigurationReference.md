@@ -173,6 +173,63 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 ...
 
 ```
+## Subscription Options
+
+Every subscription carries these, whatever the transport, and a transport's own subscription
+type adds to them rather than replacing them. **The option is the constructor parameter you
+type**, which is not always the property you read back: `subscriptionName` is the `Name`
+property, and `getRequestType` is `MapRequestType`.
+
+<!-- optioncheck: Paramore.Brighter.Subscription
+     manual: requestType — the constructor requires a request type, so it has no default the tool can read
+     manual: getRequestType — assigned to MapRequestType, and the body substitutes a function returning RequestType when it is null
+     manual: messagePumpType — the constructor rejects its own default of Unknown, so there is no default to read
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `subscriptionName` | `SubscriptionName` | `none` | Names the subscription for diagnostics; read back as `Name`. |
+| `channelName` | `ChannelName` | `none` | Names the queue on middleware where queues have names. |
+| `routingKey` | `RoutingKey` | `none` | The topic or routing key the channel subscribes to. |
+| `requestType` | `Type?` | `none` | The request type messages on this channel are translated into. |
+| `getRequestType` | `Func<Message, Type>?` | derives the type from `requestType` | Determines the request type from the message rather than from the channel. |
+| `bufferSize` | `int` | `1` | Messages held in the channel at once, and read from the broker at once. |
+| `noOfPerformers` | `int` | `1` | Threads reading this channel, each with its own message pump. |
+| `timeOut` | `TimeSpan?` | `300 ms` | How long a read waits before treating the channel as empty. |
+| `requeueCount` | `int` | `-1` | Times a message is requeued before it is treated as a poison pill; -1 is unlimited. |
+| `requeueDelay` | `TimeSpan?` | `0 ms` | How long delivery of a requeued message is delayed. |
+| `unacceptableMessageLimit` | `int` | `0` | Unacceptable messages before the channel stops; 0 disables the limit. |
+| `messagePumpType` | `MessagePumpType` | `none` | Selects the Reactor or Proactor concurrency model. |
+| `channelFactory` | `IAmAChannelFactory?` | `null` | Creates the channel; falls back to `DefaultChannelFactory` when null. |
+| `makeChannels` | `OnMissingChannel` | `Create` | Whether Brighter creates missing infrastructure, validates it, or assumes it. |
+| `emptyChannelDelay` | `TimeSpan?` | `500 ms` | How long the pump pauses after a read that found no message. |
+| `channelFailureDelay` | `TimeSpan?` | `1000 ms` | How long the pump pauses after a channel failure. |
+| `unacceptableMessageLimitWindow` | `TimeSpan?` | `null` | The window the unacceptable-message count resets at the end of. |
+
+Three of these have no default the assembly can be asked for, and the marker above declares
+each. `requestType` and `messagePumpType` are required in practice: both carry a default in
+the signature and the constructor body rejects it. `getRequestType` is assigned to
+`MapRequestType`, and a null one becomes a function returning `requestType`.
+
+## AddConsumers Options
+
+`AddConsumers` takes the [`AddBrighter` options](/contents/CommandProcessorConfigurationReference.md#addbrighter-options)
+and adds these four.
+
+<!-- optioncheck: Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection.ConsumersOptions
+     manual: InboxConfiguration — the property is initialised to a default InboxConfiguration, which has no printable value
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `DefaultChannelFactory` | `IAmAChannelFactory?` | `null` | Creates a channel for any subscription that supplies no factory of its own. |
+| `InboxConfiguration` | `InboxConfiguration` | a default `InboxConfiguration` | Configures the global Inbox described below. |
+| `Subscriptions` | `IEnumerable<Subscription>` | `empty` | The subscriptions this Dispatcher runs. |
+| `ShutdownTimeout` | `TimeSpan` | `10000 ms` | How long shutdown waits for in-flight messages to drain before tearing down. |
+
+`ShutdownTimeout` is the one to raise for long-running handlers: on expiry the message in
+progress is left un-acknowledged for redelivery.
+
 ## Dispatcher Brighter Builder Fluent Interface
 
 The call to **AddConsumers()** returns an **IBrighterBuilder** fluent interface. This means that you can use any of the options described in [Brighter Builder Fluent Interface](/contents/CommandProcessorConfigurationReference.md#brighter-builder-fluent-interface) to configure the associated *Command Processor* such as scanning assemblies for *Request Handlers* and adding an *External Bus* and *Outbox*.
@@ -232,6 +289,26 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 ```
 Typically **DbConnectionString** would obtain the connection string for the Db from configuration.
 
+## Global Inbox Options
+
+`InboxConfiguration` takes its options as constructor arguments, so the option is the
+parameter you type and the property you read back is capitalised: `onceOnly` is `OnceOnly`.
+
+<!-- optioncheck: Paramore.Brighter.InboxConfiguration
+     manual: inbox — the signature says null and the body substitutes an InMemoryInbox, which has no printable value
+     manual: context — the signature says null and the body substitutes a function returning the handler's full type name
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `inbox` | `IAmAnInbox?` | an `InMemoryInbox` | The store that records handled requests. |
+| `scope` | `InboxScope` | `All` | Whether commands, events or both are recorded. |
+| `onceOnly` | `bool` | `true` | Whether a duplicate request is detected and acted on, or merely recorded. |
+| `actionOnExists` | `OnceOnlyAction` | `Throw` | What happens when the request has been handled before. |
+| `context` | `Func<Type, string>?` | the handler's full type name | Disambiguates which handler received a request. |
+
+Both defaults the marker declares are assigned in the constructor body rather than in the
+signature, so a reader of the signature alone would see `null` for each and be wrong twice.
 
 ## Further Reading
 
