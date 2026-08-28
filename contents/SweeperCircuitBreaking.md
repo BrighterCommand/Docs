@@ -81,9 +81,11 @@ public void ConfigureServices(IServiceCollection services)
 
 The `OutboxCircuitBreakerOptions` class provides the following configuration:
 
+<!-- optioncheck: Paramore.Brighter.CircuitBreaker.OutboxCircuitBreakerOptions -->
+
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| **CooldownCount** | `int` | 10 | Number of sweeper iterations before a tripped topic is eligible for retry |
+|---|---|---|---|
+| `CooldownCount` | `int` | `10` | Sweeper iterations a tripped topic waits before it is retried. |
 
 ### Calculating Cooldown Time
 

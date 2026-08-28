@@ -23,7 +23,24 @@ closes it.
    and record the result in the table.
 4. **Re-time each one.** If the stated duration has drifted, change the page. A tutorial that
    claims ten minutes and takes forty is a defect a reader meets before anything else.
-5. **Run `python3 tools/linkcheck.py` and `python3 tools/pagelint.py`.**
+5. **Bump the pin in `tools/optioncheck/optioncheck.csproj` to the new release, and run
+   `dotnet run --project tools/optioncheck`.** One `Version=` per `PackageReference`, all of
+   them the same number — the pin lives in that file and nowhere else, which is why this is
+   one edit rather than one per table (design §5.2). **Expect it to be green before the bump
+   and to have something to say after it**: every mismatch it reports is a default that
+   changed in the release, which is the drift spec 012 exists to catch. Fix the row on the
+   page; record what it said, because the ledger of what the checker caught is the only
+   evidence that the drift was ever real.
+6. **Run `python3 tools/linkcheck.py` and `python3 tools/pagelint.py`.**
+
+> **`versioncheck.py` and `optioncheck` are the same family with OPPOSITE triggers, and
+> reasoning about them together is a mistake.** `versioncheck.py` resolves the **latest**
+> version from NuGet, so a release in another repository turns it red with no commit here —
+> it is step 1 and it tells you a release happened. `optioncheck` reflects over a **pinned**
+> package, so nothing outside this repository can change its verdict: it goes red at **step
+> 5**, when you bump the pin, performed by someone who is at that moment looking for exactly
+> this information. That is also why it has no `schedule:` trigger in CI and must not be
+> given one (design §6.5, requirements AC4 as amended).
 
 **What this does not cover.** `versioncheck.py` reads only lines naming a
 `Paramore.Brighter*` package, by design — a broader match would start policing pages that

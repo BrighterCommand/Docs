@@ -108,3 +108,31 @@ jobs:
         with:
           python-version: '3.12'
       - run: python3 tools/versioncheck.py
+
+  # Spec 012 D1/D2. tools/optioncheck diffs every option table in contents/
+  # against the type its `<!-- optioncheck: -->` marker names, reflecting over
+  # the packages pinned in tools/optioncheck/optioncheck.csproj.
+  #
+  # NO GUARD, and none may be added. The `if [ -f ... ]` that stood in the
+  # versions job until D9 landed existed only to keep the build green while the
+  # tool was absent, and a guard that outlives its tool silently un-gates the
+  # check it was protecting.
+  #
+  # NO `schedule:` TRIGGER either, and this is the opposite of the versions job
+  # rather than an oversight. AC4's schedule clause was struck at design review
+  # (design §6.5, §13.2): optioncheck reflects over a PINNED package, so nothing
+  # outside this repository can change its verdict. A scheduled run can only
+  # repeat the last PR's answer — or exit 2 because NuGet was briefly
+  # unreachable, which is a red build caused by the weather.
+  #
+  # The invocation is bare for the same reason versioncheck.py's is. Exit 2 is
+  # "the pinned packages are not in this process", which is an unchecked corpus
+  # rather than a pass, so no `|| true` and no swallowing the code in a pipeline.
+  options:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - run: dotnet run --project tools/optioncheck
