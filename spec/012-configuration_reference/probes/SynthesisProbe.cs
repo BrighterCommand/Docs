@@ -60,7 +60,7 @@ internal static class SynthesisProbe
             }
             else
             {
-                var why = ValidatedDefaults(ctor);
+                var why = ValidatedDefaults(type, ctor);
                 pass2.Add((type, why));
                 Console.WriteLine($"{type.Name,-38} {Package(type),-46} {need,3} {2,4}  constructed, "
                                   + "defaults overridden");
@@ -81,7 +81,7 @@ internal static class SynthesisProbe
             Console.WriteLine("The pass-2 types — a constructor body that rejects its own defaults, which no");
             Console.WriteLine("parse of a signature can see:");
             foreach (var (type, why) in pass2)
-                Console.WriteLine($"  {type.Name}: {why}");
+                Console.WriteLine($"  {type.Name} ({Package(type)}): {why}");
         }
 
         if (failed.Count > 0)
@@ -145,17 +145,29 @@ internal static class SynthesisProbe
             .OrderByDescending(c => c.GetParameters().Length)
             .FirstOrDefault();
 
-    /// <summary>The defaulted parameters pass 2 had to supply a value for.</summary>
-    private static string ValidatedDefaults(ConstructorInfo ctor)
+    /// <summary>
+    /// The defaulted parameters the constructor genuinely REQUIRES a value for.
+    ///
+    /// Pass 2 supplies every defaulted `enum` and `Type` parameter, and most of
+    /// them are not needed — supplying a value is not evidence that it was
+    /// required. Each candidate is put back to its own declared default, one at
+    /// a time; the ones whose removal breaks construction are the finding.
+    /// </summary>
+    private static string ValidatedDefaults(Type type, ConstructorInfo ctor)
     {
-        var names = ctor.GetParameters()
-            .Where(p => p.HasDefaultValue)
+        var candidates = ctor.GetParameters()
+            .Where(p => p.HasDefaultValue && p.Name is not null)
             .Where(p => p.ParameterType.IsEnum || p.ParameterType == typeof(Type))
-            .Select(p => p.Name)
-            .Where(n => n is not null)
+            .Select(p => p.Name!)
             .ToList();
 
-        return names.Count == 0 ? "a defaulted parameter" : string.Join(", ", names);
+        var required = candidates
+            .Where(name => !Synthesiser.CanConstructKeeping(type, new HashSet<string> { name }))
+            .ToList();
+
+        return required.Count == 0
+            ? "no single defaulted parameter is required on its own"
+            : string.Join(", ", required);
     }
 
     private static string Package(Type type) => type.Assembly.GetName().Name ?? "?";

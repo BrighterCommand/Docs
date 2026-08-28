@@ -148,7 +148,7 @@ objects.**
 
 ### The finding: thirteen constructors reject their own defaults
 
-Every subscription type in Brighter, plus `SqsSubscription`'s extra pair:
+Every subscription type in Brighter:
 
 ```text
 InMemorySubscription, Subscription, SqsSubscription, AzureServiceBusSubscription,
@@ -157,10 +157,21 @@ PostgresSubscription, RmqSubscription (Async), RmqSubscription (Sync),
 RedisSubscription, RocketSubscription
 ```
 
-All thirteen need `requestType` and `messagePumpType` supplied, and all thirteen
-need `makeChannels` — a defaulted `enum` whose declared default the body will
-not accept. `KafkaSubscription` needs six such parameters, `SqsSubscription`
-five, `GcpPubSubSubscription` four.
+**All thirteen require a request type** — `requestType`, or `dataType` on
+`PostgresSubscription` — and **eleven of the thirteen also require
+`messagePumpType`**, whose declared default of `Unknown` the body will not
+accept. The two exceptions declare a usable default of their own:
+`MsSqlSubscription` defaults it to `Proactor` and `RMQ.Sync`'s `RmqSubscription`
+to `Reactor`, that package supporting only the one pump.
+
+> **Necessity is measured, not inferred from what was supplied.** Pass 2 hands
+> every defaulted `enum` and `Type` parameter a value, and most of them are not
+> needed; the probe puts each candidate back to its own declared default one at
+> a time and keeps the ones whose removal breaks construction. A first draft of
+> this section read the supplied list as the required list and reported that
+> **all thirteen need `makeChannels`**. **Not one of them does.** Supplying a
+> value is not evidence that it was required, and the difference is a claim
+> about the product.
 
 **This is the one thing phase 2 must budget for that design does not name.**
 A synthesiser that supplies only the parameters carrying no default constructs
