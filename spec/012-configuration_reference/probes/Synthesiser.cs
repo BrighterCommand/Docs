@@ -39,33 +39,7 @@ internal static class Synthesiser
 
         for (var pass = 1; pass <= 2; pass++)
         {
-            var args = new object?[ctor.GetParameters().Length];
-            var unsynthesisable = (ParameterInfo?)null;
-
-            foreach (var p in ctor.GetParameters())
-            {
-                if (p.HasDefaultValue && pass == 1)
-                {
-                    args[p.Position] = p.DefaultValue;
-                    continue;
-                }
-
-                var value = Synthesise(p.ParameterType, depth);
-                if (value is null && !IsNullable(p))
-                {
-                    if (p.HasDefaultValue)
-                    {
-                        // pass 2 has nothing better to offer than the declared default
-                        args[p.Position] = p.DefaultValue;
-                        continue;
-                    }
-
-                    unsynthesisable = p;
-                    break;
-                }
-
-                args[p.Position] = value ?? (p.HasDefaultValue ? p.DefaultValue : null);
-            }
+            var (args, unsynthesisable) = BuildArgs(ctor, pass, depth, null);
 
             if (unsynthesisable is not null)
                 return new Result(null, pass,
@@ -83,6 +57,64 @@ internal static class Synthesiser
         }
 
         return new Result(null, 2, firstError, ctor);
+    }
+
+    /// <summary>
+    /// Can this type be constructed with pass-2 arguments, except for the named
+    /// parameters, which keep their own declared default?
+    ///
+    /// This is what turns "pass 2 supplied these five parameters" into "the
+    /// constructor requires these two" — supplying a value is not evidence that
+    /// it was needed, and the difference is a claim about the product.
+    /// </summary>
+    public static bool CanConstructKeeping(Type type, IReadOnlySet<string> keepOwnDefault)
+    {
+        var ctor = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance)
+            .OrderByDescending(c => c.GetParameters().Length)
+            .FirstOrDefault();
+
+        if (ctor is null) return false;
+
+        var (args, unsynthesisable) = BuildArgs(ctor, pass: 2, depth: 0, keepOwnDefault);
+        if (unsynthesisable is not null) return false;
+
+        try { return ctor.Invoke(args) is not null; }
+        catch { return false; }
+    }
+
+    private static (object?[] Args, ParameterInfo? Unsynthesisable) BuildArgs(
+        ConstructorInfo ctor, int pass, int depth, IReadOnlySet<string>? keepOwnDefault)
+    {
+        var args = new object?[ctor.GetParameters().Length];
+
+        foreach (var p in ctor.GetParameters())
+        {
+            var keep = p.HasDefaultValue
+                       && (pass == 1 || (p.Name is not null && keepOwnDefault?.Contains(p.Name) == true));
+
+            if (keep)
+            {
+                args[p.Position] = p.DefaultValue;
+                continue;
+            }
+
+            var value = Synthesise(p.ParameterType, depth);
+            if (value is null && !IsNullable(p))
+            {
+                if (p.HasDefaultValue)
+                {
+                    // pass 2 has nothing better to offer than the declared default
+                    args[p.Position] = p.DefaultValue;
+                    continue;
+                }
+
+                return (args, p);
+            }
+
+            args[p.Position] = value ?? (p.HasDefaultValue ? p.DefaultValue : null);
+        }
+
+        return (args, null);
     }
 
     /// <summary>A value for a parameter type, or null where the synthesiser has none.</summary>

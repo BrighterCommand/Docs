@@ -384,11 +384,15 @@ parsed by a `survey.py` that task 1.5 then found five defects in. **The rebuilt 
 the running probe now agree exactly at 34 / 70.**
 
 - **Thirteen constructors reject their own defaults** — every subscription type in the
-  product. All thirteen need `requestType`, `messagePumpType` **and `makeChannels`
-  supplied**; `KafkaSubscription` needs six such parameters. A synthesiser using only
-  the parameters that carry no default builds **19 of 34**; adding defaulted `enum` and
-  `Type` parameters takes it to **32**. **Phase 2 must budget for this and design does
-  not name it.**
+  product. **All thirteen require a request type** (`requestType`, or `dataType` on
+  `PostgresSubscription`) and **eleven also require `messagePumpType`**, whose declared
+  default of `Unknown` the body refuses; the two exceptions default it to a usable value
+  themselves. A synthesiser using only the parameters that carry no default builds **19 of
+  34**; adding defaulted `enum` and `Type` parameters takes it to **32**. **Phase 2 must
+  budget for this and design does not name it.**
+  *(Necessity is measured — each candidate is put back to its own default one at a time.
+  A first draft read what pass 2 **supplied** as what the constructors **require** and
+  reported that all thirteen need `makeChannels`; **not one of them does.**)*
 - **Two types need a hand-written factory, not four** — `AzureBlobArchiveProviderOptions`
   and `S3LuggageOptions`. The other three build because their unbuildable parameters are
   *reference* types and `null` is accepted. **That is a new obligation, not a saving:** a
