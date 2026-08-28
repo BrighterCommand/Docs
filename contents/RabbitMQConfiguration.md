@@ -106,6 +106,12 @@ Missing a confirm will cause the *Outbox Sweeper* to resend a message, as it wil
 The following code creates a *Publication* for RabbitMQ when configuring an *External Bus*
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddBrighter(...)
@@ -119,12 +125,14 @@ public void ConfigureServices(IServiceCollection services)
                     new RmqPublication
                 {
                     Topic = new RoutingKey("GreetingMade"),
-                    MaxOutStandingMessages = 5,
-                    MaxOutStandingCheckIntervalMilliSeconds = 500,
                     WaitForConfirmsTimeOutInMilliseconds = 1000,
                     MakeChannels = OnMissingChannel.Create
                 }}
             ).Create();
+
+            // Outbox thresholds are producers configuration, not publication
+            configure.MaxOutStandingMessages = 5;
+            configure.MaxOutStandingCheckInterval = TimeSpan.FromMilliseconds(500);
 }
 ```
 
@@ -133,6 +141,12 @@ public void ConfigureServices(IServiceCollection services)
 Our combined code for the *Connection*  with a single *Publication* looks like this
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddBrighter(...)
@@ -148,12 +162,14 @@ public void ConfigureServices(IServiceCollection services)
                     new RmqPublication
                 {
                     Topic = new RoutingKey("GreetingMade"),
-                    MaxOutStandingMessages = 5,
-                    MaxOutStandingCheckIntervalMilliSeconds = 500,
                     WaitForConfirmsTimeOutInMilliseconds = 1000,
                     MakeChannels = OnMissingChannel.Create
                 }}
             ).Create();
+
+            // Outbox thresholds are producers configuration, not publication
+            configure.MaxOutStandingMessages = 5;
+            configure.MaxOutStandingCheckInterval = TimeSpan.FromMilliseconds(500);
         }
 }
 ```
@@ -282,13 +298,15 @@ services.AddBrighter(...)
                 new RmqPublication
                 {
                     Topic = new RoutingKey("GreetingMade"),
-                    MaxOutStandingMessages = 5,
-                    MaxOutStandingCheckIntervalMilliSeconds = 500,
                     WaitForConfirmsTimeOutInMilliseconds = 1000,
                     MakeChannels = OnMissingChannel.Create
                 }
             }
         ).Create();
+
+        // Outbox thresholds are producers configuration, not publication
+        configure.MaxOutStandingMessages = 5;
+        configure.MaxOutStandingCheckInterval = TimeSpan.FromMilliseconds(500);
     });
 
 // Consumer Configuration
