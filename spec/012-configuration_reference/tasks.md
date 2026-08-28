@@ -461,7 +461,7 @@ may it add a `schedule:` trigger: AC4's schedule clause was struck at design rev
 and a pinned checker on a schedule can only repeat yesterday's verdict or exit 2 on a NuGet
 outage.
 
-- [ ] **Task 2.1:** Create `tools/optioncheck` — project, pinned package references, and the
+- [x] **Task 2.1:** Create `tools/optioncheck` — project, pinned package references, and the
       run contract
   - Input: design §3.1's file list, §6.4's pinning rule, and **task 1.3's package list carried
     forward verbatim, not re-derived** — probe 1.3 assembles exactly this set and proves it
@@ -473,7 +473,7 @@ outage.
   - Notes: **No `.V4` packages.** The pin lives here and nowhere else — design §5.2: a version
     on every marker would be a hundred pins to bump instead of one.
 
-- [ ] **Task 2.2:** `Binding.cs` — parse the marker and its two keys
+- [x] **Task 2.2:** `Binding.cs` — parse the marker and its two keys
   - Input: design §5 and §5.1
   - Output: a parser for `<!-- optioncheck: <type> -->`, with `omit:` and `manual:` lines, each
     carrying a reason; the table rows beneath it
@@ -482,7 +482,7 @@ outage.
     with no reason is a parser that lets 012 reach a green build by writing `omit:` over the
     hard half of every table.
 
-- [ ] **Task 2.3:** `Reflect.cs` — the two routes, one per column
+- [x] **Task 2.3:** `Reflect.cs` — the two routes, one per column
   - Input: design §6.2's table
   - Output: name and type from `ParameterInfo` / `PropertyInfo`; **`Default` from an
     instantiated object, read back, always**
@@ -492,7 +492,7 @@ outage.
     shape two. Reader-facing members are settable properties and the **widest** constructor's
     parameters, which is `survey.py:143`'s `max(props, ctor)` convention expressed as code.
 
-- [ ] **Task 2.4:** `Synthesise.cs` — constructor arguments for the 24 types that need them
+- [x] **Task 2.4:** `Synthesise.cs` — constructor arguments for the 24 types that need them
   - Input: task 1.4's re-derived table; design §6.3
   - Output: strings, enums and the three subscription arguments handled generically; a
     hand-written factory for `HandlerConfiguration`; the other three declared `manual:` where
@@ -500,7 +500,7 @@ outage.
   - Notes: 20 of the 24 need only the generic path. **`HandlerConfiguration` is P0** — it is on
     D4, phase 3 — so it gets the factory rather than the declaration.
 
-- [ ] **Task 2.5:** `Program.cs` — scope line, verdict, exit 0/1/2
+- [x] **Task 2.5:** `Program.cs` — scope line, verdict, exit 0/1/2
   - Input: design §6.1's seven steps and §6.5's exit codes
   - Output: the scope printed **before** the verdict — tables, rows, types, and the `omit:` and
     `manual:` counts, each named; then the diff; then exit 0, 1 or 2
@@ -508,7 +508,7 @@ outage.
     that is the family contract `versioncheck.py` set, and it is the whole defence against a
     vacuous green. Exit **2** is *authority unreachable*, and it is not a pass.
 
-- [ ] **Task 2.6:** Mark `SweeperCircuitBreaking.md`'s existing table, so the first CI run is
+- [x] **Task 2.6:** Mark `SweeperCircuitBreaking.md`'s existing table, so the first CI run is
       not vacuous
   - Input: design §12.2 — it is the **one** table in the corpus already in the §7.1 shape, and
     it has a single row; `OutboxCircuitBreakerOptions`, 1 option (§7.3)
@@ -523,7 +523,7 @@ outage.
     gate whose first CI run is vacuous being a gate nobody has tested — and **§2.7 records
     that this one is spent**, so no phase-8 task repeats it.
 
-- [ ] **Task 2.7:** AC3's red-proof — a changed constructor default is caught
+- [x] **Task 2.7:** AC3's red-proof — a changed constructor default is caught
   - Input: requirements §12 AC3; `spec/009-getting_started_tutorials/redproof_versioncheck.py`
     as the shape to copy
   - Output: `spec/012-configuration_reference/redproof/` — a fixture `.md` with a marker and a
@@ -533,7 +533,7 @@ outage.
     green this programme has met repeatedly. Assert the fixture is in scope **before** reading
     the verdict — 010's S2 red-proof was vacuous twice over for skipping that step.
 
-- [ ] **Task 2.8:** AC3b's red-proof — a body-coalesced default is reported as its real value,
+- [x] **Task 2.8:** AC3b's red-proof — a body-coalesced default is reported as its real value,
       never as `null`
   - Input: task 1.2's measurement; requirements §12 AC3b
   - Output: a fixture whose `EmptyChannelDelay` row says `null`; a recorded exit **1** saying
@@ -542,14 +542,14 @@ outage.
     this option *wrong, not missing*, and a reader has no reason to doubt a wrong default.
     Prove it fires before trusting the 619 rows that follow.
 
-- [ ] **Task 2.9:** AC5's red-proof — exit 2 is distinguishable from exit 0
+- [x] **Task 2.9:** AC5's red-proof — exit 2 is distinguishable from exit 0
   - Input: requirements §12 AC5; design §6.5
   - Output: a recorded run with the package source removed, exiting **2**, with a message that
     names the authority rather than the symptom
   - Notes: 009's `versioncheck.py` has the same contract and PROMPT records why it matters:
     *exit 2 is authority unreachable, which is not a pass.*
 
-- [ ] **Task 2.10:** D2 — add the job to `.github/workflows/docs.yml`, unguarded
+- [x] **Task 2.10:** D2 — add the job to `.github/workflows/docs.yml`, unguarded
   - Input: design §6.5's YAML
   - Output: a third job running `dotnet run --project tools/optioncheck` on push and pull
     request; a green CI run **naming the job** in the evidence
@@ -557,12 +557,129 @@ outage.
     `gh pr checks` — it lists a `push` row and a `pull_request` row per commit and they
     legitimately disagree; a `tail` of that output merged a red build in session 23.
 
-- [ ] **Task 2.11:** D3 — the pin joins `versioncheck.py`'s in `RELEASE_CHECKLIST.md`
+- [x] **Task 2.11:** D3 — the pin joins `versioncheck.py`'s in `RELEASE_CHECKLIST.md`
   - Input: `RELEASE_CHECKLIST.md`; requirements §9 D3; design §13.2
   - Output: a step bumping `optioncheck.csproj`'s pin, beside the existing tutorial-pin step
   - Notes: **State the trigger, because the two tools have opposite ones.**
     `versioncheck.py` goes red *by itself* when Brighter ships; `optioncheck` goes red *at this
     step*, performed by someone who is at that moment looking for exactly this information.
+
+### Phase 2 as executed — 2026-08-28, 11/11
+
+**The gate exists, it is proved to fail before it is trusted to pass, and it is unguarded in
+CI.** Everything below is at Brighter **`10.7.0`**, the pin in
+`tools/optioncheck/optioncheck.csproj` and nowhere else:
+
+```bash
+dotnet run --project tools/optioncheck                    # every page under contents/
+dotnet run --project tools/optioncheck -- <paths>         # just these files (§2.5)
+python3 spec/012-configuration_reference/redproof/redproof_optioncheck.py
+```
+
+**Six files, where design §3.1 lists five.** The sixth is `Authority.cs`, and it exists
+because **exit 2 has to be reachable as a verdict rather than as a restore failure**: a failed
+`dotnet restore` never runs the program at all, so a run whose packages were missing could
+never have said so. The `csproj` now writes its own `PackageReference` list into the assembly
+at build time, and the checker holds what loaded against what was pinned. That is what task
+2.9's red-proof measures, and it is not a change to any design decision — §6.5's exit codes
+are unchanged.
+
+**Task 2.6's seed marker exits 0, and the task was right to refuse to predict it.**
+`SweeperCircuitBreaking.md`'s single row says `CooldownCount`, `int`, `10`, and
+`OutboxCircuitBreakerOptions` at `10.7.0` says `CooldownCount`, `int`, `10`. **The corpus's
+one already-well-shaped table is correct**, so day two produced no ledger entry — which is a
+result, not an absence, and it is the first row of task 11.3's ledger either way: *checked,
+and it was right.* What the task did change is presentation — a bold `**CooldownCount**`
+became the spelling a reader types in backticks, the default gained its backticks, and the
+description gained a full stop.
+
+**The red-proofs: eight branches, all eight fired.** The two that matter are AC3b and AC5:
+
+| Branch | Expected | Got |
+|---|---:|---:|
+| 0. Baseline — the fixture must be green, and its scope asserted first | 0 | 0 |
+| 1. **AC3** — `bufferSize`'s *constructor* default changed 1 → 10 | 1 | 1 |
+| 2. **AC3b** — `emptyChannelDelay` written as `null`, which is what the *signature* says | 1 | 1 |
+| 3. `BufferSize` for `bufferSize` — the property spelling, not the parameter's | 1 | 1 |
+| 4. `omit:` with no reason | 1 | 1 |
+| 5. The type is gone — the marker renamed | 1 | 1 |
+| 6a. **AC5 control** — the built output copied elsewhere, nothing removed | 0 | 0 |
+| 6b. **AC5** — one pinned assembly deleted from that copy | 2 | 2 |
+
+**6a is not padding.** Copying the output somewhere else is itself a change, and without the
+control an exit 2 from the copy would prove nothing about the missing package. Branch 2 fires
+saying **`emptyChannelDelay` is `500 ms`**, which is phase 1's measurement arriving as a
+verdict. Branch 5 is the mechanised form of the two type names phase 1 found in design §7:
+`RocketMqSubscription` and `MQTTMessagingGatewayConfiguration` would each have produced it.
+
+**Four decisions phase 2 made that design does not name.** Each was forced by something phase
+1 measured:
+
+1. **A parameter with no declared default reads `none`, not a value.** Whatever the instance
+   holds for it is the argument the checker passed in. That is standing obligation 1's word
+   for it and a fact about the parameter rather than a limit of the tool.
+2. **An argument the checker had to supply is declared, never printed.** Phase 1's *thirteen
+   constructors reject their own defaults* lands exactly here: on `Subscription`,
+   `requestType` and `messagePumpType` are supplied and therefore unreadable, so the table
+   owes a `manual:` for each — which declares and counts. **Necessity is measured per type**,
+   probe 1.4's method carried into the tool: each supplied candidate is put back to its own
+   default and kept only if removal breaks construction. `makeChannels` is the case that
+   proves it works — it reads `Create` from its own default and stays fully checkable.
+3. **`max(props, ctor)` is a SELECTION, not a union.** The union would document `bufferSize`
+   and `BufferSize` as two options, when they are one option and the case hazard requirements
+   §7.1 names. Properties are `DeclaredOnly`, so a transport publication owes rows for its own
+   options and not for `Publication`'s ten — which is what design §7 maps as two tables.
+4. **Both escapes are checked against the type.** `OMIT NAMES NOTHING` and `MANUAL NAMES
+   NOTHING` catch a stale escape; `MANUAL NOT NEEDED` catches a `manual:` over a default the
+   tool can read, which would be an unchecked row wearing a declaration.
+
+**A third instrument now agrees with the other two.** `survey.py` parses source, probe 1.5's
+oracle reflects over assemblies, and the checker enumerates what a table owes. Twelve types
+run through it, and **every count matches phase 1's** — including the five where design §7 is
+superseded:
+
+| Type | Design §7 | `optioncheck` |
+|---|---:|---:|
+| `GcpPubSubSubscription` | 33 | 33 |
+| `KafkaSubscription` | 30 | 30 |
+| `KafkaPublication` | 17 | 17 |
+| `KafkaMessagingGatewayConfiguration` | 11 | 11 |
+| `ProducersConfiguration` | 26 | **22** |
+| `Publication` | 8 | **10** |
+| `InMemorySubscription` | 2 † | **17** |
+| `RmqMessagingGatewayConnection` | 19 | **11** |
+| `RelationalDatabaseConfiguration` | 8 | 8 |
+| `AzureBlobLockingProviderOptions` | 3 | 3 |
+| `DynamoDbInboxConfiguration` | 1 | 1 |
+| `QuartzSchedulerFactory` | 4 (§12.1) | 4 |
+
+**None of the twelve failed to construct and none produced an unprintable default**, so the
+synthesiser reaches every shape phase 3 through phase 9 will meet. **`QuartzSchedulerFactory`
+is the one to notice**: design §12.1 says the schedulers are invisible to `survey.py` because
+`SURFACE_RE` matches filenames and a factory is not a `*Configuration.cs`. **The marker binds
+a type, so the tool does not care** — phase 9's 25 options are checkable on the same terms as
+everything else.
+
+**AC4's evidence, naming the job.** The `options` job ran on
+[#129](https://github.com/BrighterCommand/Docs/pull/129) and passed in **33s**, and the line
+that matters is the one it printed on the runner:
+
+```text
+optioncheck — Brighter 10.7.0, 62 pinned packages (tools/optioncheck/optioncheck.csproj)
+scope: 1 table, 1 row, 1 type, on 1 page of 147 files scanned.
+0 mismatches across 1 table and 1 row.
+```
+
+**That is the same scope the local run reports**, which is what says the CI job is checking the
+corpus rather than passing on an empty one — and it is why task 2.6 exists. All eight check
+rows were read in full: `check`, `options` and `versions` on both the `push` and the
+`pull_request` event, plus the two GitBook rows.
+
+**The six gates in §2.8 are unmoved to the digit**, on the branch and after staging: link 150,
+pagelint 0 errors / 790 warnings / 148 pages, shape 147 pages / 12 sections / widest 10 of 20,
+redirects 77 entries / 7858 bytes, versioncheck 0 stale of 18 across 5, `--verify` 147/147/147.
+**`pagelint --changed` reaches 0 code blocks and says so** — the one page edited is a table,
+not a fence, so the strict run is legitimately vacuous and prints that it is.
 
 ---
 
