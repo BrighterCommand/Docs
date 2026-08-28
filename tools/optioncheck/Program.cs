@@ -41,6 +41,9 @@ internal static class Program
             return Unreachable;
         }
 
+        if (args.Length > 0 && args[0] == "--describe")
+            return Describe(args.Skip(1).ToList());
+
         var root = RepositoryRoot();
         if (root is null && args.Length == 0)
         {
@@ -82,6 +85,81 @@ internal static class Program
               + $"{Count(markers.Count, "table")}.");
 
         return findings.Count == 0 ? Clean : Findings;
+    }
+
+    /// <summary>
+    /// `--describe <type>…` — what a table for this type owes, in the four
+    /// columns, with the descriptions left empty.
+    ///
+    /// Standing obligation 3 is *write the table from the type, never from the
+    /// survey and never from our own prose*, and this is the instrument for
+    /// obeying it. Before it existed the only way to learn a default was to
+    /// write a wrong one and read the mismatch, which is transcription by
+    /// trial and error across sixty-odd tables still to come.
+    ///
+    /// **The obvious objection is that this makes the check circular** — a table
+    /// pasted from the tool agrees with the tool by construction, so AC2 proves
+    /// nothing. It does not bite, for two reasons worth stating rather than
+    /// assuming. The `Option`, `Type` and `Default` columns ARE the assembly's
+    /// truth by definition: design §6.2 makes the default readable only from an
+    /// instantiated object, so a human writing that column is transcribing this
+    /// output or guessing. And AC2's subject is DRIFT — today's table against
+    /// tomorrow's assembly — which no amount of agreement today can fake.
+    ///
+    /// What the tool cannot supply is the column that carries meaning. The
+    /// description is left empty on purpose: it is AC8's subject, it has no tool
+    /// behind it, and a blank cell is the honest prompt to write one.
+    /// </summary>
+    private static int Describe(IReadOnlyList<string> names)
+    {
+        if (names.Count == 0)
+        {
+            Console.Error.WriteLine("optioncheck --describe <fully.qualified.Type> [<type>…]");
+            return Unreachable;
+        }
+
+        var missing = 0;
+
+        foreach (var name in names)
+        {
+            var type = Reflect.Resolve(name);
+            if (type is null)
+            {
+                Console.Error.WriteLine($"optioncheck: THE TYPE IS GONE — `{name}` is in none of the "
+                                        + $"{Authority.Pinned().Count} pinned packages at {Authority.Pin()}");
+                missing++;
+                continue;
+            }
+
+            var surface = Reflect.Describe(type);
+
+            Console.WriteLine($"<!-- optioncheck: {type.FullName} -->");
+            Console.WriteLine();
+            Console.WriteLine("| Option | Type | Default | Description |");
+            Console.WriteLine("|---|---|---|---|");
+
+            foreach (var member in surface.Members)
+                Console.WriteLine($"| `{member.Name}` | `{member.TypeName}` | "
+                                  + $"{(member.Default is null ? "" : $"`{member.Default}`")} |  |");
+
+            Console.WriteLine();
+            Console.WriteLine($"{Count(surface.Members.Count, "member")}, read from the "
+                              + $"{(surface.Route == Reflect.Route.Constructor
+                                  ? "widest constructor's parameters"
+                                  : "settable properties")} — "
+                              + $"`max(props, ctor)` selects that route.");
+
+            foreach (var member in surface.Members.Where(m => m.Unreadable is not null))
+                Console.WriteLine($"  `{member.Name}` has no readable default: {member.Unreadable}. "
+                                  + $"The table owes `manual: {member.Name} — <why>`");
+
+            if (surface.Error is not null)
+                Console.WriteLine($"  the type did not construct: {surface.Error}");
+
+            Console.WriteLine();
+        }
+
+        return missing == 0 ? Clean : Findings;
     }
 
     /// <summary>

@@ -343,6 +343,30 @@ public class ParallelTestsB
 }
 ```
 
+## AddBrighter Options
+
+The `BrighterOptions` object the `AddBrighter` delegate receives.
+
+<!-- optioncheck: Paramore.Brighter.Extensions.DependencyInjection.BrighterOptions
+     manual: PolicyRegistry — the property is initialised to a DefaultPolicy, which has no printable value
+     manual: RequestContextFactory — the property is initialised to an InMemoryRequestContextFactory, which has no printable value
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `FeatureSwitchRegistry` | `IAmAFeatureSwitchRegistry?` | `null` | Supplies the feature switches handlers are toggled by. |
+| `HandlerLifetime` | `ServiceLifetime` | `Transient` | The lifetime request handlers are registered with. |
+| `IsolateTransientHandlerScope` | `bool` | `true` | Whether each transient handler in a pipeline gets its own DI scope. |
+| `InstrumentationOptions` | `InstrumentationOptions` | `None` | How much of a request instrumentation records. |
+| `MapperLifetime` | `ServiceLifetime` | `Transient` | The lifetime message mappers are registered with. |
+| `PolicyRegistry` | `IPolicyRegistry<string>?` | a `DefaultPolicy` | The Polly v7 policies used for retry and circuit breaking. |
+| `ResiliencePipelineRegistry` | `ResiliencePipelineRegistry<string>?` | `null` | The Polly v8 resilience pipelines that supersede `PolicyRegistry`. |
+| `RequestContextFactory` | `IAmARequestContextFactory` | an `InMemoryRequestContextFactory` | Creates the request context passed down a pipeline. |
+| `TransformerLifetime` | `ServiceLifetime` | `Transient` | The lifetime message transformers are registered with. |
+
+`PolicyRegistry` is obsolete in V10; configure `ResiliencePipelineRegistry` instead, as
+[Adding Polly Resilience Pipelines](#adding-polly-resilience-pipelines) shows.
+
 ## Validating Your Configuration
 
 We recommend enabling pipeline validation and diagnostics as part of your standard configuration. This catches common misconfiguration errors — such as sync/async mismatches, incorrect attribute ordering, and missing handlers — at startup rather than at runtime.
@@ -361,6 +385,20 @@ builder.Services.AddBrighter(options =>
 **ValidatePipelines** checks your configuration and throws a `PipelineValidationException` if errors are found. **DescribePipelines** logs a structured report of your configured pipelines to `ILogger`. Both are opt-in and independent of each other.
 
 For full details on what gets checked, how to configure validation flags, and how to interpret the diagnostic report, see [Pipeline Validation and Diagnostics](/contents/PipelineValidation.md).
+
+## Pipeline Validation Options
+
+The `BrighterPipelineValidationOptions` object `ValidatePipelines` configures.
+
+<!-- optioncheck: Paramore.Brighter.Extensions.DependencyInjection.BrighterPipelineValidationOptions -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `ConsumerOwnsValidation` | `bool` | `false` | Whether validation is deferred to the Dispatcher rather than run at host startup. |
+| `ThrowOnError` | `bool` | `true` | Whether a validation error stops host startup or is only logged. |
+
+`AddConsumers` sets `ConsumerOwnsValidation` itself, and `ValidatePipelines(throwOnError:)`
+sets `ThrowOnError`; neither is usually set by hand.
 
 ## Brighter Builder Fluent Interface
 
@@ -451,9 +489,12 @@ See the documentation for detail on specific *transports* on how to configure th
 A *Publication* configures a transport for sending a message to it's associated MoM. So an **RmqPublication** configures how we publish a message to RabbitMQ. There are a number of common properties to all publications.
 
 * **MakeChannels**: Do you want Brighter to create the infrastructure? Brighter can create infrastructure that it needs, and is aware of: **OnMissingChannel.Create**. So a publication can create the topic to send messages to. Alternatively if you create the channel by another method, such as IaaC, we can verify the infrastructure on startup: **OnMissingChannel.Validate**. Finally, you can avoid the performance cost of runtime checks by assuming your infrastructure exists: **OnMissingChannel.Assume**.
-* **MaxOutstandingMessages**: How large can the number of messages in the Outbox grow before we stop allowing new messages to be published and raise an **OutboxLimitReachedException**.
-* **MaxOutStandingCheckIntervalMilliSeconds**: How often do we check to see if the Outbox is full.
-* **Topic**: A Topic is the key used within the MoM to route messages. Publishers publish to a topic and subscribers, subscribe to it. We use a class **RoutingKey** to encapsulate the identifier used for a topic. The name the MoM uses for a topic may vary. Kafka & SNS use *topic* whilst RMQ uses *routingkey* 
+* **Topic**: A Topic is the key used within the MoM to route messages. Publishers publish to a topic and subscribers, subscribe to it. We use a class **RoutingKey** to encapsulate the identifier used for a topic. The name the MoM uses for a topic may vary. Kafka & SNS use *topic* whilst RMQ uses *routingkey*
+
+**MaxOutStandingMessages** and **MaxOutStandingCheckInterval** are not publication options.
+They belong to the producers configuration and are in [AddProducers Options](#addproducers-options).
+
+[Publication Options](#publication-options) is the full list.
 
 ### Producer Registry
 
@@ -670,7 +711,85 @@ When sending a request via the External Bus we use a Polly policy internally to 
 * **Paramore.RETRYPOLICY**
 * **Paramore.CIRCUITBREAKER**
 
+## AddProducers Options
 
+The `ProducersConfiguration` object the `AddProducers` delegate receives, described in
+[Configuring an External Bus](#configuring-an-external-bus). It is the second-widest
+configuration surface Brighter ships.
+
+<!-- optioncheck: Paramore.Brighter.ProducersConfiguration
+     manual: ProducerRegistry — the constructor assigns an empty ProducerRegistry, which has no printable value
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `ArchiveBatchSize` | `int?` | `null` | Messages archived in one batch. |
+| `ArchiveProvider` | `IAmAnArchiveProvider?` | `null` | The store dispatched messages are archived to. |
+| `ConnectionProvider` | `Type?` | `null` | The connection provider used to reach the Outbox outside a shared transaction. |
+| `DistributedLock` | `IDistributedLock?` | `null` | The lock that stops two sweepers clearing the same Outbox. |
+| `InstrumentationOptions` | `InstrumentationOptions?` | `null` | How much of a request instrumentation records on the producer side. |
+| `MessageMapperRegistry` | `IAmAMessageMapperRegistry?` | `null` | The mappers that turn requests into messages; `AutoFromAssemblies` supplies it. |
+| `MaxOutStandingMessages` | `int` | `-1` | Messages allowed to stack up in the Outbox before an `OutboxLimitReachedException`; -1 is unlimited. |
+| `MaxOutStandingCheckInterval` | `TimeSpan` | `0 ms` | How often the outstanding-message count is checked. |
+| `Outbox` | `IAmAnOutbox?` | `null` | The Outbox messages are deposited in. |
+| `OutboxBulkChunkSize` | `int?` | `null` | Messages written to the Outbox in one insert. |
+| `OutBoxBag` | `Dictionary<string, object>?` | `null` | Extra arguments an Outbox implementation requires. |
+| `OutboxTimeout` | `int?` | `null` | How long a write to the Outbox may take, in milliseconds. |
+| `ProducerRegistry` | `IAmAProducerRegistry?` | an empty `ProducerRegistry` | The producers messages are sent through, looked up by routing key. |
+| `ReplyQueueSubscriptions` | `IEnumerable<Subscription>?` | `null` | The subscriptions the reply queue uses under Request-Reply. |
+| `ResponseChannelFactory` | `IAmAChannelFactory?` | `null` | Creates the channel replies arrive on under Request-Reply. |
+| `RequestContextFactory` | `IAmARequestContextFactory?` | `null` | Creates the request context used for producer callbacks. |
+| `TransformerFactory` | `IAmAMessageTransformerFactory?` | `null` | Creates the transforms applied by message mappers. |
+| `MessageSchedulerFactory` | `IAmAMessageSchedulerFactory?` | `null` | Creates the scheduler that delays messages. |
+| `RequestSchedulerFactory` | `IAmARequestSchedulerFactory?` | `null` | Creates the scheduler that delays requests. |
+| `TransactionProvider` | `Type?` | `null` | The transaction provider that shares a transaction with the Outbox. |
+| `DefaultBoxConfiguration` | `InMemoryBoxConfiguration?` | `null` | Configures the in-memory Outbox used when no Outbox is supplied. |
+| `UseRpc` | `bool` | `false` | Whether the bus supports Request-Reply. |
+
+A `null` here usually means Brighter supplies something itself — an in-memory Outbox, an
+in-memory scheduler, the mappers `AutoFromAssemblies` registered — rather than that the
+feature is off.
+
+## Publication Options
+
+Every publication carries these, whatever the transport, and a transport's own publication
+type adds to them rather than replacing them. [Publications](#publications) describes the
+ones you meet first.
+
+<!-- optioncheck: Paramore.Brighter.Publication -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `DataSchema` | `Uri?` | `null` | The CloudEvents schema the message body adheres to. |
+| `MakeChannels` | `OnMissingChannel` | `Create` | Whether Brighter creates missing infrastructure, validates it, or assumes it. |
+| `RequestType` | `Type?` | `null` | The request type published on this channel. |
+| `Source` | `Uri` | `http://goparamore.io/` | The CloudEvents source that identifies where an event happened. |
+| `Subject` | `string?` | `null` | The CloudEvents subject of the event within its source. |
+| `Topic` | `RoutingKey?` | `null` | The topic or routing key messages are published to. |
+| `Type` | `CloudEventsType` | `empty` | The CloudEvents type used for routing and policy. |
+| `DefaultHeaders` | `IDictionary<string, object>?` | `null` | Headers the default mappers add to every message. |
+| `CloudEventsAdditionalProperties` | `IDictionary<string, object>?` | `null` | Non-standard CloudEvents attributes serialised alongside the standard ones. |
+| `ReplyTo` | `string?` | `null` | The queue a sender listens on under Request-Reply. |
+
+`Source` reads back with a trailing slash, because `Uri` normalises it. `Type` is empty on a
+new publication, and Brighter's own doc comment says otherwise — the value above is the one
+the assembly has.
+
+## Handler Configuration Options
+
+`HandlerConfiguration` is how you supply a subscriber registry and a handler factory when you
+build a Command Processor by hand rather than through dependency injection — see
+[How Configuring the Command Processor Works](/contents/HowConfiguringTheCommandProcessorWorks.md).
+
+<!-- optioncheck: Paramore.Brighter.HandlerConfiguration -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `subscriberRegistry` | `IAmASubscriberRegistry` | `none` | Maps a request type to the handlers that receive it. |
+| `handlerFactory` | `IAmAHandlerFactory` | `none` | Creates a handler instance when the pipeline needs one. |
+
+Both are required, which is what `none` says: the parameterless constructor exists for a
+Control Bus sender that posts everything and handles nothing.
 
 ## Further Reading
 

@@ -221,6 +221,23 @@ OPT_OUT = '<!-- pagelint: allow-serviceactivator -->'
 # V9 term unenforced, which is the failure this rule exists to prevent.
 SERVICEACTIVATOR_RE = re.compile(r'Service\s*Activator')
 
+# A FOURTH way the V9 name is legitimate, added by spec 012 phase 3: inside an
+# HTML comment. `<!-- optioncheck: ... -->` binds a fully-qualified type, and
+# `ConsumersOptions` lives in Paramore.Brighter.ServiceActivator.Extensions.
+# DependencyInjection, so a marker for it carries the word by construction and
+# cannot put it in backticks -- the marker's grammar takes a bare type name.
+#
+# The exemption is the same argument the fenced-block and code-span ones rest
+# on, and it is measured rather than assumed: an HTML comment publishes as
+# nothing. `grep -c optioncheck` over the published .md variant of
+# SweeperCircuitBreaking.md is 0 (spec 012 phase 2). What a reader never sees is
+# not prose.
+#
+# Not the opt-out comment, which is a page-level declaration and stays one: this
+# is "the word is not on the page", where the opt-out is "the page is about the
+# word". A page that needed the opt-out still needs it.
+HTML_COMMENT_RE = re.compile(r'<!--.*?-->', re.DOTALL)
+
 Finding = namedtuple('Finding', 'path line rule message severity')
 
 
@@ -789,11 +806,12 @@ def apply_changes(changes):
 def check_terminology(page):
     """"ServiceActivator" in prose where "Dispatcher" is meant.
 
-    Legitimate three ways, and a naive ban fires on all of them: inside fenced
+    Legitimate four ways, and a naive ban fires on all of them: inside fenced
     blocks (ServiceActivatorHostedService, the DI namespace), inside inline code
-    spans, and on a page discussing the name itself. So this reads prose only,
-    with code spans and link targets removed, and honours an opt-out comment
-    either on its own line or trailing the line it excuses.
+    spans, inside an HTML comment (see HTML_COMMENT_RE), and on a page
+    discussing the name itself. So this reads prose only, with code spans, HTML
+    comments and link targets removed, and honours an opt-out comment either on
+    its own line or trailing the line it excuses.
     """
     body = '\n'.join(page.lines)
     if OPT_OUT in body and any(
@@ -806,12 +824,20 @@ def check_terminology(page):
     # on HowServiceActivatorWorks.md -- arrives here bare and fires a rule the
     # body it came from already passes. DESCRIPTION MISMATCH keeps the two
     # equal, so checking the body checks both.
+    # Comments are blanked across the whole body before the per-line walk,
+    # because a marker's type name sits on a different line from its `<!--`.
+    # Blanked in place rather than deleted, so line numbers still address the
+    # file a reader would open.
+    uncommented = HTML_COMMENT_RE.sub(
+        lambda m: re.sub(r'[^\n]', ' ', m.group(0)), body).split('\n')
+
     findings = []
     for lineno, line in page.prose:
         if lineno <= front_matter_end(page):
             continue
         if OPT_OUT in line:
             continue
+        line = uncommented[lineno - 1]
         stripped = LINK_TARGET_RE.sub(']()', INLINE_CODE_RE.sub('``', line))
         found = SERVICEACTIVATOR_RE.search(stripped)
         if found:
