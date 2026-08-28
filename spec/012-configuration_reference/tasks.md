@@ -910,7 +910,7 @@ and each failed — `BrighterOutboxSupport.md` and `BrighterInboxSupport.md` are
 `BrighterBasicConfiguration.md` is **How-to**, and `PostgresOutbox.md` privileges one of five
 providers (design §8.4).
 
-- [ ] **Task 4.1:** Write `contents/RelationalDatabaseConfigurationReference.md`
+- [x] **Task 4.1:** Write `contents/RelationalDatabaseConfigurationReference.md`
   - Input: design §8.4's outline; `RelationalDatabaseConfiguration` (8 options); §7.3's
     seventeen components across four families
   - Output: the page — banner, opening sentence, front matter, four sections:
@@ -927,7 +927,7 @@ providers (design §8.4).
     and are not this page's argument to make. Budget ~140 lines — a prose budget, not a
     prediction.
 
-- [ ] **Task 4.2:** Land the entry, the row, and the checks
+- [x] **Task 4.2:** Land the entry, the row, and the checks
   - Input: design §9.1's first diff
   - Output: the `SUMMARY.md` entry **nested under *Basic Configuration*** beside the two
     Reference pages it joins; a `pagetypes.tsv` row; the six gates and `optioncheck`
@@ -935,6 +935,44 @@ providers (design §8.4).
     and the entry text is what reaches `/llms.txt` — write it equal to the H1. Expect link,
     pagelint, shape and (after publication) `--verify` each to move by one, and
     **`--check-redirects` not to move at all**; assert that rather than assuming it.
+
+### Phase 4 as executed — 2026-08-28, 2/2
+
+**`contents/RelationalDatabaseConfigurationReference.md` exists — 112 lines, the first page
+012 creates**, and with it the first `SUMMARY.md` entry, the first `pagetypes.tsv` row, and
+the first movement in the page-count gates this spec has caused.
+
+**The eight options are eight, and the type is constructor-driven** — `optioncheck` selects
+the constructor route, so the option is the parameter and the property is the same word
+capitalised. One member is worth the note the page gives it: `inboxTableName` reads back as
+**`InBoxTableName`**, with a capital B in the middle.
+
+**Only `connectionString` has no default.** The three table names default to `Outbox`,
+`Inbox` and `Queue`, which is why thirteen pages can link this table and say nothing further.
+
+**Two of the seventeen rows have no link, deliberately.** `SpannerOutbox.md`,
+`SpannerInbox.md` and `MSSQLMessageBroker.md` do not exist yet — they are phases 7, 7 and 6 —
+and a link to a page that does not exist is `linkcheck.py` MISSING FILE. They read *not yet
+documented*. **Phases 6 and 7 owe the link back**, which is 009's *link down the ladder,
+never up* arriving in a different spec: the page that exists last is the page that adds the
+link.
+
+**The gates moved exactly as task 4.2 predicted, and the one that did not move is the
+result:** link 150 → **151**, pagelint 148 → **149 pages**, shape 147 → **148**, and
+`--check-redirects` **did not move** — 77 entries, 7,858 bytes — because slugs are
+filename-derived and adding to a section moves no URL. That is §2.1's claim holding for a
+**sixth** time, asserted rather than assumed. `--verify` moves to 148 once GitBook publishes.
+
+**The using-directive debt did not move either**, and that is also a result: the page's one
+C# block carries its five `using` directives, so a new page added **nothing** to the 787.
+`pagelint --changed` reached **1 code block strict, 0 errors** — a real strict run, not a
+vacuous one.
+
+**The block was compiled, not eyeballed** — requirements §11's obligation for the ten new
+pages, and 009's method. Pasted into a project referencing
+`Paramore.Brighter.Extensions.DependencyInjection`, `Outbox.PostgreSql` and `PostgreSql` at
+`10.7.0`: **build succeeded**, which is what says `PostgreSqlOutbox` and
+`PostgreSqlConnectionProvider` are spelled the way the page spells them.
 
 ---
 
