@@ -84,6 +84,47 @@ services.AddBrighter(options =>
 .AddHostedService<ServiceActivatorHostedService>();
 ```
 
+## InMemory Subscription Options
+
+`InMemorySubscription` takes seventeen constructor arguments, and every one of them is
+[`Subscription`'s](/contents/DispatcherConfigurationReference.md#subscription-options): the
+in-memory transport adds no option of its own, because there is no broker to configure. The
+table is here so that the claim is checked rather than asserted — the day a parameter is
+added, it appears as a row this page does not have.
+
+<!-- optioncheck: Paramore.Brighter.InMemorySubscription
+     manual: requestType — the constructor rejects its own default, so there is no default to read
+     manual: getRequestType — assigned to MapRequestType, and the body substitutes a function returning RequestType when it is null
+     manual: messagePumpType — the constructor rejects its own default of Unknown, so there is no default to read
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `subscriptionName` | `SubscriptionName` | `none` | Names the subscription for diagnostics; read back as `Name`. |
+| `channelName` | `ChannelName` | `none` | Names the channel on the `InternalBus` this subscription reads. |
+| `routingKey` | `RoutingKey` | `none` | The topic the channel subscribes to on the `InternalBus`. |
+| `requestType` | `Type?` | `none` | The request type messages on this channel are translated into. |
+| `getRequestType` | `Func<Message, Type>?` | derives the type from `requestType` | Determines the request type from the message rather than from the channel. |
+| `bufferSize` | `int` | `1` | Messages held in the channel at once, and read from the bus at once. |
+| `noOfPerformers` | `int` | `1` | Threads reading this channel, each with its own message pump. |
+| `timeOut` | `TimeSpan?` | `300 ms` | How long a read waits before treating the channel as empty. |
+| `requeueCount` | `int` | `-1` | Times a message is requeued before it is treated as a poison pill; -1 is unlimited. |
+| `requeueDelay` | `TimeSpan?` | `0 ms` | How long delivery of a requeued message is delayed. |
+| `unacceptableMessageLimit` | `int` | `0` | Unacceptable messages before the channel stops; 0 disables the limit. |
+| `unacceptableMessageLimitWindow` | `TimeSpan?` | `null` | The window the unacceptable-message count resets at the end of. |
+| `messagePumpType` | `MessagePumpType` | `none` | Selects the Reactor or Proactor concurrency model. |
+| `channelFactory` | `IAmAChannelFactory?` | `null` | Creates the channel; supply an `InMemoryChannelFactory` over the same `InternalBus`. |
+| `makeChannels` | `OnMissingChannel` | `Create` | Whether Brighter creates missing infrastructure, validates it, or assumes it. |
+| `emptyChannelDelay` | `TimeSpan?` | `500 ms` | How long the pump pauses after a read that found no message. |
+| `channelFailureDelay` | `TimeSpan?` | `1000 ms` | How long the pump pauses after a channel failure. |
+
+**Two options are set as properties after construction rather than as constructor
+arguments**, so they are not on the table above: `DeadLetterRoutingKey` and
+`InvalidMessageRoutingKey`, both `RoutingKey?` and both `null`.
+
+The generic form `InMemorySubscription<T>` supplies `requestType` from `T` and still requires
+a subscription name, a channel name and a routing key.
+
 ## InMemory Transport Complete Example
 
 ```csharp

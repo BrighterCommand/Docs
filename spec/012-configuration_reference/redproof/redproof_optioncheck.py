@@ -6,8 +6,15 @@
 Requirements §12 AC3 asks for "a red-proof that a changed ctor default is
 caught -- NOT merely that the tool runs", AC3b for one on a body-coalesced
 default, and AC5 for exit 2 being distinguishable from exit 0. This is all
-three, in 009's `redproof_versioncheck.py` shape, and the discipline is that
-file's:
+three, in 009's `redproof_versioncheck.py` shape.
+
+Branch 7 was added at phase 5 and is the only one here about a GREEN build:
+`RmqMessagingGatewayConnection.Name` is `= Environment.MachineName`, so the
+checker read a real value and a table printing it passed on the author's machine
+and would have failed on the CI runner. It uses a second fixture, because the
+subscription one has no environment-derived member to declare.
+
+The discipline is 009's:
 
   * print a BASELINE first and require it GREEN. A probe that starts at its
     first mutation cannot tell a rule that fires from a tool that is broken.
@@ -37,6 +44,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 
 FIXTURE = os.path.join(HERE, 'fixture_subscription.md')
+CONNECTION = os.path.join(HERE, 'fixture_connection.md')
 PROJECT = os.path.join(REPO, 'tools', 'optioncheck')
 BIN = os.path.join(PROJECT, 'bin', 'Debug', 'net9.0')
 DLL = os.path.join(BIN, 'optioncheck.dll')
@@ -64,23 +72,26 @@ def digest(path):
         return hashlib.sha256(handle.read()).hexdigest()
 
 
-def read():
-    with open(FIXTURE, encoding='utf-8') as handle:
+def read(path=None):
+    with open(path or FIXTURE, encoding='utf-8') as handle:
         return handle.read()
 
 
-def write(text):
-    with open(FIXTURE, 'w', encoding='utf-8') as handle:
+def write(text, path=None):
+    with open(path or FIXTURE, 'w', encoding='utf-8') as handle:
         handle.write(text)
 
 
-def mutate(original, old, new):
+def mutate(original, old, new, path=None):
     """Replace `old` with `new`, asserting the substitution actually happened."""
     assert old in original, f'the fixture does not contain {old!r} -- it has moved'
     text = original.replace(old, new, 1)
     assert text != original, 'the mutation changed nothing'
-    write(text)
-    assert new in read(), f'the mutated fixture does not contain {new!r}'
+    write(text, path)
+    if new:
+        assert new in read(path), f'the mutated fixture does not contain {new!r}'
+    else:
+        assert old not in read(path), f'the mutated fixture still contains {old!r}'
     return text
 
 
@@ -182,6 +193,48 @@ def main():
 
     assert digest(FIXTURE) == original, 'the fixture did not survive the probe'
     print(f'\nfixture restored byte-identical: sha256 {digest(FIXTURE)}')
+
+    # ------------------------------- 7. a default the product takes from the box
+    # Phase 5's finding, and the one branch here that is about a green build
+    # rather than a red one. `RmqMessagingGatewayConnection.Name` is
+    # `Environment.MachineName`: the checker reads a real value, so before the
+    # fix a table printing this machine's hostname PASSED here and would have
+    # failed on the CI runner, where the hostname is different. The row is
+    # `manual:`; deleting the declaration must be a finding.
+    #
+    # The mutation deletes a line rather than writing a value, on purpose. A
+    # branch that wrote this machine's name into the fixture would itself be
+    # machine-dependent, which is the defect it is proving.
+    connection = digest(CONNECTION)
+    spare = os.path.join(tempfile.mkdtemp(), 'fixture_connection.md')
+    shutil.copy2(CONNECTION, spare)
+    assert digest(spare) == connection, 'the copy aside is not the file'
+
+    text = read(CONNECTION)
+    code, out = run([CONNECTION])
+    assert 'scope: 1 table, 11 rows, 1 type' in out, (
+        'branch 7 precondition: the connection fixture must be IN SCOPE:\n' + out)
+    assert code == 0, f'branch 7 needs a green baseline for its own fixture:\n{out}'
+    print('\nconnection fixture baseline green: 1 table, 11 rows, 1 type')
+
+    try:
+        mutate(text,
+               '\n     manual: Name — the default is Environment.MachineName, '
+               'which differs on every machine',
+               '', CONNECTION)
+        assert 'manual: Name' not in read(CONNECTION), (
+            'the mutation must remove the declaration, not merely edit it')
+        code, out = run([CONNECTION])
+        report('7. AN ENVIRONMENT-DERIVED DEFAULT', 1, code, out,
+               'the `manual: Name` declaration is gone; the row still names a value')
+        assert 'DEFAULT NOT DETERMINABLE' in out and 'Environment.MachineName' in out, (
+            'exit 1 is only correct if the finding says WHY the value is not a '
+            'default -- a row read off this machine is green here and red in CI')
+    finally:
+        write(text, CONNECTION)
+
+    assert digest(CONNECTION) == connection, 'the connection fixture did not survive the probe'
+    print(f'connection fixture restored byte-identical: sha256 {digest(CONNECTION)}')
 
     # -------------------------------------- 6. AC5, the authority unreachable
     # Exit 2 has to be reachable as a VERDICT rather than as a restore failure:

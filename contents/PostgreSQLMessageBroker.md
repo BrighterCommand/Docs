@@ -221,37 +221,87 @@ public class OrderCreatedEventHandler : RequestHandlerAsync<OrderCreatedEvent>
 
 ## PostgreSQL Message Broker Configuration Options
 
-### PostgresPublication
+Three of the four settings below default to `null`, and a `null` is not "unset": the schema, the
+queue store table and the payload format each fall back to the same setting on the
+[relational database configuration](/contents/RelationalDatabaseConfigurationReference.md#relational-database-configuration-options)
+the connection carries, and the schema falls back once more to `public`.
 
-| Property | Type | Description | Default |
-|----------|------|-------------|---------|
-| `Topic` | `RoutingKey` | Message routing key (queue name) | Required |
-| `SchemaName` | `string?` | Database schema name | `"public"` |
-| `QueueStoreTable` | `string?` | Queue store table name | From configuration |
-| `BinaryMessagePayload` | `bool?` | Use JSONB instead of JSON | From configuration |
+### PostgresPublication Options
 
-### PostgresSubscription
+`PostgresPublication` takes its options as properties and adds these three to the
+[base publication options](/contents/CommandProcessorConfigurationReference.md#publication-options),
+which carry `Topic`.
 
-| Property | Type | Description | Default |
-|----------|------|-------------|---------|
-| `ChannelName` | `ChannelName` | Consumer channel name | Required |
-| `RoutingKey` | `RoutingKey` | Message routing key (queue name) | Required |
-| `BufferSize` | `int` | Messages to retrieve per poll | `1` |
-| `NoOfPerformers` | `int` | Concurrent consumer threads | `1` |
-| `VisibleTimeout` | `TimeSpan` | Message visibility timeout | `30 seconds` |
-| `SchemaName` | `string?` | Database schema name | `"public"` |
-| `QueueStoreTable` | `string?` | Queue store table name | From configuration |
-| `BinaryMessagePayload` | `bool?` | Expect JSONB payloads | From configuration |
-| `TableWithLargeMessage` | `bool` | Support for large messages as streams | `false` |
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.Postgres.PostgresPublication -->
 
-### RelationalDatabaseConfiguration
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `SchemaName` | `string?` | `null` | The schema the queue store table lives in. |
+| `QueueStoreTable` | `string?` | `null` | The table messages are written to. |
+| `BinaryMessagePayload` | `bool?` | `null` | Whether the payload column is written as JSONB rather than JSON. |
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `ConnectionString` | `string` | PostgreSQL connection string |
-| `QueueStoreTable` | `string` | Default queue store table name |
-| `SchemaName` | `string` | Default schema name |
-| `BinaryMessagePayload` | `bool` | Default to JSONB |
+### PostgresSubscription Options
+
+`PostgresSubscription` takes its options as constructor arguments, so the option is the
+parameter you type. The seventeen it shares with
+[`Subscription`](/contents/DispatcherConfigurationReference.md#subscription-options) behave
+the same way here; the other seven are PostgreSQL's own.
+
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.Postgres.PostgresSubscription
+     manual: dataType — assigned to RequestType, and the constructor rejects its own default, so there is no default to read
+     manual: getRequestType — assigned to MapRequestType, and the body substitutes a function returning RequestType when it is null
+     manual: messagePumpType — the constructor rejects its own default of Unknown, so there is no default to read
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `subscriptionName` | `SubscriptionName` | `none` | Names the subscription for diagnostics; read back as `Name`. |
+| `channelName` | `ChannelName` | `none` | Names the queue this subscription reads. |
+| `routingKey` | `RoutingKey` | `none` | The routing key messages are written under. |
+| `dataType` | `Type?` | `none` | The request type messages on this queue are translated into; read back as `RequestType`. |
+| `getRequestType` | `Func<Message, Type>?` | derives the type from `dataType` | Determines the request type from the message rather than from the queue. |
+| `bufferSize` | `int` | `1` | Messages read from the queue at once and held in the channel. |
+| `noOfPerformers` | `int` | `1` | Threads reading this queue, each with its own message pump. |
+| `timeOut` | `TimeSpan?` | `300 ms` | How long a read waits before treating the queue as empty. |
+| `requeueCount` | `int` | `-1` | Times a message is requeued before it is treated as a poison pill; -1 is unlimited. |
+| `requeueDelay` | `TimeSpan?` | `0 ms` | How long delivery of a requeued message is delayed. |
+| `unacceptableMessageLimit` | `int` | `0` | Unacceptable messages before the channel stops; 0 disables the limit. |
+| `unacceptableMessageLimitWindow` | `TimeSpan?` | `null` | The window the unacceptable-message count resets at the end of. |
+| `messagePumpType` | `MessagePumpType` | `none` | Selects the Reactor or Proactor concurrency model. |
+| `channelFactory` | `IAmAChannelFactory?` | `null` | Creates the channel; falls back to `DefaultChannelFactory` when null. |
+| `makeChannels` | `OnMissingChannel` | `Create` | Whether Brighter creates the queue store table, validates it, or assumes it. |
+| `emptyChannelDelay` | `TimeSpan?` | `500 ms` | How long the pump pauses after a read that found no message. |
+| `channelFailureDelay` | `TimeSpan?` | `1000 ms` | How long the pump pauses after a channel failure. |
+| `schemaName` | `string?` | `null` | The schema the queue store table lives in. |
+| `queueStoreTable` | `string?` | `null` | The table messages are read from. |
+| `visibleTimeout` | `TimeSpan?` | `30000 ms` | How long a read message stays invisible to other consumers. |
+| `tableWithLargeMessage` | `bool` | `false` | Whether payloads are read as streams to support large messages. |
+| `binaryMessagePayload` | `bool?` | `null` | Whether the payload column is read as JSONB rather than JSON. |
+| `deadLetterRoutingKey` | `RoutingKey?` | `null` | The routing key messages are dead-lettered to. |
+| `invalidMessageRoutingKey` | `RoutingKey?` | `null` | The routing key unacceptable messages are routed to. |
+
+The request type parameter is `dataType` here rather than `requestType`, which is what every
+other transport in this documentation calls it, and it is read back as `RequestType`.
+
+The generic form `PostgresSubscription<T>`, which every example above uses, takes the same
+options and supplies four defaults the table cannot: `dataType` is `T`, and
+`subscriptionName`, `channelName` and `routingKey` are `T`'s full name. It leaves
+`messagePumpType` required, so state Reactor or Proactor on every subscription.
+
+### PostgresMessagingGatewayConnection Options
+
+The connection wraps the relational database configuration rather than adding settings of its
+own.
+
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.Postgres.PostgresMessagingGatewayConnection -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `configuration` | `RelationalDatabaseConfiguration` | `none` | The connection string, schema and table names for the queue store; read back as `Configuration`. |
+
+The eight options on that configuration are documented once, at
+[Relational Database Configuration Reference](/contents/RelationalDatabaseConfigurationReference.md),
+because seventeen Brighter components share them.
 
 ---
 

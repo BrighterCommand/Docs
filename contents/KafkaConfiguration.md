@@ -28,19 +28,43 @@ In addition to the Producer API and Consumer API Kafka streams have features suc
 
 ## Kafka Connection
 
-The Connection to Kafka is provided by an **KafkaMessagingGatewayConnection** which allows you to configure the following:
+The Connection to Kafka is provided by a `KafkaMessagingGatewayConfiguration` which allows you to configure the following:
 
-- **BootstrapServers**: A **bootstrap** server is a well-known broker through which we discover the servers in the Kafka cluster that we can connect to. You should supply a comma-separated list of host and port pairs. These are the addresses of the Kafka brokers in the "bootstrap" Kafka cluster.
+- **BootStrapServers**: A **bootstrap** server is a well-known broker through which we discover the servers in the Kafka cluster that we can connect to. You should supply a comma-separated list of host and port pairs. These are the addresses of the Kafka brokers in the "bootstrap" Kafka cluster.
 - **Debug**: A comma-separated list of debug contexts to enable.  Producer: broker, topic, msg. Consumer: consumer, cgrp, topic, fetch.
 - **Name**: An identifier to use for the client.
 - **SaslMechanisms**: If any, what is the protocol used for authenticated connection to the Kafka broker: plain, scram-sha-256, scram-sha-256, gssapi (kerberos), oauthbearer
-- **SaslKerberosName**: If using kerberos, what is the connection name.
+- **SaslKerberosPrincipal**: If using kerberos, what is the connection name.
 - **SaslUsername**: SASL username for use with PLAIN and SASL-SCRAM
 - **SaslPassword**: SASL password for use with PLAIN and SASL-SCRAM
 - **SecurityProtocol**: How are messages between client and server encrypted, if at all: plaintext, ssl, saslplaintext, saslssl
 - **SslCaLocation**: Where is the CA certificate located (see [here](https://docs.confluent.io/platform/current/tutorials/examples/clients/docs/csharp.html) for guidance).
 - **SslKeystoreLocation**: Path to the client's keystore
 - **SslKeystorePassword**: Password for the client's keystore
+
+## Kafka Connection Options
+
+The type is `KafkaMessagingGatewayConfiguration`, which is the name every example on this
+page uses. It takes its options as properties, so the option is the property you set.
+
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.Kafka.KafkaMessagingGatewayConfiguration -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `BootStrapServers` | `string[]` | `null` | Host and port pairs for the brokers the client discovers the cluster through. |
+| `Debug` | `string?` | `null` | A comma-separated list of librdkafka debug contexts to enable. |
+| `Name` | `string?` | `null` | Identifies the client to the broker. |
+| `SaslMechanisms` | `SaslMechanism?` | `null` | The SASL mechanism used to authenticate to the broker. |
+| `SaslKerberosPrincipal` | `string?` | `null` | The Kerberos principal used when the mechanism is GSSAPI. |
+| `SaslUsername` | `string?` | `null` | The SASL username used with PLAIN and SCRAM. |
+| `SaslPassword` | `string?` | `null` | The SASL password used with PLAIN and SCRAM. |
+| `SecurityProtocol` | `SecurityProtocol?` | `null` | How traffic between client and broker is encrypted. |
+| `SslCaLocation` | `string?` | `null` | Path to the CA certificate that signs the broker's certificate. |
+| `SslKeystoreLocation` | `string?` | `null` | Path to the client's keystore. |
+| `SslKeystorePassword` | `string?` | `null` | Password for the client's keystore. |
+
+Two spellings are easy to get wrong: `BootStrapServers` carries a capital `S` in the middle,
+and the Kerberos option is `SaslKerberosPrincipal`.
 
 The following code connects to a local Kafka instance (for development):
 
@@ -94,7 +118,7 @@ For more on a *Publication* see the material on an *Add Producers* in [Command P
 We allow you to configure properties for both Brighter and the Confluent .NET client. Because there are many properties on the Confluent .NET Client we also configure a callback to let you inspect and modify the configuration that we will pass to the client if you so desire. This can be used to add properties we do not support or adjust how we set them.
 
 - **Replication**: how many ISR nodes must receive the record before the producer can consider the write successful. Default is Acks.All.
-- **BatchNumberMessages**: Maximum number of messages batched in one MessageSet. Default is 10.
+- **BatchNumberMessages**: Maximum number of messages batched in one MessageSet. Default is 10000.
 - **EnableIdempotence**: Messages are produced once only. Will adjust the following if not set: `max.in.flight.requests.per.connection=5` (must be less than or equal to 5), `retries=INT32_MAX` (must be greater than 0), `acks=all`, `queuing.strategy=fifo`. Default is true.
 - **LingerMs**: Maximum time, in milliseconds, for buffering data on the producer queue. Default is 5.
 - **MessageSendMaxRetries**: How many times to retry sending a failing MessageSet. Note: retrying may cause reordering, set the  max in flight to 1 if you need ordering by when sent. Default is 3.
@@ -102,13 +126,48 @@ We allow you to configure properties for both Brighter and the Confluent .NET cl
 - **MaxInFlightRequestsPerConnection**: Maximum number of in-flight requests the  client will send. We default this to 1, so as to allow retries to not de-order the stream.
 - **NumPartitions**: How many partitions for this topic. We default to 1.
 - **Partitioner**: How do we map a partition key to a partition? Defaults to Partitioner.ConsistentRandom, but we recommend Partitioner.Murmur2Random for a more even distribution of messages across partitions. See [Kafka Hash Partitioning](#kafka-hash-partitioning) below for the supported values and the differences between them.
-- **QueueBufferingMaxMessages**: Maximum number of messages allowed on the producer queue. Defaults to 10.
+- **QueueBufferingMaxMessages**: Maximum number of messages allowed on the producer queue. Defaults to 100000.
 - **QueueBufferingMaxKbytes**: Maximum total message size sum allowed on the producer queue. Defaults to 1048576 bytes (so for 10 messages about 104Kb per message).
 - **ReplicationFactor**: What is the replication factor? How many nodes is the topic copied to on the broker? Defaults to 1.
 - **RetryBackoff**: The backoff time before retrying a message send. Defaults to 100.
 - **RequestTimeoutMs**: The ack timeout of the producer request. This value is only enforced by the broker and relies on Replication being != AcksEnum.None. Defaults to 500.
 - **TopicFindTimeoutMs**: How long to wait when asking for topic metadata. Defaults to 5000.
 - **TransactionalId**: The unique identifier for this producer, used with transactions
+
+## Kafka Publication Options
+
+`KafkaPublication` takes its options as properties and adds these seventeen to the
+[base publication options](/contents/CommandProcessorConfigurationReference.md#publication-options),
+which it inherits.
+
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.Kafka.KafkaPublication
+     manual: MessageHeaderBuilder — the property is initialised to a KafkaDefaultMessageHeaderBuilder, which has no printable value
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `Replication` | `Acks` | `All` | In-sync replicas that must acknowledge a write before it is complete. |
+| `BatchNumberMessages` | `int` | `10000` | Messages batched into one MessageSet. |
+| `EnableIdempotence` | `bool` | `true` | Whether the producer guarantees each message is written once. |
+| `LingerMs` | `int` | `5` | Milliseconds data is buffered on the producer queue before it is sent. |
+| `MessageSendMaxRetries` | `int` | `3` | Times a failing MessageSet is retried. |
+| `MessageTimeoutMs` | `int` | `5000` | Milliseconds a produced message waits locally for successful delivery; 0 is infinite. |
+| `MaxInFlightRequestsPerConnection` | `int` | `1` | Requests the client sends before waiting for a response. |
+| `NumPartitions` | `int` | `1` | Partitions given to the topic when Brighter creates it. |
+| `Partitioner` | `Partitioner` | `ConsistentRandom` | Maps a partition key to a partition. |
+| `QueueBufferingMaxMessages` | `int` | `100000` | Messages allowed on the producer queue. |
+| `QueueBufferingMaxKbytes` | `int` | `1048576` | Total size in kilobytes allowed on the producer queue. |
+| `ReplicationFactor` | `short` | `1` | Broker nodes the topic is copied to when Brighter creates it. |
+| `RetryBackoff` | `int` | `100` | Milliseconds before a failed send is retried. |
+| `RequestTimeoutMs` | `int` | `500` | Milliseconds the broker waits to acknowledge a producer request. |
+| `TopicFindTimeoutMs` | `int` | `5000` | Milliseconds a request for topic metadata waits. |
+| `TransactionalId` | `string?` | `null` | Identifies this producer across restarts when using transactions. |
+| `MessageHeaderBuilder` | `IKafkaMessageHeaderBuilder` | a `KafkaDefaultMessageHeaderBuilder` | Maps a Brighter message's headers onto Kafka headers. |
+
+`MaxInFlightRequestsPerConnection` is `1` rather than the Confluent client's own `5`, so that
+a retry cannot re-order the stream; raising it trades ordering for throughput.
+`MessageHeaderBuilder` is the extension point for the mapping between a Brighter message's
+headers and Kafka's.
 
 The following example shows how a *Publication* might be configured:
 
@@ -243,6 +302,70 @@ We support a number of Kafka specific *Subscription* options:
 - **ReplicationFactor**: What is the replication factor? How many nodes is the topic copied to on the broker? Defaults to 1. Used for topic creation if required.
 - **SessionTimeout**: If Kafka does not receive a heartbeat from the consumer within this time window, trigger a re-balance. Defaults to 10000ms (10 seconds). **Deprecated**: set `SessionTimeout` on a `ClassicGroupProtocol` via **GroupProtocol** instead.
 - **SweepUncommittedOffsetsInterval**: The interval at which we sweep, looking for offsets that have not been flushed (see [below](#offset-management)). Defaults to 30000ms (30 seconds).
+
+## Kafka Subscription Options
+
+`KafkaSubscription` takes its options as constructor arguments, so the option is the parameter
+you type. The seventeen it shares with
+[`Subscription`](/contents/DispatcherConfigurationReference.md#subscription-options) behave
+the same way here; the other thirteen are Kafka's own, and this is the widest subscription
+table in the documentation.
+
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.Kafka.KafkaSubscription
+     manual: requestType — the constructor rejects its own default, so there is no default to read
+     manual: getRequestType — assigned to MapRequestType, and the body substitutes a function returning RequestType when it is null
+     manual: messagePumpType — the constructor rejects its own default of Unknown, so there is no default to read
+     manual: numOfPartitions — assigned to NumPartitions, a spelling that differs by more than case, so the default cannot be read back
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `subscriptionName` | `SubscriptionName` | `none` | Names the subscription for diagnostics; read back as `Name`. |
+| `channelName` | `ChannelName` | `none` | Names the channel this subscription reads. |
+| `routingKey` | `RoutingKey` | `none` | The Kafka topic the consumer subscribes to. |
+| `requestType` | `Type?` | `none` | The request type messages on this topic are translated into. |
+| `getRequestType` | `Func<Message, Type>?` | derives the type from `requestType` | Determines the request type from the message rather than from the topic. |
+| `groupId` | `string?` | `null` | The consumer group this consumer joins. |
+| `bufferSize` | `int` | `1` | Messages read from the topic at once and held in the channel. |
+| `noOfPerformers` | `int` | `1` | Threads reading this topic, each with its own message pump. |
+| `timeOut` | `TimeSpan?` | `300 ms` | How long a read waits before treating the topic as empty. |
+| `requeueCount` | `int` | `-1` | Times a message is requeued before it is treated as a poison pill; -1 is unlimited. |
+| `requeueDelay` | `TimeSpan?` | `0 ms` | How long delivery of a requeued message is delayed. |
+| `unacceptableMessageLimit` | `int` | `0` | Unacceptable messages before the channel stops; 0 disables the limit. |
+| `unacceptableMessageLimitWindow` | `TimeSpan?` | `null` | The window the unacceptable-message count resets at the end of. |
+| `offsetDefault` | `AutoOffsetReset` | `Earliest` | Where the consumer starts when the group has no stored offset. |
+| `commitBatchSize` | `long` | `10` | Completed messages whose offsets are committed in one batch. |
+| `sessionTimeout` | `TimeSpan?` | `10000 ms` | How long Kafka waits for a heartbeat before rebalancing the group. |
+| `maxPollInterval` | `TimeSpan?` | `300000 ms` | How long Kafka waits for a poll before rebalancing the group. |
+| `sweepUncommittedOffsetsInterval` | `TimeSpan?` | `30000 ms` | How often offsets that never reached a batch are swept and committed. |
+| `isolationLevel` | `IsolationLevel` | `ReadCommitted` | Whether uncommitted messages are read. |
+| `messagePumpType` | `MessagePumpType` | `none` | Selects the Reactor or Proactor concurrency model. |
+| `numOfPartitions` | `int` | `1` | Partitions given to the topic when Brighter creates it; read back as `NumPartitions`. |
+| `replicationFactor` | `short` | `1` | Broker nodes the topic is copied to when Brighter creates it. |
+| `channelFactory` | `IAmAChannelFactory?` | `null` | Creates the channel; falls back to `DefaultChannelFactory` when null. |
+| `makeChannels` | `OnMissingChannel` | `Create` | Whether Brighter creates the topic, validates it, or assumes it. |
+| `emptyChannelDelay` | `TimeSpan?` | `500 ms` | How long the pump pauses after a read that found no message. |
+| `channelFailureDelay` | `TimeSpan?` | `1000 ms` | How long the pump pauses after a channel failure. |
+| `partitionAssignmentStrategy` | `PartitionAssignmentStrategy` | `RoundRobin` | How partitions are assigned across the consumer group. |
+| `configHook` | `Action<ConsumerConfig>?` | `null` | Modifies the Confluent `ConsumerConfig` before the consumer is created. |
+| `deadLetterRoutingKey` | `RoutingKey?` | `null` | The topic messages are dead-lettered to. |
+| `invalidMessageRoutingKey` | `RoutingKey?` | `null` | The topic unacceptable messages are routed to. |
+
+`makeChannels` is `Create`, so Brighter creates a topic it cannot find, using
+`numOfPartitions` and `replicationFactor`; set it to `Validate` where the topic is declared by
+your infrastructure. `sessionTimeout` and `partitionAssignmentStrategy` are deprecated in
+favour of the same settings on a `ClassicGroupProtocol`, as the bullets above record.
+
+**Four options are set as properties after construction rather than as constructor
+arguments**, so they are not on the table above: `GroupProtocol`,
+`ReadCommittedOffsetsTimeOut` (5000 ms), `TopicFindTimeout` (5000 ms) and `TimeProvider`. The
+bullets above cover the first two.
+
+The generic form `KafkaSubscription<T>`, which every example below uses, takes the same
+options and supplies four defaults the table cannot: `requestType` is `T`,
+`subscriptionName`, `channelName` and `routingKey` are `T`'s full name, and `messagePumpType`
+is `Reactor` — Kafka is the one transport here whose generic subscription defaults to the
+Reactor rather than the Proactor.
 
 The following example shows how a subscription might be configured:
 

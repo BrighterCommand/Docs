@@ -168,12 +168,40 @@ internal static class Reflect
         // so what came back is the checker's own sentinel. Reporting it as a
         // default would be the tool documenting itself — the failure `manual:`
         // exists to declare instead.
-        return Sentinel(rendered)
-            ? new Member(name, declared, null,
+        if (Sentinel(rendered))
+            return new Member(name, declared, null,
                 "the value on the instance is the argument the checker had to supply for a "
-                + "required constructor parameter, not a default")
-            : new Member(name, declared, rendered, null);
+                + "required constructor parameter, not a default");
+
+        if (Environmental(value) is { } source)
+            return new Member(name, declared, null,
+                $"the default is {source}, so the value read back is this machine's and every "
+                + "other machine reads a different one — there is no portable value to print");
+
+        return new Member(name, declared, rendered, null);
     }
+
+    /// <summary>
+    /// A default the product takes from the environment rather than from itself.
+    /// `RmqMessagingGatewayConnection.Name` is `Environment.MachineName`, so the
+    /// tool reads a real default and still cannot say what a table should print:
+    /// a row carrying this machine's hostname is green here and red on the CI
+    /// runner. The tool *can* read the value and *cannot* determine the default,
+    /// which is the case `manual:` exists to declare — so this returns a reason
+    /// rather than a value.
+    ///
+    /// Value comparison rather than IL inspection, deliberately: the tool's one
+    /// route to a default is an instantiated object (§6.2), and adding a second
+    /// route for one member is the judgement-per-parameter that route exists to
+    /// avoid. The cost of a collision — a machine named after a legitimate
+    /// default — is one `manual:` declaration, which declares and counts.
+    /// </summary>
+    private static string? Environmental(object? value) => value switch
+    {
+        string s when s.Length > 0 && s == Environment.MachineName => "Environment.MachineName",
+        string s when s.Length > 0 && s == Environment.UserName => "Environment.UserName",
+        _ => null,
+    };
 
     /// <summary>
     /// The synthesiser's own arguments, deliberately distinctive so that a value
@@ -198,6 +226,12 @@ internal static class Reflect
             var span = TimeSpan.FromMilliseconds(ms);
             forms.Add(span.ToString());
             forms.Add($"TimeSpan.FromMilliseconds({ms.ToString("0.###", CultureInfo.InvariantCulture)})");
+
+            // `922337203685477 ms` is the canonical rendering of `TimeSpan.MaxValue`
+            // and says nothing to a reader. The named form documents the same
+            // product, which is what this method is for.
+            if (Math.Abs(ms - TimeSpan.MaxValue.TotalMilliseconds) < 1) forms.Add("TimeSpan.MaxValue");
+
             if (ms % 1000 == 0)
             {
                 var seconds = (ms / 1000).ToString("0.###", CultureInfo.InvariantCulture);
