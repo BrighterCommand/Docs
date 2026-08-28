@@ -34,6 +34,7 @@
 * [Basic Configuration](/contents/BrighterBasicConfiguration.md)
   * [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md)
   * [Dispatcher Configuration Reference](/contents/DispatcherConfigurationReference.md)
+  * [Relational Database Configuration Reference](/contents/RelationalDatabaseConfigurationReference.md)
 * [InMemory Options for Development and Testing](/contents/InMemoryOptions.md)
 * [Test Double Options for Command Processor](/contents/TestDoubleOptions.md)
 * [Analyzer Support](/contents/AnalyzerSupport.md)
