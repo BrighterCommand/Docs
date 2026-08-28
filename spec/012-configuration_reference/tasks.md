@@ -861,6 +861,42 @@ the checker changes.
 > the `<!-- pagelint: allow-serviceactivator -->` precedent, and it is now measured for this
 > marker too. It is also what licenses the rule 5 exemption above.
 
+### The ledger — a third entry, and it does not compile
+
+**Found after phase 3 merged**, by reading the two pages as published rather than as
+written — which is the check `--verify` exists to prompt. Recorded here because task 11.3
+aggregates this section, and fixed in its own PR because it is a correction to code rather
+than a table.
+
+**Six code examples across three published pages set two properties on an `RmqPublication`
+that `RmqPublication` does not have.** `MaxOutStandingMessages` and
+`MaxOutStandingCheckIntervalMilliSeconds` belong to `ProducersConfiguration` — the second
+under a name it has not had since V9, and as a `TimeSpan` rather than an `int` of
+milliseconds. The pages are `BrighterBasicConfiguration.md` (**the page the whole corpus
+links to as the one path that works**), `RabbitMQConfiguration.md` (three of the six) and
+`CommandProcessorConfigurationReference.md` (two).
+
+**Proved with the compiler, not with reflection**, which is 009's method and the reason it
+is worth keeping: the block pasted verbatim into a project referencing the pinned packages
+fails with **`CS0117` twice** — *'RmqPublication' does not contain a definition for
+'MaxOutStandingMessages'* and *…for 'MaxOutStandingCheckIntervalMilliSeconds'*. The
+corrected form — the two settings moved onto `configure`, with
+`MaxOutStandingCheckInterval` taking a `TimeSpan` — builds clean.
+
+**A second defect fell out of compiling the corrected block**, and no reflection pass would
+have found it: `BrighterBasicConfiguration.md`'s example calls `UseOutboxSweeper()`, which
+lives in `Paramore.Brighter.Outbox.Hosting` — a package and namespace the page never names.
+`CS1061` until that `using` is added. Rule 6 turning strict on the three blocks this edit
+touched is what forced them to carry `using` directives at all, so **the defect was found by
+a convention, not by looking for it**; the repo-wide debt goes 790 → **787** as a result.
+
+**Why `optioncheck` did not catch any of this, and should not be changed to:** it reads
+tables. A code block is prose to it. The instrument for a code block is the compiler, and
+009's standing lesson is to *extract the page's own fences into a project and build them*
+rather than diffing after the fact. **All three ledger entries so far were found by a human
+writing a table beside prose that was already there** — which is what requirements §11 means
+by *transcribing existing documentation propagates whatever drift is already there*.
+
 ---
 
 ## Phase 4 — D15, the relational reference page (Docs PR)

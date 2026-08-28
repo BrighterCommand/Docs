@@ -521,8 +521,6 @@ var producerRegistry = new RmqProducerRegistryFactory(
         new RmqPublication
         {
             Topic = new RoutingKey("GreetingMade"),
-            MaxOutStandingMessages = 5,
-            MaxOutStandingCheckIntervalMilliSeconds = 500,
             WaitForConfirmsTimeOutInMilliseconds = 1000,
             MakeChannels = OnMissingChannel.Create
         }
@@ -552,12 +550,14 @@ public void ConfigureServices(IServiceCollection services)
                     new RmqPublication
                 {
                     Topic = new RoutingKey("GreetingMade"),
-                    MaxOutStandingMessages = 5,
-                    MaxOutStandingCheckIntervalMilliSeconds = 500,
                     WaitForConfirmsTimeOutInMilliseconds = 1000,
                     MakeChannels = OnMissingChannel.Create
                 }}
             ).Create();
+
+            // Outbox thresholds are producers configuration, not publication
+            configure.MaxOutStandingMessages = 5;
+            configure.MaxOutStandingCheckInterval = TimeSpan.FromMilliseconds(500);
         })
         .AutoFromAssemblies()
 

@@ -54,6 +54,15 @@ each is documented on that same reference page.
 Putting all this together, a typical configuration might looks as follows:
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+using Paramore.Brighter.MySql;
+using Paramore.Brighter.Outbox.Hosting;
+using Paramore.Brighter.Outbox.MySql;
+
 public void ConfigureServices(IServiceCollection services)
 {
 
@@ -82,12 +91,14 @@ public void ConfigureServices(IServiceCollection services)
                     new RmqPublication
                 {
                     Topic = new RoutingKey("GreetingMade"),
-                    MaxOutStandingMessages = 5,
-                    MaxOutStandingCheckIntervalMilliSeconds = 500,
                     WaitForConfirmsTimeOutInMilliseconds = 1000,
                     MakeChannels = OnMissingChannel.Create
                 }}
             ).Create();
+
+           // Outbox thresholds are producers configuration, not publication
+           configure.MaxOutStandingMessages = 5;
+           configure.MaxOutStandingCheckInterval = TimeSpan.FromMilliseconds(500);
            configure.Outbox = new MySqlOutbox(outboxConfiguration);
            configure.TransactionProvider = typeof(MySqlEntityFrameworkConnectionProvider<GreetingsEntityGateway>);
            configure.ConnectionProvider = typeof(MySqlConnectionProvider);
