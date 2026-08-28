@@ -67,7 +67,10 @@ internal static class Reflect
     {
         var properties = type
             .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-            .Where(p => p.SetMethod is { IsPublic: true } && !p.SetMethod.IsStatic)
+            // An indexer is public, settable and not an option: it is called
+            // `Item`, there can be several of them, and no reader ever types it.
+            .Where(p => p.SetMethod is { IsPublic: true } && !p.SetMethod.IsStatic
+                        && p.GetIndexParameters().Length == 0)
             .ToList();
 
         var ctor = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance)

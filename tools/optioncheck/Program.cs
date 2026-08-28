@@ -147,10 +147,14 @@ internal static class Program
             return;
         }
 
+        // First one wins, and none of these throws on a duplicate. A type that
+        // declares two members of one name, or a marker that names one twice,
+        // is a thing to report — not a stack trace that stops the whole run and
+        // leaves every other table unchecked.
         var surface = Reflect.Describe(type);
-        var byName = surface.Members.ToDictionary(m => m.Name, StringComparer.Ordinal);
-        var omit = marker.Omit.ToDictionary(e => e.Member, StringComparer.Ordinal);
-        var declared = marker.Manual.ToDictionary(e => e.Member, StringComparer.Ordinal);
+        var byName = First(surface.Members, m => m.Name);
+        var omit = First(marker.Omit, e => e.Member);
+        var declared = First(marker.Manual, e => e.Member);
 
         foreach (var escape in marker.Omit)
         {
@@ -308,6 +312,13 @@ internal static class Program
         }
 
         return null;
+    }
+
+    private static Dictionary<string, T> First<T>(IEnumerable<T> items, Func<T, string> key)
+    {
+        var map = new Dictionary<string, T>(StringComparer.Ordinal);
+        foreach (var item in items) map.TryAdd(key(item), item);
+        return map;
     }
 
     private static string Count(int n, string singular, string? plural = null) =>

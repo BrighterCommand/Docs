@@ -660,6 +660,21 @@ is the one to notice**: design §12.1 says the schedulers are invisible to `surv
 a type, so the tool does not care** — phase 9's 25 options are checkable on the same terms as
 everything else.
 
+**AC4's evidence, naming the job.** The `options` job ran on
+[#129](https://github.com/BrighterCommand/Docs/pull/129) and passed in **33s**, and the line
+that matters is the one it printed on the runner:
+
+```text
+optioncheck — Brighter 10.7.0, 62 pinned packages (tools/optioncheck/optioncheck.csproj)
+scope: 1 table, 1 row, 1 type, on 1 page of 147 files scanned.
+0 mismatches across 1 table and 1 row.
+```
+
+**That is the same scope the local run reports**, which is what says the CI job is checking the
+corpus rather than passing on an empty one — and it is why task 2.6 exists. All eight check
+rows were read in full: `check`, `options` and `versions` on both the `push` and the
+`pull_request` event, plus the two GitBook rows.
+
 **The six gates in §2.8 are unmoved to the digit**, on the branch and after staging: link 150,
 pagelint 0 errors / 790 warnings / 148 pages, shape 147 pages / 12 sections / widest 10 of 20,
 redirects 77 entries / 7858 bytes, versioncheck 0 stale of 18 across 5, `--verify` 147/147/147.
