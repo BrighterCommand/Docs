@@ -1139,10 +1139,65 @@ fields rather than properties, and `AzureServiceBusPublication`'s only member is
 spec rests on, and widening it to a case-insensitive union plus fields would move the corpus
 figure and every per-page figure with it. What phase 5 did instead is the disciplined half:
 each affected page names the missing options and their defaults in a sentence below its table,
-so no reader is misled, and **the question goes to review** — *should the reader-facing surface
-be the union of parameters, properties and public fields, deduplicated case-insensitively?*
-It is the first thing found in this spec that argues against an approved decision rather than
-against a figure.
+so no reader is misled.
+
+#### The question that raised, measured and answered — do not re-open it
+
+*Should the reader-facing surface be the union of parameters, properties and public fields,
+deduplicated case-insensitively?* Raised at phase 5 as the first thing in this spec that argues
+against an approved **decision** rather than against a figure, and **answered by measurement
+the same day: no, on both halves.** The measurement is here so nobody re-derives it.
+
+**Swept: all 26 marked types, phase 6's eleven, and — for fields — every one of the 72
+configuration types `survey.py` finds at `10.7.0`, by two independent instruments.**
+
+| | Union candidates | Of which false | Public mutable fields |
+|---|---:|---:|---:|
+| The 26 marked types | 9 across 4 types | **3** | — |
+| Phase 6's 11 types | 1 | — | **0** |
+| All 72, reflection **and** a source sweep | — | — | **6 across 4 types** |
+
+**Reject the union: a third of what it would add is a duplicate row.** The three false
+candidates are `NumPartitions`↔`numOfPartitions`, `Subscription`'s `MapRequestType`↔
+`getRequestType`, and `SqsPublication`'s `makeChannels`↔the base `Publication.MakeChannels`.
+Each names an option **the table already documents under its other spelling**, which is exactly
+the hazard requirements §7.1 exists to name — and against requirements §14's *a wrong default is
+worse than an absent one*, a second contradictory entry is worse than the gap. Doing it
+correctly needs a correspondence oracle — reading IL to learn which parameter assigns which
+property — which is the second route design §6.2 forbids. *(The false-positive rate is
+asymmetric by construction: properties are read `DeclaredOnly`, constructor parameters are not.
+Anyone writing a stray check should start there.)*
+
+**Reject including public fields, on the arithmetic.** Six exist across four types:
+
+| Type | Fields | Met by |
+|---|---|---|
+| `AzureServiceBusSubscriptionConfiguration` | `SqlFilter`, `UseServiceBusQueue` | phase 5, named in prose |
+| `AzureServiceBusPublication` | `UseServiceBusQueue` | phase 5, named in prose |
+| `AzureBlobLockingProviderOptions` | `StorageLocationFunc` | **phase 8 — owes the same sentence** |
+| `AzureBlobArchiveProviderOptions` | `TagsFunc`, `StorageLocationFunc` | P2, not scheduled |
+
+So **four rows in scope**, at the price of moving `Reflect.Describe`, `survey.py` and its
+reflection-oracle diff in lockstep, moving the corpus figure and every per-page figure, and
+forcing a mandatory one-row table onto `AzureServiceBusPublication` that design §10 says it
+should not have. **There is a cheaper path to the same end state**, and it is upstream: all six
+sit among properties in their own class and read as oversights, so
+**[Brighter#4285](https://github.com/BrighterCommand/Brighter/issues/4285)** asks for them to
+become properties. If it lands, the blind spot's exposure is zero and this tool needs no change
+at all.
+
+**Re-measure at phase 11, not before** — one sweep over the then-complete set of markers. The
+trigger to revisit is a type with *many* strays, or one stray a reader would never find in
+prose. Neither exists today.
+
+*(Three parse defects were made and caught inside this one measurement, all by controls rather
+than by review: `git grep -n` puts the line number in the third colon-field, so the first source
+sweep reported **0** for a field already read; a type token without spaces cannot match
+`Func<Message, string>`, **which is the identical defect `survey.py` shipped** and is recorded
+in this programme's lessons; and splitting on `=` before testing for `=>` let 90 expression-bodied
+properties in. Each was caught by asserting the sweep could still see something already known to
+be there. **Two instruments disagreeing about the same file is what made all three visible** —
+reflection said four fields, the source said three, and neither was right.)*
 
 *(This is also why the `SqlFilter` bullet on `AzureServiceBusConfiguration.md` was **not**
 corrected. It looked exactly like the Kafka `SaslKerberosName` defect below — a documented name
