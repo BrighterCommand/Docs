@@ -61,7 +61,7 @@ Seventeen, across four families, measured at `10.7.0` by looking for
 | Inbox | Spanner | not yet documented |
 | Box provisioning | MSSQL, MySQL, PostgreSQL, SQLite, Spanner | [Configuring Box Provisioning](/contents/BoxProvisioningConfiguration.md) |
 | Transport | PostgreSQL | [PostgreSQL Message Broker](/contents/PostgreSQLMessageBroker.md) |
-| Transport | MSSQL | not yet documented |
+| Transport | MSSQL | [MSSQL Message Broker](/contents/MSSQLMessageBroker.md) |
 
 **The two transports are the entries to know about.** A queue-table transport is not an
 Outbox, and it is easy to assume the relational configuration reaches only the box packages —

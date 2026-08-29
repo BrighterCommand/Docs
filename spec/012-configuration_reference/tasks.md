@@ -1297,7 +1297,7 @@ MSSQL ships neither a publication nor a connection type** (design §8.2). A writ
 eight as though Redis added something, **and every gate in this repository would be green on
 it.**
 
-- [ ] **Task 6.1:** Write `contents/GcpPubSubConfiguration.md` — 43 options, 3 tables
+- [x] **Task 6.1:** Write `contents/GcpPubSubConfiguration.md` — 43 options, 3 tables
   - Input: `GcpPubSubSubscription` 33, `GcpMessagingGatewayConnection` 7, `GcpPublication` 3;
     design §8.1's skeleton
   - Output: the page — General, Connection, Publication, Subscription, Configuration Example,
@@ -1308,7 +1308,7 @@ it.**
     Pub/Sub sample anywhere in Brighter** and the transport has **zero mentions in the corpus
     today**: the example is written from the source types, and task 6.7 compiles it.
 
-- [ ] **Task 6.2:** Write `contents/RedisConfiguration.md` — 33 options, **2** tables
+- [x] **Task 6.2:** Write `contents/RedisConfiguration.md` — 33 options, **2** tables
   - Input: `RedisSubscription` 19, `RedisMessagingGatewayConfiguration` 14
   - Output: the page; **no `## Redis Publication` section.** Budget ~150 lines
   - Notes: Redis appears in the corpus today **only as a row in cross-cutting comparison
@@ -1316,7 +1316,7 @@ it.**
     offering nowhere to configure it. Sample material exists: `samples/TaskQueue/RedisTaskQueue`,
     three files.
 
-- [ ] **Task 6.3:** Write `contents/RocketMQConfiguration.md` — 29 options, 3 tables
+- [x] **Task 6.3:** Write `contents/RocketMQConfiguration.md` — 29 options, 3 tables
   - Input: `RocketMqSubscription` 22, `RocketMessagingGatewayConnection` **4†**,
     `RocketMqPublication` 3; task 1.5's re-run
   - Output: the page. Budget ~155 lines
@@ -1324,14 +1324,14 @@ it.**
     primary constructor. **Zero mentions in the corpus and no sample in Brighter**; written
     from the source types, compiled at task 6.7.
 
-- [ ] **Task 6.4:** Write `contents/MQTTConfiguration.md` — 27 options, **2** tables
+- [x] **Task 6.4:** Write `contents/MQTTConfiguration.md` — 27 options, **2** tables
   - Input: `MqttSubscription` 19, `MQTTMessagingGatewayConfiguration` 8
   - Output: the page; **no publication section.** Budget ~140 lines
   - Notes: no sample in Brighter. Requirements §7.2.1 already rules that these pages need no
     running broker — they are Reference pages, not tutorials — so nothing here proposes to
     build one.
 
-- [ ] **Task 6.5:** Write `contents/MSSQLMessageBroker.md` — 19 options, **1 table and a link**
+- [x] **Task 6.5:** Write `contents/MSSQLMessageBroker.md` — 19 options, **1 table and a link**
   - Input: `MsSqlSubscription` 19; design §8.3 — `MsSqlMessageProducer` takes
     `RelationalDatabaseConfiguration` (`MsSqlMessageProducer.cs:69`, `:86`), and there is no
     `MsSqlMessagingGatewayConfiguration` and no `MsSqlPublication` anywhere in the package
@@ -1342,7 +1342,7 @@ it.**
     `PostgreSQLBrokerTradeOffs.md`, which is the same trade-off. Sample material exists:
     `samples/TaskQueue/MsSqlMessagingGateway`, eight files.
 
-- [ ] **Task 6.6:** Five `SUMMARY.md` entries, five `pagetypes.tsv` rows
+- [x] **Task 6.6:** Five `SUMMARY.md` entries, five `pagetypes.tsv` rows
   - Input: design §9.1's second diff
   - Output: **MSSQL beside PostgreSQL** (they are the same idea), then GCP Pub/Sub, RocketMQ,
     MQTT, Redis in the order requirements §10 lists them, all **top-level**, all before the
@@ -1352,7 +1352,7 @@ it.**
     other nine — which is why they stay flat rather than gaining a family parent, and why S2
     moved instead. No entry moves a URL: slugs are filename-derived.
 
-- [ ] **Task 6.7:** Compile every C# block on the five new pages
+- [x] **Task 6.7:** Compile every C# block on the five new pages
   - Input: design §11; the packages `optioncheck` has already pinned and restored
   - Output: a recorded compile of every ```` ```csharp ```` block, extracted from the published
     markdown and built — not run, compiled
@@ -1363,7 +1363,7 @@ it.**
     page, not from a draft**: 009 proved that a transcription error is caught by building the
     page's own fences and is invisible to reading the two side by side.
 
-- [ ] **Task 6.8:** Verify phase 6 — `optioncheck`, the six gates, AC6 and the AC8 walk
+- [x] **Task 6.8:** Verify phase 6 — `optioncheck`, the six gates, AC6 and the AC8 walk
   - Input: the five pages
   - Output: exit 0 with a scope naming 11 new tables; the six gates; **AC6 walked** — all ten
     shipping transports now have a configuration page, no orphan, no pagelint error on any of
@@ -1371,6 +1371,184 @@ it.**
   - Notes: expect link, pagelint and shape each **+5**, and `--check-redirects` unmoved.
     `--verify` moves only after publication — predict the five paths with `urlmap.py`, never
     guess them, and check `sitemap-pages.xml` lists them before probing.
+
+### Phase 6 as executed — 2026-08-30, 8/8
+
+**Eleven tables and 151 rows on five pages that did not exist**, taking the corpus to
+`37 tables, 427 rows, 37 types, on 15 pages of 153 files scanned`, exit 0. Every figure was
+re-derived from the type with `--describe` before its table was written.
+
+| Page | Tables | Rows | `manual:` | Lines | Budget |
+|---|---:|---:|---:|---:|---:|
+| `GcpPubSubConfiguration.md` | 3 | 43 | 4 | 196 | ~190 |
+| `RedisConfiguration.md` | 2 | 33 | 3 | 174 | ~150 |
+| `RocketMQConfiguration.md` | 3 | 30 | 5 | 189 | ~155 |
+| `MQTTConfiguration.md` | 2 | 26 | 3 | 173 | ~140 |
+| `MSSQLMessageBroker.md` | 1 | 19 | 2 | 166 | ~130 |
+
+**The phase total is 151, exactly as the phase table says, and two of its five rows are
+wrong** — which is the point of standing obligation 3 rather than a coincidence worth
+celebrating. `RocketSubscription` is **23** where design §7.2 says `RocketMqSubscription` 22,
+and `MqttMessagingGatewayConfiguration` is **7** where §7.2 says
+`MQTTMessagingGatewayConfiguration` 8. The two errors are +1 and −1, so the sum reproduces and
+a writer checking only the total would have seen nothing. The MQTT figure has a cause worth
+keeping: `ConnectionAttempts` is a property with an **`internal` setter**, so it is not
+reader-settable and not on the table — named in prose instead.
+
+**Seventeen `manual:` declarations across 151 rows — 11%**, against 13% at phases 3 and 5.
+Fourteen of the seventeen are the same three subscription parameters once per transport;
+the other three are `GcpPubSubSubscription.timeProvider`,
+`RocketMessagingGatewayConnection.TimerProvider` and `RocketSubscription.filter`.
+
+**Four of the six gates moved by five, and the two that should not have did not.** Link
+151 → **156**; pagelint 149 → **154 pages, 0 errors**; shape 148 → **153 pages, widest
+10 → 12 of 20**; `--check-redirects` **unmoved at 77 entries / 7858 bytes**, which is the
+sixth-and-seventh time that assertion has held for a page added to an existing section;
+`versioncheck.py` unmoved at 0 stale of 18 across 5. `--verify` moves only after publication —
+the five predicted paths are `transports/gcppubsubconfiguration`, `transports/redisconfiguration`,
+`transports/rocketmqconfiguration`, `transports/mqttconfiguration` and
+`transports/mssqlmessagebroker`, taken from `urlmap.py` rather than guessed.
+
+**The using-directive warning count did not move — 787 — and this time it was not placement
+that bought it.** A new page is 100% added lines, so `pagelint --changed` reports
+**11 code blocks strict across 8 hunks** and every one of the five C# blocks is in scope. They
+carry real `using` directives, which task 6.7 then proved sufficient by compiling them.
+
+#### The gate caught two things, and both are the kind nothing else would have
+
+1. **Two opening sentences failed rule 7 at 203 and 213 rendered characters.** Both were
+   written to §8.1's skeleton, both read as one clause, and neither is distinguishable from a
+   passing sentence by eye.
+2. **`optioncheck` reported `BLANK DEFAULT` for `RocketSubscription.filter`, and the cell was
+   not blank.** Its default is a `FilterExpression` of `*`, so the table said `` `*` `` —
+   and `Binding.Clean` strips backticks, `**` and `*` from every cell to normalise emphasis,
+   which reduces that value to the empty string. **The tool is right to refuse it**: it cannot
+   tell a stripped value from an unfinished row, and it says so rather than passing. The cell
+   now reads `every tag` and the row declares `manual:`. Recorded because the general shape is
+   worth knowing before phase 8 meets it: **a default whose rendering is a markdown control
+   character cannot be written in a cell**, and the failure arrives as the wrong message.
+
+#### Design §8.2 is right about MQTT and half right about Redis
+
+§8.2 says *"Redis and MQTT ship no publication type"*. **MQTT ships none** — its producer takes
+the base `Publication`, measured at `MQTTMessageProducer.cs:24`. **Redis ships
+`RedisMessagePublication`**, a subclass of `Publication` whose body is the comment
+`//placeholder`, and `RedisProducerRegistryFactory` takes `IEnumerable<RedisMessagePublication>`
+— so a reader configuring Redis **types the type**, even though it adds no option.
+
+The ruling's outcome is unchanged: a table for it would be `EMPTY TABLE`, and standing
+obligation 4 says do not write a page a table it does not have. What changes is the prose. The
+Redis page names the type, says it adds nothing, and links the base publication options; a
+writer following §8.2 literally would have left a reader unable to compile the one line the
+producer registry needs. **Verify the claim, not the conclusion** — the conclusion was right.
+
+#### The strays named in prose, which is the obligation phase 5 left standing
+
+`max(props, ctor)` under-reports four surfaces in this phase, none of them a defect and none of
+them a reason to move the selection — the question was raised, measured and answered at phase 5,
+and *Phase 5 as executed* carries the measurement:
+
+| Type | Not on the table | Why the tool cannot see it |
+|---|---|---|
+| `RedisMessagingGatewayConfiguration` | `AssumeServerVersion` | declared `static`, so it is process-wide rather than per gateway |
+| `MqttMessagingGatewayConfiguration` | `ConnectionAttempts` | `internal` setter — not reader-settable at all |
+| `RocketMessagingGatewayConnection` | `ClientConfig` | a get-only primary-constructor property, and it carries the **endpoint** |
+| `GcpPubSubSubscription`, `GcpPublication` | `TopicAttributes`, `DeadLetterPolicy` | configuration-shaped classes whose names end in neither `Configuration` nor `Options`, so they are outside the selected population |
+
+**The RocketMQ row is the one that matters to a reader.** Everything Brighter exposes on that
+connection is secondary; the broker address is on the `ClientConfig` you construct it with, and
+no table in this spec can contain it. The page opens with that.
+
+**No public fields on any of the eleven types**, which reproduces the sweep recorded under
+phase 5.
+
+#### What the reader could not have got from the type alone
+
+The generic subclass is what an example types, and the five disagree with each other more than
+phase 5's did:
+
+| Transport | Generic form supplies | Pump |
+|---|---|---|
+| GCP Pub/Sub | `requestType` only — names are still required, and it **does not expose** `streamingConfiguration` | still required |
+| Redis | `requestType`, and the three names from `T` | **`Proactor`** |
+| MQTT | `requestType`, and the three names from `T` | **`Proactor`** |
+| MSSQL | `requestType`, and the three names from `T` | `Proactor` on **both** forms |
+| RocketMQ | `requestType` only — names are still required | still required |
+
+**RocketMQ spells the two types differently**: the non-generic is `RocketSubscription` and the
+generic is `RocketMqSubscription<T>`, declared in the same file. Settled item 2 records the
+first half of that (`RocketMqSubscription` "does not exist"); it exists as the **generic**, which
+is the spelling every example uses, so both names are real and neither is a typo to correct.
+
+#### Task 6.7 — the five examples compile
+
+Every ```` ```csharp ```` block was **extracted from the published markdown**, not from a
+draft, into one project per block: `net9.0`, `Nullable enable`, the page's own gateway package
+plus `Paramore.Brighter.Extensions.DependencyInjection`, `…ServiceActivator.Extensions.DependencyInjection`
+and `…ServiceActivator.Extensions.Hosting`, all at `10.7.0` — the same pins `optioncheck`
+restores. **5 of 5 build: 0 errors, 0 warnings.** The harness supplies one type the pages name
+and do not define, `GreetingEvent : Event`; the only build failure of the exercise was in that
+shim (`Id.Random` is a method, not a property), which is the harness and not a page.
+
+The eleven blocks are five `csharp`, five `bash` and one `sql`, so the six non-C# blocks are
+outside this obligation and are recorded here rather than left implicit.
+
+#### The finding the compile obligation bought, and it is on other pages
+
+**`services.AddBrighter().AddProducers(…).AddConsumers(…)` does not compile.** `AddConsumers`
+extends **`IServiceCollection`**, not `IBrighterBuilder`
+(`ServiceActivator.Extensions.DependencyInjection/ServiceCollectionExtensions.cs:29` and `:78`,
+the only two definitions in the product), so chaining it off the Brighter builder is
+**`CS1929`** — measured in the harness, with a control: deleting that one line from the same
+file builds clean.
+
+**Eleven blocks across eight pages show the chain** — `InMemoryTransport.md` (2),
+`InMemoryOptions.md` (2), `RoutingMultipleMessageTypes.md` (3), `AgreementDispatcher.md`,
+`DistributedLock.md`, `InMemoryInbox.md` and `V10MigrationGuide.md` — **and so does
+`CLAUDE.md`'s own ✅ *V10 — current* example**, which is where a writer would go to copy it.
+The tutorials are **not** affected: they write `builder.Services.AddConsumers(…)`, which is why
+009's compile-and-run pass never met this.
+
+**Nothing was fixed here.** It is not an option-table mismatch, so it is not a ledger entry; it
+is eight pages plus `CLAUDE.md`, which is its own coherent unit and its own PR. Recorded before
+fixing, per standing obligation 10's spirit if not its letter. **The general shape is the one
+009 left behind and this phase paid for again: compiling a page's own fences finds the class of
+defect that reading them cannot**, and the block that found it was on a page that does not
+carry the defect.
+
+#### The ledger — no entries, and that is what a new page means
+
+Phase 5 contributed ten entries and observed that **twelve of the spec's thirteen were found by
+writing the correct table beside prose that was already there**. Five new pages have no prose to
+disagree with, so phase 6 adds none and the spec's total stands at **thirteen**. The corollary
+for task 11.3 is that the drift ledger is a measurement of the *documented* transports, not of
+the corpus, and phase 7's four pages will say the same.
+
+*(One source-side defect, not ours and not raised: `RocketMqPublication.Instrumentation` carries
+`Tag`'s doc comment verbatim, remarks and all. It joins `Publication.Type`'s doc comment from
+phase 3 as something that lives in `src/`, which is outside this programme's exception — so it
+is an issue or it is nothing.)*
+
+#### AC6, walked
+
+**Ten transports ship at `10.7.0` and all ten now have a configuration page.** Enumerated from
+`git ls-tree --name-only 10.7.0 src/ | grep MessagingGateway`, which lists twelve directories
+for ten transports — `AWSSQS` and `AWSSQS.V4` are one, `RMQ.Async` and `RMQ.Sync` are one:
+
+RabbitMQ, Kafka, AWS SNS/SQS, Azure Service Bus, PostgreSQL, **MSSQL**, **GCP Pub/Sub**,
+**RocketMQ**, **MQTT**, **Redis** — the last five new here — plus `InMemoryTransport.md`, which
+is in the core package rather than a gateway. No orphan (`linkcheck.py` clean on a whole-repo
+run), no `pagelint` error on any of the five.
+
+#### AC8, walked
+
+**All 151 descriptions are one sentence, present tense, and state what the option does.** Swept
+mechanically as well as read: no cell contains *because*, *so that*, *should*, *prefer*,
+*recommend* or *note that*, none contains two sentences, all 151 open with a capital and end in
+a full stop — **151 cells, 0 faults**. Rationale sits in prose above each table where it was
+worth having: RocketMQ's inability to create a topic, MQTT's required `TopicPrefix` and its
+`prefix/#` subscription, Redis's static `RedisConfig` overrides, and when a queue table beats a
+broker.
 
 ---
 

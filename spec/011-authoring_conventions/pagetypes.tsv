@@ -147,3 +147,8 @@ contents/TutorialDurableOutbox.md	Tutorial	high	"spec 009 D3, rung 3; tutorial b
 contents/GetStarted.md	Tutorial	medium	"spec 009 D10, the ladder's landing page; not itself a build, but the entry point to the three tutorials and typed with them"	Tutorial	Brighter V10
 contents/TutorialStreamingWithKafka.md	Tutorial	high	"spec 009 D8, rung 4; tutorial by construction — one path, numbered steps, measured single-consumer and rebalanced two-consumer runs"	Tutorial	Brighter V10
 contents/RelationalDatabaseConfigurationReference.md	Reference	high	"spec 012 D15, the relational options documented once for seventeen components; consulted, not read through"	Reference	Brighter V10
+contents/MSSQLMessageBroker.md	Reference	high	"spec 012 D12, the MSSQL queue-table transport; parameter tables consulted per option"	Reference	Brighter V10
+contents/GcpPubSubConfiguration.md	Reference	high	"spec 012 D12, the GCP Pub/Sub transport; parameter tables consulted per option"	Reference	Brighter V10
+contents/RocketMQConfiguration.md	Reference	high	"spec 012 D12, the RocketMQ transport; parameter tables consulted per option"	Reference	Brighter V10
+contents/MQTTConfiguration.md	Reference	high	"spec 012 D12, the MQTT transport; parameter tables consulted per option"	Reference	Brighter V10
+contents/RedisConfiguration.md	Reference	high	"spec 012 D12, the Redis transport; parameter tables consulted per option"	Reference	Brighter V10
