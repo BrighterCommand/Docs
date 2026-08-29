@@ -985,7 +985,7 @@ exist and already have configuration prose; what they lack is a table with a def
 `Subscription`'s 17 or `Publication`'s 8 — a transport table lists what the transport **adds or
 overrides** and links up to phase 3's tables (design §3.2).
 
-- [ ] **Task 5.1:** `RabbitMQConfiguration.md` — 44 options, 3 tables
+- [x] **Task 5.1:** `RabbitMQConfiguration.md` — 44 options, 3 tables
   - Input: `RmqSubscription` 24, `RmqMessagingGatewayConnection` 19, `RmqPublication` 1
   - Output: three marked tables
   - Notes: **One table, the Async client's** — ruled at design §13.3. `RMQ.Async`'s
@@ -994,7 +994,7 @@ overrides** and links up to phase 3's tables (design §3.2).
     two counts. **`queueType`'s row says the Sync client has no such parameter.** Two tables
     would be 23 near-duplicate rows for a one-parameter difference.
 
-- [ ] **Task 5.2:** `KafkaConfiguration.md` — 58 options, 3 tables
+- [x] **Task 5.2:** `KafkaConfiguration.md` — 58 options, 3 tables
   - Input: `KafkaSubscription` 30, `KafkaPublication` 17, `KafkaMessagingGatewayConfiguration`
     11
   - Output: three marked tables
@@ -1004,21 +1004,21 @@ overrides** and links up to phase 3's tables (design §3.2).
     the corpus mentions `MakeChannels` 23 times across 11 pages **without once pairing it with
     the word "default"** — this row is where that ends.
 
-- [ ] **Task 5.3:** `AWSSQSConfiguration.md` — 31 options, 3 tables
+- [x] **Task 5.3:** `AWSSQSConfiguration.md` — 31 options, 3 tables
   - Input: `SqsSubscription` 24, `SqsPublication` 4, `SnsPublication` 3
   - Output: three marked tables
   - Notes: `SqsSubscription` is the one type in task 1.4's table needing a **fourth**
     constructor argument, `channelType`. If task 2.4's synthesiser handles it generically this
     is unremarkable; if it does not, this is where that shows.
 
-- [ ] **Task 5.4:** `AzureServiceBusConfiguration.md` — 26 options, 3 tables
+- [x] **Task 5.4:** `AzureServiceBusConfiguration.md` — 26 options, 3 tables
   - Input: `AzureServiceBusSubscription` 18, `AzureServiceBusSubscriptionConfiguration` 6,
     `AzureServiceBusConfiguration` 2
   - Output: three marked tables
   - Notes: two configuration-shaped types on one page, one nested inside the subscription.
     **Qualify both headings by what they configure**, not by the type name alone.
 
-- [ ] **Task 5.5:** `PostgreSQLMessageBroker.md` — 27 options, three existing tables replaced
+- [x] **Task 5.5:** `PostgreSQLMessageBroker.md` — 27 options, three existing tables replaced
   - Input: `PostgresSubscription` 24, `PostgresPublication` 3,
     `PostgresMessagingGatewayConnection` **1†, and task 1.5's real figure**
   - Output: three marked tables replacing the three that are there
@@ -1029,7 +1029,7 @@ overrides** and links up to phase 3's tables (design §3.2).
     ruling is a rule. `PostgresMessagingGatewayConnection` is a `†` row: **absent from the 67
     entirely** because it has a primary constructor. Write it from the type.
 
-- [ ] **Task 5.6:** `InMemoryTransport.md` — one table, and it is **17 rows, not 2**
+- [x] **Task 5.6:** `InMemoryTransport.md` — one table, and it is **17 rows, not 2**
   - Input: `InMemorySubscription` — **2 by the unfixed survey, 17 primary-constructor
     parameters by the type** (design §12.5); task 1.5's re-run
   - Output: one marked table
@@ -1037,13 +1037,196 @@ overrides** and links up to phase 3's tables (design §3.2).
     design §7.2's column would write a two-row table and every gate in this repository would be
     green on it — `optioncheck` included, until it enumerates the type. Write it from the type.
 
-- [ ] **Task 5.7:** Verify phase 5 — `optioncheck`, the six gates, and the AC8 walk
+- [x] **Task 5.7:** Verify phase 5 — `optioncheck`, the six gates, and the AC8 walk
   - Input: the tables written above
   - Output: exit 0 with a scope naming 16 tables; the six gates; a recorded AC8 verdict
   - Notes: **No page is created, so link, pagelint, shape and `--verify` should not move.**
     The one that can move is pagelint's **warning count**, if a table lands beside a C# block
     with no `using` directives — standing obligation 8. Read `--changed`'s scope line to see
     whether it reached one.
+
+### Phase 5 as executed — 2026-08-28, 7/7
+
+**Sixteen tables and 196 rows across six pages that already existed**, taking the corpus to
+`26 tables, 276 rows, 26 types, on 10 pages of 148 files scanned`, exit 0.
+
+**The phase is 196 options, not the 186 the phase table says**, and both moves were
+predictable from phase 1. `RmqMessagingGatewayConnection` is **11, not 19** — the survey
+counted properties per *file* and that file declares three classes, which is one of the five
+defects session 39 fixed — so RabbitMQ is 36 rather than 44. `PostgresSubscription` plus
+`PostgresPublication` plus `PostgresMessagingGatewayConnection` is 28 rather than 27, and
+`InMemorySubscription` contributes its **17** rather than design §7.2's 2. Every figure was
+re-derived from the type with `--describe` when its table was written.
+
+| Page | Tables | Rows | `manual:` |
+|---|---:|---:|---:|
+| `RabbitMQConfiguration.md` | 3 | 36 | 4 |
+| `KafkaConfiguration.md` | 3 | 58 | 5 |
+| `AWSSQSConfiguration.md` | 3 | 31 | 7 |
+| `AzureServiceBusConfiguration.md` | 3 | 26 | 4 |
+| `PostgreSQLMessageBroker.md` | 3 | 28 | 3 |
+| `InMemoryTransport.md` | 1 | 17 | 3 |
+
+**Twenty-six `manual:` declarations across 196 rows — 13%**, which reproduces phase 3's 13%
+on a corpus four times the size. Twenty-two of the twenty-six are the same three subscription
+parameters repeated once per transport: `requestType`, `getRequestType` and `messagePumpType`.
+
+**The six gates are unmoved to the digit**, which is what task 5.7 predicted for a phase that
+creates no page: link 151, pagelint 0 errors / 787 warnings / 149 pages, shape 148 / 12 /
+widest 10 of 20, redirects 77 / 7858, versioncheck 0 stale of 18 across 5. **The
+using-directive count did not move either**, and that was bought rather than given:
+`pagelint --changed` reports **0 code blocks strict across 31 hunks**, so standing obligation
+8's cheapest defence — put the table where the diff cannot reach a code block — held on all
+six pages.
+
+#### The reading that settles what a transport table contains
+
+Phase 5's preamble says it *"must not restate `Subscription`'s 17 or `Publication`'s 8 — a
+transport table lists what the transport adds or overrides"*, and design §3.2 says a transport
+page *"carries `KafkaSubscription`'s 30 and points at the base rather than restating it"*. Read
+one way that is a 13-row Kafka table with 17 `omit:` declarations; read the other it is 30 rows.
+**It is 30**, and four things in the approved documents say so rather than one:
+
+1. **The phase table's 186 is the sum of the full constructor counts** — 44 + 58 + 31 + 26 + 27.
+   A delta-only reading has no arithmetic that reaches it.
+2. **Task 5.2 puts `MakeChannels` on the Kafka table** in as many words, and `makeChannels` is
+   one of `Subscription`'s seventeen.
+3. **Task 5.6 wants 17 rows for `InMemorySubscription`**, whose seventeen parameters *are*
+   `Subscription`'s seventeen exactly. A delta-only reading makes that table empty, which is
+   `EMPTY TABLE`.
+4. **Design §4's own worked example** opens with `bufferSize`, also one of the seventeen.
+
+So the "must not" is a rule about **tables**, not about **rows**: a transport page carries no
+`Subscription` table and no `Publication` table of its own, and each transport type's table is
+that type's whole constructor. Every page says which of its rows are inherited and links up,
+which is what *points at the base* buys. **Nothing in this phase needed an `omit:`** — the
+repo-wide count is still 0.
+
+#### What the reader could not have got from the type alone
+
+**Every example in this documentation types the generic subclass, and the generic subclass has
+different defaults.** `RmqSubscription<T>`, `KafkaSubscription<T>`, `SqsSubscription<T>`,
+`AzureServiceBusSubscription<T>` and `PostgresSubscription<T>` each supply `requestType` from
+`T` and default `subscriptionName`, `channelName` and `routingKey` to `T`'s full name — and they
+disagree about the pump: **Proactor on RabbitMQ, AWS and Azure Service Bus, `Reactor` on Kafka,
+and still required on PostgreSQL and in-memory.** `SqsSubscription<T>` additionally defaults
+`channelType` to `PubSub` where the non-generic constructor requires it. The tables are of the
+non-generic types, which is the population `survey.py` and `optioncheck` both select, so each
+page states the generic form's extra defaults in a sentence beneath its table. **A reader who
+had only the table would set nothing and get a different subscription than the one it
+describes.**
+
+#### `max(props, ctor)` is a selection, and on two types the two sets are not nested
+
+Settled item 3 is that the surface is `max(props, ctor)` *"as a selection rather than a union"*,
+and `Reflect.cs` gives the reason: *"on a subscription every property has a matching parameter
+and the two differ only in case"*. **That is false on two of this phase's six types**, measured
+rather than assumed:
+
+- **`KafkaSubscription`** — 30 constructor parameters and 17 declared properties, of which
+  **four are not parameters**: `GroupProtocol`, `ReadCommittedOffsetsTimeOut`,
+  `TopicFindTimeout` and `TimeProvider`. The page's own bullets already documented the first
+  two.
+- **`InMemorySubscription`** — 17 parameters and **two properties that are not among them**,
+  `DeadLetterRoutingKey` and `InvalidMessageRoutingKey`.
+
+**And a third shape the tool cannot see at all: a public field.**
+`AzureServiceBusSubscriptionConfiguration` declares `SqlFilter` and `UseServiceBusQueue` as
+fields rather than properties, and `AzureServiceBusPublication`'s only member is the field
+`UseServiceBusQueue`. `Reflect.Describe` reads `GetProperties`, so all three are invisible.
+
+**Nothing was changed for this.** The selection is a settled decision that every count in the
+spec rests on, and widening it to a case-insensitive union plus fields would move the corpus
+figure and every per-page figure with it. What phase 5 did instead is the disciplined half:
+each affected page names the missing options and their defaults in a sentence below its table,
+so no reader is misled, and **the question goes to review** — *should the reader-facing surface
+be the union of parameters, properties and public fields, deduplicated case-insensitively?*
+It is the first thing found in this spec that argues against an approved decision rather than
+against a figure.
+
+*(This is also why the `SqlFilter` bullet on `AzureServiceBusConfiguration.md` was **not**
+corrected. It looked exactly like the Kafka `SaslKerberosName` defect below — a documented name
+absent from the type — and it is not a defect at all. Verify the defect exists before fixing
+it, on a page where two neighbouring bullets were genuinely wrong.)*
+
+### The ledger — ten entries, and `optioncheck` found none of them
+
+Standing obligation 10: record the mismatch before fixing it. **All ten were found by writing
+the correct table beside prose that was already there** — nine of the ten were in bullet lists
+and the tenth in a table with the wrong columns, and the tool reads tables. That makes it
+twelve of the spec's thirteen ledger entries so far; the exception is entry 3, which was found
+by reading the pages *as published* and proved with the compiler.
+
+| # | Page | The corpus said | The assembly says |
+|---:|---|---|---|
+| 4 | `RabbitMQConfiguration.md` | the connection property is **`AmqpUri`** | `AmpqUri` — the transposition is Brighter's, and the page's own examples had it right |
+| 5 | `KafkaConfiguration.md` | the connection type is **`KafkaMessagingGatewayConnection`** | there is no such type; it is `KafkaMessagingGatewayConfiguration`, which every example on the page already used |
+| 6 | `KafkaConfiguration.md` | **`SaslKerberosName`** | `SaslKerberosPrincipal` |
+| 7 | `KafkaConfiguration.md` | **`BootstrapServers`** | `BootStrapServers` |
+| 8 | `KafkaConfiguration.md` | `BatchNumberMessages` defaults to **10** | `10000` |
+| 9 | `KafkaConfiguration.md` | `QueueBufferingMaxMessages` defaults to **10** | `100000` |
+| 10 | `AzureServiceBusConfiguration.md` | `LockDuration` defaults to **`true`** | a `TimeSpan` of one minute |
+| 11 | `AzureServiceBusConfiguration.md` | `DefaultMessageTimeToLive` defaults to **1 minute** | three days |
+| 12 | `PostgreSQLMessageBroker.md` | `SchemaName` defaults to **`"public"`** on both publication and subscription | `null` on both; `public` is the last of three fallbacks, behind the relational configuration's own `SchemaName` |
+| 13 | `PostgreSQLMessageBroker.md` | the subscription's options are `ChannelName`, `BufferSize`, `VisibleTimeout` | the type is constructor-driven, so a reader types `channelName`, `bufferSize`, `visibleTimeout` |
+
+**Entries 8 and 9 are the spec's premise in its purest form so far**: two numbers, off by three
+and four orders of magnitude, on a page nobody had reason to doubt. **Entry 10 is the cheapest**
+— a `TimeSpan` documented as defaulting to `true` — and it survived because no tool has ever
+read that bullet. **Entry 5 is the one a reader would hit first**: the sentence introducing the
+connection names a type that has never existed, three lines above an example that spells it
+correctly.
+
+`PostgreSQLMessageBroker.md`'s three tables are replaced rather than added to, which is task
+5.5 and §2.7's first row. The third of them was `RelationalDatabaseConfiguration` with **no
+`Default` column at all**; it is now a one-row `PostgresMessagingGatewayConnection` table that
+links [phase 4's page](/contents/RelationalDatabaseConfigurationReference.md), which is D15
+paying for itself one phase after it landed.
+
+### What phase 5 changed in the instrument, and why each was forced
+
+**Both were found by pointing the checker at types phase 4 never met**, which is the same
+sentence phase 3 wrote, and the first one is the more interesting of the two.
+
+1. **A default the product takes from the environment.**
+   `RmqMessagingGatewayConnection.Name` is `= Environment.MachineName`. The checker read it,
+   rendered it as `"Mac"`, and would have accepted a table saying so — **green on the author's
+   machine and red on the CI runner, where the hostname is different.** This is the first
+   defect in this spec whose symptom is a *pass*. `Reflect.WithValue` now returns an
+   `Unreadable` reason for a string default equal to `Environment.MachineName` or
+   `Environment.UserName`, so the row is `manual:` and declares. Value comparison rather than IL
+   inspection, deliberately: §6.2's whole point is one route per column, and a second route for
+   one member is the per-parameter judgement that rule exists to avoid. A collision — a machine
+   named after a legitimate default — costs one `manual:` declaration, which counts.
+2. **`TimeSpan.MaxValue` rendered as `922337203685477 ms`.**
+   `AzureServiceBusSubscriptionConfiguration.QueueIdleBeforeDelete` is `TimeSpan.MaxValue`, and
+   the canonical rendering says nothing to a reader. `Reflect.Accepted` — the method whose
+   docstring is *"presentation is not the subject"* — now also accepts the named form. It widens
+   what a correct table may write and changes no verdict.
+
+**Red-proved before either was trusted.** The probe gained **branch 7**, on a second fixture
+(`redproof/fixture_connection.md`), because the subscription fixture has no environment-derived
+member to declare. The mutation **deletes the `manual:` line** rather than writing a value: a
+branch that wrote this machine's hostname into a committed fixture would itself be
+machine-dependent, which is the defect it exists to prove. **9/9 branches fire**, re-run after
+the second change as well as the first.
+
+### AC8, walked
+
+**All 196 descriptions are one sentence, present tense, and state what the option does.** Swept
+mechanically as well as read: no cell contains *because*, *so that*, *should*, *prefer*,
+*recommend* or *note that*, none contains two sentences, all 196 open with a capital and end in
+a full stop — **196 cells, 0 faults**. Rationale sits in prose after the table where it was
+worth having: `MaxInFlightRequestsPerConnection` being `1` so a retry cannot re-order the
+stream, `queueType` existing only on the Async client, `MaxDeliveryCount` being the transport's
+count rather than Brighter's `requeueCount`, and PostgreSQL's three-step `null` → configuration
+→ `public` fallback.
+
+**Five things the tables say that no reader could have got from the pages' prose**, all from
+standing obligation 1's *the spelling the reader types*: `AmpqUri`, `BootStrapServers`,
+`SaslKerberosPrincipal`, Kafka's `numOfPartitions` reading back as `NumPartitions`, and
+PostgreSQL's request-type parameter being called **`dataType`** — the only transport in the
+corpus that does not call it `requestType`.
 
 ---
 

@@ -27,9 +27,28 @@ The connection to ASB id defined by an **IServiceBusClientProvider**, Brighter p
 
 In Brighter's implementation of the Messaging Gateway *Publications* and *Subscriptions* have their own Individual configuration.
 
+## Azure Service Bus Connection Options
+
+`AzureServiceBusConfiguration` is what the producer and consumer factories take when you
+supply a connection string rather than a client provider. It takes both options as
+constructor arguments, so the option is the parameter you type.
+
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.AzureServiceBus.AzureServiceBusConfiguration -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `connectionString` | `string` | `none` | The connection string the client authenticates and connects with. |
+| `bulkSendBatchSize` | `int` | `10` | Messages sent in one transmission when the producer sends more than one. |
+
+Both are read back capitalised — `ConnectionString` and `BulkSendBatchSize` — and both are
+get-only, so they are set once at construction.
+
 ## Azure Service Bus Publication
 
-No custom properties are supported for ASB
+`AzureServiceBusPublication` adds no properties to the
+[base publication options](/contents/CommandProcessorConfigurationReference.md#publication-options).
+It does add one public *field*, `UseServiceBusQueue`, which defaults to `false` and sends to a
+Service Bus queue instead of a topic.
 
 Basic Brighter configutarion publications is as follows
 
@@ -58,20 +77,77 @@ For more on a *Publication* see the material on an *Add Producers* in [Command P
 
 For more on a *Subscription* see the material on configuring the *Dispatcher* in [Basic Configuration](/contents/BrighterBasicConfiguration.md#configuring-the-dispatcher).
 
-When 
+A subscription has two configuration surfaces: `AzureServiceBusSubscription`, which is the
+Brighter subscription, and `AzureServiceBusSubscriptionConfiguration`, which describes the
+Service Bus entity and is passed to the subscription as `subscriptionConfiguration`.
 
-We support a number of ASB specific *Subscription* options:
+## Azure Service Bus Entity Options
 
-* **MaxDeliveryCount**: The Maximum amount of times that a Message can be delivered before it is dead Lettered. This differs from **requeue count** as this is used by the transport in the event of lock expiry (in the event of process failure or processing taking too long) **default:** 5
+`AzureServiceBusSubscriptionConfiguration` takes its options as properties, so the option is
+the property you set.
 
-* **DeadLetteringOnMessageExpiration**: Dead letter a message when it expires **default:** true
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.AzureServiceBus.AzureServiceBusSubscriptionConfiguration -->
 
-* **LockDuration**: How long message locks are held for **default:** true
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `MaxDeliveryCount` | `int` | `5` | Deliveries the transport attempts before dead-lettering a message. |
+| `DeadLetteringOnMessageExpiration` | `bool` | `true` | Whether an expired message is dead-lettered rather than dropped. |
+| `LockDuration` | `TimeSpan` | `60000 ms` | How long a message lock is held while a handler runs. |
+| `DefaultMessageTimeToLive` | `TimeSpan` | `259200000 ms` | How long a message sits on the entity before it expires. |
+| `QueueIdleBeforeDelete` | `TimeSpan` | `TimeSpan.MaxValue` | How long a queue is idle before Service Bus deletes it. |
+| `RequireSession` | `bool` | `false` | Whether the subscription is session-enabled. |
 
-* **DefaultMessageTimeToLive**: How long messages sit in the queue before they expire **default:** 1 minute
+`MaxDeliveryCount` is the transport's own count and is not Brighter's `requeueCount`: it fires
+on lock expiry, which is what a slow or crashed handler looks like to Service Bus.
+`LockDuration` is one minute and `DefaultMessageTimeToLive` is three days.
 
-* **SqlFilter**: A Sql Filter to apply to the *subscription* see [Topic Filters](https://docs.microsoft.com/en-us/azure/service-bus-messaging/topic-filters) **default:** none
+**Two further options are public fields rather than properties**, so they are not on the table
+above: `SqlFilter` (default `""`), a [Topic Filter](https://docs.microsoft.com/en-us/azure/service-bus-messaging/topic-filters)
+applied to the subscription, and `UseServiceBusQueue` (default `false`), which reads a Service
+Bus queue instead of a topic subscription.
 
+## Azure Service Bus Subscription Options
+
+`AzureServiceBusSubscription` takes its options as constructor arguments, so the option is the
+parameter you type. The seventeen it shares with
+[`Subscription`](/contents/DispatcherConfigurationReference.md#subscription-options) behave the
+same way here; `subscriptionConfiguration` is the one it adds.
+
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.AzureServiceBus.AzureServiceBusSubscription
+     manual: requestType — the constructor rejects its own default, so there is no default to read
+     manual: getRequestType — assigned to MapRequestType, and the body substitutes a function returning RequestType when it is null
+     manual: messagePumpType — the constructor rejects its own default of Unknown, so there is no default to read
+     manual: subscriptionConfiguration — read back as Configuration, and the body substitutes a default AzureServiceBusSubscriptionConfiguration when it is null
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `subscriptionName` | `SubscriptionName` | `none` | Names the subscription for diagnostics; read back as `Name`. |
+| `channelName` | `ChannelName` | `none` | Names the Service Bus subscription or queue this reads. |
+| `routingKey` | `RoutingKey` | `none` | The Service Bus topic the subscription is created on. |
+| `requestType` | `Type?` | `none` | The request type messages on this channel are translated into. |
+| `getRequestType` | `Func<Message, Type>?` | derives the type from `requestType` | Determines the request type from the message rather than from the channel. |
+| `bufferSize` | `int` | `1` | Messages read from the entity at once and held in the channel. |
+| `noOfPerformers` | `int` | `1` | Threads reading this channel, each with its own message pump. |
+| `timeOut` | `TimeSpan?` | `300 ms` | How long a read waits before treating the entity as empty. |
+| `requeueCount` | `int` | `-1` | Times a message is requeued before it is treated as a poison pill; -1 is unlimited. |
+| `requeueDelay` | `TimeSpan?` | `0 ms` | How long delivery of a requeued message is delayed. |
+| `unacceptableMessageLimit` | `int` | `0` | Unacceptable messages before the channel stops; 0 disables the limit. |
+| `unacceptableMessageLimitWindow` | `TimeSpan?` | `null` | The window the unacceptable-message count resets at the end of. |
+| `messagePumpType` | `MessagePumpType` | `none` | Selects the Reactor or Proactor concurrency model. |
+| `channelFactory` | `IAmAChannelFactory?` | `null` | Creates the channel; falls back to `DefaultChannelFactory` when null. |
+| `makeChannels` | `OnMissingChannel` | `Create` | Whether Brighter creates the topic and subscription, validates them, or assumes them. |
+| `subscriptionConfiguration` | `AzureServiceBusSubscriptionConfiguration?` | a default `AzureServiceBusSubscriptionConfiguration` | Describes the Service Bus entity Brighter creates; read back as `Configuration`. |
+| `emptyChannelDelay` | `TimeSpan?` | `500 ms` | How long the pump pauses after a read that found no message. |
+| `channelFailureDelay` | `TimeSpan?` | `1000 ms` | How long the pump pauses after a channel failure. |
+
+Leaving `subscriptionConfiguration` null gives you the defaults in the table above it, so the
+entity is created with a one-minute lock and a three-day time to live.
+
+The generic form `AzureServiceBusSubscription<T>`, which every example below uses, takes the
+same options and supplies four defaults the table cannot: `requestType` is `T`,
+`subscriptionName`, `channelName` and `routingKey` are `T`'s full name, and `messagePumpType`
+is `Proactor`.
 
 This is a typical *Subscription* configuration in a Consumer application:
 

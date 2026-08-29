@@ -54,6 +54,35 @@ The Connection to RabbitMQ is provided by an **RmqMessagingGatewayConnection** w
 
 In RabbitMQ, recreating an exiting primitive is a no-op provided the definition does not change.
 
+## RabbitMQ Connection Options
+
+`RmqMessagingGatewayConnection` takes its options as properties, so the option is the
+property you set. The property is spelled `AmpqUri`, not `AmqpUri` — the transposition is in
+Brighter's own API and a reader who types the protocol's spelling does not compile.
+
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.RMQ.Async.RmqMessagingGatewayConnection
+     manual: Name — the default is Environment.MachineName, so there is no value a table can print
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `Name` | `string` | the machine name | Names the connection in the broker's connection list. |
+| `AmpqUri` | `AmqpUriSpecification?` | `null` | The AMQP URI the client connects with, and its retry settings. |
+| `Exchange` | `Exchange?` | `null` | The exchange messages are published to and queues bind against. |
+| `DeadLetterExchange` | `Exchange?` | `null` | The exchange dead-lettered messages are routed to. |
+| `Heartbeat` | `ushort` | `20` | Seconds between heartbeats before the broker treats the connection as dead. |
+| `PersistMessages` | `bool` | `false` | Whether published messages are written to disk. |
+| `ContinuationTimeout` | `ushort` | `20` | Seconds a protocol operation waits for its reply. |
+| `ClientCertificate` | `X509Certificate2?` | `null` | The client certificate presented for mutual TLS. |
+| `ClientCertificatePath` | `string?` | `null` | Path to a client certificate file, loaded when no certificate is supplied directly. |
+| `ClientCertificatePassword` | `string?` | `null` | Password for the certificate file at `ClientCertificatePath`. |
+| `TrustServerSelfSignedCertificate` | `bool` | `false` | Whether a self-signed certificate from the broker is accepted. |
+
+`Name` is the one row with no default a table can state: it is `Environment.MachineName`, so
+it differs on every machine the process runs on. Set it explicitly when you want to recognise
+the connection in the management console. The four certificate options configure a TLS
+connection to the broker and are not exercised by any example on this page.
+
 The following code creates a typical RabbitMQ connection (here shown as part of configuring an External Bus):
 
 ``` csharp
@@ -93,15 +122,25 @@ the ones your network obliges you to; for how to choose values, see
 
 For more on a *Publication* see the material on an *Add Producers* in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#using-an-external-bus).
 
-We only support one custom property on RabbitMQ which configures shutdown delay to await pending confirmations. 
-
-* **WaitForConfirmsTimeOutInMilliseconds**
+We only support one custom property on RabbitMQ which configures shutdown delay to await pending confirmations.
 
 Under the hood, Brighter uses [Publisher Confirms](https://www.rabbitmq.com/confirms.html) to update its Outbox for the dispatch time. This means that when publishing a message we allow RabbitMQ to confirm delivery of a message to all available nodes asynchronously, and then call us back, over blocking. This allows for higher throughput. But it means that we cannot update the Outbox to show a message as dispatched, until we receive the callback, which may occur after your handler pipeline for that message has completed and the message has been acknowledged.  
 
 When shutting down a producer, it is possible that not all confirms have yet been received from RabbitMQ. The delay instructs Brighter to wait for a period of time, in order to allow the confirms to arrive. 
 
 Missing a confirm will cause the *Outbox Sweeper* to resend a message, as it will not be marked as dispatched. (This is why we refer to Guaranteed *At Least Once* because there are many opportunities where messages may be duplicated in order to guarantee they were sent).  
+
+## RabbitMQ Publication Options
+
+`RmqPublication` adds one option to the
+[base publication options](/contents/CommandProcessorConfigurationReference.md#publication-options),
+which it inherits and which are set the same way.
+
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.RMQ.Async.RmqPublication -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `WaitForConfirmsTimeOutInMilliseconds` | `int` | `500` | Milliseconds a producer waits at shutdown for outstanding publisher confirms. |
 
 The following code creates a *Publication* for RabbitMQ when configuring an *External Bus*
 
@@ -185,6 +224,55 @@ We support a number of RabbitMQ specific *Subscription* options:
 - **HighAvailability**: [Deprecated] Not used on versions of RabbitMQ 3+. Prior to this, configuring that a queue should be mirrored was an API option, now it is a configuration management option on the broker.
 - **IsDurable**: Should subscription definitions survive a restart of nodes in the broker.
 - **MaxQueueLength**: [Deprecated] Prefer to use policy to set this instead (see [RabbitMQ docs](https://www.rabbitmq.com/maxlength.html)). The maximum length a RabbitMQ queue can grow to, before new messages are rejected (and sent to a DLQ if there is one).
+
+## RabbitMQ Subscription Options
+
+`RmqSubscription` takes its options as constructor arguments, so the option is the parameter
+you type. The first seventeen are
+[`Subscription`'s](/contents/DispatcherConfigurationReference.md#subscription-options) and
+behave the same way here; the rest are RabbitMQ's own.
+
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.RMQ.Async.RmqSubscription
+     manual: requestType — the constructor rejects its own default, so there is no default to read
+     manual: getRequestType — assigned to MapRequestType, and the body substitutes a function returning RequestType when it is null
+     manual: messagePumpType — the constructor rejects its own default of Unknown, so there is no default to read
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `subscriptionName` | `SubscriptionName` | `none` | Names the subscription for diagnostics; read back as `Name`. |
+| `channelName` | `ChannelName` | `none` | Names the RabbitMQ queue this subscription reads. |
+| `routingKey` | `RoutingKey` | `none` | The routing key the queue binds to on the exchange. |
+| `requestType` | `Type?` | `none` | The request type messages on this queue are translated into. |
+| `getRequestType` | `Func<Message, Type>?` | derives the type from `requestType` | Determines the request type from the message rather than from the queue. |
+| `bufferSize` | `int` | `1` | Messages read from the queue at once and held in the channel. |
+| `noOfPerformers` | `int` | `1` | Threads reading this queue, each with its own message pump. |
+| `timeOut` | `TimeSpan?` | `300 ms` | How long a read waits before treating the queue as empty. |
+| `requeueCount` | `int` | `-1` | Times a message is requeued before it is treated as a poison pill; -1 is unlimited. |
+| `requeueDelay` | `TimeSpan?` | `0 ms` | How long delivery of a requeued message is delayed. |
+| `unacceptableMessageLimit` | `int` | `0` | Unacceptable messages before the channel stops; 0 disables the limit. |
+| `unacceptableMessageLimitWindow` | `TimeSpan?` | `null` | The window the unacceptable-message count resets at the end of. |
+| `isDurable` | `bool` | `false` | Whether the queue definition survives a broker restart. |
+| `messagePumpType` | `MessagePumpType` | `none` | Selects the Reactor or Proactor concurrency model. |
+| `channelFactory` | `IAmAChannelFactory?` | `null` | Creates the channel; falls back to `DefaultChannelFactory` when null. |
+| `highAvailability` | `bool` | `false` | Mirrors the queue across nodes on brokers before RabbitMQ 3. |
+| `deadLetterChannelName` | `ChannelName?` | `null` | Names the queue bound to the dead letter exchange for this subscription. |
+| `deadLetterRoutingKey` | `RoutingKey?` | `null` | The routing key binding the dead letter queue to the dead letter exchange. |
+| `ttl` | `TimeSpan?` | `null` | How long a message stays on the queue before RabbitMQ discards it. |
+| `makeChannels` | `OnMissingChannel` | `Create` | Whether Brighter creates the queue and binding, validates them, or assumes them. |
+| `emptyChannelDelay` | `TimeSpan?` | `500 ms` | How long the pump pauses after a read that found no message. |
+| `channelFailureDelay` | `TimeSpan?` | `1000 ms` | How long the pump pauses after a channel failure. |
+| `maxQueueLength` | `int?` | `null` | Messages the queue holds before new ones are rejected. |
+| `queueType` | `QueueType` | `Classic` | Selects a classic or quorum queue. |
+
+`queueType` is the one option the two clients do not share: the `RMQ.Sync` package's
+`RmqSubscription` takes 23 parameters and has no `queueType` among them, so quorum queues are
+available only on `RMQ.Async`. `highAvailability` and `maxQueueLength` are both deprecated,
+as the bullets above record.
+
+The generic form `RmqSubscription<T>`, which every example below uses, takes the same options
+and supplies four defaults the table cannot: `requestType` is `T`, `subscriptionName`,
+`channelName` and `routingKey` are `T`'s full name, and `messagePumpType` is `Proactor`.
 
 This is a typical *Subscription* configuration in a Consumer application:
 

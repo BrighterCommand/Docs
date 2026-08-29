@@ -59,6 +59,40 @@ For more on a *Publication* see the material on an *Add Producers* in [Command P
 
 Brighter's **Routing Key** represents the [SNS Topic Name](https://docs.aws.amazon.com/sns/latest/api/API_CreateTopic.html) or [SQS Queue Name](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_CreateQueue.html).
 
+### SNS Publication Options
+
+`SnsPublication` publishes to an SNS topic. It adds these three to the
+[base publication options](/contents/CommandProcessorConfigurationReference.md#publication-options),
+which it inherits.
+
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.AWSSQS.SnsPublication -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `FindTopicBy` | `TopicFindBy` | `Convention` | How Brighter resolves the topic from the routing key. |
+| `TopicAttributes` | `SnsAttributes?` | `null` | The attributes of the SNS topic Brighter creates. |
+| `TopicArn` | `string?` | `null` | The topic ARN, used when `FindTopicBy` is `Arn`. |
+
+### SQS Publication Options
+
+`SqsPublication` publishes to an SQS queue directly, with no SNS topic in front of it. It
+takes a channel name as a constructor argument and the rest as properties.
+
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.AWSSQS.SqsPublication
+     manual: ChannelName — the constructor requires a channel name and rejects an empty one, so there is no default to read
+     manual: QueueAttributes — the property is initialised to SqsAttributes.Empty, which has no printable value
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `ChannelName` | `ChannelName?` | `none` | Names the SQS queue this publication writes to. |
+| `ChannelType` | `ChannelType` | `PointToPoint` | Whether the publication writes to a queue or to a topic. |
+| `FindQueueBy` | `QueueFindBy` | `Name` | Whether `ChannelName` is read as a queue name or as a queue URL. |
+| `QueueAttributes` | `SqsAttributes` | `SqsAttributes.Empty` | The attributes of the SQS queue Brighter creates. |
+
+`ChannelName` is a constructor argument rather than a property with a default: the
+constructor throws when it is empty, so a publication always names its queue.
+
 ### Finding and Creating Topics
 
 Depending on the option you choose for how we handle required messaging infrastructure (Create, Validate, Assume), we will need to determine if a **Topic** already exists, when we want to create it if missing, or validate it. 
@@ -352,6 +386,58 @@ var subscriptions = new Subscription[]
     )
 };
 ```
+
+### SQS Subscription Options
+
+`SqsSubscription` takes its options as constructor arguments, so the option is the parameter
+you type. The seventeen it shares with
+[`Subscription`](/contents/DispatcherConfigurationReference.md#subscription-options) behave
+the same way here; the other seven are AWS's own.
+
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.AWSSQS.SqsSubscription
+     manual: requestType — the constructor rejects its own default, so there is no default to read
+     manual: getRequestType — assigned to MapRequestType, and the body substitutes a function returning RequestType when it is null
+     manual: messagePumpType — the constructor rejects its own default of Unknown, so there is no default to read
+     manual: queueAttributes — the body substitutes SqsAttributes.Empty, which has no printable value
+     manual: topicAttributes — the body substitutes SnsAttributes.Empty, which has no printable value
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `subscriptionName` | `SubscriptionName` | `none` | Names the subscription for diagnostics; read back as `Name`. |
+| `channelName` | `ChannelName` | `none` | Names the SQS queue this subscription reads. |
+| `channelType` | `ChannelType` | `none` | Whether the subscription reads a queue directly or through an SNS topic. |
+| `routingKey` | `RoutingKey` | `none` | The SNS topic the queue subscribes to. |
+| `requestType` | `Type?` | `none` | The request type messages on this queue are translated into. |
+| `getRequestType` | `Func<Message, Type>?` | derives the type from `requestType` | Determines the request type from the message rather than from the queue. |
+| `bufferSize` | `int` | `1` | Messages read from the queue at once and held in the channel. |
+| `noOfPerformers` | `int` | `1` | Threads reading this queue, each with its own message pump. |
+| `timeOut` | `TimeSpan?` | `300 ms` | How long a read waits before treating the queue as empty. |
+| `requeueCount` | `int` | `-1` | Times a message is requeued before it is treated as a poison pill; -1 is unlimited. |
+| `requeueDelay` | `TimeSpan?` | `0 ms` | How long delivery of a requeued message is delayed. |
+| `unacceptableMessageLimit` | `int` | `0` | Unacceptable messages before the channel stops; 0 disables the limit. |
+| `unacceptableMessageLimitWindow` | `TimeSpan?` | `null` | The window the unacceptable-message count resets at the end of. |
+| `messagePumpType` | `MessagePumpType` | `none` | Selects the Reactor or Proactor concurrency model. |
+| `channelFactory` | `IAmAChannelFactory?` | `null` | Creates the channel; falls back to `DefaultChannelFactory` when null. |
+| `emptyChannelDelay` | `TimeSpan?` | `500 ms` | How long the pump pauses after a read that found no message. |
+| `channelFailureDelay` | `TimeSpan?` | `1000 ms` | How long the pump pauses after a channel failure. |
+| `findTopicBy` | `TopicFindBy` | `Convention` | How Brighter resolves the SNS topic from the routing key. |
+| `findQueueBy` | `QueueFindBy` | `Name` | Whether `channelName` is read as a queue name or as a queue URL. |
+| `queueAttributes` | `SqsAttributes?` | `SqsAttributes.Empty` | The attributes of the SQS queue Brighter creates. |
+| `topicAttributes` | `SnsAttributes?` | `SnsAttributes.Empty` | The attributes of the SNS topic Brighter creates. |
+| `deadLetterRoutingKey` | `RoutingKey?` | `null` | The topic messages are dead-lettered to. |
+| `invalidMessageRoutingKey` | `RoutingKey?` | `null` | The topic unacceptable messages are routed to. |
+| `makeChannels` | `OnMissingChannel` | `Create` | Whether Brighter creates the queue and topic, validates them, or assumes them. |
+
+`channelType` has no default on this constructor: every subscription states whether it is
+point-to-point or publish-subscribe. `queueAttributes` and `topicAttributes` default to the
+empty attribute sets, whose members are listed under
+[SQS attributes](#sqs-attributes) and [SNS Attributes](#sns-attributes).
+
+The generic form `SqsSubscription<T>`, which every example below uses, takes the same options
+and supplies five defaults the table cannot: `requestType` is `T`, `subscriptionName`,
+`channelName` and `routingKey` are `T`'s full name, `channelType` is `PubSub`, and
+`messagePumpType` is `Proactor`.
 
 ### Ack and Nack
 
