@@ -41,6 +41,48 @@ The MongoDB Outbox supports different strategies for collection management throu
 
 **Note:** You are responsible for creating and maintaining the collection if you choose to manage it manually. This includes tasks such as adding indexes to optimize query performance and configuring Time-To-Live (TTL) indexes for automatic message cleanup.
 
+## MongoDB Outbox Options
+
+`MongoDbConfiguration` is constructed with a client and a database name, and carries the rest
+as properties. The [MongoDB Inbox](/contents/MongoDBInbox.md) and the
+[MongoDB distributed lock](/contents/MongoDbDistributedLock.md) take the same type, so one
+instance can configure all three.
+
+<!-- optioncheck: Paramore.Brighter.MongoDb.MongoDbConfiguration
+     manual: Client — set from a constructor parameter, so an instance reads back that argument rather than a default
+     manual: TimeProvider — initialised to TimeProvider.System, which has no printable value
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `Client` | `IMongoClient` | `none` | Supplies the MongoDB driver client used for every collection Brighter opens. |
+| `TimeProvider` | `TimeProvider` | `TimeProvider.System` | Supplies the clock used for message timestamps and time-to-live expiry. |
+| `DatabaseSettings` | `MongoDatabaseSettings?` | `null` | Sets the database-level settings, such as read preference and write concern. |
+| `InstrumentationOptions` | `InstrumentationOptions` | `All` | Sets how much telemetry detail the Outbox emits. |
+| `Outbox` | `MongoDbCollectionConfiguration?` | `null` | Configures the collection this Outbox writes messages to. |
+| `Inbox` | `MongoDbCollectionConfiguration?` | `null` | Configures the collection the [MongoDB Inbox](/contents/MongoDBInbox.md) writes to. |
+| `Locking` | `MongoDbCollectionConfiguration?` | `null` | Configures the collection the [MongoDB distributed lock](/contents/MongoDbDistributedLock.md) writes its lock documents to. |
+
+**`databaseName` is a constructor parameter, not a property you can set.** It surfaces as the
+get-only `DatabaseName`, and there is no default: a `MongoDbConfiguration` cannot be constructed
+without it. `Client` has no default either — pass an `IMongoClient`, or use the constructor that
+takes a connection string and builds one for you.
+
+**`Outbox` defaults to `null` and the Outbox will not run without it**, so read that `null` as
+*you must set this* rather than as *this is optional*.
+
+Each of `Outbox`, `Inbox` and `Locking` takes a `MongoDbCollectionConfiguration`:
+
+<!-- optioncheck: Paramore.Brighter.MongoDb.MongoDbCollectionConfiguration -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `Name` | `string` | `""` | Names the MongoDB collection. |
+| `MakeCollection` | `OnResolvingACollection` | `Assume` | Sets what Brighter does when it resolves the collection — see [Collection Management](#mongodb-outbox-collection-management). |
+| `Settings` | `MongoCollectionSettings?` | `null` | Sets the collection-level settings used when the collection is opened. |
+| `CreateCollectionOptions` | `CreateCollectionOptions?` | `null` | Supplies the options used when Brighter creates the collection. |
+| `TimeToLive` | `TimeSpan?` | `null` | Sets how long a document survives before the TTL index removes it. |
+
 ## MongoDB Outbox Configuration
 
 ### Basic Configuration

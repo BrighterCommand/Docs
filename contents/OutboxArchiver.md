@@ -37,11 +37,19 @@ You register the Archiver with `UseOutboxArchiver<TTransaction>`, passing an arc
 
 For example, a DynamoDB Outbox uses `UseOutboxArchiver<TransactWriteItemsRequest>`. The `DynamoDbUnitOfWork` you register as the provider is *not* a transaction type, so `UseOutboxArchiver<DynamoDbUnitOfWork>` does not compile.
 
-The **Timed Outbox Archiver** has the following configurables:
+## Timed Outbox Archiver Options
 
-  * `TimerInterval`: The number of seconds to wait between checks for messages eligible for archival (default: 15)
-  * `MinimumAge`: A `TimeSpan` for how long since a message was dispatched before it is eligible for archival (default: 24 hours)
-  * `ArchiveBatchSize`: The maximum number of messages to archive in each check (default: 100)
+The second argument to `UseOutboxArchiver<TTransaction>` configures the Archiver with a
+`TimedOutboxArchiverOptions`:
+
+<!-- optioncheck: Paramore.Brighter.Outbox.Hosting.TimedOutboxArchiverOptions -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `TimerInterval` | `int` | `15` | How many seconds the Archiver waits between checks for messages eligible for archival. |
+| `MinimumAge` | `TimeSpan` | `86400000 ms` | How long since a message was dispatched before it becomes eligible for archival. |
+| `ArchiveBatchSize` | `int` | `100` | How many messages the Archiver moves to the archive provider in each check. |
+| `Instrumentation` | `InstrumentationOptions` | `All` | How much telemetry detail the Archiver emits. |
 
 ## Running the Sweeper and Archiver Out of Process
 

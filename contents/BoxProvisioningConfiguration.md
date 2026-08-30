@@ -124,6 +124,25 @@ services.AddBrighter()
 
 The `connectionName` overload accepts the same per-box parameters you would have set on `RelationalDatabaseConfiguration` (`outboxTableName`, `schemaName` where the backend supports it, `binaryMessagePayload`); each defaults sensibly so you can usually pass just the name.
 
+## Box Provisioning Options
+
+The delegate `UseBoxProvisioning` hands you is a `BoxProvisioningOptions`. Alongside the
+`Add{Backend}*` registrations above, it carries two settings:
+
+<!-- optioncheck: Paramore.Brighter.BoxProvisioning.BoxProvisioningOptions -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `MigrationLockTimeout` | `TimeSpan` | `30000 ms` | How long a replica waits for the migration lock before giving up — see [Tuning the migration lock timeout](#tuning-the-migration-lock-timeout). |
+| `MigrationHistoryScope` | `MigrationHistoryScope` | `Global` | Where the migration-history table is placed: `Global` keeps it in the default location, `PerSchema` places it in the configured `SchemaName`. |
+
+`MigrationHistoryScope.PerSchema` places history in the `SchemaName` your
+`RelationalDatabaseConfiguration` carries, on **MSSQL and PostgreSQL only**; it is a no-op on
+MySQL, SQLite and Spanner, which have no distinct schema concept. Selecting it with a null
+`SchemaName` on MSSQL or PostgreSQL throws `ConfigurationException`. Upgrading an existing
+deployment from `Global` to `PerSchema` seeds the new history table from the old one, so the
+application still needs read access to the history table in the default schema.
+
 ## Tuning the migration lock timeout
 
 `BoxProvisioningOptions.MigrationLockTimeout` controls how long a replica is willing to wait for the per-table advisory lock during startup. The default is 30 seconds. Override it inside the same delegate, before or after the `Add{Backend}*` calls — the timeout is read late, when registrations actually run, so placement inside the delegate does not matter:

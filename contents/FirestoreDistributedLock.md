@@ -46,10 +46,11 @@ var lockingProvider = new FirestoreDistributedLock(configuration);
 `IAmAFirestoreConnectionProvider` alongside the configuration if you want to share a
 connection provider.
 
-| Setting (on `Locking`) | Type | Description |
-|------------------------|------|-------------|
-| `Name` | `string` | The collection that holds the lock documents. |
-| `Ttl` | `TimeSpan?` | Optional expiry for lock documents. |
+The lock has no options type of its own. `FirestoreConfiguration` and the
+`FirestoreCollection` you assign to `Locking` are documented once, on the Outbox page: see
+[Firestore Outbox Options](/contents/FirestoreOutbox.md#firestore-outbox-options). The two that
+matter here are `Locking.Name`, which names the collection holding the lock documents, and
+`Locking.Ttl`, which stamps each document with an expiry timestamp.
 
 ## Firestore Distributed Lock Example
 
@@ -75,10 +76,14 @@ services
 
 The provider creates lock documents in the collection named by `Locking.Name`. It
 acquires a lock with an atomic create that succeeds only when the document does not
-already exist, so only one instance holds a given lock at a time. Setting `Ttl` lets
-stale locks expire, which protects you if an instance crashes before releasing its lock.
-Ensure the application's service account can read and write documents in the lock
-collection.
+already exist, so only one instance holds a given lock at a time. Ensure the application's
+service account can read and write documents in the lock collection.
+
+**`Ttl` writes a field; it does not delete anything on its own.** Brighter stamps a `Ttl`
+timestamp onto each lock document, and Firestore removes an expired document only once you have
+created a **TTL policy** on that field, through the Google Cloud console or the Firestore Admin
+API. Without the policy a crashed instance's lock document stays where it is, so create the
+policy if you are relying on expiry to recover the lock.
 
 ## Firestore Distributed Lock Notes
 
@@ -91,4 +96,5 @@ collection.
 ## Further Reading
 
 - [Distributed Lock](/contents/DistributedLock.md) — concepts and the full provider list
+- [Firestore Outbox](/contents/FirestoreOutbox.md) — the matching Outbox, and where `FirestoreConfiguration` is documented
 - [Outbox Support](/contents/BrighterOutboxSupport.md) — the Sweeper and Archiver

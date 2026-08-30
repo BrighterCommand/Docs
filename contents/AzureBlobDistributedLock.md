@@ -34,12 +34,24 @@ new AzureBlobLockingProvider(
         tokenCredential: new DefaultAzureCredential()));
 ```
 
-| Setting | Type | Default | Description |
-|---------|------|---------|-------------|
-| `BlobContainerUri` | `Uri` | *(required)* | The URI of the blob container that holds the lock blobs. |
-| `TokenCredential` | `TokenCredential` | *(required)* | The Azure credential used to authenticate, for example `DefaultAzureCredential`. |
-| `LeaseValidity` | `TimeSpan` | 1 minute | How long the blob lease is held before it expires automatically. Set it longer than a Sweeper/Archiver cycle. |
-| `StorageLocationFunc` | `Func<string, string>` | `resource => $"lock-{resource}"` | Maps a resource name to the blob name used for its lock. |
+<!-- optioncheck: Paramore.Brighter.Locking.Azure.AzureBlobLockingProviderOptions
+     manual: BlobContainerUri — set from a required constructor parameter, so an instance reads back that argument rather than a default
+     manual: TokenCredential — set from a required constructor parameter, so an instance reads back that argument rather than a default
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `BlobContainerUri` | `Uri` | `none` | Names the blob container that holds the lock blobs. |
+| `TokenCredential` | `TokenCredential` | `none` | Authenticates to the container, for example with `DefaultAzureCredential`. |
+| `LeaseValidity` | `TimeSpan` | `60000 ms` | How long the blob lease is held before it expires automatically. |
+
+All three properties are `init`-only, so set them in the constructor call or an object
+initialiser. Set `LeaseValidity` longer than a Sweeper or Archiver cycle.
+
+**`StorageLocationFunc` is a public field rather than a property**, which is why it is not in
+the table above: it is a `Func<string, string>` mapping a resource name to the blob name that
+holds its lock, and it defaults to `resource => $"lock-{resource}"`. Assign it in an object
+initialiser like any other member.
 
 ## Azure Blob Distributed Lock Example
 

@@ -24,11 +24,13 @@ provision** — see [Provisioning](#ms-sql-distributed-lock-provisioning).
 
 ## MS SQL Distributed Lock Configuration
 
-Unlike the lease-based providers, the MS SQL provider does not take an options class.
-You construct it with an `MsSqlConnectionProvider`, which it uses to open the session
-that holds the application lock. The connection provider is built from an
-`IAmARelationalDatabaseConfiguration` (a `RelationalDatabaseConfiguration`) carrying your
-connection string:
+**Unlike the lease-based providers, the MS SQL provider has no options type at all**, so
+there is no table of settings on this page. You construct it with an
+`MsSqlConnectionProvider`, which it uses to open the session that holds the application lock.
+The connection provider is built from an `IAmARelationalDatabaseConfiguration` (a
+`RelationalDatabaseConfiguration`) carrying your connection string, and its options are
+documented once in the [Relational Database Configuration
+Reference](/contents/RelationalDatabaseConfigurationReference.md):
 
 ```csharp
 var configuration = new RelationalDatabaseConfiguration(
