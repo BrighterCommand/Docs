@@ -118,8 +118,10 @@ two settings that govern expiry and scan concurrency.
 surface as the get-only `Timeout` and `NumberOfShards`. `numberOfShards` defaults to 3 and
 shards the outstanding index so an active topic does not build a hot partition; the Outbox
 throws `ArgumentOutOfRangeException` above 20. `timeout` defaults to 500 and **nothing reads
-it** — the timeouts that take effect are the `outBoxTimeout` arguments on the Outbox's own
-methods. `tableName` and `scanConcurrency` are constructor parameters as well, but each has a
+it**; neither does the DynamoDB Outbox read the `outBoxTimeout` argument the `IAmAnOutbox`
+methods take, which it accepts and passes between overloads without ever acting on. Configure
+timeouts on the `AmazonDynamoDBClient` you hand to the Outbox instead. `tableName` and
+`scanConcurrency` are constructor parameters as well, but each has a
 settable property and is in the table above.
 
 ## Replay Support: The Causation Index
