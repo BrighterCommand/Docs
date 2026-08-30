@@ -53,12 +53,12 @@ Seventeen, across four families, measured at `10.7.0` by looking for
 | Outbox | MySQL | [MySQL Outbox](/contents/MySQLOutbox.md) |
 | Outbox | PostgreSQL | [PostgreSQL Outbox](/contents/PostgresOutbox.md) |
 | Outbox | SQLite | [SQLite Outbox](/contents/SqliteOutbox.md) |
-| Outbox | Spanner | not yet documented |
+| Outbox | Spanner | [Spanner Outbox](/contents/SpannerOutbox.md) |
 | Inbox | MSSQL | [MSSQL Inbox](/contents/MSSQLInbox.md) |
 | Inbox | MySQL | [MySQL Inbox](/contents/MySQLInbox.md) |
 | Inbox | PostgreSQL | [PostgreSQL Inbox](/contents/PostgresInbox.md) |
 | Inbox | SQLite | [SQLite Inbox](/contents/SqliteInbox.md) |
-| Inbox | Spanner | not yet documented |
+| Inbox | Spanner | [Spanner Inbox](/contents/SpannerInbox.md) |
 | Box provisioning | MSSQL, MySQL, PostgreSQL, SQLite, Spanner | [Configuring Box Provisioning](/contents/BoxProvisioningConfiguration.md) |
 | Transport | PostgreSQL | [PostgreSQL Message Broker](/contents/PostgreSQLMessageBroker.md) |
 | Transport | MSSQL | [MSSQL Message Broker](/contents/MSSQLMessageBroker.md) |
