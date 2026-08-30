@@ -9,6 +9,11 @@ layout:
 
 > **Reference** · Applies to **Brighter V10** · Prerequisites: [Replay On Seen](/contents/ReplayOnSeen.md)
 
+> **Not in a released package yet.** Replay On Seen ships **after Brighter 10.7.0**, which is
+> the current release. `OnceOnlyAction.Replay`, `SupportsCausationTracking` and the Causation Id
+> plumbing this page describes are on Brighter's development branch and are in no version you
+> can install today, so treat what follows as the feature as it will ship.
+
 Which stores support Replay On Seen, the cases where it does not fire, the events it emits, and its limitations. For the concept see [Replay On Seen](/contents/ReplayOnSeen.md); for the procedure see [Turning On Replay On Seen](/contents/TurningOnReplayOnSeen.md).
 
 ## Store Support

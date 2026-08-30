@@ -124,6 +124,12 @@ settable property and is in the table above.
 
 ## Replay Support: The Causation Index
 
+> **Not in a released package yet.** This section describes
+> [Replay On Seen](/contents/ReplayOnSeen.md), which ships **after Brighter 10.7.0** — the
+> current release. `DynamoDbConfiguration.CausationIndexName` and the `CausationId` attribute
+> below are on Brighter's development branch and are in no version you can install today, which
+> is why `CausationIndexName` is absent from the options table above.
+
 [Replay On Seen](/contents/ReplayOnSeen.md) resends every Outbox message produced under a given Causation Id. On DynamoDB that means querying on a non-key attribute, which needs a Global Secondary Index — by default one named **Causation**, with `CausationId` as its hash key.
 
 This applies to both `Paramore.Brighter.Outbox.DynamoDB` and `.V4`. The DynamoDB **Inbox** needs nothing: it looks a Causation Id up by the table's own primary key.
