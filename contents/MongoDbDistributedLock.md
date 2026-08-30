@@ -48,10 +48,11 @@ var lockingProvider = new MongoDbLockingProvider(configuration);
 `IAmAMongoDbConnectionProvider` alongside the configuration if you want to share a
 connection provider.
 
-| Setting (on `Locking`) | Type | Description |
-|------------------------|------|-------------|
-| `Name` | `string` | The collection that holds the lock documents. |
-| `TimeToLive` | `TimeSpan?` | Optional expiry for lock documents, applied through a MongoDB TTL index. |
+The lock has no options type of its own. `MongoDbConfiguration` and the
+`MongoDbCollectionConfiguration` you assign to `Locking` are documented once, on the Outbox
+page: see [MongoDB Outbox Options](/contents/MongoDBOutbox.md#mongodb-outbox-options). The two
+that matter here are `Locking.Name`, which names the collection holding the lock documents, and
+`Locking.TimeToLive`, which expires them through a MongoDB TTL index.
 
 ## MongoDB Distributed Lock Example
 

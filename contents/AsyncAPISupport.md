@@ -164,15 +164,17 @@ When the same routing key appears in multiple sources, Brighter produces one cha
 
 Configure the generated document via the `UseAsyncApi()` delegate:
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `Title` | `string` | `"Brighter Application"` | The `info.title` field in the generated document |
-| `Version` | `string` | `"1.0.0"` | The `info.version` field |
-| `Description` | `string?` | `null` | Optional `info.description` field |
-| `Servers` | `Dictionary<string, V3ServerDefinition>?` | `null` | Server definitions (broker endpoints) |
-| `AssembliesToScan` | `IEnumerable<Assembly>?` | Entry assembly | Assemblies to scan for `[PublicationTopic]` types |
-| `DisableAssemblyScanning` | `bool` | `false` | When `true`, skips assembly scanning entirely |
-| `SupplementalPublications` | `IEnumerable<Publication>?` | `null` | Additional publications to include beyond those in the producer registry |
+<!-- optioncheck: Paramore.Brighter.AsyncAPI.AsyncApiOptions -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `Title` | `string` | `"Brighter Application"` | Sets the `info.title` field of the generated document. |
+| `Version` | `string` | `"1.0.0"` | Sets the `info.version` field of the generated document. |
+| `Description` | `string?` | `null` | Sets the `info.description` field of the generated document. |
+| `Servers` | `Dictionary<string, V3ServerDefinition>?` | `null` | Supplies the server definitions — the broker endpoints — keyed by server id. |
+| `AssembliesToScan` | `IEnumerable<Assembly>?` | `null` | Names the assemblies scanned for `[PublicationTopic]` types; the default scan set applies when it is null. |
+| `DisableAssemblyScanning` | `bool` | `false` | Turns off assembly scanning, leaving only registered producers and `SupplementalPublications`. |
+| `SupplementalPublications` | `IEnumerable<Publication>?` | `null` | Adds publications beyond those found in the producer registry and by scanning. |
 
 Full configuration example:
 

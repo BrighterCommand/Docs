@@ -1771,7 +1771,7 @@ own store, with no type, no default and nothing for reflection to check. They ma
 option-shaped regex correctly and are **out of scope for the checker: they get no marker**
 (design §12.2).
 
-- [ ] **Task 8.1:** The outbox pages — `DynamoOutbox.md`, `MongoDBOutbox.md`,
+- [x] **Task 8.1:** The outbox pages — `DynamoOutbox.md`, `MongoDBOutbox.md`,
       `InMemoryOutbox.md`
   - Input: `DynamoDbConfiguration` 7, `MongoDbConfiguration` 7, `MongoDbCollectionConfiguration`
     5, `InMemoryBoxConfiguration` 4
@@ -1780,7 +1780,7 @@ option-shaped regex correctly and are **out of scope for the checker: they get n
     like Firestore's — write it once and point at it. `MongoDbLuggageStoreOptions` is a
     different type and is **P2**, not this task.
 
-- [ ] **Task 8.2:** The sweeper, archiver, provisioning and inbox pages —
+- [x] **Task 8.2:** The sweeper, archiver, provisioning and inbox pages —
       `BrighterOutboxSupport.md`, `OutboxArchiver.md`, `BoxProvisioningConfiguration.md`,
       `DynamoInbox.md`
   - Input: `TimedOutboxSweeperOptions` 4, `TimedOutboxArchiverOptions` 4,
@@ -1792,7 +1792,7 @@ option-shaped regex correctly and are **out of scope for the checker: they get n
     applies in miniature. Keep the table to the sweeper's own options and link the rationale.
     `DynamoDbInboxConfiguration` is a `†` row; write it from the type.
 
-- [ ] **Task 8.3:** The seven lock pages — three tables, two links, two absences
+- [x] **Task 8.3:** The seven lock pages — three tables, two links, two absences
   - Input: design §7.4, measured constructor by constructor — **and three of this task's four
     figures are floors (§2.9), which is more than any other task in the spec**.
     `DynamoDbDistributedLock.md` (`DynamoDbLockingProviderOptions` **4†**),
@@ -1812,7 +1812,7 @@ option-shaped regex correctly and are **out of scope for the checker: they get n
     the Azure Blob and DynamoDB options types are under-counted by two each and carry no mark
     at all (§2.9). All three tables are written from the type.
 
-- [ ] **Task 8.4:** Normalise `AsyncAPISupport.md`'s table — the one of the twelve no other
+- [x] **Task 8.4:** Normalise `AsyncAPISupport.md`'s table — the one of the twelve no other
       task owns
   - Input: §2.7's table; design §12.2's six header shapes; `AsyncApiOptions`, 6 options
   - Output: one table in the §7.1 shape with its marker
@@ -1826,7 +1826,7 @@ option-shaped regex correctly and are **out of scope for the checker: they get n
     unchanged, which is a coherent state; dropping any of the other four leaves a page
     half-converted.
 
-- [ ] **Task 8.5:** Verify phase 8 — `optioncheck`, the six gates, and the AC8 walk
+- [x] **Task 8.5:** Verify phase 8 — `optioncheck`, the six gates, and the AC8 walk
   - Input: everything above
   - Output: exit 0; the six gates; a recorded AC8 verdict; **the `omit:` and `manual:` counts
     read off the scope line and recorded**
@@ -1834,6 +1834,114 @@ option-shaped regex correctly and are **out of scope for the checker: they get n
     the residue is the sum of the `manual:` declarations, printed per option and by name.
     Record it here, because phase 11 will quote it and a number nobody derived is a number
     somebody guessed.
+
+### Phase 8 as executed — 2026-08-30, 5/5
+
+**Fifteen pages edited, twelve tables, 49 rows, and no page created** — taking the corpus to
+`51 tables, 485 rows, 51 types, on 27 pages of 157 files scanned`, exit 0.
+
+| Task | Pages | Tables | Rows | `manual:` |
+|---|---:|---:|---:|---:|
+| 8.1 outboxes | 3 | 4 | 23 | 2 |
+| 8.2 sweeper, archiver, provisioning, inbox | 4 | 4 | 11 | 0 |
+| 8.3 locks | 7 | 3 | 8 | 4 |
+| 8.4 `AsyncAPISupport.md` | 1 | 1 | 7 | 0 |
+| **Total** | **15** | **12** | **49** | **6** |
+
+**The residue is 6 of 49, 12%** — in line with phase 7's 1 of 9 and well below phase 3's and
+phase 5's 13%, because phase 8 writes no subscriptions and the three parameters that carry most
+of the residue elsewhere never appear. Four of the six are the same shape: a required
+constructor parameter feeding an `init`-only property, so an instantiated object reads back the
+argument the checker had to supply. The other two are `MongoDbConfiguration.Client` (the same
+shape) and `TimeProvider` (no printable value).
+
+**Every task's figures came out exactly as design §7.3 and §7.4 predicted, and §2.9's floors did
+not bite.** `DynamoDbConfiguration` 7, `MongoDbConfiguration` 7, `MongoDbCollectionConfiguration`
+5, `InMemoryBoxConfiguration` 4, `TimedOutboxSweeperOptions` 4, `TimedOutboxArchiverOptions` 4,
+`BoxProvisioningOptions` 2, `DynamoDbInboxConfiguration` 1, `DynamoDbLockingProviderOptions` 4,
+`AzureBlobLockingProviderOptions` 3, `PostgresLockingProviderOptions` 1. **§2.9 lists three of
+these as under-counted; the rebuilt `survey.py` now agrees with `optioncheck` on all eleven**
+(`survey.py --ref 10.7.0 --tsv`), so those floors were properties of the *pre-phase-1* survey
+that design §12.5 read, not of the corpus today. **The one figure that did move is design
+§7.6's**: `AsyncApiOptions` is **7**, not 6, and both instruments say so.
+
+**The only figure in play moved and the other six did not.** `optioncheck` 39 tables/436 rows →
+**51/485**; link **160 files**, pagelint **158 pages, 0 errors, 783 warnings**, shape **157
+pages, widest 12 of 20**, `--check-redirects` **77 entries / 7858 bytes**, `versioncheck.py`
+**0 stale of 18** — all five unmoved, which is what a phase that creates no page predicts, and
+`--verify` is unmoved for the same reason. **The using-directive debt did not move either.**
+
+**`pagelint --changed origin/master` reports `16 file(s), 28 hunk(s) … 15 documentation
+page(s), 0 code block(s) strict` — the sixteenth file is this one — and that vacuity is the
+deliverable rather than a gap.**
+Standing obligation 8 says the cheapest defence against rule 6 is placement; twelve tables went
+in among the **53** C# blocks those fifteen pages carry and **not one block overlaps the
+diff**, so
+the debt is unchanged and no block was dragged into strict scope. Read the scope line, not the
+verdict: this run says nothing about the strict rules, legitimately.
+
+**AC8 walked, mechanically and by reading.** All 49 rows are four cells, no `Default` is blank,
+every description is one present-tense sentence ending in a full stop, and every `Type` is a
+code span. The eleven pages carrying a table were re-read for the sentence-per-row rule as
+well, because the mechanical check cannot see a description that is a rationale.
+
+#### §2.7's twelve are now all accounted for
+
+Five lock tables normalised at task 8.3 — three became marked tables (`DynamoDbDistributedLock`,
+`AzureBlobDistributedLock`, `PostgresDistributedLock`) and two became **links** to the table
+that owns the type (`MongoDbDistributedLock` → `MongoDBOutbox.md#mongodb-outbox-options`,
+`FirestoreDistributedLock` → `FirestoreOutbox.md#firestore-outbox-options`, which is phase 7's
+handover paid). With task 5.5's three, task 2.6's one and task 8.4's one, that is ten of twelve
+normalised and `CausationTrackingStores.md`'s two deliberately left alone: they are an interface
+contract, not options, and they get no marker.
+
+**Two pages state an absence instead of carrying a table.** `MsSqlDistributedLock.md` and
+`MySqlDistributedLock.md` already said the provider takes no options class; what they gained is
+the link to D15, so a reader who needs the connection surface has somewhere to go. Those are
+two of standing obligation 4's seven instances, and the pages already reported the absence —
+what was missing was where to go next.
+
+#### The ledger — seven entries, and `optioncheck` found none of them
+
+All seven were found by writing a table from the type, which is standing obligation 3 doing the
+work the checker cannot: five are options the corpus never mentioned or described wrongly, and
+two are properties that exist and do nothing.
+
+| Page | What the corpus said | What the assembly says |
+|---|---|---|
+| `AsyncAPISupport.md:173` | `AssembliesToScan` defaults to *Entry assembly* | it is initialised to **`null`**; the default scan set is chosen downstream |
+| `BrighterOutboxSupport.md:179` | `MinimumMessageAge` is *the age of a message in milliseconds*, default 5000 | it is a **`TimeSpan`**, `TimeSpan.FromSeconds(5)` |
+| `OutboxArchiver.md:40` | three configurables | there are **four** — `Instrumentation` was undocumented |
+| `BoxProvisioningConfiguration.md` | nothing | **`MigrationHistoryScope`** appeared nowhere in the corpus, on any page |
+| `AzureBlobDistributedLock.md:42` | `StorageLocationFunc` as a table row beside three properties | it is a **public field**, invisible to reflection over properties; moved to prose |
+| `DynamoOutbox.md:187` | `DynamoDbConfiguration.CausationIndexName` defaults to `"Causation"` | **no such member exists at `10.7.0`** — see below |
+| `FirestoreDistributedLock.md:79` | setting `Ttl` *lets stale locks expire* | `Ttl` writes a field; Firestore deletes nothing without a **TTL policy** (phase 7's finding, one family over) |
+
+**Two options exist and are read by nothing**, which is a fact about the product rather than
+drift, and both are now stated on the page: `DynamoDbConfiguration.Timeout` is assigned in the
+constructor and never read — the timeouts that take effect are the `outBoxTimeout` arguments on
+the Outbox's own methods — and `DynamoDbInboxConfiguration.Credentials` and `Region` are read
+nowhere either. The Inbox pair is also the spec's first **V3/V4 divergence**: the two are
+get-only in `Paramore.Brighter.Inbox.DynamoDB` and settable in `.V4`, so the same type name has
+1 option in the pinned package and 3 in the one the page recommends. The marker binds the
+pinned one; the page says the rest in a sentence.
+
+#### `DynamoOutbox.md` documents a property that has not shipped
+
+`CausationIndexName` is absent from `git show 10.7.0:…/DynamoDbConfiguration.cs` **and** from
+the assembly `optioncheck` reflects over, and NuGet's latest for
+`paramore.brighter.outbox.dynamodb` is `10.7.0`. It exists on Brighter `master`, added between
+the tag (2026-07-29) and 2026-08-01. So the page's *The index name* section — and the wider
+replay-on-seen material it belongs to — describes the **next** release as though it were the
+current one, and a reader on 10.7.0 finds no such property to set.
+
+**Phase 8 changed nothing about it**, deliberately: the section is one page of a family
+(`ReplayOnSeen.md`, `ReplayOnSeenReference.md`, `CausationTrackingStores.md` and this one), and
+version-flagging one page of four would leave the corpus less consistent than it is now. The
+seven-row table beside it is written from the pinned type and says nothing about replay, so
+nothing on the page contradicts anything else. **It is recorded here as a question for the
+maintainer** — whether the corpus documents the latest release or the tip — and it is the
+first time this programme has met the question at all.
 
 ---
 

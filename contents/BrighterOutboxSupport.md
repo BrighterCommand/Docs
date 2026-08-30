@@ -173,12 +173,22 @@ The benefits of using an **Outbox Sweeper** are:
   * If there is a failure dispatch a message after it is committed to the **Outbox** it will be retried until it is dispatches
   * The ability to choose between the implicit and explicit clearing of messages
 
-The **Timed Outbox Sweeper** has the following configurables
+#### Timed Outbox Sweeper Options
 
-  * TimerInterval: The amount of seconds to wait between checks for undispatched messages (default: 5)
-  * MinimumMessageAge: The age a message (in milliseconds) that a messages should be before the **OutboxSweeper** should attempt to dispatch it. (default: 5000)
-  * BatchSize: The number of messages to attempt to dispatch in each check (default: 100)
-  * UseBulk: Use Bulk dispatching of messages on your **Messaging Gateway** (default: false), note: not all **messaging Gateway**s support Bulk dispatching.
+`UseOutboxSweeper` configures the Sweeper with a `TimedOutboxSweeperOptions`:
+
+<!-- optioncheck: Paramore.Brighter.Outbox.Hosting.TimedOutboxSweeperOptions -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `TimerInterval` | `int` | `5` | How many seconds the Sweeper waits between checks for undispatched messages. |
+| `MinimumMessageAge` | `TimeSpan` | `5000 ms` | How old a message must be before the Sweeper attempts to dispatch it. |
+| `BatchSize` | `int` | `100` | How many messages the Sweeper attempts to dispatch in each check. |
+| `UseBulk` | `bool` | `false` | Whether the Sweeper dispatches in bulk; not every messaging gateway supports it. |
+
+`Args` is a public field rather than a property: a `Dictionary<string, object>` of extra
+arguments a particular flavour of Outbox needs. It is read-only, so add to the dictionary
+rather than assigning a new one.
 
 It is important to note that the lower the Minimum Message age is the more likely it is that your message will be dispatches more than once (as if you are explicitly clearing messages your application may have instructed the clearing of a message at the same time as the **Outbox Sweeper**)
 

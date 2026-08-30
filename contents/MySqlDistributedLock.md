@@ -24,11 +24,12 @@ Named locks are a built-in MySQL feature, so there is **no table to provision** 
 
 ## MySQL Distributed Lock Configuration
 
-Like the MS SQL provider, the MySQL provider does not take an options class. You
-construct it with a `MySqlConnectionProvider`, which it uses to open the session that
-holds the lock. The connection provider is built from an
+**Like the MS SQL provider, the MySQL provider has no options type at all**, so there is no
+table of settings on this page. You construct it with a `MySqlConnectionProvider`, which it
+uses to open the session that holds the lock. The connection provider is built from an
 `IAmARelationalDatabaseConfiguration` (a `RelationalDatabaseConfiguration`) carrying your
-connection string:
+connection string, and its options are documented once in the [Relational Database
+Configuration Reference](/contents/RelationalDatabaseConfigurationReference.md):
 
 ```csharp
 var configuration = new RelationalDatabaseConfiguration(

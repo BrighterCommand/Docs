@@ -32,9 +32,16 @@ new PostgresLockingProvider(
         connectionString: "Host=localhost;Database=orders;Username=app;Password=secret"));
 ```
 
-| Setting | Type | Default | Description |
-|---------|------|---------|-------------|
-| `ConnectionString` | `string` | *(required)* | The connection string used to open the session that holds the advisory lock. |
+<!-- optioncheck: Paramore.Brighter.Locking.PostgresSql.PostgresLockingProviderOptions -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `connectionString` | `string` | `none` | Opens the session that holds the advisory lock. |
+
+That constructor parameter is the whole of the type: it surfaces as the get-only
+`ConnectionString`, and there is nothing else to set. In particular the provider does **not**
+take a [relational database configuration](/contents/RelationalDatabaseConfigurationReference.md),
+even though the Postgres Outbox beside it does.
 
 ## Postgres Distributed Lock Example
 

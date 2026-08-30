@@ -44,12 +44,21 @@ new DynamoDbLockingProvider(
 `DynamoDbLockingProviderOptions` takes two required values in its constructor and exposes
 two optional settings:
 
-| Setting | Type | Default | Description |
-|---------|------|---------|-------------|
-| `LockTableName` | `string` | *(required)* | The DynamoDB table that holds the locks. |
-| `LeaseholderGroupId` | `string` | *(required)* | Identifies the group of instances that share the lock. All instances that must coordinate use the same value. |
-| `LeaseValidity` | `TimeSpan` | 1 minute | How long the lease is held before it expires automatically. Set it comfortably longer than a Sweeper/Archiver cycle. |
-| `ManuallyReleaseLock` | `bool` | `false` | When `false`, the lock simply expires after `LeaseValidity`; when `true`, it is released explicitly on completion. |
+<!-- optioncheck: Paramore.Brighter.Locking.DynamoDb.DynamoDbLockingProviderOptions
+     manual: LockTableName — set from a required constructor parameter, so an instance reads back that argument rather than a default
+     manual: LeaseholderGroupId — set from a required constructor parameter, so an instance reads back that argument rather than a default
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `LockTableName` | `string` | `none` | Names the DynamoDB table that holds the locks. |
+| `LeaseholderGroupId` | `string` | `none` | Identifies the group of instances that share the lock; every instance that must coordinate uses the same value. |
+| `LeaseValidity` | `TimeSpan` | `60000 ms` | How long the lease is held before it expires automatically. |
+| `ManuallyReleaseLock` | `bool` | `false` | Whether the provider releases the lock on completion rather than letting it expire. |
+
+Both constructor parameters are required, and both properties are `init`-only: set them in the
+constructor call or in an object initialiser, not afterwards. Set `LeaseValidity` comfortably
+longer than a Sweeper or Archiver cycle.
 
 ## DynamoDB Distributed Lock Example
 

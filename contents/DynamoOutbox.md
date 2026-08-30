@@ -97,6 +97,31 @@ public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, Can
 }
 ```
 
+## DynamoDb Outbox Options
+
+`DynamoDbConfiguration` names the table and its four global secondary indexes, and carries the
+two settings that govern expiry and scan concurrency.
+
+<!-- optioncheck: Paramore.Brighter.Outbox.DynamoDB.DynamoDbConfiguration -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `TableName` | `string` | `"brighter_outbox"` | Names the DynamoDB table that holds the Outbox. |
+| `DeliveredIndexName` | `string` | `"Delivered"` | Names the global secondary index of dispatched messages, indexed by topic. |
+| `DeliveredAllTopicsIndexName` | `string` | `"DeliveredAllTopics"` | Names the global secondary index of dispatched messages covering every topic. |
+| `OutstandingIndexName` | `string` | `"Outstanding"` | Names the global secondary index of undispatched messages, indexed by topic. |
+| `OutstandingAllTopicsIndexName` | `string` | `"OutstandingAllTopics"` | Names the global secondary index of undispatched messages covering every topic. |
+| `TimeToLive` | `TimeSpan?` | `null` | Sets how long a message survives in the table before DynamoDB expires it; messages do not expire when it is null. |
+| `ScanConcurrency` | `int` | `3` | Sets how many segments a parallel scan for outstanding messages uses. |
+
+**`timeout` and `numberOfShards` are constructor parameters, not properties you can set.** They
+surface as the get-only `Timeout` and `NumberOfShards`. `numberOfShards` defaults to 3 and
+shards the outstanding index so an active topic does not build a hot partition; the Outbox
+throws `ArgumentOutOfRangeException` above 20. `timeout` defaults to 500 and **nothing reads
+it** — the timeouts that take effect are the `outBoxTimeout` arguments on the Outbox's own
+methods. `tableName` and `scanConcurrency` are constructor parameters as well, but each has a
+settable property and is in the table above.
+
 ## Replay Support: The Causation Index
 
 [Replay On Seen](/contents/ReplayOnSeen.md) resends every Outbox message produced under a given Causation Id. On DynamoDB that means querying on a non-key attribute, which needs a Global Secondary Index — by default one named **Causation**, with `CausationId` as its hash key.
