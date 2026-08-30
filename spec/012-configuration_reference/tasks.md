@@ -1935,13 +1935,25 @@ the tag (2026-07-29) and 2026-08-01. So the page's *The index name* section — 
 replay-on-seen material it belongs to — describes the **next** release as though it were the
 current one, and a reader on 10.7.0 finds no such property to set.
 
-**Phase 8 changed nothing about it**, deliberately: the section is one page of a family
-(`ReplayOnSeen.md`, `ReplayOnSeenReference.md`, `CausationTrackingStores.md` and this one), and
-version-flagging one page of four would leave the corpus less consistent than it is now. The
-seven-row table beside it is written from the pinned type and says nothing about replay, so
-nothing on the page contradicts anything else. **It is recorded here as a question for the
-maintainer** — whether the corpus documents the latest release or the tip — and it is the
-first time this programme has met the question at all.
+**Phase 8's own PR changed nothing about it**, deliberately: the section is one page of a
+family, and version-flagging one page of several would leave the corpus less consistent than it
+is. The seven-row table beside it is written from the pinned type and says nothing about
+replay, so nothing on the page contradicts anything else.
+
+**Ruled the same day: the four pages carry a marker, and the count was five, not four.**
+Measured rather than assumed — `OnceOnlyAction.Replay`, `SupportsCausationTracking`,
+`ReplayCausation` and `CausationId` are **all absent from `10.7.0` and all present on
+`origin/master`**, so the whole feature is unreleased, and **fifteen** pages mention it.
+Weighting by how much replay material each carries put the flag where a reader could actually
+be misled: the four dedicated pages — `ReplayOnSeen.md` (28 hits), `ReplayOnSeenReference.md`
+(60), `TurningOnReplayOnSeen.md` (55), `CausationTrackingStores.md` (32) — take a blockquote
+below the banner, and `DynamoOutbox.md`'s *Replay Support* section (14) takes one of its own
+naming `CausationIndexName`. The remaining ten mention it in passing and take nothing.
+
+**The blockquote goes immediately below the banner and rule 7 does not notice**, which is worth
+knowing before the next such marker: `opening_sentence()` passes over blockquotes by design, so
+all five pages keep the opening sentence their `description:` front matter was derived from —
+asserted by calling the extractor directly rather than inferred from a green run.
 
 ---
 
