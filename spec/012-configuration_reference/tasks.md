@@ -1502,19 +1502,55 @@ the only two definitions in the product), so chaining it off the Brighter builde
 **`CS1929`** — measured in the harness, with a control: deleting that one line from the same
 file builds clean.
 
-**Eleven blocks across eight pages show the chain** — `InMemoryTransport.md` (2),
-`InMemoryOptions.md` (2), `RoutingMultipleMessageTypes.md` (3), `AgreementDispatcher.md`,
-`DistributedLock.md`, `InMemoryInbox.md` and `V10MigrationGuide.md` — **and so does
-`CLAUDE.md`'s own ✅ *V10 — current* example**, which is where a writer would go to copy it.
-The tutorials are **not** affected: they write `builder.Services.AddConsumers(…)`, which is why
-009's compile-and-run pass never met this.
+**Eleven blocks across six pages show the chain** — `RoutingMultipleMessageTypes.md` (3),
+`InMemoryTransport.md` (2), `InMemoryOptions.md` (2), `V10MigrationGuide.md` (2),
+`AgreementDispatcher.md` and `InMemoryInbox.md` — **and so does `CLAUDE.md`'s own ✅ *V10 —
+current* example**, which is where a writer would go to copy it. The tutorials are **not**
+affected: they write `builder.Services.AddConsumers(…)`, which is why 009's compile-and-run
+pass never met this.
 
-**Nothing was fixed here.** It is not an option-table mismatch, so it is not a ledger entry; it
-is eight pages plus `CLAUDE.md`, which is its own coherent unit and its own PR. Recorded before
-fixing, per standing obligation 10's spirit if not its letter. **The general shape is the one
-009 left behind and this phase paid for again: compiling a page's own fences finds the class of
-defect that reading them cannot**, and the block that found it was on a page that does not
-carry the defect.
+**`DistributedLock.md` matched the pattern and is correct**, which is the reason the count above
+reads six pages and not eight: its chain is rooted at `services.AddSingleton<IAmazonDynamoDB>(…)`,
+which returns `IServiceCollection`, so `.AddConsumers(…).AddProducers(…).UseOutboxSweeper(…)` is
+a legal sequence. **A leading-dot `.AddConsumers(` is not the defect; the receiver is** — and the
+first draft of this note said eight pages because it counted the pattern.
+
+**Nothing was fixed in #135.** It is not an option-table mismatch, so it is not a ledger entry;
+it is its own coherent unit and its own PR. Recorded before fixing, per standing obligation 10's
+spirit if not its letter. **The general shape is the one 009 left behind and this phase paid for
+again: compiling a page's own fences finds the class of defect that reading them cannot**, and
+the block that found it was on a page that does not carry the defect.
+
+#### What the repair found once it started — five invented APIs, not one
+
+**Authorised by the maintainer on 2026-08-30 and shipped as its own PR**, ahead of phase 7. The
+chain was the entry point; the blocks it lives in carried four more, every one of which would
+stop a reader's build:
+
+| # | The corpus said | The assembly says | Sites |
+|---:|---|---|---:|
+| 1 | `AddBrighter().AddProducers(…).AddConsumers(…)` | `AddConsumers` extends `IServiceCollection`; put it first — `CS1929` otherwise | 11 blocks, 6 pages + `CLAUDE.md` |
+| 2 | `ConsumersOptions.ChannelFactory` | `DefaultChannelFactory` | 13 |
+| 3 | `ConsumersOptions.Inbox` | `InboxConfiguration` | 6 |
+| 4 | `InboxConfiguration.NoActionOnExists` | no such member; it is `actionOnExists: OnceOnlyAction.Warn`, and the second positional parameter is an `InboxScope` | 5 |
+| 5 | `new InMemoryChannelFactory(bus)` | the only constructor takes `(InternalBus, TimeProvider, …)` | 2 |
+| 6 | `.AutoFromAssemblies().AddHostedService<…>()` | `AddHostedService` extends `IServiceCollection`, not the builder | 2 |
+
+*(A seventh, local to one page: `InMemoryOptions.md`'s two helpers declared their bus parameter
+`IAmABus` and passed it to `InMemoryProducerRegistryFactory` and `InMemoryChannelFactory`, both
+of which take `InternalBus`.)*
+
+**Each corrected shape was compiled**, not reviewed: four representative shapes — consumer-only,
+consumers-then-producers, the inbox configuration, and consumers-then-`Handlers` — in one project
+against the same pinned packages, **0 errors and 0 warnings**. The harness itself supplied the
+last lesson of the exercise, and it is one this file already carries: pinning
+`Microsoft.Extensions.Hosting 9.0.0` beside `…ServiceActivator.Extensions.Hosting 10.7.0` is
+**`NU1605`**, the same downgrade rung 2 met.
+
+**The using-directive debt moved 787 → 783.** Nine blocks were pulled into `--changed` scope by
+edits of one word; four of them earned real `using` directives and five declared `// ...`,
+which downgrades and still counts. One of the five was **truncated** — `AzureServiceBusConfiguration.md`'s
+consumer example ended mid-lambda with an unbalanced brace — and is now closed.
 
 #### The ledger — no entries, and that is what a new page means
 

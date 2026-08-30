@@ -277,6 +277,7 @@ and supplies four defaults the table cannot: `requestType` is `T`, `subscription
 This is a typical *Subscription* configuration in a Consumer application:
 
 ``` csharp
+// ...
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
     var subscriptions = new Subscription[]
@@ -307,7 +308,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
     services.AddConsumers(options =>
         {
             options.Subscriptions = subscriptions;
-            options.ChannelFactory = new ChannelFactory(rmqMessageConsumerFactory);
+            options.DefaultChannelFactory = new ChannelFactory(rmqMessageConsumerFactory);
             ... //see Basic Configuration
         })
 ```

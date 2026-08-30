@@ -33,18 +33,15 @@ The InMemory Inbox provides message deduplication without requiring a database.
 // ...
 var bus = new InternalBus();
 
-services.AddBrighter(options =>
+services.AddConsumers(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
-})
-.AddConsumers(options =>
-{
-    options.Inbox = new InboxConfiguration(
+    options.InboxConfiguration = new InboxConfiguration(
         new InMemoryInbox(TimeProvider.System),
-        InboxConfiguration.NoActionOnExists
+        actionOnExists: OnceOnlyAction.Warn
     );
     options.Subscriptions = subscriptions;
-    options.ChannelFactory = new InMemoryChannelFactory(bus);
+    options.DefaultChannelFactory = new InMemoryChannelFactory(bus, TimeProvider.System);
 })
 .AutoFromAssemblies();
 ```

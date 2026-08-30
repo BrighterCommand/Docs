@@ -152,6 +152,7 @@ is `Proactor`.
 This is a typical *Subscription* configuration in a Consumer application:
 
 ``` csharp
+// ...
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
     var subscriptions = new Subscription[]
@@ -192,7 +193,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
     builder.Services.AddConsumers(options =>
     {
         options.Subscriptions = subscriptions;
-        options.ChannelFactory = new AzureServiceBusChannelFactory(asbConsumerFactory);
+        options.DefaultChannelFactory = new AzureServiceBusChannelFactory(asbConsumerFactory);
         
     }
 ```

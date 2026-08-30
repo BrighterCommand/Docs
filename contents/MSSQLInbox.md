@@ -17,6 +17,7 @@ For this we will need the *Inbox* packages for the MsSQL *Inbox*.
 * **Paramore.Brighter.Inbox.MsSql**
 
 ``` csharp
+// ...
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
         .ConfigureServices(hostContext, services) =>
@@ -29,7 +30,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
     services.AddConsumers(options =>
         {
             var configuration = new RelationalDatabaseConfiguration(connectionString, "BrighterTests", inboxTableName: "InboxMessages");
-            opt.Inbox = new InboxConfiguration(new MsSqlInbox(configuration));
+            options.InboxConfiguration = new InboxConfiguration(new MsSqlInbox(configuration));
             ...
         });
 }

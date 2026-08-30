@@ -163,28 +163,36 @@ services.AddBrighter()
 
 **After (V10)**:
 ```csharp
-services.AddBrighter()
+// ...
+services.AddConsumers(options =>
+    {
+        options.Subscriptions = subscriptions;
+        options.DefaultChannelFactory = new ChannelFactory(...);
+    })
     .AddProducers(options =>
     {
         options.ProducerRegistry = new RmqProducerRegistryFactory(...).Create();
-    })
-    .AddConsumers(options =>
-    {
-        options.Subscriptions = subscriptions;
-        options.ChannelFactory = new ChannelFactory(...);
     });
 ```
+
+`AddConsumers` extends `IServiceCollection` and `AddProducers` extends the Brighter builder it
+returns, so the consumer registration comes first and the producer registration chains off it.
+`AddBrighter` is the entry point when there are no consumers.
 
 **Migration Steps**:
 
 1. Replace `UseExternalBus` with `AddProducers`
-2. Replace `AddServiceActivator` with `AddConsumers`
-3. Update property names: `ProducerRegistry` instead of passing directly
+2. Replace `AddServiceActivator` with `AddConsumers`, and put it **first** in the chain
+3. Update property names: `ProducerRegistry` instead of passing directly,
+   `DefaultChannelFactory` instead of `ChannelFactory`, and `InboxConfiguration` instead of
+   `Inbox`
 
 | V9 Method | V10 Method | Purpose |
 |-----------|------------|---------|
 | `UseExternalBus()` | `AddProducers()` | Configure message producers (send/publish to external bus) |
 | `AddServiceActivator()` | `AddConsumers()` | Configure message consumers (receive from external bus) |
+| `options.ChannelFactory` | `options.DefaultChannelFactory` | Supply the channel factory for every subscription that does not name its own |
+| `options.Inbox` | `options.InboxConfiguration` | Configure the Inbox used by the consumer pipeline |
 
 **Terminology**: In V10, we use **"Dispatcher"** to refer to the component that dispatches messages to handlers. The assembly name remains `Paramore.Brighter.ServiceActivator` for backward compatibility, but documentation and APIs now use "Dispatcher" for clarity.
 
@@ -601,12 +609,25 @@ V10 provides comprehensive InMemory implementations for testing.
 **Example**:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Observability;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 // Test setup with InMemory components
 var internalBus = new InternalBus();
 
-services.AddBrighter(options =>
+services.AddConsumers(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
+    options.InboxConfiguration = new InboxConfiguration(
+        new InMemoryInbox(TimeProvider.System),
+        actionOnExists: OnceOnlyAction.Warn
+    );
+    options.Subscriptions = subscriptions;
+    options.DefaultChannelFactory = new InMemoryChannelFactory(internalBus, TimeProvider.System);
 })
 .AddProducers(options =>
 {
@@ -617,15 +638,6 @@ services.AddBrighter(options =>
         InstrumentationOptions.All
     ).Create();
     options.Outbox = new InMemoryOutbox(TimeProvider.System);
-})
-.AddConsumers(options =>
-{
-    options.Inbox = new InboxConfiguration(
-        new InMemoryInbox(TimeProvider.System),
-        InboxConfiguration.NoActionOnExists
-    );
-    options.Subscriptions = subscriptions;
-    options.ChannelFactory = new InMemoryChannelFactory(internalBus, TimeProvider.System);
 })
 .UseScheduler(new InMemorySchedulerFactory())
 .AutoFromAssemblies();

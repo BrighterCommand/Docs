@@ -83,6 +83,13 @@ For more details on service provider overloads and the Options pattern, see [Ser
 Here's a complete example showing how to use multiple InMemory components together:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Observability;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 public class IntegrationTests : IDisposable
 {
     private readonly ServiceProvider _serviceProvider;
@@ -95,24 +102,14 @@ public class IntegrationTests : IDisposable
         var services = new ServiceCollection();
         var internalBus  = new InternalBus();
 
-        services.AddBrighter(options =>
+        services.AddConsumers(options =>
         {
             options.HandlerLifetime = ServiceLifetime.Scoped;
-        })
-        .AddProducers(options =>
-        {
-            var publication = new Publication() { Topic = new RoutingKey("PersonCreated") };
 
-            options.ProducerRegistry = new InMemoryProducerRegistryFactory(_internalBus , new[] { publication }, InstrumentationOptions.All)
-                .Create();
-            options.Outbox = new InMemoryOutbox();
-        })
-        .AddConsumers(options =>
-        {
             // InMemory Inbox for deduplication
-            options.Inbox = new InboxConfiguration(
+            options.InboxConfiguration = new InboxConfiguration(
                 new InMemoryInbox(TimeProvider.System),
-                InboxConfiguration.NoActionOnExists
+                actionOnExists: OnceOnlyAction.Warn
             );
 
             options.Subscriptions = new Subscription[]
@@ -124,7 +121,15 @@ public class IntegrationTests : IDisposable
                 )
             };
 
-            options.ChannelFactory = new InMemoryChannelFactory(_internalBus, TimeProvider.System);
+            options.DefaultChannelFactory = new InMemoryChannelFactory(_internalBus, TimeProvider.System);
+        })
+        .AddProducers(options =>
+        {
+            var publication = new Publication() { Topic = new RoutingKey("PersonCreated") };
+
+            options.ProducerRegistry = new InMemoryProducerRegistryFactory(_internalBus, new[] { publication }, InstrumentationOptions.All)
+                .Create();
+            options.Outbox = new InMemoryOutbox(TimeProvider.System);
         })
         .UseScheduler(new InMemorySchedulerFactory())  // InMemory Scheduler
         .UseInMemoryArchiveProvider()  // InMemory Archive
@@ -182,6 +187,15 @@ public class IntegrationTests : IDisposable
 Use InMemory components for development/testing, production components elsewhere:
 
 ```csharp
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Observability;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 public static class BrighterConfiguration
 {
     public static IServiceCollection AddBrighterWithEnvironmentConfig(
@@ -191,9 +205,12 @@ public static class BrighterConfiguration
     {
         var internalBus = new InternalBus();
 
-        services.AddBrighter(options =>
+        services.AddConsumers(options =>
         {
             options.HandlerLifetime = ServiceLifetime.Scoped;
+            options.InboxConfiguration = GetInbox(environment, configuration);
+            options.Subscriptions = GetSubscriptions();
+            options.DefaultChannelFactory = GetChannelFactory(environment, configuration, internalBus);
         })
         .AddProducers(options =>
         {
@@ -201,12 +218,6 @@ public static class BrighterConfiguration
         })
         .UseOutbox(GetOutbox(environment, configuration))
         .UseScheduler(GetSchedulerFactory(environment, configuration))
-        .AddConsumers(options =>
-        {
-            options.Inbox = GetInbox(environment, configuration);
-            options.Subscriptions = GetSubscriptions();
-            options.ChannelFactory = GetChannelFactory(environment, configuration, internalBus);
-        })
         .AutoFromAssemblies();
 
         return services;
@@ -215,7 +226,7 @@ public static class BrighterConfiguration
     private static IAmAProducerRegistry GetProducerRegistry(
         IHostEnvironment environment,
         IConfiguration configuration,
-        IAmABus bus)
+        InternalBus bus)
     {
         if (environment.IsDevelopment() || environment.IsEnvironment("Testing"))
         {
@@ -263,25 +274,25 @@ public static class BrighterConfiguration
         {
             return new InboxConfiguration(
                 new InMemoryInbox(TimeProvider.System),
-                InboxConfiguration.NoActionOnExists
+                actionOnExists: OnceOnlyAction.Warn
             );
         }
 
         // Production: SQL Server, PostgreSQL, MySQL, DynamoDB, etc.
         return new InboxConfiguration(
             new MsSqlInbox(/* production config */),
-            InboxConfiguration.NoActionOnExists
+            actionOnExists: OnceOnlyAction.Warn
         );
     }
 
     private static IAmAChannelFactory GetChannelFactory(
         IHostEnvironment environment,
         IConfiguration configuration,
-        IAmABus bus)
+        InternalBus bus)
     {
         if (environment.IsDevelopment() || environment.IsEnvironment("Testing"))
         {
-            return new InMemoryChannelFactory(bus);
+            return new InMemoryChannelFactory(bus, TimeProvider.System);
         }
 
         // Production: RabbitMQ, Kafka, AWS SQS, etc.
