@@ -370,6 +370,7 @@ Reactor rather than the Proactor.
 The following example shows how a subscription might be configured:
 
 ``` csharp
+// ...
  private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
 	var subscriptions = new KafkaSubscription[]
@@ -394,7 +395,7 @@ The following example shows how a subscription might be configured:
 	services.AddConsumers(options =>
 	{
 		options.Subscriptions = subscriptions;
-		options.ChannelFactory = new ChannelFactory(consumerFactory);
+		options.DefaultChannelFactory = new ChannelFactory(consumerFactory);
 	}).AutoFromAssemblies();
 
 
@@ -411,6 +412,7 @@ The **configHook** takes a *delegate* (you can pass a lambda). Your delegate wil
 You can use it as follows:
 
 ``` csharp
+// ...
 var subscription = new KafkaSubscription<GreetingEvent>(
 	subscriptionName: new SubscriptionName("paramore.example.greeting"),
 	channelName: new ChannelName("greeting.event"),
@@ -439,7 +441,7 @@ var consumerFactory = new KafkaMessageConsumerFactory(
 services.AddConsumers(options =>
 {
 	options.Subscriptions = subscriptions;
-	options.ChannelFactory = new ChannelFactory(consumerFactory);
+	options.DefaultChannelFactory = new ChannelFactory(consumerFactory);
 }).AutoFromAssemblies();
 ```
 

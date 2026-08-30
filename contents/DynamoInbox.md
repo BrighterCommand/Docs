@@ -43,7 +43,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
 	services.AddConsumers(opt => 
 	{
-		opt.Inbox = new InboxConfiguration(new DynamoDbInbox(dynamoDb, new DynamoDbInboxConfiguration()));
+		opt.InboxConfiguration = new InboxConfiguration(new DynamoDbInbox(dynamoDb, new DynamoDbInboxConfiguration()));
 		...
 	});
 }

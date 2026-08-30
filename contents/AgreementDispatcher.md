@@ -114,6 +114,11 @@ registry.RegisterAsync<MyCommand>((request, context) =>
 Agreement Dispatcher can be combined with [Dynamic Message Deserialization](DynamicMessageDeserialization.md) for two-level routing:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.Kafka;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 // Level 1: Dynamic deserialization (CloudEvents type → Request type)
 var subscription = new KafkaSubscription(
     new SubscriptionName("paramore.example.orders"),
@@ -130,8 +135,7 @@ var subscription = new KafkaSubscription(
 );
 
 // Level 2: Agreement dispatcher (Request content → Handler)
-services.AddBrighter(options => { })
-    .AddConsumers(options => { options.Subscriptions = new[] { subscription }; })
+services.AddConsumers(options => { options.Subscriptions = new[] { subscription }; })
     .Handlers(registry =>
     {
         registry.Register<OrderCreated>((request, context) =>

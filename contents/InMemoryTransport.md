@@ -71,17 +71,15 @@ services.AddBrighter(options =>
 
 var internalBus = new InternalBus();
 
-services.AddBrighter(options =>
+services.AddConsumers(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
-})
-.AddConsumers(options =>
-{
     options.Subscriptions = subscriptions;
-    options.ChannelFactory = new InMemoryChannelFactory(internalBus, TimeProvider.System);
+    options.DefaultChannelFactory = new InMemoryChannelFactory(internalBus, TimeProvider.System);
 })
-.AutoFromAssemblies()
-.AddHostedService<ServiceActivatorHostedService>();
+.AutoFromAssemblies();
+
+services.AddHostedService<ServiceActivatorHostedService>();
 ```
 
 ## InMemory Subscription Options
@@ -135,19 +133,9 @@ public class Startup
     {
         var internalBus = new InternalBus();
 
-        services.AddBrighter(options =>
+        services.AddConsumers(options =>
         {
             options.HandlerLifetime = ServiceLifetime.Scoped;
-        })
-        .AddProducers(options =>
-        {
-               var publication = new Publication() { Topic = new RoutingKey("GreetingMade") };
-
-                options.ProducerRegistry = new InMemoryProducerRegistryFactory(internalBus , new[] { publication }, InstrumentationOptions.All)
-                    .Create();
-        })
-        .AddConsumers(options =>
-        {
             options.Subscriptions = new Subscription[]
             {
                 new Subscription<GreetingMade>(
@@ -156,10 +144,18 @@ public class Startup
                     new RoutingKey("GreetingMade")
                 )
             };
-            options.ChannelFactory = new InMemoryChannelFactory(internalBus, TimeProvider.System);
+            options.DefaultChannelFactory = new InMemoryChannelFactory(internalBus, TimeProvider.System);
         })
-        .AutoFromAssemblies()
-        .AddHostedService<ServiceActivatorHostedService>();
+        .AddProducers(options =>
+        {
+            var publication = new Publication() { Topic = new RoutingKey("GreetingMade") };
+
+            options.ProducerRegistry = new InMemoryProducerRegistryFactory(internalBus, new[] { publication }, InstrumentationOptions.All)
+                .Create();
+        })
+        .AutoFromAssemblies();
+
+        services.AddHostedService<ServiceActivatorHostedService>();
     }
 }
 ```

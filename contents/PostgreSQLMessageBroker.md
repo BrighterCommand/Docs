@@ -180,7 +180,7 @@ var channelFactory = new PostgresChannelFactory(postgresConfiguration);
 services.AddConsumers(options =>
 {
     options.Subscriptions = subscriptions;
-    options.ChannelFactory = channelFactory;
+    options.DefaultChannelFactory = channelFactory;
 })
 .AutoFromAssemblies();
 ```

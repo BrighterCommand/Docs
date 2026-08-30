@@ -309,17 +309,23 @@ services.AddBrighter()
 ✅ **V10 — current**
 
 ```csharp
-services.AddBrighter()
+services.AddConsumers(options =>
+    {
+        options.Subscriptions = subscriptions;
+        options.DefaultChannelFactory = new ChannelFactory(...);
+    })
     .AddProducers(options =>
     {
         options.ProducerRegistry = new RmqProducerRegistryFactory(...).Create();
-    })
-    .AddConsumers(options =>
-    {
-        options.Subscriptions = subscriptions;
-        options.ChannelFactory = new ChannelFactory(...);
     });
 ```
+
+**The receiver matters and the compiler is the only thing that says so.** `AddConsumers`
+extends `IServiceCollection`; `AddProducers`, `UseScheduler`, `Handlers` and
+`AutoFromAssemblies` extend the `IBrighterBuilder` it returns. So a consumer registration comes
+**first** and everything else chains off it —
+`services.AddBrighter().AddProducers(…).AddConsumers(…)` is **`CS1929`**, and an earlier
+version of this example had it. `AddBrighter` is the entry point when there are no consumers.
 
 ### Complete code blocks
 

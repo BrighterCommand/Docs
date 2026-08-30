@@ -167,8 +167,7 @@ Once the request type is resolved, Brighter routes the message to the appropriat
 
 ```csharp
 // ...
-services.AddBrighter(options => { })
-    .AddConsumers(options =>
+services.AddConsumers(options =>
     {
         options.Subscriptions = new[] { subscription };
     })
@@ -208,8 +207,7 @@ var subscription = new KafkaSubscription(
 );
 
 // Second: Dynamically choose handler based on content
-services.AddBrighter(options => { })
-    .AddConsumers(options => { options.Subscriptions = new[] { subscription }; })
+services.AddConsumers(options => { options.Subscriptions = new[] { subscription }; })
     .Handlers(registry =>
     {
         registry.Register<OrderCreated>((request, context) =>
@@ -266,8 +264,7 @@ var subscription = new KafkaSubscription(
     messagePumpType: MessagePumpType.Proactor
 );
 
-services.AddBrighter(options => { })
-    .AddConsumers(options =>
+services.AddConsumers(options =>
     {
         options.Subscriptions = new[] { subscription };
     })
