@@ -152,3 +152,7 @@ contents/GcpPubSubConfiguration.md	Reference	high	"spec 012 D12, the GCP Pub/Sub
 contents/RocketMQConfiguration.md	Reference	high	"spec 012 D12, the RocketMQ transport; parameter tables consulted per option"	Reference	Brighter V10
 contents/MQTTConfiguration.md	Reference	high	"spec 012 D12, the MQTT transport; parameter tables consulted per option"	Reference	Brighter V10
 contents/RedisConfiguration.md	Reference	high	"spec 012 D12, the Redis transport; parameter tables consulted per option"	Reference	Brighter V10
+contents/FirestoreOutbox.md	Reference	high	"spec 012 D13, the Firestore Outbox; the FirestoreConfiguration table consulted per option"	Reference	Brighter V10
+contents/SpannerOutbox.md	Reference	high	"spec 012 D13, the Spanner Outbox; no options type of its own, links the relational reference"	Reference	Brighter V10
+contents/FirestoreInbox.md	Reference	high	"spec 012 D16, the Firestore Inbox; shares the Outbox configuration type"	Reference	Brighter V10
+contents/SpannerInbox.md	Reference	high	"spec 012 D16, the Spanner Inbox; no options type of its own, links the relational reference"	Reference	Brighter V10

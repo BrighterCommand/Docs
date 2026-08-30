@@ -1598,7 +1598,7 @@ the inbox side with no page at all; three of the four pages document everything 
 family over. **These two pages are the cleanest statement of standing obligation 4 in the
 spec.**
 
-- [ ] **Task 7.1:** Write `contents/FirestoreOutbox.md` — 7 options, 1 table
+- [x] **Task 7.1:** Write `contents/FirestoreOutbox.md` — 7 options, 1 table
   - Input: `FirestoreConfiguration` (7, and a `†` row in design §12.5 — under-counted by two);
     design §8.5's outline; `PostgresOutbox.md` as the registration example's shape
   - Output: the page — Configuration, Options (the marked table), Provisioning (links
@@ -1606,14 +1606,14 @@ spec.**
   - Notes: **this table is linked by the Firestore inbox and the Firestore lock**, so it is
     written once and pointed at twice — the same economy D15 makes at four times the scale.
 
-- [ ] **Task 7.2:** Write `contents/SpannerOutbox.md` — **0 options, 0 tables**
+- [x] **Task 7.2:** Write `contents/SpannerOutbox.md` — **0 options, 0 tables**
   - Input: design §8.5; `SpannerOutbox.cs:32`
   - Output: the page — Configuration (**links D15**), Provisioning (what is genuinely
     Spanner-specific), Connection Provider, Further Reading. Budget ~110 lines
   - Notes: **AC6b is this task and 7.1 together**: Firestore with a table, Spanner without. The
     page reports the absence rather than working around it.
 
-- [ ] **Task 7.3:** Write `contents/FirestoreInbox.md` and `contents/SpannerInbox.md` — **0
+- [x] **Task 7.3:** Write `contents/FirestoreInbox.md` and `contents/SpannerInbox.md` — **0
       options between them**
   - Input: design §8.5's second block and §12.6; both take
     **Prerequisites: [Inbox Support](/contents/BrighterInboxSupport.md)**
@@ -1625,7 +1625,7 @@ spec.**
     *The cheapest way to test a rule is to point it at the neighbouring family before anyone
     else does.*
 
-- [ ] **Task 7.4:** Four `SUMMARY.md` entries, the compile, and the checks
+- [x] **Task 7.4:** Four `SUMMARY.md` entries, the compile, and the checks
   - Input: design §9.1's third diff
   - Output: four **nested** entries — Firestore and Spanner outbox under *Outbox Support*,
     the two inboxes under *Inbox Support*, each immediately **before** its family's InMemory
@@ -1634,6 +1634,123 @@ spec.**
   - Notes: nesting is why these four add **nothing** to *Outbox and Inbox*'s top-level count —
     the section already carries 39 pages behind 9 entries, which is family nesting doing the
     only job that controls a section's width.
+
+### Phase 7 as executed — 2026-08-30, 4/4
+
+**Four pages, two tables, nine rows** — taking the corpus to
+`39 tables, 436 rows, 39 types, on 16 pages of 157 files scanned`, exit 0.
+
+| Page | Tables | Rows | `manual:` | Lines | Budget |
+|---|---:|---:|---:|---:|---:|
+| `FirestoreOutbox.md` | 2 | 9 | 1 | 133 | ~120 |
+| `SpannerOutbox.md` | 0 | 0 | — | 160 | ~110 |
+| `FirestoreInbox.md` | 0 | 0 | — | 97 | ~100 |
+| `SpannerInbox.md` | 0 | 0 | — | 122 | ~100 |
+
+**`FirestoreConfiguration` is 7, exactly as design §7.3 says**, and §2.9's *"under-counted by
+two"* is right about the surface and does not move the table: the two are `projectId` and
+`database`, **get-only primary-constructor properties**, so `max(props, ctor)` selects the
+seven settable properties and the two are named in prose. They are the fourth instance of the
+stray kind phase 6 met on `RocketMessagingGatewayConnection.ClientConfig`, and like it they are
+the ones a reader cannot omit — a `FirestoreConfiguration` cannot be constructed without both.
+
+**The ninth row is a second table nobody's figure predicted, and it is checked.**
+`FirestoreCollection` — `Name`, `Ttl` — is what `Outbox`, `Inbox` and `Locking` all take, so a
+reader cannot configure the Outbox without it. It is **outside `survey.py`'s population** (its
+name ends in neither `Configuration` nor `Options`), which is why no count in the spec carries
+it, and phase 6 handled that shape by naming such types in prose. **`optioncheck` binds by
+type name, not by population**, so the better answer here was a marked table: two rows that
+cannot drift, rather than two rows of prose that can. `--describe` prints it, and the corpus
+figure moves by two rows that were always reader-facing and never counted.
+
+**Spanner has no table on either page, and that is the deliverable.** `SpannerOutbox.cs:32` and
+`SpannerInboxAsync` both take `IAmARelationalDatabaseConfiguration`; both pages link D15 for
+the options and spend their own words on what Spanner does differently. **AC6b is walked**:
+Firestore with a table, Spanner without, in one PR.
+
+**Phase 4's two remaining unlinked rows are paid.** `RelationalDatabaseConfigurationReference.md`
+read *not yet documented* against Outbox/Spanner and Inbox/Spanner; both now name the page.
+`BoxProvisioning.md`'s per-backend page list gained Spanner on both families — the section
+listed Spanner in its support matrix and in its differences table while linking four pages of
+five, which is *completing a set invalidates every measurement of the set* arriving as a
+sentence rather than a number.
+
+**Five of the seven gates moved by four and the two that should not have did not.** Link
+156 → **160**; pagelint 154 → **158 pages, 0 errors**; shape 153 → **157 pages**; `optioncheck`
+37 tables/427 rows → **39/436**. `--check-redirects` **unmoved at 77 entries / 7858 bytes**
+(the eighth time that assertion has held) and `versioncheck.py` unmoved at 0 stale of 18 across
+5. **`--check-shape`'s widest stayed at 12 of 20**, which is the point of nesting: four pages
+added to *Outbox and Inbox* and its top-level count did not move. `--verify` moves only after
+publication; the four predicted paths, taken from `urlmap.py` rather than guessed, are
+`outbox-and-inbox/brighteroutboxsupport/firestoreoutbox`,
+`outbox-and-inbox/brighteroutboxsupport/spanneroutbox`,
+`outbox-and-inbox/brighterinboxsupport/firestoreinbox` and
+`outbox-and-inbox/brighterinboxsupport/spannerinbox`.
+
+**The using-directive count did not move — 783.** `pagelint --changed` reports **12 code
+blocks strict across 12 hunks**, so every new block is in scope, and all of them carry real
+`using` directives.
+
+#### Task 7.4 — six blocks compile, and two of them did not at first
+
+Every ```` ```csharp ```` block was extracted from the published markdown into one project per
+block: `net9.0`, `Nullable enable`, **`ImplicitUsings` disabled**, the four Firestore/Spanner
+packages plus `Paramore.Brighter.Extensions.DependencyInjection`,
+`…ServiceActivator.Extensions.DependencyInjection` and `Paramore.Brighter.Outbox.Hosting`, all
+at `10.7.0` — the same pins `optioncheck` restores. **6 of 6 build: 0 errors, 0 warnings.**
+The twelve blocks are six `csharp`, four `powershell` and two `sql`.
+
+**Two failed on the first run and both are the reader's problem, not the harness's.**
+`OnceOnlyAction` is in **`Paramore.Brighter.Inbox`**, not `Paramore.Brighter`, so both inbox
+pages' registration blocks were `CS0103` as written; the Firestore one also wanted
+`using System;` for `TimeSpan`. Disabling `ImplicitUsings` is what made them visible — with it
+on, `System` is free and the failure reduces to one error instead of three. **A block that
+passes rule 6 has `using` lines; it does not have the *right* ones**, and only a compiler
+distinguishes the two. No sample for either store exists anywhere in Brighter, so this is the
+only check these four pages get.
+
+#### The ledger — two entries, on a page phase 7 did not write
+
+Both were found by reading `OutboxArchiver.md`'s `TTransaction` table while working out what a
+Firestore Outbox archives to, and **`optioncheck` cannot see either**: it is not an option
+table, it carries a namespace column no marker models, and nothing in this repository checks a
+namespace at all.
+
+| Page | What the corpus said | What the assembly says |
+|---|---|---|
+| `OutboxArchiver.md:36` | `FirestoreTransaction` is in `Paramore.Brighter.Outbox.Firestore` | it is in **`Paramore.Brighter.Firestore`** (`FirestoreTransaction.cs:7`) |
+| `OutboxArchiver.md:33` | `DbTransaction` is for *SQL Server, PostgreSQL, MySQL, SQLite* | **Spanner too** — `SpannerUnitOfWork : RelationalDbTransactionProvider`, and `IAmATransactionConnectionProvider : IAmABoxTransactionProvider<DbTransaction>` |
+
+The first is the worse of the two: a reader who adds the named `using` and writes
+`UseOutboxArchiver<FirestoreTransaction>()` gets `CS0246` from a page that told them the
+namespace. The second is the omission the archiver table was always going to grow — a store
+with no page was a store nobody checked the row for.
+
+#### Design §8.5 is right about the shape and wrong about one link
+
+§8.5 gives `FirestoreOutbox.md` a *"Provisioning the Firestore Outbox — links
+`BoxProvisioning.md`"* section. **Firestore has no box provisioning package.** The family is
+`*.MsSql`, `*.MySql`, `*.PostgreSql`, `*.Sqlite` and `*.Spanner`, and `git grep -i firestore`
+over `src/Paramore.Brighter.BoxProvisioning*` at `10.7.0` returns nothing. The section stays and
+the link stays; what it says is that there is **nothing to provision** — Firestore creates a
+collection on first write — and that Box Provisioning is deliberately relational-only. **Verify
+the claim, not the conclusion**, for the second phase running: the outline was right that the
+section belongs and wrong about what it would say.
+
+The same section carries the one gotcha a reader cannot get from the type. `FirestoreCollection.Ttl`
+makes Brighter write a `Ttl` timestamp field onto each document **and nothing else**; Firestore
+deletes an expired document only once a **TTL policy** exists on that field, created through the
+console or the Admin API, and no Brighter package touches the Admin API. Setting `Ttl` and
+skipping the policy leaves an Inbox collection that only ever grows.
+
+#### Two things phase 8 inherits
+
+- **`FirestoreDistributedLock.md` still carries its own three-column `Locking` table**, which is
+  one of §2.7's five lock tables and **task 8.3's to normalise**. It should now link
+  [Firestore Outbox Options](/contents/FirestoreOutbox.md#firestore-outbox-options) rather than
+  restate `Name` and `Ttl`, which is the second of the two pointers task 7.1 predicted.
+- **`AzureBlobLockingProviderOptions.StorageLocationFunc` still owes its sentence in prose** —
+  the public-field obligation phase 5 left standing, unchanged by this phase.
 
 ---
 

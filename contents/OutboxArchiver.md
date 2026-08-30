@@ -30,10 +30,10 @@ You register the Archiver with `UseOutboxArchiver<TTransaction>`, passing an arc
 
 | Outbox | `TTransaction` to use | Namespace |
 | --- | --- | --- |
-| SQL Server, PostgreSQL, MySQL, SQLite | `DbTransaction` | `System.Data.Common` |
+| SQL Server, PostgreSQL, MySQL, SQLite, Spanner | `DbTransaction` | `System.Data.Common` |
 | DynamoDB | `TransactWriteItemsRequest` | `Amazon.DynamoDBv2.Model` |
 | MongoDB | `IClientSessionHandle` | `MongoDB.Driver` |
-| Firestore | `FirestoreTransaction` | `Paramore.Brighter.Outbox.Firestore` |
+| Firestore | `FirestoreTransaction` | `Paramore.Brighter.Firestore` |
 
 For example, a DynamoDB Outbox uses `UseOutboxArchiver<TransactWriteItemsRequest>`. The `DynamoDbUnitOfWork` you register as the provider is *not* a transaction type, so `UseOutboxArchiver<DynamoDbUnitOfWork>` does not compile.
 
