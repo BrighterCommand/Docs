@@ -123,13 +123,33 @@ public class AnalyticsService
 
 ## InMemory Scheduler Configuration
 
+### InMemory Scheduler Factory Options
+
+`InMemorySchedulerFactory` takes no constructor arguments, so `new InMemorySchedulerFactory()`
+is a complete configuration; these four properties are what you can change about it.
+
+<!-- optioncheck: Paramore.Brighter.InMemorySchedulerFactory
+     manual: TimeProvider — initialised to TimeProvider.System, which has no printable value
+     manual: GetOrCreateMessageSchedulerId — a delegate returning a fresh identifier, which has no printable value
+     manual: GetOrCreateRequestSchedulerId — a delegate returning a fresh identifier, which has no printable value
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `TimeProvider` | `TimeProvider` | `TimeProvider.System` | The clock the scheduler measures delays against, and the seam a `FakeTimeProvider` replaces in a test. |
+| `GetOrCreateMessageSchedulerId` | `Func<Message, string>` | a fresh identifier per message | Names the timer Brighter creates for a message. |
+| `GetOrCreateRequestSchedulerId` | `Func<IRequest, string>` | a fresh identifier per request | Names the timer Brighter creates for a request. |
+| `OnConflict` | `OnSchedulerConflict` | `Throw` | What Brighter does when a timer with the same identifier already exists. |
+
+`OnSchedulerConflict` is `Throw` or `Overwrite`.
+
 ### Basic Configuration
 
 Configure the InMemory Scheduler with `InMemorySchedulerFactory`:
 
 ```csharp
 using Paramore.Brighter.Extensions.DependencyInjection;
-using Paramore.Brighter.InMemoryScheduler;
+using Paramore.Brighter;
 
 var builder = WebApplication.CreateBuilder(args);
 

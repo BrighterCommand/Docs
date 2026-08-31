@@ -64,6 +64,28 @@ dotnet add package Quartz.Serialization.Json
 
 ## Quartz Configuration
 
+### Quartz Scheduler Factory Options
+
+`QuartzSchedulerFactory` takes the Quartz `IScheduler` as its constructor argument and exposes
+four properties. Everything else about Quartz — the job store, clustering, misfire policy — is
+configured on Quartz itself, not on Brighter's factory.
+
+<!-- optioncheck: Paramore.Brighter.MessageScheduler.Quartz.QuartzSchedulerFactory
+     manual: TimeProvider — initialised to TimeProvider.System, which has no printable value
+     manual: GetOrCreateSchedulerId — a delegate returning a fresh identifier, which has no printable value
+     manual: GetOrCreateRequestSchedulerId — a delegate returning a fresh identifier, which has no printable value
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `TimeProvider` | `TimeProvider` | `TimeProvider.System` | The clock the scheduler measures delays against. |
+| `Group` | `string?` | `null` | Names the Quartz job group scheduled jobs are created in; Quartz uses its own default group when this is null. |
+| `GetOrCreateSchedulerId` | `Func<Message, string>` | a fresh identifier per message | Names the Quartz job Brighter creates for a message. |
+| `GetOrCreateRequestSchedulerId` | `Func<IRequest, string>` | a fresh identifier per request | Names the Quartz job Brighter creates for a request. |
+
+The message hook is `GetOrCreateSchedulerId` here and `GetOrCreateMessageSchedulerId` on the
+AWS and InMemory factories; the request hook carries the same name on all three.
+
 ### Basic Configuration
 
 Configure Brighter with Quartz scheduler:

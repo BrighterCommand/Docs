@@ -136,6 +136,27 @@ dotnet add package Paramore.Brighter.MessageScheduler.Azure
 
 ## Azure Scheduler Configuration
 
+### Azure Scheduler Factory Options
+
+`AzureServiceBusSchedulerFactory` takes the client provider and the scheduler topic as
+constructor arguments, and reads both back as properties you can also set on the initialiser.
+
+<!-- optioncheck: Paramore.Brighter.MessageScheduler.Azure.AzureServiceBusSchedulerFactory
+     manual: Topic — set from a required constructor parameter, so an instance reads back that argument rather than a default
+     manual: TimeProvider — initialised to TimeProvider.System, which has no printable value
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `ClientProvider` | `IServiceBusClientProvider` | `null` | Supplies the Service Bus client the scheduler sends through, and carries the credential. |
+| `SenderOptions` | `ServiceBusSenderOptions?` | `null` | The options the scheduler creates its Service Bus sender with. |
+| `Topic` | `RoutingKey` | `none` | Names the topic or queue scheduled messages are sent to. |
+| `TimeProvider` | `TimeProvider` | `TimeProvider.System` | The clock the scheduler measures delays against. |
+
+`ClientProvider` and `Topic` are constructor arguments rather than properties with defaults,
+so every factory supplies both. Setting them on the initialiser replaces what you passed;
+neither can be left out.
+
 ### Basic Configuration
 
 Configure Azure Service Bus Scheduler with minimal settings:
