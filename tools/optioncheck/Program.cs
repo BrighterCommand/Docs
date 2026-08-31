@@ -329,9 +329,42 @@ internal static class Program
                          + $"reader-facing member of `{type.Name}` at {Authority.Pin()}");
         }
 
-        if (surface.Error is not null && surface.Members.All(m => m.Unreadable is not null))
+        // A type that did not construct has no readable default anywhere, so
+        // this is the table-level echo of the per-member DEFAULT NOT
+        // DETERMINABLE above — and it is an error whenever a row is left to
+        // stand on a value the checker never confirmed.
+        //
+        // PHASE 9 FORCED THE ESCAPE. `HangfireMessageSchedulerFactory` throws
+        // from Hangfire's own static (`Current JobStorage instance has not been
+        // initialized yet`) the moment anything constructs it, so EVERY route
+        // to a default is closed for the whole type, permanently and for a
+        // reason no edit here can reach. Before this clause, a table declaring
+        // all three rows `manual:` — named and reasoned in the scope block,
+        // which is the acknowledgement `manual:` exists to be — still exited 1,
+        // and there was no green path to a correct table at all. The only way
+        // to a green build was to DELETE the marker, which takes `Option`,
+        // `Type`, UNDOCUMENTED and ROW NAMES NOTHING out of scope as well. A
+        // gate whose only remedy is removing the gate reports a table nobody
+        // checks as a table that passed, which is what standing obligation 2
+        // exists to prevent.
+        //
+        // So it fires unless every unreadable member is DECLARED — `manual:`
+        // or `omit:`. It does not soften: one undeclared row and it is back,
+        // which is branch 8 of the red-proof, and the declarations are printed
+        // by name and reason in the scope block either way. Declare and count,
+        // never silence.
+        var undeclared = surface.Members
+            .Where(m => m.Unreadable is not null)
+            .Where(m => !declared.ContainsKey(m.Name) && !omit.ContainsKey(m.Name))
+            .ToList();
+
+        if (surface.Error is not null
+            && surface.Members.All(m => m.Unreadable is not null)
+            && undeclared.Count > 0)
             findings.Add($"{marker.File}:{marker.Line}: CANNOT CONSTRUCT — `{type.Name}`: {surface.Error}. "
-                         + "Every default in this table is unchecked");
+                         + $"Every default in this table is unchecked, and {undeclared.Count} of them "
+                         + $"{(undeclared.Count == 1 ? "is" : "are")} not declared: "
+                         + string.Join(", ", undeclared.Select(m => $"`{m.Name}`")));
     }
 
     /// <summary>
