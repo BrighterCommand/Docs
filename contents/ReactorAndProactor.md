@@ -280,6 +280,7 @@ Different transports have varying levels of native support for synchronous and a
 |-----------|----------------|------------------|-------|
 | **Azure Service Bus** | Sync over Async | Native | Async API is native |
 | **AWS (SNS/SQS)** | Sync over Async | Native | Async API is native |
+| **GCP Pub/Sub** | Sync over Async | Native | Streaming pull is the default; `SubscriptionMode.Pull` has native sync and async APIs |
 | **Kafka** | Native | Async over Sync | Sync API is native |
 | **MQTT** | Sync over Async/Event Based | Event Based | Event-driven architecture |
 | **MSSQL** | Native | Native | Both APIs supported |
@@ -287,6 +288,7 @@ Different transports have varying levels of native support for synchronous and a
 | **RabbitMQ v6** | Sync over Async | Native | Async client recommended |
 | **RabbitMQ v7** | Sync over Async | Native | Async client recommended |
 | **Redis** | Native | Native | Both APIs supported |
+| **RocketMQ** | Sync over Async | Native | Async API is native |
 
 **Key:**
 - **Native**: Transport SDK provides native support

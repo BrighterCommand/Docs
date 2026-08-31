@@ -2197,7 +2197,7 @@ the drift 012 exists to stop, happening today, with every gate green on them.
 **This phase must not:** correct them from memory or from the other pages. AC7 is *diffed
 against `survey.py` output at the release ref* — the fixed survey, after task 1.5.
 
-- [ ] **Task 10.1:** `ReactorAndProactor.md` — `#transport-native-support`
+- [x] **Task 10.1:** `ReactorAndProactor.md` — `#transport-native-support`
   - Input: the anchor, not the line number (requirements §11); `survey.py --ref 10.7.0` after
     task 1.5
   - Output: rows for **GCP Pub/Sub and RocketMQ**, which the table omits
@@ -2207,7 +2207,7 @@ against `survey.py` output at the release ref* — the fixed survey, after task 
     draft of that very sentence invented an anchor — `#transport-support-matrix` — that has
     never existed.
 
-- [ ] **Task 10.2:** `HandlerFailure.md` — `#transport-nack-behavior`
+- [x] **Task 10.2:** `HandlerFailure.md` — `#transport-nack-behavior`
   - Input: the anchor; the same survey run
   - Output: rows for **GCP Pub/Sub, RocketMQ, PostgreSQL and MSSQL** — this table omits four,
     two more than the other
@@ -2215,13 +2215,108 @@ against `survey.py` output at the release ref* — the fixed survey, after task 
     page for. That is the precise shape of the defect: not silence, but a claim with no
     landing place.
 
-- [ ] **Task 10.3:** Walk AC7, and verify phase 10
+- [x] **Task 10.3:** Walk AC7, and verify phase 10
   - Input: both corrected tables; the survey output at the ref
   - Output: a recorded diff showing the two tables and the shipped transport set agree; the six
     gates; `optioncheck`
   - Notes: **`optioncheck` does not check these tables** — they are comparison tables, not
     option tables, and they get no marker. AC7's tool is the survey, and this is the one
     criterion in the spec whose evidence is a diff rather than an exit code.
+
+---
+
+### Phase 10 as executed — 2026-08-31, 3/3
+
+**Two pages edited, no page created, no marker added, and all seven gates unmoved** — link
+`160 files checked`, pagelint `0 errors, 783 warnings across 158 pages`, shape `157 pages,
+12 sections, deepest 4 of 4, widest 12 of 20`, redirects `77 entries, 7858 bytes`,
+`versioncheck` `0 stale pins of 18 examined across 5 page(s)`, and `optioncheck` still
+`0 mismatches across 58 tables and 516 rows`. That was the prediction and it is also the
+problem: **a phase where nothing is expected to move is a phase where a vacuous pass is
+invisible**, so the evidence below is the AC7 diff and the source readings, not the exit codes.
+
+`pagelint.py --changed origin/master` reports `2 file(s), 4 hunk(s) in the diff;
+2 documentation page(s), **0 code block(s) strict**` and says in its own words that a pass
+there proves nothing. Correct for a table-only diff, and the reason the tables were placed
+where no C# block is touched.
+
+#### AC7 — the diff, in both directions, at the ref
+
+The population is `survey.py --ref 10.7.0 --tsv`, filtered to `MessagingGateway`: **12
+packages**, which fold to **10 shipping transports** (`AWSSQS` + `AWSSQS.V4` are one transport
+on two AWS SDKs; `RMQ.Async` + `RMQ.Sync` are one transport on two RabbitMQ clients). **The
+control is `git ls-tree --name-only 10.7.0 src/ | grep MessagingGateway`, which returns the
+same twelve** — a zero from a broken selector and a zero from a complete table look identical,
+and the survey selects by class-name suffix rather than by directory.
+
+| Table | Rows before | Rows after | Missing from table | Named but unshipped |
+|---|---:|---:|---|---|
+| `ReactorAndProactor.md#transport-native-support` | 9 | 11 | none | none |
+| `HandlerFailure.md#transport-nack-behavior` | 6 | 10 | none | none |
+
+Eleven rows for ten transports because RabbitMQ keeps its two client rows, v6 and v7.
+**Both anchors in the task body are real** — checked through `linkcheck.py`'s `slug()` before
+being cited, because requirements §11 records a draft of that sentence inventing
+`#transport-support-matrix`.
+
+**Neither table's inherited row list was wrong**, which is worth recording only because phase 9
+inherited three figures and all three were wrong: GCP Pub/Sub and RocketMQ were the two the
+first table lacked, and those two plus PostgreSQL and MSSQL were the four the second lacked.
+
+#### Every cell was read out of the source at the tag, and one of the *existing* rows was wrong
+
+**Kafka's nack row said `No-op (offset is not committed) — message is re-delivered on next
+poll`. It has not been a no-op since `65c5e11c7`, 2026-03-24, *"Kafka Nack Fix (#4053)"*** —
+`KafkaMessageConsumer.Nack` calls `_consumer.Seek(topicPartitionOffset)`, so the next receive
+returns the same message rather than waiting for a poll cycle that may never redeliver it. It
+is corrected here. **Nothing in this repository could have found it**: the table carries no
+marker, `optioncheck` does not bind comparison tables, and the row was well-formed prose about
+a real transport. It was found because task 10.2 obliges reading the source for the four rows
+being *added*, and the six already there were in the same six files.
+
+This is the drift D10 exists to demonstrate, one row further than design §3.4 predicted:
+**§3.4 named two tables as missing rows and the ledger now also has a row that was correct when
+written and false at `10.7.0`.**
+
+| Transport | Nack at `10.7.0` | Source |
+|---|---|---|
+| GCP Pub/Sub | no-op; unacknowledged, redelivered after the ack deadline | `GcpPullMessageConsumer.cs:78`, `GcpPubSubStreamMessageConsumer.cs:61` — identical in both modes |
+| PostgreSQL | no-op; the row's `visible_timeout` expires | `PostgresMessageConsumer.cs:180` |
+| RocketMQ | no-op; the invisibility timeout expires | `RocketMessageConsumer.cs:101` |
+| MSSQL | no-op; the read already deleted the row | `MsSqlMessageConsumer.cs:80` |
+
+**Two of those four cells rest on a doc comment, so both were checked against the code rather
+than believed** — *"atomic read-and-delete"* is real, `MsSqlMessageQueue.cs:237` dequeues with
+a CTE `delete … output deleted.Payload, …`; *"visibility timeout"* is real,
+`PostgresMessageConsumer.cs:137` sets `visible_timeout = CURRENT_TIMESTAMP + $1` on receive and
+`:141` re-selects rows whose timeout has passed. Source prose next to source code is still
+prose.
+
+#### The no-ops are not equivalent, and the table implied they were
+
+Three of the six no-ops leave the message on the channel; three have already consumed it, so a
+`DontAckAction` on MSSQL, Redis or MQTT **discards the message**. The table said `No-op` in all
+six cells with no way to tell those outcomes apart, which is a worse failure than the four
+absent rows. One sentence below the table now separates them and points at
+`DeferMessageAction`, whose `Requeue` re-publishes on all three
+(`MsSqlMessageConsumer.cs:271`, `RedisMessageConsumer.cs:450`, `MQTTMessageConsumer.cs:316`).
+
+*(That sentence was drafted naming **`RequeueAction`**, a type that does not exist — the
+exception is `DeferMessageAction`, which the same page names eight lines above the table. One
+`git grep` at `10.7.0` caught it. Same shape as the invented anchor requirements §11 records:
+**a plausible name assembled from the surrounding vocabulary, in the one sentence of the phase
+no tool would have checked**, since a bare type name in prose is invisible to `linkcheck.py`,
+`pagelint.py` and `optioncheck` alike.)*
+
+#### Reactor and Proactor — the two added rows
+
+Both are `Sync over Async` / `Native`: `RocketMessageConsumer` and
+`GcpPubSubStreamMessageConsumer` each implement both interfaces with the sync side delegating
+through `BrighterAsyncContext.Run`. **GCP has two modes and the row describes the default**:
+`SubscriptionMode.Stream` is the default (`GcpPubSubSubscription.cs:127`) and is async-native,
+while `SubscriptionMode.Pull` selects `GcpPullMessageConsumer`, whose `Receive` and
+`ReceiveAsync` call `client.Pull` and `client.PullAsync` and are **both** native. The Notes cell
+says so rather than flattening it.
 
 ---
 

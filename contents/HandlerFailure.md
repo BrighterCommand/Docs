@@ -265,9 +265,15 @@ A [nack](/contents/BasicConcepts.md#nack-negative-acknowledgment) (negative ackn
 | RabbitMQ | `BasicNack` with `requeue: true` — message is immediately re-queued |
 | AWS SQS | `ChangeMessageVisibility` to 0 — message becomes immediately visible |
 | Azure Service Bus | `AbandonMessage` — lock is released, message becomes available |
-| Kafka | No-op (offset is not committed) — message is re-delivered on next poll |
+| Kafka | `Seek` back to the message's offset — the next receive returns the same message |
+| GCP Pub/Sub | No-op — the message is left unacknowledged, and Pub/Sub redelivers it once the ack deadline passes |
+| PostgreSQL | No-op — the row's `visible_timeout` expires and the message becomes available again |
+| RocketMQ | No-op — the invisibility timeout expires and the message becomes available again |
+| MSSQL | No-op — the read is an atomic read-and-delete, so the message has already left the queue |
 | Redis | No-op (`BLPOP` is destructive — the message is already consumed) |
 | MQTT | No-op (no acknowledgment concept in MQTT) |
+
+The no-ops are not equivalent. On GCP Pub/Sub, PostgreSQL and RocketMQ the message is still on the channel and returns when its deadline or timeout expires; on MSSQL, Redis and MQTT the read has already consumed it, so a nack discards the message. On those three prefer [`DeferMessageAction`](#requeue-with-delay-defermessageaction), which re-publishes the message rather than relying on the transport to redeliver it.
 
 ### Using FeatureSwitchAttribute with dontAck
 
