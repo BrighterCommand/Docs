@@ -1919,9 +1919,31 @@ two are properties that exist and do nothing.
 
 **Two options exist and are read by nothing**, which is a fact about the product rather than
 drift, and both are now stated on the page: `DynamoDbConfiguration.Timeout` is assigned in the
-constructor and never read — the timeouts that take effect are the `outBoxTimeout` arguments on
-the Outbox's own methods — and `DynamoDbInboxConfiguration.Credentials` and `Region` are read
-nowhere either. The Inbox pair is also the spec's first **V3/V4 divergence**: the two are
+constructor and never read, and `DynamoDbInboxConfiguration.Credentials` and `Region` are read
+nowhere either.
+
+> **The sentence attached to the first of those was wrong, and it shipped.** Phase 8 wrote that
+> *"the timeouts that take effect are the `outBoxTimeout` arguments on the Outbox's own
+> methods"*. **`DynamoDbOutbox` ignores those too**: every occurrence in the file is a doc
+> comment, a parameter declaration or a pass-through between overloads, and the terminal
+> `AddAsync`, `GetAsync` and `DispatchedMessagesAsync` bodies never read the value. Corrected in
+> **#140** (`afa240d`), one day later. **The half that was measured was right and the half that
+> was reasoned was wrong** — *nothing reads `Timeout`* came from a grep with a control behind it,
+> while *therefore the other timeout is the real one* came from the shape of the sentence. A
+> negative finding invites a compensating positive, and the compensation is the part nobody
+> measures. It surfaced only because the maintainer asked the finding to be expanded, which is
+> the cheapest review in the programme and the one that has now caught two defects.
+
+**All four of this programme's `src/` findings went upstream together on 2026-08-31 as
+[Brighter#4296](https://github.com/BrighterCommand/Brighter/issues/4296)**, labelled `Bug`:
+phase 8's two dead members, `DynamoDbOutbox`'s ignored `outBoxTimeout`, phase 3's
+`Publication.Type` doc comment and phase 6's `RocketMqPublication.Instrumentation`. Every
+*nothing reads this* claim in it carries the control that was run against it, and it cites
+Brighter#2837 — which asked for `DynamoDbInboxConfiguration` to be wired up in 2023 and was
+closed COMPLETED with `TableName` wired and these two members left as they were. **Do not
+re-raise any of the four.**
+
+The Inbox pair is also the spec's first **V3/V4 divergence**: the two are
 get-only in `Paramore.Brighter.Inbox.DynamoDB` and settable in `.V4`, so the same type name has
 1 option in the pinned package and 3 in the one the page recommends. The marker binds the
 pinned one; the page says the rest in a sentence.
