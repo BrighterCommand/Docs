@@ -56,6 +56,25 @@ dotnet add package TickerQ.EntityFrameworkCore
 
 ## TickerQ Configuration
 
+### TickerQ Scheduler Factory Options
+
+`TickerQSchedulerFactory` is the one scheduler factory with **no settable properties at all**.
+Its whole surface is three required constructor arguments, and a reader cannot construct it
+without all three; the two properties it does expose, `GetOrCreateSchedulerId` and
+`ParseSchedulerId`, are get-only and cannot be replaced.
+
+<!-- optioncheck: Paramore.Brighter.MessageScheduler.TickerQ.TickerQSchedulerFactory -->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `timeTickerManager` | `ITimeTickerManager<TimeTickerEntity>` | `none` | Adds, updates and deletes the time tickers Brighter schedules messages with. |
+| `tickerPersistenceProvider` | `ITickerPersistenceProvider<TimeTickerEntity, CronTickerEntity>` | `none` | Reads a ticker back by its identifier when a scheduled message is rescheduled. |
+| `timeProvider` | `TimeProvider` | `none` | The clock the scheduler measures delays against. |
+
+All three come out of the container, which is why every example below builds the factory from
+a `provider` rather than with `new`. Everything else about TickerQ — persistence, the
+dashboard, the poll interval — is configured on TickerQ itself through `AddTickerQ`.
+
 ### Basic Configuration
 
 Configure Brighter with TickerQ scheduler in your `Program.cs`:

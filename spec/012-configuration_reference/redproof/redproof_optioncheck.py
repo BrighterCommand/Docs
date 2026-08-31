@@ -8,11 +8,14 @@ caught -- NOT merely that the tool runs", AC3b for one on a body-coalesced
 default, and AC5 for exit 2 being distinguishable from exit 0. This is all
 three, in 009's `redproof_versioncheck.py` shape.
 
-Branch 7 was added at phase 5 and is the only one here about a GREEN build:
-`RmqMessagingGatewayConnection.Name` is `= Environment.MachineName`, so the
-checker read a real value and a table printing it passed on the author's machine
-and would have failed on the CI runner. It uses a second fixture, because the
-subscription one has no environment-derived member to declare.
+Branch 7 was added at phase 5 and branch 8 at phase 9; they are the two here
+about a GREEN build. `RmqMessagingGatewayConnection.Name` is
+`= Environment.MachineName`, so the checker read a real value and a table
+printing it passed on the author's machine and would have failed on the CI
+runner. `HangfireMessageSchedulerFactory` cannot be constructed at all, so a
+table declaring every row `manual:` was still red with no green path to a
+correct table. Each uses its own fixture, because the subscription one has
+neither an environment-derived member nor an unconstructable type.
 
 The discipline is 009's:
 
@@ -45,6 +48,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 
 FIXTURE = os.path.join(HERE, 'fixture_subscription.md')
 CONNECTION = os.path.join(HERE, 'fixture_connection.md')
+HANGFIRE = os.path.join(HERE, 'fixture_hangfire.md')
 PROJECT = os.path.join(REPO, 'tools', 'optioncheck')
 BIN = os.path.join(PROJECT, 'bin', 'Debug', 'net9.0')
 DLL = os.path.join(BIN, 'optioncheck.dll')
@@ -235,6 +239,58 @@ def main():
 
     assert digest(CONNECTION) == connection, 'the connection fixture did not survive the probe'
     print(f'connection fixture restored byte-identical: sha256 {digest(CONNECTION)}')
+
+    # -------------------------------- 8. a type that cannot be constructed
+    # Phase 9's finding, and the second branch here about a GREEN build.
+    # `HangfireMessageSchedulerFactory` throws from Hangfire's own static, so
+    # every default on the type is unreadable and CANNOT CONSTRUCT fired even
+    # when all three rows were declared `manual:` -- no green path to a correct
+    # table existed, and the only remedy was deleting the marker. The predicate
+    # now consults the declarations. THIS IS THE ASSERTION THAT IT STILL FIRES:
+    # one undeclared row must bring it back, by name.
+    #
+    # Like branch 7 the mutation DELETES a declaration rather than writing a
+    # value, and for the same reason: the fixture must not depend on a default
+    # nobody can read.
+    hangfire = digest(HANGFIRE)
+    third = os.path.join(tempfile.mkdtemp(), 'fixture_hangfire.md')
+    shutil.copy2(HANGFIRE, third)
+    assert digest(third) == hangfire, 'the copy aside is not the file'
+
+    text = read(HANGFIRE)
+    code, out = run([HANGFIRE])
+    assert 'scope: 1 table, 3 rows, 1 type' in out, (
+        'branch 8 precondition: the hangfire fixture must be IN SCOPE:\n' + out)
+    assert '3 manual: declarations' in out, (
+        'branch 8 precondition: all three rows must be DECLARED, or the '
+        f'baseline is green for a different reason than the one it tests:\n{out}')
+    assert code == 0, (
+        'branch 8 needs a green baseline: a fully-declared table on an '
+        f'unconstructable type is the case the escape exists for:\n{out}')
+    print('\nhangfire fixture baseline green: 1 table, 3 rows, 3 manual: declarations')
+
+    try:
+        mutate(text,
+               '\n     manual: Client — the type cannot be constructed, '
+               'so no default on it is readable',
+               '', HANGFIRE)
+        assert 'manual: Client' not in read(HANGFIRE), (
+            'the mutation must remove the declaration, not merely edit it')
+        assert 'manual: Queue' in read(HANGFIRE) and 'manual: TimeProvider' in read(HANGFIRE), (
+            'the mutation must leave the OTHER two declared -- the branch is '
+            'about a partly-declared table, not an undeclared one')
+        code, out = run([HANGFIRE])
+        report('8. A TYPE THAT CANNOT BE CONSTRUCTED, PARTLY DECLARED', 1, code, out,
+               'the `manual: Client` declaration is gone; the other two remain')
+        assert 'CANNOT CONSTRUCT' in out and '`Client`' in out, (
+            'exit 1 is only correct if the finding NAMES the undeclared row: a '
+            'table-level message that does not say which row is unchecked '
+            'cannot be acted on, and the escape is only safe if this fires')
+    finally:
+        write(text, HANGFIRE)
+
+    assert digest(HANGFIRE) == hangfire, 'the hangfire fixture did not survive the probe'
+    print(f'hangfire fixture restored byte-identical: sha256 {digest(HANGFIRE)}')
 
     # -------------------------------------- 6. AC5, the authority unreachable
     # Exit 2 has to be reachable as a VERDICT rather than as a restore failure:

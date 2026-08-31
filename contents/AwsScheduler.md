@@ -170,6 +170,52 @@ Uses AWS SDK for .NET v3 (deprecated in AWS).
 
 ## AWS Scheduler Configuration
 
+### AWS Scheduler Factory Options
+
+`AwsSchedulerFactory` takes the AWS connection and the IAM role as constructor arguments and
+exposes the rest as properties. The surface is the same in both packages: `AWS` and `AWS.V4`
+declare the same ten options with the same defaults, and differ only in the AWS SDK they bind.
+
+<!-- optioncheck: Paramore.Brighter.MessageScheduler.AWS.AwsSchedulerFactory
+     manual: TimeProvider — initialised to TimeProvider.System, which has no printable value
+     manual: Group — initialised to a new SchedulerGroup, which has no printable value; its own defaults are the table below
+     manual: GetOrCreateMessageSchedulerId — a delegate returning a fresh identifier, which has no printable value
+     manual: GetOrCreateRequestSchedulerId — a delegate returning a fresh identifier, which has no printable value
+     manual: Role — set from a required constructor parameter, so an instance reads back that argument rather than a default
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `TimeProvider` | `TimeProvider` | `TimeProvider.System` | The clock the scheduler measures delays against. |
+| `Group` | `SchedulerGroup` | a new `SchedulerGroup` | The EventBridge Scheduler group Brighter creates schedules in. |
+| `GetOrCreateMessageSchedulerId` | `Func<Message, string>` | a fresh identifier per message | Names the schedule Brighter creates for a message. |
+| `GetOrCreateRequestSchedulerId` | `Func<IRequest, string>` | a fresh identifier per request | Names the schedule Brighter creates for a request. |
+| `FlexibleTimeWindowMinutes` | `int?` | `null` | The window, in minutes, within which AWS may run the schedule; the schedule runs at its exact time when this is null. |
+| `SchedulerTopicOrQueue` | `RoutingKey` | `empty` | Names the topic or queue `FireAwsScheduler` messages are published to. |
+| `Role` | `string` | `none` | Names the IAM role, as a role name or an ARN, that EventBridge Scheduler assumes to deliver the message. |
+| `UseMessageTopicAsTarget` | `bool` | `true` | Targets the message's own topic or queue directly rather than routing through a `FireAwsScheduler` message. |
+| `OnConflict` | `OnSchedulerConflict` | `Throw` | What Brighter does when a schedule with the same identifier already exists. |
+| `MakeRole` | `OnMissingRole` | `Assume` | What the factory does about the IAM role before it schedules. |
+
+`Role` is a constructor argument rather than a property with a default, so every factory names
+a role. `OnSchedulerConflict` is `Throw` or `Overwrite`; `OnMissingRole` is `Assume`,
+`Validate` or `Create`, and [Automatic Role Creation](#automatic-role-creation) covers the
+last of them.
+
+### AWS Scheduler Group Options
+
+`Group` takes a `SchedulerGroup`, which carries three options of its own.
+
+<!-- optioncheck: Paramore.Brighter.MessageScheduler.AWS.SchedulerGroup
+     manual: Tags — initialised to a list holding one Tag, which has no printable value
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `Name` | `string` | `"default"` | Names the EventBridge Scheduler group the schedules belong to. |
+| `Tags` | `List<Tag>` | one tag, `Source` = `Brighter` | The tags Brighter applies to the group when it creates it. |
+| `MakeSchedulerGroup` | `OnMissingSchedulerGroup` | `Assume` | What the factory does when the group does not exist. |
+
 ### Basic Configuration
 
 Configure AWS Scheduler with minimal settings:
@@ -451,6 +497,9 @@ public class TrialService
 | **Components** | Fewer | More (requires Dispatcher) |
 | **Flexibility** | Target must exist | More flexible |
 | **Recommended For** | Production messages | Requests and commands |
+
+`UseMessageTopicAsTarget` defaults to `true`, so a factory schedules direct to target unless
+you say otherwise — see [AWS Scheduler Factory Options](#aws-scheduler-factory-options).
 
 ## AWS Scheduler Best Practices
 

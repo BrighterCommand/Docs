@@ -100,6 +100,30 @@ dotnet add package Hangfire.Mongo
 
 ## Hangfire Configuration
 
+### Hangfire Scheduler Factory Options
+
+`HangfireMessageSchedulerFactory` takes no constructor arguments and exposes three properties.
+Storage, retries, the dashboard and the worker count all belong to Hangfire itself and are
+configured through `AddHangfire`, not here.
+
+<!-- optioncheck: Paramore.Brighter.MessageScheduler.Hangfire.HangfireMessageSchedulerFactory
+     manual: Queue — the factory reaches Hangfire's JobStorage static as it is constructed, so no default on this type is readable outside a configured Hangfire host
+     manual: Client — the factory reaches Hangfire's JobStorage static as it is constructed, so no default on this type is readable outside a configured Hangfire host
+     manual: TimeProvider — the factory reaches Hangfire's JobStorage static as it is constructed, so no default on this type is readable outside a configured Hangfire host
+-->
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `Queue` | `string?` | `null` | Names the Hangfire queue scheduled jobs are enqueued on; Hangfire uses its `default` queue when this is null. |
+| `Client` | `IBackgroundJobClientV2` | a new `BackgroundJobClient` | The Hangfire client the scheduler enqueues jobs through. |
+| `TimeProvider` | `TimeProvider` | `TimeProvider.System` | The clock the scheduler measures delays against. |
+
+**`Client` is created eagerly, so configure Hangfire before you construct the factory.**
+Its initialiser calls `new BackgroundJobClient()`, which reads Hangfire's `JobStorage.Current`
+static and throws `InvalidOperationException: Current JobStorage instance has not been
+initialized yet` when no storage is registered. Register your Hangfire storage before the
+factory is constructed, as the complete examples below do.
+
 ### Basic Configuration
 
 Configure Brighter with Hangfire scheduler:
