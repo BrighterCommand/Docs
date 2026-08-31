@@ -1987,7 +1987,7 @@ asserted by calling the extractor directly rather than inferred from a green run
 **This phase must not:** give `TickerQScheduler.md` a table. `TickerQSchedulerFactory` has
 **zero** settable properties (design §12.1). That is standing obligation 4's seventh instance.
 
-- [ ] **Task 9.1:** `AwsScheduler.md`, `QuartzScheduler.md`, `AzureScheduler.md`
+- [x] **Task 9.1:** `AwsScheduler.md`, `QuartzScheduler.md`, `AzureScheduler.md`
   - Input: `AwsSchedulerFactory` 10, `QuartzSchedulerFactory` 4,
     `AzureServiceBusSchedulerFactory` 4
   - Output: three marked tables
@@ -1996,7 +1996,7 @@ asserted by calling the extractor directly rather than inferred from a green run
     valid marker and D9 needs no new mechanism. That is the whole practical consequence of
     §12.1; the rest of it is a caution about figures.
 
-- [ ] **Task 9.2:** `InMemoryScheduler.md`, `HangfireScheduler.md`, `TickerQScheduler.md`
+- [x] **Task 9.2:** `InMemoryScheduler.md`, `HangfireScheduler.md`, `TickerQScheduler.md`
   - Input: `InMemorySchedulerFactory` 4, `HangfireMessageSchedulerFactory` 3,
     `TickerQSchedulerFactory` **0**
   - Output: two marked tables, and **one page stating that TickerQ's factory exposes no
@@ -2004,12 +2004,188 @@ asserted by calling the extractor directly rather than inferred from a green run
   - Notes: `## Hangfire Best Practices` is better than `## Hangfire Scheduler Best Practices`,
     and no rule can tell you that — heading qualification's editorial half is a judgement.
 
-- [ ] **Task 9.3:** Verify phase 9 — `optioncheck`, the six gates, and the AC8 walk
+- [x] **Task 9.3:** Verify phase 9 — `optioncheck`, the six gates, and the AC8 walk
   - Output: exit 0 with a scope naming five new tables and 25 rows; the six gates; a recorded
     AC8 verdict
   - Notes: **25 options that no figure in the requirements counts.** Nothing in the
     requirements is wrong — §2 is explicit that the survey counts *configuration types*, and a
     factory is not one. This is *ask what a figure counted.*
+
+### Phase 9 as executed — 2026-08-31, 3/3
+
+**Six pages edited, seven tables, 31 rows, and no page created** — taking the corpus to
+`58 tables, 516 rows, 58 types, on 33 pages of 157 files scanned`, exit 0.
+
+| Task | Pages | Tables | Rows | `manual:` |
+|---|---:|---:|---:|---:|
+| 9.1 AWS, Quartz, Azure | 3 | 4 | 21 | 11 |
+| 9.2 InMemory, Hangfire, TickerQ | 3 | 3 | 10 | 6 |
+| **Total** | **6** | **7** | **31** | **17** |
+
+**Every one of the three figures this phase inherited was wrong, and each was wrong in a
+different way.** The task bodies above are left as written, because what they got wrong is the
+point:
+
+| The task said | Measured with `--describe` |
+|---|---|
+| `<!-- optioncheck: Paramore.Brighter.MessageScheduler.**Aws**.AwsSchedulerFactory -->` is a valid marker (task 9.1) | **`THE TYPE IS GONE`.** The namespace is `.AWS`. The same casing produced a false finding against `../Brighter` once already |
+| *This phase must not give `TickerQScheduler.md` a table* (task 9.2) | **It gets one.** See below |
+| *five new tables and 25 rows* (task 9.3) | **seven and 31** |
+
+#### TickerQ has no settable property and three required constructor arguments
+
+Both halves of design §12.1 are true and the conclusion drawn from them is not.
+`TickerQSchedulerFactory` really does have **zero settable properties** — the two it exposes,
+`GetOrCreateSchedulerId` and `ParseSchedulerId`, are get-only expression-bodied properties a
+reader cannot replace. It also has a **primary constructor with three required parameters**,
+`timeTickerManager`, `tickerPersistenceProvider` and `timeProvider`, which `max(props, ctor)`
+selects and `--describe` prints. A reader cannot construct the factory without all three.
+
+**This is design §12.5's primary-constructor blindness one family further on**, in the one place
+§12.5 was never pointed: §12.5 lists thirteen surfaces the *old* `survey.py` could not see, and
+the scheduler family was invisible to that survey for a *different* reason — no configuration
+type — so nobody asked whether the two blind spots overlapped. They do, on exactly one type.
+
+**Standing obligation 4 keeps its rule and loses this instance.** *The absence of a
+configuration type is a fact about the product*; the absence of a settable property is not the
+same fact, and the page reports what a reader must actually supply.
+
+*(Counted while striking it, because a numeral in a noun phrase is a measurement: standing
+obligation 4 and design §10 both say **"seven instances across four families"** and both then
+name **eight** things across **five** — Spanner as a store, MSSQL and PostgreSQL as transports,
+the MSSQL and MySQL locks, TickerQ as a scheduler, Redis and MQTT as publications. Removing
+TickerQ leaves seven, which is the number both documents already claimed. Neither figure has
+ever been load-bearing and neither is edited here; the list is what a writer reads, and it is
+correct.)*
+
+#### `SchedulerGroup` binds, so it is a table rather than prose
+
+Phase 7's lesson applied before the prose was written rather than after: `--describe
+Paramore.Brighter.MessageScheduler.AWS.SchedulerGroup` prints a table, so AWS's `Group`
+sub-options — `Name`, `Tags`, `MakeSchedulerGroup`, which `AwsScheduler.md` already showed in a
+code example — became a **seventh marked table** instead of three sentences no gate would ever
+read again. That is the whole of the difference between the predicted five tables and the seven
+that shipped, plus TickerQ.
+
+#### The residue is 17 of 31 — 55%, not one row in eight
+
+Every phase before this landed between 11% and 13%. The sixteen predicted decompose as measured
+and the seventeenth is `SchedulerGroup.Tags`:
+
+- **five `TimeProvider` rows**, one on every factory but TickerQ, whose clock is a constructor
+  parameter and therefore has no default at all
+- **six `Func<Message, string>` / `Func<IRequest, string>` scheduler-id hooks** across AWS,
+  Quartz and InMemory
+- **three constructor-supplied values** — `AwsSchedulerFactory.Role`,
+  `AzureServiceBusSchedulerFactory.Topic`, and `AwsSchedulerFactory.Group`, whose
+  `SchedulerGroup` has no printable form
+- **Hangfire's three**, which are the instrument change below
+- **`SchedulerGroup.Tags`**, a `List<Tag>` with no printable form
+
+**The ratio is a property of the family being documented, not of the spec.** A *factory* carries
+clocks and delegates where a *configuration* carries strings and timespans, and one row in eight
+was never a rule about this repository — it was a rule about configuration types. Take
+`--describe`'s count before predicting one.
+
+#### What phase 9 changed in the instrument, and why it was forced
+
+**`HangfireMessageSchedulerFactory` cannot be constructed at all.** Its `Client` property is
+initialised `= new BackgroundJobClient()`, whose parameterless constructor reads Hangfire's
+`JobStorage.Current` static and throws `InvalidOperationException: Current JobStorage instance
+has not been initialized yet`. It is the only member that can throw, so the failure is located
+rather than inferred. Every default on the type is therefore unreadable — the whole surface,
+permanently, for a reason no edit in this repository can reach.
+
+**A table declaring all three rows `manual:` still exited 1**, measured with a fixture before
+anything was written. `Program.cs`'s `CANNOT CONSTRUCT` predicate fired whenever the type failed
+*and* every member was unreadable, and never consulted the declarations — so the table was red
+with **no green path to a correct table**. The only remedy was deleting the marker, which takes
+`Option`, `Type`, `UNDOCUMENTED` and `ROW NAMES NOTHING` out of scope as well. **A gate whose
+only remedy is removing the gate reports a table nobody checks as a table that passed**, which
+is what standing obligation 2 exists to prevent.
+
+So the predicate now fires unless **every** unreadable member is declared `manual:` or `omit:`,
+and it names the rows that are not. It does not soften: one undeclared row brings it back. That
+is **red-proof branch 8**, on a third fixture (`fixture_hangfire.md`), and the mutation *deletes*
+a declaration rather than writing a value for the same reason branch 7's does — the fixture must
+not depend on a default nobody can read. **10/10 branches fire**, and the corpus was unmoved at
+`0 mismatches across 51 tables and 485 rows` before the pages were touched.
+
+**What was NOT done, and it was the obvious fix:** initialising `JobStorage` in the checker's
+harness. That is the `Environment.MachineName` lesson — a checker reading its own environment and
+reporting it as the product's behaviour — and it would have made the Hangfire defaults readable
+here and unreadable on any machine without Hangfire configured.
+
+#### The instrument blind spot this phase found and did not fix
+
+`AzureServiceBusSchedulerFactory.ClientProvider` prints a default of **`null`**, and it is not a
+default: it is the argument the checker had to supply for a required constructor parameter.
+`Synthesise` records injected arguments **by parameter name** and `Reflect` matches that set
+against **property names**, so `topic` → `Topic` is caught and `client` → `ClientProvider` is
+not. The property name differs from the parameter name, and the check falls through.
+
+**It is not fixable within design §6.2's one route to a default.** The supplied value here *is*
+`null`, so reference-identity cannot tell it apart from a property that is genuinely null; only
+IL inspection could, and that is the second route §6.2 forbids. This is the
+readable-versus-determinable distinction again, arriving through a third door — the first was
+`Environment.MachineName`, the second a body-coalesced default. **Recorded, and the page says
+in its own words that `ClientProvider` and `Topic` are constructor arguments neither of which
+can be left out**, so no reader is misled by the cell.
+
+#### The ledger — one entry, and it is a code block rather than a table
+
+`optioncheck` reported **0 mismatches** on every run of this phase, before and after, exactly as
+at phase 8 — and the one defect on these six pages is in a place no marker can reach:
+
+| Page | What the corpus said | What the source says |
+|---|---|---|
+| `InMemoryScheduler.md:132` | `using Paramore.Brighter.InMemoryScheduler;` | **that namespace exists nowhere in `src/` at `10.7.0`.** `InMemorySchedulerFactory` is in `Paramore.Brighter` |
+
+**The sweep that found it carried a control**, because a zero from a grep is the answer a broken
+grep also gives: the same query was run against the other **ten** `Paramore.*` namespaces these
+six pages `using`, and every one of them returned between 2 and 86 declaring files. So the zero
+is a fact about the namespace, not about the sweep. This is *a block that passes rule 6 has
+`using` lines; it does not have the right ones*, met a second time — phase 7 met it as a
+`CS0103` under a compiler, and here there was no compiler, only the observation that a namespace
+in a `using` directive is a claim that can be checked against the source.
+
+#### AC8 walked, mechanically and by reading
+
+All 31 rows are four cells, no `Default` is blank, every description is one present-tense
+sentence ending in a full stop, and every `Type` is a code span. All 31 were then printed as a
+list and read as sentences, which is what caught two descriptions written from the type's name
+rather than its use: `tickerPersistenceProvider` is read **once**, in `ReSchedulerAsync`, to
+fetch a ticker by id, and `timeTickerManager` is `AddAsync`/`UpdateAsync`/`DeleteAsync` —
+neither is what "schedules and cancels tickers" and "reads back a ticker" said before the
+methods were read.
+
+#### The gates, and the one figure in play
+
+`optioncheck` 51 tables / 485 rows → **58 / 516**, re-derived from the run rather than from
+arithmetic — the predicted 57/513 was wrong for the reason above. Everything else is **unmoved**,
+which is what a phase creating no page predicts: link **160 files**, pagelint **158 pages,
+0 errors, 783 warnings**, shape **157 pages, widest 12 of 20**, `--check-redirects` **77 entries
+/ 7858 bytes**, `versioncheck.py` **0 stale of 18**, `--verify` **157 predicted, 157 published,
+157 agree**. `pagetypes.tsv` is unmoved at **157 data rows**, and no `SUMMARY.md` entry was owed.
+
+**`pagelint --changed origin/master` reports `10 file(s), 18 hunk(s) … 6 documentation page(s),
+1 code block(s) strict`, and the 1 is the deliverable rather than a gap.** *(It read `9 file(s),
+14 hunk(s)` an hour earlier, before this file was staged — the same figure, measured before the
+edit that moved it, which is the trap this list has recorded three times.)* These are the
+longest, most code-dense pages 012 has touched — **130 C# blocks across six pages** — and
+placement kept every one of them out of the diff except the block whose `using` directive was
+the defect above. That block already carried `using` lines, so the debt did not move.
+
+#### One thing this phase deliberately did not do
+
+**Every `##` heading on these six pages is unique and several are unqualified** —
+`## Dashboard`, `## Storage Options`, `## Persistence Options`, `## Advanced Configuration`,
+`## Important Warning`, `## Scheduling Modes Comparison`, `## Clustering and High Availability`.
+Rule 3a is green on all of them, because `pagelint.py` checks uniqueness and nothing checks
+qualification. Re-qualifying them moves seven published anchors on six pages for a reason
+unrelated to D9, so it is recorded here rather than done: **it is the editorial half of a
+rule with a tool for its mechanical half, and a green build is evidence about the mechanical
+half only.**
 
 ---
 
