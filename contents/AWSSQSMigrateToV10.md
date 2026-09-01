@@ -133,7 +133,7 @@ if (!chain.TryGetAWSCredentials("default", out var credentials))
 }
 
 var region = RegionEndpoint.GetBySystemName("us-east-1");
-var connection = new AwsMessagingGatewayConnection(credentials, region);
+var connection = new AWSMessagingGatewayConnection(credentials, region);
 ```
 
 **V4 Approach**:
@@ -148,7 +148,7 @@ if (!chain.TryGetAWSCredentials("default", out var credentials))
 }
 
 var region = RegionEndpoint.GetBySystemName("us-east-1");
-var connection = new AwsMessagingGatewayConnection(credentials, region);
+var connection = new AWSMessagingGatewayConnection(credentials, region);
 ```
 
 **V4 - Using Default Credentials** (recommended):
@@ -158,7 +158,7 @@ var connection = new AwsMessagingGatewayConnection(credentials, region);
 // V4 - Let SDK resolve credentials automatically
 var credentials = FallbackCredentialsFactory.GetCredentials();
 var region = FallbackRegionFactory.GetRegionEndpoint();
-var connection = new AwsMessagingGatewayConnection(credentials, region);
+var connection = new AWSMessagingGatewayConnection(credentials, region);
 ```
 
 **5. Test Thoroughly**
@@ -207,12 +207,12 @@ var credentials = FallbackCredentialsFactory.GetCredentials(); // Checks env var
 ```csharp
 // ...
 // Problem: Region not specified
-var connection = new AwsMessagingGatewayConnection(credentials, null); // ❌
+var connection = new AWSMessagingGatewayConnection(credentials, null); // ❌
 
 // Solution: Provide region explicitly or use fallback
 var region = FallbackRegionFactory.GetRegionEndpoint()
     ?? RegionEndpoint.USEast1; // Fallback to default
-var connection = new AwsMessagingGatewayConnection(credentials, region);
+var connection = new AWSMessagingGatewayConnection(credentials, region);
 ```
 
 **Issue 3: Package Version Conflicts**

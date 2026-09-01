@@ -28,28 +28,48 @@ Point-to-point scenarios can be modelled either as an SNS **topic** with one sub
 
 ## SQS Connection
 
-The Connection to AWS is provided by an **AWSMessagingGatewayConnection**. This is a wrapper around AWS credentials and region, that allows us to create the .NET clients that abstract various AWS HTTP APIs. We require the following parameters:
+The connection to AWS is provided by an `AWSMessagingGatewayConnection`. It wraps the credentials and region Brighter needs to build the .NET clients that abstract the AWS HTTP APIs, and every producer, consumer and channel factory on this page takes one.
 
-- **Credentials**: An instance of *AWSCredentials*. Storing and retrieving the credentials is a detail for your application and may vary by environment. There is AWS discussion of credentials resolution [here](https://docs.aws.amazon.com/sdk-for-net/v3/developer-guide/creds-assign.html)
-- **Region**: The *RegionEndpoint* to use. SNS is a regional service, so we need to know which region to provision infrastructure in, or find it from.
+<!-- optioncheck: Paramore.Brighter.MessagingGateway.AWSSQS.AWSMessagingGatewayConnection -->
 
-``` csharp
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `credentials` | `AWSCredentials` | `none` | The credentials Brighter presents when it creates an SNS, SQS or STS client. |
+| `region` | `RegionEndpoint` | `none` | The AWS region whose topics and queues Brighter provisions or finds. |
+| `clientConfigAction` | `Action<ClientConfig>?` | `null` | Runs against each client's configuration after the region is set and before the client is constructed. |
+
+All three are constructor parameters, and the properties that read them back differ from them only in case. Storing and retrieving the credentials is a detail for your application and varies by environment; AWS describes the resolution order [here](https://docs.aws.amazon.com/sdk-for-net/v3/developer-guide/creds-assign.html). SNS and SQS are regional services, so the region decides where infrastructure is provisioned or looked up. `clientConfigAction` is handed the `ClientConfig` of every client Brighter builds, so any setting the AWS SDK exposes there — a custom `ServiceURL`, a timeout, a proxy — is applied from one place.
+
+```csharp
+using System;
+using Amazon;
+using Amazon.Runtime.CredentialManagement;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 public void ConfigureServices(IServiceCollection services)
 {
-    if (!new CredentialProfileStoreChain().TryGetAWSCredentials("default", out var credentials)
-	{
-        throw InvalidOperationException("Missing AWS Credentials");
+    if (!new CredentialProfileStoreChain().TryGetAWSCredentials("default", out var credentials))
+    {
+        throw new InvalidOperationException("Missing AWS Credentials");
     }
 
-    services.AddBrighter(...)
-        .AddProducers((configure) =>
-        { 
+    var region = RegionEndpoint.GetBySystemName(
+        Environment.GetEnvironmentVariable("AWS_REGION") ?? "us-east-1");
+
+    services.AddBrighter()
+        .AddProducers(configure =>
+        {
             configure.ProducerRegistry = new SnsProducerRegistryFactory(
-                    new AwsMessagingGatewayConnection(credentials, Environment.GetEnvironmentVariable("AWS_REGION"))
-                    ,
-                    ... //publication, see below
+                new AWSMessagingGatewayConnection(credentials, region),
+                new SnsPublication[]
+                {
+                    new SnsPublication { Topic = new RoutingKey("greeting.event") }
+                }
             ).Create();
-        })
+        });
 }
 ```
 
@@ -141,7 +161,7 @@ If you are creating the topics out-of-band, by CloudFormation for example, and s
 
 ### SNS Attributes
 
-This property allows you to pass an instance of `SnsAttributes` which contains properties representing the attributes used when creating an SNS Topic. These are only used if you are creating a topic.
+The publication property is `TopicAttributes`, and it takes an instance of `SnsAttributes` carrying the attributes used when creating an SNS Topic. These are only used if you are creating a topic.
 
 *   **DeliveryPolicy**: The policy that defines how Amazon SNS retries failed deliveries to HTTP/S endpoints.
 *   **Policy**: The JSON serialization of the topic's access control policy.
@@ -150,6 +170,14 @@ This property allows you to pass an instance of `SnsAttributes` which contains p
 *   **ContentBasedDeduplication**: For FIFO topics, enables content-based deduplication.
 
 ```csharp
+using System;
+using Amazon;
+using Amazon.Runtime.CredentialManagement;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 public void ConfigureServices(IServiceCollection services)
 {
     if (!new CredentialProfileStoreChain().TryGetAWSCredentials("default", out var credentials))
@@ -161,7 +189,7 @@ public void ConfigureServices(IServiceCollection services)
         .AddProducers((configure) =>
         { 
             configure.ProducerRegistry = new SnsProducerRegistryFactory(
-                new AwsMessagingGatewayConnection(credentials, region),
+                new AWSMessagingGatewayConnection(credentials, region),
                 new SnsPublication[]
                 {
                     new SnsPublication
@@ -169,7 +197,7 @@ public void ConfigureServices(IServiceCollection services)
                         Topic = new RoutingKey("my-fifo-topic.fifo"),
                         FindTopicBy = TopicFindBy.Convention,
                         MakeChannels = OnMissingChannel.Create,
-                        SnsAttributes = new SnsAttributes(type: SqsType.Fifo, contentBasedDeduplication: true)
+                        TopicAttributes = new SnsAttributes(type: SqsType.Fifo, contentBasedDeduplication: true)
                     }
                 }
             ).Create();
@@ -188,6 +216,14 @@ Depending on the option you choose under **QueueFindBy**, Brighter will use diff
 When you provide the queue name via the routing key, Brighter uses the AWS SDK's `GetQueueUrlAsync` method to find the queue URL. This is more efficient than listing all queues as it's a direct lookup by name. If the queue doesn't exist and you've configured `OnMissingChannel.Create`, Brighter will create it.
 
 ```csharp
+using System;
+using Amazon;
+using Amazon.Runtime.CredentialManagement;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 public void ConfigureServices(IServiceCollection services)
 {
     // Get AWS credentials
@@ -204,7 +240,7 @@ public void ConfigureServices(IServiceCollection services)
     .AddProducers(options =>
     { 
         options.ProducerRegistry = new SqsProducerRegistryFactory(
-            new AwsMessagingGatewayConnection(credentials, region),
+            new AWSMessagingGatewayConnection(credentials, region),
             new SqsPublication[]
             {
                 new SqsPublication
@@ -227,6 +263,14 @@ public void ConfigureServices(IServiceCollection services)
 You directly provide the complete queue URL rather than just the name. This is the most efficient option as it requires no additional API calls to locate the queue. When using `QueueFindBy.Url`, the queue URL is provided via the `ChannelName`.
 
 ```csharp
+using System;
+using Amazon;
+using Amazon.Runtime.CredentialManagement;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 public void ConfigureServices(IServiceCollection services)
 {
     // Get AWS credentials
@@ -243,7 +287,7 @@ public void ConfigureServices(IServiceCollection services)
     .AddProducers(options =>
     { 
         options.ProducerRegistry = new SqsProducerRegistryFactory(
-            new AwsMessagingGatewayConnection(credentials, region),
+            new AWSMessagingGatewayConnection(credentials, region),
             new SqsPublication[]
             {
                 new SqsPublication
