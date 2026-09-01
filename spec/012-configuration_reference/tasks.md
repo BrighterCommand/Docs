@@ -7,11 +7,12 @@ moved.
 answered the same day) and `requirements.md` (approved 2026-08-27, `.requirements-approved`;
 amended twice by design review — AC4's schedule clause struck, D15 and D16 added)
 
-**Total tasks: 57, across 11 phases.** Re-derived, not counted by hand:
-`grep -c '^- \[.\] \*\*Task' tasks.md` says 57, and the phase table's Tasks column sums to 57
-independently. **Keep both**, and re-derive both after any edit — 009's D-table spent three
-sessions wrong because a count was edited beside the row it counted, and 010 carried two
-counting methods that disagreed by four for a fortnight while both printed a plausible number.
+**Total tasks: 58, across 11 phases — 57 as approved, plus task 11.6, which the acceptance
+walk added.** Re-derived, not counted by hand: `grep -c '^- \[.\] \*\*Task' tasks.md` says 58,
+and the phase table's Tasks column sums to 58 independently. **Keep both**, and re-derive both
+after any edit — 009's D-table spent three sessions wrong because a count was edited beside the
+row it counted, and 010 carried two counting methods that disagreed by four for a fortnight
+while both printed a plausible number.
 
 **It was 56 at draft, and the review moved it — the two counts then disagreed by one until the
 phase table was corrected too**, which is exactly the failure the paragraph above describes,
@@ -59,7 +60,7 @@ authorisation 009 needed four times is not needed once here.
 | **8** | Outbox, inbox and lock pages, and the last of §2.7's twelve tables | 5 | D7, D8 |
 | **9** | Schedulers — 25 options the survey never counted | 3 | D9 |
 | **10** | The two stale cross-cutting tables | 3 | D10 |
-| **11** | Acceptance — AC1–AC9 walked with evidence, the drift ledger, and close | 5 | — |
+| **11** | Acceptance — AC1–AC9 walked with evidence, the drift ledger, and close | 6 | — |
 
 **Phases 3 through 10 are individually shippable and individually abandonable.** Each adds
 tables to pages that already exist or adds pages the tree does not yet reference; a spec that
@@ -2330,7 +2331,7 @@ green under all six gates, with the obvious repair wrong in three of eleven plac
 this spec's equivalent**, which is why every phase above walks it; phase 11 is where that is
 confirmed rather than where it starts.
 
-- [ ] **Task 11.1:** Walk AC1, AC6, AC6b and AC8 page by page, with evidence
+- [x] **Task 11.1:** Walk AC1, AC6, AC6b and AC8 page by page, with evidence
   - Input: every page 012 touched; the traceability table below
   - Output: a § *The acceptance pass as executed* section in this file, naming the evidence
     per criterion
@@ -2338,7 +2339,7 @@ confirmed rather than where it starts.
     table is *correct*, never that a surface *has* one. The scope line's type count against
     design §7's mapping is the nearest mechanical check, and it is not the same claim.
 
-- [ ] **Task 11.2:** Re-run the six gates and `optioncheck`, and record the closing numbers
+- [x] **Task 11.2:** Re-run the six gates and `optioncheck`, and record the closing numbers
   - Input: §2.8's starting numbers
   - Output: the six figures at the closing commit, with the deltas explained — link, pagelint,
     shape and `--verify` each **+10**, `--check-redirects` unmoved, `versioncheck.py`
@@ -2348,7 +2349,7 @@ confirmed rather than where it starts.
     time. **Predict every new path with `urlmap.py` before probing it**, and check
     `sitemap-pages.xml` lists it so the probe is not premature.
 
-- [ ] **Task 11.3:** Compile the drift ledger — what the checker caught, and what it did not
+- [x] **Task 11.3:** Compile the drift ledger — what the checker caught, and what it did not
   - Input: standing obligation 10's per-phase records, from task 2.6 onward
   - Output: a § *What the checker caught* section in this file: every mismatch, as page,
     option, **what the corpus said** and **what the assembly says**; the `manual:` residue by
@@ -2363,7 +2364,7 @@ confirmed rather than where it starts.
     task 2.6 finds on day two. **Record the misses too** — a `manual:` declaration is a row
     nobody verified, and a ledger that lists only successes is an advertisement.
 
-- [ ] **Task 11.4:** Re-check [#67](https://github.com/BrighterCommand/Docs/issues/67) and
+- [x] **Task 11.4:** Re-check [#67](https://github.com/BrighterCommand/Docs/issues/67) and
       comment
   - Input: the issue thread; **task 11.3's ledger**; what 012 actually shipped
   - Output: a comment naming the prose configuration reference as delivered, **citing the
@@ -2375,7 +2376,7 @@ confirmed rather than where it starts.
     Brighter repository, not here, and the comment should say so rather than leave it implied.
     **#67 stays open** — 013 still owes it the PostgreSQL-for-both-transport-and-outbox guide.
 
-- [ ] **Task 11.5:** Re-derive the totals, tick the README, and close
+- [x] **Task 11.5:** Re-derive the totals, tick the README, and close
   - Input: this file
   - Output: `grep -c '^- \[x\] \*\*Task'` and the phase table's Tasks column, **re-derived and
     agreeing**; `README.md` § Status Checklist ticked; `spec/.current-spec` repointed to 013
@@ -2384,13 +2385,332 @@ confirmed rather than where it starts.
     counts disagreed by one until the table was corrected too, which is the whole reason for
     keeping two.
 
+- [x] **Task 11.6:** The repair the AC1 walk produced — `AWSMessagingGatewayConnection`
+  - Input: task 11.1's page-by-page walk; `--describe` on the type; the four `csharp` blocks on
+    `AWSSQSConfiguration.md` that construct a connection
+  - Output: a marked three-row table under `## SQS Connection`; the nine sites naming a type
+    that has never existed corrected; the blocks the correction touched compiled
+  - Notes: **Added by the walk, which is what task 11.5 predicted and 009's Task 12.4 is the
+    precedent for.** AC1 has no tool: `optioncheck` proves a table is *correct* and is silent
+    about a surface that has none, so the only instrument is the mapping walked against the
+    corpus. The AWS connection is the one P0 surface design §7.2 never mapped — every other
+    documented transport carries a connection or configuration row and AWS's carries three
+    types and no connection.
+
+---
+
+### Phase 11 as executed — 2026-09-01, 6/6
+
+**AC1 was unmet, and the walk is the only thing that could have said so.** Every gate was green
+before this phase and every gate is green after it; what changed is that a P0 surface which had
+never had a table now has one. `optioncheck` reported `0 mismatches` on both sides of that
+sentence, because **a checker's population is the text you gave it** — it proves a table is
+correct and is silent about a surface with no table at all. That is the third phase running in
+which the instrument with no tool behind it found the defect, and it is why 009's Phase 12 is
+quoted in this phase's preamble.
+
+**The corpus 012 leaves behind: 59 marked tables, 519 checked rows, 59 types, on 33 pages.**
+Requirements §3.1 measured the starting state at **44 option rows in 12 tables across 9 pages**,
+of which two tables are deliberately unmarked to this day. **Eight of the 59 replace one of
+those twelve; the other 51 are surfaces that had no table at all.**
+
+#### AC1, walked page by page — and the one surface it found missing
+
+The walk is design §7's mapping against the corpus, surface by surface, and it was done twice
+in opposite directions, because a mapping walked only forwards can only find pages, never gaps:
+
+- **Forwards** — every row of design §7.1, §7.2, §7.3, §7.4 and §7.5 against the marker on its
+  named page. **All present**, including the four rows that are deliberately *not* a table:
+  Spanner outbox and inbox and the Firestore inbox link D15 or `FirestoreOutbox.md`, and the
+  MSSQL and MySQL locks state the absence and link D15.
+- **Backwards** — `survey.py --ref 10.7.0 --tsv`'s population against the 59 markers, by type
+  name. The survey returns **72 rows, 60 distinct type names** (twelve names appear in two
+  assemblies apiece — the six `.V4` pairs, `RMQ.Async`/`RMQ.Sync`, `Transformers.AWS`/`.V4`).
+  **Fifty of the 60 carry a marked table**; eight of the ten that do not are design §7.6's
+  luggage-and-archive family, filed under P2 and not scheduled. That left **two**.
+
+| Uncovered by the backwards walk | Options | Verdict |
+|---|---:|---|
+| `AWSMessagingGatewayConnection` | 3 | **AC1 unmet.** Repaired at task 11.6 |
+| `MonitorConfiguration` | 2 | Out of scope, and **unmapped by design §7** — recorded below |
+
+**`AWSMessagingGatewayConnection` is a P0 surface by requirements §7.2 item 4** — *"the five
+documented transports … subscription, publication and connection tables per transport"* — and
+**design §7.2's AWS row names three types and no connection**, where every other documented
+transport's row carries one (`RmqMessagingGatewayConnection`,
+`KafkaMessagingGatewayConfiguration`, `AzureServiceBusConfiguration`,
+`PostgresMessagingGatewayConnection`). The gap was in the mapping, so every phase written from
+the mapping reproduced it, and nothing downstream could see it: the page carries three checked
+tables and 31 rows, and passed `optioncheck` on every run of this spec.
+
+**What the page said instead was a two-bullet list, and it was short by an option.** The type
+takes `credentials`, `region` and `clientConfigAction`; the bullets described the first two.
+`--describe` prints all three with **no `manual:` needed** — `none`, `none`, `null` — so this
+is not a surface anything found hard, only one nobody was sent to.
+
+**`MonitorConfiguration` is genuinely out of 012's scope and is still worth the row.** It is
+`IsMonitoringEnabled` and `InstanceName`, read by `MonitorHandler` and `MonitorHandlerAsync`
+(`Monitoring/Handlers/MonitorHandler.cs:53`), so it belongs to the middleware-attribute family
+requirements §7.4 item 11 files under **P2** — and **design §7.6, whose stated job is that
+nothing is lost, does not name it.** No page in the corpus mentions it either
+(`grep -rn 'MonitorConfiguration\|IsMonitoringEnabled' contents/` returns nothing). Recorded,
+not scheduled: it is a P2 surface, and the ledger below carries it as a known absence rather
+than as drift.
+
+#### AC1's repair, and the two defects it uncovered on the way
+
+Task 11.6, and the second and third of these were found by the compiler rather than by the
+walk — **the instrument for a code block is the compiler**, for the fourth time in this spec:
+
+| # | Page | What the corpus said | What the assembly says |
+|---:|---|---|---|
+| 35 | `AWSSQSConfiguration.md` | two bullets under `## SQS Connection` | three constructor parameters; `clientConfigAction` was undocumented |
+| 36 | `AWSSQSConfiguration.md` ×4, `AWSSQSMigrateToV10.md` ×5 | `new AwsMessagingGatewayConnection(…)` | **`AWSMessagingGatewayConnection`** — the lower-case spelling is `CS0246` |
+| 37 | `AWSSQSConfiguration.md:164` and its example | the SNS attributes property is `SnsAttributes` | **`TopicAttributes`**, of type `SnsAttributes?` — `CS0117` |
+
+**Entry 36 carries its control.** `AwsMessagingGatewayConnection` appears in **0** files under
+`src/` at `10.7.0` while `AWSMessagingGatewayConnection` appears in **26**, and
+`git log -S'class AwsMessagingGatewayConnection' --all` returns nothing — so the type has never
+existed, rather than having been renamed. A zero from a grep is also what a broken grep returns,
+which is why the second half of that sentence is here at all.
+
+**Entry 37 is the ledger's sharpest case of a table being right while its own page is wrong.**
+`AWSSQSConfiguration.md:93` — the `SnsPublication` table phase 5 wrote — says `TopicAttributes`,
+and it has said so since phase 5. Twenty lines further down the page, the prose and the example
+said `SnsAttributes`. **`optioncheck` was green throughout, correctly**: it read the table, and
+the table was right. Only compiling the block found it.
+
+**Four blocks compiled, 4 of 4, 0 errors and 0 warnings** — extracted from the page as printed
+into one project per block, `net9.0`, `Nullable enable`, **`ImplicitUsings` disabled**,
+against `Paramore.Brighter.MessagingGateway.AWSSQS` and
+`Paramore.Brighter.Extensions.DependencyInjection` at `10.7.0`. The first block also needed
+repair before it could compile at all: an unclosed `if (`, a `throw InvalidOperationException`
+missing its `new`, and a `string?` passed where a `RegionEndpoint` is required. **The five
+sites on `AWSSQSMigrateToV10.md` were not compiled** — they are declared-incomplete `// ...`
+fragments and the edit there is the mechanical rename above, verified against the source with
+its control. Say so rather than let a silence imply a build.
+
+#### The other eight criteria, with their evidence
+
+| AC | Verdict | Evidence at the closing commit |
+|---|---|---|
+| AC1 | **met after task 11.6** | The two-direction walk above. **No tool**, by construction |
+| AC2 | met | `0 mismatches across 59 tables and 519 rows`, and the scope line is not empty — 59 types on 33 pages of 157 files |
+| AC3 | met | Red-proof branch 1: `bufferSize`'s **constructor** default changed 1 → 10, exit 1 |
+| AC3b | met | Red-proof branch 2: `emptyChannelDelay` written as `null` — the tool answers **500 ms** |
+| AC4 | met | `.github/workflows/docs.yml` job `options`, unguarded, **no `schedule:`**. Run `33460629780` on `master` at `407c80b`: `check`, `versions`, `options` all success, and the runner printed `scope: 58 tables, 516 rows, 58 types, on 33 pages of 157 files scanned` — the same scope as the local run, which is what says CI is checking the corpus rather than an empty one |
+| AC5 | met | Red-proof branch 6b: one pinned assembly deleted, **exit 2**, against branch 6a's control at exit 0 |
+| AC6 | met | Ten transports at `10.7.0`, ten pages; re-derived from `git ls-tree --name-only 10.7.0 src/ \| grep MessagingGateway`, twelve directories folding to ten |
+| AC6b | met | `FirestoreOutbox.md` two tables, nine rows; `SpannerOutbox.md` and `SpannerInbox.md` **no table**, linking D15 |
+| AC7 | met | Phase 10's diff in both directions: 9 → 11 and 6 → 10 rows, nothing named that does not ship |
+| AC8 | met | Below |
+| AC9 | met | The seven gates, below |
+
+**The red-proof fires 10/10 across three fixtures**, re-run on this branch. It is the evidence
+for AC3, AC3b and AC5 and it is the only evidence any of them will ever have — an exit code
+proves a gate ran, never that it can fail.
+
+#### AC8, confirmed corpus-wide rather than re-walked per phase
+
+Every phase that wrote a table walked AC8 as it wrote it (standing obligation 5). This is the
+aggregate, swept in one pass over all 59 marked tables by a parser written for the purpose:
+
+**59 tables, 519 rows, 0 faults.** Every row is four cells; no `Default` is blank; every `Type`
+is a code span; every description opens with a capital, ends in a full stop and is a single
+sentence; and none contains *because*, *so that*, *should*, *prefer*, *recommend* or
+*note that*. The one hit the word list produced is
+`MongoDBOutbox.md:60`'s *"read preference and write concern"* — the sweep's false positive, not
+a rationale.
+
+**The sweep carries its own control**: it is an independent parser, and it reports the same
+**59 tables and 519 rows** the checker does. A sweep that had silently skipped a table would
+have printed a smaller number and a clean verdict, which is indistinguishable from this one
+without the comparison.
+
+#### Task 11.2 — the gates, and the deltas explained
+
+`4ef9633` (§2.8) on the left, this branch on the right:
+
+| Gate | At `4ef9633` | At the close | Delta |
+|---|---|---|---|
+| `linkcheck.py` | 150 files | **160 files** | **+10** — one per page created |
+| `pagelint.py` | 0 errors, 790 warnings, 148 pages | **0 errors, 779 warnings, 158 pages** | pages **+10**; warnings **−11** |
+| `urlmap.py --check-shape` | 147 pages, 12 sections, deepest 4 of 4, widest 10 of 20 | **157 pages, 12 sections, deepest 4 of 4, widest 12 of 20** | pages **+10**; widest +2, from D12's five transports |
+| `urlmap.py --check-redirects` | 77 entries, 7858 bytes | **77 entries, 7858 bytes** | **unmoved** |
+| `versioncheck.py` | 0 stale of 18 across 5 pages | **0 stale of 18 across 5 pages** | unmoved |
+| `optioncheck` | — (built at phase 2) | **0 mismatches, 59 tables, 519 rows** | — |
+| `urlmap.py --verify` | 147 / 147 / 147 | **157 / 157 / 157** | **+10** |
+
+**Task 11.2's *"each +10"* prediction holds on all four counts** — link, pagelint, shape and
+`--verify` — one per page created at phases 4, 6 and 7, and it is the one figure in this spec
+that came out exactly as approved. **`--check-redirects` not moving is the result, not an
+omission**: slugs are filename-derived, so adding a page to an existing section moves no URL,
+and that assertion has now held **ten times**, including across four *nested* pages at once.
+
+**The warning count is the one that moved quietly, and every step of it was a genuine edit.**
+790 → 787 at #131 (the compile repair, ledger entry 3), 787 → 783 at #136 (the invented-API
+repair, entries 14–20), and **783 → 779 here**, because the four AWS blocks task 11.6 touched
+earned real `using` directives rather than a declared omission. **No page 012 created added
+anything to it**: phases 4, 6 and 7 shipped ten pages whose every C# block carries its
+directives.
+
+**`pagelint.py --changed origin/master` reports `5 file(s), 31 hunk(s) in the diff;
+2 documentation page(s), 8 code block(s) strict` — and this is the first phase in three whose
+strict count is large enough to mean something.** Eight blocks were pulled into strict scope by
+one-word renames, four of them earning real directives; the other four are the migration page's
+declared `// ...` fragments, which downgrade and are still counted. *(It read
+`2 file(s), 19 hunk(s)` before this file, the README and `.current-spec` were staged — the same
+run, measured before the edit that moved it, which is the trap this programme has now recorded
+four times. The figure that counts is the one taken after `git add`.)*
+
+#### Task 11.3 — the drift ledger: what the checker caught, and what it did not
+
+**`optioncheck` found none of it.** Not one of the entries below was reported by the gate 012
+built, and that is not a criticism of the gate: **every one of them is a statement the checker's
+population does not contain** — a bullet, a sentence, a comparison table, a code block, or a
+row that was correct when it was written and overtaken afterwards. AC2 is an exit code and an
+exit code has no memory; this section is the only evidence this spec produces that the drift
+was real.
+
+**Thirty-seven entries. Counted by counting the rows below, not by adding to a running total.**
+`Kind` says which instrument could ever have seen it: `table` a marked option table, `prose` a
+bullet or sentence, `code` a fenced example, `matrix` a cross-cutting comparison table.
+
+| # | Phase | Kind | Page | What the corpus said | What the assembly says |
+|---:|---:|---|---|---|---|
+| 1 | 3 | prose | `CommandProcessorConfigurationReference.md` | `MaxOutstandingMessages` and `MaxOutStandingCheckIntervalMilliSeconds` are publication options | they are on `ProducersConfiguration`; `Publication` has neither |
+| 2 | 3 | prose | `CommandProcessorConfigurationReference.md` | `MaxOutStandingCheckIntervalMilliSeconds` | the member is `MaxOutStandingCheckInterval`, a `TimeSpan`; the suffix is a V9 spelling |
+| 3 | 3 | code | `BrighterBasicConfiguration.md`, `RabbitMQConfiguration.md`, `CommandProcessorConfigurationReference.md` — 6 blocks | the same two properties set on an `RmqPublication` | `CS0117` twice; and `UseOutboxSweeper` needs `Paramore.Brighter.Outbox.Hosting`, `CS1061` |
+| 4 | 5 | prose | `RabbitMQConfiguration.md` | the connection property is `AmqpUri` | `AmpqUri` — the transposition is Brighter's |
+| 5 | 5 | prose | `KafkaConfiguration.md` | the connection type is `KafkaMessagingGatewayConnection` | no such type; `KafkaMessagingGatewayConfiguration` |
+| 6 | 5 | prose | `KafkaConfiguration.md` | `SaslKerberosName` | `SaslKerberosPrincipal` |
+| 7 | 5 | prose | `KafkaConfiguration.md` | `BootstrapServers` | `BootStrapServers` |
+| 8 | 5 | prose | `KafkaConfiguration.md` | `BatchNumberMessages` defaults to `10` | `10000` |
+| 9 | 5 | prose | `KafkaConfiguration.md` | `QueueBufferingMaxMessages` defaults to `10` | `100000` |
+| 10 | 5 | prose | `AzureServiceBusConfiguration.md` | `LockDuration` defaults to `true` | a `TimeSpan` of one minute |
+| 11 | 5 | prose | `AzureServiceBusConfiguration.md` | `DefaultMessageTimeToLive` defaults to 1 minute | three days |
+| 12 | 5 | prose | `PostgreSQLMessageBroker.md` | `SchemaName` defaults to `"public"` on both surfaces | `null` on both; `public` is the last of three fallbacks |
+| 13 | 5 | table | `PostgreSQLMessageBroker.md` | the options are `ChannelName`, `BufferSize`, `VisibleTimeout` | constructor-driven: a reader types `channelName`, `bufferSize`, `visibleTimeout` |
+| 14 | 6 | code | 6 pages, 11 blocks — **and `CLAUDE.md`** | `AddBrighter().AddProducers(…).AddConsumers(…)` | `AddConsumers` extends `IServiceCollection`; `CS1929` |
+| 15 | 6 | code | 13 sites | `ConsumersOptions.ChannelFactory` | `DefaultChannelFactory` |
+| 16 | 6 | code | 6 sites | `ConsumersOptions.Inbox` | `InboxConfiguration` |
+| 17 | 6 | code | 5 sites | `InboxConfiguration.NoActionOnExists` | no such member; `actionOnExists: OnceOnlyAction.Warn`, and the second positional parameter is an `InboxScope` |
+| 18 | 6 | code | 2 sites | `new InMemoryChannelFactory(bus)` | the only constructor takes `(InternalBus, TimeProvider, …)` |
+| 19 | 6 | code | 2 sites | `.AutoFromAssemblies().AddHostedService<…>()` | `AddHostedService` extends `IServiceCollection` |
+| 20 | 6 | code | `InMemoryOptions.md` | two helpers declare their bus parameter `IAmABus` | both callees take `InternalBus` |
+| 21 | 7 | table | `OutboxArchiver.md:36` | `FirestoreTransaction` is in `Paramore.Brighter.Outbox.Firestore` | `Paramore.Brighter.Firestore` — the named `using` gives `CS0246` |
+| 22 | 7 | table | `OutboxArchiver.md:33` | `DbTransaction` is for SQL Server, PostgreSQL, MySQL, SQLite | **and Spanner** |
+| 23 | 8 | table | `AsyncAPISupport.md:173` | `AssembliesToScan` defaults to *Entry assembly* | initialised to `null` |
+| 24 | 8 | prose | `BrighterOutboxSupport.md:179` | `MinimumMessageAge` is milliseconds, default 5000 | a `TimeSpan`, `TimeSpan.FromSeconds(5)` |
+| 25 | 8 | prose | `OutboxArchiver.md:40` | three configurables | **four** — `Instrumentation` was undocumented |
+| 26 | 8 | — | `BoxProvisioningConfiguration.md` | nothing | `MigrationHistoryScope` appeared on no page in the corpus |
+| 27 | 8 | table | `AzureBlobDistributedLock.md:42` | `StorageLocationFunc` as a property row | a **public field**, invisible to reflection over properties |
+| 28 | 8 | prose | `DynamoOutbox.md:187` | `DynamoDbConfiguration.CausationIndexName` defaults to `"Causation"` | **no such member at `10.7.0`** — the page was ahead of the product |
+| 29 | 8 | prose | `FirestoreDistributedLock.md:79` | setting `Ttl` lets stale locks expire | `Ttl` writes a field; Firestore deletes nothing without a TTL **policy** |
+| 30 | 9 | code | `InMemoryScheduler.md:132` | `using Paramore.Brighter.InMemoryScheduler;` | that namespace exists nowhere in `src/` at `10.7.0` |
+| 31 | 10 | matrix | `ReactorAndProactor.md#transport-native-support` | 9 transports | 10 ship; GCP Pub/Sub and RocketMQ absent |
+| 32 | 10 | matrix | `HandlerFailure.md#transport-nack-behavior` | 6 transports | 10 ship; GCP Pub/Sub, RocketMQ, PostgreSQL and MSSQL absent |
+| 33 | 10 | matrix | `HandlerFailure.md` | Kafka's nack is a no-op, redelivered on the next poll | `KafkaMessageConsumer.Nack` has called `Seek` since `65c5e11c7`, 2026-03-24 |
+| 34 | 10 | matrix | `HandlerFailure.md` | `No-op` in all six no-op cells | three leave the message on the channel and **three discard it** |
+| 35 | 11 | prose | `AWSSQSConfiguration.md` | two bullets for the connection | three constructor parameters; `clientConfigAction` undocumented |
+| 36 | 11 | code | `AWSSQSConfiguration.md` ×4, `AWSSQSMigrateToV10.md` ×5 | `AwsMessagingGatewayConnection` | `AWSMessagingGatewayConnection`; the other spelling has never existed — `CS0246` |
+| 37 | 11 | code | `AWSSQSConfiguration.md:164` and its example | the SNS attributes property is `SnsAttributes` | `TopicAttributes` — `CS0117`, on a page whose own table said so |
+
+**Entry 33 is the one no gate here could ever have produced, and it arrived from an additive
+task.** Phase 10 was sent to *add* four rows and found a fifth row already there that had gone
+false five months earlier — in the one table the spec had already named as stale. **When a task
+says "add the missing rows", budget for re-reading the rows that are already there**, because
+the file is open either way.
+
+**Entry 28 is the mirror**: a page ahead of the product rather than behind it. Every gate in
+this repository is green either way.
+
+**Twenty-one of the 37 were found by writing the correct table beside prose that was already
+there** — standing obligation 3, which is not a tool. **Eleven were found by a compiler.** The
+remaining five came from reading a comparison table's source. **Zero were found by
+`optioncheck`.**
+
+#### Task 11.3 — the misses, which a ledger of successes would not have
+
+**76 `manual:` declarations across 519 rows — 14.6%, on 22 pages.** Each is a row the checker
+**declares it cannot verify**; each counts, and each is printed by name on every run, which is
+what makes this a measurement rather than an estimate. By shape:
+
+| Shape | Rows |
+|---|---:|
+| A constructor that rejects its own default — `requestType`, `messagePumpType`, `channelName` | 24 |
+| A default object with no printable value — `SnsAttributes.Empty`, an `InMemoryInbox`, a `DefaultPolicy` | 20 |
+| A delegate or hook — `MapRequestType`'s substitution, the scheduler-id `Func<>`s | 19 |
+| Set from a required constructor parameter, so the instance reads back the checker's argument | 7 |
+| `HangfireMessageSchedulerFactory` — the **whole surface**, unreadable outside a configured Hangfire host | 3 |
+| `RmqMessagingGatewayConnection.Name` — `Environment.MachineName` | 1 |
+| `AzureServiceBusSubscription.subscriptionConfiguration` and `KafkaSubscription.numOfPartitions` — read back under a name that differs by more than case | 2 |
+
+**`0 omit:` declarations across the whole spec.** Nothing was excluded from a table; the residue
+is entirely *cannot read*, never *chose not to say*.
+
+**Six more misses, none of them drift, all of them things this spec knows it did not check:**
+
+1. **Two option-shaped tables carry no marker on purpose** — `CausationTrackingStores.md`'s
+   pair. They are an interface contract rather than options (§2.7, design §12.2).
+2. **`max(props, ctor)` under-reports, and the strays are prose.** Four settable properties on
+   `KafkaSubscription`, two on `InMemorySubscription`, `RedisMessagingGatewayConfiguration`'s
+   `static` one, `MqttMessagingGatewayConfiguration`'s `internal`-setter one,
+   `RocketMessagingGatewayConnection.ClientConfig` (which carries the **endpoint**),
+   `GcpPubSubSubscription`'s `TopicAttributes` and `DeadLetterPolicy`, and
+   `FirestoreConfiguration`'s two get-only primary-constructor properties. Each is named in
+   prose beneath its table and **none is checked by anything**.
+3. **Six public fields are invisible to a tool that reads properties** — across
+   `AzureServiceBusSubscriptionConfiguration`, `AzureServiceBusPublication`,
+   `AzureBlobLockingProviderOptions` and `AzureBlobArchiveProviderOptions`. Measured, ruled on,
+   and taken upstream as
+   [Brighter#4285](https://github.com/BrighterCommand/Brighter/issues/4285). **Re-measured here
+   as phase 5 asked: still six, still four types, and the two in scope are named in prose.**
+4. **One checker blind spot, recorded and not fixable within design §6.2.**
+   `AzureServiceBusSchedulerFactory.ClientProvider` prints `null`, which is the checker's own
+   injected argument: `Synthesise` records injections by **parameter** name and `Reflect`
+   matches **property** names, so `client` → `ClientProvider` falls through where
+   `topic` → `Topic` is caught. **Any future table on a type whose property name differs from
+   its constructor parameter's owes that cell a hand-check.**
+5. **Fifteen pages describe an unreleased feature.** Replay On Seen — `OnceOnlyAction.Replay`,
+   `SupportsCausationTracking`, `ReplayCausation`, `CausationId`,
+   `DynamoDbConfiguration.CausationIndexName` — is absent at `10.7.0` and present on Brighter
+   `master`. Five carry a *not yet released* blockquote; ten mention it in passing and carry
+   nothing.
+6. **`MonitorConfiguration` is documented nowhere and mapped nowhere**, including by design
+   §7.6, whose stated purpose is that nothing is lost. Two options, P2.
+
+**And one miss this spec made and corrected itself.** Phase 8 wrote that
+`DynamoDbConfiguration.Timeout` is dead *"so the timeouts that take effect are the
+`outBoxTimeout` arguments"*. `DynamoDbOutbox` ignores those too, corrected in #140. **The half
+that was measured was right and the half that was reasoned was wrong** — a negative finding
+invites a compensating positive, and the compensation is the part nobody measures.
+
+#### Task 11.4 — #67
+
+Re-checked immediately before commenting, per the task note. See the comment for what was
+posted; the headline it cites is the ledger's **37 entries**, not the table count, because
+#67's claim is about drift rather than about volume. **#67 stays open**: 013 still owes it the
+PostgreSQL-for-both-transport-and-outbox guide, which is a public commitment.
+
+#### Task 11.5 — the totals
+
+**58 tasks across 11 phases**, re-derived two ways rather than incremented:
+`grep -c '^- \[.\] \*\*Task' tasks.md` and the phase table's Tasks column, which must agree.
+The walk added task 11.6, exactly as the task note predicted from 009's 12.4 — **and the phase
+table is the one that gets forgotten**, so it was edited in the same pass and both counts
+re-run afterwards.
+
+`spec/.current-spec` moves to `013-howto_guides`, and 012's README § Status Checklist is ticked
+through *Spec closed*.
+
 ---
 
 ## Traceability
 
 | AC | Walked by | Evidence |
 |---|---|---|
-| AC1 | 11.1, and phases 3–9 as they land | Page by page against design §7's mapping. **No tool** |
+| AC1 | 11.1, and phases 3–9 as they land; **repaired at 11.6** | Page by page against design §7's mapping, and the mapping against `survey.py`'s population in the other direction. **No tool** — and the backwards walk is what found `AWSMessagingGatewayConnection` |
 | AC2 | every verification task; **11.3** | `optioncheck` exit 0, with a scope line that is not empty — and the ledger of what it caught before it went green, which the exit code cannot carry |
 | AC3 | **2.7** | A fixture with a wrong constructor-parameter row, exit 1 |
 | AC3b | **1.2, 2.8** | `EmptyChannelDelay` — the probe measures it, the red-proof proves the tool catches it |

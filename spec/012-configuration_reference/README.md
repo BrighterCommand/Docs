@@ -1,10 +1,16 @@
 # Spec 012: Configuration Reference Tables
 
 **Created:** 2026-08-03
-**Status:** **Design APPROVED 2026-08-27; the next phase is TASKS.** `requirements.md`
-approved 2026-08-27 and merged as `9df5e89`; `design.md` approved the same day, its four
-review questions answered — which added **D15** and **D16** and struck AC4's schedule
-clause. Three more pages, zero more options.
+**Status:** **COMPLETE 2026-09-01, 58/58.** All eleven phases executed; the acceptance pass is
+`tasks.md` § *Phase 11 as executed*, which walks AC1–AC9 with evidence and carries the 37-entry
+drift ledger. `requirements.md` approved 2026-08-27 and merged as `9df5e89`; `design.md`
+approved the same day, its four review questions answered — which added **D15** and **D16** and
+struck AC4's schedule clause; `tasks.md` approved as `3a95df1` at 57 tasks, and the acceptance
+walk added a 58th.
+
+**What shipped:** `tools/optioncheck` in CI unguarded, **59 marked option tables carrying 519
+checked rows across 33 pages**, ten new pages, 32 edited, and ten `SUMMARY.md` entries. The
+corpus documented **44 option rows in 12 tables across 9 pages** when the spec opened.
 
 > **This README is stamped 2026-08-03 and `requirements.md` supersedes it on every point
 > of fact.** It was written against a tree Spec 010 has since changed and a scope list
@@ -135,10 +141,11 @@ reasoning in `requirements.md` §5. Do not re-raise them:**
 - [x] Requirements reviewed and approved — 2026-08-27, merged as `9df5e89`
 - [x] Documentation outline created — `design.md`, 2026-08-27
 - [x] Outline reviewed and approved — 2026-08-27, four questions answered
-- [ ] Writing tasks identified
-- [ ] Writing complete
-- [ ] Documentation reviewed
-- [ ] Spec closed
+- [x] Writing tasks identified — `tasks.md`, approved 2026-08-27 as `3a95df1`
+- [x] Writing complete — phases 1–10, ten pages created and 32 edited
+- [x] Documentation reviewed — the acceptance pass, `tasks.md` § *Phase 11 as executed*
+- [x] Spec closed — **2026-09-01, 58/58**, AC1–AC9 walked with evidence and a 37-entry drift
+      ledger
 
 ## Execution Order
 
