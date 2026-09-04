@@ -1,7 +1,7 @@
 # Spec 013: Task-Oriented How-To Guides
 
 **Created:** 2026-08-03
-**Status:** Requirements drafted 2026-09-04 — see [`requirements.md`](requirements.md), awaiting review
+**Status:** **Requirements APPROVED 2026-09-04** — see [`requirements.md`](requirements.md). Design phase is next.
 
 > **This README was written 2026-08-03 against a tree Specs 010 and 012 have since changed, and
 > `requirements.md` §2 supersedes it on every content claim.** Measured 2026-09-04: the two named
@@ -138,7 +138,7 @@ it composes content the earlier specs have already normalised, moved and tabulat
 ## Status Checklist
 
 - [x] Requirements gathered — `requirements.md`, 2026-09-04
-- [ ] Requirements reviewed and approved
+- [x] Requirements reviewed and approved — 2026-09-04, marker `.requirements-approved`
 - [ ] Documentation outline created
 - [ ] Outline reviewed and approved
 - [ ] Writing tasks identified

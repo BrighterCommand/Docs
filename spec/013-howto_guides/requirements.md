@@ -1,6 +1,6 @@
 # Spec 013: Task-Oriented How-To Guides — Requirements
 
-**Status:** Draft, awaiting review
+**Status:** **APPROVED 2026-09-04.** Q1 and Q2 answered in §13; Q3 and Q4 belong to the design phase
 **Created:** 2026-09-04
 **Answers:** [Docs#67](https://github.com/BrighterCommand/Docs/issues/67)
 
@@ -81,7 +81,7 @@ no How To section, and 013 does not get one either"*, and `tasks.md` repeats it 
 > tree, and that is 013's call, not this one.
 
 So the section is a **decision this spec must make on evidence**, not a given. §10 makes the
-proposal and §13 puts it to review.
+proposal; **§13 Q2 settled it — there is no *Guides* section**, and the twelve-section tree stands.
 
 ---
 
@@ -343,10 +343,11 @@ they elaborate, which `CLAUDE.md` notes absorbs detail without touching the top-
 all**. A nested page's URL gains a segment, so this must be settled before publication, never
 after.
 
-**The *Guides* section stays unbuilt at this count.** 010 set the test at three or more genuinely
-cross-cutting guides. P0-1, P0-3 and P1-2 are three — but P0-3 is arguably filed under its subject
-rather than cross-cutting, and creating a section for two would violate S1 on the day it landed.
-**§13 Q2 puts it to review rather than deciding it here.**
+**There is no *Guides* section — ruled 2026-09-04, §13 Q2.** 010 set the test at three or more
+genuinely cross-cutting guides and made the call 013's. On this list it is not met: P0-3 files under
+its own subject rather than across subjects, and a section holding two would violate S1 on the day
+it landed. **`SUMMARY.md` keeps twelve sections and the top-level count does not move.** A fourth
+cross-cutting guide reopens the question as a fresh decision, not an inherited one.
 
 ---
 
@@ -406,32 +407,51 @@ was found, one command, at the last possible moment.
 
 ---
 
-## 13. Open questions for the maintainer
+## 13. Questions put to the maintainer — **two answered 2026-09-04, two still open**
 
-1. **Is the P0 list right?** It is set by demand, so it promotes **poison messages / DLQ** (4
-   askings) above the claim check (1 asking + a structural gap), and it demotes half the README's
-   proposals to *closed*. The README's ordering was written before any of this was measured.
-2. **Does a *Guides* section get built?** 010 set the test at three or more cross-cutting guides
-   and made it 013's call. On this list the count is two or three depending on whether P0-3 counts
-   as cross-cutting. Recommendation: **no section**, file beside subject per §10, revisit if a
-   fourth arrives.
-3. **Does P0-3 repair `HandlerFailure.md`'s nack table, or link around it?** §3.3: the explanation
-   it links to has known defects in the guide's own subject area. Repairing is in this spec's
-   spirit and outside its stated scope.
-4. **Does any guide get a compiled sample in `../Brighter/samples/`?** P0-1 is the shape that wants
-   one — a composition is exactly what rots inside a markdown fence. A write there needs
-   authorisation per PR.
+> **Q1 and Q2 are ANSWERED and are not to be re-raised.** Q3 and Q4 belong to the design phase,
+> which is where the information to settle them arrives.
 
-**Two things found while measuring, needing a decision but not blocking this document:**
+### Q1 — Is the P0 list right? **ANSWERED: accept as proposed.**
 
-- **[Docs#70](https://github.com/BrighterCommand/Docs/issues/70) is OPEN and its defect is
-  fixed.** *"AzureBlobConfiguration.md opens by describing Azure Service Bus"* — repaired by 010's
-  `49ea480`; the page now opens *"The Azure Archive Provider writes messages swept from your
-  Outbox into an Azure Blob Storage container."* It can be closed with that citation. **Not done —
-  closing someone's issue is outward-facing and needs your say-so**, which is the lesson 012's
-  task 11.4 bought.
-- **`contents/EFCoreOutbox.md:56` ends `...of these APIs).x`** — a stray character, published,
-  invisible to all seven gates. One-line fix, wants a home in a PR rather than one of its own.
+The list stands as §7 has it: demand-ordered, promoting **poison messages / DLQ** (4 askings)
+above the claim check (1 asking plus a structural gap), and demoting half the README's proposals
+to *closed*. **P0-2 stays an edit rather than a page.**
+
+### Q2 — Does a *Guides* section get built? **ANSWERED: no.**
+
+**No *Guides* section.** Every guide files beside its subject per §10, nesting under the page it
+elaborates. 010's three-or-more test is **not** met by this list, and it is revisited only if a
+fourth genuinely cross-cutting guide arrives — at which point it is a fresh decision, not an
+inherited one. `SUMMARY.md` keeps twelve sections; the top-level count does not move.
+
+### Q3 — Does P0-3 repair `HandlerFailure.md`'s nack table, or link around it? **OPEN.**
+
+§3.3: the explanation P0-3 would link to has known defects in the guide's own subject area — four
+absent rows, and six present rows that print `No-op` where three of them discard the message and
+three leave it on the channel. Repairing is in this spec's spirit and outside its stated scope.
+**For the design phase**, which is when the guide's shape says how much of that table it leans on.
+
+### Q4 — Does any guide get a compiled sample in `../Brighter/samples/`? **OPEN.**
+
+P0-1 is the shape that wants one — a composition is exactly what rots inside a markdown fence.
+A write there is authorised **per PR**, so this is asked again when the PR exists, not now.
+
+### The two loose ends found while measuring — both actioned 2026-09-04
+
+- **[Docs#70](https://github.com/BrighterCommand/Docs/issues/70)** — *"AzureBlobConfiguration.md
+  opens by describing Azure Service Bus"*, repaired by 010's `49ea480`; the page now opens *"The
+  Azure Archive Provider writes messages swept from your Outbox into an Azure Blob Storage
+  container."* **Authorised for closing on 2026-09-04**, citing that commit. *(This clause is
+  written before the act it describes, so it says only what was authorised. What was **done** is
+  recorded in the PR that carries it — 012's task 11.4 shipped a merged document claiming a
+  comment had been posted while it sat unposted for three days, and the fix is to write the record
+  after the act or write it as pending.)*
+- **`contents/EFCoreOutbox.md:56` ended `...of these APIs).x`** — a stray character, published,
+  invisible to all seven gates. **Fixed in this spec's requirements PR**, folded in rather than
+  given a PR of its own. It is the only change to `contents/` this document's PR makes, and it
+  moves no gate: the line is prose, two fence markers above it, so no code block overlaps the diff
+  and rule 6 stays out of it.
 
 ---
 
