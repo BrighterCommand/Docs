@@ -1,7 +1,15 @@
 # Spec 013: Task-Oriented How-To Guides
 
 **Created:** 2026-08-03
-**Status:** Requirements Phase
+**Status:** Requirements drafted 2026-09-04 — see [`requirements.md`](requirements.md), awaiting review
+
+> **This README was written 2026-08-03 against a tree Specs 010 and 012 have since changed, and
+> `requirements.md` §2 supersedes it on every content claim.** Measured 2026-09-04: the two named
+> content gaps below are **closed** (`Logging.md` is 151 lines; `MessageTransforms.md` exists), and
+> **three of the four missing how-tos are closed** — only `ClaimCheck.md`'s survives. The *Scope*
+> section's first bullet is **backwards**: Spec 010 design §6.2 is headed *"There is no How To
+> section, and 013 does not get one either"*. The rationale below stands; the page references do
+> not.
 
 ## Topic Overview
 
@@ -129,7 +137,7 @@ it composes content the earlier specs have already normalised, moved and tabulat
 
 ## Status Checklist
 
-- [ ] Requirements gathered
+- [x] Requirements gathered — `requirements.md`, 2026-09-04
 - [ ] Requirements reviewed and approved
 - [ ] Documentation outline created
 - [ ] Outline reviewed and approved
