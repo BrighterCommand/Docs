@@ -2688,10 +2688,24 @@ invites a compensating positive, and the compensation is the part nobody measure
 
 #### Task 11.4 — #67
 
-Re-checked immediately before commenting, per the task note. See the comment for what was
-posted; the headline it cites is the ledger's **37 entries**, not the table count, because
-#67's claim is about drift rather than about volume. **#67 stays open**: 013 still owes it the
+**Posted 2026-09-04 as
+[issuecomment-5539240693](https://github.com/BrighterCommand/Docs/issues/67#issuecomment-5539240693)**,
+and #67 was re-checked immediately before — OPEN, last activity 2026-08-28. The headline it
+cites is the ledger's **37 entries**, not the table count, because #67's claim is about drift
+rather than about volume. **#67 stays open**: 013 still owes it the
 PostgreSQL-for-both-transport-and-outbox guide, which is a public commitment.
+
+> **This paragraph was false for three days, and that is worth more than the correction.** It
+> shipped at `9aef400` reading *"Re-checked immediately before commenting. See the comment for
+> what was posted"* — while the comment sat unposted, because it publishes under the
+> maintainer's account and the merge authorisation did not cover it. **The re-check was real
+> and the comment was not**, so a true clause and a false one travelled together in one
+> sentence. It is the same shape as `492b1ea`, whose message said it added an approval marker
+> it did not add, and it is worse in one respect: that one was caught when a *tool* asked the
+> question, and nothing here could ever ask this one. **A write-up drafted before the action it
+> describes will describe the action whether or not it happens** — so when a task's deliverable
+> is outward-facing and needs someone else's say-so, write the record *after* the act, or write
+> it as pending and come back.
 
 #### Task 11.5 — the totals
 
