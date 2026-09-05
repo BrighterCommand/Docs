@@ -228,10 +228,15 @@ independently, so a Brighter-shaped sweep condemns them. **Check the right produ
 editing** — the same shape as the `SqlFilter` public field that was one edit from being deleted as
 drift.
 
-**One instance is upstream and out of scope.**
-`src/Paramore.Brighter.MessagingGateway.MsSql/README.md:95` in the Brighter repository carries
-`.Policies(policyRegistry)` too. `CLAUDE.md` makes that read-only outside `samples/`; it is worth
-an issue, not an edit.
+**Two instances are upstream and out of scope, and are RAISED.**
+`src/Paramore.Brighter.MessagingGateway.MsSql/README.md:95` and
+`docs/guides/paramore_brighter_core_guide.md:909` in the Brighter repository carry the same dead
+chain, both still on `origin/master`. `CLAUDE.md` makes those read-only outside `samples/`, so
+they went up as **[Brighter#4301](https://github.com/BrighterCommand/Brighter/issues/4301)** on
+2026-09-05 — which also carries two defects the Docs-side sweep did not have: **`.NoTaskQueues()`**,
+whose only occurrence in that entire repository is the README naming it, and a **dangling `cref`**
+in `CommandProcessorBuilder.cs`'s own XML comment pointing at `CommandProcessorBuilder.Policies`,
+a member that no longer exists.
 
 **So P0-2 is scoped corpus-wide**, and its instrument is the compiler — the only thing that has
 ever found a published example that does not compile.
@@ -439,14 +444,49 @@ cross-cutting guide reopens the question as a fresh decision, not an inherited o
    strict** and each earns real directives. That is a budgeted cost and the warning count should
    fall — it is **779** at `af38910`, and a phase that edits ten blocks and moves it by nothing has
    probably not edited what it thought it did.
-4. **A page must not silently document an unreleased feature.** Replay On Seen is absent from
-   `10.7.0` and present on Brighter `origin/master`; five pages carry a *not yet released*
-   blockquote. Any guide touching it inherits that obligation, and the trigger for removing it is
-   `versioncheck.py` going red.
+4. **An API is in one of THREE states, and only the third is a defect.** Ruled by the maintainer
+   2026-09-05, after the §3.2.1 findings raised the question of what "does not exist" means.
+
+   | State | Test | What a page may do |
+   |---|---|---|
+   | **Live** | present at the pinned release (`10.7.0`) | document freely |
+   | **Forthcoming** | absent at the release, **present on `origin/master`** | **document it — but say so explicitly** |
+   | **Dead or invented** | present at **neither** | **always a defect**, repair it |
+
+   **Documenting ahead of a release is legitimate and expected — the documentation is part of the
+   work, not a follow-up to it.** What is not acceptable is doing it *silently*, so a forthcoming
+   API is documented only as a deliberate, stated choice: the writer confirms they intend to
+   document an unreleased feature and knows it is not installable today.
+
+   **The form already exists in the corpus and is not to be reinvented** — five pages carry it,
+   four immediately below the banner and one scoped to a section
+   (`DynamoOutbox.md:129`). Verbatim from `ReplayOnSeen.md:12`:
+
+   ```markdown
+   > **Not in a released package yet.** Replay On Seen ships **after Brighter 10.7.0**, which is
+   > the current release. `OnceOnlyAction.Replay`, `SupportsCausationTracking` and the Causation Id
+   > plumbing this page describes are on Brighter's development branch and are in no version you
+   > can install today, so treat what follows as the feature as it will ship.
+   ```
+
+   It names the feature, names the release it ships after, names the symbols, and tells the reader
+   what to do with the page. The trigger for removing it is **`versioncheck.py` going red** at the
+   pin bump.
+
+   **013's default posture is live-only, and that is a property of this spec rather than of the
+   rule.** This programme is restructuring what is already published, not documenting work to come,
+   so a forthcoming API appearing in a 013 guide should be rare and deliberate. **The ten sites in
+   §3.2.1 are none of these things** — `.ResiliencePipelines(` and `.ConfigureResiliencePipelines(`
+   are absent from **both** refs, which is the third state, and `.Policies(` is a V9 survival.
 5. **Link, do not copy** — configuration values come from Spec 012's tables by link.
-6. **Verify a claim at the ref.** `git show 10.7.0:<path>`. A type name assembled from surrounding
-   vocabulary is this programme's most-repeated defect: `RequeueAction`, `AwsMessagingGatewayConnection`
-   and `#transport-support-matrix` were all plausible, all invented, and all invisible to every gate.
+6. **Verify a claim at BOTH refs, and with a control.** `git show 10.7.0:<path>` for live,
+   `origin/master` for forthcoming — a check against one ref cannot tell state 2 from state 3. A
+   type name assembled from surrounding vocabulary is this programme's most-repeated defect:
+   `RequeueAction`, `AwsMessagingGatewayConnection` and `#transport-support-matrix` were all
+   plausible, all invented, and all invisible to every gate. **Use `git grep -w`, not a
+   hand-rolled regex**: three regexes were wrong inside §3.2.1's own sweep, two of them returning
+   a plausible zero, and each was caught only by a control asserting the search could still find
+   something already read by eye.
 7. **A namespace claim is checked by nothing here.** Every `using Paramore.*` line a guide prints
    gets `git grep "namespace X" 10.7.0 -- src/` **with a control**, because a zero is also what a
    broken grep returns.
@@ -472,7 +512,7 @@ with nothing mechanical behind it.
 | **AC7** | Every guide ends with a verification step naming what the reader sees | walked — **no tool** |
 | **AC8** | `pagetypes.tsv` has a row per new page | walked — **no tool reads this file** |
 | **AC9** | Each guide traces to an asking, cited by number | walked — **no tool** |
-| **AC10** | **No page names a Brighter method that does not exist at the pinned ref**, checked for the resilience family and for every API this spec writes | `git grep -w <name> 10.7.0 -- src/` **with a control**, per §11.6 — **no tool** |
+| **AC10** | **No page names an API that exists in neither the pinned release nor `origin/master`**, and any API present only on `origin/master` carries the *Not in a released package yet* blockquote — see §11.4 | `git grep -w <name>` at **both refs**, **with a control**, per §11.6 — **no tool** |
 
 **AC9 is walked backwards, not forwards.** Forwards — every guide has a citation — can only ever
 find guides that were written. Backwards — every cluster in §3.1 with two or more askings against
