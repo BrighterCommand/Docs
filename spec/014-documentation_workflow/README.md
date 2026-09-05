@@ -83,8 +83,8 @@ predicted, and items 6 to 8 are the ones no command's absence had been noticed b
    whose demand lived in **GitHub discussions, issues and `FAQ.md`**. None of the three is
    mentioned by any command. Run literally, the phase would have produced an intuition-ordered
    guide list; the measured one reordered every priority and closed half the candidates.
-8. **Nothing in the workflow asks whether the API a page names still exists — and this is the
-   defect class with the highest blast radius.** 013's requirements phase found **ten call sites
+8. **Nothing in the workflow asks whether the API a page names exists — and this is the defect
+   class with the highest blast radius.** 013's requirements phase found **ten call sites
    across five pages naming Brighter builder methods that have never existed in any released
    version** (`.ResiliencePipelines(`, `.ConfigureResiliencePipelines(`) or that died at V10
    (`.Policies(`), while the real API — `.Resilience(…)` / `.DefaultResilience()` — appears on
@@ -119,12 +119,28 @@ predicted, and items 6 to 8 are the ones no command's absence had been noticed b
   than a feature: discussions, issues, `FAQ.md` (defect 7). Dedupe a cross-source census **by
   thread, not by row** — a tracker that moves an issue to a discussion leaves the same asking in
   both enumerations — and **paginate before quoting a count**.
-- Add an **API-liveness obligation** to `/spec:implement` and `/spec:review` (defect 8): before a
-  page names a type, method or namespace, `git grep -w <name> <ref> -- src/` **with a control**,
-  and compile the page's own fences. **Consider whether it should be a gate** — the corpus has ten
-  live instances and nothing that can see them, which is exactly the argument that produced
-  `optioncheck`. Note the counter-example before designing one: `.AddPolicies(` is dead in
-  Brighter and **alive in Darker 4.1.1**, so a checker must know which product a page is about.
+- Add an **API-liveness obligation** to `/spec:implement` and `/spec:review` (defect 8), built on
+  the maintainer's 2026-09-05 ruling that an API is in one of **three** states, not two:
+
+  | State | Test | What a page may do |
+  |---|---|---|
+  | **Live** | present at the pinned release | document freely |
+  | **Forthcoming** | absent there, **present on `origin/master`** | document it, **but say so explicitly** |
+  | **Dead or invented** | present at **neither** | always a defect |
+
+  **Documenting ahead of a release is legitimate and expected** — the docs are part of the work,
+  so the rule must not be *"the API must exist in the released package"*. The obligation is that
+  the unreleased case is **stated, never silent**: the writer confirms they are documenting a
+  forthcoming feature and knows it is not installable. The corpus already has the form —
+  **`> **Not in a released package yet.** …`**, on five pages, with `versioncheck.py` going red at
+  the pin bump as the removal trigger — so a command should cite it rather than invent one.
+
+  **Whether this becomes an eighth gate is open**, and the ruling makes it harder than it first
+  looked: a checker must resolve **two** refs to tell state 2 from state 3, and must know **which
+  product** a page is about — `.AddPolicies(` is dead in Brighter and **alive in Darker 4.1.1**,
+  which versions independently. Note also that the manual sweep that found the ten sites made
+  **three wrong regexes**, two returning a plausible zero, all three caught only by a control; a
+  gate would have to be red-proved against exactly that failure.
 - Require a phase to **re-derive its own spec's README** before executing it (defect 9).
 - Decide what belongs in `CLAUDE.md` versus in a command. `CLAUDE.md` is the authority on
   conventions and the commands should cite rather than restate it; **restating is how the two
