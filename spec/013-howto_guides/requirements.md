@@ -170,6 +170,72 @@ grep -rl 'AddBrighterDefault' contents/ ; grep -rl 'ResiliencePipelineRegistry' 
 How-to.** A spec that only knows how to add pages would have written a twelfth resilience page
 beside eleven that already discuss `UseResiliencePipeline`.
 
+### 3.2.1 CORRECTION, 2026-09-05 — the wiring examples do not compile, and P0-2 is corpus-wide
+
+**Recorded before it is fixed**, which is 012's rule and the only evidence this drift was ever
+real. §3.2 as first written called `PolicyRetryAndCircuitBreaker.md` *"a good 445-line How-to"*
+missing two symbols. **That understated it.** The page's culminating wiring example — and four
+other pages — call **methods that do not exist in any released version of Brighter, nor on
+`origin/master`**:
+
+| Call in the corpus | Declared in Brighter `src/` at `10.7.0` | Sites |
+|---|---|---|
+| `.ResiliencePipelines(…)` | **never existed** | 2 |
+| `.ConfigureResiliencePipelines(…)` | **never existed** | 3 |
+| `.Policies(…)` | **no** — V9's `INeedPolicy` form, gone at V10 | 5 |
+| `.Resilience(…)` / `.DefaultResilience()` — **the real API** | yes | **0 sites in the corpus** |
+
+**Ten sites across five pages**, none of which any gate can see: a bare method name in a fence is
+invisible to `linkcheck.py`, `pagelint.py` and `optioncheck` alike, and `optioncheck` binds only
+what a marker names.
+
+| Page | Lines | Dead call |
+|---|---|---|
+| `PolicyRetryAndCircuitBreaker.md` | 355, 356, 372 | `.Policies(`, `.ResiliencePipelines(`, `.ConfigureResiliencePipelines(` |
+| `MigratingToPollyV8.md` | 101, 111, 112 | `.Policies(` ×2, `.ResiliencePipelines(` |
+| `CommandProcessorConfigurationReference.md` | 104 | `.ConfigureResiliencePipelines(` |
+| `CQRSWithBrighterAndDarker.md` | 378 | `.ConfigureResiliencePipelines(` |
+| `HowConfiguringTheCommandProcessorWorks.md` | 236 | `.Policies(` |
+| `HowConfiguringTheDispatcherWorks.md` | 66 | `.Policies(` |
+
+**`MigratingToPollyV8.md:112` is the sharpest**: it presents `.ResiliencePipelines(…)` as *"New:
+Polly v8 pipelines"* — the ✅ current form — and line 116 tells the reader to use both methods
+together. The real API is a **single** `Resilience(registry, policyRegistry)` with an optional
+second parameter, so the advice is wrong about the *shape*, not only the spelling. On the
+migration page, for the highest-demand topic in the corpus.
+
+**The verified remedy**, because a diagnosis without one is half a finding:
+
+- **Builder**: `.Resilience(resiliencePipelineRegistry, policyRegistry)` or `.DefaultResilience()`
+  — `CommandProcessorBuilder.cs:144`, `:171`.
+- **DI**: there is **no fluent method**. `BrighterOptions.ResiliencePipelineRegistry` is a
+  settable property (`BrighterOptions.cs:59`), so the registry is supplied inside
+  `AddBrighter(options => …)`.
+- **And it must carry `.AddBrighterDefault()`.** All three DI call sites assign with **`??=`**
+  (`ServiceCollectionExtensions.cs:339,463,705`), so Brighter supplies its defaults *only when you
+  supply no registry*. Supply your own and `CommandProcessor.OutboxProducer` is absent — at which
+  point `CommandProcessorBuilder.Resilience()` throws **unconditionally**, on its first statement
+  (`:146-148`): `ConfigurationException: The resilience pipeline registry is missing the
+  CommandProcessor.OutboxProducer resilience pipeline which is required`.
+
+**This is a likelier explanation for Brighter#3960's four hours than "the documentation was
+incomplete"** — the reader was copying methods that do not exist.
+
+**Two sites were nearly added to this list and are CORRECT.** `QueryPipelinePolicies.md:56` and
+`DarkerBasicConfiguration.md:280` call `.AddPolicies(…)`, which **is real in Darker 4.1.1**
+(`src/Paramore.Darker.Policies/QueryProcessorBuilderExtensions.cs`). Darker versions
+independently, so a Brighter-shaped sweep condemns them. **Check the right product before
+editing** — the same shape as the `SqlFilter` public field that was one edit from being deleted as
+drift.
+
+**One instance is upstream and out of scope.**
+`src/Paramore.Brighter.MessagingGateway.MsSql/README.md:95` in the Brighter repository carries
+`.Policies(policyRegistry)` too. `CLAUDE.md` makes that read-only outside `samples/`; it is worth
+an issue, not an edit.
+
+**So P0-2 is scoped corpus-wide**, and its instrument is the compiler — the only thing that has
+ever found a published example that does not compile.
+
 ### 3.3 The DLQ cluster is real, spans transports, and has no task-shaped route
 
 Four askings across 2022–2025 and two different transports. Today **21 pages mention a dead-letter
@@ -262,7 +328,7 @@ third** — in that order, because the README's risk section binds this spec to 
 | # | Deliverable | Why P0 | Shape |
 |---|---|---|---|
 | **P0-1** | **Use PostgreSQL for both transport and Outbox** | Publicly committed on #67 **twice** (2026-07-18 and the 2026-09-04 comment), 3 independent askings, nothing composes it | **New page** |
-| **P0-2** | **Resilience pipelines on an async handler** — `UseResiliencePipelineAsync`, the registry keys, `AddBrighterDefault`, and the non-generic `KeyNotFound` trap | 5 askings, the largest cluster; a public API on **0 of 157 pages**; the maintainer calls configuration *"one of our biggest weaknesses"* | **Edit** to `PolicyRetryAndCircuitBreaker.md` |
+| **P0-2** | **The resilience wiring, corpus-wide** — repair the **10 dead call sites across 5 pages** (§3.2.1), then add `UseResiliencePipelineAsync`, `AddBrighterDefault` and the `??=` trap | 5 askings, the largest cluster; **the documented wiring does not compile**; a required public API on **0 of 157 pages** | **Edits** to 5 pages, verified by **compiling the fences** |
 | **P0-3** | **Handle a poison message and route it to a DLQ** | 4 askings, 2 transports, 2022–2025; 21 pages carry fragments and none carries a route | **New page**, plus a decision on §3.3's known defects |
 
 ### P1 — should have
@@ -313,6 +379,11 @@ How-to), routing several types down one channel, and writing a query and its han
 |---|---|---|---|
 | `contents/PostgresForTransportAndOutbox.md` *(name to settle at design)* | create | How-to | P0-1 |
 | `contents/PolicyRetryAndCircuitBreaker.md` | edit | How-to (unchanged) | P0-2 |
+| `contents/MigratingToPollyV8.md` | edit — 3 dead sites, incl. the ✅-marked one | How-to (unchanged) | P0-2 |
+| `contents/CommandProcessorConfigurationReference.md` | edit — 1 dead site | Reference (unchanged) | P0-2 |
+| `contents/CQRSWithBrighterAndDarker.md` | edit — 1 dead site | Explanation (unchanged) | P0-2 |
+| `contents/HowConfiguringTheCommandProcessorWorks.md` | edit — 1 dead site | Explanation (unchanged) | P0-2 |
+| `contents/HowConfiguringTheDispatcherWorks.md` | edit — 1 dead site | Explanation (unchanged) | P0-2 |
 | `contents/HandlingPoisonMessages.md` *(name to settle at design)* | create | How-to | P0-3 |
 | `contents/ClaimCheckLargePayloads.md` *(name to settle at design)* | create | How-to | P1-1 |
 | `contents/MSSQLForTransportAndBoxes.md` *(name to settle at design)* | create | How-to | P1-2 |
@@ -362,10 +433,12 @@ cross-cutting guide reopens the question as a fresh decision, not an inherited o
    published example that does not: extract the page's own fences into a project and build them,
    with **`<ImplicitUsings>disable</ImplicitUsings>`**, because the question is whether the page
    *as printed* compiles. Reflection cannot answer it.
-3. **Rule 6 is held off by placement.** A guide is new, so every block in it is 100% added lines
-   and strict under `--changed`; each therefore carries its real `using` directives. Where P0-2
-   edits an existing page, **the edited block becomes strict** and earns real directives — that is
-   a budgeted cost, not a surprise.
+3. **Rule 6 is held off by placement, and P0-2 deliberately gives that up.** A guide is new, so
+   every block in it is 100% added lines and strict under `--changed`; each carries its real
+   `using` directives. **P0-2 edits ten code blocks across five existing pages, so all ten become
+   strict** and each earns real directives. That is a budgeted cost and the warning count should
+   fall — it is **779** at `af38910`, and a phase that edits ten blocks and moves it by nothing has
+   probably not edited what it thought it did.
 4. **A page must not silently document an unreleased feature.** Replay On Seen is absent from
    `10.7.0` and present on Brighter `origin/master`; five pages carry a *not yet released*
    blockquote. Any guide touching it inherits that obligation, and the trigger for removing it is
@@ -394,11 +467,12 @@ with nothing mechanical behind it.
 | **AC2** | Every new page is linked from `SUMMARY.md` and no page is orphaned | `linkcheck.py` |
 | **AC3** | Every internal link resolves, including anchors | `linkcheck.py` |
 | **AC4** | Every new page passes all seven page rules | `pagelint.py`, and `--changed origin/master` |
-| **AC5** | Every C# block on a new page compiles as printed | the harness in §11.2 — **no tool in CI** |
+| **AC5** | Every C# block on a new page **or an edited one** compiles as printed | the harness in §11.2 — **no tool in CI** |
 | **AC6** | Shape and redirects hold; nested pages move no existing URL | `urlmap.py --check-shape`, `--check-redirects`, `--verify` after publication |
 | **AC7** | Every guide ends with a verification step naming what the reader sees | walked — **no tool** |
 | **AC8** | `pagetypes.tsv` has a row per new page | walked — **no tool reads this file** |
 | **AC9** | Each guide traces to an asking, cited by number | walked — **no tool** |
+| **AC10** | **No page names a Brighter method that does not exist at the pinned ref**, checked for the resilience family and for every API this spec writes | `git grep -w <name> 10.7.0 -- src/` **with a control**, per §11.6 — **no tool** |
 
 **AC9 is walked backwards, not forwards.** Forwards — every guide has a citation — can only ever
 find guides that were written. Backwards — every cluster in §3.1 with two or more askings against
