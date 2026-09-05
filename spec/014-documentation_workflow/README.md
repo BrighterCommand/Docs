@@ -69,6 +69,37 @@ the spec caused, which is the right shape. Nothing does that for the other six.
 5. **No command mentions an acceptance pass.** Both specs that ran one found a criterion unmet
    at the close — 009's AC7 and 012's AC1 — on corpora green under every gate.
 
+**Found while running 013's requirements phase, 2026-09-04/05 — these are measured, not
+predicted, and items 6 to 8 are the ones no command's absence had been noticed before:**
+
+6. **Neither `acceptance criteria` nor `open questions` appears anywhere in the nine commands.**
+   Measured across the same 451 lines: `grep -ril 'acceptance criteri'` → **0 files**;
+   `grep -ril 'open question'` → **0**. Every spec in the programme has both sections, and they
+   exist only because each spec copied the last one's document. **Both criteria found unmet at a
+   close were criteria the workflow never asked for.** This is sharper than defect 5: the
+   workflow does not ask a spec what it will be judged by, and then has no pass to judge it in.
+7. **`/spec:requirements`' Research Steps are feature-shaped.** They name ADRs, release notes,
+   source code and samples — right for a spec documenting a new feature, and wrong for 013,
+   whose demand lived in **GitHub discussions, issues and `FAQ.md`**. None of the three is
+   mentioned by any command. Run literally, the phase would have produced an intuition-ordered
+   guide list; the measured one reordered every priority and closed half the candidates.
+8. **Nothing in the workflow asks whether the API a page names still exists — and this is the
+   defect class with the highest blast radius.** 013's requirements phase found **ten call sites
+   across five pages naming Brighter builder methods that have never existed in any released
+   version** (`.ResiliencePipelines(`, `.ConfigureResiliencePipelines(`) or that died at V10
+   (`.Policies(`), while the real API — `.Resilience(…)` / `.DefaultResilience()` — appears on
+   **zero pages**. One of them is presented as the ✅ *"New: Polly v8"* form on the migration
+   page. **Every gate is green on all ten**, because a bare method name in a fence is invisible
+   to `linkcheck.py`, `pagelint.py` and `optioncheck` alike — `optioncheck` binds only what a
+   marker names, and no marker names a method. `/spec:implement`'s quality checklist says
+   *"code examples are correct"* and supplies no way to find out. **The instrument that works is
+   the compiler**, it is 009's method, and no command mentions it.
+9. **No command warns that an inherited list rots.** 013's README named six content gaps and
+   **five were already closed** by Specs 010 and 012 — three of them by page splits nobody
+   revisited. The re-derivation happened only because the README and `PROMPT.md` say so in prose
+   that no command reads. A spec that starts by executing its own README ships work that is
+   already done.
+
 ## Scope sketch — for the requirements phase to settle, not settled here
 
 - Add a **mode-mix step** to `/spec:requirements`: for each deliverable, which of the four page
@@ -81,6 +112,20 @@ the spec caused, which is the right shape. Nothing does that for the other six.
   placement defence.
 - Add an **acceptance-pass phase** — walk the criteria with evidence, and record what was found
   wrong before it was fixed.
+- Make `/spec:requirements` ask for **acceptance criteria and open questions by name**, and make
+  each criterion **name its instrument or be marked as having none** — the marked ones are where
+  every close-time failure has been (defect 6).
+- Give `/spec:requirements` a **demand step** for specs whose subject is reader problems rather
+  than a feature: discussions, issues, `FAQ.md` (defect 7). Dedupe a cross-source census **by
+  thread, not by row** — a tracker that moves an issue to a discussion leaves the same asking in
+  both enumerations — and **paginate before quoting a count**.
+- Add an **API-liveness obligation** to `/spec:implement` and `/spec:review` (defect 8): before a
+  page names a type, method or namespace, `git grep -w <name> <ref> -- src/` **with a control**,
+  and compile the page's own fences. **Consider whether it should be a gate** — the corpus has ten
+  live instances and nothing that can see them, which is exactly the argument that produced
+  `optioncheck`. Note the counter-example before designing one: `.AddPolicies(` is dead in
+  Brighter and **alive in Darker 4.1.1**, so a checker must know which product a page is about.
+- Require a phase to **re-derive its own spec's README** before executing it (defect 9).
 - Decide what belongs in `CLAUDE.md` versus in a command. `CLAUDE.md` is the authority on
   conventions and the commands should cite rather than restate it; **restating is how the two
   drifted apart in the first place**, which is 012's premise pointed at ourselves.
