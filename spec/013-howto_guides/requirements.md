@@ -434,10 +434,26 @@ cross-cutting guide reopens the question as a fresh decision, not an inherited o
    banner (`> **How-to** · Applies to **Brighter V10**` plus Prerequisites), `##` headings
    qualified by subject, an opening sentence ≤200 **rendered** characters that is unique across
    the corpus, and a language tag on every fence.
-2. **Code compiles as printed.** 009's method, and the only instrument that has ever found a
-   published example that does not: extract the page's own fences into a project and build them,
-   with **`<ImplicitUsings>disable</ImplicitUsings>`**, because the question is whether the page
-   *as printed* compiles. Reflection cannot answer it.
+2. **Code compiles as printed — and compiling is not enough.** 009's method, and the only
+   instrument that has ever found a published example that does not compile: extract the page's own
+   fences into a project and build them, with **`<ImplicitUsings>disable</ImplicitUsings>`**,
+   because the question is whether the page *as printed* compiles. Reflection cannot answer it.
+
+   **Its limit was measured on 2026-09-05 in Brighter#4302 and is now a standing caveat.** Two
+   examples built clean against **both** the released packages and `origin/master` — 0 errors, 0
+   warnings — and **two lines still threw at runtime**:
+   `MessagingGateway.MsSql/ChannelFactory.cs:46` **downcasts** `Subscription` to
+   `MsSqlSubscription` and throws when the cast fails, and `Subscription<T>` defaults to
+   **`Proactor`** against a mapper registry with no async half, selecting a branch that throws. **A
+   compile proves the type is satisfied and says nothing about a downcast, a null check, or a
+   default that selects a code path.**
+
+   **So, wherever an example is downstream of anything taking an interface or a base class — a
+   channel factory, a transaction provider, a scheduler — find the source repository's own test
+   for that shape and mirror it** rather than composing one.
+   `tests/Paramore.Brighter.RMQ.Sync.Tests/MessageDispatch/When_building_a_dispatcher.cs` carried
+   both answers. A runtime `ConfigurationException` from a page that looks authoritative is
+   **worse** for a reader than the compile error it replaced.
 3. **Rule 6 is held off by placement, and P0-2 deliberately gives that up.** A guide is new, so
    every block in it is 100% added lines and strict under `--changed`; each carries its real
    `using` directives. **P0-2 edits ten code blocks across five existing pages, so all ten become

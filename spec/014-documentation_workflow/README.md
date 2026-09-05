@@ -135,6 +135,13 @@ predicted, and items 6 to 8 are the ones no command's absence had been noticed b
   **`> **Not in a released package yet.** …`**, on five pages, with `versioncheck.py` going red at
   the pin bump as the removal trigger — so a command should cite it rather than invent one.
 
+  **Compiling is necessary and not sufficient**, measured in Brighter#4302: two examples built
+  clean against both the released packages and `origin/master` and **still threw at runtime**, one
+  on a **downcast** inside a transport's channel factory and one on a **default** that selected a
+  throwing branch. So the obligation is *compile, then mirror the source repository's own test for
+  any shape downstream of an interface or base class* — a rule a command can state and a gate
+  probably cannot check.
+
   **Whether this becomes an eighth gate is open**, and the ruling makes it harder than it first
   looked: a checker must resolve **two** refs to tell state 2 from state 3, and must know **which
   product** a page is about — `.AddPolicies(` is dead in Brighter and **alive in Darker 4.1.1**,
