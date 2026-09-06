@@ -95,19 +95,39 @@ See the section [Policy Retry and Circuit Breaker](/contents/PolicyRetryAndCircu
 With the resilience pipeline registry configured, you need to tell Brighter where to find it:
 
 ``` csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Polly;
+using Polly.Registry;
+using Polly.Retry;
+
 // ...
 public void ConfigureServices(IServiceCollection services)
 {
+    var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>()
+        .AddBrighterDefault();
+
+    resiliencePipelineRegistry.TryAddBuilder("RetryPipeline",
+        (builder, _) => builder.AddRetry(new RetryStrategyOptions()));
+
     services.AddBrighter(options =>
-        options.PolicyRegistry = new PolicyRegistry() // Optional: for legacy Polly v7 policies
-    )
-    .ConfigureResiliencePipelines(registry =>
     {
-        registry.TryAddBuilder("RetryPipeline", /* ... */);
-        registry.TryAddBuilder("CircuitBreakerPipeline", /* ... */);
+        options.ResiliencePipelineRegistry = resiliencePipelineRegistry;
     });
 }
 ```
+
+**`ResiliencePipelineRegistry` is a property on `BrighterOptions`, not a fluent builder call.**
+You set it inside the `AddBrighter` options delegate, as above. Brighter supplies its own
+registry only when you leave the property unset — it does so with `??=` — so a registry you
+build yourself needs `AddBrighterDefault()`, which backfills the pipelines Brighter requires
+without touching yours. Without it, startup fails with a `ConfigurationException` naming the
+missing `CommandProcessor.OutboxProducer` pipeline.
+
+`BrighterOptions.PolicyRegistry` still exists for Polly v7 `[UsePolicy]` handlers, but it is
+marked obsolete in V10 and compiling against it raises `CS0618`.
 
 > **Note**: For legacy Polly v7 policies using `[UsePolicy]`, see the [migration guide](/contents/MigratingToPollyV8.md#polly-v8-migration-guide-v9-to-v10) for updating to V10 resilience pipelines.
 
@@ -610,7 +630,7 @@ public void ConfigureServices(IServiceCollection services)
         .AddProducers((configure) =>
         {
             configure.Outbox = new MySqlOutbox(outboxConfiguration);
-            configure.TransactionProvider = typeof(MySqlEntityFrameworkConnectionProvider<GreetingsEntityGateway>);
+            configure.TransactionProvider = typeof(MySqlEntityFrameworkTransactionProvider<GreetingsEntityGateway>);
             configure.ConnectionProvider = typeof(MySqlConnectionProvider);
         })
         .AutoFromAssemblies();

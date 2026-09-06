@@ -225,14 +225,14 @@ never had. **Thirteen tasks. One PR.**
 **This phase expects NO gate to move except pagelint's warning count**, which is exactly when a
 vacuous pass is invisible. **Read `--changed`'s scope line — expect `8 code block(s) strict`.**
 
-- [ ] **Task 1.1:** Re-derive P0-2's site table before editing anything
+- [x] **Task 1.1:** Re-derive P0-2's site table before editing anything
   - Input: design §2.3, §2.3.1, §5; the commands in §2.1 above
   - Output: a confirmed list of 17 sites / 6 pages / 8 blocks, with the current line numbers
   - Notes: **Run the control in the same breath** — `.Resilience(`, `DefaultResilience` and
     `AddBrighterDefault` must return **0 in `contents/`** and non-zero in `src/`. A sweep that
     cannot find the live API is not evidence about the dead one.
 
-- [ ] **Task 1.2:** Repair `PolicyRetryAndCircuitBreaker.md` — 2 blocks, 4 sites
+- [x] **Task 1.2:** Repair `PolicyRetryAndCircuitBreaker.md` — 2 blocks, 4 sites
   - Input: design §5's rows for `:351`, `:355`, `:356`, `:372`; §2.1's declarations
   - Output: `CommandProcessorBuilder.StartNew()`; `.Policies(policyRegistry)` **folded into**
     `.Resilience(registry, policyRegistry)`; `.ConfigureResiliencePipelines(…)` at `:372`
@@ -241,7 +241,7 @@ vacuous pass is invisible. **Read `--changed`'s scope line — expect `8 code bl
     optional second parameter, so a site-for-site substitution prints two calls where one
     belongs. Both blocks earn real `using` directives.
 
-- [ ] **Task 1.3:** Repair `MigratingToPollyV8.md` — 2 blocks, 5 sites, and the shape error
+- [x] **Task 1.3:** Repair `MigratingToPollyV8.md` — 2 blocks, 5 sites, and the shape error
   - Input: design §5's rows for `:99`, `:101`, `:109`, `:111`, `:112`; and `:116`
   - Output: both `With()` → `StartNew()`; both `.Policies(` folded;
     `.ResiliencePipelines(registry)` → `.Resilience(registry, policyRegistry)`
@@ -252,21 +252,21 @@ vacuous pass is invisible. **Read `--changed`'s scope line — expect `8 code bl
     ✅ marker**: it was marking a method that never existed, which is the one case in the corpus
     where the version convention actively endorsed an invention.
 
-- [ ] **Task 1.4:** Repair `CommandProcessorConfigurationReference.md:104` — 1 block, 1 site
+- [x] **Task 1.4:** Repair `CommandProcessorConfigurationReference.md:104` — 1 block, 1 site
   - Input: design §5; §2.1's `BrighterOptions.ResiliencePipelineRegistry` (a **settable
     property**, `BrighterOptions.cs:59`)
   - Output: `.ConfigureResiliencePipelines(…)` → `options.ResiliencePipelineRegistry = …`
   - Notes: **There is no fluent DI method**, which is why the invented one was so easy to
     write. Say so in a sentence; the next person to reach for a fluent call is the reader.
 
-- [ ] **Task 1.5:** Repair `CQRSWithBrighterAndDarker.md:378` — 1 block, 1 site
+- [x] **Task 1.5:** Repair `CQRSWithBrighterAndDarker.md:378` — 1 block, 1 site
   - Input: design §5
   - Output: as task 1.4
   - Notes: **Check which product before editing.** This page covers both, and Darker's
     `.AddPolicies(` is real. The edit is to the Brighter half only, and the page's banner
     (`Brighter and Darker V10`) is the reminder.
 
-- [ ] **Task 1.6:** Repair `HowConfiguringTheCommandProcessorWorks.md` — 1 block, 2 sites
+- [x] **Task 1.6:** Repair `HowConfiguringTheCommandProcessorWorks.md` — 1 block, 2 sites
   - Input: design §5's rows for `:234`, `:236`
   - Output: `With()` → `StartNew()`; `.Policies(policyRegistry)` →
     `.Resilience(registry, policyRegistry)`
@@ -274,7 +274,7 @@ vacuous pass is invisible. **Read `--changed`'s scope line — expect `8 code bl
     adjacent `.ResiliencePipelines(` to fold into. **The two cases look identical in a grep and
     are not** — read the block.
 
-- [ ] **Task 1.7:** Rewrite `HowConfiguringTheDispatcherWorks.md:54-74` from the source's own test
+- [x] **Task 1.7:** Rewrite `HowConfiguringTheDispatcherWorks.md:54-74` from the source's own test
   - Input: `tests/Paramore.Brighter.RMQ.Sync.Tests/MessageDispatch/When_building_a_dispatcher.cs`;
     design §2.3's four defects
   - Output: a block with `DispatchBuilder.StartNew()`, `.Subscriptions(`, a real
@@ -287,7 +287,7 @@ vacuous pass is invisible. **Read `--changed`'s scope line — expect `8 code bl
     satisfied and nothing about a default that selects a code path.** Mirror the test; do not
     compose.
 
-- [ ] **Task 1.8:** Repair `HowConfiguringTheDispatcherWorks.md:48`'s prose — §2.2's addition
+- [x] **Task 1.8:** Repair `HowConfiguringTheDispatcherWorks.md:48`'s prose — §2.2's addition
   - Input: §2.2 above; `CLAUDE.md`'s terminology rule
   - Output: the sentence names `ChannelFactory` in backticks, not **InputChannelFactory** in
     bold
@@ -295,7 +295,7 @@ vacuous pass is invisible. **Read `--changed`'s scope line — expect `8 code bl
     fence-only repair, and it is four lines above the block that gets it right — P0-4's shape
     on a P0-2 page. Grep the page for `InputChannelFactory` afterwards and expect **0**.
 
-- [ ] **Task 1.9:** Add what is on zero pages today — `AddBrighterDefault` and the `??=` trap
+- [x] **Task 1.9:** Add what is on zero pages today — `AddBrighterDefault` and the `??=` trap
   - Input: design §2.1; `ResiliencePipelineRegistryExtensions.cs:57`;
     `CommandProcessorBuilder.cs:144-148`, `:171`; the DI factory at `:705`
   - Output: every edited block gains `.AddBrighterDefault()`, plus prose covering **(a)** that
@@ -308,7 +308,7 @@ vacuous pass is invisible. **Read `--changed`'s scope line — expect `8 code bl
     add **`UseResiliencePipelineAsync`**, which is on 2 pages and neither is the resilience
     how-to.
 
-- [ ] **Task 1.10:** P0-4 — repair the ten dead relational type names across six pages
+- [x] **Task 1.10:** P0-4 — repair the ten dead relational type names across six pages
   - Input: design §11 Q6's **verified replacement table**; §2.1's control run
   - Output: `PostgresOutbox.md`, `MSSQLOutbox.md`, `MySQLOutbox.md`, `SqliteOutbox.md`,
     `BrighterBasicConfiguration.md`, `CommandProcessorConfigurationReference.md` — each dead
@@ -320,7 +320,7 @@ vacuous pass is invisible. **Read `--changed`'s scope line — expect `8 code bl
     are the control. Prefer a prose fix that does not touch the adjacent code block — rule 6
     placement, standing obligation 7.
 
-- [ ] **Task 1.11:** Compile all eight repaired blocks
+- [x] **Task 1.11:** Compile all eight repaired blocks
   - Input: 009's harness; `tools/optioncheck/optioncheck.csproj`'s pinned packages
   - Output: 8/8 building, 0 errors, 0 warnings, with `<ImplicitUsings>disable</ImplicitUsings>`
   - Notes: **Do not add `Microsoft.Extensions.Hosting` — `NU1605`.** Check every
@@ -328,7 +328,7 @@ vacuous pass is invisible. **Read `--changed`'s scope line — expect `8 code bl
     (obligation 8): a block passing rule 6 has directives, not necessarily the right ones.
     **And record what compiling did not prove** — task 1.7's block is the case in point.
 
-- [ ] **Task 1.12:** Run the seven gates and assert the phase moved what it predicted
+- [x] **Task 1.12:** Run the seven gates and assert the phase moved what it predicted
   - Input: design §9's phase-1 row
   - Output: link **160** unmoved, pagelint pages **158** unmoved, shape unmoved, redirects
     unmoved, versioncheck unmoved, optioncheck unmoved — and **warnings BELOW 779**
@@ -337,11 +337,108 @@ vacuous pass is invisible. **Read `--changed`'s scope line — expect `8 code bl
     has not edited what it thought it did. **This is the dangerous phase precisely because it
     expects nothing to move.**
 
-- [ ] **Task 1.13:** Record every defect found, then open the PR
+- [x] **Task 1.13:** Record every defect found, then open the PR
   - Output: a ledger entry per site — page, line, what the corpus said, what the assembly says
   - Notes: feeds task 5.3. **A defect fixed silently is a defect that never existed.** Ask for
     the merge **and the head-ref deletion by name in the same breath**; this repository does
     not auto-delete a merged head ref.
+
+---
+
+## Phase 1 as executed — 2026-09-06
+
+**All thirteen tasks done in one PR. Every gate landed where design §9 predicted**: link
+**160** unmoved, pagelint pages **158** unmoved, shape and redirects and versioncheck and
+optioncheck all unmoved, and the warning count **779 → 773**. The scope line read
+**`10 code block(s) strict`**, not the predicted 8 — see finding E.
+
+### The ledger — what the corpus said, and what the assembly says
+
+**Fifteen dead call sites repaired, plus three further defects and ten dead type names.** The
+seventeen scoped sites became fifteen, and the two that survive are the subject of finding A.
+
+| Page | Site | The corpus said | The assembly says |
+|---|---|---|---|
+| `PolicyRetryAndCircuitBreaker.md` | 351 | `CommandProcessorBuilder.With()` | `StartNew()` |
+| | 355–356 | `.Policies(r)` **and** `.ResiliencePipelines(r)` | one `.Resilience(registry, policyRegistry)` |
+| | 372 | `.ConfigureResiliencePipelines(…)` | `options.ResiliencePipelineRegistry = …` |
+| `MigratingToPollyV8.md` | 109 | `CommandProcessorBuilder.With()` | `StartNew()` |
+| | 111–112 | `.Policies(r)` **and** `.ResiliencePipelines(r)` | one `.Resilience(…)` |
+| | 116 | *"you can use both methods"* | there is one method with an optional second argument |
+| `CommandProcessorConfigurationReference.md` | 104 | `.ConfigureResiliencePipelines(…)` | a settable property on `BrighterOptions` |
+| `CQRSWithBrighterAndDarker.md` | 378 | `.ConfigureResiliencePipelines(…)` | as above |
+| `HowConfiguringTheCommandProcessorWorks.md` | 234, 236 | `.With()`, `.Policies(r)` | `StartNew()`, `.Resilience(…)` |
+| `HowConfiguringTheDispatcherWorks.md` | 54–74 | `DispatchBuilder.With()`, `.Subscribers(`, `InputChannelFactory`, `RmqMessageConsumerFactory(logger)`, one-argument `.MessageMappers(` | `StartNew()`, `.Subscriptions(`, `ChannelFactory`, `RmqMessageConsumerFactory(connection)`, **four**-argument `.MessageMappers(` |
+| | 48 | `InputChannelFactory` **in prose** | §2.2's addition — survives a fence-only repair |
+| six outbox/config pages | 10 sites | `…UnitOfWork`, `…EntityFrameworkConnectionProvider<T>` | `…TransactionProvider`, `…EntityFrameworkTransactionProvider<T>` (MSSQL keeps `Core`) |
+
+**What is now zero across `contents/`:** `.ResiliencePipelines(`, `.ConfigureResiliencePipelines(`,
+`InputChannelFactory`, `DispatchBuilder.With(`, `.Subscribers(`, and all eight dead relational
+type names. **`.Resilience(`, `DefaultResilience` and `AddBrighterDefault` were on 0 pages and
+are now on 5** — the tell that opened this phase, inverted.
+
+### Seven findings the task list did not predict
+
+**A. Two of the seventeen sites are correct, and design §5's table would have falsified them.**
+`MigratingToPollyV8.md:99` and `:101` sit inside a block the page labels **V9** on a migration
+page. `git grep -c` at tag **9.33** declares `With()` **1** and `Policies(` **2**; both are
+**0** at `10.7.0`. They are genuine V9 API, correctly shown as history. Rewriting them to
+`StartNew()` would have told the reader V9 had a method it never had — **a repair inventing a
+history, the same shape as design §11 Q6's invented type name**. The block is now marked
+❌ **V9 — superseded** / ✅ **V10 — current** per `CLAUDE.md`, so the next dead-API sweep meets
+an explicit label rather than a bare `.With()`. **The general rule: before repairing a dead
+call, ask whether the page is quoting it on purpose — a migration guide's job is to print the
+dead API.**
+
+**B. Every fluent example was missing three mandatory chain steps, and no sweep could see it.**
+`CommandProcessorBuilder`'s interfaces force
+`StartNew → Handlers → Resilience|DefaultResilience → ExternalBus|NoExternalBus →
+ConfigureInstrumentation|NoInstrumentation → RequestContextFactory → RequestSchedulerFactory →
+Build`. Four of the five builder blocks skipped two or three of those. **Repairing only the
+names design §5 lists would have produced blocks that still do not compile** — the defect was
+never the spelling alone, it was that the blocks predate three steps. Found by the compiler,
+which is the only instrument that reads a chain rather than a token.
+
+**C. `AddBrighterDefault` needs a namespace that is on 0 of 158 pages.** It lives in
+`Paramore.Brighter.Extensions` (`Extensions/ResiliencePipelineRegistryExtensions.cs:57`
+@ `10.7.0`), not `Paramore.Brighter`. So the method the spec set out to add is one the corpus
+cannot import — the zero-tell one level down from the one requirements §7 measured.
+
+**D. `UseResiliencePipelineAsync` is in `Paramore.Brighter.Policies.Attributes`**, and the two
+pages that already use it carry no `using` lines at all, so nothing revealed it.
+
+**E. Two of P0-4's ten sites are inside code fences, not prose — so ten blocks turned strict,
+not eight.** Design §11 Q6 describes the family as *"all in prose four lines above code blocks
+that get it right"*, and that holds for eight of ten;
+`BrighterBasicConfiguration.md:103` and `CommandProcessorConfigurationReference.md:633` are
+`configure.TransactionProvider = typeof(…)` **inside** a block. The predicted rule-6 budget was
+therefore two blocks short. **The prediction was checkable in one command and nobody ran it**;
+`--changed` reported the truth immediately, which is the argument for reading the scope line.
+
+**F. Renaming a type inside a block is not finished until its namespace is imported.**
+`BrighterBasicConfiguration.md`'s block imports `Paramore.Brighter.MySql` but not
+`Paramore.Brighter.MySql.EntityFrameworkCore`, where the EF provider actually lives. The block
+passes rule 6 either way — it has directives, just not the right ones — and only the compiler
+told them apart. The directive was added.
+
+**G. `BrighterOptions.PolicyRegistry` is obsolete and raises `CS0618`, and that is NOT a
+defect.** Under AC10's three states it is **live**, merely deprecated, so it was recorded rather
+than swept. It was dropped from the one example being rewritten anyway, because `CLAUDE.md`
+forbids showing deprecated patterns as current — a different reason, deliberately.
+
+### What was checked and deliberately left alone
+
+- **`.AddPolicies(`, `.AddHandlersFromAssemblies(`, `.AddDefaultPolicies()`, `.AddDarker(` and
+  `QueryProcessorLifetime` on `CQRSWithBrighterAndDarker.md` are real in Darker**, verified in
+  `../Darker` at `origin/master` against a control of 0. Only the Brighter half of that block
+  was touched — obligation 10, and the page's `Brighter V10 and Darker V4` banner is the
+  reminder.
+- **`DynamoDbUnitOfWork` and `MongoDbUnitOfWork` survive on five pages.** The NoSQL stores
+  genuinely have a unit of work; they are the control that proves the P0-4 sweep discriminated
+  rather than pattern-matching on `UnitOfWork`.
+- **`CommandProcessorConfigurationReference.md:621`'s block keeps its `// ...`**, which declares
+  its omission and downgrades rule 6 to a warning. Expanding it into a compilable example is a
+  different job.
 
 ---
 

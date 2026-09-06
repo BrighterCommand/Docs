@@ -231,10 +231,27 @@ You need to provide a factory to give us instances of a [Context](/contents/Usin
 All these individual elements can be passed to a **Command Processor Builder** to help build a **Command Processor**. This has a fluent interface to help guide you when configuring Brighter. The result looks like this:
 
 ``` csharp
-var commandProcessor = CommandProcessorBuilder.With()
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions;
+using Polly.Registry;
+
+var commandProcessor = CommandProcessorBuilder.StartNew()
     .Handlers(new HandlerConfiguration(subscriberRegistry, handlerFactory))
-    .Policies(policyRegistry)
+    .Resilience(resiliencePipelineRegistry.AddBrighterDefault())
     .NoExternalBus()
+    .NoInstrumentation()
     .RequestContextFactory(new InMemoryRequestContextFactory())
+    .RequestSchedulerFactory(new InMemorySchedulerFactory())
     .Build();
 ```
+
+**Each call returns the interface the next one is declared on**, which is what makes the chain
+guide you: `StartNew()` gives you something that only offers `Handlers`, and `Handlers` gives
+you something that only offers `Resilience` or `DefaultResilience`. You cannot skip a step,
+and the compiler — not the documentation — is what tells you so.
+
+`Resilience` takes a second, optional Polly v7 `IPolicyRegistry<string>` if you still have
+`[UsePolicy]` handlers to carry; see the deprecated Policy Registry section below.
+`AddBrighterDefault()` backfills the pipelines Brighter itself needs — without it, a registry
+you built yourself makes `Resilience` throw `ConfigurationException` at startup. If you have
+no pipelines of your own, `DefaultResilience()` replaces the whole call.

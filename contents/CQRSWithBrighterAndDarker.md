@@ -357,7 +357,9 @@ Configure both Brighter and Darker in your `Program.cs` or `Startup.cs`:
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
+using Paramore.Brighter.Extensions;
 using Paramore.Brighter.Extensions.DependencyInjection;
+using Polly.Registry;
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Policies;
@@ -370,15 +372,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Configure Brighter (Command Side)
+var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>()
+    .AddBrighterDefault();
+// Configure retry and circuit breaker pipelines for commands with TryAddBuilder here
+
 builder.Services.AddBrighter(options =>
 {
-    // Configure Brighter options
+    options.ResiliencePipelineRegistry = resiliencePipelineRegistry;
 })
-.AutoFromAssemblies(typeof(PlaceOrderCommandHandler).Assembly)
-.ConfigureResiliencePipelines(registry =>
-{
-    // Configure retry and circuit breaker policies for commands
-});
+.AutoFromAssemblies(typeof(PlaceOrderCommandHandler).Assembly);
 
 // Configure Darker (Query Side)
 builder.Services.AddDarker(options =>

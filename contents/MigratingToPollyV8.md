@@ -92,7 +92,7 @@ internal class MyHandler : RequestHandler<MyCommand>
 
 ### Step 4: Update CommandProcessor Configuration
 
-**V9**:
+❌ **V9 — superseded**
 
 ```csharp
 // ...
@@ -102,18 +102,40 @@ var commandProcessor = CommandProcessorBuilder.With()
     .Build();
 ```
 
-**V10**:
+✅ **V10 — current**
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions;
+using Polly.Registry;
+
 // ...
-var commandProcessor = CommandProcessorBuilder.With()
-    .Handlers(/* ... */)
-    .Policies(policyRegistry)  // Optional: Keep for legacy v7 policies during migration
-    .ResiliencePipelines(resiliencePipelineRegistry)  // New: Polly v8 pipelines
+var commandProcessor = CommandProcessorBuilder.StartNew()
+    .Handlers(handlerConfiguration)
+    // One call, not two: the Polly v7 registry is Resilience's optional second argument
+    .Resilience(resiliencePipelineRegistry, policyRegistry)
+    .NoExternalBus()
+    .NoInstrumentation()
+    .RequestContextFactory(new InMemoryRequestContextFactory())
+    .RequestSchedulerFactory(new InMemorySchedulerFactory())
     .Build();
 ```
 
-> **Note**: You can use both `Policies()` and `ResiliencePipelines()` during migration to support both legacy `UsePolicy` and new `UseResiliencePipeline` attributes.
+**Three names change in that chain, and one of them is the entry point.** `With()` becomes
+`StartNew()`, and `Policies()` — which took a Polly v7 `IPolicyRegistry<string>` on its own —
+is now the **optional second argument** to `Resilience()`. There is no separate call to make:
+pass both registries to `Resilience` during migration, and drop the second argument once no
+`[UsePolicy]` attributes remain. If you have nothing to carry over, `DefaultResilience()`
+replaces the pair.
+
+> **Build the registry with `AddBrighterDefault()`.** Brighter requires a pipeline registered
+> under `CommandProcessor.OutboxProducer`, and `Resilience` throws `ConfigurationException` at
+> startup when the registry you hand it does not have one. `AddBrighterDefault` uses
+> `TryAddBuilder`, so it adds what is missing and leaves your own pipelines alone.
+
+The V10 chain is also longer than V9's. `NoExternalBus()`, `NoInstrumentation()` and
+`RequestSchedulerFactory()` are steps the fluent interface now requires — the compiler will
+tell you, because each returns the interface the next call is declared on.
 
 ---
 

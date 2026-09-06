@@ -120,8 +120,8 @@ services.AddSingleton<IAmARelationalDatabaseConfiguration>(dbConfig);
 Next, in your `ConfigureServices` method or `Program.cs`, add the outbox configuration when calling `AddBrighter`. You need to specify the `Outbox`, `ConnectionProvider`, and `TransactionProvider`.
 
 The `TransactionProvider` depends on how you manage your database transactions.
-- Use `MsSqlUnitOfWork` for ADO.NET-based transaction management.
-- Use `MsSqlEntityFrameworkConnectionProvider<T>` if you are using Entity Framework Core, where `T` is your `DbContext`.
+- Use `MsSqlTransactionProvider` for ADO.NET-based transaction management.
+- Use `MsSqlEntityFrameworkCoreTransactionProvider<T>` if you are using Entity Framework Core, where `T` is your `DbContext`.
 
 ### **Example with Entity Framework Core**
 
