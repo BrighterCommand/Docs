@@ -60,6 +60,7 @@ using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessagingGateway.RMQ.Async;
 using Paramore.Brighter.MySql;
+using Paramore.Brighter.MySql.EntityFrameworkCore;
 using Paramore.Brighter.Outbox.Hosting;
 using Paramore.Brighter.Outbox.MySql;
 
@@ -100,7 +101,7 @@ public void ConfigureServices(IServiceCollection services)
            configure.MaxOutStandingMessages = 5;
            configure.MaxOutStandingCheckInterval = TimeSpan.FromMilliseconds(500);
            configure.Outbox = new MySqlOutbox(outboxConfiguration);
-           configure.TransactionProvider = typeof(MySqlEntityFrameworkConnectionProvider<GreetingsEntityGateway>);
+           configure.TransactionProvider = typeof(MySqlEntityFrameworkTransactionProvider<GreetingsEntityGateway>);
            configure.ConnectionProvider = typeof(MySqlConnectionProvider);
         })
         .UseOutboxSweeper()

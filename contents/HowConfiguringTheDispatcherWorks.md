@@ -45,33 +45,66 @@ var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory)
 
 ### Channel Factory
 
-The Channel Factory is where we take a dependency on a specific Broker. We pass the **Dispatcher** an instances of **InputChannelFactory** which in turn has a dependency on implementation of **IAmAChannelFactory**. The channel factory is used to create channels that wrap the underlying Message-Oriented Middleware that you are using.
+The Channel Factory is where we take a dependency on a specific Broker. We pass the **Dispatcher** an instance of `ChannelFactory`, which in turn has a dependency on an implementation of `IAmAChannelFactory`. The channel factory is used to create channels that wrap the underlying Message-Oriented Middleware that you are using.
 
 ### Creating a Builder
 
 This code fragment shows putting the whole thing together
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Sync;
+using Paramore.Brighter.Observability;
+using Paramore.Brighter.ServiceActivator;
+
 // create message mappers
-var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory)
-{
-    { typeof(GreetingCommand), typeof(GreetingCommandMessageMapper) }
-};
+var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory, null);
+messageMapperRegistry.Register<GreetingCommand, GreetingCommandMessageMapper>();
 
 // create the gateway
-var rmqMessageConsumerFactory = new RmqMessageConsumerFactory(logger);
-_dispatcher = DispatchBuilder.With()
-    .CommandProcessor(CommandProcessorBuilder.With()
-        .Handlers(new HandlerConfiguration(subscriberRegistry, handlerFactory))
-        .Policies(policyRegistry)
-        .NoExternalBus()
-        .RequestContextFactory(new InMemoryRequestContextFactory())
-        .Build())
-    .MessageMappers(messageMapperRegistry)
-    .ChannelFactory(new InputChannelFactory(rmqMessageConsumerFactory))
-    .Subscribers(subscriptions)
+var rmqConnection = new RmqMessagingGatewayConnection
+{
+    AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672/%2f")),
+    Exchange = new Exchange("paramore.brighter.exchange")
+};
+var rmqMessageConsumerFactory = new RmqMessageConsumerFactory(rmqConnection);
+
+var tracer = new BrighterTracer(TimeProvider.System);
+
+var commandProcessor = CommandProcessorBuilder.StartNew()
+    .Handlers(new HandlerConfiguration(subscriberRegistry, handlerFactory))
+    .DefaultResilience()
+    .NoExternalBus()
+    .ConfigureInstrumentation(tracer, InstrumentationOptions.All)
+    .RequestContextFactory(new InMemoryRequestContextFactory())
+    .RequestSchedulerFactory(new InMemorySchedulerFactory())
+    .Build();
+
+_dispatcher = DispatchBuilder.StartNew()
+    .CommandProcessor(commandProcessor, new InMemoryRequestContextFactory())
+    // four registries: sync mappers, async mappers, transforms, async transforms
+    .MessageMappers(messageMapperRegistry, null, null, null)
+    .ChannelFactory(new ChannelFactory(rmqMessageConsumerFactory))
+    .Subscriptions(
+    [
+        new RmqSubscription<GreetingCommand>(
+            new SubscriptionName("GreetingCommand"),
+            new ChannelName("greeting.command"),
+            new RoutingKey("greeting.command"),
+            messagePumpType: MessagePumpType.Reactor,
+            timeOut: TimeSpan.FromMilliseconds(200))
+    ])
+    .ConfigureInstrumentation(tracer, InstrumentationOptions.All)
     .Build();
 ```
+
+**Two details in that block will bite you if you change them.** The subscription is typed
+`RmqSubscription<T>` rather than `Subscription<T>`, because a transport's channel factory casts
+to its own subscription type and throws `ConfigurationException` when the cast fails — code that
+compiles perfectly and dies at `Receive()`. And `messagePumpType` is set explicitly to
+`Reactor`: `Subscription<T>` defaults to `Proactor`, which needs the *async* mapper registry,
+and the third and fourth arguments to `MessageMappers` here are `null`.
 
 ## Validating Consumer Configuration
 

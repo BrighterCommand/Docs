@@ -58,6 +58,32 @@ internal class MyQoSProtectedHandler : RequestHandler<MyCommand>
 }
 ```
 
+### Async Handlers Take UseResiliencePipelineAsync
+
+`UseResiliencePipeline` decorates a synchronous `Handle`. An async handler takes the async
+attribute instead, and pairing them the other way round leaves the pipeline out of the chain:
+
+```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
+internal class MyQoSProtectedHandlerAsync : RequestHandlerAsync<MyCommand>
+{
+    [UseResiliencePipelineAsync(policy: "MyRetryPipeline", step: 1)]
+    public override async Task<MyCommand> HandleAsync(
+        MyCommand command, CancellationToken cancellationToken = default)
+    {
+        // Do work that could throw errors due to distributed computing reliability
+        return await base.HandleAsync(command, cancellationToken);
+    }
+}
+```
+
+Both attributes read from the same `ResiliencePipelineRegistry<string>`, so a pipeline name
+registered once serves handlers of either kind.
+
 ### Configuring Resilience Pipelines
 
 To configure a Polly resilience pipeline, you use the `ResiliencePipelineRegistry<string>` to register pipelines with a name. At runtime, Brighter looks up that pipeline by name.
@@ -339,45 +365,83 @@ See [Request Context documentation](UsingTheContextBag.md) for more details on a
 
 ## Registering Pipelines with CommandProcessor
 
-When creating your `CommandProcessor`, pass the `ResiliencePipelineRegistry<string>` to the builder:
+When creating your `CommandProcessor`, pass the `ResiliencePipelineRegistry<string>` to
+`Resilience`:
 
 ```csharp
-var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>();
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions;
+using Polly;
+using Polly.Registry;
+using Polly.Retry;
 
-// Configure pipelines (see examples above)
-resiliencePipelineRegistry.TryAddBuilder("MyRetryPipeline", /* ... */);
-resiliencePipelineRegistry.TryAddBuilder("MyCircuitBreakerPipeline", /* ... */);
+// Start from Brighter's own pipelines. AddBrighterDefault uses TryAddBuilder, so it
+// backfills the pipelines Brighter requires without replacing any you have registered.
+var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>()
+    .AddBrighterDefault();
 
-var commandProcessor = CommandProcessorBuilder.With()
+// Configure your own pipelines (see examples above)
+resiliencePipelineRegistry.TryAddBuilder("MyRetryPipeline",
+    (builder, _) => builder.AddRetry(new RetryStrategyOptions()));
+
+var commandProcessor = CommandProcessorBuilder.StartNew()
     .Handlers(new HandlerConfiguration(
         subscriberRegistry: registry,
         handlerFactory: handlerFactory))
-    .Policies(policyRegistry)  // Legacy Polly v7 policies (optional)
-    .ResiliencePipelines(resiliencePipelineRegistry)  // Polly v8 pipelines
+    .Resilience(resiliencePipelineRegistry, policyRegistry)  // policyRegistry is optional
+    .NoExternalBus()
+    .NoInstrumentation()
     .RequestContextFactory(new InMemoryRequestContextFactory())
+    .RequestSchedulerFactory(new InMemorySchedulerFactory())
     .Build();
 ```
+
+`Resilience` takes the Polly v8 registry first and an optional Polly v7 `IPolicyRegistry<string>`
+second — **one call, not two.** If you have no legacy policies to carry, call
+`DefaultResilience()` instead and Brighter supplies its own registry.
+
+> **Call `AddBrighterDefault` whenever you build the registry yourself.** Brighter requires a
+> pipeline registered under `CommandProcessor.OutboxProducer`, and `Resilience` throws
+> `ConfigurationException` on its first statement when the registry does not have one — at
+> **startup**, before any message is sent. Brighter only fills the gap for you when you supply
+> *no* registry at all, because the container does it with `??=`.
 
 Or using dependency injection with ASP.NET Core:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Registry;
+using Polly.Retry;
+
+var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>()
+    .AddBrighterDefault();
+
+resiliencePipelineRegistry.TryAddBuilder("MyRetryPipeline",
+    (builder, _) => builder.AddRetry(new RetryStrategyOptions()));
+
+resiliencePipelineRegistry.TryAddBuilder("MyCircuitBreakerPipeline",
+    (builder, _) => builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions()));
+
 services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
+    options.ResiliencePipelineRegistry = resiliencePipelineRegistry;
 })
 .Handlers(registry =>
 {
     registry.Register<MyCommand, MyQoSProtectedHandler>();
-})
-.ConfigureResiliencePipelines(registry =>
-{
-    registry.TryAddBuilder("MyRetryPipeline",
-        (builder, context) => builder.AddRetry(new RetryStrategyOptions { /* ... */ }));
-
-    registry.TryAddBuilder("MyCircuitBreakerPipeline",
-        (builder, context) => builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions { /* ... */ }));
 });
 ```
+
+**There is no fluent `ConfigureResiliencePipelines` method on the DI builder.** The registry is
+a settable property on `BrighterOptions`, set inside the `AddBrighter` options delegate as
+above. This is the same `??=` case as the builder: assigning your own registry means Brighter
+never calls `AddBrighterDefault` for you, so call it yourself.
 
 ---
 
