@@ -139,8 +139,9 @@ it composes content the earlier specs have already normalised, moved and tabulat
 
 - [x] Requirements gathered — `requirements.md`, 2026-09-04
 - [x] Requirements reviewed and approved — 2026-09-04, marker `.requirements-approved`
-- [ ] Documentation outline created
-- [ ] Outline reviewed and approved
+- [x] Documentation outline created — `design.md`, 2026-09-05
+- [x] Outline reviewed and approved — 2026-09-06, marker `.design-approved`. Q5, Q6 and Q7
+      ruled; Q3 answered by measurement; Q4 deferred to phase 2's PR
 - [ ] Writing tasks identified
 - [ ] Writing complete
 - [ ] Documentation reviewed

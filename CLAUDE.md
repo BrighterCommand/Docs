@@ -74,8 +74,8 @@ headings now carry their subject. `## Configuration` appears on 26 pages, which
 makes every one of them a worse search result and every extracted chunk
 unattributable. See [Heading qualification](#heading-qualification).
 
-**Tutorial pages use `## Step N: …` headings in place of step 4's skeleton**, and that
-is a convention rather than an exception to be tidied away later. A tutorial is a
+**Tutorial and How-to pages use `## Step N: …` headings in place of step 4's skeleton**, and
+that is a convention rather than an exception to be tidied away later. Both are a
 sequence a reader executes once, not a reference they consult; Key Concepts /
 Configuration / Best Practices imposes a shape that fights the order the reader needs.
 The steps take everything else in the pattern — H1, banner, introduction, then
@@ -84,6 +84,13 @@ on their own terms, because a step heading names what that step does
 (`## Step 4: Wire Up Brighter`) and is unique across pages. This seeks no exemption
 from any rule in the [ledger](#the-ledger); it records why these pages look different.
 `contents/TutorialFirstCommand.md` is the first of them.
+
+**Extended from tutorials to how-tos on 2026-09-06**, ruled at spec 013's design review
+(design §11 Q7). The reason was never about tutorials specifically — it is about a page
+a reader *executes*, and a how-to is that shape too. **It does not reach every How-to
+page retroactively**: the 53 pages already typed How-to keep their headings, because
+requalifying them would move published anchors for no reader benefit. It binds pages
+written from here on.
 
 ### SUMMARY.md Management
 
