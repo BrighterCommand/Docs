@@ -50,6 +50,8 @@ The PostgreSQL Outbox requires a specific table in your database to store messag
 The `PostgreSqlOutboxBuilder.GetDDL()` method creates the SQL script for you. You can execute this script against your database to create the outbox table.
 
 ```csharp
+using Paramore.Brighter.Outbox.PostgreSql;
+
 // The table name can be whatever you choose.
 string tableName = "Outbox"; 
 
@@ -58,41 +60,45 @@ string ddl = PostgreSqlOutboxBuilder.GetDDL(tableName);
 
 // The DDL for a table that stores the message body as BYTEA
 // Useful if your message body is binary
-string binaryDdl = PostgreSqlOutboxBuilder.GetDDL(tableName, hasBinaryMessagePayload: true);
+string binaryDdl = PostgreSqlOutboxBuilder.GetDDL(tableName, binaryMessagePayload: true);
 ```
+
+**The parameter is named `binaryMessagePayload` here.** The MSSQL, MySQL and SQLite builders spell the same argument `hasBinaryMessagePayload`, so copying a call from one of those pages gives you `CS1739`.
 
 ### **Example SQL Script**
 
-Running `PostgreSqlOutboxBuilder.GetDDL("Outbox")` will generate the following SQL script:
+Running `PostgreSqlOutboxBuilder.GetDDL("Outbox")` against **Brighter V10 (10.7.0)** generates the following SQL script:
 
 ```sql
-CREATE TABLE "Outbox" ( 
-    "MessageId" VARCHAR(255) NOT NULL, 
-    "Topic" VARCHAR(255) NOT NULL, 
-    "MessageType" VARCHAR(32) NOT NULL, 
-    "Timestamp" TIMESTAMPTZ(3) NOT NULL, 
-    "CorrelationId" VARCHAR(255) NULL,
-    "ReplyTo" VARCHAR(255) NULL,
-    "ContentType" VARCHAR(128) NULL, 
-    "PartitionKey" VARCHAR(255) NULL, 
-    "WorkflowId" VARCHAR(255) NULL,
-    "JobId" VARCHAR(255) NULL,
-    "Dispatched" TIMESTAMPTZ(3) NULL, 
-    "HeaderBag" TEXT NOT NULL, 
-    "Body" TEXT NOT NULL , 
-    "Source" VARCHAR(255) NULL,
-    "Type" VARCHAR(255) NULL,
-    "DataSchema" VARCHAR(255) NULL,
-    "Subject" VARCHAR(255) NULL,
-    "TraceParent" VARCHAR(255) NULL,
-    "TraceState" VARCHAR(255) NULL,
-    "Baggage" TEXT NULL,
-    "Created" TIMESTAMPTZ(3) NOT NULL DEFAULT NOW(),
-    "CreatedID" INT NOT NULL GENERATED ALWAYS AS IDENTITY, 
-    UNIQUE("CreatedID"),
-    PRIMARY KEY ("MessageId")
+CREATE TABLE IF NOT EXISTS "outbox"
+(
+    Id bigserial PRIMARY KEY,
+    MessageId character varying(255) UNIQUE NOT NULL,
+    Topic character varying(255) NULL,
+    MessageType character varying(32) NULL,
+    Timestamp timestamptz NULL,
+    CorrelationId character varying(255) NULL,
+    ReplyTo character varying(255) NULL,
+    ContentType character varying(128) NULL,
+    PartitionKey character varying(128) NULL,  
+    WorkflowId character varying(255) NULL,
+    JobId character varying(255) NULL,
+    Dispatched timestamptz NULL,
+    HeaderBag text NULL,
+    Body text NULL,
+    Source character varying (255) NULL,
+    Type character varying (255) NULL,
+    DataSchema character varying (255) NULL,
+    Subject character varying (255) NULL,
+    TraceParent character varying (255) NULL,
+    TraceState character varying (255) NULL,
+    Baggage text NULL,
+    DataRef character varying (255) NULL,
+    SpecVersion character varying (255) NULL
 );
 ```
+
+**Note the table name.** You configured `"Outbox"` and the DDL emits `"outbox"`: Brighter lowercases the identifier and then quotes it, so that a configured mixed-case name still resolves to the table that older, unquoted DDL created. A `select` against `"Outbox"` therefore fails with `relation "Outbox" does not exist` while `select * from outbox` succeeds.
 
 ## PostgreSQL Outbox Configuration
 

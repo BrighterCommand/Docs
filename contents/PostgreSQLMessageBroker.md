@@ -38,21 +38,22 @@ dotnet add package Paramore.Brighter.MessagingGateway.Postgres
 
 ### Database Table
 
-Create the queue store table in your PostgreSQL database:
+Brighter creates the queue store table for you when a publication or subscription sets `MakeChannels = OnMissingChannel.Create`. Set `OnMissingChannel.Validate` instead to manage the table yourself — this is the DDL Brighter runs, and the one to match:
 
 ```sql
-CREATE TABLE IF NOT EXISTS {schema}.{queue_store_table}
+CREATE TABLE IF NOT EXISTS "{schema}"."{queue_store_table}"
 (
-    "id" BIGSERIAL PRIMARY KEY,
-    "queue" VARCHAR(255) NOT NULL,
-    "content" JSONB NOT NULL,
-    "visible_timeout" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "id" BIGINT GENERATED ALWAYS AS IDENTITY,
+    "visible_timeout" TIMESTAMPTZ,
+    "queue" VARCHAR(255),
+    "content" JSON
 );
 
-CREATE INDEX IF NOT EXISTS idx_{queue_store_table}_queue_visible
-    ON {schema}.{queue_store_table}("queue", "visible_timeout");
+CREATE INDEX IF NOT EXISTS "{schema}_{queue_store_table}_queue_visible_timeout_idx"
+    ON "{schema}"."{queue_store_table}"("queue", "visible_timeout") INCLUDE ("id");
 ```
+
+The `content` column is `JSONB` rather than `JSON` when the payload is binary — see `binaryMessagePayload` below.
 
 **Index Requirements**: The index on `(queue, visible_timeout)` is critical for performance.
 
@@ -63,9 +64,11 @@ CREATE INDEX IF NOT EXISTS idx_{queue_store_table}_queue_visible
 ### Basic Producer Setup
 
 ```csharp
+using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessagingGateway.Postgres;
-using Paramore.Brighter.PostgreSql;
 
 // Database configuration
 var postgresConfiguration = new RelationalDatabaseConfiguration(
@@ -74,6 +77,10 @@ var postgresConfiguration = new RelationalDatabaseConfiguration(
     schemaName: "public",
     binaryMessagePayload: true  // Use JSONB for better performance
 );
+
+// The gateway connection wraps that configuration; the producer registry takes this,
+// not the configuration itself
+var connection = new PostgresMessagingGatewayConnection(postgresConfiguration);
 
 // Publication configuration
 var publications = new List<PostgresPublication>
@@ -89,7 +96,7 @@ var publications = new List<PostgresPublication>
 
 // Producer registry
 var producerRegistry = new PostgresProducerRegistryFactory(
-    postgresConfiguration,
+    connection,
     publications
 ).Create();
 

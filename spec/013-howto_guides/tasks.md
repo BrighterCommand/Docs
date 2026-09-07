@@ -447,7 +447,7 @@ forbids showing deprecated patterns as current — a different reason, deliberat
 **Goal:** the guide Docs#67 is owed. **Eleven tasks. One PR.** ~330 lines, How-to, nested under
 `PostgreSQLMessageBroker.md`.
 
-- [ ] **Task 2.1:** Ask the Q4 question, now that the PR exists
+- [x] **Task 2.1:** Ask the Q4 question, now that the PR exists
   - Input: design §11 Q4
   - Output: a ruling on whether P0-1 gets a compiled sample in `../Brighter/samples/`
   - Notes: **Deferred by agreement, not open.** A write to `../Brighter` is authorised **per
@@ -456,7 +456,7 @@ forbids showing deprecated patterns as current — a different reason, deliberat
     and expect `build` to be a **coin-flip** (Brighter#4276) — re-run the job rather than
     pushing an empty commit.
 
-- [ ] **Task 2.2:** Write the front matter, H1, banner and opening sentence
+- [x] **Task 2.2:** Write the front matter, H1, banner and opening sentence
   - Input: design §4.1
   - Output: quoted `description:` with `layout.description.visible: false`; H1 *Use PostgreSQL
     for Both Transport and Outbox*; the banner naming both prerequisites
@@ -465,7 +465,7 @@ forbids showing deprecated patterns as current — a different reason, deliberat
     `pagelint.py --fix` will write the front matter *from* the sentence; it refuses if the
     sentence fails rule 7, which is the check.
 
-- [ ] **Task 2.3:** Steps 1–2 — packages and the two tables' DDL
+- [x] **Task 2.3:** Steps 1–2 — packages and the two tables' DDL
   - Input: `PostgresOutbox.md` §NuGet re-pinned; `PostgreSQLMessageBroker.md:39`;
     `PostgresOutbox.md:64`
   - Output: `## Step 1: Install the Packages`, `## Step 2: Create the Queue and Outbox Tables`
@@ -473,7 +473,7 @@ forbids showing deprecated patterns as current — a different reason, deliberat
     a pin here is checked by nothing — grep the tools for this filename before assuming either
     way (a checker's inclusion list is where its unstated obligations live).
 
-- [ ] **Task 2.4:** Step 3 — one `RelationalDatabaseConfiguration`, three tables
+- [x] **Task 2.4:** Step 3 — one `RelationalDatabaseConfiguration`, three tables
   - Input: design §2.5; `src/Paramore.Brighter/RelationalDatabaseConfiguration.cs:21`
   - Output: `## Step 3: Describe Both Tables in One Configuration`
   - Notes: **This is the pivot the whole guide turns on** — `queueStoreTable`,
@@ -482,7 +482,7 @@ forbids showing deprecated patterns as current — a different reason, deliberat
     the first two. **Link `RelationalDatabaseConfigurationReference.md` for the option table;
     never restate it.**
 
-- [ ] **Task 2.5:** Step 4 — register `IAmARelationalDatabaseConfiguration`, and say why
+- [x] **Task 2.5:** Step 4 — register `IAmARelationalDatabaseConfiguration`, and say why
   - Input: `PostgresOutbox.md:116`; Brighter #3721 / #3755 (closed, *not a bug*) and #4279
   - Output: `## Step 4: Register the Configuration`
   - Notes: **the #3721 trap.** `TransactionProvider` is a **`Type`**, activated by the
@@ -491,7 +491,7 @@ forbids showing deprecated patterns as current — a different reason, deliberat
     `GetRequiredService<IAmACommandProcessor>()` throws, naming a type the reader's code never
     mentions. Mirror **009 rung 3's sample**, per obligation 3.
 
-- [ ] **Task 2.6:** Steps 5–6 — producer, Outbox and consumer
+- [x] **Task 2.6:** Steps 5–6 — producer, Outbox and consumer
   - Input: design §7 examples 5 and 6; `PostgreSQLMessageBroker.md:145`
   - Output: `## Step 5: Wire the Producer and the Outbox`, `## Step 6: Wire the Consumer`
   - Notes: **`AddConsumers` extends `IServiceCollection`; `AddProducers` extends the
@@ -499,7 +499,7 @@ forbids showing deprecated patterns as current — a different reason, deliberat
     else chains off it — `services.AddBrighter().AddProducers(…).AddConsumers(…)` is
     **`CS1929`**, and eleven blocks across eight pages get this wrong today.
 
-- [ ] **Task 2.7:** Steps 7–8 — deposit/commit/clear, and the Sweeper
+- [x] **Task 2.7:** Steps 7–8 — deposit/commit/clear, and the Sweeper
   - Input: `PostgreSQLMessageBroker.md:362` made runnable; `PostgresOutbox.md:169`
   - Output: `## Step 7: Deposit and Clear Inside Your Transaction`, `## Step 8: Run the Outbox
     Sweeper`
@@ -508,7 +508,7 @@ forbids showing deprecated patterns as current — a different reason, deliberat
     omission was invisible until the sample was built. Link `PostgresDistributedLock.md` for
     multi-instance sweepers.
 
-- [ ] **Task 2.8:** Step 9 — the verification step, measured on a real run
+- [x] **Task 2.8:** Step 9 — the verification step, measured on a real run
   - Input: design §7 example 9
   - Output: `## Step 9: Verify It Worked` — verification SQL and the **expected log lines**
   - Notes: **AC7, and it is the criterion with no tool behind it.** 009's AC7 was found unmet
@@ -516,7 +516,7 @@ forbids showing deprecated patterns as current — a different reason, deliberat
     was **false three times of eleven**. **When a page makes a factual claim about the reader's
     machine, the claim needs a measurement, not a diagnosis.** Run it.
 
-- [ ] **Task 2.9:** The failures section — the two exceptions, by their text
+- [x] **Task 2.9:** The failures section — the two exceptions, by their text
   - Input: design §4.1's two named failures
   - Output: `## PostgreSQL Transport and Outbox Failures`
   - Notes: print the **exception text a reader will have searched for** —
@@ -525,7 +525,7 @@ forbids showing deprecated patterns as current — a different reason, deliberat
     `ConnectionProvider` and `TransactionProvider` on `AddProducers`) and the missing
     `IAmARelationalDatabaseConfiguration` registration from task 2.5.
 
-- [ ] **Task 2.10:** `SUMMARY.md`, `pagetypes.tsv`, *Further Reading*, and compile
+- [x] **Task 2.10:** `SUMMARY.md`, `pagetypes.tsv`, *Further Reading*, and compile
   - Input: design §6's `## Transports` diff
   - Output: the nested entry under `PostgreSQLMessageBroker.md`; a `pagetypes.tsv` row
     appended; every block compiled
@@ -533,7 +533,7 @@ forbids showing deprecated patterns as current — a different reason, deliberat
     *PostgreSQL for Transport and Outbox*, deliberately shorter than the H1. Entry and page in
     the **same commit**.
 
-- [ ] **Task 2.11:** Gates, and assert the four that move
+- [x] **Task 2.11:** Gates, and assert the four that move
   - Input: design §9's four-new-pages row, taken one page at a time
   - Output: link 160 → **161**, pagelint 158 → **159**, shape 157 → **158** with **widest
     unmoved at 12 of 20**, redirects **unmoved**, optioncheck **unmoved**; `--verify` after
@@ -543,6 +543,109 @@ forbids showing deprecated patterns as current — a different reason, deliberat
     `transports/postgresqlmessagebroker/postgresqltransportandoutbox`. **Do not probe it until
     `sitemap-pages.xml` moves**; a premature probe can cache a 404, and the discriminator is
     `curl <path>.md`.
+
+---
+
+## Phase 2 as executed — 2026-09-07
+
+**All eleven tasks done in one PR.** Every gate landed where design §9 and task 2.11 predicted:
+link **160 → 161**, pagelint pages **158 → 159**, shape **157 → 158** with the widest section
+**unmoved at 12 of 20**, redirects unmoved at **77 entries / 7858 bytes**, versioncheck unmoved
+at **18 pins across 5 pages**, optioncheck unmoved at **59 tables / 519 rows**. The warning
+count fell **773 → 772**. The `--changed` scope line read **17 code block(s) strict** across
+**3 documentation page(s)**, with 0 errors — the new page's 13 blocks plus the four repaired
+below.
+
+**Q4 was answered YES**, which is why this phase has a Brighter PR beside it.
+
+### The companion sample — Brighter#4304
+
+[Brighter#4304](https://github.com/BrighterCommand/Brighter/pull/4304) adds
+`samples/TaskQueue/PostgresTaskQueue/GreetingsSenderWithOutbox/`, registered in
+`Brighter.slnx` in the same PR. It **extends** rather than creates, which is `CLAUDE.md`'s
+stated preference order: `Greetings` and `GreetingsReceiverConsole` are reused **unchanged**,
+and the only edit to an existing file is the one line in `Brighter.slnx`.
+
+**It was run, not merely built.** Happy path: deposit, then `Found 1 to clear out of amount 100`
+and `Decoupled invocation of message: Topic:greeting.event`, then the receiver prints the
+greeting and logs `Deleted the message … on the queue greeting.event`. Unhappy path (`--fail`):
+the row counts in `greeting` and `outbox` are both unchanged, so neither write survived. Those
+runs are where every line of step 9 comes from.
+
+### Six findings the task list did not predict
+
+**A. Design §4.1's first named failure is stale, and the tell was that the probe printed a
+different exception.** The page was to print `InvalidOperationException: No Async outbox
+defined.` — Q&A #3795 verbatim, from `OutboxProducerMediator.cs:502`. Removing the two
+providers and running produces something else entirely:
+`ConfigurationException: Unable to register outbox of type PostgreSqlOutbox - no transaction
+provider has been registered that matches the outbox's transaction type`, thrown from
+`AddProducers` **at registration**. `AddProducers` takes the transaction type from
+`TransactionProvider ?? InMemoryTransactionProvider` and refuses an Outbox that does not
+implement `IAmAnOutboxSync<,>`/`IAmAnOutboxAsync<,>` for *that* type. The guard was added
+**2026-01-19 in Brighter#3952** and ships in `10.7.0`, so a V10 reader cannot reach the
+sweeper message by this route. **This is §13 Q3's shape exactly** — a finding taken from a
+public thread, accurately quoted, and overtaken by a fix nobody re-checked. The page prints
+the measured exception and names the older one as its historical equivalent, because that is
+the string a search engine still carries.
+
+**B. Four defects on the two pages P0-1 names as prerequisites, none of them in P0-2 or
+P0-4's scope.** Ruled into this PR on 2026-09-07 rather than recorded, on design §11 Q6's own
+principle that a guide cannot honestly link a page whose code does not compile:
+
+| Page | Site | The corpus said | The compiler says |
+|---|---|---|---|
+| `PostgresOutbox.md` | 61 | `GetDDL(tableName, hasBinaryMessagePayload: true)` | **`CS1739`** — PostgreSql's parameter is `binaryMessagePayload` |
+| `PostgresOutbox.md` | 68–95 | an "Example SQL Script" `GetDDL("Outbox")` generates | a different table — `"outbox"`, `Id bigserial PRIMARY KEY`, `DataRef`, `SpecVersion`, no `Created`/`CreatedID` |
+| `PostgreSQLMessageBroker.md` | 91 | `PostgresProducerRegistryFactory(postgresConfiguration, …)` | **`CS1503`** — it takes a `PostgresMessagingGatewayConnection` |
+| `PostgreSQLMessageBroker.md` | 44–55 | `BIGSERIAL PRIMARY KEY`, `TIMESTAMP … DEFAULT`, `JSONB NOT NULL` | `BIGINT GENERATED ALWAYS AS IDENTITY`, `TIMESTAMPTZ`, `JSON`, and an index with `INCLUDE ("id")` |
+
+**C. `hasBinaryMessagePayload` is real — on the other three stores — which is what made row 1
+invisible.** MsSql, MySql and Sqlite all spell it `hasBinaryMessagePayload`; PostgreSql alone
+spells it `binaryMessagePayload`. A `git grep -c` for the wrong name returns **3 files**, not
+zero, so the cheap check exonerates it. **Four of five following a convention is what hides the
+fifth** — the same shape as design §11 Q6's `MsSqlEntityFrameworkCoreTransactionProvider`, and
+it was settled by compiling the published line and getting `CS1739`, with the corrected line
+compiling clean as the control. `PostgresOutbox.md` now says so in a sentence, so the next
+person to copy a sibling's call meets a warning instead of the compiler.
+
+**D. The two subsystems disagree about identifier case, on one configuration object.** Measured
+on a real run: the queue table is `Queue` and the Outbox table is `outbox`. The transport quotes
+the configured name as written (`PostgresMessagingGateway.cs`), while the Outbox lowercases and
+*then* quotes (`PgIdentifier.Quote`), deliberately, so a configured `"Outbox"` still matches the
+table older unquoted DDL created. So `select * from "Queue"` works and `select * from "Outbox"`
+returns `relation "Outbox" does not exist`. **Only composing the two surfaces this**, which is
+the argument for the guide existing; it is in step 2, in the failures section, and now in
+`PostgresOutbox.md` as well.
+
+**E. One flag means two things once the object is shared.** `binaryMessagePayload` tells the
+transport to store the queue's `content` as `JSONB` rather than `JSON`, and tells the Outbox to
+store `Body` as `bytea` rather than `text`. `PostgreSQLMessageBroker.md` recommends `true` for
+performance, and a reader sharing that object moves their Outbox to `bytea` without being told.
+The escape is per-publication and per-subscription: `PostgresPublication.BinaryMessagePayload`
+and `PostgresSubscription.BinaryMessagePayload` are both nullable and both override the shared
+value (`PostgresMessageProducerFactory.cs:30`, `PostgresChannelFactory.cs:25`). Step 3 says so.
+
+**F. `GetDDL`'s output differs between `10.7.0` and `origin/master`, and the repair was one
+paste away from documenting an unreleased column.** Run against `origin/master` by
+`ProjectReference` it emits `CausationId` and a `idx_outbox_causationid` index; run against the
+**released 10.7.0 package** it emits neither. Row 2 of finding B was repaired from the second,
+by adding a `PackageReference` to `Paramore.Brighter.Outbox.PostgreSql 10.7.0` and printing it.
+**A compile harness wired to `src/` measures the product's future**, and every page here
+documents its present.
+
+### Two decisions worth naming
+
+- **The page carries no version pins**, which departs from task 2.3's instruction to pin against
+  `10.7.0`. That note also said to grep the tools first, and the grep is why: `versioncheck.py`
+  scans only the five pages in `TUTORIAL_PAGES`, so a pin here would be checked by nothing and
+  would rot silently, while adding the page to `TUTORIAL_PAGES` would move a gate design §9
+  predicts unmoved. Both prerequisite pages name packages without versions and the banner
+  already says **Brighter V10**.
+- **Step 2 documents both provisioning routes rather than choosing.** The queue table arrives
+  from `OnMissingChannel.Create` and the Outbox from `UseBoxProvisioning`, which is what the
+  sample does and is genuinely two routes in one database; `PostgresOutbox.md`'s Option A /
+  Option B framing is linked rather than restated.
 
 ---
 
