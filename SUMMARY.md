@@ -69,6 +69,7 @@
 * [Azure Service Bus Configuration](/contents/AzureServiceBusConfiguration.md)
 * [PostgreSQL Message Broker](/contents/PostgreSQLMessageBroker.md)
   * [PostgreSQL Broker Trade-Offs](/contents/PostgreSQLBrokerTradeOffs.md)
+  * [PostgreSQL for Transport and Outbox](/contents/PostgreSQLTransportAndOutbox.md)
 * [MSSQL Message Broker](/contents/MSSQLMessageBroker.md)
 * [GCP Pub/Sub Configuration](/contents/GcpPubSubConfiguration.md)
 * [RocketMQ Configuration](/contents/RocketMQConfiguration.md)
