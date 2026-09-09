@@ -56,6 +56,7 @@
 * [AsyncAPI Document Generation](/contents/AsyncAPISupport.md)
 * [Error Handling](/contents/HandlerFailure.md)
   * [Error Handling Options](/contents/ErrorHandlingOptions.md)
+  * [Handle a Poison Message](/contents/HandlingPoisonMessages.md)
 
 ## Transports
 

@@ -659,13 +659,13 @@ PR.** ~300 lines, How-to, nested under `HandlerFailure.md`.
 defects as open. **The guide's contribution is the route**, which is on no page — the two
 existing pages carry semantics and options and never have the reader do it.
 
-- [ ] **Task 3.1:** Front matter, H1, banner, opening sentence
+- [x] **Task 3.1:** Front matter, H1, banner, opening sentence
   - Input: design §4.2
   - Output: H1 *Handle a Poison Message and Route It to a Dead Letter Queue*; banner naming
     `HandlerFailure.md` and `ErrorHandlingOptions.md`
   - Notes: 150 characters rendered as drafted — re-measure and assert uniqueness.
 
-- [ ] **Task 3.2:** Steps 1–2 — confirm the diagnosis, then choose the action
+- [x] **Task 3.2:** Steps 1–2 — confirm the diagnosis, then choose the action
   - Input: `HandlerFailure.md#transport-nack-behavior` (**verified to resolve**, §2.1)
   - Output: `## Step 1: Confirm You Have a Poison Message`, `## Step 2: Choose Between Requeue,
     Reject and Don't Acknowledge`
@@ -674,7 +674,7 @@ existing pages carry semantics and options and never have the reader do it.
     `DeferMessageAction` is the only safe choice. `HandlerFailure.md:276` says this — **point at
     it, do not repeat it.**
 
-- [ ] **Task 3.3:** Steps 3–4 — requeue count, DLQ routing key, backstop attribute
+- [x] **Task 3.3:** Steps 3–4 — requeue count, DLQ routing key, backstop attribute
   - Input: `ErrorHandlingOptions.md:122`; `HandlerFailure.md:217`
   - Output: `## Step 3: Set a Requeue Count and a Dead Letter Routing Key`, `## Step 4: Add a
     Backstop Attribute`
@@ -691,18 +691,18 @@ existing pages carry semantics and options and never have the reader do it.
     **`Proactor`** (`Subscription.cs:291` @ `10.7.0`), so the async attribute is what the
     default reader needs, and it is the one this corpus has never named.
 
-- [ ] **Task 3.4:** Step 5 — the verification step
+- [x] **Task 3.4:** Step 5 — the verification step
   - Output: `## Step 5: Verify the Message Reaches the Dead Letter Queue`
   - Notes: AC7. **Never read a broker's counters until the connection you removed is gone** — a
     stopped consumer whose connection has not been reaped reads `0`, which is
     indistinguishable from a lost message and is the opposite of what you are verifying.
 
-- [ ] **Task 3.5:** Steps 6–7 — enrichment headers, replay or discard
+- [x] **Task 3.5:** Steps 6–7 — enrichment headers, replay or discard
   - Output: `## Step 6: Read the Enrichment Headers`, `## Step 7: Decide Whether to Replay or
     Discard`
   - Notes: link `ReplayOnSeen.md` rather than restating it.
 
-- [ ] **Task 3.6:** The per-transport section — **linked, never copied**
+- [x] **Task 3.6:** The per-transport section — **linked, never copied**
   - Output: `## Poison Message Handling on Your Transport`
   - Notes: links `HandlerFailure.md#transport-nack-behavior` and
     `ErrorHandlingOptions.md#native-vs-brighter-managed-dlq` **by anchor**. Requirements §8 puts
@@ -710,10 +710,89 @@ existing pages carry semantics and options and never have the reader do it.
     anchors were resolved through `linkcheck.py`'s own `slug()` in §2.1 — **resolve them again
     after writing, because the check is cheap and an invented anchor is invisible to review.**
 
-- [ ] **Task 3.7:** `SUMMARY.md`, `pagetypes.tsv`, compile, gates
+- [x] **Task 3.7:** `SUMMARY.md`, `pagetypes.tsv`, compile, gates
   - Output: nested entry under `HandlerFailure.md`; link 161 → **162**, pagelint 159 → **160**,
     shape 158 → **159**, redirects and optioncheck **unmoved**
   - Notes: predicted URL `using-an-external-bus/handlerfailure/handlingpoisonmessages`.
+
+---
+
+## Phase 3 as executed — 2026-09-09
+
+**All seven tasks done in one PR.** `contents/HandlingPoisonMessages.md` is **294 lines** against a
+~300 target, and the section outline is design §4.2's unchanged. Gates landed exactly where task
+3.7 predicted: link **161 → 162**, pagelint pages **159 → 160** with **0 errors**, shape
+**158 → 159** with the widest section **unmoved at 12 of 20**, redirects **unmoved** at 77 entries
+/ 7858 bytes, versioncheck unmoved at 18 pins across 5 pages, optioncheck unmoved at **59 tables /
+519 rows**. The warning count is **unmoved at 772** — every block on the new page carries its
+`using` directives. The published URL is
+`using-an-external-bus/handlerfailure/handlingpoisonmessages`, which is task 3.7's prediction
+character for character.
+
+**The `--changed` scope line read `1 documentation page(s), 8 code block(s) strict`** — the new
+page's eight blocks, so the strict pass covers the whole page rather than passing vacuously.
+
+**All six C# blocks were extracted from the page and compiled**, against the **released 10.7.0
+packages** rather than `ProjectReference`s into `src/` — phase 2's finding F is why. That proves
+the `KafkaSubscription<T>` constructor including `deadLetterRoutingKey`, the
+`[RejectMessageOnErrorAsync]` attribute and its namespace, `PostAsync`, `Receive`,
+`Header.Bag.TryGetValue`, the `Message`/`MessageHeader` constructors and `SendAsync`.
+
+### Four findings the task list did not predict
+
+**A. `Subscription<T>`'s `Proactor` default does not survive contact with a transport, and that
+decides which backstop attribute compiles.** Task 3.3 says *"`Subscription<T>` defaults to
+**`Proactor`** (`Subscription.cs:291`), so the async attribute is what the default reader needs"*.
+The base class does; **the transports mostly do not.** Measured at `10.7.0` across all eleven
+generic subscriptions:
+
+| Default `messagePumpType` | `Subscription<T>` |
+|---|---|
+| `Proactor` | `SqsSubscription`, `AzureServiceBusSubscription`, `MqttSubscription`, `MsSqlSubscription`, `RedisSubscription`, `RmqSubscription` (RMQ.**Async**) |
+| `Reactor` | `KafkaSubscription`, `RmqSubscription` (RMQ.**Sync**) |
+| `Unknown` | `PostgresSubscription`, `GcpPubSubSubscription`, `RocketMqSubscription` |
+
+So on Kafka the default reader gets a **Reactor** and needs the **sync** attribute — the opposite
+of the note. Picking wrong is a `ConfigurationException` at pipeline build
+(`PipelineValidation.md:48`). **`RmqSubscription` is two types with one name**, and which default
+you get is decided by the package you referenced.
+
+**B. `Unknown` is not a third pump — the base constructor rejects it.** `Subscription.cs:213`
+throws `ConfigurationException("You must set a message pump type: use Reactor for sync pipelines;
+use Proactor for async pipelines")`. So `new PostgresSubscription<T>(…)` without naming a pump
+**throws at construction**. Phase 2's own page passes `messagePumpType: MessagePumpType.Reactor`
+at `PostgreSQLTransportAndOutbox.md:167` and never says why it must.
+
+**C. Two APIs on the design's "named APIs, all verified live" list are live but not reachable the
+way a guide would print them** — and `ErrorHandlingOptions.md` already had both right, so this is
+a constraint on the new page rather than a corpus defect:
+
+- **`DontAckDelay` is on `MessagePump`, not `Subscription`.** `ConsumerFactory` copies six
+  subscription properties onto the pump (`TimeOut`, `RequeueCount`, `EmptyChannelDelay`,
+  `RequeueDelay`, `UnacceptableMessageLimit`, `UnacceptableMessageLimitWindow`) and
+  **`DontAckDelay` is not among them**, so it stays at its 1-second default. Printing it in a
+  subscription initialiser would be `CS0117`.
+- **`DeadLetterNamingConvention` and `InvalidMessageNamingConvention` have no production call
+  site.** At `10.7.0` each appears only in its own file and two unit tests — against a control of
+  **59 files** referencing `DeadLetterRoutingKey`. They build a name; they are not a policy
+  Brighter applies.
+
+**"Verified live" was checking existence. A guide needs reachability**, and the two are not the
+same test.
+
+**D. `AwsSqsSubscription` does not exist; the type is `SqsSubscription`.** Written into the table
+in finding A, caught by grepping every type name before publishing, with a control. The
+programme's most-repeated defect — a plausible name assembled from surrounding vocabulary —
+arriving inside the phase whose findings are about exactly that.
+
+### Two things deliberately not done
+
+- **`ReplayOnSeen.md` is linked but not offered as the route.** It ships **after 10.7.0**, and the
+  page says so where it links it; step 7 points a V10 reader at an Inbox or their own idempotency
+  instead. Task 3.5 said "link it rather than restating it" and did not mention that it is
+  unreleased.
+- **The pump-default table carries no `optioncheck` marker.** A marker would move a gate design §9
+  predicts unmoved. It is re-derivable in one command, recorded here rather than on the page.
 
 ---
 
