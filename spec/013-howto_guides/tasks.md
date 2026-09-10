@@ -801,12 +801,12 @@ arriving inside the phase whose findings are about exactly that.
 **Goal:** the claim-check recipe, and the proof that design §2.5's composition generalises. **Eight
 tasks. One PR.**
 
-- [ ] **Task 4.1:** `HandlingLargeMessages.md` — front matter, H1, banner, opening sentence
+- [x] **Task 4.1:** `HandlingLargeMessages.md` — front matter, H1, banner, opening sentence
   - Input: design §4.3
   - Output: H1 *Put a Large Payload Behind a Claim Check*; prerequisites `ClaimCheck.md` and
     `MessageMappers.md`
 
-- [ ] **Task 4.2:** Steps 1–2 — the size limit, and the six luggage stores
+- [x] **Task 4.2:** Steps 1–2 — the size limit, and the six luggage stores
   - Input: `git grep -l 'IAmAStorageProviderAsync' 10.7.0 -- src/`
   - Output: `## Step 1: Find Your Transport's Message Size Limit`, `## Step 2: Choose a Luggage
     Store`
@@ -817,7 +817,7 @@ tasks. One PR.**
     an **unclosed bold** — `**IAmAStorageProviderAsync:` — which is how long it has been since
     anyone read the bottom of that page.
 
-- [ ] **Task 4.3:** Step 3 — register the luggage store. **This is why the page exists**
+- [x] **Task 4.3:** Step 3 — register the luggage store. **This is why the page exists**
   - Input: `ServiceCollectionExtensions.cs:951`, `:971`, `:992`
   - Output: `## Step 3: Register the Luggage Store`
   - Notes: **`UseExternalLuggageStore<TStoreProvider>` is on 0 of 157 pages**, against a control
@@ -825,7 +825,7 @@ tasks. One PR.**
     following `ClaimCheck.md` attaches the attribute and gets **no store**. Written from the
     type, three overloads.
 
-- [ ] **Task 4.4:** Steps 4–6, the failures section, and `ClaimCheck.md`'s pointer
+- [x] **Task 4.4:** Steps 4–6, the failures section, and `ClaimCheck.md`'s pointer
   - Input: `ClaimCheck.md:25`, `:38`; `MessageTransforms.md`'s ruling
   - Output: `## Step 4: Attach the Claim Check to Your Mapper`, `## Step 5: Choose a
     Threshold`, `## Step 6: Verify the Payload Went to the Store`, `## Claim Check Failures`;
@@ -835,21 +835,21 @@ tasks. One PR.**
     not own. The default `JsonMessageMapper<TRequest>` already carries `[CloudEvents(0)]`, so
     "default mappers do not run transforms" is **false** and must not be written.
 
-- [ ] **Task 4.5:** `MSSQLTransportInboxAndOutbox.md` — front matter, H1, banner, opening sentence
+- [x] **Task 4.5:** `MSSQLTransportInboxAndOutbox.md` — front matter, H1, banner, opening sentence
   - Input: design §4.4
   - Output: H1 naming transport, Inbox and Outbox together; prerequisites `MSSQLMessageBroker.md`
     and `MSSQLOutbox.md`
   - Notes: **`MSSQLOutbox.md` must already be repaired by task 1.10** — it is a prerequisite
     this guide links, and it named a type that has never existed.
 
-- [ ] **Task 4.6:** The MSSQL steps, mirroring P0-1 with an Inbox step inserted after step 5
+- [x] **Task 4.6:** The MSSQL steps, mirroring P0-1 with an Inbox step inserted after step 5
   - Input: design §4.4; `MSSQLMessageBroker.md:107`
   - Output: the step sequence, and *Further Reading* pointing back at P0-1 so the two read as
     one pattern
   - Notes: **divergence from P0-1's shape is a defect here, not variety** — the value of this
     page is that the pattern generalises.
 
-- [ ] **Task 4.7:** The `MsSqlSubscription` caveat — load-bearing, from Brighter#4302
+- [x] **Task 4.7:** The `MsSqlSubscription` caveat — load-bearing, from Brighter#4302
   - Input: `MessagingGateway.MsSql/ChannelFactory.cs:46`, `:65`, `:88`;
     `MSSQLMessageBroker.md:142`
   - Output: every subscription typed `MsSqlSubscription<T>`, **with the reason stated**
@@ -858,11 +858,99 @@ tasks. One PR.**
     dies at `dispatcher.Receive()`** — strictly worse than a compile error, because the page
     looks authoritative right up to the throw. Mirror the MsSql gateway tests (obligation 3).
 
-- [ ] **Task 4.8:** Both `SUMMARY.md` entries, both `pagetypes.tsv` rows, compile, gates
+- [x] **Task 4.8:** Both `SUMMARY.md` entries, both `pagetypes.tsv` rows, compile, gates
   - Output: link 162 → **164**, pagelint 160 → **162**, shape 159 → **161** with widest still
     **12 of 20**, redirects and optioncheck **unmoved**; `--verify` **161/161** after publication
   - Notes: two nested pages in one PR — **assert the widest and the redirect count individually
     rather than as a pair.**
+
+---
+
+## Phase 4 as executed — 2026-09-10, `f8e769b` on `docs/013-phase4-large-messages-mssql`, PR #155
+
+**Two new nested pages, four repaired, one upstream sample PR.** All eight tasks done, **39 / 43**.
+
+### The gates landed on task 4.8's prediction
+
+link **162 → 164**, pagelint **160 → 162 pages**, shape **159 → 161** with the widest section
+**unmoved at 12 of 20**; redirects (**77 / 7858**), versioncheck (**0 stale of 18**) and
+optioncheck (**0 across 59 tables, 519 rows**) all unmoved. `--changed origin/master` read
+**`6 documentation page(s), 25 code block(s) strict`**, 0 errors — the scope line was read, not
+just the verdict.
+
+**The warning count fell 772 → 768**, which task 4.8 did *not* predict. It was bought: four
+previously-bare blocks on `ClaimCheck.md` and `MSSQLOutbox.md` earned real `using` directives
+while their defects were being repaired.
+
+### Findings
+
+**A. THE NULL LUGGAGE STORE THROWS ON RESOLUTION, NOT ON THRESHOLD — AND THE FIRST DRAFT OF THE
+PAGE SAID OTHERWISE.** `AddBrighter` ends with `UseExternalLuggageStore<NullLuggageStore>()`
+(`ServiceCollectionExtensions.cs:222-223`), and `RegisterLuggageStore`'s factory calls
+`EnsureStoreExists()` **before handing the store out**. So the failure lands when anything
+resolves `IAmAStorageProvider` — when a `[ClaimCheck]` mapper's transform pipeline is first
+built — whatever size that message is. I wrote *"at the first message over the threshold"*,
+compiled it happily, and only running it found the error. **Lesson 13 again, in a phase whose
+whole subject is registration.**
+
+**B. REGISTRATION ORDER FOR THE LUGGAGE STORE IS THE OPPOSITE OF `AddBrighterDefault`'s.**
+`UseExternalLuggageStore` uses `AddSingleton`, so the **last** registration wins and yours must
+come **after** `AddBrighter`. `AddBrighterDefault` uses `TryAddBuilder`, so yours must come
+**first**. Two rules, opposite directions, and neither is discoverable from the call site.
+Measured with a control: `AddBrighter()` alone resolves to a throwing `NullLuggageStore`;
+the same container with `.UseExternalLuggageStore<InMemoryStorageProvider>()` resolves to
+`InMemoryStorageProvider`.
+
+**C. NINE OF TEN PROVIDERS PREFIX THE DDL BUILDER AND MSSQL DOES NOT — THE DOCS WROTE THE
+PATTERN.** `MsSqlOutboxBuilder` (6 sites, `MSSQLOutbox.md`) and `MsSqlInboxBuilder` (1 site,
+`MSSQLInbox.md`) have **never existed**; the types are `SqlOutboxBuilder` and `SqlInboxBuilder`.
+The census that settles it is one command over the ten Outbox/Inbox packages — `PostgreSql…`,
+`MySql…`, `Sqlite…`, `Spanner…` all prefixed, MsSql alone bare. **This is lesson 12 inverted:
+there, one file was checked and generalised; here, the family was assumed and never checked at
+all.** Design §4.4 asserted task 1.10 had already repaired `MSSQLOutbox.md`; it had not, because
+phase 1 swept *call sites*, not *DDL builder names*.
+
+**D. `ClaimCheck.md` PRINTED AN INTERFACE WITH THREE MEMBERS THAT DO NOT EXIST.**
+`UploadAsync`/`DownloadAsync` where the product has `StoreAsync`/`RetrieveAsync`, and no
+`EnsureStoreExistsAsync` or `Tracer` at all. The page also carried a V9 one-argument
+`MapToMessage` — the defect review 6 found on Brighter#4302 — and a store list that stopped
+after **one of seven**, mid-`**`. It had been green under every gate for as long as the gates
+have existed, because nothing about it was *malformed*.
+
+**E. THE MSSQL GATEWAY HAS NO PROVISIONING PATH, SO `OnMissingChannel.Create` IS INERT.**
+Control: the Postgres gateway has **12** `OnMissingChannel` references and a `CREATE TABLE`;
+the MSSQL gateway has **0** beyond storing the value on the publication. `MsSqlQueueBuilder`
+— the type that would give you the DDL — has **no production call site**, which is exactly why
+it is public. **This is the one place design §2.5's composition does not generalise**, and the
+page says so rather than smoothing it over.
+
+**F. THE MSSQL SAMPLE'S TWO RECEIVERS COULD NEVER HAVE STARTED.** Both built
+`Subscription<T>` where `ChannelFactory` downcasts to `MsSqlSubscription` and throws. Measured
+with a control — `Subscription<T>` → `ConfigurationException`, `MsSqlSubscription<T>` →
+accepted. Fixed in **Brighter#4331**, along with the Outbox and Inbox the sample now
+demonstrates. **A sample that compiles is not a sample that runs**, and nothing in either
+repository was checking.
+
+**G. `## Step N:` HEADINGS ARE NOT UNIQUE ACROSS PAGES ONCE TWO HOW-TOS SHARE A SEQUENCE.**
+`CLAUDE.md` justifies the step-heading convention partly on the claim that a step heading *"is
+unique across pages"*. That held only while no two how-tos shared a shape — and design §4.4
+**required** P1-2 to mirror P0-1's. Four headings collided and rule 3a failed the build.
+Resolved by qualifying the four **on the new page only**, so no published PostgreSQL anchor
+moves. **Phase 5 and spec 014 both want this**: the convention's stated rationale has an
+unstated precondition.
+
+### What the harnesses were
+
+Two, both `PackageReference` to **10.7.0** (phase 2's finding F), both `net9.0`,
+`<ImplicitUsings>disable</ImplicitUsings>`, **no `<NoWarn>`** (lesson 12). `largecheck`
+extracted **4** fences and `mssqlcheck` **9**; both reached **0 errors**, and the only warning
+classes were `CS0105` and `CS0414`, both harness artefacts — **no `CS0618`**, so nothing on
+either page uses an obsolete API.
+
+**The extractor learned to hoist `using` directives.** A page's `using` lines must be *in* the
+block — that is rule 6 — but are only legal at file scope, so the harness moves them rather
+than supplying them. A block missing one still fails to resolve its types, which is how the two
+missing directives on the MSSQL page were caught.
 
 ---
 
