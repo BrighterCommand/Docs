@@ -960,6 +960,22 @@ Server up and watching an empty table. **This is the third time in this programm
 compiling, plausible, reviewed example was wrong about behaviour**, and the first where the
 instrument had to be a database rather than a probe.
 
+**I. TASK 4.8 WAS TICKED WITH PART OF IT UNDONE.** It reads *"Both `SUMMARY.md` entries, both
+`pagetypes.tsv` rows, compile, gates"*. The `SUMMARY.md` entries, the compile and the gates were
+all done and checked; **the two `pagetypes.tsv` rows were never written**, and the tick went on
+anyway. Phase 2 and phase 3 both added theirs (lines 159 and 160), so the omission is phase 4's
+alone. Added afterwards, appended in spec order per the file's own convention.
+
+**AC8 is the criterion that would have caught it, and AC8 has no tool** — *"no tool reads this
+file"*, in requirements §12's own words. So the row count is the check: **161 rows against 161
+published pages**, and that equality is worth asserting at every acceptance pass rather than
+eyeballing the additions.
+
+**The transferable part is about the tick, not the file.** A task whose Output clause lists four
+things is four checks, and ticking it after doing three is the same defect as a commit message
+naming one of the two things a commit does (lesson 9). **Re-read the Output clause at tick time,
+not from memory of what the task was about.**
+
 ### What the harnesses were
 
 Two, both `PackageReference` to **10.7.0** (phase 2's finding F), both `net9.0`,
