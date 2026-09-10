@@ -991,18 +991,190 @@ missing directives on the MSSQL page were caught.
 
 ---
 
+## Phase 5 as executed — the acceptance pass, 2026-09-10
+
+**42 / 43 tasks.** Task 5.4 is deliberately open: it ends in a comment on Docs#67, which is
+outward-facing and needs the maintainer's word.
+
+### Task 5.1 — AC1–AC8 and AC10, walked forwards with evidence
+
+All measurements taken at `18b20a9` + this branch, against the published site.
+
+| # | Criterion | Instrument | Result |
+|---|---|---|---|
+| **AC1** | Every P0 ships or is struck with a reason | walked, **no tool** | **MET.** P0-1 #153, P0-2 #152, P0-3 #154; P1-1 and P1-2 #155. P2-1/2/3 not attempted — P2 is *nice to have*, and AC1 binds P0 only |
+| **AC2** | New pages linked, none orphaned | `linkcheck.py` | **MET.** `No broken internal links (164 files checked)`, 0 orphans |
+| **AC3** | Every internal link resolves, anchors included | `linkcheck.py` | **MET.** Same run |
+| **AC4** | Every new page passes all seven page rules | `pagelint.py`, `--changed` | **MET.** `0 errors, 768 warnings across 162 pages`; phase 4's PR read `6 documentation page(s), 25 code block(s) strict` |
+| **AC5** | Every C# block on a new **or edited** page compiles | the harness, **no tool in CI** | **MET.** Phase 4: `largecheck` 4 fences, `mssqlcheck` 10 fences, **0 errors**, and **no `CS0618`** — the harnesses carry no `<NoWarn>` |
+| **AC6** | Shape and redirects hold; nested pages move no URL | `--check-shape`, `--check-redirects`, `--verify` | **MET.** 161 pages, widest **12 of 20 unmoved**; redirects **77 / 7858 unmoved**; `--verify` **predicted 161, published 161, 161 agree** |
+| **AC7** | Every guide ends with a verification step naming what the reader sees | walked, **no tool** | **MET** — all four guides, one verification step each |
+| **AC8** | `pagetypes.tsv` has a row per new page | walked, **no tool reads this file** | **MET, but only after #157.** Phase 4 ticked task 4.8 without writing the rows. **161 rows = 161 published pages** |
+| **AC10** | No page names an API dead at both refs | `git grep -w` at both refs with a control, **no tool** | **MET for 013's pages after one repair — see below** |
+
+### AC7 IS MET — AND THE FIRST WALK OF IT WAS WRONG, WHICH IS THE FINDING
+
+All four guides carry exactly one verification step:
+
+| Guide | Step |
+|---|---|
+| `PostgreSQLTransportAndOutbox.md` | Step 9: Verify It Worked |
+| `HandlingPoisonMessages.md` | **Step 5: Verify the Message Reaches the Dead Letter Queue** |
+| `HandlingLargeMessages.md` | Step 6: Verify the Payload Went to the Store |
+| `MSSQLTransportInboxAndOutbox.md` | Step 10: Verify It Worked |
+
+**The first pass recorded AC7 as unmet for `HandlingPoisonMessages.md`, and that was an artefact
+of the instrument.** The walk listed headings with `grep '^## ' | tail -4`, which showed steps 6
+and 7 and the two closing sections, and the verification step at **step 5 of 7** was never in
+view. The conclusion — *"a reader is told how to read headers on a DLQ message and never how to
+establish one arrived"* — was false; step 5 is the most thorough verification of the four, since
+it also warns that a stopped consumer whose connection has not been reaped reports `0` messages,
+which is indistinguishable from a lost one, and insists on matching the message id rather than
+observing that *some* message arrived.
+
+**This repository already carries this lesson and it was not applied**: a `tail` of
+`gh pr checks` merged a red build in session 23, and the rule written from it is *"read the whole
+of the output, and both event rows"*. **A `tail` is a sampling instrument, and an acceptance pass
+is a census** — the two do not mix. The re-walk that settled it counts matches across the whole
+file (`grep -cE '^## Step .*: *Verify'`) rather than eyeballing a slice.
+
+**Only one guide puts verification last**, and AC7's wording says *"ends with"*. `HandlingPoison
+Messages.md` verifies at step 5 because steps 6 and 7 are about what to do *with* the message
+once it is on the queue, which is the right order for the reader. **Read as intent — a
+verification step naming what the reader sees — the criterion is met by all four.** Read as
+literal placement it is met by three. Recorded so the next spec does not re-open it as a defect:
+**this is a wording imprecision in AC7, not a gap in the corpus**, and 014 should phrase it as
+*"contains"* rather than *"ends with"*.
+
+### AC10 WAS WALKED, NOT ASSERTED — AND IT FOUND ONE
+
+The walk extracted every identifier from **code contexts only** — fenced C# blocks and inline
+code spans — across the **18 `contents/` pages 013 touched**, and tested each against declared
+types at **both** `10.7.0` and `origin/master`.
+
+**One real defect, on a 013 page, inside a code block:** `MSSQLOutbox.md:168` printed
+`MsSqlEntityFrameworkTransactionProvider<MyDbContext>`, which exists at neither ref. The type is
+**`MsSqlEntityFrameworkCoreTransactionProvider`**. **Four of five providers spell it
+`<Provider>EntityFrameworkTransactionProvider`; MSSQL alone inserts `Core`** — the identical trap
+as phase 4's finding C, in a different family, on the same page. The page contradicted itself:
+prose at `:128` had it right, the code block had it wrong, so reading worked and pasting did not.
+**Repaired on this branch**, with the inconsistency stated so it is not "corrected" back.
+
+**Three further dead names were found corpus-wide and are deliberately NOT repaired**, held as
+the first red for the symbol-census gate (below), on the maintainer's instruction:
+
+| Symbol | Page | Reality |
+|---|---|---|
+| `IAmACommandStoreAsync` | `BuildingAnAsyncPipeline.md:36,38` — **in a C# block** | absent at both refs; a paste gets `CS0246` |
+| `UseExternalInbox` | `DispatcherConfigurationReference.md:255` | a **Reference** page naming a method that does not exist |
+| `IAmAnIbox` | `HowBrighterWorks.md:94` | a typo for `IAmAnInbox` |
+
+**None is on a page 013 touched**, which is why AC10 passes for this spec and fails for the
+corpus.
+
+### WHAT THE AC10 WALK TAUGHT ABOUT BUILDING THE GATE
+
+The walk is the prototype for the symbol-census gate, and its false positives are its design
+spec. A naive census over 013's pages raised **77** candidates of which **1** was real. Every
+other class is mechanically excludable:
+
+1. **Index declared types only and you flag every method.** `AddMsSqlOutbox`,
+   `UseExternalLuggageStore` and `TryAddBuilder` are all real and all invisible to a type index.
+2. **C# elides the `Attribute` suffix.** `git grep -w UseInbox` returns **0** at `10.7.0` while
+   `UseInboxAttribute` returns **4**. The docs write `[UseInbox]`. The gate must try both.
+3. **Reader-declared symbols must be scoped out.** `BuildTestServiceProvider` is *declared in the
+   same block* that uses it, as are `TestRequestContextFactory` and `DebugRequestContextFactory`.
+4. **BCL and third-party names are noise** — `TimeProvider`, `InvalidOperationException`,
+   `ResiliencePipelineRegistry` (Polly), `DbContextOptions` (EF).
+5. **A page that discusses a dead name needs an opt-out.** `MSSQLOutbox.md` now says *"there is
+   no `MsSqlOutboxBuilder`"* on purpose. Rule 5's `<!-- pagelint: allow-serviceactivator -->` is
+   the precedent.
+
+**And a trap that cost two false starts here**: `git grep` **does not honour `\b`** in its ERE.
+A pattern using it returns **0 matches** and looks like a clean corpus. Both attempts were caught
+only because the controls were two-way — a known-present symbol *and* a known-absent one. **A
+control that only proves absence proves nothing about the grep.**
+
+### Task 5.2 — AC9 walked BACKWARDS
+
+Every cluster in requirements §3.1 with **two or more independent askings**, against what is
+published:
+
+| Cluster | Askings | Delivered by | Verdict |
+|---|---|---|---|
+| Resilience pipeline configuration | **5** | 013 P0-2 (#152) — 15 dead call sites repaired across 11 pages | delivered |
+| Routing several types over one channel | **4** | 010, before 013 opened | already closed |
+| Poison messages and the DLQ | **4** | 013 P0-3 (#154) | delivered |
+| PostgreSQL as transport *and* Outbox | **3** | 013 P0-1 (#153) | delivered |
+| Kafka offsets, rebalance, partitions | **3** | 009 rung 4 | already closed |
+| CloudEvents type → request mapping | **2** | 11 pages, pre-013 | already closed |
+
+**Every cluster with two or more askings is now answered.** The single-asking rows are
+unchanged: large messages / claim check is **delivered** (P1-1), EF Core transactions and routing
+were already closed, and health checks (1 asking, 2021) stays **P2, not attempted**.
+
+**The backwards walk found nothing missing**, which is a result rather than a formality — 012's
+AC1 failure was found by exactly this walk at exactly this point. What it did confirm is that
+**P1-2 has the weakest demand trace of the five deliverables**: design §4.4 traces it to
+*#3960's other stated goal*, and #3960 is already counted in the resilience cluster. Its
+justification is structural — establishing that §2.5's composition generalises — and §7 says so
+in as many words. **That is a defensible P1, not a missing citation**, and it is recorded here so
+nobody re-derives the question.
+
+### Task 5.3 — the defect ledger
+
+**Every defect this spec found in the corpus, with what the corpus said and what the product
+says.** This is the only evidence 013 produces that the documentation was ever wrong.
+
+| # | Page(s) | Corpus said | Product says | Fixed by |
+|---|---|---|---|---|
+| 1 | 11 pages, 10 blocks | 15 dead call sites — `CommandProcessorBuilder.With(`, `.Policies(`, `.ResiliencePipelines(`, `.ConfigureResiliencePipelines(`, `InputChannelFactory`, `.Subscribers(` | `StartNew()`, `.Resilience(`, `ChannelFactory`, `.Subscriptions(` | phase 1, #152 |
+| 2 | 6 pages | 10 dead relational type names | the eight live ones | phase 1, #152 |
+| 3 | `MigratingToPollyV8.md` | *(not a defect)* — 2 of the 17 sites are V9 printed **on purpose** on a migration page | genuine V9 API at tag 9.33 | struck, phase 1 |
+| 4 | `ErrorHandlingOptions.md` | the nack table | already repaired before 013 measured it | n/a — Q3's premise was stale |
+| 5 | `HandlingPoisonMessages.md` draft | `AwsSqsSubscription` | `SqsSubscription` | phase 3, before publication |
+| 6 | design §4.2's API list | `DontAckDelay` on the subscription; `DeadLetterNamingConvention` reachable | `DontAckDelay` is on `MessagePump`; the naming conventions have **no production call site** | struck, phase 3 — **the corpus was right and the spec was loose** |
+| 7 | `ClaimCheck.md` | `IAmAStorageProviderAsync` with `UploadAsync`/`DownloadAsync`, no `EnsureStoreExistsAsync`, no `Tracer`; V9 one-argument `MapToMessage`; **one store listed of seven**, mid-`**` | `StoreAsync`/`RetrieveAsync`; two-argument mapper; seven stores | phase 4, #155 |
+| 8 | `MSSQLOutbox.md` ×6, `MSSQLInbox.md` ×1 | `MsSqlOutboxBuilder`, `MsSqlInboxBuilder` | `SqlOutboxBuilder`, `SqlInboxBuilder` — **MSSQL is the only unprefixed provider of ten** | phase 4, #155 |
+| 9 | `PostgreSQLTransportAndOutbox.md` | step 8's block missing the DI `using` for `AddBrighter` | — | phase 4, #155 |
+| 10 | `MSSQLTransportInboxAndOutbox.md` | the global `InboxConfiguration` de-duplicates in a consumer-only process | it is **silently dropped** without an external bus — **0 Inbox rows vs 1 with a producer** | phase 4 correction, #156 |
+| 11 | `MSSQLTransportInboxAndOutbox.md` | `scope:` selects Commands / Events / All | **`InboxScope` is inert** — 0 references in `src/`, control 43 | phase 4 correction, #156 |
+| 12 | `HandlingLargeMessages.md` draft | the null luggage store throws at the first over-threshold message | it throws on **resolution**, because `RegisterLuggageStore` calls `EnsureStoreExists()` eagerly | phase 4, before publication |
+| 13 | `pagetypes.tsv` | two rows present | they were never written; task 4.8 ticked anyway | #157 |
+| 14 | `MSSQLOutbox.md:168` | `MsSqlEntityFrameworkTransactionProvider<T>` | `MsSqlEntityFrameworkCoreTransactionProvider<T>` — **MSSQL is the only provider of five that inserts `Core`** | **phase 5, this branch** |
+| 15 | `BuildingAnAsyncPipeline.md`, `DispatcherConfigurationReference.md`, `HowBrighterWorks.md` | `IAmACommandStoreAsync`, `UseExternalInbox`, `IAmAnIbox` | absent at both refs | **HELD — the census gate's first red** |
+
+**Upstream, and separately**: Brighter#4301 / #4302 (the V9 builder examples, eight review
+rounds), #4304 (phase 2's sample), #4307 (the compile-fixture issue, backlog), and #4331 — which
+found **three sample applications that had never been able to start**, none of which any CI had
+noticed because all three compiled.
+
+**The pattern across fifteen entries**: the ones a tool caught were caught immediately; the ones
+with no tool behind them survived years. Entries 7, 8 and 14 were each green under every gate
+this repository has, because nothing mechanical had ever read a type name in a code block.
+
+**And one entry that is not in the table, because it was never a corpus defect.** The first AC7
+walk reported `HandlingPoisonMessages.md` as missing a verification step; it has one, at step 5,
+and the walk had listed headings through `tail -4`. **The acceptance pass's own instrument
+produced the only false finding in this ledger** — which is worth more than the fifteen true
+ones, because a manual criterion is only as good as the command behind it, and nothing checks
+*that*.
+
+
+---
+
 ## Phase 5 — Acceptance
 
 **Goal:** walk AC1–AC10 with evidence, and find what the phases did not. **Four tasks. One PR.**
 
-- [ ] **Task 5.1:** Walk AC1–AC8 and AC10 forwards, with evidence per criterion
+- [x] **Task 5.1:** Walk AC1–AC8 and AC10 forwards, with evidence per criterion
   - Input: requirements §12
   - Output: one paragraph per criterion, each naming the command and its output
   - Notes: **the criteria with no tool behind them are where the defects are** — 009's AC7 and
     012's AC1 were both found unmet at the close, and both were the criterion nothing checked.
     AC10 is API liveness, and its rule has **three** states: only *dead or invented* is a defect.
 
-- [ ] **Task 5.2:** Walk **AC9 backwards** — the delivered set against the demand census
+- [x] **Task 5.2:** Walk **AC9 backwards** — the delivered set against the demand census
   - Input: requirements §3.1's clusters, every one with two or more askings
   - Output: a cluster-by-cluster table, marked delivered / not delivered / deliberately deferred
   - Notes: **This is the task most likely to find something, and that is why it exists.** A
@@ -1010,7 +1182,7 @@ missing directives on the MSSQL page were caught.
     one command to find backwards, at the last possible moment, after eleven phases had been
     written from a mapping with a hole in it.
 
-- [ ] **Task 5.3:** Publish the defect ledger
+- [x] **Task 5.3:** Publish the defect ledger
   - Input: tasks 1.13 and every phase's recorded findings
   - Output: a ledger — page, line, what the corpus said, what the product says, which task
     fixed it
