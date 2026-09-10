@@ -158,3 +158,5 @@ contents/FirestoreInbox.md	Reference	high	"spec 012 D16, the Firestore Inbox; sh
 contents/SpannerInbox.md	Reference	high	"spec 012 D16, the Spanner Inbox; no options type of its own, links the relational reference"	Reference	Brighter V10
 contents/PostgreSQLTransportAndOutbox.md	How-to	high	"spec 013 P0-1, the PostgreSQL transport-and-Outbox composition guide; Step N headings, executed once"	How-to	Brighter V10
 contents/HandlingPoisonMessages.md		review	013 phase 3 — written as a How-to per design §4.2	How-to	Brighter V10
+contents/HandlingLargeMessages.md	How-to	high	013 phase 4 P1-1 — written as a How-to per design §4.3; Step N headings, executed once	How-to	Brighter V10
+contents/MSSQLTransportInboxAndOutbox.md	How-to	high	013 phase 4 P1-2 — written as a How-to per design §4.4; mirrors P0-1's shape	How-to	Brighter V10
