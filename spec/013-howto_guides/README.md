@@ -1,7 +1,7 @@
 # Spec 013: Task-Oriented How-To Guides
 
 **Created:** 2026-08-03
-**Status:** **Requirements APPROVED 2026-09-04** — see [`requirements.md`](requirements.md). Design phase is next.
+**Status:** **COMPLETE 2026-09-10, 43/43 tasks.** Five phases, five PRs — #152, #153, #154, #155 (with #156 and #157 correcting it), #158. The acceptance pass and the fifteen-entry defect ledger are in [`tasks.md`](tasks.md) § *Phase 5 as executed*. Docs#67, the externally-raised issue this programme answers, is **closed as completed**.
 
 > **This README was written 2026-08-03 against a tree Specs 010 and 012 have since changed, and
 > `requirements.md` §2 supersedes it on every content claim.** Measured 2026-09-04: the two named
@@ -142,10 +142,11 @@ it composes content the earlier specs have already normalised, moved and tabulat
 - [x] Documentation outline created — `design.md`, 2026-09-05
 - [x] Outline reviewed and approved — 2026-09-06, marker `.design-approved`. Q5, Q6 and Q7
       ruled; Q3 answered by measurement; Q4 deferred to phase 2's PR
-- [ ] Writing tasks identified
-- [ ] Writing complete
-- [ ] Documentation reviewed
-- [ ] Spec closed
+- [x] Writing tasks identified — `tasks.md`, 2026-09-07, marker `.tasks-approved`
+- [x] Writing complete — 43/43 tasks across five phases; four new pages, fourteen edited
+- [x] Documentation reviewed — AC1–AC10 walked 2026-09-10; AC9 walked **backwards**; one AC10
+      defect found and repaired, three held as the census gate's first red
+- [x] Spec closed — 2026-09-10, with Docs#67 closed alongside it
 
 ## Next Steps
 

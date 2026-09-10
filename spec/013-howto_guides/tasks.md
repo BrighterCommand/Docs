@@ -993,8 +993,15 @@ missing directives on the MSSQL page were caught.
 
 ## Phase 5 as executed — the acceptance pass, 2026-09-10
 
-**42 / 43 tasks.** Task 5.4 is deliberately open: it ends in a comment on Docs#67, which is
-outward-facing and needs the maintainer's word.
+**43 / 43 tasks. SPEC 013 IS COMPLETE.** Task 5.4 was held for the maintainer's word on Docs#67
+and released 2026-09-10: comment [issuecomment-5620384790](https://github.com/BrighterCommand/Docs/issues/67#issuecomment-5620384790),
+issue **CLOSED as completed** at 14:33:40Z.
+
+**Docs#67 is the issue this whole programme answers.** It was raised externally, prompted five
+specs, and was kept open across two of them against two named commitments — the prose
+configuration reference (012) and the task-oriented how-to guides, with *"configuring Brighter
+with PostgreSQL for both transport and outbox"* named by the reporter. **Both are discharged**,
+and the closing comment reports the defect ledger rather than only the deliverables.
 
 ### Task 5.1 — AC1–AC8 and AC10, walked forwards with evidence
 
@@ -1190,7 +1197,7 @@ ones, because a manual criterion is only as good as the command behind it, and n
     P0-2 defects, ten P0-4 names, plus §2.2's addition and whatever the phases turn up. A
     defect fixed silently is a defect that never existed.
 
-- [ ] **Task 5.4:** Close the spec, and settle Docs#67
+- [x] **Task 5.4:** Close the spec, and settle Docs#67
   - Output: `README.md` boxes ticked, the board updated, and a comment on
     [Docs#67](https://github.com/BrighterCommand/Docs/issues/67)
   - Notes: **#67 stays open until P0-1 lands, and P0-1 is phase 2** — so this is where it can
