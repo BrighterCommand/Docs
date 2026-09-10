@@ -164,8 +164,10 @@ public void ConfigureServices(IServiceCollection services)
     {
         producers.Outbox = new MsSqlOutbox(outboxConfiguration);
         producers.ConnectionProvider = typeof(MsSqlConnectionProvider);
-        // Use the EF Core transaction provider with your DbContext
-        producers.TransactionProvider = typeof(MsSqlEntityFrameworkTransactionProvider<MyDbContext>);
+        // Use the EF Core transaction provider with your DbContext. Note the "Core": MSSQL is
+        // the one provider that spells it MsSqlEntityFrameworkCoreTransactionProvider, where
+        // MySQL, PostgreSQL, SQLite and MongoDB all use <Provider>EntityFrameworkTransactionProvider.
+        producers.TransactionProvider = typeof(MsSqlEntityFrameworkCoreTransactionProvider<MyDbContext>);
         
         // ... configure your producers (e.g., for RabbitMQ, Kafka)
     })
