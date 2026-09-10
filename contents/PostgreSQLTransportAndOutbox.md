@@ -262,6 +262,7 @@ The Sweeper is a hosted service that wakes on a timer, finds undispatched messag
 using System;
 using Paramore.Brighter.BoxProvisioning;
 using Paramore.Brighter.BoxProvisioning.PostgreSql;
+using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.Outbox.Hosting;
 
 builder.Services

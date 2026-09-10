@@ -21,7 +21,7 @@ Brighter ships a library that creates the table on first start and evolves its s
 
 **Option B — Manage the DDL yourself (recommended where you have schema-change governance).**
 
-Use `MsSqlOutboxBuilder.GetDDL()` to obtain the same DDL Brighter ships, then drive it through your own change-management tooling — FluentMigrator, Flyway, Liquibase, an enterprise change-window pipeline, or hand-rolled scripts. The rest of this page describes this option.
+Use `SqlOutboxBuilder.GetDDL()` to obtain the same DDL Brighter ships, then drive it through your own change-management tooling — FluentMigrator, Flyway, Liquibase, an enterprise change-window pipeline, or hand-rolled scripts. The rest of this page describes this option.
 
 Neither option is deprecated. Choose based on fit: small teams and greenfield apps benefit from startup-time provisioning; teams with DBA approval workflows or change windows often prefer to drive the same DDL through their own tooling.
 
@@ -41,29 +41,33 @@ Install-Package Paramore.Brighter.MsSql.EntityFrameworkCore
 
 ## MSSQL Outbox Database Table Schema
 
-The MSSQL Outbox requires a specific table in your database to store messages before they are dispatched. You can generate the necessary SQL Data Definition Language (DDL) script to create this table using the `MsSqlOutboxBuilder` helper class.
+The MSSQL Outbox requires a specific table in your database to store messages before they are dispatched. You can generate the necessary SQL Data Definition Language (DDL) script to create this table using the `SqlOutboxBuilder` helper class.
 
 **Note:** When you choose Option B, you are responsible for creating the table and applying schema changes when upgrading to new versions of Brighter. Option A handles both for you — see [Database Provisioning](/contents/BoxProvisioning.md). Either way, application-level concerns like additional indexes for query performance remain your responsibility.
 
 ### **Generating the DDL**
 
-The `MsSqlOutboxBuilder.GetDDL()` method creates the SQL script for you. You can execute this script against your database to create the outbox table.
+The `SqlOutboxBuilder.GetDDL()` method creates the SQL script for you. You can execute this script against your database to create the outbox table.
+
+**Mind the type name.** Every other provider prefixes its builder — `PostgreSqlOutboxBuilder`, `MySqlOutboxBuilder`, `SqliteOutboxBuilder`, `SpannerOutboxBuilder` — and MSSQL alone does not. There is no `MsSqlOutboxBuilder`; the type is `SqlOutboxBuilder`, in `Paramore.Brighter.Outbox.MsSql`. The Inbox builder is `SqlInboxBuilder` for the same reason.
 
 ```csharp
+using Paramore.Brighter.Outbox.MsSql;
+
 // The table name can be whatever you choose.
 string tableName = "Outbox"; 
 
 // The DDL for a table that stores the message body as NVARCHAR(MAX)
-string ddl = MsSqlOutboxBuilder.GetDDL(tableName);
+string ddl = SqlOutboxBuilder.GetDDL(tableName);
 
 // The DDL for a table that stores the message body as VARBINARY(MAX)
 // Useful if your message body is binary
-string binaryDdl = MsSqlOutboxBuilder.GetDDL(tableName, hasBinaryMessagePayload: true);
+string binaryDdl = SqlOutboxBuilder.GetDDL(tableName, hasBinaryMessagePayload: true);
 ```
 
 ### **Example SQL Script**
 
-Running `MsSqlOutboxBuilder.GetDDL("Outbox")` will generate the following SQL script:
+Running `SqlOutboxBuilder.GetDDL("Outbox")` will generate the following SQL script:
 
 ```sql
 CREATE TABLE Outbox (

@@ -21,11 +21,16 @@ We provide a **WrapWithAttribute** of **ClaimCheck** that will use the **ClaimCh
 
 In the following example we add the **ClaimCheck** attribute to the *Message Mapper* with a trigger at 256Kb
 
-``` csharp
-[ClaimCheck(step:0, thresholdInKb: 256)]
-public Message MapToMessage(GreetingEvent request)
+```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+
+[ClaimCheck(step: 0, thresholdInKb: 256)]
+public Message MapToMessage(GreetingEvent request, Publication publication)
 {
-	var header = new MessageHeader(messageId: request.Id, topic: typeof(GreetingEvent).FullName.ToValidSNSTopicName(), messageType: MessageType.MT_EVENT);
+	var header = new MessageHeader(messageId: request.Id, topic: publication.Topic!, messageType: MessageType.MT_EVENT);
 	var body = new MessageBody(JsonSerializer.Serialize(request, JsonSerialisationOptions.Options));
 	var message = new Message(header, body);
 	return message;
@@ -34,15 +39,19 @@ public Message MapToMessage(GreetingEvent request)
 
 We provide a matching **UnwrapWithAttribute** of **RetrieveClaim** that will use the **ClaimCheckTransformer** to download the body of your **Message** from a luggage store and replace the existing body (likely a claim check reference) with the downloaded content.
 
-``` csharp
-[RetrieveClaim(0, retain:false)]
+```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+
+[RetrieveClaim(step: 0, retain: false)]
 public GreetingEvent MapToRequest(Message message)
 {
 	var greetingCommand = JsonSerializer.Deserialize<GreetingEvent>(message.Body.Value, JsonSerialisationOptions.Options);
 	
-	return greetingCommand;
+	return greetingCommand!;
 }
-
 ```
 
 An optional parameter 'retain' determines if we keep the body in storage after it is retrieved or delete it. The default is to delete it.
@@ -54,22 +63,49 @@ The outcome of these attributes is that the uploading of the body to the *luggag
 The *luggage store* is where we store the body of the message for later retrieval. We provide implementations of the Luggage Store interface for popular distributed stores, but you can implement the interface for any that we do not provide.
 
 ```csharp
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter.Observability;
 
-   public interface IAmAStorageProviderAsync
-    {
-        Task DeleteAsync(string claimCheck, CancellationToken cancellationToken);
-        Task<Stream> DownloadAsync(string claimCheck, CancellationToken cancellationToken);
-        Task<bool> HasClaimAsync(string claimCheck, CancellationToken cancellationToken);
-        Task<string> UploadAsync(Stream stream, CancellationToken cancellationToken);
-    }
-
+public interface IAmAStorageProviderAsync
+{
+    IAmABrighterTracer? Tracer { get; set; }
+    Task EnsureStoreExistsAsync(CancellationToken cancellationToken = default);
+    Task DeleteAsync(string claimCheck, CancellationToken cancellationToken = default);
+    Task<Stream> RetrieveAsync(string claimCheck, CancellationToken cancellationToken = default);
+    Task<bool> HasClaimAsync(string claimCheck, CancellationToken cancellationToken = default);
+    Task<string> StoreAsync(Stream stream, CancellationToken cancellationToken = default);
+}
 ```
 
-* DeleteAsync: Deletes a item from the store
-* DownloadAsync: Creates a stream for a download from the store
-* HasClaimAsync: Does the claim check exist in the store
-* UploadAsync: Uploads a stream to the store and returns a claim, an identifier that can later be used to delete, download or check for the existence of the file uploaded to the store.
+* `Tracer`: the tracer used to capture telemetry. You do not set this — the registration does
+* `EnsureStoreExistsAsync`: creates the store, or checks that it is there, according to `StorageOptions.Strategy`
+* `DeleteAsync`: deletes an item from the store
+* `RetrieveAsync`: creates a stream for a download from the store
+* `HasClaimAsync`: does the claim check exist in the store
+* `StoreAsync`: puts a stream into the store and returns a claim, an identifier that can later be used to delete, retrieve or check for the existence of what was stored
 
-We provide the following implementations of **IAmAStorageProviderAsync:
+There is a synchronous `IAmAStorageProvider` alongside it carrying the same operations, and
+**every store implements both** — which is what registration requires.
 
-* [S3LuggageStore](/contents/S3LuggageStore.md)
+## Luggage Store Implementations
+
+Seven implementations ship with V10:
+
+| Store | Package |
+|---|---|
+| `S3LuggageStore` | `Paramore.Brighter.Transformers.AWS`, and `Paramore.Brighter.Transformers.AWS.V4` for AWS SDK v4 |
+| `AzureBlobLuggageStore` | `Paramore.Brighter.Transformers.Azure` |
+| `GcsLuggageStore` | `Paramore.Brighter.Transformers.Gcp` |
+| `MongoDbLuggageStore` | `Paramore.Brighter.Transformers.MongoGridFS` |
+| `FileSystemStorageProvider` | `Paramore.Brighter` (core) |
+| `InMemoryStorageProvider` | `Paramore.Brighter` (core) |
+| `NullLuggageStore` | `Paramore.Brighter` (core) — the default, and every method throws |
+
+**Registering one of them is a step of its own**, and `AddBrighter` leaves you with the null
+store until you do. See
+[Put a Large Payload Behind a Claim Check](/contents/HandlingLargeMessages.md), which covers the
+registration, the threshold and how to tell whether the payload really left.
+
+* [S3 Luggage Store](/contents/S3LuggageStore.md)
