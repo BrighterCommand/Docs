@@ -939,6 +939,27 @@ Resolved by qualifying the four **on the new page only**, so no published Postgr
 moves. **Phase 5 and spec 014 both want this**: the convention's stated rationale has an
 unstated precondition.
 
+**H. THE PAGE SHIPPED TWO FALSE CLAIMS ABOUT THE INBOX, AND ONLY RUNNING THE SAMPLE FOUND THEM.**
+Both were in the merged #155 and were corrected afterwards.
+
+- **The global `InboxConfiguration` does nothing in a consumer-only process.** Its policy
+  arguments reach the pipeline only through `CommandProcessorBuilder`'s `ExternalBus` overloads
+  (`ServiceCollectionExtensions.cs:657-676`); with no producers registered the `NoExternalBus`
+  branch is taken and **that overload accepts no inbox**. Step 7 printed exactly that shape —
+  `AddConsumers` with an `InboxConfiguration` and no producer — and asserted it de-duplicates.
+  Measured with a control: **0 Inbox rows with no producer, 1 row with one**, the table present
+  and provisioned in both runs. The page now leads with `[UseInbox]`, which does not depend on a
+  bus.
+- **`InboxScope` is inert.** 0 references in `src/` outside its own declaration, against a
+  control of **43** for `OnceOnlyAction`. The page had a table row explaining when to choose
+  `Commands` over `Events`.
+
+**Neither was reachable by compiling**, and neither was reachable by reading either — the
+`scope:` argument has a type, a default and an XML comment. What found them was standing SQL
+Server up and watching an empty table. **This is the third time in this programme that a
+compiling, plausible, reviewed example was wrong about behaviour**, and the first where the
+instrument had to be a database rather than a probe.
+
 ### What the harnesses were
 
 Two, both `PackageReference` to **10.7.0** (phase 2's finding F), both `net9.0`,

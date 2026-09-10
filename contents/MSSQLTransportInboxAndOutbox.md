@@ -196,12 +196,11 @@ It does this in all three of its channel-creation methods. A plain `Subscription
 
 ## Step 7: Add the Inbox
 
-The Inbox is what makes the *consumer* idempotent: it records the messages a handler has already seen, so a redelivery is recognised rather than reprocessed. Configure it on the same `AddConsumers` call, against the same database:
+The Inbox is what makes the *consumer* idempotent: it records the messages a handler has already seen, so a redelivery is recognised rather than reprocessed. Register the store on `AddConsumers`, and put the policy on the handler:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
-using Paramore.Brighter.Inbox;
 using Paramore.Brighter.Inbox.MsSql;
 using Paramore.Brighter.MessagingGateway.MsSql;
 using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
@@ -212,28 +211,53 @@ builder.Services.AddConsumers(options =>
         options.DefaultChannelFactory = new ChannelFactory(
             new MsSqlMessageConsumerFactory(configuration));
 
-        options.InboxConfiguration = new InboxConfiguration(
-            new MsSqlInbox(configuration),
-            scope: InboxScope.Commands,
-            onceOnly: true,
-            actionOnExists: OnceOnlyAction.Warn);
+        // This supplies the STORE. The policy lives on the handler, below.
+        options.InboxConfiguration = new InboxConfiguration(new MsSqlInbox(configuration));
     })
     .AutoFromAssemblies();
 ```
 
+```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Inbox.Attributes;
+
+public class GreetingEventHandler : RequestHandler<GreetingEvent>
+{
+    [UseInbox(step: 0, contextKey: nameof(GreetingEventHandler), onceOnly: true,
+        onceOnlyAction: OnceOnlyAction.Warn)]
+    public override GreetingEvent Handle(GreetingEvent @event)
+    {
+        // Runs once per message id, however many times the transport delivers it
+        return base.Handle(@event);
+    }
+}
+```
+
 **`MsSqlInbox` takes the same configuration object**, reading `inboxTableName` from it — the third of the three names step 3 set.
 
-The three arguments after the Inbox are the ones worth deciding rather than defaulting:
+> **Why the attribute rather than the global configuration alone.** `InboxConfiguration`'s
+> other arguments — `scope`, `onceOnly`, `actionOnExists` — only reach the pipeline through
+> `CommandProcessorBuilder`'s `ExternalBus` overloads. A process that registers **no producers**
+> takes the `NoExternalBus` branch instead (`ServiceCollectionExtensions.cs:657`), and **that
+> overload accepts no inbox at all** — so a consumer-only application gets no de-duplication and
+> no warning that it is missing. Measured on a receiver with the Inbox table present and
+> provisioned: **0 rows written with no producer registered, 1 row with one registered.**
+> `[UseInbox]` is an ordinary handler attribute and does not depend on there being a bus.
+
+The attribute's arguments are the ones worth deciding rather than defaulting:
 
 | Option | Default | What it does |
 |---|---|---|
-| `scope` | `InboxScope.All` | `Commands`, `Events`, or `All`. Commands are the usual choice — an event delivered twice is often harmless, a command rarely is |
-| `onceOnly` | `true` | Whether to de-duplicate at all. `false` records without suppressing, which is useful as an audit log |
-| `actionOnExists` | `OnceOnlyAction.Throw` | What a duplicate does. `Throw` surfaces it, `Warn` logs and drops it |
+| `contextKey` | the handler's type name | Scopes the record to one handler, so two handlers of the same event each get their own row |
+| `onceOnly` | `false` on the attribute | Whether to de-duplicate at all. `false` records without suppressing, which is useful as an audit log |
+| `onceOnlyAction` | `OnceOnlyAction.Throw` | What a duplicate does. `Throw` raises `OnceOnlyException`, `Warn` logs and drops it without calling your handler |
 
-`OnceOnlyAction.Throw` is the default and it is the safe one, but on a transport that redelivers it will fill your logs with exceptions for messages that are being handled correctly. `Warn` is usually what you want once you trust the Inbox.
+`OnceOnlyAction.Throw` is the default and it is the safe one, but on a transport that redelivers it will fill your logs with exceptions for messages that are being handled correctly. `Warn` is usually what you want once you trust the Inbox — remembering that it means the duplicate is *silently dropped* after one log line.
 
-See [Brighter Inbox Support](/contents/BrighterInboxSupport.md) for the `[UseInbox]` attribute, which scopes an Inbox to a single handler instead of globally.
+**`InboxScope` is inert and you should not reach for it.** `InboxConfiguration` accepts a `scope:` of `Commands`, `Events` or `All`, but the enumeration is referenced nowhere in the product outside its own declaration — control: `OnceOnlyAction` has 43 references — so setting it changes nothing. Use `contextKey` and which handlers carry the attribute to control what is recorded.
+
+See [Brighter Inbox Support](/contents/BrighterInboxSupport.md) for more on `[UseInbox]`.
 
 ## Step 8: Deposit and Clear Inside Your Transaction
 
@@ -379,7 +403,15 @@ select CommandId, CommandType, ContextKey, Timestamp from InboxMessages;
 
 `ContextKey` is what scopes a message to a handler. It is generated from the handler's class name unless you pass a `context` function to `InboxConfiguration`, which is why two different handlers can each record the same `CommandId` without either seeing the other's row.
 
-A second delivery adds no row and, with `actionOnExists: OnceOnlyAction.Warn`, logs rather than throws — the handler does not run twice.
+A second delivery of the same message id adds no row and, with `onceOnlyAction: OnceOnlyAction.Warn`, logs rather than throws — the handler does not run twice. Measured by replaying an identical row onto the queue:
+
+```text
+delivery 1, message id X : handler ran 1 time
+delivery 2, message id X : handler ran 0 times
+  warn: Paramore.Brighter.Inbox.Handlers.UseInboxHandler
+        Command 01a08aef-c8a4-738e-ad13-317ce5686212 has already been seen
+InboxMessages rows after both : 1
+```
 
 **The check that matters is the failure case**, because it is the reason for all of this. Throw inside the handler between the two writes and the commit, and both disappear together — the row counts in your table and in `Outbox` are unchanged, and nothing reaches the queue.
 
@@ -401,9 +433,13 @@ A `ConfigurationException`, thrown by `AddProducers` while your application is s
 
 You skipped step 4. What makes this one expensive is how healthy everything looks first: the host starts, both boxes are provisioned, and the exception arrives only on the first attempt to resolve a command processor, naming a type your code never mentions.
 
-**Every message is handled twice**
+**Every message is handled twice, and the Inbox table stays empty**
 
-The Inbox is configured with `scope: InboxScope.Events` while the redelivered request is a command, or the other way round. Check the scope against what you are actually sending; `InboxScope.All` covers both while you work out which.
+The handler has no `[UseInbox]`, or the process registers no producers and you were relying on `InboxConfiguration`'s policy arguments — which never reach the pipeline without an external bus. Step 7. Setting `scope:` will not help: `InboxScope` is inert.
+
+**Every message is handled twice, and the Inbox table has rows**
+
+`onceOnly` defaulted to `false` on the attribute, so the Inbox is recording without suppressing. Set `onceOnly: true`.
 
 **`The type or namespace name 'MsSqlOutboxBuilder' could not be found`**
 
