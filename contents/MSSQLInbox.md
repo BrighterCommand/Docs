@@ -49,7 +49,7 @@ Brighter ships a library that creates the Inbox table on first start and evolves
 
 **Option B — Manage the DDL yourself.**
 
-Use `MsSqlInboxBuilder.GetDDL()` to obtain the DDL Brighter ships and apply it via your own tooling (FluentMigrator, Flyway, Liquibase, or hand-rolled scripts).
+Use `SqlInboxBuilder.GetDDL()` to obtain the DDL Brighter ships and apply it via your own tooling (FluentMigrator, Flyway, Liquibase, or hand-rolled scripts). **There is no `MsSqlInboxBuilder`** — MSSQL is the one provider whose builders carry no prefix, in `Paramore.Brighter.Inbox.MsSql`.
 
 Choose based on fit; neither option is deprecated.
 
