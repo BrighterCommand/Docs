@@ -869,7 +869,7 @@ person reads should over-report rather than hide a real dead name.
 **Goal:** the corpus is right, and the gate that proves it goes green on its first CI run.
 Eight tasks, one PR. **Ask before merging: this changes the published site.**
 
-- [ ] **Task 3.1:** Repair the scheduler family — **two symbols**, 13 sites across 8 pages
+- [x] **Task 3.1:** Repair the scheduler family — **two symbols**, 13 sites across 8 pages
   - Input: `IMessageScheduler` → `IAmAMessageScheduler` at `AwsScheduler.md`,
     `AzureScheduler.md` ×2, `HangfireScheduler.md`, `InMemoryScheduler.md` ×2,
     `QuartzScheduler.md`, `SchedulingAMessage.md`, `TickerQScheduler.md` ×3;
@@ -883,33 +883,33 @@ Eight tasks, one PR. **Ask before merging: this changes the published site.**
     luck**, which is not a method. Check each block still compiles as a claim — a name repair
     can leave a signature wrong
 
-- [ ] **Task 3.2:** Repair `IAmACommandStoreAsync`, `BuildingAnAsyncPipeline.md:36,38`
+- [x] **Task 3.2:** Repair `IAmACommandStoreAsync`, `BuildingAnAsyncPipeline.md:36,38`
   - Input: `src/Paramore.Brighter/Inbox/Handlers/UseInboxHandlerAsync.cs:55,67` at `origin/master`
   - Output: the page's async command-sourcing example
   - Notes: **`IAmAnInboxAsync`** — command sourcing is the Inbox side, and the example is V8-era.
     This one needs reading: the surrounding `CommandSourcingHandlerAsync<T>` is the page's own
     illustrative class and is fine; the interface it depends on is not
 
-- [ ] **Task 3.3:** Repair `UseExternalInbox`, `DispatcherConfigurationReference.md:255`
+- [x] **Task 3.3:** Repair `UseExternalInbox`, `DispatcherConfigurationReference.md:255`
   - Input: the page; `InboxConfiguration` and the V10 inbox registration at `origin/master`
   - Output: the paragraph, rewritten
   - Notes: **not a rename — the method went.** A Reference page naming a method that does not
     exist is the worst case of the four, because Reference is what a reader consults rather than
     reads. Describe what V10 actually does
 
-- [ ] **Task 3.4:** Repair `IAmAnIbox` → `IAmAnInbox`, `HowBrighterWorks.md:94`
+- [x] **Task 3.4:** Repair `IAmAnIbox` → `IAmAnInbox`, `HowBrighterWorks.md:94`
   - Input: the page
   - Output: one line
   - Notes: a typo, and the cheapest entry in the ledger — which is the point of the ledger
 
-- [ ] **Task 3.5:** Wire `symbolcheck.py` into the `check` job of `.github/workflows/docs.yml`
+- [x] **Task 3.5:** Wire `symbolcheck.py` into the `check` job of `.github/workflows/docs.yml`
   - Input: the existing `linkcheck`/`pagelint` steps and their comments
   - Output: one step, with a comment saying why it ships **with** the repairs
   - Notes: **`docs.yml` triggers `on: push`.** A gate merged while the corpus is red turns
     `master` red and reddens its own PR. The rule, written into the comment: *a gate and the
     corpus that satisfies it merge together, or the gate merges second*
 
-- [ ] **Task 3.6:** Wire `--verify-list` into the **scheduled `versions` job**, not `check`
+- [x] **Task 3.6:** Wire `--verify-list` into the **scheduled `versions` job**, not `check`
   - Input: the `versions` job and its existing rationale comment
   - Output: `actions/checkout` for `BrighterCommand/Brighter` and `BrighterCommand/Darker`, plus
     the step
@@ -917,14 +917,14 @@ Eight tasks, one PR. **Ask before merging: this changes the published site.**
     because *"the event that invalidates a pinned version is a release in another repository"* —
     a watchlist entry is invalidated by exactly that. Fetch depth must reach the pinned tag
 
-- [ ] **Task 3.7:** Re-run all eight gates; confirm `symbolcheck` green and **not vacuous**
+- [x] **Task 3.7:** Re-run all eight gates; confirm `symbolcheck` green and **not vacuous**
   - Input: the numbers at `c0d410a`; task 2.12's confirmation that phase 2 moved none
   - Output: the numbers
   - Notes: predicted — seven unmoved except `pagelint` warnings, which may fall if a repaired
     block earns a `using` line; `symbolcheck` **green with 4 entries loaded**. A green run over an
     empty watchlist is the vacuous case, so the run prints the entry count
 
-- [ ] **Task 3.8:** Write § *Phase 3 as executed*, with the defect ledger
+- [x] **Task 3.8:** Write § *Phase 3 as executed*, with the defect ledger
   - Input: **task 2.11's pasted red output** — that is where the "what the corpus said" column
     comes from, and it was captured in the previous PR precisely so the repair could not erase it
   - Output: what the corpus said, what the product says, and how each was found
@@ -932,6 +932,186 @@ Eight tasks, one PR. **Ask before merging: this changes the published site.**
     one PR back by design: a ledger written after the repair, from the repaired corpus, proves
     nothing. **Three of the four were found by a person and one by the probe** — record which,
     because that ratio is the argument both for and against the tool
+
+---
+
+## Phase 3 as executed — 2026-09-13, `docs/014-phase3-repairs`
+
+**All eight tasks in one PR. Eleven pages repaired, two CI steps wired, no page added or moved.**
+`symbolcheck` went from **17 sites across 11 pages, exit 1** to **exit 0 with 5 entries over 161
+pages and 1 site silenced** — the number of pages touched is exactly the 11 AC7 predicts, and
+`git diff --name-only c0d410a -- contents/` counts them.
+
+### The defect ledger — five symbols, and what each one actually was
+
+*What the corpus said* is read out of § *Phase 2 as executed*'s red-proof 1, captured one PR
+early so that the repair could not erase it.
+
+| # | What the corpus said | What the product says | How it was found | Repair |
+|---|---|---|---|---|
+| 1 | `IMessageScheduler`, 11 sites / 7 pages | 0 files at `10.7.0` and at master; `IAmAMessageScheduler` 51 at both — **but it is a marker interface with no members** | **the probe** (014 design §3.4) | `IAmAMessageSchedulerAsync` at 8 sites, `IAmAMessageScheduler` named in prose at 1 |
+| 2 | `IMessageSchedulerFactory`, 2 sites | 0 at both; `IAmAMessageSchedulerFactory` 11 at both | **the probe**, re-derived — phase 1 finding D | a rename, both sites |
+| 3 | `IAmACommandStoreAsync`, 2 sites | 0 at both; `IAmAnInboxAsync` 9 at both | **a person**, 013 ledger 15 | the block rewritten — see below |
+| 4 | `UseExternalInbox`, 1 site | 0 at both — removed, not renamed | **a person**, 013 ledger 15 | paragraph rewritten; the name **kept** behind an opt-out |
+| 5 | `IAmAnIbox`, 1 site | 0 at both; a typo | **a person**, 013 ledger 15 | `IAmAnInboxAsync`, **not** the `IAmAnInbox` the watchlist suggested |
+
+**Three by a person, two by the probe** — the tasks predicted "three and one", and the split of
+row 1 into rows 1 and 2 is where the fourth became a fifth. The ratio is the argument both ways
+and it should be read both ways: the probe found the **13 sites that repeat**, a person found the
+**3 that do not**, and no amount of either would have found the other.
+
+### The finding that governs the whole phase: **the replacement column is a name, not a type**
+
+`symbolcheck` polices names. Two of the five rows carry a replacement that is the right *name*
+and the wrong *type*, and in both cases a mechanical substitution would have gone green and left
+the page wrong:
+
+```text
+IAmAMessageScheduler   public interface IAmAMessageScheduler;          <- no members at all
+IAmAMessageSchedulerAsync : IAmAMessageScheduler    ScheduleAsync, ReSchedulerAsync, CancelAsync
+IAmAnInbox             IAmABrighterTracer Tracer { set; }              <- one member, not AddAsync
+IAmAnInboxAsync : IAmAnInbox                        AddAsync, ExistsAsync, ...
+```
+
+Eight of the scheduler sites declare a field and then `await _scheduler.CancelAsync(...)`. Given
+the watchlist's replacement verbatim they would name a live type, satisfy the gate, and **not
+compile** — `CancelAsync` is on `IAmAMessageSchedulerAsync`. The same holds for
+`HowBrighterWorks.md:94`, the "cheapest entry in the ledger": the sentence has
+`UseInboxHandlerAsync` calling `AddAsync`, and the handler's own field is `IAmAnInboxAsync`
+(`src/Paramore.Brighter/Inbox/Handlers/UseInboxHandlerAsync.cs:55`). **The cheapest repair in the
+ledger was the one where the watchlist's own advice was wrong.**
+
+This is **finding B for the second and third time**, now on `master` rather than on a scratch
+copy, and it is the standing answer to anyone who reads a green `symbolcheck` as *"this page is
+correct"*. It is also why tasks 3.1–3.4 were specified as read-through repairs: the tool cannot
+be given the judgement, so the writer keeps it. **Both sites were verified against the interface
+declarations, not against the count of files matching a name.**
+
+**The watchlist rows were left unchanged.** `IAmAnIbox → IAmAnInbox` is true as a typo repair;
+what it is not is a type decision, and a replacement column cannot hold one. Making the column
+say `IAmAnInboxAsync` would be right for this page and wrong for the next.
+
+### A dead name the watchlist never knew, found by reading the block around a repair
+
+`TickerQScheduler.md:208` called `_scheduler.RescheduleAsync(schedulerId, at)`. Resolved the way
+every watchlist row is:
+
+```text
+RescheduleAsync    0 files at 10.7.0, 0 at origin/master      <- the docs' name
+ReSchedulerAsync   9 files at 10.7.0, 9 at origin/master      <- the product's name
+```
+
+It was two lines below a site the gate *did* report, and the gate has nothing to say about it —
+it is not on the list, and 014's own census argues nothing cheap can put it there. It was found
+because task 3.1 says **substitution with a read-through, not sed**. Repaired to
+`ReSchedulerAsync`.
+
+### `BuildingAnAsyncPipeline.md` was three defects deep, and the gate could see one
+
+The dead interface was the shallowest of them:
+
+| What | Was | Is |
+|---|---|---|
+| the interface | `IAmACommandStoreAsync` — dead | `IAmAnInboxAsync` |
+| the call | `AddAsync(command, -1, ct)` | `AddAsync(command, "CommandSourcing", Context as RequestContext, -1, cancellationToken)` |
+| the signature | `HandleAsync(T command, CancellationToken? ct = null)` | `HandleAsync(T command, CancellationToken cancellationToken = default)` |
+| the body | `Task<T>` with **no return statement** | `return await base.HandleAsync(...)` |
+
+The page's own prose, two paragraphs down, told the reader to *"call **return await
+base.HandleAsync(command, ct)**"* — which the code beneath it did not do, and had not done for as
+long as the block has been there. **The prose was right and the code was wrong**, which is the
+opposite of the failure this spec was built to catch, and no gate in this repository looks for
+it. The prose was updated to name the parameter the code now uses.
+
+### The opt-out's first use in the live corpus
+
+`DispatcherConfigurationReference.md` keeps the name `UseExternalInbox` on purpose, in a *Coming
+from V9?* note, behind `<!-- symbolcheck: allow UseExternalInbox -->`. The reasoning is the
+banner's own: pre-V10 Brighter is well represented in blog posts and Stack Overflow answers, so
+the reader most likely to search for that method is the reader who most needs the page saying it
+was removed. Deleting the name would have made the gate green by making the page silent.
+
+The run says so out loud, which is the property phase 2 decision 4 bought:
+
+```text
+----- silenced by opt-out (1 site(s)) -----
+contents/DispatcherConfigurationReference.md  UseExternalInbox ×1
+
+No watchlisted symbols found (5 entries, 161 pages checked, 1 silenced).          exit 0
+```
+
+**`0 findings` and `0 findings, 1 silenced` are different claims**, and only the second is true
+of this corpus. Red-proof 7 showed the opt-out working on a scratch copy; this is the first time
+it has run on `master`.
+
+### The CI wiring, and the control that proves `fetch-depth: 0` is load-bearing
+
+Task 3.5 puts `symbolcheck.py` in the `check` job beside `pagelint`, in the same PR as the
+repairs it polices, with the rule written into the comment. Task 3.6 puts `--verify-list` in the
+scheduled `versions` job — **and that job now checks this repository out into `Docs/` with
+`Brighter/` and `Darker/` beside it**, because `symbolcheck` resolves rows at `../Brighter` and
+`actions/checkout` cannot write outside the workspace. Every step in that job names its
+`working-directory`.
+
+The layout was **run, not reasoned about** — three local clones arranged as CI arranges them:
+
+```text
+Docs/ Brighter/ Darker/ as siblings     control: CommandProcessor LIVE  43 at 10.7.0, 45 at master
+                                        control: IAmAnIbox        DEAD   0 at 10.7.0,  0 at master
+                                        All 5 entries still dead …                        exit 0
+no siblings at all                      no checkout at ../Brighter … cannot run without it exit 2
+Brighter cloned --depth 1               ../Brighter@origin/master: fatal: unable to resolve
+  (tag present, origin/master absent)   revision: origin/master                            exit 2
+```
+
+The third row is the two-way control for the `fetch-depth: 0` line: remove it and the step does
+not quietly report five dead rows, it refuses. A pinned tag survives a shallow clone and
+`origin/master` does not, so the shallow failure is the one that would have been plausible.
+
+### The gates — task 3.7, predicted and measured
+
+| Gate | At `c0d410a` | Now | Predicted |
+|---|---|---|---|
+| `linkcheck` | 164 files / 0 broken | **164 / 0** | unmoved ✓ |
+| `pagelint` | 0 errors / 768 warnings / 162 pages | **0 / 757 / 162** | *"may fall if a repaired block earns a `using` line"* ✓ |
+| `--check-shape` | 161 / 12 / widest 12 of 20 | **161 / 12 / 12 of 20**, deepest 4 of 4 | unmoved ✓ |
+| `--check-redirects` | 77 entries / 7858 bytes | **77 / 7858** | unmoved ✓ |
+| `versioncheck` | 0 stale of 18 across 5 | **0 of 18 across 5** | unmoved ✓ |
+| `optioncheck` | 0 across 59 tables / 519 rows | **0 / 59 / 519** | unmoved ✓ |
+| `--verify` | 161 = 161 | **predicted 161, published 161, 161 agree** | unmoved ✓ |
+| **`symbolcheck`** | 17 sites / 11 pages, exit 1 | **0 findings, 5 entries, 161 pages, 1 silenced, exit 0** | green and **not vacuous** ✓ |
+
+**The one number that moved was diffed rather than asserted.** 768 → 757 is **eleven** warnings,
+and eleven is not ten:
+
+```text
+$ diff <(pagelint at HEAD~) <(pagelint now) | grep -c '^<.*USING DIRECTIVES'    11
+$ diff … | grep -v 'USING DIRECTIVES' | grep '^[<>]'    (only the summary line)
+```
+
+Ten came from the strict `--changed` pass, which turns rule 6 into an error for any block
+overlapping the diff and named exactly ten. The eleventh is `BuildingAnAsyncPipeline.md`'s block,
+which had earned its `using` lines during task 3.2 *before* that pass ran and so was never in its
+error list. No warning of any other class moved. The strict pass reports **11 files, 38 hunks, 11
+pages, 13 code blocks strict, 0 errors**.
+
+**Task 3.7's own text predicted "green with 4 entries loaded".** It is **5**, and that figure is
+the pre-finding-D count surviving in a sentence the amendment banners did not reach. Recorded
+rather than quietly corrected: it is friction 29 — *an inherited count re-quoted at the wrong
+grain* — turning up one phase after it was written down.
+
+### Three decisions phase 3 took that the design did not
+
+1. **Repairs target the async interface, not the marker.** The watchlist's replacement is advice
+   about a *name*; which type a block should name is a judgement about the code around it, and it
+   stays with the writer. The rows were not edited to say otherwise.
+2. **A removed name may stay in prose, behind a visible opt-out.** The alternative — deleting
+   every mention of `UseExternalInbox` — makes the gate green by making the docs useless to the
+   reader arriving from V9. The opt-out is per symbol, prints its count, and is the reason this
+   is a decision and not a hole.
+3. **A defect found beside a repair gets repaired.** `RescheduleAsync` is not on the watchlist and
+   will never be; it was two lines from one that is. Task 3.1's *"read-through, not sed"* is what
+   found it, and the phase treats that instruction as covering what the reading turns up.
 
 ---
 

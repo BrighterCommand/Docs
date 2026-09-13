@@ -31,23 +31,30 @@ Let us assume that we want to log all requests travelling through the pipeline. 
 handler as follows:
 
 ``` csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public class CommandSourcingHandlerAsync<T> : RequestHandlerAsync<T> where T : class, IRequest
 {
-    private readonly IAmACommandStoreAsync _commandStore;
+    private readonly IAmAnInboxAsync _inbox;
 
-    public CommandSourcingHandlerAsync(IAmACommandStoreAsync commandStore)
+    public CommandSourcingHandlerAsync(IAmAnInboxAsync inbox)
     {
-        _commandStore = commandStore;
+        _inbox = inbox;
     }
 
-    public override async Task<T> HandleAsync(T command, CancellationToken? ct = null)
+    public override async Task<T> HandleAsync(T command, CancellationToken cancellationToken = default)
     {
-        await _commandStore.AddAsync(command, -1, ct).ConfigureAwait(ContinueOnCapturedContext);
+        await _inbox.AddAsync(command, "CommandSourcing", Context as RequestContext, -1, cancellationToken)
+            .ConfigureAwait(ContinueOnCapturedContext);
+
+        return await base.HandleAsync(command, cancellationToken).ConfigureAwait(ContinueOnCapturedContext);
     }
 }
 ```
 
-Our HandleAsync method is the method which will be called by the pipeline to service the request. After we log we call **return await base.HandleAsync(command, ct)** to ensure that the next handler in the
+Our HandleAsync method is the method which will be called by the pipeline to service the request. After we log we call **return await base.HandleAsync(command, cancellationToken)** to ensure that the next handler in the
 chain is called.
 
 If we failed to do this, the *target handler* would not be called nor any subsequent handlers in the chain. This call to the next item in the chain is how we support the \'Russian Doll\' model - because the next

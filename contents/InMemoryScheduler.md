@@ -168,6 +168,13 @@ var app = builder.Build();
 Use InMemory for development, production schedulers elsewhere:
 
 ```csharp
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddBrighter(options =>
@@ -177,7 +184,7 @@ builder.Services.AddBrighter(options =>
 .UseScheduler(GetSchedulerFactory(builder.Environment, builder.Configuration))
 .AutoFromAssemblies();
 
-static IMessageSchedulerFactory GetSchedulerFactory(
+static IAmAMessageSchedulerFactory GetSchedulerFactory(
     IHostEnvironment environment,
     IConfiguration configuration)
 {
@@ -278,10 +285,16 @@ public class ReportService
 Cancel a previously scheduled job:
 
 ```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+
 public class OrderService
 {
+    // ... _repository and _logger, injected as your application supplies them
     private readonly IAmACommandProcessor _commandProcessor;
-    private readonly IMessageScheduler _scheduler;
+    private readonly IAmAMessageSchedulerAsync _scheduler;
 
     public async Task CancelOrder(Guid orderId)
     {
@@ -305,6 +318,13 @@ public class OrderService
 Example unit test using InMemory Scheduler:
 
 ```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Xunit;
+
 public class SchedulingTests : IDisposable
 {
     private readonly ServiceProvider _serviceProvider;
@@ -354,7 +374,7 @@ public class SchedulingTests : IDisposable
         // Arrange
         var command = new TestCommand { Id = Guid.NewGuid() };
         var delay = TimeSpan.FromSeconds(10);  // Long delay
-        var scheduler = _serviceProvider.GetRequiredService<IMessageScheduler>();
+        var scheduler = _serviceProvider.GetRequiredService<IAmAMessageSchedulerAsync>();
 
         // Act
         var schedulerId = await _commandProcessor.SendAsync(delay, command);

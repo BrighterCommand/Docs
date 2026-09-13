@@ -252,9 +252,13 @@ For this we will need the *Inbox* packages for the MySQL *Inbox*.
 
 For a given backing store the pattern should be Paramore.Brighter.Inbox.{DATABASE} where {DATABASE} is the name of the Db that you are using.
 
-To configure our *Inbox* we then need to use the UseExternalInbox method call and pass in an instance of a class that implements **IAmAnInbox**, taken from our package, and an instance of **InboxConfiguration** that tells Brighter how we want to use the Inbox.
+To configure our *Inbox* we set the **InboxConfiguration** property on the options passed to **AddConsumers()**. **InboxConfiguration** takes the instance of a class that implements **IAmAnInbox**, taken from our package, as its first constructor argument; the remaining arguments tell Brighter how we want to use the Inbox. There is no separate registration call — the *Inbox* and its behavior are the one object.
 
-For *Inbox Configuration* you set the following properties:
+<!-- symbolcheck: allow UseExternalInbox -->
+
+> **Coming from V9?** The builder method **UseExternalInbox()**, which took the **IAmAnInbox** and an **InboxConfiguration** as two arguments, was removed at V10. Set **options.InboxConfiguration** instead, as the example below does. The name is kept here on purpose, so that a reader arriving from a V9 blog post or Stack Overflow answer finds the page that tells them it is gone.
+
+For *Inbox Configuration* you pass the following arguments, each of which is exposed as a property:
 
 * **ActionOnExists**: What do we do if the request has been handled? The default,**OnceOnlyAction.Throw** is to throw a **OnceOnlyException**. If you take no other action this will cause the message to be rejected and sent to a DLQ if one is configured (See [Handler Failure](/contents/HandlerFailure.md)). The alternative is **OnceOnlyAction.Warn** simply logs that the request is a duplicate, but takes no other action. A third option, **OnceOnlyAction.Replay**, also skips the handler but resends the messages that handler produced the first time it ran — it has prerequisites, so see [Replay On Seen](/contents/ReplayOnSeen.md) before you choose it.
 * **OnceOnly**: This defaults to *true* and will check for a duplicate and take the action indicated by **ActionOnExists**. If *false* the *Inbox* will record the request, but will take no further action. (This tends to be set to *false* if you are using the *Inbox* to record what requests caused current state only and not de-duplicate).
