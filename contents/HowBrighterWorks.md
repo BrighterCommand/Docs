@@ -91,6 +91,6 @@ simplicity.
 
 29: We return from RequestLoggingAsync\<\> which has no work left to do.
 
-30: UseInboxHandlerAsync calls IAmAnIbox\'s AddAsync method to write the command to the Inbox. Then it returns.
+30: UseInboxHandlerAsync calls IAmAnInboxAsync\'s AddAsync method to write the command to the Inbox. Then it returns.
 
 31: SendAsync returns, and we are done.

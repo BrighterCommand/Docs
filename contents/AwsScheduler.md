@@ -431,10 +431,16 @@ public class ReportService
 Cancel a scheduled task before it executes:
 
 ```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+
 public class OrderService
 {
+    // ... _repository and _logger, injected as your application supplies them
     private readonly IAmACommandProcessor _commandProcessor;
-    private readonly IMessageScheduler _scheduler;
+    private readonly IAmAMessageSchedulerAsync _scheduler;
 
     public async Task CancelOrder(Guid orderId)
     {

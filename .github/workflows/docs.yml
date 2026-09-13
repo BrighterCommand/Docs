@@ -59,6 +59,24 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
         run: python3 tools/pagelint.py --changed "origin/$BASE_REF"
 
+      # Spec 014 phase 2/3. tools/symbolcheck.py fails the build when a page names a
+      # symbol on tools/symbolwatch.tsv — a name that is dead in the product at both
+      # the pinned release and its master.
+      #
+      # THIS STEP SHIPS IN THE SAME PR AS THE REPAIRS IT POLICES, and that is the
+      # rule rather than this instance: a gate and the corpus that satisfies it merge
+      # together, or the gate merges second. This file triggers `on: push`, so a gate
+      # merged over a corpus that still violates it turns master red *and* reddens its
+      # own pull request. The 17 sites this step would have failed on were repaired in
+      # the commits beside it; the red run itself is preserved in
+      # spec/014-documentation_workflow/tasks.md § Phase 2 as executed, because a gate
+      # that has never been seen failing has not been shown to work.
+      #
+      # `--verify-list` is deliberately NOT here — see the versions job below. Nothing
+      # in this job checks out Brighter or Darker, and without them that mode exits 2
+      # rather than reporting every watched name as dead.
+      - run: python3 tools/symbolcheck.py
+
       # Spec 010 D3/D7, Q10's answer. Both read only the repository, so neither can
       # make the build flaky. `--verify` is deliberately NOT here: it fetches the live
       # sitemap, and a check whose failure mode is "the site was slow" teaches people
@@ -100,14 +118,48 @@ jobs:
   # braces: the event that invalidates a pin is a release in another
   # repository, so a PR-only trigger would leave a stale pin undetected until
   # someone happened to touch the docs.
+  # tools/symbolcheck.py --verify-list joins this job for that same reason, spec 014
+  # phase 3. It asks of every row in tools/symbolwatch.tsv: is this name still dead?
+  # A row goes stale when the product brings the name back, deletes its replacement,
+  # or ships the replacement a page was told to wait for — all three are releases in
+  # another repository, which is this job's stated trigger and not the `check` job's.
+  #
+  # That is also why the three checkouts below are laid out as siblings. symbolcheck
+  # resolves each row at ../Brighter and ../Darker, and actions/checkout cannot write
+  # outside the workspace — so this repository goes in Docs/ and the two products
+  # beside it, rather than at the workspace root. Every step therefore names its
+  # working-directory.
+  #
+  # fetch-depth: 0 and fetch-tags on the products are load-bearing, not caution: the
+  # rows resolve at a PINNED TAG as well as at origin/master, and a shallow default
+  # checkout has neither. A missing ref is exit 2 here rather than a row silently
+  # reading DEAD — `git grep` exits >1 for a bad ref and 1 for an honest zero, and
+  # resolve() tells those apart.
   versions:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: Docs
+      - uses: actions/checkout@v4
+        with:
+          repository: BrighterCommand/Brighter
+          path: Brighter
+          fetch-depth: 0
+          fetch-tags: true
+      - uses: actions/checkout@v4
+        with:
+          repository: BrighterCommand/Darker
+          path: Darker
+          fetch-depth: 0
+          fetch-tags: true
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: python3 tools/versioncheck.py
+        working-directory: Docs
+      - run: python3 tools/symbolcheck.py --verify-list
+        working-directory: Docs
 
   # Spec 012 D1/D2. tools/optioncheck diffs every option table in contents/
   # against the type its `<!-- optioncheck: -->` marker names, reflecting over

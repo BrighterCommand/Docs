@@ -104,7 +104,7 @@ Cancel a previously scheduled message:
 // ...
 public class OrderService
 {
-    private readonly IMessageScheduler _scheduler;
+    private readonly IAmAMessageSchedulerAsync _scheduler;
 
     public async Task CancelOrder(Guid orderId)
     {

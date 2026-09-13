@@ -238,7 +238,7 @@ public static class BrighterConfiguration
         return new RmqProducerRegistryFactory(/* production config */).Create();
     }
 
-    private static IMessageSchedulerFactory GetSchedulerFactory(
+    private static IAmAMessageSchedulerFactory GetSchedulerFactory(
         IHostEnvironment environment,
         IConfiguration configuration)
     {

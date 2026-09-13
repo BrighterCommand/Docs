@@ -394,9 +394,15 @@ public class OrderService
 ### Cancelling a Scheduled Job
 
 ```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+
 public class OrderService
 {
-    private readonly IMessageScheduler _scheduler;
+    // ... _repository and _logger, injected as your application supplies them
+    private readonly IAmAMessageSchedulerAsync _scheduler;
 
     public async Task CancelOrder(Guid orderId)
     {

@@ -188,10 +188,14 @@ public class NotificationService
 You can cancel a scheduled job using the ID returned during scheduling:
 
 ```csharp
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
+// ... inside your own class; _scheduler is injected
 public async Task CancelNotification(string schedulerId)
 {
     // Cancel the specific job using the scheduler interface
-    // Note: You typically need the IMessageScheduler interface here
+    // Note: You typically need the IAmAMessageSchedulerAsync interface here
     await _scheduler.CancelAsync(schedulerId);
 }
 ```
@@ -200,12 +204,17 @@ public async Task CancelNotification(string schedulerId)
 You can reschedule a scheduled job using the ID returned during scheduling:
 
 ```csharp
+using System;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
+// ... inside your own class; _scheduler is injected
 public async Task RescheduleNotification(string schedulerId, DateTimeOffset at)
 {
     // Reschedule the specific job using the scheduler interface
-    // Note: You typically need the IMessageScheduler interface here
+    // Note: You typically need the IAmAMessageSchedulerAsync interface here
     // Note: You can't reschedule a job that has already been executed or  in progress
-    await _scheduler.RescheduleAsync(schedulerId, at);
+    await _scheduler.ReSchedulerAsync(schedulerId, at);
 }
 ```
 
@@ -254,7 +263,7 @@ TickerQ integration for Brighter offers a modern, high-performance scheduling op
 
 - **Fast**: Source-generator based, low overhead.
 - **Visual**: Integrated dashboard.
-- **Standard**: Fully implements Brighter's `IMessageScheduler` interface.
+- **Standard**: Fully implements Brighter's `IAmAMessageSchedulerSync` and `IAmAMessageSchedulerAsync` interfaces.
 
 Use TickerQ when you want a lightweight, modern scheduler without the legacy footprint of older libraries.
  
