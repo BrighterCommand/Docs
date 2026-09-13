@@ -551,10 +551,38 @@ named here only so the phase does not look like it declined to predict.
     `git diff --name-only origin/master -- contents/` **0**, and the gate is **still red at
     exit 1** in this repository — which is what phase 2 is required to leave behind for phase 3
 
-- [ ] **Task 2.8:** Red-proof 3 — the list is what fires, not the corpus
+- [x] **Task 2.8:** Red-proof 3 — the list is what fires, not the corpus
   - Input: `tools/symbolwatch.tsv` from task 2.1
   - Output: delete one row, re-run, that symbol alone stops being reported
   - Notes: distinguishes "the tool reads its list" from "the tool has the names baked in"
+  - **Done 2026-09-13, as a full leave-one-out rather than one deletion.** Five runs, each
+    dropping one row, and in every one the dropped symbol stops being reported, **the other four
+    keep their exact site counts**, and the footer says **4 watchlist entries** instead of 5:
+
+    | Dropped | Sites | Pages |
+    |---|---|---|
+    | *(baseline)* | 17 | 11 |
+    | `IAmACommandStoreAsync` | 15 | 10 |
+    | `UseExternalInbox` | 16 | 10 |
+    | `IAmAnIbox` | 16 | 10 |
+    | `IMessageScheduler` | **6** | **5** |
+    | `IMessageSchedulerFactory` | 15 | 10 |
+
+    The site arithmetic is exact each time. **The page arithmetic is the interesting one:**
+    dropping `IMessageScheduler` takes 7 pages off an 11-page total and leaves **5**, not 4,
+    because `InMemoryScheduler.md` carries the factory as well — finding D's overlap showing up
+    as a number in an unrelated proof
+  - **And the other direction, which deletion alone cannot prove.** Adding a row for a name
+    **absent from the corpus** (`ZzzNeverWrittenAnywhere`) leaves the findings **byte-identical**
+    and moves only the entry count, 5 → 6: a list can grow without manufacturing a finding.
+    Adding one for a name **present and never listed** — `CommandSourcingHandlerAsync`, the
+    page's own example class, 5 sites on `BuildingAnAsyncPipeline.md` — takes the report to
+    **22 sites** with the other five unchanged. **Removal proves the tool forgets; addition
+    proves it looks.** The far end is the empty list, which is **exit 2**, not a green
+  - **No `--watchlist <path>` flag, deliberately**, which is why all of this ran against a
+    scratch copy of `contents/` and `tools/`. A gate that can be pointed at another list can be
+    silenced by pointing it at an empty one, and that is a single line in a workflow file.
+    `git status --short tools/` is empty: the shipped list was never edited
 
 - [ ] **Task 2.9:** Red-proof 4 and 5 — `--verify-list` discriminates
   - Input: task 2.6; Brighter at `10.7.0` and `origin/master`
