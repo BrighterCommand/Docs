@@ -618,7 +618,7 @@ named here only so the phase does not look like it declined to predict.
     cannot produce a false green even if someone wires it there
   - **One cosmetic fix in the same commit:** the summary said *"1 entry need attention"*
 
-- [ ] **Task 2.10:** Red-proof 6 and 7 — **the product column, and the opt-out**
+- [x] **Task 2.10:** Red-proof 6 and 7 — **the product column, and the opt-out**
   - Input: `design.md` §4.2–4.3; `CLAUDE.md` § *Page banner*; Darker at `4.1.1`
   - Output: two proofs. **Product** — add a `darker`-product row for a symbol live in Darker and
     dead in Brighter (**`AddPolicies`**, not the design's `.AddPolicies(`: task 2.6 measured the
@@ -656,18 +656,211 @@ named here only so the phase does not look like it declined to predict.
     ×2` underneath. **The second half is the half that matters** — an opt-out that silenced the
     page would pass a one-way test and be a hole in the gate
 
-- [ ] **Task 2.11:** Write §§ *Phase 1 as executed* and *Phase 2 as executed*
+- [x] **Task 2.11:** Write §§ *Phase 1 as executed* and *Phase 2 as executed*
   - Input: tasks 1.1 and 2.7–2.10
   - Output: the probe write-up and phase 2's, with all **seven** red-proof outputs pasted
   - Notes: **the red-proofs live here because they cannot live in CI** — the gate is not wired
     until phase 3, so this section is the only record that it was ever red. Phase 3's ledger
     (task 3.8) reads its "what the corpus said" column out of this section
 
-- [ ] **Task 2.12:** Re-run the seven gates; predict and confirm no movement
+- [x] **Task 2.12:** Re-run the seven gates; predict and confirm no movement
   - Input: the numbers at `c0d410a` in `requirements.md` §11.6
   - Output: the numbers, in the write-up
   - Notes: predicted **all seven unmoved** — phase 2 adds two files under `tools/` and touches no
     page. If anything moves, something was edited that should not have been
+
+---
+
+## Phase 2 as executed — 2026-09-13, `docs/014-phase2-symbolcheck`
+
+**All twelve tasks in one PR. Two files added under `tools/` — `symbolcheck.py` (818 lines) and
+`symbolwatch.tsv` (5 rows) — and no page changed.** The seven gates are exactly where
+`requirements.md` §11.6 recorded them; the eighth is **red on purpose** and stays red until
+phase 3.
+
+### The seven red-proofs, as run
+
+They live here because they **cannot live in CI**. The gate is not wired until phase 3, so this
+section is the only record that it was ever red, and task 3.8's ledger reads its *what the corpus
+said* column out of it.
+
+**1 — the gate fires.** `python3 tools/symbolcheck.py`, before any repair:
+
+```text
+===== IAmACommandStoreAsync — 2 site(s) across 1 page(s) =====
+    IAmAnInboxAsync   [013 ledger 15, listed 2026-09-10]
+contents/BuildingAnAsyncPipeline.md:36  private readonly IAmACommandStoreAsync _commandStore;
+contents/BuildingAnAsyncPipeline.md:38  public CommandSourcingHandlerAsync(IAmACommandStoreAsync commandStore)
+
+===== UseExternalInbox — 1 site(s) across 1 page(s) =====
+    (removed at V10 — not a rename)   [013 ledger 15, listed 2026-09-10]
+contents/DispatcherConfigurationReference.md:255  To configure our *Inbox* we then need to use the UseExternalInbox method call…
+
+===== IAmAnIbox — 1 site(s) across 1 page(s) =====
+    IAmAnInbox   [013 ledger 15, listed 2026-09-10]
+contents/HowBrighterWorks.md:94  30: UseInboxHandlerAsync calls IAmAnIbox\'s AddAsync method to write the command to the Inbox…
+
+===== IMessageScheduler — 11 site(s) across 7 page(s) =====
+    IAmAMessageScheduler   [014 design §3.4 — the probe, listed 2026-09-12]
+contents/AwsScheduler.md:437       private readonly IMessageScheduler _scheduler;
+contents/AzureScheduler.md:344     private readonly IMessageScheduler _scheduler;
+contents/AzureScheduler.md:374     private readonly IMessageScheduler _scheduler;
+contents/HangfireScheduler.md:429  private readonly IMessageScheduler _scheduler;
+contents/InMemoryScheduler.md:284  private readonly IMessageScheduler _scheduler;
+contents/InMemoryScheduler.md:357  var scheduler = _serviceProvider.GetRequiredService<IMessageScheduler>();
+contents/QuartzScheduler.md:399    private readonly IMessageScheduler _scheduler;
+contents/SchedulingAMessage.md:107 private readonly IMessageScheduler _scheduler;
+contents/TickerQScheduler.md:194   // Note: You typically need the IMessageScheduler interface here
+contents/TickerQScheduler.md:206   // Note: You typically need the IMessageScheduler interface here
+contents/TickerQScheduler.md:257   - **Standard**: Fully implements Brighter's `IMessageScheduler` interface.
+
+===== IMessageSchedulerFactory — 2 site(s) across 2 page(s) =====
+    IAmAMessageSchedulerFactory   [014 tasks, phase 1 finding D, listed 2026-09-13]
+contents/InMemoryOptions.md:241    private static IMessageSchedulerFactory GetSchedulerFactory(
+contents/InMemoryScheduler.md:180  static IMessageSchedulerFactory GetSchedulerFactory(
+
+17 site(s) across 11 page(s), from 5 watchlist entries over 161 pages.          exit 1
+```
+
+**2 — and stops.** The same tool over a scratch copy with all 17 sites repaired by the gate's own
+`word_pattern`:
+
+```text
+No watchlisted symbols found (5 entries, 161 pages checked).                    exit 0
+```
+
+It says **5 entries**, so that green is not the empty-list green.
+
+**3 — the list is what fires, not the corpus.** A full leave-one-out; each run drops one row and
+nothing else:
+
+```text
+baseline                        17 site(s) across 11 page(s), from 5 watchlist entries
+without IAmACommandStoreAsync   15 site(s) across 10 page(s), from 4 watchlist entries
+without UseExternalInbox        16 site(s) across 10 page(s), from 4 watchlist entries
+without IAmAnIbox               16 site(s) across 10 page(s), from 4 watchlist entries
+without IMessageScheduler        6 site(s) across  5 page(s), from 4 watchlist entries
+without IMessageSchedulerFactory 15 site(s) across 10 page(s), from 4 watchlist entries
+```
+
+In every run the dropped symbol goes and **the other four keep their exact counts**. Both
+additions were run too: a row for a name **absent** from the corpus leaves the findings
+byte-identical, and a row for a name **present and unlisted** (`CommandSourcingHandlerAsync`,
+5 sites) takes the total to 22. **Removal proves the tool forgets; addition proves it looks.**
+
+**4 — a bad ref cannot pass clean**, and there are two ways to have one:
+
+```text
+ref '10.7.O' (letter O)     cannot run: ../Brighter@10.7.O: fatal: unable to
+                            resolve revision: 10.7.O                           exit 2
+../Darker pointed at as     control failed: CommandProcessor resolves DEAD,
+'brighter', ref 4.1.1       expected LIVE (0 files at 4.1.1, 0 at master)      exit 2
+```
+
+**5 — `--verify-list` discriminates.** `CommandProcessor` added as a row:
+
+```text
+CommandProcessor  brighter  LIVE  43 at 10.7.0, 45 at origin/master
+===== 1 entry needs attention =====
+CommandProcessor (brighter, line 22): LIVE — 43 files at 10.7.0, 45 at origin/master.
+    REMOVE THE ROW. The name exists at both refs; policing it tells a writer to
+    replace correct text.                                                      exit 1
+```
+
+Those two numbers print as a **control on every run**, green or red.
+
+**6 — the `product` column.** `AddPolicies` has 5 real sites across 3 pages, **all bannered
+*Darker V4***; one more was planted on a scratch copy of `PolicyRetryAndCircuitBreaker.md`, a
+*Brighter V10* page. One symbol, two rows:
+
+| Row | The gate reports | `--verify-list` says |
+|---|---|---|
+| `AddPolicies` · **brighter** | **1 site / 1 page** — the planted Brighter page; the 5 Darker sites invisible | **DEAD**, 0 at `10.7.0`, 0 at master — green |
+| `AddPolicies` · **darker** | **5 sites / 3 pages** — the Darker V4 pages; the planted site invisible | **LIVE**, 1 at `4.1.1`, 1 at master — exit 1 |
+
+**7 — the opt-out, per symbol.** On `InMemoryScheduler.md`, the one page carrying two listed
+symbols, adding `<!-- symbolcheck: allow IMessageScheduler -->` and nothing else:
+
+```text
+===== IMessageSchedulerFactory — 1 site(s) across 1 page(s) =====
+contents/InMemoryScheduler.md:181  static IMessageSchedulerFactory GetSchedulerFactory(
+----- silenced by opt-out (2 site(s)) -----
+contents/InMemoryScheduler.md  IMessageScheduler ×2                            exit 1
+```
+
+### The gates — task 2.12, predicted unmoved, and unmoved
+
+| Gate | §11.6 | Measured 2026-09-13 |
+|---|---|---|
+| `linkcheck` | 164 files / 0 broken | **164 / 0** |
+| `pagelint` | 0 errors / 768 warnings / 162 pages | **0 / 768 / 162** |
+| `--check-shape` | 161 / 12 / widest 12 of 20 | **161 / 12 / 12 of 20**, deepest 4 of 4 |
+| `--check-redirects` | 77 entries / 7858 bytes | **77 / 7858** |
+| `versioncheck` | 0 of 18 across 5 | **0 of 18 across 5** |
+| `optioncheck` | 0 across 59 tables / 519 rows | **0 / 59 / 519** |
+| `--verify` | 161 = 161 | **predicted 161, published 161, 161 agree** |
+| **`symbolcheck`** | — | **17 sites / 11 pages, exit 1 — red, and required to be** |
+
+Nothing moved, which is what a phase that adds two files under `tools/` and edits no page must
+show. `git diff --name-only origin/master -- contents/` is **0** and `SUMMARY.md` is untouched.
+
+### Five findings the task list did not predict
+
+**A. `git grep -w` silently zeroes any pattern that does not begin and end with a word
+character.** `git grep -lwF '.Handle('` returns **0** files where the same search without `-w`
+returns **23**. A watchlist row like `.AddPolicies(` verified under an unconditional `-w` would
+read `DEAD` for ever, whatever the truth. `resolve()` applies the flag only at ends that have a
+word character. **This is the plausible-zero failure for the third time in this spec** — empty
+token sets in phase 1, the space-blind fence regex before that, now a flag that cannot match.
+It is also why the design's `.AddPolicies(` became **`AddPolicies`**: the dotted form is 0 files
+in *both* products, because the dot is how a caller writes it and library source holds the
+definition.
+
+**B. A green gate is not a repaired page, and red-proof 2 demonstrated it by accident.** The
+mechanical stand-in for `UseExternalInbox` produced *"use the **InboxConfiguration** method
+call"* — a type described as a method, **wrong prose that `symbolcheck` calls green**. That is
+design §4.1's residual row, live. It is why task 3.3 rewrites the paragraph rather than
+substituting a token, and it is the sentence to quote if anyone reads a green `symbolcheck` as
+*"this page is correct"*.
+
+**C. In a tree with no sibling checkouts, `--verify-list` refuses instead of reporting all-dead.**
+The first scratch run said `no checkout at ../Brighter … cannot run without it`, **exit 2**,
+rather than resolving five rows against nothing. **That tree is the CI `check` job**, and it is
+the evidence behind task 3.6: in the job where `--verify-list` does not belong, it cannot produce
+a false green even if someone wires it there.
+
+**D. Two refs give four states, not three.** The three-state ruling names *live*,
+*forthcoming-and-said-so* and *a defect*; resolving at two refs also produces **WITHDRAWN** —
+present at the pin, gone on master. Each state now carries its own advice, because what it
+implies about the *pages* differs, and all three non-dead states mean **remove the row, never
+repair it**. Every state was reached with a real name: `CommandProcessor` 43 → 45 LIVE,
+`IAmACausationTrackingOutbox` 0 → 12 FORTHCOMING, `RegisterConverters` 3 → 0 WITHDRAWN — which
+is Brighter#4276's fix turning up as a state.
+
+**E. The census's number is 932, and that is the third number this spec has had for it.** Phase
+1 recorded **831** from a script that no longer exists and reconstructed **881**; the shipped
+`--census` measures **932 unresolved across 129 of 145 fenced pages**. Three filter sets, three
+numbers, one unchanged conclusion. **932 is the first of them anyone can reproduce with one
+command**, which is friction 28's actual repair: the figure can now rot visibly. The shipped
+filter deliberately keeps the example-domain nouns the reconstruction dropped — a report a
+person reads should over-report rather than hide a real dead name.
+
+### Four decisions phase 2 took that the design did not
+
+1. **No `--watchlist <path>` flag.** A gate that can be pointed at another list can be silenced
+   by pointing it at an empty one, and that is one line in a workflow file. Every red-proof ran
+   against a scratch copy of `contents/` and `tools/` instead; `git status --short tools/` stayed
+   empty throughout.
+2. **A malformed or empty watchlist is exit 2, not 1.** Seven faults take that path — no header,
+   empty list, bad `product`, wrong field count, blank replacement, duplicate symbol, missing
+   file. A tool with nothing to say about the corpus must not say the corpus is red.
+3. **`--verify-list` also resolves each row's replacement**, and reports one that is not live.
+   The design's own first draft sent `IAmACommandStoreAsync` to `IAmAnOutbox`; a gate that hands
+   a writer a dead name is worse than no gate.
+4. **An opt-out is never silent.** Suppressed sites print with a count, and one that names an
+   unlisted symbol or suppresses nothing is a **warning that does not change the exit code** —
+   `0 findings` and `0 findings, 14 silenced` are different claims. Warning rather than error on
+   pagelint's rule-6 argument: debt that fails a build gets deleted rather than understood.
 
 ---
 
