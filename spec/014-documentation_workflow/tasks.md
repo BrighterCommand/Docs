@@ -398,19 +398,38 @@ named here only so the phase does not look like it declined to predict.
     the corpus** — task 2.10's proof is the only thing that exercises it, which is exactly why the
     tasks review added it
 
-- [ ] **Task 2.2:** Write `tools/symbolcheck.py` — gate mode
+- [x] **Task 2.2:** Write `tools/symbolcheck.py` — gate mode
   - Input: `linkcheck.py` and `pagelint.py` for the house exit-code contract and output shape
   - Output: default invocation walks `contents/`, reports `symbol · page · line · replacement`
   - Notes: **exit 1 on any hit, 0 when clean, 2 on bad arguments** — the contract the other three
     share. Accept file paths to check specific pages. It searches **code contexts and prose
     alike**, which is safe precisely because the list is curated
+  - **Done 2026-09-13.** Run over `contents/` it reports **17 sites across 11 pages from 5
+    entries over 161 pages**, which is §2's re-derived total reached by a second, independent
+    route — and the per-symbol split is finding D's: `IMessageScheduler` **11 across 7**,
+    `IMessageSchedulerFactory` **2 across 2**, `InMemoryOptions.md` under the factory only.
+    Contract walked: clean page **0**, red page **1**, missing path **2**, a path outside
+    `contents/` **2**, unknown option **2**. **Seven watchlist faults exit 2, not 1** — no
+    header, empty list, bad `product`, wrong field count, blank replacement, duplicate symbol,
+    missing file — because a tool with nothing to say about the corpus must not say the corpus
+    is red. Matching is whole-word with **boundaries applied only at ends that have one**, so
+    `.AddPolicies(` is listable and `IMessageSchedulerFactory` does not match under
+    `IMessageScheduler`; eight matcher cases checked both ways. Product filter checked across
+    all four banner states — Brighter, Darker, both, and **no banner, which is checked against
+    everything**: a page must not escape this gate by failing pagelint's rule 1
 
 - [ ] **Task 2.3:** Import `FENCE_RE` from `pagelint.py` rather than writing a fence regex
   - Input: `tools/pagelint.py:192`
   - Output: the import, plus a comment saying why
-  - Notes: **146 fences across 39 pages** are written ```` ``` csharp ```` with a space. The
-    probe's first regex missed all 146, which is how a known-dead symbol came back clean on run
-    one. This task exists so that mistake cannot be made a third time
+  - Notes: **re-scoped by task 2.2, and the reason is the inversion.** The gate searches code and
+    prose alike, so **gate mode needs no fence regex at all** — the task's premise was a census's
+    premise. `symbolcheck.py` already imports `APPLIES_TO`, `BANNER_RE` and `products_named` from
+    `pagelint.py` on the same never-restate principle; `FENCE_RE` joins them **when `--census`
+    arrives in task 2.5**, which is the only mode that has code contexts to find. Kept as its own
+    task rather than folded in, because **141 fences across 39 pages** are written
+    ```` ``` csharp ```` with a space (146 as inherited; re-derived in phase 1, finding B), the
+    probe's first regex missed all of them, and that is how a known-dead symbol came back clean
+    on run one. This task exists so that mistake cannot be made a third time
 
 - [ ] **Task 2.4:** Add the per-symbol opt-out
   - Input: rule 5's `<!-- pagelint: allow-serviceactivator -->` precedent
