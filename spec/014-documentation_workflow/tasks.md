@@ -431,11 +431,28 @@ named here only so the phase does not look like it declined to predict.
     probe's first regex missed all of them, and that is how a known-dead symbol came back clean
     on run one. This task exists so that mistake cannot be made a third time
 
-- [ ] **Task 2.4:** Add the per-symbol opt-out
+- [x] **Task 2.4:** Add the per-symbol opt-out
   - Input: rule 5's `<!-- pagelint: allow-serviceactivator -->` precedent
   - Output: `<!-- symbolcheck: allow <Symbol> -->`, scoped to one symbol, not a page
   - Notes: a page that says *"there is no `MsSqlOutboxBuilder`"* on purpose needs this. **Per
     symbol** so an opt-out cannot silently cover a second, unrelated dead name
+  - **Done 2026-09-13.** Own line, matched whole, like the precedent. The symbol is the rest of
+    the comment rather than a word, so `.AddPolicies(` is opt-out-able too. **The two-way
+    demonstration wrote itself**: `InMemoryScheduler.md` is the one page carrying two listed
+    symbols, so opting out `IMessageScheduler` there silences **exactly its 2 sites** and
+    `IMessageSchedulerFactory` **still reports, exit 1**. That is task 2.10's second half, met
+    early on the page finding D created. Eight parse cases checked: recognised on its own line,
+    with extra whitespace and indented, and **rejected** with no symbol, with trailing prose,
+    inline in a sentence, and under another tool's name
+  - **Two things the task did not ask for, and the reason for each.** The opt-out comment names
+    its own symbol and so matched its own pattern — counted, every opt-out would have reported
+    one more suppressed site than it has, and on a page whose only mention was the comment an
+    unused opt-out would have looked used. It is skipped. And **an opt-out is never silent**:
+    suppressed sites are printed with a count, and one that names an unlisted symbol or
+    suppresses nothing is a **warning that does not change the exit code** — `0 findings` and
+    `0 findings, 14 silenced` are different claims about the corpus. Warning, not error, on
+    pagelint's rule-6 argument: debt that fails a build gets deleted rather than understood.
+    **`contents/` carries no opt-out today**, so the proof above is the only evidence it works
 
 - [ ] **Task 2.5:** Add `--census`, the open-world report
   - Input: `design.md` §4.4; the probe's method

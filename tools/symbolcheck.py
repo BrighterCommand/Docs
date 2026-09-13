@@ -33,6 +33,18 @@ each row names its product and a row is only reported on pages whose banner
 admits that product. The banner is read with pagelint's own vocabulary, not a
 second copy of it.
 
+A page that names a dead symbol on purpose -- a migration guide, or a sentence
+saying the thing does not exist -- opts out one symbol at a time:
+
+    <!-- symbolcheck: allow IMessageScheduler -->
+
+PER SYMBOL, never per page. A page-wide silence would let an opt-out written for
+a name the page discusses deliberately cover a second, unrelated dead name that
+arrived on that page later, and nothing would report it. Opt-outs that suppress
+nothing, or name a symbol no longer on the list, are printed as warnings; they
+do not fail the build, because debt that fails a build gets deleted rather than
+understood.
+
 Usage:
     python3 tools/symbolcheck.py                    # gate: the whole of contents/
     python3 tools/symbolcheck.py contents/X.md      # specific pages
@@ -69,6 +81,10 @@ PRODUCTS = ('brighter', 'darker', 'both')
 BANNER_PRODUCT = {'brighter': 'Brighter', 'darker': 'Darker'}
 
 IDENT = re.compile(r'[A-Za-z0-9_]')
+
+# One symbol per comment, on its own line -- see opt_outs().
+OPT_OUT_RE = re.compile(r'^<!--\s*symbolcheck:\s*allow\s+(\S.*?)\s*-->$')
+OPT_OUT_EXAMPLE = '<!-- symbolcheck: allow IMessageScheduler -->'
 
 
 class Entry:
@@ -194,22 +210,57 @@ def page_products(lines):
     return None
 
 
+def opt_outs(lines):
+    """{symbol: lineno} for every `<!-- symbolcheck: allow X -->` on its own line.
+
+    The comment is on the same footing as pagelint's
+    `<!-- pagelint: allow-serviceactivator -->`: its own line, matched whole.
+
+    It names ONE symbol. That is the whole design of it. A page-wide "skip
+    symbolcheck" would let a page opting out of a name it discusses on purpose
+    -- "there is no `MsSqlOutboxBuilder`" -- silently opt out of a second, dead
+    name that arrived on that page two years later, and nothing would ever say
+    so. The symbol is taken as the rest of the comment rather than a word,
+    because a watchlist row need not be an identifier: `.AddPolicies(` is one.
+    """
+    found = {}
+    for lineno, line in enumerate(lines, 1):
+        match = OPT_OUT_RE.match(line.strip())
+        if match:
+            found.setdefault(match.group(1), lineno)
+    return found
+
+
 def scan(rel, entries):
-    """Every (entry, lineno, text) hit on one page."""
+    """One page's hits, and what its opt-outs did.
+
+    Returns (hits, suppressed, allowed) where hits and suppressed are lists of
+    (entry, lineno, text) and allowed is {symbol: lineno}. Suppressed hits are
+    kept rather than dropped so an opt-out that suppresses nothing can be
+    reported as the dead weight it is.
+    """
     with open(os.path.join(ROOT, rel), encoding='utf-8') as fh:
         lines = fh.read().splitlines()
 
+    allowed = opt_outs(lines)
     products = page_products(lines)
     in_scope = [e for e in entries if e.applies_to(products)]
     if not in_scope:
-        return []
+        return [], [], allowed
 
-    hits = []
+    hits, suppressed = [], []
     for lineno, line in enumerate(lines, 1):
+        # The opt-out comment names its symbol, so it matches its own pattern.
+        # Counting it would report every opt-out as suppressing one site more
+        # than it does -- and on a page whose only mention was the comment, an
+        # opt-out that suppresses nothing would look used.
+        if OPT_OUT_RE.match(line.strip()):
+            continue
         for entry in in_scope:
             if entry.pattern.search(line):
-                hits.append((entry, lineno, line.strip()))
-    return hits
+                target = suppressed if entry.symbol in allowed else hits
+                target.append((entry, lineno, line.strip()))
+    return hits, suppressed, allowed
 
 
 def _clip(text, width=100):
@@ -245,15 +296,21 @@ def main(argv):
     else:
         pages = everything
 
-    findings = []
+    listed = {e.symbol for e in entries}
+    findings, silenced, stale = [], [], []
     for rel in pages:
-        for entry, lineno, text in scan(rel, entries):
+        hits, suppressed, allowed = scan(rel, entries)
+        for entry, lineno, text in hits:
             findings.append((entry, rel, lineno, text))
+        for entry, lineno, text in suppressed:
+            silenced.append((entry, rel, lineno, text))
 
-    if not findings:
-        print(f'No watchlisted symbols found '
-              f'({len(entries)} entries, {len(pages)} pages checked).')
-        return 0
+        used = {e.symbol for e, _, _ in suppressed}
+        for symbol, lineno in sorted(allowed.items(), key=lambda kv: kv[1]):
+            if symbol not in listed:
+                stale.append((rel, lineno, symbol, 'not on the watchlist'))
+            elif symbol not in used:
+                stale.append((rel, lineno, symbol, 'suppresses nothing here'))
 
     for entry in entries:
         rows = [f for f in findings if f[0] is entry]
@@ -266,6 +323,37 @@ def main(argv):
               f'listed {entry.first_seen}]')
         for _, rel, lineno, text in rows:
             print(f'{rel}:{lineno}  {_clip(text)}')
+        print(f'    To keep one of these on purpose, put '
+              f'`<!-- symbolcheck: allow {entry.symbol} -->` on its own line.')
+
+    # Never silent. An opt-out that nobody can see is the same defect as a dead
+    # name nobody can see, one level up: the count is printed on a green run
+    # too, because "0 findings" and "0 findings, 14 silenced" are not the same
+    # claim about the corpus.
+    if silenced:
+        by_page = sorted({(rel, e.symbol) for e, rel, _, _ in silenced})
+        print(f'\n----- silenced by opt-out ({len(silenced)} site(s)) -----')
+        for rel, symbol in by_page:
+            n = sum(1 for e, r, _, _ in silenced if r == rel and e.symbol == symbol)
+            print(f'{rel}  {symbol} ×{n}')
+
+    # Warnings, not errors. A stale opt-out is debt, and debt that fails the
+    # build gets deleted rather than understood -- the same argument that keeps
+    # pagelint's using-directive rule a counted warning repo-wide.
+    if stale:
+        print(f'\n----- stale opt-out (warning: {len(stale)}) -----')
+        for rel, lineno, symbol, why in stale:
+            print(f'{rel}:{lineno}  allow {symbol} — {why}')
+
+    if not findings:
+        extra = ''
+        if silenced:
+            extra += f', {len(silenced)} silenced'
+        if stale:
+            extra += f', {len(stale)} stale opt-out(s)'
+        print(f'\nNo watchlisted symbols found '
+              f'({len(entries)} entries, {len(pages)} pages checked{extra}).')
+        return 0
 
     affected = sorted({f[1] for f in findings})
     print(f'\n{len(findings)} site(s) across {len(affected)} page(s), '
