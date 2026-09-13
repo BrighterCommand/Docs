@@ -1338,8 +1338,11 @@ its number is unchanged.
   - Notes: the README template gains **Acceptance criteria**, **Open questions**, and the
     re-derive instruction. 013's README named six gaps of which five were closed; 014's defect
     count was wrong by two before this spec started.
-    **Carries an AC6 finding from phase 4: its prose names `wc -l` and its `allowed-tools` does
-    not permit it** — the only unpermitted invocation in the nine commands
+    **Carries an AC6 finding from phase 4, and it is wider than first recorded**: the command's
+    own context block runs `ls -la spec/ | grep "^d" | wc -l | xargs -I {} echo …` against an
+    `allowed-tools` of `Bash(mkdir:*), Bash(echo:*), Bash(date:*), Bash(ls:*)` — **`grep`, `wc`
+    and `xargs` are all unpermitted**, and a `!` block is one shell invocation, so the whole line
+    is forbidden rather than three-quarters of it. The only unpermitted invocation in the nine
 
 - [ ] **Task 5.5:** Add the `CLAUDE.md` note at rule 2, **and three more from phase 4**
   - Input: `CLAUDE.md` §§ *Page banner*, *Heading qualification*, *Code Example Best Practices*;
