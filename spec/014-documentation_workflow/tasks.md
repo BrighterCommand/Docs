@@ -523,12 +523,33 @@ named here only so the phase does not look like it declined to predict.
     plausible-zero failure for the third time in this spec, in a third disguise** — empty token
     sets in phase 1, the space-blind fence regex before it, and now a flag that cannot match
 
-- [ ] **Task 2.7:** Red-proof 1 and 2 — the gate fires, and stops
+- [x] **Task 2.7:** Red-proof 1 and 2 — the gate fires, and stops
   - Input: tasks 2.1 and 2.2; the 11 pages and 17 sites in §2
   - Output: run before any repair → **red on 4 symbols across 11 pages, 17 sites**; run against a
     scratch copy with the 17 sites repaired → **green**
   - Notes: paste both outputs into the write-up. The scratch copy is a copy — phase 2 changes no
     page
+  - **Done 2026-09-13. Red: `17 site(s) across 11 page(s), from 5 watchlist entries over 161
+    pages`, exit 1** — five symbols, not the four the task says, per finding D. **Green on the
+    repaired copy: `No watchlisted symbols found (5 entries, 161 pages checked)`, exit 0** —
+    and it says *5 entries*, so the green is not the empty-list green. Full outputs in
+    § *Phase 2 as executed* (task 2.11)
+  - **The copy was repaired with the gate's own `word_pattern`**, so the repair cannot be right
+    in a way the gate would not have accepted. **17 lines changed across 11 pages** —
+    `InMemoryScheduler.md` ×3, `TickerQScheduler.md` ×3, `AzureScheduler.md` ×2,
+    `BuildingAnAsyncPipeline.md` ×2, seven more ×1 — which is §2's site count derived a **third**
+    way, after the design's grep and the gate's own report
+  - **A green gate is not a repaired page, and the proof shows it.** Checked that the
+    replacements *arrived* rather than the lines being deleted: `IAmAnInboxAsync` 0 → 2,
+    `IAmAMessageScheduler` 0 → 11, `IAmAMessageSchedulerFactory` 2 → 4, `IAmAnInbox` 3 → 4,
+    `UseExternalInbox` 1 → 0. But the mechanical stand-in for `UseExternalInbox` produced
+    *"use the **InboxConfiguration** method call"* — a type described as a method, **wrong prose
+    that the gate calls green**. That is design §4.1's residual row demonstrated live, it is why
+    task 3.3 rewrites the paragraph instead of substituting a token, and it is the sentence to
+    quote if anyone reads a green `symbolcheck` as "the page is correct"
+  - **The real corpus was not touched**: `git status --short contents/` empty,
+    `git diff --name-only origin/master -- contents/` **0**, and the gate is **still red at
+    exit 1** in this repository — which is what phase 2 is required to leave behind for phase 3
 
 - [ ] **Task 2.8:** Red-proof 3 — the list is what fires, not the corpus
   - Input: `tools/symbolwatch.tsv` from task 2.1
