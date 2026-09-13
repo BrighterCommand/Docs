@@ -490,13 +490,38 @@ named here only so the phase does not look like it declined to predict.
     A census would catch **3 of 5, none of them completely**; the watchlist catches 5 of 5,
     all 17 sites
 
-- [ ] **Task 2.6:** Add `--verify-list`, product-aware, two refs
+- [x] **Task 2.6:** Add `--verify-list`, product-aware, two refs
   - Input: the three-state ruling of 2026-09-05; `design.md` §4.2–4.3
   - Output: each row resolved at its product's pin and `origin/master`; any entry now **live** is
     reported and the run fails
   - Notes: this is what distinguishes *forthcoming* from *dead*. **An entry that becomes live is
     removed, not repaired.** It reads `../Brighter` and `../Darker` and therefore does **not**
     run in the `check` job — see task 3.6
+  - **Done 2026-09-13.** Green on the shipped list: **all 5 entries DEAD at both refs of their
+    product, and every named replacement LIVE.** Two refs give **four** states, not three, and
+    each gets its own advice because the advice about the *pages* differs — `LIVE` (both),
+    `FORTHCOMING` (absent at pin, present at master — *a page may name it if it says so*),
+    `WITHDRAWN` (present at pin, absent at master — *the corpus is right for that pin*). All
+    three say **remove the row, never repair it**
+  - **Six induced cases, all four states reached with real names, not fixtures:** `LIVE`
+    `CommandProcessor` **43 → 45**, exit 1; `FORTHCOMING` `IAmACausationTrackingOutbox`
+    **0 → 12**, exit 1; `WITHDRAWN` `RegisterConverters` **3 → 0**, exit 1 — that is #4276's fix
+    showing up as a state; a dead row whose **replacement** is dead, exit 1 with its own message;
+    a corrupted ref, **exit 2** carrying git's own `unable to resolve revision`; and the product
+    case below. `--census --verify-list` together and `--verify-list` with a path are both exit 2
+  - **The `product` column, demonstrated on one name.** `AddPolicies` as a `darker` row resolves
+    against Darker's refs and comes back **LIVE, 1 → 1**; the same name is **0 → 0** in Brighter.
+    One symbol, opposite verdicts, and only the column tells them apart — §4.3's argument, met
+    with a real name. **Note for task 2.10: the row must be `AddPolicies`, not the design's
+    `.AddPolicies(`** — the leading dot is how a *caller* writes it, and library source contains
+    the definition
+  - **A trap worth the whole task: `git grep -w` silently zeroes any pattern that does not begin
+    and end with a word character.** `git grep -lwF '.Handle('` returns **0** files where the
+    same search without `-w` returns **23**. A row like `.AddPolicies(` verified under an
+    unconditional `-w` would read `DEAD` forever, whatever the truth. `resolve()` applies the flag
+    only at ends that have a word character, mirroring the gate's matcher. **That is the
+    plausible-zero failure for the third time in this spec, in a third disguise** — empty token
+    sets in phase 1, the space-blind fence regex before it, and now a flag that cannot match
 
 - [ ] **Task 2.7:** Red-proof 1 and 2 — the gate fires, and stops
   - Input: tasks 2.1 and 2.2; the 11 pages and 17 sites in §2
@@ -521,7 +546,9 @@ named here only so the phase does not look like it declined to predict.
 - [ ] **Task 2.10:** Red-proof 6 and 7 — **the product column, and the opt-out**
   - Input: `design.md` §4.2–4.3; `CLAUDE.md` § *Page banner*; Darker at `4.1.1`
   - Output: two proofs. **Product** — add a `darker`-product row for a symbol live in Darker and
-    dead in Brighter (`.AddPolicies(` is the documented case), confirm `--verify-list` calls it
+    dead in Brighter (**`AddPolicies`**, not the design's `.AddPolicies(`: task 2.6 measured the
+    dotted form at 0 files in both products, because the dot is how a caller writes it and
+    library source holds the definition), confirm `--verify-list` calls it
     **live** and that the gate does **not** report it on a page bannered *Darker V4*, while a
     `brighter` row for the same symbol **is** reported on a Brighter page. **Opt-out** — a page
     carrying `<!-- symbolcheck: allow <Symbol> -->` goes green for that symbol **and stays red for

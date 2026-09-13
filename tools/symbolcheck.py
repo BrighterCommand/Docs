@@ -48,6 +48,14 @@ understood.
 Usage:
     python3 tools/symbolcheck.py                    # gate: the whole of contents/
     python3 tools/symbolcheck.py contents/X.md      # specific pages
+    python3 tools/symbolcheck.py --census           # the open-world report, NOT a gate
+    python3 tools/symbolcheck.py --verify-list      # is every row still dead?
+
+--census and --verify-list read ../Brighter and ../Darker. Nothing in the
+`check` job of .github/workflows/docs.yml checks either of them out -- every
+tool in that job reads this repository alone -- so --verify-list belongs to the
+scheduled `versions` job, for the reason that job already states: the event
+that invalidates a pin is a release in another repository.
 
 Exit code is 1 when any listed symbol is found, 0 when clean, and 2 when the
 arguments or the watchlist are unusable -- the same contract linkcheck.py,
@@ -522,17 +530,198 @@ def run_census(pages):
     return 0
 
 
+# --------------------------------------------------------------------------
+# --verify-list — the half that stops the list rotting
+# --------------------------------------------------------------------------
+#
+# A watchlist is a set of claims about another repository, and claims about
+# another repository go stale on that repository's schedule, not ours. So every
+# row is re-resolved at BOTH of its product's refs, and the four outcomes are
+# not all the same:
+#
+#   absent at the pin, absent at master   DEAD         the row is still true
+#   present at both                       LIVE         the name came back
+#   absent at the pin, present at master  FORTHCOMING  it lands next release
+#   present at the pin, absent at master  WITHDRAWN    the docs' pin still has it
+#
+# Only the first is acceptable, and the other three are all "remove the row",
+# never "repair the row". A gate policing a name that exists is worse than no
+# gate: it tells a writer to replace correct text with something else.
+#
+# The three-state liveness rule (live / forthcoming-and-said-so / a defect) is
+# why both refs are read rather than just the pin. A name absent today and
+# present on master is FORTHCOMING, and a list that could not tell those apart
+# would keep failing a page that is about to be right.
+
+# Replacements that are prose rather than a name -- "(removed at V10)" -- are
+# not resolvable and say so by starting with a bracket.
+PROSE_REPLACEMENT = '('
+
+
+def resolve(repo, ref, symbol):
+    """How many src/ files at `ref` contain `symbol`. -1 if the ref is unusable.
+
+    -w ONLY when the symbol begins and ends with a word character, and this is
+    not a nicety. `git grep -wF '.Handle('` returns 0 files where the same
+    search without -w returns 23: a pattern whose last character is not a word
+    character can never satisfy the flag. A row like `.AddPolicies(` verified
+    with an unconditional -w would report DEAD forever, whatever the truth --
+    the same plausible-zero failure this spec has now met three times, in three
+    disguises.
+    """
+    path = os.path.join(ROOT, repo)
+    if not os.path.isdir(os.path.join(path, '.git')):
+        raise CensusError(
+            f'no checkout at {repo}; --verify-list resolves every row against '
+            f'the products\' source and cannot run without it')
+    flags = ['-l', '-F']
+    if IDENT.match(symbol[0]) and IDENT.match(symbol[-1]):
+        flags.append('-w')
+    proc = subprocess.run(
+        ['git', '-C', path, 'grep'] + flags + [symbol, ref, '--', 'src/*.cs'],
+        capture_output=True, text=True)
+    # git grep exits 1 for "no matches" and >1 for a real failure, which is how
+    # a bad ref is told from an honest zero.
+    if proc.returncode > 1:
+        raise CensusError(
+            f'{repo}@{ref}: {proc.stderr.strip()[:160] or "git grep failed"}')
+    return len([line for line in proc.stdout.splitlines() if line.strip()])
+
+
+def verdict(pin_files, master_files):
+    if pin_files == 0 and master_files == 0:
+        return 'DEAD'
+    if pin_files and master_files:
+        return 'LIVE'
+    if master_files:
+        return 'FORTHCOMING'
+    return 'WITHDRAWN'
+
+
+def verify_row(symbol, product):
+    """[(product, pin, ref_counts, verdict)] for each product in scope."""
+    products = PRODUCTS[:2] if product == 'both' else (product,)
+    out = []
+    for name in products:
+        repo, (pin, head) = PRODUCT_REFS[name]
+        counts = (resolve(repo, pin, symbol), resolve(repo, head, symbol))
+        out.append((name, pin, head, counts, verdict(*counts)))
+    return out
+
+
+def run_verify_list():
+    """Re-resolve every watchlist row. 0 when all dead, 1 when any is not."""
+    try:
+        entries = load_watchlist()
+    except ValueError as exc:
+        print(f'watchlist unusable: {exc}', file=sys.stderr)
+        return 2
+
+    # The controls go through the same code path the rows do. A control that
+    # uses a different query proves that query, not this one.
+    try:
+        for symbol, expected in ((CONTROL_PRESENT, 'LIVE'),
+                                 (CONTROL_ABSENT, 'DEAD')):
+            got = verify_row(symbol, 'brighter')[0]
+            if got[4] != expected:
+                print(f'control failed: {symbol} resolves {got[4]}, '
+                      f'expected {expected} ({got[3][0]} files at {got[1]}, '
+                      f'{got[3][1]} at {got[2]})', file=sys.stderr)
+                return 2
+            print(f'control: {symbol:<24} {got[4]:<12} '
+                  f'{got[3][0]} files at {got[1]}, {got[3][1]} at {got[2]}')
+    except CensusError as exc:
+        print(f'--verify-list cannot run: {exc}', file=sys.stderr)
+        return 2
+    print()
+
+    problems = []
+    for entry in entries:
+        try:
+            rows = verify_row(entry.symbol, entry.product)
+        except CensusError as exc:
+            print(f'--verify-list cannot run: {exc}', file=sys.stderr)
+            return 2
+        for name, pin, head, counts, state in rows:
+            print(f'{entry.symbol:<28} {name:<9} {state:<12} '
+                  f'{counts[0]} at {pin}, {counts[1]} at {head}')
+            if state != 'DEAD':
+                problems.append((entry, name, state, pin, head, counts))
+
+        if entry.replacement.startswith(PROSE_REPLACEMENT):
+            continue
+        try:
+            repl = verify_row(entry.replacement, entry.product)
+        except CensusError as exc:
+            print(f'--verify-list cannot run: {exc}', file=sys.stderr)
+            return 2
+        for name, pin, head, counts, state in repl:
+            if state != 'LIVE':
+                problems.append(
+                    (entry, name, f'REPLACEMENT {state}', pin, head, counts))
+                print(f'  -> replacement {entry.replacement} is {state} in '
+                      f'{name}: {counts[0]} at {pin}, {counts[1]} at {head}')
+
+    if not problems:
+        print(f'\nAll {len(entries)} entries still dead at both refs of their '
+              f'product, and every named replacement still live.')
+        return 0
+
+    plural = 'entry' if len(problems) == 1 else 'entries'
+    print(f'\n===== {len(problems)} {plural} need attention =====')
+    for entry, name, state, pin, head, counts in problems:
+        if state.startswith('REPLACEMENT'):
+            print(f'{entry.symbol}: its replacement {entry.replacement} is '
+                  f'{state.split()[1]} in {name}. The gate is telling writers '
+                  f'to use a name that is not there — fix the replacement.')
+            continue
+        print(f'{entry.symbol} ({name}, line {entry.lineno}): {state} — '
+              f'{counts[0]} files at {pin}, {counts[1]} at {head}.')
+        print('    ' + ADVICE[state])
+    return 1
+
+
+# Remove the row in all three cases, but for three different reasons, and the
+# reason is what tells the person reading this what to do about the PAGES.
+ADVICE = {
+    'LIVE': 'REMOVE THE ROW. The name exists at both refs; policing it tells a '
+            'writer to replace correct text.',
+    'FORTHCOMING': 'REMOVE THE ROW. Absent at the pin and present on master is '
+                   'forthcoming, not dead — a page may name it if it says so, '
+                   'with `> **Not in a released package yet.**`',
+    'WITHDRAWN': 'REMOVE THE ROW. It exists in the release the documentation '
+                 'is pinned to, so the corpus is right for that pin. Re-list it '
+                 'after the pin moves past the removal, if it is still wrong.',
+}
+
+
 def main(argv):
     census_mode = False
+    verify_mode = False
     paths = []
     for arg in argv:
         if arg == '--census':
             census_mode = True
+        elif arg == '--verify-list':
+            verify_mode = True
         elif arg.startswith('-'):
             print(f'unknown option: {arg}', file=sys.stderr)
             return 2
         else:
             paths.append(arg)
+
+    if census_mode and verify_mode:
+        print('--census and --verify-list are different questions: one reads '
+              'the corpus, the other reads the watchlist', file=sys.stderr)
+        return 2
+
+    if verify_mode:
+        if paths:
+            print('--verify-list takes no paths: it resolves the watchlist '
+                  'against the products, not against this repository',
+                  file=sys.stderr)
+            return 2
+        return run_verify_list()
 
     everything = md_files()
     if paths:
