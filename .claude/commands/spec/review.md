@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(cat:*), Bash(test:spec/*), Bash(ls:spec/*), Bash(touch:spec/*), Bash(grep:*), Bash(git diff:*), Bash(git log:*), Bash(python3 tools/linkcheck.py:*), Bash(python3 tools/pagelint.py:*), Bash(python3 tools/urlmap.py:*), Bash(python3 tools/versioncheck.py:*), Bash(python3 tools/symbolcheck.py:*), Bash(dotnet run --project tools/optioncheck:*), Read
+allowed-tools: Bash(cat:*), Bash(echo:*), Bash(test:spec/*), Bash(ls:spec/*), Bash(touch:spec/*), Bash(grep:*), Bash(tail:*), Bash(git diff:*), Bash(git log:*), Bash(python3 tools/linkcheck.py:*), Bash(python3 tools/pagelint.py:*), Bash(python3 tools/urlmap.py:*), Bash(python3 tools/versioncheck.py:*), Bash(python3 tools/symbolcheck.py:*), Bash(dotnet run --project tools/optioncheck:*), Read
 description: Review current specification phase
 ---
 

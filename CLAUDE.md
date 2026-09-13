@@ -70,9 +70,12 @@ Follow this structure within documentation files:
    headings
 
 The skeleton and its ordering are unchanged; what changed is that section
-headings now carry their subject. `## Configuration` appears on 26 pages, which
-makes every one of them a worse search result and every extracted chunk
-unattributable. See [Heading qualification](#heading-qualification).
+headings now carry their subject. `## Configuration` **stood on 26 pages when this
+rule was written**, which made every one of them a worse search result and every
+extracted chunk unattributable. Spec 011 then requalified them: measured
+2026-09-13, `grep -rl '^## Configuration$' contents/` finds **0**. The motivation
+is why the rule exists; the 26 is history, not current state. See
+[Heading qualification](#heading-qualification).
 
 **Tutorial and How-to pages use `## Step N: …` headings in place of step 4's skeleton**, and
 that is a convention rather than an exception to be tidied away later. Both are a
@@ -208,6 +211,19 @@ instead of quietly asserting last year's version. Change the versions in
 `APPLIES_TO` in `tools/pagelint.py` and nowhere else — this section documents that
 tuple and `apply_banners.py` imports it.
 
+**Rule 2 is a dependency of a second tool, and that is new.** `symbolcheck` resolves
+a watchlisted name against **the product the page claims**, and the banner's *Applies
+to* is the only machine-readable statement of it — `.AddPolicies(` is dead in Brighter
+and alive in Darker 4.1.1, so a page's product decides whether a row applies to it at
+all. It imports `APPLIES_TO` and `BANNER_RE` from `pagelint` rather than keeping a
+second copy of the vocabulary.
+
+A page whose banner is missing or malformed declares no product, and is therefore
+**checked against every row** rather than exempted from any: silence is not a claim to
+be exempt, and a page does not get to escape one check by failing another. So the
+banner is no longer only about telling a reader which version they are looking at.
+Weaken it and two tools lose their footing.
+
 **Page type** is exactly one of four values:
 
 | Type | Use when the page… |
@@ -257,8 +273,9 @@ not `## Configuration`.
 
 An unqualified heading fails the reader twice: as a search result it says nothing, and
 as an extracted chunk it cannot be traced back to the page it came from. It also
-collides — `## Configuration` and `## Best Practices` each appear on 26 pages, and
-GitBook resolves such collisions into `#configuration`, `#configuration-1`,
+collides — `## Configuration` and `## Best Practices` **each stood on 26 pages before
+this rule was applied** (both are **0** today, measured 2026-09-13), and GitBook
+resolves such collisions into `#configuration`, `#configuration-1`,
 `#configuration-2`, anchors no author would choose and no reader can interpret.
 
 Derive the qualifier from the page's subject — its H1, with filler removed:
@@ -529,10 +546,17 @@ failure the claim in this paragraph is meant to prevent:
 | `description:` front matter equals it | 7 (`DESCRIPTION MISMATCH`) | error | error |
 | That front matter is a quoted single line | 7 (`DESCRIPTION UNREADABLE`) | error | error |
 | Version markers on code (❌/✅) | — | **review only** | **review only** |
+| C# blocks compile **against the released packages** | — | **review only** | **review only** |
+| A block asserting behaviour is **run, with a control** | — | **review only** | **review only** |
 
-Version markers are the one convention with no rule, and deliberately so: whether two
-code blocks differ *by version* is a judgement about meaning, and a regex that guessed
-at it would fire on every before/after pair in the repo. It is checked in review.
+**Three conventions have no rule, and each is a judgement a regex would get wrong.**
+Whether two code blocks differ *by version* is about meaning, and a pattern that
+guessed would fire on every before/after pair in the repo. Whether a block *compiles*
+is decidable but not by this linter — it needs a build against the packages a reader
+would install, which is [its own section](#compiling-an-example-and-against-what).
+Whether a block's claim about *behaviour* is true needs the block run, with a control.
+All three are checked in review; the rows are here so that "no rule" does not quietly
+become "no check".
 
 **`--fix` repairs three of these and refuses the rest.** It retargets a banner whose
 *Applies to* is stale against `APPLIES_TO` — which is what makes a version bump one
@@ -749,9 +773,31 @@ using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
 ```
 
+### Compiling an example, and against what
+
+**A block is built against the released packages, not against `src/`.** Extract the
+page's C# blocks into a scratch project, add the NuGet packages a reader would add,
+and build. A `ProjectReference` into `../Brighter/src` compiles against unreleased
+code and vouches for an API nobody can install — spec 013 phase 2 found exactly that,
+and it is the reason this sentence exists. Replay a tutorial step by step; a step that
+legitimately does not build says so on the page.
+
+**Compiling is necessary and not sufficient.** Where a block asserts *behaviour* — an
+exception type, an ordering, a precedence, whether an option does anything at all —
+**run it, and run it with a control**: the case that should behave differently. Four
+compiling, reviewed examples in this documentation asserted behaviour that turned out
+to be false, and every one of them would have survived any check short of execution.
+A single passing case cannot distinguish a working example from an instrument that
+cannot fail.
+
+Neither of these has a linter rule, for the same reason version markers do not: what a
+block is *claiming* is a judgement. Both are checked in review, and both are in the
+[ledger](#the-ledger) as review-only rows so that nobody has to remember them.
+
 ### Code Example Standards
 
-1. **Test all code examples** - Ensure they compile and run
+1. **Test all code examples** - compile them against the released packages, and
+   **run** the ones that assert behaviour, with a control
 2. **Reference working samples** - Link to `Brighter/samples/` where applicable
 3. **Show realistic examples** - Use domain-appropriate examples (Orders, Customers, etc.)
 4. **Explain key points** - Add comments or explanatory text for complex code

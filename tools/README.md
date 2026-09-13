@@ -18,14 +18,18 @@ open-question log stay in `PROMPT.md`, which stays untracked. If you find yourse
 `PROMPT.md` from a command file, the thing you reached for either belongs in this file or should
 not be in a command.
 
-## The eight gates at `fc77c42`
+## The eight gates at `412fd34`
 
-`fc77c42` is `master` as of 2026-09-13 — spec 014 phase 3, PR #160. Re-derive these before
+`412fd34` is `master` as of 2026-09-13 — spec 014 phase 4, PR #161. Re-derive these before
 quoting them; the command is in the row so that you can.
 
-| # | Gate | Command | Expected at `fc77c42` |
+**`linkcheck` reads 165 here and read 164 at `fc77c42`, one merge earlier.** The file you are
+reading is the +1: `tools/` is inside `linkcheck`'s walk, so this file entered its corpus the day
+it was written. Both numbers are true at their refs, which is what the refs are for.
+
+| # | Gate | Command | Expected at `412fd34` |
 |---:|---|---|---|
-| 1 | `linkcheck` | `python3 tools/linkcheck.py` | **164 files, 0 broken** |
+| 1 | `linkcheck` | `python3 tools/linkcheck.py` | **165 files, 0 broken** |
 | 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 757 warnings, 162 pages** |
 | 3 | shape | `python3 tools/urlmap.py --check-shape` | **161 pages, 12 sections, widest 12 of 20, deepest 4 of 4** |
 | 4 | redirects | `python3 tools/urlmap.py --check-redirects` | **77 entries, 7858 bytes** |
@@ -108,7 +112,7 @@ pointed at another list can be silenced by pointing it at an empty one.
   `EMPTY TARGET`, and `ORPHAN` — a page under `contents/` that `SUMMARY.md` never links to.
   Orphans are reported only on a whole-repo run.
   **Its corpus is the repository, not the published tree**: it walks everything except `.git`,
-  `.github`, `.claude`, `.repomix`, `spec/` and `node_modules`, which is why its file count (164)
+  `.github`, `.claude`, `.repomix`, `spec/` and `node_modules`, which is why its file count (165)
   is higher than `pagelint`'s page count (162) and why *this file* is in it.
   It resolves a link to `CLAUDE.md` but has no index of its headings, so
   **an anchored link into `CLAUDE.md` reports `MISSING ANCHOR` even when the heading exists.**

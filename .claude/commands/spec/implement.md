@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(cat:*), Bash(test:spec/*), Bash(grep:*), Bash(git diff:*), Bash(git add:*), Bash(python3 tools/*.py:*), Bash(dotnet run --project tools/optioncheck:*), Write, Edit, Read, Glob, Grep
+allowed-tools: Bash(cat:*), Bash(echo:*), Bash(test:spec/*), Bash(grep:*), Bash(git diff:*), Bash(git add:*), Bash(python3 tools/*.py:*), Bash(dotnet run --project tools/optioncheck:*), Write, Edit, Read, Glob, Grep
 description: Start writing documentation from approved tasks
 argument-hint: [task-number]
 ---
