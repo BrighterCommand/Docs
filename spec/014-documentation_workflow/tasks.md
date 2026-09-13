@@ -418,7 +418,7 @@ named here only so the phase does not look like it declined to predict.
     all four banner states — Brighter, Darker, both, and **no banner, which is checked against
     everything**: a page must not escape this gate by failing pagelint's rule 1
 
-- [ ] **Task 2.3:** Import `FENCE_RE` from `pagelint.py` rather than writing a fence regex
+- [x] **Task 2.3:** Import `FENCE_RE` from `pagelint.py` rather than writing a fence regex
   - Input: `tools/pagelint.py:192`
   - Output: the import, plus a comment saying why
   - Notes: **re-scoped by task 2.2, and the reason is the inversion.** The gate searches code and
@@ -430,6 +430,11 @@ named here only so the phase does not look like it declined to predict.
     ```` ``` csharp ```` with a space (146 as inherited; re-derived in phase 1, finding B), the
     probe's first regex missed all of them, and that is how a known-dead symbol came back clean
     on run one. This task exists so that mistake cannot be made a third time
+  - **Done 2026-09-13, with task 2.5**, which is the mode that has fences to find. `FENCE_RE` and
+    `CSHARP_TAGS` are imported beside `APPLIES_TO`, `BANNER_RE` and `products_named`, under a
+    comment carrying the 141 fences and the reason. **The import is checked by its own output**:
+    `--census` reports **145 pages with a C# fence**, which is the loose count, not the 118 a
+    space-blind regex sees
 
 - [x] **Task 2.4:** Add the per-symbol opt-out
   - Input: rule 5's `<!-- pagelint: allow-serviceactivator -->` precedent
@@ -454,11 +459,36 @@ named here only so the phase does not look like it declined to predict.
     pagelint's rule-6 argument: debt that fails a build gets deleted rather than understood.
     **`contents/` carries no opt-out today**, so the proof above is the only evidence it works
 
-- [ ] **Task 2.5:** Add `--census`, the open-world report
+- [x] **Task 2.5:** Add `--census`, the open-world report
   - Input: `design.md` §4.4; the probe's method
   - Output: candidates sorted **by page-spread**, with counts; **never a gate**
   - Notes: it prints its own controls and **refuses to report on an empty token set**. Page-spread
     ordering is what surfaced `IMessageScheduler` at 7 among `CustomerId` and `OrderStatus`
+  - **Done 2026-09-13.** Runs in **0.55s** over 161 pages and prints, in order: the four token
+    sets with their sizes, the controls, six stage counts, then **every** candidate — no cap,
+    visible or otherwise — with page-spread, site count, its first four pages and a marker when
+    it is already on the watchlist. **Exit is 0 whatever it finds**, deliberately: an exit code
+    that varies with findings is the first step to someone wiring a report into CI
+  - **The instrument fails loudly three ways, all walked.** A corrupted ref → *empty token set …
+    a plausible zero is the failure this check exists to avoid*, **exit 2**; a missing checkout →
+    **exit 2** naming the directory; and — the one that matters — **pointing `brighter` at
+    Darker's repository gives a perfectly non-empty token set and is caught only by the
+    control**, `CommandProcessor absent from brighter@4.1.1`, **exit 2**. That is the two-way
+    control earning itself: a guard against emptiness alone would have passed it
+  - **What it measures, and the number is not 831.** 145 fenced pages, 2,763 raw tokens, 2,280
+    after comments and strings, 2,019 candidates, **932 unresolved across 129 of 145**. Phase 1
+    recorded 831/127 from a script that no longer exists and reconstructed 881/128; this is a
+    third filter set and therefore a third number. **The difference is the point of friction
+    28 and its repair**: 932 is the first of these figures that anyone can reproduce with one
+    command, so from here the number rots visibly instead of silently. The shipped filter
+    deliberately does **not** exclude the example-domain nouns the reconstruction did — a report
+    read by a person should over-report rather than hide a real dead name
+  - **And it re-proves why D8 was inverted, from inside the tool that replaced it.** Of the five
+    watchlisted symbols the census sees **three**: `UseExternalInbox` and `IAmAnIbox` are prose
+    and structurally invisible to it. It also under-counts the one it found — **6 pages / 8
+    sites against the gate's 7 / 11** — because the rest are in `//` comments and a sentence.
+    A census would catch **3 of 5, none of them completely**; the watchlist catches 5 of 5,
+    all 17 sites
 
 - [ ] **Task 2.6:** Add `--verify-list`, product-aware, two refs
   - Input: the three-state ruling of 2026-09-05; `design.md` §4.2–4.3

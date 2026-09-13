@@ -61,17 +61,45 @@ this spec's probe met twice in one session in another disguise.
 """
 import os
 import re
+import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Not a second copy of the banner vocabulary. pagelint owns APPLIES_TO and
 # CLAUDE.md documents that tuple; restating it here is how the two drift.
-from pagelint import APPLIES_TO, BANNER_RE, products_named   # noqa: E402
+#
+# FENCE_RE is imported for the same reason and one sharper one. 141 C# fences
+# across 39 pages are written "``` csharp" with a space, and pagelint's regex is
+# the only one in this repository that has always handled them. The 014 probe
+# wrote its own without the space, silently skipped every one of those fences,
+# and reported a corpus containing a KNOWN dead symbol as clean. Never write a
+# second fence regex.
+from pagelint import (                                        # noqa: E402
+    APPLIES_TO, BANNER_RE, CSHARP_TAGS, FENCE_RE, products_named)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAGES_DIR = 'contents'
 WATCHLIST = os.path.join(ROOT, 'tools', 'symbolwatch.tsv')
+
+# Where a product's source lives and which refs a symbol is resolved at. Both
+# refs, always: a name absent from the pinned release and present on master is
+# FORTHCOMING, which is a different thing from dead and must not be listed as
+# dead. The tag is the release the documentation is written against, so it moves
+# with pagelint's APPLIES_TO -- when that says Brighter V11, this says the V11
+# tag. It lives here and nowhere else.
+#
+# The paths are siblings of this repository, checked out by whoever runs the
+# command. Nothing in .github/workflows/docs.yml's `check` job has them, which
+# is why neither --census nor --verify-list runs there.
+PRODUCT_REFS = {
+    'brighter': ('../Brighter', ('10.7.0', 'origin/master')),
+    'darker': ('../Darker', ('4.1.1', 'origin/master')),
+}
+
+# A PascalCase-ish word, four characters or more. Three would admit `Add`, `Get`
+# and every acronym in the corpus; the probe measured this threshold and kept it.
+TOKEN_RE = re.compile(r'[A-Z][A-Za-z0-9_]{3,}')
 
 COLUMNS = ('symbol', 'product', 'replacement', 'evidence', 'first_seen')
 PRODUCTS = ('brighter', 'darker', 'both')
@@ -267,23 +295,250 @@ def _clip(text, width=100):
     return text if len(text) <= width else text[:width - 1] + '…'
 
 
-def main(argv):
-    for arg in argv:
-        if arg.startswith('-'):
-            print(f'unknown option: {arg}', file=sys.stderr)
-            return 2
+# --------------------------------------------------------------------------
+# --census — the open-world report, which is NOT a gate
+# --------------------------------------------------------------------------
+#
+# This is the half of spec 014 that was going to be the whole of it. Resolve
+# every symbol the docs use against the products' source and report what does
+# not resolve. Measured before it was built: 831 unresolved across 127 of 144
+# fenced pages, and the top of the list is the docs' own example domain --
+# OrderId, CustomerId, GreetingEvent, ProcessOrderCommand. No cheap filter
+# separates those from a real API name; the ones tried moved the count by under
+# a third and none of them reaches zero.
+#
+# So it is a REPORT, read by a person, and its output is how names reach the
+# watchlist. It must never be promoted to a gate without a second measurement
+# saying the example-domain problem has gone away.
+#
+# Sorted by page-spread, because that ordering is what found IMessageScheduler:
+# a name on seven pages is far likelier to be a real API than a one-page example
+# type, and it sat at 7 among CustomerId at 17 and OrderStatus at 11.
 
+# Declarations a page makes itself. A reader's own example class is not an
+# unresolved API; it is the page defining its subject.
+DECL_RE = re.compile(
+    r'\b(?:class|interface|record|struct|enum)\s+([A-Za-z_][A-Za-z0-9_]*)')
+
+LINE_COMMENT_RE = re.compile(r'//[^\n]*')
+BLOCK_COMMENT_RE = re.compile(r'/\*.*?\*/', re.S)
+STRING_RE = re.compile(r'@?"(?:[^"\\\n]|\\.|"")*"')
+
+# Deliberately short. The probe over-reported rather than hide a real dead name
+# behind an over-eager filter, and a report a person reads can afford noise in a
+# way a gate cannot.
+NOISE_PREFIX = ('System', 'Microsoft', 'Polly', 'Newtonsoft', 'Xunit', 'Amazon',
+                'Azure', 'Google', 'Confluent', 'RabbitMQ', 'Npgsql', 'Oracle')
+NOISE_EXACT = frozenset("""
+Task ValueTask String Int32 Int64 Guid DateTime DateTimeOffset TimeSpan Boolean Double Decimal
+List Dictionary IEnumerable IReadOnlyList IReadOnlyDictionary IList ICollection IDictionary
+Exception InvalidOperationException ArgumentException ArgumentNullException NotImplementedException
+TimeProvider CancellationToken CancellationTokenSource Console Program Startup Main
+IServiceCollection IServiceProvider IHostBuilder IHost IConfiguration ILogger ILoggerFactory
+HttpClient HttpContext ControllerBase ActionResult IActionResult DbContext DbContextOptions
+JsonSerializer JsonSerializerOptions JsonConvert Encoding Environment Assembly Type Object
+True False Null This Base New Return Await Async Public Private Static Void Var
+""".split())
+
+# The two-way control, run before any number is read. A control proving only
+# absence proves nothing: if the token sets were built wrong, EVERYTHING looks
+# unresolved and the absent name still looks absent. The present one is what
+# catches that. The probe's first attempt built six empty sets through broken
+# shell quoting, which without this check reads as "the corpus is clean".
+CONTROL_PRESENT = 'CommandProcessor'
+CONTROL_ABSENT = 'IAmAnIbox'
+
+
+class CensusError(Exception):
+    """The instrument is wrong, so its numbers mean nothing."""
+
+
+def source_tokens(repo, ref):
+    """Every PascalCase token in `src/` .cs files at `ref`. Never returns empty.
+
+    src/ ONLY. Darker's SampleMauiTestApp/Resources/Fonts/FluentUI.cs is a
+    generated glyph table contributing 1,579 distinct PascalCase names by
+    itself -- five times the whole of Darker's real source surface. Include
+    tests and samples and a font glyph can vouch for a dead API.
+    """
+    path = os.path.join(ROOT, repo)
+    if not os.path.isdir(os.path.join(path, '.git')):
+        raise CensusError(
+            f'no checkout at {repo}; --census and --verify-list read the '
+            f'products\' source and cannot run without it')
+    proc = subprocess.run(
+        ['git', '-C', path, 'grep', '-h', '-I', '-o', '-E',
+         TOKEN_RE.pattern, ref, '--', 'src/*.cs'],
+        capture_output=True, text=True)
+    tokens = set(proc.stdout.split())
+    if not tokens:
+        raise CensusError(
+            f'empty token set for {repo}@{ref}: '
+            f'{proc.stderr.strip()[:200] or "no output"}. '
+            f'A plausible zero is the failure this check exists to avoid -- '
+            f'every symbol in the corpus would read as unresolved, and the '
+            f'report would call a clean corpus clean for the wrong reason')
+    return tokens
+
+
+def universe():
+    """Token sets for every (product, ref), with the controls walked."""
+    sets = {}
+    for product, (repo, refs) in sorted(PRODUCT_REFS.items()):
+        for ref in refs:
+            sets[f'{product}@{ref}'] = source_tokens(repo, ref)
+
+    failures = []
+    for name, tokens in sorted(sets.items()):
+        if name.startswith('brighter') and CONTROL_PRESENT not in tokens:
+            failures.append(f'{CONTROL_PRESENT} absent from {name}')
+        if CONTROL_ABSENT in tokens:
+            failures.append(f'{CONTROL_ABSENT} present in {name}')
+    if failures:
+        raise CensusError('controls failed: ' + '; '.join(failures))
+    return sets
+
+
+def csharp_blocks(lines):
+    """Every C# fenced block body on a page, via pagelint's FENCE_RE."""
+    blocks, opener, buf = [], None, []
+    for line in lines:
+        match = FENCE_RE.match(line)
+        if opener is None:
+            if match:
+                opener = (match.group(1)[0], len(match.group(1)),
+                          match.group(2).lower())
+                buf = []
+            continue
+        if (match and match.group(1)[0] == opener[0]
+                and len(match.group(1)) >= opener[1] and not match.group(2)):
+            if opener[2] in CSHARP_TAGS:
+                blocks.append('\n'.join(buf))
+            opener = None
+            continue
+        buf.append(line)
+    if opener is not None and opener[2] in CSHARP_TAGS:   # EOF closes it
+        blocks.append('\n'.join(buf))
+    return blocks
+
+
+def strip_noncode(body):
+    """Comments and string literals out. A name in a comment is not a use."""
+    body = BLOCK_COMMENT_RE.sub(' ', body)
+    body = STRING_RE.sub(' "" ', body)
+    return LINE_COMMENT_RE.sub(' ', body)
+
+
+def census(pages):
+    """{symbol: {page: count}} for candidates, and the stage counts."""
+    raw, stripped = set(), set()
+    candidates = {}
+    fenced = 0
+    for rel in pages:
+        with open(os.path.join(ROOT, rel), encoding='utf-8') as fh:
+            lines = fh.read().splitlines()
+        blocks = csharp_blocks(lines)
+        if not blocks:
+            continue
+        fenced += 1
+        declared = set()
+        for body in blocks:
+            declared.update(DECL_RE.findall(body))
+        for body in blocks:
+            raw.update(TOKEN_RE.findall(body))
+            for token in TOKEN_RE.findall(strip_noncode(body)):
+                stripped.add(token)
+                if (token in declared or token in NOISE_EXACT
+                        or token.startswith(NOISE_PREFIX)):
+                    continue
+                pages_for = candidates.setdefault(token, {})
+                pages_for[rel] = pages_for.get(rel, 0) + 1
+    return candidates, {'fenced': fenced, 'raw': len(raw),
+                        'stripped': len(stripped), 'candidates': len(candidates)}
+
+
+def run_census(pages):
+    """Print the report. Returns 0 on success, 2 when the instrument is wrong.
+
+    NEVER returns 1. This is a report, not a gate, and an exit code that varies
+    with what it finds is the first step towards someone wiring it into CI.
+    """
     try:
-        entries = load_watchlist()
-    except ValueError as exc:
-        print(f'watchlist unusable: {exc}', file=sys.stderr)
+        sets = universe()
+    except CensusError as exc:
+        print(f'census cannot run: {exc}', file=sys.stderr)
         return 2
 
+    print('token sets, src/ only, both refs per product:')
+    for name, tokens in sorted(sets.items()):
+        print(f'  {name:28} {len(tokens):>6} tokens')
+    print(f'controls OK: {CONTROL_PRESENT} present in every Brighter set, '
+          f'{CONTROL_ABSENT} in none\n')
+
+    known = set().union(*sets.values())
+    candidates, counts = census(pages)
+
+    unresolved = {}
+    for symbol, hits in candidates.items():
+        if symbol in known:
+            continue
+        # C# lets an attribute drop its suffix, so [Handler] is HandlerAttribute.
+        if symbol.endswith('Attribute') or (symbol + 'Attribute') in known:
+            continue
+        unresolved[symbol] = hits
+
+    listed = set()
+    try:
+        listed = {e.symbol for e in load_watchlist()}
+    except ValueError:
+        pass                       # the census does not depend on the watchlist
+
+    spread = sorted(unresolved.items(),
+                    key=lambda kv: (-len(kv[1]), -sum(kv[1].values()), kv[0]))
+    print(f'pages examined                     : {len(pages)}')
+    print(f'...with at least one C# fence      : {counts["fenced"]}')
+    print(f'distinct tokens in those fences    : {counts["raw"]}')
+    print(f'...after comments and strings      : {counts["stripped"]}')
+    print(f'...after page declarations, noise  : {counts["candidates"]}')
+    print(f'UNRESOLVED at src/ of both products, both refs : {len(unresolved)}')
+    pages_hit = {p for hits in unresolved.values() for p in hits}
+    print(f'pages carrying at least one        : {len(pages_hit)} '
+          f'of {counts["fenced"]}\n')
+
+    print('by page-spread — the ordering that found IMessageScheduler:')
+    for symbol, hits in spread:
+        names = sorted(hits)
+        shown = ', '.join(os.path.basename(p) for p in names[:4])
+        if len(names) > 4:
+            shown += f', +{len(names) - 4} more'
+        mark = '  <- on the watchlist' if symbol in listed else ''
+        print(f'{len(names):>4} page(s) {sum(hits.values()):>4} site(s)  '
+              f'{symbol:<40} {shown}{mark}')
+
+    print(f'\n{len(unresolved)} candidate(s), every one printed. This is a '
+          f'REPORT, not a gate: most of these are the documentation\'s own '
+          f'example domain, and triage is a person\'s job. Exit code is 0 '
+          f'whatever it found.')
+    return 0
+
+
+def main(argv):
+    census_mode = False
+    paths = []
+    for arg in argv:
+        if arg == '--census':
+            census_mode = True
+        elif arg.startswith('-'):
+            print(f'unknown option: {arg}', file=sys.stderr)
+            return 2
+        else:
+            paths.append(arg)
+
     everything = md_files()
-    if argv:
+    if paths:
         pages = []
         missing = []
-        for raw in argv:
+        for raw in paths:
             rel = os.path.relpath(os.path.abspath(raw), ROOT)
             if rel in everything:
                 pages.append(rel)
@@ -295,6 +550,15 @@ def main(argv):
             return 2
     else:
         pages = everything
+
+    if census_mode:
+        return run_census(pages)
+
+    try:
+        entries = load_watchlist()
+    except ValueError as exc:
+        print(f'watchlist unusable: {exc}', file=sys.stderr)
+        return 2
 
     listed = {e.symbol for e in entries}
     findings, silenced, stale = [], [], []
