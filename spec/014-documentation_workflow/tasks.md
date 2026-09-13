@@ -30,8 +30,8 @@ task that moved the number.
 | **1** | **The census probe** — executed 2026-09-12; its write-up ships with phase 2 | 1 | D12 |
 | **2** | **`symbolcheck.py`, its watchlist, and seven red-proofs. No CI job** | 12 | D8 |
 | **3** | **The four repairs AND the CI job, one PR** | 8 | D9 |
-| **4** | **The three P0 commands** | 5 | D5, D2, D6 |
-| **5** | **The three P1 commands, the committed home, and P2-1** | 7 | D3, D4, D1, D10, D7 |
+| **4** | **The three P0 commands, and the committed home they cite** | 6 | D5, D2, D6, D10 |
+| **5** | **The three P1 commands and P2-1** | 6 | D3, D4, D1, D7 |
 | **6** | **Acceptance** — the walk, the ledgers, the close | 6 | D11 |
 
 ---
@@ -1118,9 +1118,16 @@ grain* — turning up one phase after it was written down.
 ## Phase 4 — the three P0 commands
 
 **Goal:** the commands stop contradicting `CLAUDE.md` and start naming the instruments.
-Five tasks, one PR.
+~~Five tasks~~ **six tasks**, one PR.
 
-- [ ] **Task 4.1:** Rewrite `/spec:implement` (D5), 42 → ~70 lines
+> **AMENDED 2026-09-13, at the top of the phase: task 5.1 executes here, not in phase 5.**
+> Task 4.3 requires `/spec:review` to cite its numbers from `tools/README.md`, and 5.1 is what
+> writes that file. Shipping 4.3 first would merge a command citing a file that does not exist —
+> the failure this spec was written to stop, committed by the spec itself. The phase table in §0
+> and `## Phase 5` below carry the same amendment. **The 39-task total does not move**; 5.1 keeps
+> its number, because renumbering is how a spec's two counts start disagreeing.
+
+- [x] **Task 4.1:** Rewrite `/spec:implement` (D5), 42 → ~70 lines
   - Input: `design.md` §6.1; `CLAUDE.md` §§ *File Organization Pattern*, *Page banner*,
     *The opening sentence*, *Page descriptions*
   - Output: `.claude/commands/spec/implement.md`
@@ -1129,7 +1136,7 @@ Five tasks, one PR.
     yet.**` form; the compile obligation; and a **Quality Check split in two** — what a tool
     decides, and what you decide
 
-- [ ] **Task 4.2:** Rewrite `/spec:requirements` (D2), 48 → ~85 lines
+- [x] **Task 4.2:** Rewrite `/spec:requirements` (D2), 48 → ~85 lines
   - Input: `design.md` §6.2
   - Output: `.claude/commands/spec/requirements.md`
   - Notes: the **subject declaration** — `feature` · `reader problem` · `process` — which decides
@@ -1138,20 +1145,20 @@ Five tasks, one PR.
     criteria as *contains*, not *ends with* (defect 16), and say that **"a file exists" is not an
     instrument** (defect 17)
 
-- [ ] **Task 4.3:** Rewrite `/spec:review` (D6), 87 → ~120 lines
+- [x] **Task 4.3:** Rewrite `/spec:review` (D6), 87 → ~120 lines
   - Input: `design.md` §6.3; the existing `linkcheck` block, which is the model to copy
   - Output: `.claude/commands/spec/review.md`
   - Notes: **all eight gates** with the pre-existing-versus-yours discipline; **the numbers are
     cited from `tools/README.md`, never pasted**; and a fourth phase checklist, **Acceptance**,
     which walks the no-instrument criteria first
 
-- [ ] **Task 4.4:** Update `allowed-tools` on all three, in the same commit as their prose
+- [x] **Task 4.4:** Update `allowed-tools` on all three, in the same commit as their prose
   - Input: the three frontmatter blocks; the eight gate commands from `tools/README.md`'s draft
   - Output: the three frontmatter blocks
   - Notes: standing obligation 4. Today **one command of nine permits any `python3`**, and only
     `linkcheck.py`. A prose-only change would read as covered and be forbidden
 
-- [ ] **Task 4.5:** Write § *Phase 4 as executed*
+- [x] **Task 4.5:** Write § *Phase 4 as executed*
   - Input: tasks 4.1–4.4
   - Output: a section in this file, with the before/after line counts per command
   - Notes: record any place where citing `CLAUDE.md` was not possible because the convention is
@@ -1159,11 +1166,150 @@ Five tasks, one PR.
 
 ---
 
-## Phase 5 — the three P1 commands, the committed home, and P2-1
+## Phase 4 as executed — 2026-09-13, `docs/014-phase4-p0-commands`
 
-**Goal:** the rest of the workflow, and a home the commands can cite. Seven tasks, one PR.
+**Six tasks in one PR — 4.1 to 4.5 and 5.1, pulled forward.** No page under `contents/` changes,
+so no merge sign-off was owed. The three P0 commands went from **177 lines to 323**, and
+`tools/README.md` arrived at **158**.
 
-- [ ] **Task 5.1:** Write `tools/README.md` (D10)
+| File | Before | After | Design target | Δ |
+|---|---:|---:|---:|---|
+| `.claude/commands/spec/implement.md` | 42 | **89** | ~70 | +47 |
+| `.claude/commands/spec/requirements.md` | 48 | **90** | ~85 | +42 |
+| `.claude/commands/spec/review.md` | 87 | **144** | ~120 | +57 |
+| `tools/README.md` | — | **158** | — | new |
+| **All nine commands** | **451** | **597** | — | +146 |
+
+451 is requirements constraint 4's figure, re-derived here from `fc77c42` rather than quoted, and
+it agreed. **Two of the three commands overshot their target by about 20%** and `implement.md` by
+27%; every section in the overshoot is one §6 names, so the choice was to miss the target or drop
+a mandated section. Recorded rather than trimmed — constraint 4 asks that growth be *justified*,
+not that it be small.
+
+### The sequencing decision, taken before any file was opened
+
+Task 4.3 requires the gate numbers to be **cited from `tools/README.md`, never pasted**, and task
+5.1 writes that file one phase later. The three options were to cite forward at a file that does
+not exist, to paste the numbers and replace them in phase 5, or to move 5.1 here. **5.1 moved.**
+Pasting is the drift `optioncheck` exists to prevent, aimed at ourselves; citing forward merges a
+command carrying a dead reference, which is this spec's own subject. Nothing in the dependency
+graph objected — 5.1's only input is the gate numbers.
+
+### Gate movement: **predicted seven unmoved and one moved, and that is what happened**
+
+**The handover predicted "none" for all eight, and it was wrong.** `linkcheck`'s corpus is the
+**repository**, not the published tree: `tools/` is not in its `SKIP_DIRS`, so a new
+`tools/README.md` enters it.
+
+| Gate | At `fc77c42` | After | |
+|---|---|---|---|
+| `linkcheck` | 164 files / 0 broken | **165 files / 0 broken** | **moved, as predicted** |
+| `pagelint` | 0 errors / 757 warnings / 162 pages | unchanged | scope is `contents/` + `ROOT_PAGES` |
+| shape · redirects · `versioncheck` · `optioncheck` · `--verify` · `symbolcheck` | — | unchanged | no page, pin, table or `SUMMARY.md` entry touched |
+
+The prediction was written to the scratchpad **before** the first file was created, with the
++1 named and its cause given. That is standing obligation 6 doing the work it exists for: the
+number moved, and nobody had to decide after the fact whether it was supposed to.
+
+### Four findings
+
+**A. An anchored link into `CLAUDE.md` is reported `MISSING ANCHOR`, even when the heading
+exists.** `CLAUDE.md` is in `linkcheck`'s `SKIP_FILES`, so the file resolves through
+`os.path.exists` but its headings are never indexed. Found by probing before writing, with a
+two-way control — a probe file with live links reported 0 problems across 165 files, the same file
+with a dead link reported 3. **Consequence:** `tools/README.md` cites `CLAUDE.md` sections as
+prose, never as anchored links. The commands live under `.claude/`, which is in `SKIP_DIRS`, and
+are not subject to it.
+
+**B. `CLAUDE.md` states a measurement in the present tense that its own rule has since
+falsified.** Twice — *"`## Configuration` appears on 26 pages"* and *"`## Configuration` and
+`## Best Practices` each appear on 26 pages"*. Measured on this branch: **0 and 0**, because spec
+011 requalified them. The claims are sound as *motivation* and false as *fact*, and the cost was
+real — the first attempt to red-proof the `pagelint` filter planted `## Configuration` in
+`Glossary.md`, collided with nothing, and reported 0 errors. A tool looked vacuous for one round
+because a rationale sentence read as current state. **This is a `CLAUDE.md` gap and phase 5's task
+5.5 owns the file** — it is not repaired here, because a "while I'm here" edit to `CLAUDE.md` is
+exactly what design §10 warns 014 is most likely to do quietly.
+
+**C. Obligation 4 is stated one-way, and the reverse direction is where the defect was.** *"Prose
+and permission ship together"* catches prose naming a tool the frontmatter forbids. Reading it
+backwards — **which grants does the prose never use?** — found `/spec:requirements` holding
+`Bash(touch:*)`, which is what creates `.requirements-approved`. **The command that writes the
+requirements was permitted to approve them**, with no prose anywhere asking it to. Removed, along
+with a `Bash(test:*)` narrowed to `test:spec/*`. P2-2's `commandlint` should check both
+directions, not just the stated one.
+
+**D. Task 4.3's own rule caught task 4.3.** The first draft of `review.md` explained the `pagelint`
+filter with *"757 of them would bury everything else"* — a pasted gate number, in the file whose
+job is to stop pasting gate numbers, written minutes after writing the rule. Caught by grepping
+the three commands for every figure in `tools/README.md`. **A rule you have just written is not a
+rule you are yet following.**
+
+### Where citing `CLAUDE.md` was not possible
+
+Two conventions the commands now state are **not in `CLAUDE.md` at all**, so they are stated in
+the command rather than cited, and phase 5 owns the gap:
+
+1. **The compile obligation.** That a C# block is built against the **released packages** rather
+   than `ProjectReference`s into `src/` is 013 phase 2's finding F, recorded in a closed spec's
+   `tasks.md` and nowhere a writer would look. `CLAUDE.md` § *Code Example Standards* says
+   *"test all code examples"* and stops.
+2. **That behaviour must be run, not compiled, and always with a control.** Four compiling,
+   reviewed examples in this programme asserted false behaviour. `CLAUDE.md` has no rule, no
+   ledger row, and no mention.
+
+Both belong in `CLAUDE.md` § *Code Example Best Practices*. **Neither is added here** — phase 4's
+PR touches no `contents/` page and no `CLAUDE.md` line, and it keeps that property.
+
+### A decision taken, reversed, and why the reversal is the point
+
+**`/spec:review` pre-runs all eight gates.** It first pre-ran **five**, on measured grounds:
+`linkcheck`, `pagelint`, `--check-shape`, `--check-redirects` and `symbolcheck` cost **0.1–0.4s
+each** and read only this repository, against 2.6s for `versioncheck` (NuGet), 1.8s for a warm
+`optioncheck` (a build) and 0.5s for `--verify` (the live sitemap) — and a review command that is
+slow or weather-dependent is one people learn to skip.
+
+**Checking AC5 against its own stated instrument is what reversed it.** AC5 reads *"all eight
+gates are named in `.claude/commands/spec/`, and `/spec:review` runs eight"*, and five-plus-three
+satisfies the first clause and argues with the second. Design §6.3 — written later — says only
+*"all eight gates"*, which the five-inline shape could be read to satisfy; **the approved
+requirement is the narrower of the two and it wins.** The measured cost of the deviation was about
+5 seconds, which is not grounds to reinterpret a criterion. The prose absorbs the flakiness
+instead: three gates may print **exit 2**, and the command says in as many words that exit 2 is
+*unchecked*, not clean, and is re-run once before being believed.
+
+**This is the sequencing decision's lesson arriving twice in one phase.** Both times the question
+was whether to bend a rule this spec had just written, and both times the answer was to move the
+work instead.
+
+### Two decisions phase 4 took that the design did not
+
+1. **`pagelint` is piped through `grep -v '(warning)'` in the command's context block.** A bare
+   run injects hundreds of debt lines. The filter was red-proved rather than assumed: with a
+   cross-page collision and an in-page repeat planted in `Glossary.md`, **both errors and the
+   summary survived the filter**, and the corpus was restored and re-measured at 0 errors
+   afterwards.
+2. **AC6 was measured, not asserted, with a throwaway checker — and the throwaway is written
+   down.** Friction 28's rule is that a single-use instrument owes its output the exact commands,
+   so: the check parses each command's `allowed-tools`, expands globs like
+   `Bash(python3 tools/*.py:*)`, and runs **both directions**. Result across all nine commands:
+   **0 unpermitted in the three P0 commands**, and one in `new.md` — *prose names `wc -l`, the
+   frontmatter does not permit it* — which is **phase 5's task 5.4** and is left alone here.
+   The reverse direction reports 17 unused grants, and **most are not defects**: `Bash(test:spec/*)`
+   backs prose that says *"a `.tasks-approved` file in the spec directory"* without naming a
+   command. **That is the honest boundary of the reverse check and P2-2 should inherit it** — the
+   grants worth removing are the ones no reading of the prose reaches, which is how
+   `Bash(touch:*)` was found.
+
+---
+
+## Phase 5 — the three P1 commands and P2-1
+
+**Goal:** the rest of the workflow. ~~Seven tasks~~ **six tasks**, one PR — **task 5.1 shipped in
+phase 4**, for the reason recorded in that phase's amendment banner. Its box is ticked below and
+its number is unchanged.
+
+- [x] **Task 5.1:** Write `tools/README.md` (D10)
   - Input: `design.md` §7.4; the gate numbers at `c0d410a`; 012 §1's phase-is-a-PR contract
   - Output: a new file — the eight commands, what each checks, **the expected numbers at a named
     ref**, and the contract
@@ -1191,13 +1337,22 @@ Five tasks, one PR.
   - Output: `.claude/commands/spec/new.md`
   - Notes: the README template gains **Acceptance criteria**, **Open questions**, and the
     re-derive instruction. 013's README named six gaps of which five were closed; 014's defect
-    count was wrong by two before this spec started
+    count was wrong by two before this spec started.
+    **Carries an AC6 finding from phase 4: its prose names `wc -l` and its `allowed-tools` does
+    not permit it** — the only unpermitted invocation in the nine commands
 
-- [ ] **Task 5.5:** Add the `CLAUDE.md` note at rule 2
-  - Input: `CLAUDE.md` § *Page banner*; `design.md` §4.3
-  - Output: one line recording that `symbolcheck` reads the banner for product
+- [ ] **Task 5.5:** Add the `CLAUDE.md` note at rule 2, **and three more from phase 4**
+  - Input: `CLAUDE.md` §§ *Page banner*, *Heading qualification*, *Code Example Best Practices*;
+    `design.md` §4.3; § *Phase 4 as executed*
+  - Output: one line recording that `symbolcheck` reads the banner for product, **plus phase 4's
+    three**
   - Notes: rule 2 is now a dependency of a second tool. Nobody should be able to weaken the banner
-    without seeing what rests on it
+    without seeing what rests on it. Phase 4's three: the **two stale present-tense counts**
+    (*"`## Configuration` appears on 26 pages"*, said twice — it appears on **0**, because the
+    rule those sentences justify was then applied); the
+    **compile-against-released-packages** obligation; and **behaviour must be run, not compiled,
+    and always with a control**. The last two are stated in `/spec:implement` rather than cited,
+    because `CLAUDE.md` has nowhere to cite them to
 
 - [ ] **Task 5.6:** Add the evidence requirement to `/spec:update-task` (D7, P2-1)
   - Input: `requirements.md` §3.1; 013's ledger entry 13
@@ -1324,3 +1479,29 @@ Continuing the ledger at 25.
     cheap and specific: re-derive with `-w`, and if the two disagree, the difference is a
     longer name that deserves its own row.** Four consecutive phases across two specs have now
     found a stale or mis-grained inherited count.
+
+30. **A gate's scope is not the site's scope, and nothing in the workflow asks which.** *Met in
+    phase 4.* "No page under `contents/` changes" was read as "no gate moves", and `linkcheck`
+    moved 164 → 165 because its corpus is the **repository**. The claim that failed was about the
+    *published tree* and the claim being made was about *a tool's file walk*, and they are not the
+    same claim on six of the eight gates. `tools/README.md` now states each gate's corpus, which is
+    the cheapest place for the answer to live. **Obligation 6 worked exactly as designed** — the
+    prediction was written down before the work, so the +1 was a confirmation rather than a
+    discovery.
+
+31. **Obligation 4 has a direction, and the defect was in the other one.** *Met in phase 4; see
+    finding C.* *"Prose and permission ship together"* reads naturally as prose → permission, and
+    every previous application of it has gone that way. Read permission → prose, the first audit
+    ever run found `/spec:requirements` permitted to `touch` its own approval marker. **P2-2's
+    `commandlint` must check both directions**, and the design's one-line description of it —
+    *"every tool a command's prose names is permitted by its own `allowed-tools`"* — specifies only
+    the half that found nothing.
+
+32. **A rationale sentence that quotes a measurement in the present tense outlives the
+    measurement.** *Met in phase 4; see finding B.* `CLAUDE.md` says `## Configuration` *"appears
+    on 26 pages"*; it appears on none, because the rule that sentence justifies was then applied to
+    all 26. Nothing is wrong with the argument and nothing checks the number, so it reads as
+    current state to the next person — who planted a heading expecting a collision and got a clean
+    run. **A measurement inside a rationale needs the ref it was taken at, exactly as a gate
+    number does**, and `tools/README.md`'s rule — *a number without a ref is not a fact* — should
+    extend to `CLAUDE.md`.

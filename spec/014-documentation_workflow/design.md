@@ -439,13 +439,21 @@ phase 2. The requirements deliberately left the count to this phase.
 | **1** | **The probe** — executed 2026-09-12, §3 | D12 | with 2 | — |
 | **2** | **`symbolcheck.py`, its watchlist, its red-proofs — and NO CI job yet** | D8 | ✔ | 1 |
 | **3** | **The four corpus repairs, AND the CI job, in one PR** | D9 | ✔ | 2 |
-| **4** | **The three P0 commands** | D5, D2, D6 | ✔ | 2 |
-| **5** | **The three P1 commands and the committed home** | D3, D4, D1, D10 | ✔ | 4 |
+| **4** | **The three P0 commands, and the committed home they cite** | D5, D2, D6, **D10** | ✔ | 2 |
+| **5** | **The three P1 commands** | D3, D4, D1 | ✔ | 4 |
 | **6** | **Acceptance** — the walk, the ledger, the friction | D11 | ✔ | all |
 
 **1 gates 2** for the reason the requirements gave: the checker's shape is decided by the
 census's numbers, and §3 changed it. **2 gates 4**, because D5 and D6 cite the tool by name and
 `allowed-tools` must permit a tool that exists.
+
+> **AMENDED 2026-09-13 — D10 moved from phase 5 to phase 4**, at the top of phase 4 and before any
+> file was opened. §6.3 requires `/spec:review` to **cite** its numbers from D10's committed home
+> rather than paste them; with D10 a phase later, the choice was a merged command citing a file
+> that does not exist, or the pasted numbers §6.3 forbids. **The same rule that put the CI job in
+> phase 3 applies**: a thing and the thing it depends on merge together, or the dependant merges
+> second. Task numbering is unchanged — 5.1 keeps its number and `tasks.md` § *Phase 4 as executed*
+> records it.
 
 > ### Why the CI job ships in phase 3 and not phase 2 — the design review's blocking finding
 >
