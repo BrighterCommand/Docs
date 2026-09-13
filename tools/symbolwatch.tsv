@@ -1,0 +1,21 @@
+# tools/symbolwatch.tsv — names known dead in a released product, each with the live replacement.
+#
+# Tab-separated. Blank lines and lines beginning '#' are ignored; every other line is five
+# fields. Read by `tools/symbolcheck.py`: the gate reports any of these appearing under
+# contents/, and --verify-list re-resolves every row so an entry that comes back to life fails
+# loudly instead of quietly policing a name that returned.
+#
+# Before adding a row, resolve it TWO WAYS at BOTH refs. -w is not optional: git grep does not
+# honour \b, so without it a longer live name lends its existence to a shorter dead one.
+#
+#   git -C ../Brighter grep -lw 'IMessageScheduler'    10.7.0 -- 'src/*.cs'   # 0  <- must be 0
+#   git -C ../Brighter grep -lw 'IAmAMessageScheduler' 10.7.0 -- 'src/*.cs'   # 51 <- must not be
+#
+# product is brighter, darker or both, and it is not decoration: a symbol can be dead in one
+# product and alive in the other, and the column is the only thing that tells them apart.
+symbol	product	replacement	evidence	first_seen
+IAmACommandStoreAsync	brighter	IAmAnInboxAsync	013 ledger 15	2026-09-10
+UseExternalInbox	brighter	(removed at V10 — not a rename)	013 ledger 15	2026-09-10
+IAmAnIbox	brighter	IAmAnInbox	013 ledger 15	2026-09-10
+IMessageScheduler	brighter	IAmAMessageScheduler	014 design §3.4 — the probe	2026-09-12
+IMessageSchedulerFactory	brighter	IAmAMessageSchedulerFactory	014 tasks, phase 1 finding D	2026-09-13

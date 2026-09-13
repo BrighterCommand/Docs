@@ -1,8 +1,15 @@
 # Spec 014: The Documentation Workflow Itself
 
 **Created:** 2026-09-04
-**Status:** **README only — requirements phase not started.** `spec/.current-spec` points at
-**013**, deliberately: 013 is the next work and this is queued behind it.
+**Status:** **ALL THREE PHASES APPROVED 2026-09-12** (`.requirements-approved`,
+`.design-approved`, `.tasks-approved`) — **implementation started 2026-09-13, task 1.1 done.**
+`spec/.current-spec` points at **014**; 013 closed at 43/43 on 2026-09-10.
+
+> **Read `requirements.md`, not this file, on every content claim.** The requirements phase
+> re-derived what is below and corrected it. **The defect list is eighteen, not the fifteen
+> recorded in `PROMPT.md`** — that arithmetic omitted `spec/013-howto_guides/tasks.md` §5's two,
+> and this phase found a further one in `/spec:update-task`. All five review questions are
+> answered there, including the ruling that **014 builds the symbol-census gate**.
 
 ## Topic Overview
 
@@ -161,21 +168,29 @@ predicted, and items 6 to 8 are the ones no command's absence had been noticed b
 
 ## Status Checklist
 
-- [ ] Requirements gathered
-- [ ] Requirements reviewed and approved
-- [ ] Documentation outline created
-- [ ] Outline reviewed and approved
-- [ ] Writing tasks identified
+- [x] Requirements gathered — `requirements.md`, 2026-09-12
+- [x] Requirements reviewed and approved — 2026-09-12, five review findings applied
+- [x] Documentation outline created — `design.md`, 2026-09-12, with the census probe executed
+- [x] Outline reviewed and approved — 2026-09-12, five findings applied, two of them blocking
+- [x] Writing tasks identified — `tasks.md`, 2026-09-12, **39 tasks / 6 phases / 5 PRs**, approved
 - [ ] Writing complete
 - [ ] Documentation reviewed
 - [ ] Spec closed
 
 ## Next Steps
 
-1. Finish **013** first — it holds a public commitment on
-   [#67](https://github.com/BrighterCommand/Docs/issues/67).
-2. Run `/spec:switch 014-documentation_workflow`, then `/spec:requirements`.
-3. **Read the four closed specs' `tasks.md` write-ups as the source material** — they are where
+1. ~~Finish **013** first~~ — **done, closed 2026-09-10 at 43/43, and Docs#67 with it.**
+2. ~~`/spec:switch 014-documentation_workflow`, then `/spec:requirements`~~ — **done 2026-09-12.**
+3. ~~Run `/spec:design`~~ — **done 2026-09-12, approved. The probe ran first and changed the
+   design**: 831 unresolved symbols across 127 of 144 fenced pages, so **D8 is a watchlist
+   checker, not a census gate**, and the probe found a fourth dead symbol —
+   `IMessageScheduler`, across the whole scheduler family.
+4. ~~Run `/spec:tasks`~~ — **done 2026-09-12, approved. 39 tasks, six phases, five PRs.**
+5. **Run `/spec:implement`.** Start at **task 1.1**; phase 1 is already executed and its write-up
+   ships on phase 2's branch. The one thing not to re-decide: **the CI job ships in phase 3 with
+   the repairs, never in phase 2** — `docs.yml` runs `on: push`, so a gate merged while the
+   corpus is red turns `master` red.
+6. **Read the four closed specs' `tasks.md` write-ups as the source material** — they are where
    the method actually lives: 009's *acceptance pass as executed*, 010's Phase 6 and 9 split
    rules, 011's conventions, and 012's §1 standing obligations and *Phase 11 as executed*.
 
