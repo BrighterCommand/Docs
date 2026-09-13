@@ -373,7 +373,7 @@ named here only so the phase does not look like it declined to predict.
 > updated the phase table, AC9 and the total but not the heading above them. **It is §1's own
 > warning happening inside §1's own file**, and it is why every count here carries its command.
 
-- [ ] **Task 2.1:** Write the watchlist `tools/symbolwatch.tsv`
+- [x] **Task 2.1:** Write the watchlist `tools/symbolwatch.tsv`
   - Input: `design.md` §4.2; 013 ledger entry 15; the probe's `IMessageScheduler` finding
   - Output: five columns — `symbol · product · replacement · evidence · first_seen` — and **five
     rows**, amended from four by phase 1's finding D: `IMessageSchedulerFactory` ·  `brighter` ·
@@ -382,6 +382,21 @@ named here only so the phase does not look like it declined to predict.
     `.AddPolicies(` is dead in Brighter and alive in Darker 4.1.1. Verify each replacement
     against the source before writing it: **the design's own first draft got
     `IAmACommandStoreAsync` wrong** and said `IAmAnOutbox` where the answer is `IAmAnInboxAsync`
+  - **Done 2026-09-13.** All ten names resolved two ways at both refs with
+    `git -C ../Brighter grep -lw '<symbol>' <ref> -- 'src/*.cs' | wc -l`, dead **0 → 0** and live
+    **not** zero: `IAmACommandStoreAsync` 0→0 / `IAmAnInboxAsync` **9→9**; `UseExternalInbox`
+    0→0, no successor of that name — `UseExternalBus` and `UseExternalLuggageStore` are the
+    surviving `UseExternal*` pair, so the cell reads *(removed at V10 — not a rename)*;
+    `IAmAnIbox` 0→0 / `IAmAnInbox` **6→8**; `IMessageScheduler` 0→0 /
+    `IAmAMessageScheduler` **51→51**; `IMessageSchedulerFactory` 0→0 /
+    `IAmAMessageSchedulerFactory` **11→11**. `IAmAnInboxAsync` checked for sense as well as
+    liveness — it is the parameter `UseInboxHandlerAsync` actually takes
+    (`src/Paramore.Brighter/Inbox/Handlers/UseInboxHandlerAsync.cs:55,67` @ `origin/master`).
+    **The file supports `#` comments and blank lines**, which `pagetypes.tsv` does not; task 2.2's
+    parser must skip them, and task 2.7's red-proof passes over a file that has them.
+    **All five shipped rows are `brighter`, so the `product` column has no discriminating row in
+    the corpus** — task 2.10's proof is the only thing that exercises it, which is exactly why the
+    tasks review added it
 
 - [ ] **Task 2.2:** Write `tools/symbolcheck.py` — gate mode
   - Input: `linkcheck.py` and `pagelint.py` for the house exit-code contract and output shape
