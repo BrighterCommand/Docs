@@ -584,13 +584,39 @@ named here only so the phase does not look like it declined to predict.
     silenced by pointing it at an empty one, and that is a single line in a workflow file.
     `git status --short tools/` is empty: the shipped list was never edited
 
-- [ ] **Task 2.9:** Red-proof 4 and 5 — `--verify-list` discriminates
+- [x] **Task 2.9:** Red-proof 4 and 5 — `--verify-list` discriminates
   - Input: task 2.6; Brighter at `10.7.0` and `origin/master`
   - Output: a corrupted ref name **exits non-zero** rather than passing clean; `CommandProcessor`
     is reported **live** (43 files at 10.7.0, 45 at master)
   - Notes: this is the two-way control at the tool level. **A control that only proves absence
     proves nothing about the grep** — `git grep` does not honour `\b`, and the probe met the
     plausible-zero failure twice in one session
+  - **Done 2026-09-13, as subprocess runs on a scratch copy** — the shipped tool and list were
+    never edited (`git status --short tools/` empty). **Red-proof 4 was run twice, because there
+    are two ways to have the wrong ref and only one of them is git's problem:**
+
+    ```text
+    4a  ref '10.7.O' (letter O)   --verify-list cannot run: ../Brighter@10.7.O:
+                                  fatal: unable to resolve revision: 10.7.O      exit 2
+    4b  ../Darker at 4.1.1,       control failed: CommandProcessor resolves DEAD,
+        pointed at as 'brighter'  expected LIVE (0 files at 4.1.1, 0 at master)   exit 2
+    ```
+
+    **4b is the one the task is really about.** That ref resolves perfectly, the repository is
+    real, `git grep` is happy, and every row comes back `DEAD` — a clean sweep that means
+    nothing. Only the **present** half of the control catches it. An absence-only control
+    passes 4b without a murmur, which is the note's point made with a run instead of an argument
+  - **Red-proof 5: `CommandProcessor` added as a row is reported `LIVE`, 43 at `10.7.0` and 45 at
+    `origin/master`, exit 1**, with the advice *REMOVE THE ROW*. The same two numbers print as a
+    control on **every** `--verify-list` run, green or red, so the discrimination is visible even
+    on a clean day
+  - **A fifth proof nobody asked for, met by accident and worth more than one of the four.** The
+    first run in the scratch copy had no sibling checkouts, and the tool said **`no checkout at
+    ../Brighter … cannot run without it`, exit 2** rather than resolving five rows against
+    nothing and reporting them all still dead. **That environment is the CI `check` job**, and
+    this is the evidence behind task 3.6: in the job where `--verify-list` does not belong, it
+    cannot produce a false green even if someone wires it there
+  - **One cosmetic fix in the same commit:** the summary said *"1 entry need attention"*
 
 - [ ] **Task 2.10:** Red-proof 6 and 7 — **the product column, and the opt-out**
   - Input: `design.md` §4.2–4.3; `CLAUDE.md` § *Page banner*; Darker at `4.1.1`

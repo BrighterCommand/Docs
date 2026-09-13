@@ -667,8 +667,8 @@ def run_verify_list():
               f'product, and every named replacement still live.')
         return 0
 
-    plural = 'entry' if len(problems) == 1 else 'entries'
-    print(f'\n===== {len(problems)} {plural} need attention =====')
+    plural = 'entry needs' if len(problems) == 1 else 'entries need'
+    print(f'\n===== {len(problems)} {plural} attention =====')
     for entry, name, state, pin, head, counts in problems:
         if state.startswith('REPLACEMENT'):
             print(f'{entry.symbol}: its replacement {entry.replacement} is '
