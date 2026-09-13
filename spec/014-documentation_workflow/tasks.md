@@ -632,6 +632,29 @@ named here only so the phase does not look like it declined to predict.
     had no control; an opt-out with no control is the same defect one level down. The second half
     of each proof is what makes it two-way — an opt-out that silences everything would pass a
     one-way test
+  - **Done 2026-09-13.** `AddPolicies` is the right fixture and the corpus supplied it: **5 real
+    sites across 3 pages, every one of them bannered *Darker V4*** — `DarkerBasicConfiguration.md`
+    ×3, `QueryPipeline.md`, `QueryPipelinePolicies.md`. One site was **planted** on a scratch
+    copy of `PolicyRetryAndCircuitBreaker.md`, a *Brighter V10* page, so the same symbol exists
+    on both sides of the product line
+  - **Proof 6 — one symbol, two rows, disjoint page sets and opposite verdicts:**
+
+    | Row | Gate reports | `--verify-list` |
+    |---|---|---|
+    | `AddPolicies` · **brighter** | **1 site / 1 page** — the planted Brighter page alone; all 5 Darker sites invisible | **DEAD** 0 at `10.7.0`, 0 at master — *all 6 entries still dead*, green |
+    | `AddPolicies` · **darker** | **5 sites / 3 pages** — exactly the Darker V4 pages; the planted Brighter site invisible | **LIVE** 1 at `4.1.1`, 1 at master — exit 1, *REMOVE THE ROW* |
+
+    **That is §4.3's whole argument in one table**, and neither half of it is provable without
+    the other: a `brighter` row that reported Darker pages would be a false positive nobody
+    could silence except by deleting the row, and a row whose liveness was resolved against the
+    wrong product would call a live method dead
+  - **Proof 7 — the opt-out, on `InMemoryScheduler.md`**, the one page carrying two listed
+    symbols. Before: `IMessageScheduler` **2 sites** and `IMessageSchedulerFactory` **1 site**,
+    exit 1. After adding `<!-- symbolcheck: allow IMessageScheduler -->` and nothing else:
+    `IMessageSchedulerFactory` **still reported, still exit 1**, with
+    `----- silenced by opt-out (2 site(s)) ----- contents/InMemoryScheduler.md IMessageScheduler
+    ×2` underneath. **The second half is the half that matters** — an opt-out that silenced the
+    page would pass a one-way test and be a hole in the gate
 
 - [ ] **Task 2.11:** Write §§ *Phase 1 as executed* and *Phase 2 as executed*
   - Input: tasks 1.1 and 2.7–2.10
