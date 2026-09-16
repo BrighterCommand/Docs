@@ -89,9 +89,13 @@ never runs, so this command is the only place it is seen.
 | Requirements | requirements.md | .requirements-approved |
 | Design/Outline | design.md | .design-approved |
 | Tasks | tasks.md | .tasks-approved |
+| Writing | tasks.md approved, boxes still unticked | — none; it ends when they are all ticked |
 | Acceptance | tasks.md, fully ticked | .accepted |
 
-The active phase is the first one whose document exists and whose marker does not.
+The active phase is the first one whose document exists and whose marker does not. **Writing is the
+one phase with no marker**, so it is detected by the boxes rather than by a file: tasks approved and
+at least one `- [ ]` left. Reviewing a writing phase means the *Writing Review* checklist below, on
+the pages that phase touched.
 
 ### Review Checklists
 
@@ -128,6 +132,17 @@ The active phase is the first one whose document exists and whose marker does no
 - Are inherited counts re-derived by two methods that agree?
 - Is the mismatch recorded before it is fixed?
 - Is there a final acceptance phase owning the walk and the ledgers?
+
+**Writing Review — the three things no gate decides:**
+
+`CLAUDE.md` § *The ledger* carries three conventions marked **review only**, and this is the review
+they mean. No linter will ever report them, so a page that breaks one is green everywhere.
+
+- Are the ❌/✅ **version markers** right on any block that shows a V9 and a V10 form?
+- Does every new or edited C# block **compile against the released packages** — not a
+  `ProjectReference` into `src/` — and does a step that legitimately does not build say so?
+- Does any block asserting **behaviour** — an exception type, an ordering, a precedence — get
+  **run, with a control**? Four compiling, reviewed examples in this programme were wrong
 
 **Acceptance Review:**
 - Walk the criteria **in order of the ones marked as having no instrument first** — they are the

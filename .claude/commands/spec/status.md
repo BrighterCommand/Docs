@@ -5,7 +5,7 @@ description: Show all specifications and their status
 
 ## Gather Status Information
 
-All specs: !`ls -d spec/*/ 2>/dev/null | sort`
+All specs: !`ls -d spec/*/ 2>/dev/null`
 Current spec: !`cat spec/.current-spec 2>/dev/null || echo "None"`
 
 ## Your Task

@@ -91,9 +91,14 @@ from any rule in the [ledger](#the-ledger); it records why these pages look diff
 **Extended from tutorials to how-tos on 2026-09-06**, ruled at spec 013's design review
 (design §11 Q7). The reason was never about tutorials specifically — it is about a page
 a reader *executes*, and a how-to is that shape too. **It does not reach every How-to
-page retroactively**: the 53 pages already typed How-to keep their headings, because
-requalifying them would move published anchors for no reader benefit. It binds pages
-written from here on.
+page retroactively**: the **53** pages typed How-to **when the ruling was taken** keep
+their headings, because requalifying them would move published anchors for no reader
+benefit. It binds pages written from here on.
+
+That 53 is a historical set, not a census, and the difference is the point: measured
+2026-09-16, `grep -rlE '^> \*\*How-to\*\*' contents/` finds **57**, of which **6** use
+`## Step N:`. The four that arrived since were written under the ruling and the other
+53 predate it — so a rising count is the rule working, not the rule breaking.
 
 ### SUMMARY.md Management
 

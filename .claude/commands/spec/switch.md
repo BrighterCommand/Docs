@@ -6,7 +6,7 @@ argument-hint: <spec-id-or-name>
 
 ## Available Specifications
 
-!`ls -d spec/*/ 2>/dev/null | sort`
+!`ls -d spec/*/ 2>/dev/null`
 
 Current spec: !`cat spec/.current-spec 2>/dev/null || echo "None"`
 

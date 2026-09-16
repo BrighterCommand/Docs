@@ -1,9 +1,10 @@
 # Spec 014: The Documentation Workflow Itself
 
 **Created:** 2026-09-04
-**Status:** **ALL THREE PHASES APPROVED 2026-09-12** (`.requirements-approved`,
-`.design-approved`, `.tasks-approved`) — **implementation started 2026-09-13, task 1.1 done.**
-`spec/.current-spec` points at **014**; 013 closed at 43/43 on 2026-09-10.
+**Status:** **CLOSED 2026-09-16 at 39/39**, across six phases and five pull requests
+(#159, #160, #161, #162, and the acceptance PR). Three approval markers exist; **`.accepted` is the
+maintainer's to create** at `/spec:review`, and is the one thing this phase does not write itself.
+`spec/.current-spec` still points at **014** — see *Status Checklist* for why.
 
 > **Read `requirements.md`, not this file, on every content claim.** The requirements phase
 > re-derived what is below and corrected it. **The defect list is eighteen, not the fifteen
@@ -173,11 +174,32 @@ predicted, and items 6 to 8 are the ones no command's absence had been noticed b
 - [x] Documentation outline created — `design.md`, 2026-09-12, with the census probe executed
 - [x] Outline reviewed and approved — 2026-09-12, five findings applied, two of them blocking
 - [x] Writing tasks identified — `tasks.md`, 2026-09-12, **39 tasks / 6 phases / 5 PRs**, approved
-- [ ] Writing complete
-- [ ] Documentation reviewed
-- [ ] Spec closed
+- [x] Writing complete — **39 of 39**, 2026-09-16. Re-derived, not incremented:
+      `grep -c '^- \[x\] \*\*Task' tasks.md` against `grep -c '^- \[.\] \*\*Task' tasks.md`
+- [x] Documentation reviewed — the acceptance walk, `tasks.md` § *Phase 6 as executed*.
+      **Twelve of twelve criteria met, five repairs taken during the walk**, all eight gates green
+- [x] Spec closed — 2026-09-16. `spec/.current-spec` **stays** at `014-documentation_workflow`
+      until a spec 015 exists; repointing it at a directory that does not exist breaks
+      `/spec:status` and `/spec:switch`
 
-## Next Steps
+## What 014 shipped
+
+Nine command files, from **451** lines to **777** — eight rewritten or repaired, and `/spec:switch`,
+the one 014 never touched, repaired at the acceptance walk. An eighth gate, `tools/symbolcheck.py`, with a curated watchlist,
+seven red-proofs and two CI jobs. `tools/README.md`, the committed home for the gate numbers and
+the phase-is-a-PR contract. Eleven `contents/` pages repaired of **eight** dead-API defects, five
+of which no gate had ever reported. Four edits to `CLAUDE.md`, two of them new ledger rows. And the
+two ledgers, which are as much the product as the commands: **eight corpus defects with a *found
+by* column**, and **twenty-two friction entries, 18–39**.
+
+**The residual gap, which is the line the next spec starts from:** a dead API written into prose on
+an existing page — uncompiled, and not on `symbolwatch.tsv` — **is caught by nothing.** 014 built
+the instrument, repaired everything the instrument can see, and measured the size of what it
+cannot: `--census` reports 881 unresolved candidates across 128 pages and **cannot be a gate**,
+which is D12's finding. Anyone reading AC3 as *"014 closed defect 8"* should read this sentence
+instead.
+
+## Next Steps — as executed
 
 1. ~~Finish **013** first~~ — **done, closed 2026-09-10 at 43/43, and Docs#67 with it.**
 2. ~~`/spec:switch 014-documentation_workflow`, then `/spec:requirements`~~ — **done 2026-09-12.**
@@ -186,10 +208,9 @@ predicted, and items 6 to 8 are the ones no command's absence had been noticed b
    checker, not a census gate**, and the probe found a fourth dead symbol —
    `IMessageScheduler`, across the whole scheduler family.
 4. ~~Run `/spec:tasks`~~ — **done 2026-09-12, approved. 39 tasks, six phases, five PRs.**
-5. **Run `/spec:implement`.** Start at **task 1.1**; phase 1 is already executed and its write-up
-   ships on phase 2's branch. The one thing not to re-decide: **the CI job ships in phase 3 with
-   the repairs, never in phase 2** — `docs.yml` runs `on: push`, so a gate merged while the
-   corpus is red turns `master` red.
+5. ~~Run `/spec:implement`~~ — **done. Five PRs, phases 2 to 6: #159, #160, #161, #162, and this
+   one.** The thing that was not re-decided held: the CI job shipped in phase 3 **with** the
+   repairs, so `master` never went red on a gate that had arrived before its corpus.
 6. **Read the four closed specs' `tasks.md` write-ups as the source material** — they are where
    the method actually lives: 009's *acceptance pass as executed*, 010's Phase 6 and 9 split
    rules, 011's conventions, and 012's §1 standing obligations and *Phase 11 as executed*.

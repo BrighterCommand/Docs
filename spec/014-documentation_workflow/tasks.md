@@ -1562,7 +1562,7 @@ outstanding.
 
 **Goal:** walk AC1–AC12 with evidence and find what the phases did not. Six tasks, one PR.
 
-- [ ] **Task 6.1:** Walk AC1–AC12 forwards, one paragraph each, naming the command and its output
+- [x] **Task 6.1:** Walk AC1–AC12 forwards, one paragraph each, naming the command and its output
   - Input: `requirements.md` §12, as amended by the design review
   - Output: one paragraph per criterion, each naming its instrument and that instrument's output
   - Notes: **start with the seven-and-a-half that have no tool** — AC1, AC2, AC3, AC4, AC10,
@@ -1570,21 +1570,21 @@ outstanding.
     unmarked ones. **Use a census, not a `tail`**: 013's only false finding came from
     `grep '^## ' | tail -4` on a seven-step page
 
-- [ ] **Task 6.2:** Walk AC2 — no command contradicts `CLAUDE.md` — convention by convention
+- [x] **Task 6.2:** Walk AC2 — no command contradicts `CLAUDE.md` — convention by convention
   - Input: `CLAUDE.md`'s rule ledger — **nineteen rows after task 5.5**, seventeen when this task
     was written; the nine commands as rewritten
   - Output: a table, convention against the command that would cause a writer to break it
   - Notes: this is the criterion 014 exists to satisfy and it has **no tool**. Walking it by
     reading the commands against `CLAUDE.md`'s ledger is the whole test
 
-- [ ] **Task 6.3:** Walk AC7 backwards — what changed that should not have
+- [x] **Task 6.3:** Walk AC7 backwards — what changed that should not have
   - Input: `origin/master` at the pre-014 tip
   - Output: `git diff --name-only origin/master -- contents/ | wc -l` = **11**, and
     `git diff --stat origin/master -- SUMMARY.md` empty
   - Notes: **the criterion most likely to break quietly.** A spec about the workflow is the
     easiest place to talk yourself into a "while I'm here" edit
 
-- [ ] **Task 6.4:** Write the defect ledger — every defect 014 found, and what the product says
+- [x] **Task 6.4:** Write the defect ledger — every defect 014 found, and what the product says
   - Input: task 3.8's ledger; task 2.11's red output; the eighteen workflow defects
   - Output: the ledger table, with a *found by* column
   - Notes: it already has two entries the phases did not predict — `IMessageScheduler`, found by
@@ -1593,14 +1593,14 @@ outstanding.
     they have existed. The *found by* column has to distinguish them: one is the instrument's
     win, the other is the re-derivation's
 
-- [ ] **Task 6.5:** Write the friction ledger — 014's own, continuing at 30
+- [x] **Task 6.5:** Write the friction ledger — 014's own, ~~continuing at 30~~ **collected at 35**
   - Input: `requirements.md` §14 (18–21), `design.md` §13 (22–24), §4 of this file (25–29, of
     which **28 and 29 were met in phase 1**)
   - Output: the collected ledger, plus whatever phases 2–5 met
   - Notes: **the ledger is 014's product as much as the commands are** — it is what the next
     workflow spec inherits, and the reason this one had eighteen defects to work from
 
-- [ ] **Task 6.6:** Close — README checklist, `spec/.current-spec`, and what the next session needs
+- [x] **Task 6.6:** Close — README checklist, `spec/.current-spec`, and what the next session needs
   - Input: the README's status checklist; `design.md` §4.1's coverage matrix
   - Output: the checklist ticked, and a closing section naming the residual gap
   - Notes: **do not repoint `.current-spec` until a next spec exists.** Record the residual gap —
@@ -1610,22 +1610,433 @@ outstanding.
 
 ---
 
+## Phase 6 as executed — 2026-09-16, `docs/014-phase6-acceptance`
+
+**Twelve of twelve criteria are met, and the walk took five repairs to get there.** Two of them
+were true when written and made false by a later edit elsewhere; one was a rule stated in only one
+of its two directions; one was a checklist that never existed for a convention delegated to it; and
+one had been live since before 014 began, green under the check written **one phase earlier to find
+exactly that class of thing**.
+
+**All five came out of AC2 and AC6, which are two of the seven and a half criteria with no
+instrument.** The requirements said out loud that carrying more hand-walked criteria than
+instrumented ones was *"worse than it looks"*; what the walk shows is narrower and less comfortable
+than that. The instrumented criteria were all green and all uninformative. **Every finding 014 has
+to show for its acceptance phase came from reading.**
+
+### Gate movement: predicted eight unmoved, and eight were
+
+The prediction went into the scratchpad before a file was opened, and this time the *why* was the
+work: phase 6 edits `spec/`, `.claude/` and `CLAUDE.md`, and **none of the three is in any gate's
+corpus**. `spec/` and `.claude/` are both in `linkcheck`'s `SKIP_DIRS` and `CLAUDE.md` is a skipped
+file; `pagelint`'s corpus is `contents/` plus the root `README.md`; the three `urlmap` modes read
+`SUMMARY.md`; `versioncheck`, `optioncheck` and `symbolcheck` read pages. **Phase 6 creates no file
+anywhere**, which is the clause that made phase 5's "none" defensible and makes this one so.
+
+Measured after the work — all eight at their `373e9c3` figures, which are `tools/README.md`'s
+figures at `412fd34` unchanged:
+
+```text
+No broken internal links (165 files checked).
+0 errors, 757 warnings (using-directive debt: 757 blocks across 116 pages) across 162 pages.
+0 shape failures — 161 pages, 12 sections, deepest 4 of 4 segments, widest 12 of 20 top-level entries
+0 redirect failures — 77 entries, 7858 bytes, all printable ASCII
+0 stale pins of 18 examined across 5 page(s).
+No watchlisted symbols found (5 entries, 161 pages checked, 1 silenced).
+predicted 161, published 161, 161 agree
+0 mismatches across 59 tables and 519 rows.
+```
+
+### Task 6.1 — the walk, criteria with no instrument first
+
+| # | Instrument | Output | Verdict |
+|---|---|---|---|
+| AC1 | none — read | seven P0s, seven shipped, none struck | **met** |
+| AC2 | none — read | nineteen rows walked; **four repairs** | **met, after repair** |
+| AC3 | `grep -cE` on §3 | 17 rows, highest row 17, +§3.1 = **18** | **met, 17 fully / 1 partly** |
+| AC4 | none — read | nine commands read entire; two explicit *no instrument* markings | **met** |
+| AC5 | `grep -rlF`; ``grep -c '^!`'`` | eight named, **eight run** | **met; its second instrument is wrong** |
+| AC6 | none — walked; a rebuilt checker | **2 forbidden**, repaired → 0 | **met, after repair** |
+| AC7 | `git diff --name-only` | **11**; `SUMMARY.md` empty | **met** |
+| AC8 | the seven commands | seven green; **two no longer at §11.6's numbers** | **met, with both movements named** |
+| AC9 | `symbolcheck` + seven red-proofs | tasks 2.7–2.10, output pasted | **met** |
+| AC10 | none — read | eighteen entries, 18–35, contiguous; **four added** | **met** |
+| AC11 | `grep -rn` + walked reverse | six of nine commands cite `tools/README.md`; no orphan section | **met** |
+| AC12 | none — read | both numbers recorded and cited; the unrepaired reds named | **met** |
+
+**AC1 — every P0 ships or is struck.** Seven P0s, and the disposition is that none was struck: D5,
+D2 and D6 in phase 4; D9's eleven pages and D8 with its two CI jobs in phases 2 and 3; D12 in phase
+1; D11 is this section. `grep -n 'symbolcheck' .github/workflows/docs.yml` puts the gate at line 78
+of the `check` job and `--verify-list` at line 161 of the scheduled `versions` job, which is the
+only mechanical part of this criterion. **The strikes are all in P2** — P2-2 and P2-3, struck in
+phase 5 with reasons — and AC1 does not reach them.
+
+**AC3 — eighteen defects, re-derived not quoted.** Two methods that agree:
+`grep -cE '^\| *[0-9]+ \|'` over §3 of `requirements.md` gives **17 rows**, and the highest row
+number in the same range is **17**. §3.1's eighteenth is prose, counted by hand and by being the
+only one. **Seventeen are repaired and one is repaired in part**: defect 8 — *nothing asks whether
+the API a page names exists* — got its prose repairs in D3, D5 and D6 and its instrument in D8,
+and D8 knows only the five names on its watchlist. That remainder is the residual gap task 6.6
+names, and it is the line to quote to anyone who reads AC3 as saying 014 closed defect 8.
+
+**AC4 — every added obligation names its instrument or is marked as having none.** A census, not a
+sample: all nine command files were read end to end, which is **777** lines — `cat … | wc -l`,
+`wc -l … | tail -1` and `awk 'END{print NR}'` all agree, and an earlier figure of 774 in this
+section's own drafting was a count taken before the last repair landed. The repair shows up in two
+places where a command says out loud that nothing checks something — `/spec:implement`'s
+**"What you decide, because nothing here checks it"** heading over five questions, and
+`/spec:update-task`'s *"where the Output cannot be checked mechanically, the tick says so"*. Every
+other obligation names a command: `grep -c`, `wc -l`, `git -C ../Brighter grep -n`,
+`urlmap.py --redirects`, `test -f`, the eight gates, or `tools/README.md` for a number.
+
+**AC5 — eight gates named, and `/spec:review` runs eight.** All eight resolve in
+`.claude/commands/spec/`: `symbolcheck.py` on three commands, `linkcheck.py`, `pagelint.py` and
+`optioncheck` on two each, the three `urlmap` modes and `versioncheck.py` on `review.md`.
+``grep -c '^!`' review.md`` is **8**, and those eight lines are the eight gates — the current-spec
+block sits mid-line and is not counted. **The criterion is met and the instrument written for it is
+not the instrument that measures it**: §12 says *"`grep -c python3` on `review.md`'s frontmatter"*,
+which returns **5**, because the frontmatter holds one grant per *binary path* and `urlmap.py`
+carries three of the eight gates. See friction 39.
+
+**AC6 — prose and `allowed-tools` agree, in both directions.** This is the criterion that failed,
+and § *The finding* below is its account. After repair: **0 forbidden, 7 unreached grants, 32
+permitted invocations across 9 commands.**
+
+**AC8 — the seven existing gates green.** All seven are green. **Two are not at the numbers §11.6
+records**, and neither is adopted silently: `linkcheck` reads **165** where §11.6 says 164, because
+`tools/README.md` entered its walk the day it was written (phase 4, predicted as a *finding* and
+reconciled); `pagelint` reads **757 warnings** where §11.6 says 768, because eleven C# blocks earned
+their `using` lines during phase 3's repairs — settled by diffing the two runs rather than by
+arithmetic, and no warning of any other class moved. §11.6's list is the **pre-014** state and
+should be read as a baseline, not as a target. **D8's disposition**, which AC8 deliberately left
+open: decided by D12's numbers to be a watchlist rather than a census, built, and green at
+*0 findings — 5 entries, 161 pages, 1 silenced*, which is a different claim from *0 findings*.
+
+**AC9 — the red-proofs.** Seven, not five, recorded with their output in tasks 2.7–2.10 and
+re-read here rather than re-run: the gate fires on all five watchlist symbols and stops when they
+are repaired; deleting an entry proves the list is firing and not the corpus; `--verify-list` exits
+non-zero on a corrupt ref and still reports `CommandProcessor` as live; and the `product` column
+and the opt-out each got the two-way control the tasks review added them for.
+
+**AC12 — the probe ran and its numbers are cited.** D12 covered all 161 pages — 144 of them
+carrying a C# fence by a loose regex, 145 by `pagelint`'s `FENCE_RE`, and 161 for the prose surface
+— and recorded both numbers with the command beside each. `design.md` §4 cites them to invert D8
+from a census to a watchlist, and §5 cites them to size D9. **The reds it found that 014 does not
+repair are named**: the 881 unresolved candidates are dominated by the documentation's own invented
+domain — `OrderId` on 31 pages, `GreetingEvent` on 18, `CustomerId` on 17 — which no cheap filter
+separates from a real API name, and that finding is *why* the gate is a curated list. What goes
+un-gated goes to the residual gap in 6.6, not to a later spec's inbox.
+
+### Task 6.2 — AC2 against the nineteen rows, and the four repairs it produced
+
+The ledger is **nineteen rows**, re-derived: the table in `CLAUDE.md` § *The ledger* has 21 pipe
+lines, of which two are the header and its separator. Walked row by row against the nine commands,
+asking of each: which command would cause a writer to break this, and does that command cite the
+rule, restate it, or contradict it?
+
+| Rows | The command that would cause a writer to break it | Verdict |
+|---|---|---|
+| 1–2 — one H1, and no second | `/spec:implement`'s structure section | cites, by presupposing it: *"first non-blank line after the H1"* |
+| 3–4 — the banner, and its grammar | `/spec:implement`, `/spec:design`, `/spec:review` | cites § *Page banner*; **one deliberate restatement**, below |
+| 5–6 — heading qualification | `/spec:implement`, `/spec:design` | cites, with one example and **no copy of the allowlist** |
+| 7 — a language tag on every fence | none | left to rule 4; `/spec:implement` runs `pagelint` on the paths it touched |
+| 8 — "Dispatcher", not "ServiceActivator" | none | left to rule 5; neither spelling appears in any command |
+| 9 — `using` directives | `/spec:implement` | cites **rule 6 by number**, and guards `// ...` against misuse |
+| 10–16 — the opening sentence and `description:` | `/spec:implement`, `/spec:design` | cites §§ *The opening sentence* and *Page descriptions*; neither copies the 200-character limit nor the clauses |
+| 17 — version markers | `/spec:implement` | **contradicted — repaired** |
+| 18–19 — compile, and run with a control | `/spec:implement` states both; **`/spec:review` checked neither** | **contradicted — repaired** |
+
+**Repair 1 — a command asserting a fact the ledger had already changed.**
+`/spec:implement` line 87 read *"Are the ❌/✅ version markers right? That is **the one** convention
+with no rule"*. `CLAUDE.md` line 552 reads *"**Three** conventions have no rule"*, because **phase 5
+added the other two rows** — and phase 5 did not re-read the command phase 4 had shipped. The
+command was also arguing with itself: it states the compile obligation and the run obligation three
+paragraphs earlier and then calls version markers the only one. Repaired to name all three and cite
+the ledger.
+
+**Repair 2 — a delegation with no receiver.** `CLAUDE.md` says of those same three rows: *"All
+three are checked in review"*. `grep -niE 'compile|control|version marker|❌|behaviour'` over
+`/spec:review` returned **one line**, and it is the tasks-phase question about red-proofs — a
+different subject. **The review command had no question for any of the three conventions
+`CLAUDE.md` delegates to it.** So the ledger's review-only column pointed at a review that was not
+looking. Repaired with a **Writing Review** checklist carrying all three, and — because the
+checklist would otherwise be unreachable — a **Writing** row in the phase-detection table, the one
+phase with no approval marker, detected by tasks approved and boxes still unticked.
+
+**Repair 3 — a rule stated without its retroactivity.** `CLAUDE.md` is explicit that the
+`## Step N:` convention *"does not reach every How-to page retroactively"*, because requalifying one
+moves every published anchor on it. `/spec:implement` guarded **one** direction — *"do not tidy a
+`## Step N:` page into sections"* — and left the other open while telling the writer that a How-to
+uses step headings. A writer editing one of the pre-ruling How-to pages would have followed the
+command straight into the thing the convention forbids. Repaired to forbid the conversion in both
+directions and to name the date the rule binds from.
+
+**Repair 4 — the third stale count in a rationale, found by re-deriving one the walk did not need
+to.** The same sentence says *"the 53 pages already typed How-to"*. Measured today:
+
+```bash
+grep -rlE '^> \*\*How-to\*\*' contents/ | wc -l      # 57
+grep -rhcE '^> \*\*How-to\*\*' contents/ | awk '{s+=$1} END {print s}'   # 57
+```
+
+**57, not 53** — and the sentence is not wrong, it is unanchored. 53 was true on 2026-09-06 when
+the ruling was taken, and the sentence means that historical set; four How-to pages have been
+written under the rule since. This is precisely the class phase 5 repaired twice — and phase 5
+found its two by grepping for *"26 pages"*, the number it already knew about, so a third sentence
+with a different number went past. `CLAUDE.md` now carries the date, today's 57, and the six of
+those 57 that use step headings, with the note that **a rising count is the rule working**.
+
+**What the four repairs cost, against constraint 4.** `/spec:review` 144 → 159 and
+`/spec:implement` 89 → 93; `status.md` and `switch.md` lost a pipeline each and no lines. Fifteen of
+the nineteen added lines are the *Writing Review* checklist and the phase row that makes it
+reachable, which is the only one of the four that adds a section rather than correcting a sentence.
+The nine commands stand at **777** against a pre-014 **451**.
+
+**The one deliberate restatement, recorded rather than repaired.** `/spec:implement` says *"The
+separator is ` · `, not a hyphen"*, which copies one token out of `CLAUDE.md`'s banner grammar
+against constraint 1. It stays: the value is unguessable and a hyphen looks right, so a writer who
+has not opened `CLAUDE.md` gets it wrong by default, and one character cannot drift the way a
+grammar can. **Nothing else is restated** — `grep -rn` over the commands for the five allowlisted
+headings, `APPLIES_TO`, the 200-character limit and the version strings returns nothing but
+`new.md`'s `## Next Steps`, which is a heading in the spec-README template and not a page under
+`contents/`. The four page-type names appear in `/spec:design` and `/spec:requirements`, which is
+unavoidable: choosing one is the decision those commands exist to force.
+
+### Task 6.3 — AC7 backwards, and the whole-repository diff
+
+Forwards first, at the baseline this spec named:
+
+```bash
+git diff --name-only c0d410a -- contents/ | wc -l     # 11
+git diff --stat c0d410a -- SUMMARY.md                 # empty
+```
+
+The eleven are D9's eleven, no more and no fewer. Backwards — **what changed that should not
+have** — is `git diff --stat c0d410a -- .`, read line by line against the deliverable table:
+
+| Changed | Why it is allowed |
+|---|---|
+| **all nine** commands | D1–D7 are seven of them; `status.md` took a permission repair in phase 5 and `switch.md` one in this phase, so the *"only one untouched"* row in the handover is now spent |
+| `.github/workflows/docs.yml` +52 | D8's two CI jobs, tasks 3.5 and 3.6 |
+| `CLAUDE.md` | D10, under constraint 2 — see below |
+| eleven `contents/` pages | D9 |
+| `tools/README.md`, `symbolcheck.py`, `symbolwatch.tsv` | D10, D8 |
+| `spec/.current-spec`, `spec/014-*` | the spec's own |
+
+**Nothing else moved.** No other spec directory appears in the diff, `.gitbook.yaml` is untouched,
+and no file was renamed, so no published URL moved.
+
+**The one entry that needed reading rather than matching is `CLAUDE.md`**, because §8 puts
+*"rewriting `CLAUDE.md`'s conventions"* out of scope. Its diff is **five edits across six hunks**
+and **not one of them changes a rule's verdict**: three repair stale counts inside rationale
+sentences — two in phase 5, the third in this phase — one records that `symbolcheck` now depends on
+rule 2, and one gives the compile and run obligations a home. The ledger **gained** two rows and
+lost none. Under constraint 2's test — *`CLAUDE.md` says what a page must be; a command says what a
+phase must do* — all five are page-level.
+
+**The `contents/` diff is 100 changed lines and every one is a repair or its consequence.**
+`git diff c0d410a -- contents/ | grep '^+'` over the additions is **44 `using` lines and 8
+`// ...` markers**, which is the compile obligation applied to the blocks the repairs touched — the
+rest is the symbol names themselves, plus one signature corrected from
+`CancellationToken? ct = null` to `CancellationToken cancellationToken = default` and one `return`
+statement added to a `Task<T>` method that had none. That last one is the finding phase 3 recorded
+as the reverse of what 014 was built to catch: **the prose was right and the code was wrong.**
+
+### The finding: the check written in phase 5 to find forbidden invocations could not see them
+
+Phase 5's account of obligation 4 ends *"the re-run reports 0 unpermitted across 9 commands"*, and
+its throwaway was kept to disk per friction 28. Re-run today over the nine commands **as phase 5
+left them**, it still reports **0 unpermitted**. A checker written this phase, from the obligation rather than from the
+previous instrument, reports **two forbidden invocations**:
+
+```text
+.claude/commands/spec/status.md: FORBIDDEN  sort
+.claude/commands/spec/switch.md: FORBIDDEN  sort
+```
+
+Both are ``!`ls -d spec/*/ 2>/dev/null | sort` ``, both in a `!` context block that runs on **every**
+invocation of the command, and both predate 014 — `switch.md` is the command 014 never touched.
+
+**Why phase 5's run missed them is a single line of its own source.** It filters pipeline segments
+through `LOOKS_LIKE_CMD`, a closed alternation of **twenty-four** binary names —
+`cat|ls|grep|wc|xargs|echo|mkdir|date|touch|test|sed|awk|head|tail|find|git|python3|dotnet|rm|cp|mv|chmod|curl|gh`.
+A segment whose first word is not on that list is **not recognised as a command at all**, so it is
+never tested against the grants. **`sort` is not one of the twenty-four**, and it is in the corpus.
+
+**The instrument answers "which of these twenty-four binaries does this line run?" where the
+permission model asks "which binaries will this shell line execute?"** That is friction 33's
+sentence exactly, written *in phase 5*, about *this instrument*, one phase before the instrument
+proved it again from the inside. Phase 4's checker encoded the wrong question in its *prose
+matching*; phase 5's encoded it in its *binary list*. The question was repaired and the
+enumeration under it was not.
+
+**The four-case control, run before either number was believed** — and case B is the one that
+discriminates the two instruments rather than the two corpora:
+
+| Case | Planted | Phase 6's checker | Phase 5's checker |
+|---|---|---|---|
+| A | nothing — the file as shipped | silent | silent |
+| **B** | `jq -r .id` — unpermitted, **off** the twenty-four | **FORBIDDEN** | **silent** |
+| C | `sed -n 1p` — unpermitted, **on** the twenty-four | FORBIDDEN | UNPERMITTED |
+| D | `grep -v x` — permitted by `Bash(grep:*)` | silent | silent |
+
+A and D are the known-absent half; B and C the known-present. **Without B this is two instruments
+agreeing**, which is what phase 5 had.
+
+**The repair is a deletion, not a grant**, following phase 5's own precedent with `/spec:new`'s
+`ls | grep | wc | xargs` line: the shell is simplified rather than the permission widened, because
+a grant for a binary nothing needs is a defect in the reverse direction by construction. `| sort` is
+a no-op after `ls -d spec/*/` — both the glob and `ls` sort — proved rather than assumed:
+
+```bash
+diff <(ls -d spec/*/ 2>/dev/null) <(ls -d spec/*/ 2>/dev/null | sort)   # identical
+```
+
+Per friction 28, the throwaway owes its exact command:
+
+```bash
+python3 <scratch>/permcheck.py     # 0 forbidden, 7 unreached grants, 32 permitted, 9 commands
+```
+
+**Its boundary is phase 5's, and it held.** The reverse direction over-reports by design: all seven
+unreached grants back prose that describes an action without naming a binary — `Bash(test:spec/*)`
+behind *"a `.tasks-approved` file in the spec directory"* on three commands, `Bash(grep:*)` and
+`Bash(test:*)` behind `/spec:status`'s *"Count `- [x]` vs `- [ ]`"*. **One is weaker than the other
+six and is recorded rather than removed**: `/spec:tasks` holds `Bash(wc:*)` and its prose names only
+`grep -c`. It is reachable through obligation 1's *"two methods that agree"*, where `wc -l` is the
+obvious second, and removing a grant on that reasoning would be a guess in the other direction.
+
+**This is the sixth plausible zero**, and the handover predicted a sixth would arrive. The five
+before it: empty token sets in phase 1; the space-blind fence regex; `git grep -w` in phase 2;
+phase 4's planted `## Configuration` colliding with nothing; and phase 5's permission checker asking
+the wrong question. **The sixth is the fifth one's repair, still asking a wrong question.**
+
+### Task 6.4 — the defect ledger
+
+**Three kinds of defect, and the *found by* column is why they are three tables.** What 014 found
+in the documentation, what it inherited to repair in the workflow, and what it found in itself.
+
+**The corpus — eight defects on eleven pages, none of which any gate had ever reported:**
+
+| Site | What it was | Found by |
+|---|---|---|
+| `BuildingAnAsyncPipeline.md:36,38` | `IAmACommandStoreAsync`, dead, inside a C# block — a paste gets `CS0246` | 013's manual sweep; **held** for 014 as the gate's first red |
+| `DispatcherConfigurationReference.md:255` | `UseExternalInbox`, dead, in prose on a **Reference** page | 013's manual sweep |
+| `HowBrighterWorks.md:94` | `IAmAnIbox`, a typo for `IAmAnInbox` | 013's manual sweep |
+| 7 pages, 11 sites | `IMessageScheduler`, dead; the product's name is `IAmAMessageScheduler` | **the probe (D12)** — the instrument's win, and it tripled the repair phase |
+| `InMemoryOptions.md:241`, `InMemoryScheduler.md:180` | `IMessageSchedulerFactory`, a **second** dead symbol hiding inside the first one's substring count | **phase 1's write-up, re-deriving a count it had just been given** — the re-derivation's win, not the instrument's |
+| `TickerQScheduler.md:208` | `RescheduleAsync`, 0 files at both refs; the name is `ReSchedulerAsync` | **reading the block around a repair.** It sat two lines below a site the gate *did* report, and no watchlist knew the name |
+| `BuildingAnAsyncPipeline.md` | `AddAsync` called with V8's arity | reading around a repair |
+| `BuildingAnAsyncPipeline.md` | a `Task<T>` method with **no return statement**, under prose telling the reader to write `return await base.HandleAsync(...)` | reading around a repair. **The prose was right and the code was wrong** — the reverse of what 014 was built to catch, and nothing in this repository looks for it |
+
+**The two rows that matter most are the two the *found by* column separates.** `IMessageScheduler`
+is what an instrument buys: seven pages nobody suspected, found in one run. `IMessageSchedulerFactory`
+is what re-deriving an inherited number buys, and no instrument would ever have found it — it was
+**inside** the first row's count, wearing its name as a prefix. One is the case for building tools;
+the other is the case for standing obligation 1, and 014 has exactly one example of each.
+
+**The workflow — the eighteen, all repaired or repaired in part:**
+
+| # | Repaired by | Shipped in |
+|---:|---|---|
+| 1, 2, 3 | D5, D6 | phase 4 |
+| 4, 14, 15 | D4 | phase 5 |
+| 5 | D2, D4, D6 | phases 4, 5 |
+| 6 | D2, D1 | phases 4, 5 |
+| 7, 16, 17 | D2 | phase 4 |
+| **8** | D3, D5, D6 **and D8** | phases 2–5 — **in part; see the residual gap** |
+| 9 | D1, D2, D3, D4 | phases 4, 5 |
+| 10, 11, 12, 13 | D3 | phase 5 |
+| 18 (§3.1) | D7 | phase 5, as P2-1 |
+
+**What 014 found in its own instruments and documents:**
+
+| Defect | Found by |
+|---|---|
+| Six token sets silently empty — a broken pathspec reading as *"nothing is unresolved"* | phase 1's guard, written **before** it was needed |
+| A fence regex blind to ` ```csharp ` with leading spaces | phase 1's controls |
+| The watchlist's replacement column right as a **name** and wrong as a **type** at **9 of 17** sites — repairs that name a live type, satisfy the gate and do not compile | phase 3, reading the code around each repair |
+| `/spec:requirements` permitted to `touch` its own approval marker | phase 4, running obligation 4 **backwards** for the first time |
+| Eleven forbidden invocations in seven commands | phase 5, re-running obligation 4 forwards and parsing the shell |
+| `resolve()`'s docstring giving a **false mechanism** for a correct decision, and `word_pattern()`'s false in the mirror image | phase 5, writing `/spec:design` and finding the trap would not reproduce |
+| Two stale present-tense counts in `CLAUDE.md` rationale | phase 4's planted heading colliding with nothing |
+| **Two forbidden `sort` invocations, live since before 014** | **phase 6**, rebuilding the checker from the obligation |
+| **`/spec:implement` asserting "the one convention with no rule" after phase 5 made it three** | **phase 6**, task 6.2's walk |
+| **`/spec:review` checking none of the three conventions `CLAUDE.md` delegates to review** | **phase 6**, task 6.2's walk |
+| **A third unanchored count in `CLAUDE.md` — 53 How-to pages, 57 today** | **phase 6**, re-deriving a number the walk did not strictly need |
+
+### Task 6.5 — the friction ledger, collected
+
+**Eighteen entries came into this phase, 18–35, contiguous and without duplicates; twenty-two leave
+it.** Re-derived across the three documents that hold them rather than re-listed here — the command
+returns **22** today and returned **18** before this phase's four were written:
+
+```bash
+{ awk '/^## 14\. Workflow friction/,0' requirements.md
+  awk '/^## 13\. Workflow friction/,0' design.md
+  awk '/^## 4\. Workflow friction/,0'  tasks.md
+} | grep -oE '^[0-9]+\.' | tr -d '.' | sort -n | uniq | wc -l      # 22 — and 18..39 with no gap
+```
+
+| Where | Entries | What they are about |
+|---|---|---|
+| `requirements.md` §14 | 18–21 | the requirements template has no shape for a process spec |
+| `design.md` §13 | 22–24 | the design command has no slot for an experiment |
+| `tasks.md` §4 | 25–35 | the task command's defaults, and four phases of instrument failure |
+
+**Phase 6 adds four, 36–39, in §4 below.** The ledger is 014's product as much as the commands are
+— this spec had eighteen defects to work from because 013 wrote its friction down. **Phase 6's own
+findings divide, and the division is the interesting part**: the `sort` defect is friction 33
+recurring *inside its own repair*, so the ledger had already named it and naming it was not enough;
+the other three sit on ground no entry covered, which is why they become 37, 38 and 39 rather than
+a second citation of something old.
+
+### Task 6.6 — the close
+
+The README's status checklist is ticked and its *Next Steps* replaced with what actually happened.
+**`spec/.current-spec` is deliberately left pointing at `014-documentation_workflow`**, per the
+task's own note: there is no spec 015, and repointing it at a directory that does not exist breaks
+`/spec:status` and `/spec:switch` for the next session.
+
+**The residual gap, in one sentence, and it is the line the next spec starts from:**
+
+> **A dead API written into prose on an existing page — uncompiled, and not on `symbolwatch.tsv` —
+> is caught by nothing.**
+
+Everything 014 built narrows that and none of it closes it. `symbolcheck` checks five curated names
+and says so in its own output. `--census` reports the open world and **cannot be a gate**, which is
+D12's finding and the reason D8 has the shape it does. `/spec:implement`'s compile obligation covers
+only blocks a phase *touches*, and `pagelint`'s **757 warnings across 116 pages** are a fair proxy
+for how much of the corpus no phase has yet touched. **The three defects phase 3 found by reading
+around a repair are the proof**: each sat inside, or two lines from, a block the gate had already
+flagged, and the gate reported none of the three.
+
+**What that makes the honest claim about defect 8**: 014 built the instrument, repaired everything
+the instrument can see, and demonstrated the size of what it cannot. `--census` is where a later
+spec starts, and the question it has to answer is the one D12 answered *no* to for a gate and left
+open for a report: **which slice of 881 candidates across 128 pages is worth a human triage pass?**
+
+---
+
 ## 3. Acceptance criteria — where each is met
 
-| # | Criterion | Met by |
-|---|---|---|
-| AC1 | Every P0 ships or is struck | tasks 6.1, and 5.7 for the P2 strikes |
-| AC2 | No command contradicts `CLAUDE.md` | **task 6.2**, walked |
-| AC3 | Eighteen defects repaired or struck, count re-derived | task 6.4 |
-| AC4 | Every added obligation names its instrument | task 6.1 |
-| AC5 | Eight gates named; `/spec:review` runs eight | tasks 4.3, 4.4 |
-| AC6 | Prose and `allowed-tools` agree | task 4.4, walked at 6.1 |
-| AC7 | `SUMMARY.md` unchanged; `contents/` exactly 11 pages | **task 6.3** |
-| AC8 | Seven gates green at their numbers | tasks **2.12**, 3.7 |
-| AC9 | The red-proofs — **seven, not five**, after the tasks review | tasks 2.7, 2.8, 2.9, **2.10** |
-| AC10 | 014's friction recorded | task 6.5 |
-| AC11 | Only what a command cites moved out of `PROMPT.md` | task 5.1 |
-| AC12 | The probe ran and its numbers are cited | tasks 1.1, **2.11** |
+**All twelve met, walked 2026-09-16.** Five repairs were taken during the walk; the *Met by* column
+names where the evidence is, and § *Phase 6 as executed* carries it.
+
+| # | Criterion | Met by | At the walk |
+|---|---|---|---|
+| AC1 | Every P0 ships or is struck | tasks 6.1, and 5.7 for the P2 strikes | seven of seven ship, none struck |
+| AC2 | No command contradicts `CLAUDE.md` | **task 6.2**, walked | **four repairs** |
+| AC3 | Eighteen defects repaired or struck, count re-derived | task 6.4 | 17 fully, **defect 8 in part** |
+| AC4 | Every added obligation names its instrument | task 6.1 | clean; two explicit *no instrument* markings |
+| AC5 | Eight gates named; `/spec:review` runs eight | tasks 4.3, 4.4 | met — **its own instrument measures something else**, friction 39 |
+| AC6 | Prose and `allowed-tools` agree | task 4.4, re-run at **6.1** | **2 forbidden found and repaired** |
+| AC7 | `SUMMARY.md` unchanged; `contents/` exactly 11 pages | **task 6.3** | 11, and the backwards diff is clean |
+| AC8 | Seven gates green at their numbers | tasks **2.12**, 3.7 | green; **two no longer at §11.6's figures**, both named |
+| AC9 | The red-proofs — **seven, not five**, after the tasks review | tasks 2.7, 2.8, 2.9, **2.10** | re-read, not re-run |
+| AC10 | 014's friction recorded | task 6.5 | eighteen collected, **four added** |
+| AC11 | Only what a command cites moved out of `PROMPT.md` | task 5.1, walked at **6.1** | six of nine commands cite it; no orphan section |
+| AC12 | The probe ran and its numbers are cited | tasks 1.1, **2.11** | both cited; the un-gated reds named |
 
 ---
 
@@ -1721,3 +2132,47 @@ Continuing the ledger at 25.
     review that reached them agreed with the *decision*. **Nothing in the workflow asks a review
     to check the reason separately from the ruling** — and a false reason is what the next person
     reasons from when the case is not identical.
+
+36. **An instrument built from an enumeration is bounded by that enumeration, and nothing asks what
+    it cannot see.** *Met in phase 6.* Phase 5's permission checker recognised a pipeline segment as
+    a command only if its first word was one of **twenty-four** hard-coded binary names. `sort` is
+    not one of them, so two forbidden invocations were invisible to it — and it
+    reports **0 unpermitted** on today's files, beside a checker reporting two. This is friction 33
+    recurring **one phase after it was written, inside the repair for it**: 33 says an instrument
+    may not ask its obligation's question, and the repair fixed the *question* while leaving an
+    enumeration underneath that re-imposed the old answer. **The control that catches it is one line
+    of design: a probe over a closed list owes a two-way control whose positive case is deliberately
+    outside the list.** Case B of phase 6's four-case control is that line, and without it the two
+    instruments merely agree.
+
+37. **`CLAUDE.md` and the commands depend on each other in both directions, and only one direction
+    has a step.** *Met in phase 6.* Every command is told to cite `CLAUDE.md` and never restate it —
+    and nothing tells a phase that **edits** `CLAUDE.md` to re-read the commands that cite it. Phase
+    5 added two rows to the ledger; `/spec:implement` went on saying *"the one convention with no
+    rule"*, shipped one phase earlier, true when written and false the moment the ledger moved.
+    Session 60's rule states the mechanism from the other side: **the thing you just changed is the
+    thing you stop testing.** The cheap repair is a step in `/spec:implement`'s and `/spec:review`'s
+    quality checks — *if this phase changed `CLAUDE.md`, grep the commands for the claim you
+    changed* — and 014 does not ship it, because it was found at the acceptance walk of the spec
+    that would have had to write it.
+
+38. **A convention that delegates its enforcement to "review" needs a named receiver, and
+    `review only` was not one.** *Met in phase 6.* Three rows of the ledger read **review only**, and
+    `CLAUDE.md` says in as many words that *"all three are checked in review"*. `/spec:review` — the
+    review — had a question for none of them, and had not had one at any point in 014. The words
+    look like a routing decision and are a **description of who is not doing it**; a row marked
+    *review only* should name the checklist it lands in, exactly as an acceptance criterion must
+    name its instrument. This is defect 6 one level up: **the ledger's own no-instrument rows were
+    unmarked in the sense AC4 means.**
+
+39. **Nothing checks that a criterion's named instrument measures the criterion.** *Met in phase 6.*
+    AC5 says *"all eight gates are named, and `/spec:review` runs eight"* and names as its instrument
+    `grep -c python3` **on `review.md`'s frontmatter**, which returns **5** — one grant per binary
+    path, with `urlmap.py` carrying three of the eight gates. The criterion is met and its stated
+    instrument has never been able to show it; ``grep -c '^!`' review.md`` is the one that returns 8.
+    This continues friction 24 one step further: 24 asks a criterion to say **where** its evidence
+    will come from, and this asks whether the thing named actually **measures what the sentence
+    claims**. The test is cheap and belongs in `/spec:review`'s requirements checklist — **run each
+    criterion's instrument at the review, before any of it is built, and check the number against
+    what the criterion says.** An instrument that cannot be run yet is a criterion with no
+    instrument, which is the thing AC4 exists to make visible.
