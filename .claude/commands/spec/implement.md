@@ -83,6 +83,20 @@ python3 tools/symbolcheck.py <paths>
 dotnet run --project tools/optioncheck -- <paths>  # only if you touched a marked option table
 ```
 
+**If this task edited `CLAUDE.md`, re-read the commands that cite it.** You are told to cite it and
+never restate it, which runs one way — the dependency runs both. A command quoting a fact you have
+just changed is wrong from that moment, and no gate walks `.claude/`:
+
+```bash
+grep -rn '<a distinctive phrase from the sentence you changed>' .claude/commands/spec/
+grep -rn '<the section you changed>' .claude/commands/spec/
+```
+
+Spec 014 phase 5 added two rows to the ledger, and this command went on asserting the old count of
+rule-less conventions for a whole phase — true when written, false the moment the ledger moved, and
+found only at the acceptance walk. **Read every hit**: a phrase quoted inside an example or a
+warning is not a live claim, and the first draft of this very paragraph matched its own grep.
+
 **What you decide**, because nothing here checks it:
 
 - Is the page the type its banner claims? A mislabelled page reads perfectly and misleads everyone

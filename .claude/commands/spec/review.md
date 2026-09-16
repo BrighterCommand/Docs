@@ -109,6 +109,11 @@ the pages that phase touched.
 - Is scope clear with P0/P1/P2, and is out-of-scope explicit?
 - **Does every acceptance criterion name its instrument, or say it has none?** An unmarked
   criterion is the one that goes unmet — both that ever have were unmarked
+- **Run each named instrument now, and check what it prints against what the criterion claims.**
+  Naming an instrument is not the same as naming one that measures the thing: 014's AC5 claimed
+  *"`/spec:review` runs eight gates"* and named `grep -c python3` on the frontmatter, which returns
+  **5**, because one grant covers three gates. An instrument that cannot be run yet is a criterion
+  with no instrument — mark it as one
 - Are open questions listed by name, each with a recommendation?
 - Does every number carry the command that produced it?
 
@@ -143,6 +148,9 @@ they mean. No linter will ever report them, so a page that breaks one is green e
   `ProjectReference` into `src/` — and does a step that legitimately does not build say so?
 - Does any block asserting **behaviour** — an exception type, an ordering, a precedence — get
   **run, with a control**? Four compiling, reviewed examples in this programme were wrong
+- **Did this phase edit `CLAUDE.md`? Then grep the commands for the claim it changed.** The
+  citation rule runs one way and the dependency runs both, and no gate walks `.claude/` — so a
+  command quoting a fact the phase has just falsified stays green everywhere
 
 **Acceptance Review:**
 - Walk the criteria **in order of the ones marked as having no instrument first** — they are the

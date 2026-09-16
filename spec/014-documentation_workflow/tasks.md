@@ -2156,6 +2156,16 @@ Continuing the ledger at 25.
     changed* — and 014 does not ship it, because it was found at the acceptance walk of the spec
     that would have had to write it.
 
+    > **DISCHARGED 2026-09-16, after 014 closed.** The step is in `/spec:implement` § *Quality
+    > check* and in `/spec:review`'s *Writing Review* checklist. **Two-way control, which a prose
+    > step can still have**: run at `373e9c3` — the commit that shipped the ledger change — it
+    > fires on `implement.md:87`, the live false assertion; run today it returns nothing. **And it
+    > found one thing while being written**: the first draft of the new step quoted the offending
+    > phrase verbatim as its own example, so the step matched its own documentation. That is
+    > friction 30's shape one level in — *the instrument's own text enters the instrument's
+    > corpus* — and it is why the shipped wording describes the claim instead of quoting it, and
+    > says to read every hit.
+
 38. **A convention that delegates its enforcement to "review" needs a named receiver, and
     `review only` was not one.** *Met in phase 6.* Three rows of the ledger read **review only**, and
     `CLAUDE.md` says in as many words that *"all three are checked in review"*. `/spec:review` — the
@@ -2176,3 +2186,10 @@ Continuing the ledger at 25.
     criterion's instrument at the review, before any of it is built, and check the number against
     what the criterion says.** An instrument that cannot be run yet is a criterion with no
     instrument, which is the thing AC4 exists to make visible.
+
+    > **DISCHARGED 2026-09-16, after 014 closed.** The question is in `/spec:review`'s
+    > *Requirements Review* checklist, one line below the *name its instrument* question it
+    > extends, and it carries AC5 as its worked example: a criterion that is **met** and an
+    > instrument that has **never been able to show it**. Naming the failure that way is
+    > deliberate — the case to catch is not a wrong criterion, it is a right one wearing an
+    > instrument that measures something else.
