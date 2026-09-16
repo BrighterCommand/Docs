@@ -2,9 +2,10 @@
 
 **Created:** 2026-09-04
 **Status:** **CLOSED 2026-09-16 at 39/39**, across six phases and five pull requests
-(#159, #160, #161, #162, and the acceptance PR). Three approval markers exist; **`.accepted` is the
-maintainer's to create** at `/spec:review`, and is the one thing this phase does not write itself.
-`spec/.current-spec` still points at **014** — see *Status Checklist* for why.
+(#159, #160, #161, #162, #163). **All four markers exist, and `.accepted` is the first one this
+programme has ever created** — fourteen specs, six acceptance passes, and no spec had recorded one
+until 2026-09-16. That is friction 40, and `/spec:status` was taught to read the marker in the same
+PR. `spec/.current-spec` still points at **014** — see *Status Checklist* for why.
 
 > **Read `requirements.md`, not this file, on every content claim.** The requirements phase
 > re-derived what is below and corrected it. **The defect list is eighteen, not the fifteen
@@ -190,7 +191,7 @@ seven red-proofs and two CI jobs. `tools/README.md`, the committed home for the 
 the phase-is-a-PR contract. Eleven `contents/` pages repaired of **eight** dead-API defects, five
 of which no gate had ever reported. Four edits to `CLAUDE.md`, two of them new ledger rows. And the
 two ledgers, which are as much the product as the commands: **eight corpus defects with a *found
-by* column**, and **twenty-two friction entries, 18–39**.
+by* column**, and **twenty-three friction entries, 18–40** — the last added after the spec closed.
 
 **The residual gap, which is the line the next spec starts from:** a dead API written into prose on
 an existing page — uncompiled, and not on `symbolwatch.tsv` — **is caught by nothing.** 014 built
