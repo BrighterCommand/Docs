@@ -24,7 +24,10 @@ Current spec: !`cat spec/.current-spec 2>/dev/null || echo "No active spec"`
 A `Tutorial` or a `How-to` is a sequence the reader **executes**, and uses `## Step N: …` headings.
 A `Reference` or an `Explanation` is **consulted**, and uses the qualified-section pattern.
 `CLAUDE.md` § *File Organization Pattern* carries both and why the split exists. Do not restate it,
-and do not tidy a `## Step N:` page into sections.
+and **the conversion is forbidden in both directions on an existing page**: do not tidy a
+`## Step N:` page into sections, and do not requalify an existing How-to into steps. The step rule
+reached how-tos on 2026-09-06 and **binds pages written after it, not the ones that predate it** —
+converting one moves every published anchor on it, for no reader benefit.
 
 Whichever shape, the page owes four things, each with a rule behind it:
 
@@ -34,7 +37,7 @@ Whichever shape, the page owes four things, each with a rule behind it:
   the `.md` variant all print it — § *The opening sentence*
 - **`description:` front matter equal to that sentence**, quoted — § *Page descriptions*
 - **Every `##` heading qualified by its subject** — `## Kafka Configuration`, never
-  `## Configuration` — except the five allowlisted navigation headings
+  `## Configuration` — except the allowlisted navigation headings, which `CLAUDE.md` lists
 
 **Voice:** second person, active, present tense. **`SUMMARY.md`:** update it when you add a page;
 never leave an orphan.
@@ -84,6 +87,7 @@ dotnet run --project tools/optioncheck -- <paths>  # only if you touched a marke
 
 - Is the page the type its banner claims? A mislabelled page reads perfectly and misleads everyone
 - Does the example teach the thing, or only compile?
-- Are the ❌/✅ version markers right? That is the one convention with no rule
+- Are the ❌/✅ version markers right? One of the **three** conventions with no rule — the other
+  two are the compile and the run obligations above, and `CLAUDE.md` § *The ledger* lists all three
 - Is this duplicated from a page that already owns it? Link instead
 - Are new terms defined on first use, and consistent with `Glossary.md`?
