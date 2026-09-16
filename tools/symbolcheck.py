@@ -153,9 +153,19 @@ def word_pattern(symbol):
     """Match `symbol` as a whole word, at the ends where "word" means anything.
 
     `\\b` cannot be used unconditionally: a row may be a call fragment such as
-    `.AddPolicies(`, whose first and last characters are not word characters, so
-    a leading or trailing `\\b` would require a word character next to them and
-    the row would never match anything.
+    `.AddPolicies(`, whose first and last characters are not word characters.
+    `\\b` asserts a transition, so at such an edge it demands a *word* character
+    next door -- the opposite of what the corpus holds. Measured 2026-09-13,
+    `\\b\\.AddPolicies\\(\\b` matches the code form `registry.AddPolicies(policy)`
+    and misses all three prose forms this gate exists to find: the backticked
+    fragment, the bare one mid-sentence, and the one at end of line. The guards
+    below are therefore applied per end, and only where the end is an identifier
+    character.
+
+    Note that git's -w, used in resolve(), fails the same rows for the mirror-
+    image reason: it tests the neighbours for NON-word characters. The two
+    instruments disagree about what a non-word edge means, and neither can be
+    trusted unconditionally.
     """
     prefix = r'(?<![A-Za-z0-9_])' if IDENT.match(symbol[0]) else ''
     suffix = r'(?![A-Za-z0-9_])' if IDENT.match(symbol[-1]) else ''
@@ -562,12 +572,19 @@ def resolve(repo, ref, symbol):
     """How many src/ files at `ref` contain `symbol`. -1 if the ref is unusable.
 
     -w ONLY when the symbol begins and ends with a word character, and this is
-    not a nicety. `git grep -wF '.Handle('` returns 0 files where the same
-    search without -w returns 23: a pattern whose last character is not a word
-    character can never satisfy the flag. A row like `.AddPolicies(` verified
+    not a nicety. git's -w tests the characters ADJACENT to the match, not the
+    ends of the pattern, so a row like `.Handle(` matches `>.Handle()` in prose
+    and misses `.Handle(command)` -- which is how source writes it. Measured
+    2026-09-13 in ../Brighter: `git grep -lwF '.Handle('` finds 0 files where
+    the same search without -w finds 179. A row like `.AddPolicies(` verified
     with an unconditional -w would report DEAD forever, whatever the truth --
     the same plausible-zero failure this spec has now met three times, in three
     disguises.
+
+    The earlier form of this comment said such a pattern "can never satisfy the
+    flag". It can: the zero is a property of the corpus, not of the flag, and
+    the same search over this repository's prose finds files. Corrected in
+    phase 5 with a two-way control; see tasks.md.
     """
     path = os.path.join(ROOT, repo)
     if not os.path.isdir(os.path.join(path, '.git')):

@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(ls:*), Bash(cat:*), Bash(grep:*), Bash(test:*), Read
+allowed-tools: Bash(ls:*), Bash(cat:*), Bash(echo:*), Bash(grep:*), Bash(test:*), Read
 description: Show all specifications and their status
 ---
 

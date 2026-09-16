@@ -57,8 +57,13 @@ Do not restate these per task; they are assumed by all of them.
    is the only evidence 014 produces about the corpus.
 3. **A check that has never failed has not been shown to work.** Every new check gets a
    red-proof, and every control is **two-way** — a known-present case and a known-absent one.
-4. **Prose and permission ship together.** A command instructing a tool run gets the matching
-   `allowed-tools` entry in the same commit (requirements constraint 3).
+4. **Prose and permission ship together, and the check runs in both directions.** A command
+   instructing a tool run gets the matching `allowed-tools` entry in the same commit (requirements
+   constraint 3) — and a grant no reading of the prose reaches is a permission nobody asked for.
+   **AMENDED 2026-09-13**, twice by evidence: the reverse direction found `/spec:requirements`
+   holding `Bash(touch:*)` in phase 4, and the forward direction — re-run properly in phase 5 —
+   found **eleven forbidden invocations in seven commands**, every one of them inside a `!`
+   context block that runs on every invocation.
 5. **Cite `CLAUDE.md`, never restate it.** Restating is how the two drifted apart.
 6. **Predict gate movement before the work, including "none"** — a vacuous pass is invisible
    exactly when no movement is expected. `git add` before any `--changed` run, or the strict pass
@@ -806,8 +811,15 @@ show. `git diff --name-only origin/master -- contents/` is **0** and `SUMMARY.md
 
 ### Five findings the task list did not predict
 
-**A. `git grep -w` silently zeroes any pattern that does not begin and end with a word
-character.** `git grep -lwF '.Handle('` returns **0** files where the same search without `-w`
+> **CORRECTED 2026-09-13 by phase 5. The mechanism below is wrong and the numbers name no
+> corpus.** `-w` tests the characters *adjacent to the match*, not the ends of the pattern, so
+> such a row matches wherever its neighbours are also non-word — `>.Handle()` does, `.Handle(x)`
+> does not. The pair *0 / 23* reproduces in no single repository: `../Brighter` gives **0 / 179**,
+> this one **4 / 22**. **The decision the finding supports is unchanged and correct**; only its
+> reason and its figures are. Left standing, struck rather than rewritten, per obligation 2.
+
+**A. ~~`git grep -w` silently zeroes any pattern that does not begin and end with a word
+character.~~** `git grep -lwF '.Handle('` returns **0** files where the same search without `-w`
 returns **23**. A watchlist row like `.AddPolicies(` verified under an unconditional `-w` would
 read `DEAD` for ever, whatever the truth. `resolve()` applies the flag only at ends that have a
 word character. **This is the plausible-zero failure for the third time in this spec** — empty
@@ -1317,7 +1329,7 @@ its number is unchanged.
     census and open-question log stay there, and `PROMPT.md` stays ignored. Every number carries
     the ref it was measured at, or it is not a fact
 
-- [ ] **Task 5.2:** Rewrite `/spec:design` (D3), 54 → ~85 lines
+- [x] **Task 5.2:** Rewrite `/spec:design` (D3), 54 → ~85 lines
   - Input: `design.md` §7.1
   - Output: `.claude/commands/spec/design.md`
   - Notes: page type per file; the conventions, cited; **verify the API the design will print**;
@@ -1325,23 +1337,28 @@ its number is unchanged.
     Add the step friction 23 asks for: **a design resting on an unmeasured number says which
     number and how it will be measured, before approval**
 
-- [ ] **Task 5.3:** Rewrite `/spec:tasks` (D4), 63 → ~95 lines
+- [x] **Task 5.3:** Rewrite `/spec:tasks` (D4), 63 → ~95 lines
   - Input: `design.md` §7.2; §1 of this file, which is the worked example
   - Output: `.claude/commands/spec/tasks.md`
   - Notes: phase-is-a-PR, citing `tools/README.md`; **the four-phase template kept but explicitly
     labelled a default**; a standing-obligations section; red-proofs; record-before-fixing;
     re-derive inherited counts; an acceptance phase last
 
-- [ ] **Task 5.4:** Rewrite `/spec:new` (D1), 63 → ~75 lines
+- [x] **Task 5.4:** Rewrite `/spec:new` (D1), 63 → ~75 lines
   - Input: `design.md` §7.3; this spec's own README, which the re-derive instruction is drawn from
   - Output: `.claude/commands/spec/new.md`
   - Notes: the README template gains **Acceptance criteria**, **Open questions**, and the
     re-derive instruction. 013's README named six gaps of which five were closed; 014's defect
     count was wrong by two before this spec started.
-    **Carries an AC6 finding from phase 4: its prose names `wc -l` and its `allowed-tools` does
-    not permit it** — the only unpermitted invocation in the nine commands
+    **Carries an AC6 finding from phase 4, and it is wider than first recorded**: the command's
+    own context block runs `ls -la spec/ | grep "^d" | wc -l | xargs -I {} echo …` against an
+    `allowed-tools` of `Bash(mkdir:*), Bash(echo:*), Bash(date:*), Bash(ls:*)` — **`grep`, `wc`
+    and `xargs` are all unpermitted**, and a `!` block is one shell invocation, so the whole line
+    is forbidden rather than three-quarters of it. ~~The only unpermitted invocation in the nine
+    commands~~ — **it was not: phase 5's re-run found eleven more, in seven other commands.**
+    See § *Phase 5 as executed*
 
-- [ ] **Task 5.5:** Add the `CLAUDE.md` note at rule 2, **and three more from phase 4**
+- [x] **Task 5.5:** Add the `CLAUDE.md` note at rule 2, **and three more from phase 4**
   - Input: `CLAUDE.md` §§ *Page banner*, *Heading qualification*, *Code Example Best Practices*;
     `design.md` §4.3; § *Phase 4 as executed*
   - Output: one line recording that `symbolcheck` reads the banner for product, **plus phase 4's
@@ -1354,18 +1371,190 @@ its number is unchanged.
     and always with a control**. The last two are stated in `/spec:implement` rather than cited,
     because `CLAUDE.md` has nowhere to cite them to
 
-- [ ] **Task 5.6:** Add the evidence requirement to `/spec:update-task` (D7, P2-1)
+- [x] **Task 5.6:** Add the evidence requirement to `/spec:update-task` (D7, P2-1)
   - Input: `requirements.md` §3.1; 013's ledger entry 13
   - Output: `.claude/commands/spec/update-task.md`
   - Notes: the task's stated **Output** must exist before the box flips; where it cannot be
     checked, the tick says so. 013's task 4.8 was ticked with its two `pagetypes.tsv` rows
     unwritten and reached `master`
 
-- [ ] **Task 5.7:** Write § *Phase 5 as executed*
+- [x] **Task 5.7:** Write § *Phase 5 as executed*
   - Input: tasks 5.1–5.6
   - Output: a section in this file, including the P2 strikes
   - Notes: **P2-2 (`commandlint`) and P2-3 (`/spec:status` gate state) are not attempted.** P2 is
     *nice to have* and AC1 binds P0 only. Record them as struck-with-a-reason, not as owed
+
+---
+
+## Phase 5 as executed — 2026-09-13, `docs/014-phase5-p1-commands`
+
+**Six tasks in one PR — 5.2 to 5.7, plus the folded-in `a27d36e`.** No page under `contents/`
+changes, so no merge sign-off is owed. The four rewritten commands went from **204 lines to 365**,
+and all nine from **597 to 758**.
+
+| File | Before | After | Design target | Δ |
+|---|---:|---:|---:|---|
+| `.claude/commands/spec/design.md` | 54 | **115** | ~85 | +61 |
+| `.claude/commands/spec/tasks.md` | 63 | **106** | ~95 | +43 |
+| `.claude/commands/spec/new.md` | 63 | **97** | ~75 | +34 |
+| `.claude/commands/spec/update-task.md` | 24 | **47** | — | +23 |
+| **All nine commands** | **597** | **758** | — | +161 |
+
+Two methods, and they agree: `wc -l` over the nine sums to 758, and the nine rows above sum to 758
+independently. 597 is phase 4's figure, re-derived from `412fd34` rather than quoted.
+
+**Every rewrite overshot, `design.md` by 35%**, and the overshoot is the same trade phase 4
+recorded: each section maps to something §7 mandates, so the choice was to miss the target or drop
+a mandated section. `new.md`'s +34 is mostly inside its fenced README template, which gained the
+two sections §7.3 asks for. Constraint 4 asks that growth be justified, not that it be small.
+
+### Gate movement: predicted eight unmoved, and eight were
+
+The prediction went to the scratchpad before the first file was opened — including the reasoning
+that **phase 5 creates no new file anywhere**, which is what made "none" defensible this time after
+phase 4's `tools/` surprise. `linkcheck` holds at 165 because editing a file already inside its
+walk does not change a file count; `.claude/` is a `SKIP_DIR`, `CLAUDE.md` a `SKIP_FILE`, `spec/`
+skipped. All eight re-measured after the work: unmoved.
+
+**`tools/README.md` was re-referenced from `fc77c42` to `412fd34`, and that is not gate movement.**
+Its `linkcheck` row read **164**, true at the ref it named and one merge behind `master`, where the
+answer is **165** — the +1 that file's own arrival caused. Correcting a citation's ref is not a
+number moving; the row now says so in as many words, so the next reader does not have to work it
+out twice.
+
+### The finding: **obligation 4's forward direction had never actually been run**
+
+Phase 4 reported *"0 unpermitted in the three P0 commands"* and one in `new.md`. Re-running the
+check in phase 5 — against all nine, with pipelines split — found **eleven forbidden invocations
+across seven commands**:
+
+| Command | Forbidden invocation | Where |
+|---|---|---|
+| `design`, `implement`, `requirements`, `review`, `tasks`, `update-task` | `echo "No active spec"` | the `!` context block |
+| `status` | `echo "None"` | the `!` context block |
+| `review` | `tail -20`, `tail -5` ×3 | the `!` gate blocks |
+
+Every one sits in a `!` block — **the part that runs automatically on every single invocation of
+the command**, before the model does anything. `!`cat spec/.current-spec 2>/dev/null || echo "No
+active spec"`` needs `echo` permitted, by the same ruling that made `new.md`'s whole `ls | grep |
+wc | xargs` line forbidden rather than three-quarters forbidden: **a `!` block is one shell
+invocation.**
+
+**The corpus was already arguing with itself and nobody had read it.** `switch.md` and the old
+`new.md` both granted `Bash(echo:*)`; the other seven used `echo` and did not. Two of nine authors
+thought it was required. Nothing checked which was right.
+
+**Why phase 4's run missed it** is the more useful half. Its checker looked at the *tools a
+command's prose names* — `python3 tools/pagelint.py`, `dotnet run` — and `echo` in a fallback does
+not read as naming a tool. The instrument encoded the question as *"which tools does this command
+tell you to run?"* when the permission model asks *"which binaries will this shell line execute?"*
+**Same words, different question, and the gap between them is a check that returns 0 for eleven
+live defects.** This is the plausible-zero failure for the **fifth** time in 014 — phase 2's
+handover predicted a fifth would arrive, and it arrived inside the obligation written to catch it.
+
+**Repaired:** `Bash(echo:*)` on seven commands, `Bash(tail:*)` on `review.md`, in the same commit
+as the prose. The re-run reports **0 unpermitted across 9 commands**, and the checker was
+red-proved two ways first — a planted `sed -n` in a fence is reported, the unmodified file is not.
+Per friction 28 the throwaway owes its exact command:
+
+```bash
+python3 <scratch>/permcheck.py .claude/commands/spec/*.md    # 0 unpermitted across 9 commands
+```
+
+Its stated boundary is phase 4's: the reverse direction over-reports, because a grant backing prose
+that describes an action without naming a command — `Bash(test:spec/*)` behind *"a
+`.tasks-approved` file in the spec directory"* — is not a defect. **P2-2 inherits the forward
+direction's real definition: parse the shell, not the prose.**
+
+### The second finding: a mechanism this spec explained wrongly, in two places, in shipped tooling
+
+Writing `/spec:design`'s API-verification section meant restating 014's own `git grep -w` trap. It
+does not reproduce. The recorded claim — *"a pattern whose last character is not a word character
+can never satisfy the flag"*, in § *Phase 2 as executed* finding A, in `resolve()`'s docstring, and
+in the handover — is **false**.
+
+**What is actually true**, probed in a scratch repository with a four-case control:
+
+| Case | `-w` | plain |
+|---|---|---|
+| `handler.Handle(command);` | miss | match |
+| `IHandleRequests<T>.Handle()` | **match** | match |
+| `x.Handle( y` | miss | match |
+| `[.Handle(]` | **match** | match |
+
+`-w` tests the characters **adjacent to the match**, not the ends of the pattern. So a pattern with
+non-word edges matches wherever its neighbours are also non-word — common in prose, near-absent in
+code, where the next character after `(` is an argument. **The zero is a property of the corpus,
+not of the flag.**
+
+**And the recorded numbers name no corpus.** *"0 files where the same search without `-w` returns
+23"* is reproducible in neither repository: in `../Brighter` it is **0 against 179**; in this one,
+at the ref the finding was written at, **4 against 22**. The pair mixes corpora. Re-derived at four
+refs, the Docs figure was never 0 — it was **2** before 014 and **4** after phase 2, three of those
+four matches being the finding's own text quoting itself.
+
+`word_pattern()`'s docstring was wrong in the **mirror image**: it said an unconditional `\b` would
+mean the row *"would never match anything"*. Measured, `\b\.AddPolicies\(\b` matches the **code**
+form and misses all three **prose** forms — which is worse than never matching, because the gate's
+corpus is prose. Python's `\b` demands a word character at a non-word edge; git's `-w` demands a
+non-word one. **Two instruments, opposite meanings for the same idea, and this spec had a sentence
+about each that got the direction wrong.**
+
+**Both docstrings repaired, no behaviour changed** — `word_pattern` still returns
+`\.AddPolicies\(` bare and `(?<![A-Za-z0-9_])CommandProcessor(?![A-Za-z0-9_])` guarded, and
+`symbolcheck` still exits 0 with *5 entries, 161 pages, 1 silenced*. **The conclusion the false
+mechanism supported was right all along**, which is exactly why it survived: a correct decision
+protects its own bad reasoning from review. Finding A is struck through rather than rewritten, per
+obligation 2.
+
+### `CLAUDE.md` — four edits, and two of them are new rows in the ledger
+
+1. **Rule 2 is a dependency of a second tool.** `symbolcheck` reads the banner's *Applies to* for
+   the page's product, importing `APPLIES_TO` and `BANNER_RE` from `pagelint` rather than keeping a
+   copy. Verified in the source, not taken from the design: a page with **no readable banner
+   declares no product and is checked against every row**, not exempted from any.
+2. and 3. **The two stale present-tense counts, repaired.** *"`## Configuration` appears on 26
+   pages"*, twice. Re-derived two ways — `grep -rl` counting files and `grep -rh` counting lines —
+   **0 and 0**, and 0 as far back as `c0d410a`. Both now read as history with the measurement
+   beside them, because the sentences are sound as motivation and were false as fact.
+4. **The two homeless obligations got a home** — § *Compiling an example, and against what*: a
+   block compiles **against the released packages**, not a `ProjectReference` into `src/`; and a
+   block asserting **behaviour is run, with a control**. `/spec:implement` stated both because
+   `CLAUDE.md` had nowhere to cite; it can cite now.
+
+**The ledger went from 17 rows to 19**, both review-only, joining version markers. That is the
+ledger's own discipline applied — *"a rule in only one of the two places is how the next round of
+decay begins"* — and it is why task 6.2's input line was amended in the same commit rather than
+left to be re-derived later. **Friction 29 says to grep the whole spec when a count moves**, and
+one occurrence was found.
+
+### The P2 strikes — struck, not owed
+
+- **P2-2, `commandlint`:** struck. AC1 binds P0 only. It now has a **sharper specification than it
+  started with**, bought by this phase: parse each `!` block and fenced command as a shell line,
+  check every binary in the pipeline against the expanded `allowed-tools` globs, run both
+  directions, and report the reverse direction as advisory. A throwaway proved the check is worth
+  ~40 lines and finds real defects on its first run — **twice now, in two directions**.
+- **P2-3, `/spec:status` reports gate state:** struck. `/spec:review` pre-runs all eight, and a
+  second command doing the same work would be a second place for the numbers to drift.
+
+Both are recorded here as struck-with-a-reason so that the acceptance walk does not report them as
+outstanding.
+
+### Three decisions phase 5 took that the design did not
+
+1. **The three P0 commands and `status.md` were edited, in a phase that owns neither.** Ruling 7 —
+   a defect found beside a repair gets repaired — against design §10's warning about *"while I'm
+   here"*. The tie-break: the defect class was found by phase 5's own instrument, the fix is one
+   frontmatter token per file, and shipping three commands with forbidden context blocks while
+   fixing three others would leave the corpus in a state no reading of obligation 4 defends.
+2. **`tools/symbolcheck.py`'s comments were edited by a phase about commands.** Same ruling. The
+   alternative was to ship `/spec:design` telling a writer one thing about `git grep -w` while the
+   tool's own source told them the opposite.
+3. **`new.md`'s context block was replaced, not repaired.** `ls -la | grep "^d" | wc -l | xargs`
+   produced a *count* of specs; step 1 of the task needs the *next ID*. The replacement,
+   `ls -d spec/*/`, needs one grant instead of four and answers the question actually being asked —
+   the permission defect was a symptom of a context block that printed the wrong thing.
 
 ---
 
@@ -1382,7 +1571,8 @@ its number is unchanged.
     `grep '^## ' | tail -4` on a seven-step page
 
 - [ ] **Task 6.2:** Walk AC2 — no command contradicts `CLAUDE.md` — convention by convention
-  - Input: `CLAUDE.md`'s seventeen-row rule ledger; the nine commands as rewritten
+  - Input: `CLAUDE.md`'s rule ledger — **nineteen rows after task 5.5**, seventeen when this task
+    was written; the nine commands as rewritten
   - Output: a table, convention against the command that would cause a writer to break it
   - Notes: this is the criterion 014 exists to satisfy and it has **no tool**. Walking it by
     reading the commands against `CLAUDE.md`'s ledger is the whole test
@@ -1504,4 +1694,30 @@ Continuing the ledger at 25.
     current state to the next person — who planted a heading expecting a collision and got a clean
     run. **A measurement inside a rationale needs the ref it was taken at, exactly as a gate
     number does**, and `tools/README.md`'s rule — *a number without a ref is not a fact* — should
-    extend to `CLAUDE.md`.
+    extend to `CLAUDE.md`. *Repaired in phase 5, task 5.5: both sentences now carry the
+    measurement and the date.*
+
+33. **An obligation is satisfied by whatever instrument someone builds for it, and nobody checks
+    that the instrument asks the obligation's question.** *Met in phase 5.* Obligation 4's forward
+    direction was reported green in phase 4 by a checker that asked *"which tools does this
+    command's prose name?"*. The permission model asks *"which binaries will this shell line
+    execute?"* — and the gap between the two questions was **eleven forbidden invocations in seven
+    commands**, every one inside a `!` block that runs on every invocation. **A green from a
+    single-use instrument is a claim about the instrument, not about the corpus**, and the
+    workflow's only defence against that is friction 28's rule that the throwaway prints its exact
+    command — which is how this one was re-run and disagreed with.
+
+34. **A number recorded without its corpus cannot be re-derived, and reads as reproducible.**
+    *Met in phase 5.* *"`git grep -lwF '.Handle('` returns 0 where the same search without `-w`
+    returns 23"* names no repository. It is 0/179 in `../Brighter` and 4/22 here, and the pair as
+    recorded reproduces nowhere. Obligation 1 says to put the command beside the figure; this is
+    the next turn of the same screw — **the command is not enough, because the same command
+    answers differently in two working directories.**
+
+35. **A correct conclusion protects the wrong reasoning underneath it.** *Met in phase 5.*
+    `resolve()` applies `-w` conditionally, which is right, and gave a mechanism for it that is
+    false; `word_pattern()` does the mirror-image thing and gave a mechanism false in the mirror
+    image. Both survived a design review, a tasks review and two phase reviews, because every
+    review that reached them agreed with the *decision*. **Nothing in the workflow asks a review
+    to check the reason separately from the ruling** — and a false reason is what the next person
+    reasons from when the case is not identical.

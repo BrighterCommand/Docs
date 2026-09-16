@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(cat:*), Bash(test:spec/*), Bash(ls:spec/*), Bash(grep:*), Bash(wc:*), Bash(git log:*), Bash(gh issue list:*), Bash(gh search:*), Bash(gh api:*), Write, Edit, Read, Glob, Grep
+allowed-tools: Bash(cat:*), Bash(echo:*), Bash(test:spec/*), Bash(ls:spec/*), Bash(grep:*), Bash(wc:*), Bash(git log:*), Bash(gh issue list:*), Bash(gh search:*), Bash(gh api:*), Write, Edit, Read, Glob, Grep
 description: Create or review requirements specification
 ---
 
