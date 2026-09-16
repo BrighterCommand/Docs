@@ -1967,15 +1967,16 @@ the other is the case for standing obligation 1, and 014 has exactly one example
 
 ### Task 6.5 — the friction ledger, collected
 
-**Eighteen entries came into this phase, 18–35, contiguous and without duplicates; twenty-two leave
-it.** Re-derived across the three documents that hold them rather than re-listed here — the command
-returns **22** today and returned **18** before this phase's four were written:
+**Eighteen entries came into this phase, 18–35, contiguous and without duplicates; twenty-two left
+it — and a twenty-third was added after 014 closed.** Re-derived across the three documents that
+hold them rather than re-listed here — the command returned **18** before this phase's four were
+written, **22** at the close, and **23** now that friction 40 has joined them:
 
 ```bash
 { awk '/^## 14\. Workflow friction/,0' requirements.md
   awk '/^## 13\. Workflow friction/,0' design.md
   awk '/^## 4\. Workflow friction/,0'  tasks.md
-} | grep -oE '^[0-9]+\.' | tr -d '.' | sort -n | uniq | wc -l      # 22 — and 18..39 with no gap
+} | grep -oE '^[0-9]+\.' | tr -d '.' | sort -n | uniq | wc -l      # 23 — and 18..40 with no gap
 ```
 
 | Where | Entries | What they are about |
@@ -2193,3 +2194,31 @@ Continuing the ledger at 25.
     > instrument that has **never been able to show it**. Naming the failure that way is
     > deliberate — the case to catch is not a wrong criterion, it is a right one wearing an
     > instrument that measures something else.
+
+40. **A marker no command reads is a marker nobody writes, and that went unnoticed for fourteen
+    specs.** *Found 2026-09-16, after 014 closed, by re-deriving the board rather than quoting it.*
+    `/spec:review`'s phase-detection table lists `.accepted` for the acceptance phase and its
+    approval step offers to create it. Measured:
+
+    ```bash
+    find spec -name '.accepted' | wc -l        # 0
+    find spec -maxdepth 2 -name '.*-approved' | sed 's|.*/||' | sort | uniq -c
+    #   13 .design-approved
+    #   13 .requirements-approved
+    #   12 .tasks-approved
+    ```
+
+    **Six specs — 009 to 014 — ran and wrote up an acceptance pass, and not one recorded it with
+    the mechanism built for it.** The reason is mechanical rather than careless, and it is the
+    transferable part: the other three markers are each **gated on by the next command** —
+    `/spec:design` stops without `.requirements-approved`, `/spec:tasks` without
+    `.design-approved`, `/spec:implement` without `.tasks-approved` — and all three are reported
+    by `/spec:status`. **`.accepted` is read by exactly one command, the one that writes it.**
+    Nothing breaks when it is missing, so nothing ever wrote it.
+
+    This is friction 38's shape a third time — *a step that names a receiver nothing reaches* —
+    and the rule generalises past markers: **an artefact no consumer reads is an artefact that
+    will not be produced, however clearly the instruction says to produce it.** Either something
+    reads it or it should not exist. *Repaired in the same PR: `/spec:status` now reports
+    `.accepted`, including its absence on a spec sitting at N/N, because "never walked" and
+    "walked but unrecorded" are different states and that is the only place the difference shows.*

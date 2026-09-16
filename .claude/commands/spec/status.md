@@ -32,16 +32,23 @@ For each spec directory, check:
 - `tasks.md` exists → tasks identified
 - `.tasks-approved` exists → tasks approved
 - Count `- [x]` vs `- [ ]` in tasks.md → writing progress
+- `.accepted` exists → **acceptance walked and approved; the spec is closed**
+
+**Report `.accepted` explicitly, including when it is absent from a spec at 100%.** It is the only
+marker no other command gates on, so nothing forces it to be written — and a spec sitting at N/N
+with no `.accepted` either never had its acceptance walk or had one nobody recorded. Those are
+different states and this is the only place the difference shows.
 
 ### Output Format
 
 ```
 ## Documentation Specs Status
 
-| ID  | Topic                | Phase        | Progress |
-|-----|----------------------|--------------|----------|
-| 001 | darker_docs          | Writing      | 5/12     |
-| 002 | error_handling       | Requirements | -        |
+| ID  | Topic                | Phase        | Progress | Closed |
+|-----|----------------------|--------------|----------|--------|
+| 001 | darker_docs          | Writing      | 5/12     | —      |
+| 002 | error_handling       | Requirements | -        | —      |
+| 003 | some_closed_spec     | Accepted     | 14/14    | ✅     |
 
 **Active:** 001-darker_docs
 **Next action:** Run `/spec:implement` to continue writing
