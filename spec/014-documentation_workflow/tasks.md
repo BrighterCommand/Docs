@@ -2222,3 +2222,25 @@ Continuing the ledger at 25.
     reads it or it should not exist. *Repaired in the same PR: `/spec:status` now reports
     `.accepted`, including its absence on a spec sitting at N/N, because "never walked" and
     "walked but unrecorded" are different states and that is the only place the difference shows.*
+
+    > **BACKFILLED 2026-09-16, on evidence, and the discrimination matters more than the files.**
+    > A marker asserts that an acceptance pass happened, so each was checked against a **dated
+    > write-up in that spec's own `tasks.md`** before being created — not inferred from the spec
+    > sitting at 100%:
+    >
+    > | Spec | Written up as | Dated |
+    > |---|---|---|
+    > | 011 | *Task 7.4 as executed — the acceptance pass* | 2026-08-06 |
+    > | 010 | *The acceptance pass as executed* | 2026-08-22 |
+    > | 009 | *The acceptance pass as executed* | 2026-08-27 |
+    > | 012 | *Phase 11 as executed, 6/6* | 2026-09-01 |
+    > | 013 | *Phase 5 as executed — the acceptance pass* | 2026-09-10 |
+    > | 014 | *Phase 6 as executed* | 2026-09-16 |
+    >
+    > **002–008 deliberately get none**, and that is the useful half of this exercise. They are all
+    > at 100% and none of them ever ran an acceptance pass — the discipline starts at 009. A
+    > `grep -ci acceptance` over their task lists returns **0** for six of the seven; **005 returns
+    > 1 and is a false positive**, a heading reading *"Acceptance criteria for tasks"*, which is a
+    > criteria section and not a pass. **Had the backfill been driven by the 100% figure rather
+    > than by the write-ups, seven specs would now carry a marker asserting an approval that never
+    > happened** — a false record created by the act of tidying the record.
