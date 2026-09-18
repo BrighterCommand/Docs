@@ -202,9 +202,21 @@ unknown until AC3 runs.
 token-set sizes per ref but not the refs' SHAs, so no figure it produces can be reproduced later.
 This is small and it is the reason 929 has been four numbers. *Depends on:* nothing.
 
+## Superseded by `requirements.md`
+
+**The open questions above are this README's first draft and `requirements.md` carries the live
+set** — six rather than five, and **question 1's recommendation rests on different evidence now**.
+This README argued the method-declaration filter was *an extension of a filter the tool already
+has*. It is more than that: 014's `design.md` §3.2 records the probe as scoping out page-declared
+*"types **and members**"*, so the filter is one the **approved design recorded and the shipped tool
+lost** — finding E's ~6% discrepancy, 270 of its 808 names now accounted for. Restoring a
+specification beats extending a heuristic, and that is friction 42.
+
+Read `requirements.md` for anything this section touches.
+
 ## Status Checklist
 
-- [ ] Requirements gathered
+- [x] Requirements gathered
 - [ ] Requirements reviewed and approved
 - [ ] Documentation outline created
 - [ ] Outline reviewed and approved
