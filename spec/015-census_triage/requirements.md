@@ -115,7 +115,13 @@ awk '{print $1}' rows.txt | sort -n | uniq -c
 | ≥7 pages | **40** |
 
 Three quarters of the list is the single-page tail; the head is small enough to read in one
-sitting. **That asymmetry is the only opening a method has.**
+sitting.
+
+> **That asymmetry was written as *"the only opening a method has"*, and the design closed a
+> different opening instead.** The shape argument assumed triage was a *reading* cost, so the only
+> way in was to read less. The method that shipped makes the first stage **mechanical** — 0.4s a
+> name — which removes the need to choose a slice at all, and Q2 was reversed on exactly that.
+> **The asymmetry is still real; it stopped being the constraint.**
 
 ### Finding 1 — the scoping filter the design recorded was lost, and this is a regression
 
@@ -230,27 +236,34 @@ during P0-6**, which Q4 added and which is the only part of 015 that writes to t
 | **P0-1** | **Restore the page-declared-member filter to `--census`**, at the candidates stage, with two-way controls whose positive case sits outside the enumeration (friction 36). Predict the movement before the change | `--census`; `probe/methodprobe.py` |
 | **P0-2** | **`--census` pins its head refs and prints every resolved SHA** — the SHAs, not the ref names — in its header, so any figure it produces is reproducible later. **Census path only**: `PRODUCT_REFS` is shared with the gate, and the gate keeps following `origin/master` | the header's SHAs against `git rev-parse`, four of four |
 | **P0-3** | **The triage method, written down**, with its slice, its per-name evidence requirement, and its **stopping condition** | no instrument — read |
-| **P0-4** | **Execute it over the ≥3-page slice: 112 names** after P0-1 | the triage record; `wc -l` against 112 |
+| **P0-4** | **Execute it over the WHOLE census** — every candidate P0-1 leaves, not a slice (Q2, reversed). Ordered by page-spread, because that ordering is what has found something before | the triage record; `wc -l` against the count `--census` reports |
 | **P0-5** | **Every confirmed-dead name becomes a `symbolwatch.tsv` row or carries a written reason it does not** | `--verify-list`; row count moves by the number added |
 | **P0-6** | **Repair the pages carrying a confirmed-dead name** (Q4), bounded by what P0-4 finds in the ≥3-page slice. A repaired C# block enters `pagelint` rule 6 **strict scope** under `--changed`, so it needs its `using` directives or a declared `// ...` omission, and it **compiles against the released packages** before it ships | `pagelint --changed origin/master`; a build of each repaired block; `symbolcheck` |
 
-**P0-4's slice, measured after P0-1's filter:**
+**P0-4's corpus after P0-1's filter is the whole census.** The bands below are kept because they
+are the **ordering** the triage walks and the shape of the work, not a scope boundary any more —
+and because two of the figures moved when the design settled *which* member filter ships, which is
+[friction 43](#workflow-friction):
 
-| Slice | Names |
-|---|---:|
-| ≥7 pages | 38 |
-| ≥5 pages | 60 |
-| ≥4 pages | 70 |
-| **≥3 pages** | **112** |
-| ≥2 pages | 220 |
-| 1 page (the tail) | 599 |
+| Band | Names, all-or-nothing (requirements) | Names, **per page** (design, and what ships) |
+|---|---:|---:|
+| ≥7 pages | 38 | **36** |
+| ≥5 pages | 60 | **57** |
+| ≥4 pages | 70 | **65** |
+| ≥3 pages | 112 | **103** |
+| ≥2 pages | 220 | **210** |
+| 1 page | 599 | **609** |
+| **total — P0-4's corpus** | **819** | **819** |
+
+**Both filters total 819 and the bands differ**, which is why the total was the wrong number to
+budget from. `design.md` §2 carries the measurement and the command.
 
 ### P1 — wanted, and the spec still closes without them
 
 | # | Item | Instrument |
 |---|---|---|
 | **P1-1** | **State how much of finding E's 808-name gap is recoverable.** 270 by methods; name what the remaining 538 are, or say the original filter set is unrecoverable and stop guessing | the staged table, re-derived |
-| **P1-2** | **A written policy on the 599-name tail** — in or out, with the reason and the expected yield | no instrument — read |
+| **P1-2** | ~~A written policy on the 599-name tail~~ — **withdrawn when Q2 was reversed.** The tail is triaged, so there is no policy to write about not triaging it. Kept struck through rather than deleted, because a deliverable that vanishes without trace looks like one that was forgotten | — |
 
 ### P2 — empty
 
@@ -275,8 +288,10 @@ reader sees; P0-6 changes `contents/` pages, so standing obligation 7 now binds 
   declare the omission, so 015 repairs the directives in the blocks it touches and **only** those.
   Expect the repo-wide 757 to fall by a small number and **say which blocks moved it** — a warning
   count that drops for unexplained reasons is how debt figures stop meaning anything.
-- **The 599-name single-page tail** (Q2). Out, with its number and its expected yield written down
-  by P1-2 rather than skipped — AC8 is what proves the boundary was stated.
+- ~~The 599-name single-page tail (Q2)~~ — **no longer out of scope.** Q2 was reversed at the
+  design review once its *depends on* was measured; the tail is **609 names** under the filter that
+  ships and P0-4 triages it. Struck through rather than deleted so the reversal is visible from the
+  section it used to sit in.
 - **Prose-surface census.** D12 conclusion 2: 160 of 161 pages carry an unresolved prose token, so
   the prose surface is unusable for a census and fine only for a curated watchlist.
 - **Anything in `../Brighter` or `../Darker`.** Read-only, and nothing here needs a sample.
@@ -331,10 +346,10 @@ unmarked criterion below is a declared risk.
 | **AC2** | The census's candidate count moved from 929 by exactly the predicted amount, **both figures measured at the same resolved SHA pair**, and the prediction was written **before** the change | `--census` before and after, with P0-2's header showing the same SHAs on both runs; the prediction in `tasks.md`, dated, ahead of the commit |
 | **AC3** | `--census`'s header prints, **for each of the four refs it resolves**, the SHA git resolves it to — and each printed SHA **equals** what `git rev-parse` returns for that ref | `--census \| head -6` matched against `git -C ../Brighter rev-parse origin/master` and the three others: **0 of 4 today, 4 of 4 after P0-2** |
 | **AC4** | The triage method is written down **and names its stopping condition** | *no instrument — read*, by the maintainer at `/spec:review`. A method with no stopping condition is a backlog |
-| **AC5** | Every name in the ≥3-page slice has a verdict row | `grep -c` on `triage.md`'s table against the slice count P0-1 leaves (112 today; re-derive) |
+| **AC5** | **Every name in the census** has a verdict row — not a slice (Q2, reversed) | `grep -c` on `triage.md`'s table against the count `--census` reports (**819** today; re-derive, and re-derive the **bands** too, not just the total — they are what moved) |
 | **AC6** | Each verdict cites evidence **and a control** | *no instrument — read.* **This is the criterion that fails quietly**: clearing a name because it "looks like an example" is the reasoning that left `ConfigureBrighter` unexamined |
 | **AC7** | Every confirmed-dead name is a `symbolwatch.tsv` row or has a written reason it is not | `python3 tools/symbolcheck.py --verify-list` at 0 findings; row count moves by the number added |
-| **AC8** | What 015 did **not** triage is stated as a number with its boundary | `grep` for the figure in `tasks.md`; it must carry its own command |
+| **AC8** | What 015 did **not** triage is stated as a number with its boundary. **Q2's reversal did not retire this criterion, it moved it**: the untriaged set is no longer the tail but the surfaces the census never reaches — the **110** names P0-1's filter removes as page-declared members, the tokens `NOISE_EXACT` and `NOISE_PREFIX` drop, and the **prose** surface D12 ruled unusable | `grep` for each figure in `tasks.md`; each must carry its own command |
 | **AC9** | The eight gates are at `tools/README.md`'s figures, or moved on purpose with that file changed and nowhere else | the eight commands in `tools/README.md` |
 | **AC10** | No count in any document 015 ships is unanchored | *no instrument — read.* 014 found **three** unanchored counts in `CLAUDE.md`; 015 quotes more numbers than 014 did |
 | **AC11** | Every confirmed-dead name in the slice is **gone from `contents/`**, or its remaining sites carry a written opt-out (P0-6) | `grep -rn '<name>' contents/` per name, against the triage record; `symbolcheck` prints the opt-out count, and *0 findings, N silenced* is a different claim from *0 findings* |
@@ -406,11 +421,17 @@ useful half of the record.
 | # | Subject | Ruling | Took the recommendation? |
 |---|---|---|---|
 | 1 | Member filter breadth | methods now; properties and fields measured, not implemented | yes |
-| 2 | The 599-name tail | out of scope, stated with its number | yes |
+| **2** | **The 599-name tail** | **IN — the whole census is triaged.** Ruled out 2026-09-18, **reversed the same day at the design review** once the measurement it depended on existed | **no — overturned, twice** |
 | 3 | Triage unit | the name, ordered by page-spread | yes |
 | **4** | **Repair or list?** | **repair** | **no — overturned** |
 | 5 | Census reproducibility | print the resolved SHAs | yes |
 | **6** | **Pin or follow?** | **pin** | **no — overturned** |
+
+> **Q2 is the one that worked exactly as a *depends on* is supposed to.** It was ruled out on an
+> explicit condition — *"what P0-4 costs per name on the head. Measure there first, then rule"* —
+> the design measured it, the measurement contradicted the assumption the ruling rested on, the
+> design **reported it rather than acting on it**, and the maintainer reversed the ruling. **Three
+> of six recommendations are now overturned, and none of the three was overturned by argument.**
 
 **1. Does `--census` get the member filter, and at what breadth — methods only, or properties and
 fields too?**
@@ -429,9 +450,22 @@ single-page, single-site name is the least likely to be a real API and would dom
 But `IMessageScheduler` sat at 7 pages, not 1, so this is a claim about **expected yield**, not
 impossibility.
 *Depends on:* what P0-4 costs per name on the head. Measure there first, then rule.
-**RULED: keep it out.** The tail stays out of 015 and P1-2 writes the policy — the number, the
-boundary and the expected yield — rather than the work. AC8 is what proves the number was stated
-instead of the slice being quietly narrowed.
+
+**RULED 2026-09-18, morning: keep it out.** The tail stays out of 015 and P1-2 writes the policy
+rather than the work.
+
+**REVERSED 2026-09-18, at the design review: the whole census is triaged.** The recommendation
+rested on *"431 of them would dominate the budget"*, and the design measured the budget instead of
+assuming it: the mechanical stage costs **0.4s per name per product**, so the tail is minutes, not
+a grind. **The recommendation was not wrong about the yield — it was wrong about the cost**, and
+those are separable. The expected yield of a single-page single-site name is still low; it is
+simply no longer a reason to skip it.
+
+**What this changes:** P0-4 covers **all 819 census candidates**, not the 112-then-103 slice;
+**P1-2's tail policy disappears** as a deliverable, because a policy about what you did not do is
+not needed once you have done it; AC5 counts verdict rows against the whole census; and AC8's
+*"what 015 did not triage"* stops being the tail and becomes the surfaces the census itself never
+reaches.
 
 **3. What is the triage unit — the name, or the page?**
 *Recommendation:* **the name, ordered by page-spread.** It is the ordering that has found something
