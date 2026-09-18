@@ -219,7 +219,9 @@ Read `requirements.md` for anything this section touches.
 - [x] Requirements gathered
 - [x] Requirements reviewed and approved — 2026-09-18, six questions ruled, Q4 and Q6 overturning
       the recommendation; `.requirements-approved` exists
-- [ ] Documentation outline created
+- [x] Documentation outline created — `design.md`, 2026-09-18. **It is not a page outline**: 015
+      creates no page, so the outline sections are marked N/A with reasons and the design is the
+      instrument change, the triage method and its pilot
 - [ ] Outline reviewed and approved
 - [ ] Writing tasks identified
 - [ ] Writing complete
