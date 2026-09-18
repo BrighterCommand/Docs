@@ -1,7 +1,7 @@
 # Spec 015: Census Triage — Design
 
 **Created:** 2026-09-18
-**Status:** Awaiting review — run `/spec:review`
+**Status:** **Approved 2026-09-18.** `.design-approved` exists. Q2 was reversed at this review.
 **Requirements:** approved 2026-09-18 (`.requirements-approved`), six questions ruled, Q4 and Q6
 overturning the recommendation.
 

@@ -222,7 +222,9 @@ Read `requirements.md` for anything this section touches.
 - [x] Documentation outline created — `design.md`, 2026-09-18. **It is not a page outline**: 015
       creates no page, so the outline sections are marked N/A with reasons and the design is the
       instrument change, the triage method and its pilot
-- [ ] Outline reviewed and approved
+- [x] Outline reviewed and approved — 2026-09-18. **Q2 was reversed at this review**, taking P0-4
+      from a 103-name slice to all 819 candidates; the screen that followed found **twelve dead
+      Brighter APIs in the tail and none in the head**. `.design-approved` exists
 - [ ] Writing tasks identified
 - [ ] Writing complete
 - [ ] Documentation reviewed
