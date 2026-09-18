@@ -217,7 +217,8 @@ Read `requirements.md` for anything this section touches.
 ## Status Checklist
 
 - [x] Requirements gathered
-- [ ] Requirements reviewed and approved
+- [x] Requirements reviewed and approved — 2026-09-18, six questions ruled, Q4 and Q6 overturning
+      the recommendation; `.requirements-approved` exists
 - [ ] Documentation outline created
 - [ ] Outline reviewed and approved
 - [ ] Writing tasks identified
