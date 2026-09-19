@@ -195,28 +195,37 @@ public override async Task<GreetingMade> HandleAsync(
 Here's how to configure Brighter with an InMemory Outbox and a transport:
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 services.AddBrighter(options =>
 {
     // Configure handlers
     options.HandlerLifetime = ServiceLifetime.Scoped;
     options.MapperLifetime = ServiceLifetime.Singleton;
-    options.CommandProcessorLifetime = ServiceLifetime.Scoped;
 })
-.UseInMemoryOutbox() // Simple outbox for development
-.AutoFromAssemblies(); // Auto-discover handlers
-
-services.AddProducers(options =>
+.AddProducers(configure =>
 {
     // Configure your transport (RabbitMQ, Kafka, AWS, etc.)
-    options.UseRabbitMQ(new RabbitMqConfiguration
+    var connection = new RmqMessagingGatewayConnection
     {
-        AmqpUri = new Uri("amqp://guest:guest@localhost:5672")
-    })
-    .Publication<GreetingMade>(publication =>
-    {
-        publication.Topic = new RoutingKey("greeting.made");
-    });
-});
+        AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
+        Exchange = new Exchange("paramore.brighter.exchange")
+    };
+
+    configure.ProducerRegistry = new RmqProducerRegistryFactory(
+        connection,
+        new[] { new RmqPublication { Topic = new RoutingKey("greeting.made"), RequestType = typeof(GreetingMade) } }
+    ).Create();
+
+    // A development Outbox that lives in memory; this is also what you get
+    // if you set no Outbox at all
+    configure.Outbox = new InMemoryOutbox(TimeProvider.System);
+})
+.AutoFromAssemblies(); // Auto-discover handlers
 ```
 
 ### Next Steps

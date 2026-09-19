@@ -147,10 +147,17 @@ public class EventPublisher
 ### Example: Transactional Messaging with Context
 
 ```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public class OrderHandler : RequestHandlerAsync<CreateOrderCommand>
 {
     private readonly IAmACommandProcessor _commandProcessor;
-    private readonly IUnitOfWork _uow;
+    private readonly IAmATransactionConnectionProvider _transactionProvider;
+    private readonly IOrderRepository _orderRepository;
 
     public override async Task<CreateOrderCommand> HandleAsync(
         CreateOrderCommand command,
@@ -166,11 +173,10 @@ public class OrderHandler : RequestHandlerAsync<CreateOrderCommand>
             ["x-tenant-id"] = command.TenantId
         };
 
-        var posts = new List<Guid>();
+        var posts = new List<Id>();
 
-        var conn = await _uow.GetConnectionAsync(cancellationToken);
-        await conn.OpenAsync(cancellationToken);
-        var tx = _uow.GetTransaction();
+        var conn = await _transactionProvider.GetConnectionAsync(cancellationToken);
+        var tx = await _transactionProvider.GetTransactionAsync(cancellationToken);
 
         try
         {
@@ -180,15 +186,16 @@ public class OrderHandler : RequestHandlerAsync<CreateOrderCommand>
             // Deposit message with explicit context
             posts.Add(await _commandProcessor.DepositPostAsync(
                 new OrderCreatedEvent { OrderId = command.OrderId },
+                _transactionProvider,
                 requestContext: context,
                 cancellationToken: cancellationToken
             ));
 
-            await tx.CommitAsync(cancellationToken);
+            await _transactionProvider.CommitAsync(cancellationToken);
         }
         catch (Exception)
         {
-            await tx.RollbackAsync(cancellationToken);
+            await _transactionProvider.RollbackAsync(cancellationToken);
             throw;
         }
 

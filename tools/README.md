@@ -27,16 +27,23 @@ quoting them; the command is in the row so that you can.
 reading is the +1: `tools/` is inside `linkcheck`'s walk, so this file entered its corpus the day
 it was written. Both numbers are true at their refs, which is what the refs are for.
 
+**Two rows carry a second ref, `3be2a78` — spec 015 phase 4, the triage repairs.** `symbolcheck`
+went from 5 watchlist entries to **22** when the triage's seventeen confirmed-dead names were
+listed, and from 1 silenced site to **3** when two of them were kept on purpose behind visible
+opt-outs. `pagelint`'s warning count **fell**, 757 → **744**, because thirteen repaired C# blocks
+gained the `using` directives rule 6 asks for; two more declared their omission with `// ...`,
+which is honest and still counted. The other six rows are unmoved at both refs.
+
 | # | Gate | Command | Expected at `412fd34` |
 |---:|---|---|---|
 | 1 | `linkcheck` | `python3 tools/linkcheck.py` | **165 files, 0 broken** |
-| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 757 warnings, 162 pages** |
+| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 744 warnings, 162 pages** — at `3be2a78`; it read **757** at `412fd34` |
 | 3 | shape | `python3 tools/urlmap.py --check-shape` | **161 pages, 12 sections, widest 12 of 20, deepest 4 of 4** |
 | 4 | redirects | `python3 tools/urlmap.py --check-redirects` | **77 entries, 7858 bytes** |
 | 5 | `versioncheck` | `python3 tools/versioncheck.py` | **0 stale pins of 18, across 5 pages** |
 | 6 | `optioncheck` | `dotnet run --project tools/optioncheck` | **0 mismatches across 59 tables, 519 rows** |
 | 7 | `--verify` | `python3 tools/urlmap.py --verify` | **161 predicted = 161 published** |
-| 8 | `symbolcheck` | `python3 tools/symbolcheck.py` | **0 findings — 5 entries, 161 pages, 1 silenced** |
+| 8 | `symbolcheck` | `python3 tools/symbolcheck.py` | **0 findings — 22 entries, 161 pages, 3 silenced** — at `3be2a78`; it read **5 entries, 1 silenced** at `412fd34` |
 
 **Three of the eight are not in the `check` job of `.github/workflows/docs.yml`, and each absence
 is a decision rather than an oversight:**

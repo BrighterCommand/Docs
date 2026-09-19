@@ -23,29 +23,45 @@ See [AWS SQS Migration](/contents/AWSSQSMigrateToV10.md#migrating-from-aws-sdk-v
 
 We then need to configure our **S3LuggageStore** and register it with our IoC container. Our **ClaimCheckTransformer** has a dependency on **IAmAStorageProviderAsync** and at runtime, when our [** **IAmAMessageTransformerFactory**](/contents/MessageTransforms.md#message-transformer-factory) creates an instance it needs to be able to resolve that dependency. For this reason you need to register the implementation, in this case **S3LuggageStore** with the IoC container to allow it to resolve the dependency.
 
-We provide an extension method to **ServiceCollection** to help with this:
+We provide a builder method, **UseExternalLuggageStore()**, to help with this:
 
 ``` csharp
-serviceCollection.AddS3LuggageStore((options) =>
-{
-	options.Connection = new AWSS3Connection(credentials, RegionEndpoint.EUWest1);
-	options.BucketName = "brightersamplebucketb0561a06-70ec-11ed-a1eb-0242ac120002";
-	options.BucketRegion = S3Region.EUW1;
-	options.StoreCreation = S3LuggageStoreCreation.CreateIfMissing;
-});
+using System.Net.Http;
+using Amazon;
+using Amazon.S3;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Transformers.AWS.V4;
+using Paramore.Brighter.Transforms.Storage;
+
+serviceCollection.AddBrighter()
+    .UseExternalLuggageStore(provider => new S3LuggageStore(
+        new S3LuggageOptions(
+            new AWSS3Connection(credentials, RegionEndpoint.EUWest1),
+            "brightersamplebucketb0561a06-70ec-11ed-a1eb-0242ac120002")
+        {
+            BucketRegion = S3Region.EUWest1,
+            HttpClientFactory = provider.GetService<IHttpClientFactory>(),
+            Strategy = StorageStrategy.CreateIfMissing
+        }));
 ```
 
-You configure an **S3LuggageStore** using the **S3LuggateOptions** provided to the callback in **AddS3LuggageStore**. You MUST set the following options:
+<!-- symbolcheck: allow AddS3LuggageStore -->
+<!-- symbolcheck: allow S3LuggageStoreCreation -->
 
-* **Connection**: The **AWSS3Connection** that allows us to connect to your account. Used to create an **S3Client** and an **STSClient**
-* **BucketName**: The name of the S3 bucket that backs the luggage store. We use one bucket for the luggage store. You may re-use a bucket that you already have.
+> **Coming from V9?** The **IServiceCollection** extension **AddS3LuggageStore()** was removed at V10, along with the **S3LuggageStoreCreation** enum it configured. Build the **S3LuggageStore** yourself and hand it to **UseExternalLuggageStore()**, as above. The name is kept here on purpose, so that a reader arriving from a V9 sample finds the page that tells them it is gone.
+
+You configure an **S3LuggageStore** using **S3LuggageOptions**. The connection and the bucket name are constructor arguments; the rest are properties:
+
+* **connection**: The **AWSS3Connection** that allows us to connect to your account. Used to create an **S3Client** and an **STSClient**
+* **bucketName**: The name of the S3 bucket that backs the luggage store. We use one bucket for the luggage store. You may re-use a bucket that you already have.
 * **BucketRegion**: Where is the bucket? Bucket names must be unique within a region.
-* **StoreCreation**: What should we do when determining if there is a bucket for the store?
-  * **CreateIfMissing**: We will create the bucket in the requested region (provided the credentials provided have rights to do this.)
-    * **ValidateExists**: We will check if the bucket exists in the requested region. We throw an **InvalidOperationException** if it does not.
-    * **AssumeExists**: We do not check for the bucket, but just assume it exists
+* **Strategy**: What should we do when determining if there is a bucket for the store?
+  * **StorageStrategy.CreateIfMissing**: We will create the bucket in the requested region (provided the credentials provided have rights to do this.)
+    * **StorageStrategy.Validate**: We will check if the bucket exists in the requested region. We throw an **InvalidOperationException** if it does not.
+    * **StorageStrategy.Assume**: We do not check for the bucket, but just assume it exists
 
-If you choose **CreateIfMissing** or **ValidateExists** then you must register an **IHTTPClientFactory** as we will use this to obtain an HTTP Client for use with the AWS REST API to make a check for the bucket's existence. The simplest way to do this is to use the ServiceCollection extension provided for creating an **IHTTPClientFactory**:
+If you choose **StorageStrategy.CreateIfMissing** or **StorageStrategy.Validate** then you must register an **IHTTPClientFactory** as we will use this to obtain an HTTP Client for use with the AWS REST API to make a check for the bucket's existence. The simplest way to do this is to use the ServiceCollection extension provided for creating an **IHTTPClientFactory**:
 
 ```csharp
  serviceCollection.AddHttpClient();

@@ -32,17 +32,24 @@ You create a **Message Mapper** by deriving from **IAmAMessageMapper\<TaskRemind
 An example follows:
 
 ``` csharp
+using System.Net.Mime;
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+
 public class GreetingMadeMessageMapper : IAmAMessageMapper<GreetingMade>
 {
-    public Message MapToMessage(GreetingMade request)
+    public IRequestContext Context { get; set; }
+
+    public Message MapToMessage(GreetingMade request, Publication publication)
     {
-        var header = new MessageHeader(messageId: request.Id, topic: "GreetingMade", messageType: MessageType.MT_EVENT); 
+        var header = new MessageHeader(messageId: request.Id, topic: new RoutingKey("GreetingMade"), messageType: MessageType.MT_EVENT);
         var payload = System.Text.Json.JsonSerializer.Serialize(request, new JsonSerializerOptions(JsonSerializerDefaults.General));
-        var body = new MessageBody(payload, ApplicationJson, CharacterEncoding.UTF8);
+        var body = new MessageBody(payload, new ContentType(MediaTypeNames.Application.Json), CharacterEncoding.UTF8);
         var message = new Message(header, body);
         return message;
     }
-    
+
     public GreetingMade MapToRequest(Message message)
     {
         return JsonSerializer.Deserialize<GreetingMade>(message.Body.Value, JsonSerialisationOptions.Options);
@@ -91,32 +98,32 @@ The Message Body stores the content for transmission over a transport as a byte[
 In many cases the easiest option is to send the payload as plain text, as this is the easiest to inspect if you need to debug your messages. In this case the simplest path is to serialize the **Command** or **Event** as JSON and deserialize from that JSON. MessageBody contains a constructor that takes a string with two optional parameters, a media type (which defaults to **application/json**) and a character encoding type for the string (which defaults to **CharacterEncoding.UTF8**),
 
 ```csharp
-public MessageBody(string body, string contentType = ApplicationJson, CharacterEncoding characterEncoding = CharacterEncoding.UTF8)
+public MessageBody(string? body, ContentType? contentType = null, CharacterEncoding characterEncoding = CharacterEncoding.UTF8)
 {
-    ...
+    // ...
 ```
 
 which can be used as follows (or omitting the default parameters)
 
 ```csharp
+using System.Net.Mime;
+using System.Text.Json;
+using Paramore.Brighter;
 
 var payload = System.Text.Json.JsonSerializer.Serialize(request, new JsonSerializerOptions(JsonSerializerDefaults.General));
-var body = new MessageBody(payload, ApplicationJson, CharacterEncoding.UTF8);
-
+var body = new MessageBody(payload, new ContentType(MediaTypeNames.Application.Json), CharacterEncoding.UTF8);
 ```
 
 If your payload is binary, then we provide two constructors that can be used to write bytes. For backwards compatibility these constructors also default to application/json and UTF-8. However, if you have binary content we recommend setting the media type to application/octet-stream and the character encoding to either **CharacterEncoding.Base64** if it needs transmission as a string, or **CharacterEncoding.Raw** if not).
 
 ```csharp
-
-public MessageBody(byte[] bytes, string contentType = ApplicationJson, CharacterEncoding characterEncoding = CharacterEncoding.UTF8)
+public MessageBody(byte[]? bytes, ContentType? contentType = null, CharacterEncoding characterEncoding = CharacterEncoding.UTF8)
 {
-    ...
+    // ...
 
-public MessageBody(in ReadOnlyMemory<byte> body, string contentType = ApplicationJson, CharacterEncoding characterEncoding = CharacterEncoding.UTF8)
+public MessageBody(in ReadOnlyMemory<byte> body, ContentType? contentType = null, CharacterEncoding characterEncoding = CharacterEncoding.UTF8)
 {
-    ...
-
+    // ...
 ```
 
 For example, when writing a Kafka payload with leading bytes indicating the schema id, you would want to use a binary payload because conversion to and from a UTF8 string is lossy. Here we serialize the payload with the Kafka header (Magic Byte (0) + Schema Id Bytes) and a JSON payload using the Confluent Serdes serializer. Even though we serialize to JSON, because of the header bytes we treat the payload as binary:

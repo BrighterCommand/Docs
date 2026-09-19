@@ -19,3 +19,20 @@ UseExternalInbox	brighter	(removed at V10 — not a rename)	013 ledger 15	2026-0
 IAmAnIbox	brighter	IAmAnInbox	013 ledger 15	2026-09-10
 IMessageScheduler	brighter	IAmAMessageScheduler	014 design §3.4 — the probe	2026-09-12
 IMessageSchedulerFactory	brighter	IAmAMessageSchedulerFactory	014 tasks, phase 1 finding D	2026-09-13
+UseMsSqlOutbox	brighter	(removed at V10 — set Outbox on AddProducers, with MsSqlOutbox)	015 triage §5.2	2026-09-19
+UseMySqlOutbox	brighter	(removed at V10 — set Outbox on AddProducers, with MySqlOutbox)	015 triage §5.2	2026-09-19
+UseDynamoDbOutbox	brighter	(removed at V10 — set Outbox on AddProducers, with DynamoDbOutbox)	015 triage §5.2	2026-09-19
+UseInMemoryOutbox	brighter	(removed at V10 — Outbox on AddProducers defaults to InMemoryOutbox)	015 triage §5.2	2026-09-19
+UseDynamoDbTransactionConnectionProvider	brighter	TransactionProvider	015 triage §5.2	2026-09-19
+UseMySqTransactionConnectionProvider	brighter	TransactionProvider	015 triage §5.2	2026-09-19
+AddS3LuggageStore	brighter	UseExternalLuggageStore	015 triage §5.2	2026-09-19
+S3LuggageStoreCreation	brighter	StorageStrategy	015 triage §5.2	2026-09-19
+StoreCreation	brighter	Strategy	015 triage §5.2	2026-09-19
+CommandProcessorLifetime	brighter	(removed at V10 — the CommandProcessor is a singleton; Brighter ADR 0033)	015 triage §5.2	2026-09-19
+UseScoped	brighter	(removed at V10 — no direct replacement; HandlerLifetime carries the scope)	015 triage §5.2	2026-09-19
+NoTaskQueues	brighter	NoExternalBus	015 triage §5.2	2026-09-19
+IUnitOfWork	brighter	IAmATransactionConnectionProvider	015 triage §5.2	2026-09-19
+UnitOfWork	brighter	IAmATransactionConnectionProvider	015 triage §5.2	2026-09-19
+BeginOrGetTransaction	brighter	GetTransaction	015 triage §5.2	2026-09-19
+BeginOrGetTransactionAsync	brighter	GetTransactionAsync	015 triage §5.2	2026-09-19
+ApplicationJson	brighter	(removed at V10 — MessageBody takes a System.Net.Mime.ContentType, defaulting to application/json)	015 triage §5.2	2026-09-19

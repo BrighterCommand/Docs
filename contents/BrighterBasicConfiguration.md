@@ -179,20 +179,33 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 When all of the relevant configuration sections are added together, your code will look something like this, with variations for your transport and stores.
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Inbox.MySql;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+using Paramore.Brighter.MySql;
+using Paramore.Brighter.Outbox.MySql;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+using Paramore.Brighter.ServiceActivator.Extensions.Hosting;
+
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
-        .ConfigureServices(hostContext, services) =>
+        .ConfigureServices((hostContext, services) =>
         {
             services.Configure<HostOptions>(options =>
             {
                 options.ShutdownTimeout = TimeSpan.FromSeconds(20);
             });
             ConfigureBrighter(hostContext, services);
-        }
+        });
 
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
-   var subscriptions = new Subscription[]
+    var subscriptions = new Subscription[]
     {
         new RmqSubscription<GreetingMade>(
             new SubscriptionName("paramore.sample.salutationanalytics"),
@@ -212,33 +225,36 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
     var rmqMessageConsumerFactory = new RmqMessageConsumerFactory(rmqConnection);
 
+    var outboxConfiguration = new RelationalDatabaseConfiguration(
+        DbConnectionString(), outBoxTableName: "Outbox");
+
     services.AddConsumers(options =>
     {
         options.Subscriptions = subscriptions;
         options.DefaultChannelFactory = new ChannelFactory(rmqMessageConsumerFactory);
-        options.UseScoped = true;
         options.HandlerLifetime = ServiceLifetime.Scoped;
         options.MapperLifetime = ServiceLifetime.Singleton;
-        options.CommandProcessorLifetime = ServiceLifetime.Scoped;
         options.PolicyRegistry = new SalutationPolicy();
-        options.InboxConfiguration =  new InboxConfiguration(
-            inbox: new MySqlInbox(new RelationalDatabaseConfiguration(DbConnectionString()))
+        options.InboxConfiguration = new InboxConfiguration(
+            inbox: new MySqlInbox(new RelationalDatabaseConfiguration(DbConnectionString())),
             scope: InboxScope.Commands,
             onceOnly: true,
             actionOnExists: OnceOnlyAction.Throw
         );
     })
-    .AddProducers((configure) =>
+    .AddProducers(configure =>
     {
-        configure.ProducerRegistry = producerRegistry;
-        configure.Outbox = outbox;
-        configure.TransactionProvider = transactionProvider;
-        configure.ConnectionProvider = connectionProvider;
+        configure.ProducerRegistry = new RmqProducerRegistryFactory(
+            rmqConnection,
+            new[] { new RmqPublication { Topic = new RoutingKey("GreetingMade"), RequestType = typeof(GreetingMade) } }
+        ).Create();
+        configure.Outbox = new MySqlOutbox(outboxConfiguration);
+        configure.ConnectionProvider = typeof(MySqlConnectionProvider);
+        configure.TransactionProvider = typeof(MySqlTransactionProvider);
     })
     .AutoFromAssemblies();
-    
-    services.AddHostedService<ServiceActivatorHostedService>();
 
+    services.AddHostedService<ServiceActivatorHostedService>();
 }
 
 ```

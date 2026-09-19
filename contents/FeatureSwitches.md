@@ -151,18 +151,24 @@ We associate a **Feature Switch Registry** with a **Command Processor** by passi
 configure new instances of **Command Processor**.
 
 ``` csharp
+using Paramore.Brighter;
+using Paramore.Brighter.FeatureSwitch;
+using Paramore.Brighter.FeatureSwitch.Providers;
+
 var featureSwitchRegistry = FluentConfigRegistryBuilder
                             .With()
                             .StatusOf<MyFeatureSwitchedConfigHandler>().Is(FeatureSwitchStatus.Off)
                             .Build();
 
 var builder = CommandProcessorBuilder
-                    .With()
+                    .StartNew()
+                    .ConfigureFeatureSwitches(featureSwitchRegistry)
                     .Handlers(new HandlerConfiguration(_registry, _handlerFactory))
-                    .DefaultPolicy()
-                    .NoTaskQueues()
-                    .ConfigureFeatureSwitches(fluentConfig)
-                    .RequestContextFactory(new InMemoryRequestContextFactory());
+                    .DefaultResilience()
+                    .NoExternalBus()
+                    .NoInstrumentation()
+                    .RequestContextFactory(new InMemoryRequestContextFactory())
+                    .RequestSchedulerFactory(new InMemorySchedulerFactory());
 
 var commandProcessor = builder.Build();
 ```

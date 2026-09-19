@@ -16,7 +16,14 @@ How to wire circuit breaking into an Outbox Sweeper, tune its cooldown, and exte
 ### Basic Setup with Outbox Sweeper
 
 ```csharp
-// ...
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.CircuitBreaker;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MsSql;
+using Paramore.Brighter.Outbox.Hosting;
+using Paramore.Brighter.Outbox.MsSql;
+
 public void ConfigureServices(IServiceCollection services)
 {
     // Register circuit breaker
@@ -24,20 +31,21 @@ public void ConfigureServices(IServiceCollection services)
         new InMemoryOutboxCircuitBreaker()  // Uses default cooldown of 10 sweeps
     );
 
-    services.AddBrighter(options =>
-    {
-        options.OutboxSweeper = new OutboxSweeperOptions
+    // ... producerRegistry and outboxConfiguration come from your transport
+    // and your database configuration
+    services.AddBrighter()
+        .AddProducers(configure =>
         {
-            SweepInterval = TimeSpan.FromMinutes(1),  // Sweep every minute
-            BatchSize = 100  // Process up to 100 messages per sweep
-        };
-    })
-    .AddProducers(configure =>
-    {
-        configure.ProducerRegistry = /* your producer registry */;
-    })
-    .UseMsSqlOutbox(/* outbox configuration */)
-    .UseOutboxSweeper();  // Enable sweeper with circuit breaking
+            configure.ProducerRegistry = producerRegistry;
+            configure.Outbox = new MsSqlOutbox(outboxConfiguration);
+            configure.ConnectionProvider = typeof(MsSqlConnectionProvider);
+            configure.TransactionProvider = typeof(MsSqlTransactionProvider);
+        })
+        .UseOutboxSweeper(options =>       // Enable sweeper with circuit breaking
+        {
+            options.TimerInterval = 60;    // Sweep every 60 seconds
+            options.BatchSize = 100;       // Process up to 100 messages per sweep
+        });
 }
 ```
 
