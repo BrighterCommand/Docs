@@ -261,7 +261,7 @@ it still owes obligations 1 and 2.
     shows the SHAs. Today's total is **929**; re-derive rather than quote it, because it was measured
     at `6145913a0` and this run is at `09f5d988f`
 
-- [ ] **Task 1.6:** Add `MEMBER_DECL_RE` and the per-page member filter
+- [x] **Task 1.6:** Add `MEMBER_DECL_RE` and the per-page member filter
   - Input: `design.md` §2.2 (the regex and the two lines it goes beside), §2.1 (why *per page* and
     not all-or-nothing), `tools/symbolcheck.py:462-473` (`DECL_RE`, applied per page inside the loop)
   - Output: three lines in `census()` — the regex, and `declared.update(MEMBER_DECL_RE.findall(
@@ -270,7 +270,7 @@ it still owes obligations 1 and 2.
     stripped body in the same commit would move the type filter's output and the member filter's at
     once, and neither movement could then be attributed
 
-- [ ] **Task 1.7:** Record the **after** count at the same SHA pair, and reconcile against 1.1
+- [x] **Task 1.7:** Record the **after** count at the same SHA pair, and reconcile against 1.1
   - Input: task 1.1's prediction, task 1.5's before-run
   - Output: in § *Phase 1 as executed*, the second `--census` header and total, an explicit
     *predicted N, measured M* line, and an explanation of any difference rather than a quiet
@@ -278,7 +278,7 @@ it still owes obligations 1 and 2.
   - Notes: AC2 depends on AC3 — the two headers must show the same four SHAs, and that is checkable
     by eye in the paste. Expected movement is **110 names**, 929 → 819
 
-- [ ] **Task 1.8:** Red-proof the member filter, with a positive case outside the enumeration
+- [x] **Task 1.8:** Red-proof the member filter, with a positive case outside the enumeration
   - Input: `design.md` §2.3 (the blind spot, one name wide), §10.4's three controls, friction 36
   - Output: in § *Phase 1 as executed*: `methodprobe.py` reporting **0** removable after the change
     (AC1's red-proof), the three controls from §10.4, and a **two-way planted control** — a
@@ -289,7 +289,7 @@ it still owes obligations 1 and 2.
     spot exists and is one name wide is worth more than one that proves the filter works on cases it
     was built from. Do not commit the scratch pages; paste their output
 
-- [ ] **Task 1.9:** Write P1-1 — how much of finding E's 808-name gap is recoverable
+- [x] **Task 1.9:** Write P1-1 — how much of finding E's 808-name gap is recoverable
   - Input: `design.md` §8's staged table, `spec/014-documentation_workflow/tasks.md` finding E
   - Output: a § *P1-1: the gap is not members* section in this file carrying the re-derived staged
     table (`perpageprobe.py --stages`) and the sentence that **481 of 808 are unexplained by member
@@ -297,7 +297,7 @@ it still owes obligations 1 and 2.
   - Notes: **do not "correct" 831 or 1,211 in 014's `design.md`.** They are the numbers that design
     was approved on and 015's job is to explain them, not overwrite them
 
-- [ ] **Task 1.10:** Re-run the eight gates and reconcile against the prediction
+- [x] **Task 1.10:** Re-run the eight gates and reconcile against the prediction
   - Input: task 1.1's predicted figures, `tools/README.md`'s table
   - Output: an eight-row table in § *Phase 1 as executed*, predicted against measured, citing
     `tools/README.md`'s figures rather than pasting them
@@ -305,7 +305,7 @@ it still owes obligations 1 and 2.
     its corpus — but `tools/` is inside the walk, which moved `linkcheck` 164 → 165 once before. A
     gate's scope is not the site's scope
 
-- [ ] **Task 1.11:** Write § *Phase 1 as executed*
+- [x] **Task 1.11:** Write § *Phase 1 as executed*
   - Input: tasks 1.3 to 1.8's recorded output
   - Output: a section in this file carrying the two census headers, the two red-proofs, the controls,
     the reconciliation and any finding the task list did not predict
@@ -804,3 +804,222 @@ exactly what that is worth: a number that survives a change is not evidence that
 The commit between them touches `CommandProcessor.cs`, and `CommandProcessor` is a name the census
 resolves at every ref, so there was never a mechanism by which this number could have moved. The
 figure carried forward is the pinned one, because both halves of AC2 must come from one world.
+
+### The after-count, at the same SHA pair *(task 1.7)*
+
+```text
+token sets, src/ only, release tag and pinned master per product:
+  brighter  10.7.0          c1b8af886     7593 tokens
+  brighter  pinned master   09f5d988f     7713 tokens
+  darker    4.1.1           ddb71ee        313 tokens
+  darker    pinned master   2f76cda        313 tokens
+controls OK: CommandProcessor present in every Brighter set, IAmAnIbox in none
+
+pages examined                     : 161
+...with at least one C# fence      : 145
+distinct tokens in those fences    : 2764
+...after comments and strings      : 2280
+...after page declarations, noise  : 1749
+UNRESOLVED at src/ of both products, both refs : 819
+pages carrying at least one        : 127 of 145
+```
+
+**Predicted 819, measured 819** — a movement of exactly the predicted 110 names. The stage above it
+moved with it, 2019 → 1749, and the pages carrying at least one candidate fell 129 → 127.
+
+**AC2 depends on AC3, and this is where that is cashed in.** The two headers are checkable against
+each other by eye, and mechanically:
+
+```bash
+diff <(head -6 before.txt) <(head -6 after.txt)    # no output — the same four SHAs
+```
+
+Both halves of AC2 are therefore measurements of one world. Nothing was adopted quietly: the
+prediction, the before-run and the after-run all say 929 → 819 at `09f5d988f` / `2f76cda`.
+
+### The member filter red-proofed, with a planted case from outside the enumeration *(task 1.8)*
+
+**AC1's red-proof first.** `methodprobe.py` asks how many candidates are declared as a method on
+every page using them. Before P0-1 it answered 110; after:
+
+```text
+unresolved candidates                      : 819
+declared as a method on EVERY page using it: 0
+declared on SOME pages using it            : 0
+remaining after the filter                 : 819
+```
+
+**0 removable, which is what AC1 names as its red-proof.** And `perpageprobe.py`'s three controls,
+all green against the shipped tool:
+
+```text
+positive  ConfigureBrighter removed  : True
+negative  HostBuilderContext survives : True
+negative  CommandProcessor absent    : True
+```
+
+**The planted two-way control is the part that is worth more than either.** Both of the above are
+built from cases the filter was designed against. Friction 36 asks for a positive case from
+**outside** the enumeration, and `MEMBER_DECL_RE` is anchored on a modifier — so the outside case is
+a declaration carrying none. Two scratch pages were written into `contents/`, the census run over
+each with the filter **off** and **on**, and the pages deleted; they are not committed:
+
+```text
+name                  filter OFF    filter ON   verdict
+ZzPlantedModifier     True          False       PASS
+ZzPlantedBareName     True          True        PASS
+
+census size  filter OFF: 2021   filter ON: 1750
+```
+
+`ZzPlantedModifier` is `public void ZzPlantedModifier(int count)` and must **disappear**.
+`ZzPlantedBareName` is `void ZzPlantedBareName(int count);` in an interface body and must
+**survive** — the filter is anchored not to see it, by design, and a control that proved the blind
+spot *closed* would be proving the filter does something it was never built to do.
+
+**The `filter OFF` column is friction 44's check and it is not decoration.** It shows each planted
+name was in the corpus to begin with, so each assertion *could* fail. Without it, a filter that had
+silently stopped running would give `False` on both — and the first row would read as a pass. The
+census sizes corroborate it arithmetically: 2021 = 2019 + 2 with the filter off, 1750 = 1749 + 1
+with it on, so exactly one of the two planted names survived.
+
+### Finding — AC1's instrument exits 2 after P0-1, and that is friction 44 from the other direction
+
+`methodprobe.py` reports the 0 that AC1 asks for **and then fails its own positive control**:
+
+```text
+controls:
+  positive  ConfigureBrighter caught : False
+  negative  CommandProcessor absent  : True
+
+CONTROLS FAILED -- the numbers above mean nothing.       (exit 2)
+```
+
+**The probe is not wrong and the filter is not wrong.** `ok_pos` is
+`'ConfigureBrighter' in fully`, and `fully` is computed over the census — which now removes
+`ConfigureBrighter` before the probe ever sees it. The control asserts that the probe's filter
+*catches* a name the shipped tool has already filtered out, so it is **unsatisfiable whatever
+either does**.
+
+This is friction 44 arriving by a route `design.md` §10.3 did not anticipate. There, the control's subject
+had been **repaired out of the corpus** by spec 014. Here, **the tool absorbed the probe's own
+filter** — which is what shipping P0-1 *means*. A probe that measures what a change would buy
+cannot keep a control that asserts the change has not happened yet.
+
+**Neither probe is being rewritten, and that is a decision rather than an omission.** They are the
+evidence base for figures an approved design was signed off on; re-anchoring their controls now
+would mean a later re-run no longer reproduces those figures, and the probes are single-use
+instruments whose question P0-1 has now answered. What the record owes instead is this paragraph,
+addressed to phase 5:
+
+> **Phase 5, task 5.2, reading AC1: `methodprobe.py` exits 2 and prints `CONTROLS FAILED`. That is
+> the expected post-P0-1 state and AC1 is met.** The criterion is *"reports 0 removable"*, and it
+> does. Check the number, not the exit code, and check it beside `perpageprobe.py`'s three controls,
+> which stay satisfiable because its positive is worded as *removed* rather than as *caught*.
+
+**The same absorption shows up in `perpageprobe.py`'s headline table, which now prints three
+identical rows** — 819 / 36 / 57 / 65 / 103 / 210 three times over. Its "shipped today (types
+only)" row *is* the shipped tool, and the shipped tool now has the member filter in it. The
+comparison the probe was built to make is no longer visible from inside it.
+
+### Finding — the drift control inverts after P0-1, and it must be read the new way from here
+
+`design.md` §10.2's control requires the probe's copy with **no extra filter** to reproduce the
+shipped tool. After P0-1 that comparison is false by design:
+
+```text
+sc.census(pages())[0]                  -> 1749
+stage_count(pages(), [])               -> 2019   DRIFT      <- expected from here on
+stage_count(pages(), [METHOD_DECL_RE]) -> 1749
+len(census_per_page(pages()))          -> 1749   AGREE
+```
+
+**From here the faithful pair is `sc.census` against `stage_count(pages(), [METHOD_DECL_RE])`, and
+they agree at 1749.** The `[]` path has not broken — it has become the **pre-change baseline**, which
+is a useful thing to still have: 2019 → 1749 stays reproducible in one process after the change, so
+phases 3 and 5 can re-derive the movement without checking out an older ref.
+
+**Read the old way, this control now says "the copy has drifted" about a copy that has not.** Any
+phase re-running §10.2 verbatim gets a red that means the opposite of what it says.
+
+### P1-1: the gap is not members *(task 1.9)*
+
+```bash
+python3 spec/015-census_triage/probe/perpageprobe.py --stages
+```
+
+```text
+types only -- shipped today        : 2019
++ methods                          : 1749   (recovers 270)
++ properties and fields            : 1692   (recovers 327)
+design.md 3.2 recorded             : 1211
+
+unexplained after both             : 481  of the 808-name gap
+```
+
+**481 of 808 are unexplained by member declarations of any kind.** Methods recover 270, properties
+and fields 57 more; neither closes the gap, so neither is a step towards reproducing 1,211.
+**Whatever the original probe filtered, it was not members** — which is P1-1's answer, and it
+answers the requirements' alternative offer (*"or say the original filter set is unrecoverable and
+stop guessing"*) in the affirmative.
+
+**The staged table still reproduces after P0-1**, because its "types only" row is the probe's own
+copy of the type-only path rather than a call into the shipped tool. That is the second half of the
+drift finding above, stated as a benefit rather than a hazard.
+
+**Do not "correct" 831 or 1,211 in 014's `design.md`.** They are the numbers that design was
+approved on; 015's job is to explain them, not to overwrite them.
+
+### The eight gates, reconciled against the prediction *(task 1.10)*
+
+All eight run at `b262975` + the member filter, with `git add -A` before the `--changed` pass so the
+strict run had a diff to see. **Figures cited from `tools/README.md`, not pasted** — the column below
+says whether each moved, which is the claim obligation 6 asks for.
+
+| # | Gate | Predicted | Measured | Reconciliation |
+|---:|---|---|---|---|
+| 1 | `linkcheck` | none | **unmoved** at `tools/README.md`'s figure | The `.md`-only argument held: `tools/symbolcheck.py` is not a `.md` file and `spec/` is skipped, so nothing entered the walk |
+| 2 | `pagelint` | none, errors and warnings both | **unmoved**, and `--changed` clean | The debt count did not move because no page was touched. `--changed` is 0 errors, which is AC12's shape ahead of the phase that owes it |
+| 3 | shape | none | **unmoved** | `SUMMARY.md` untouched |
+| 4 | redirects | none | **unmoved** | No URL moved |
+| 5 | `versioncheck` | none | **unmoved** | No page pins a version in this diff |
+| 6 | `optioncheck` | none | **unmoved** | No option table touched |
+| 7 | `--verify` | none | **unmoved** | Published-URL set unchanged |
+| 8 | `symbolcheck` | none, gate **and** `--verify-list` | **unmoved**, both | The mechanical prediction held: the pin lives inside `run_census`'s reach only, and `verify_row` still resolves against `PRODUCT_REFS` |
+
+**Eight of eight predicted, eight of eight measured, no movement anywhere.** That is a green worth
+one sentence of suspicion and no more: this phase changed a tool that no gate runs — `--census` is
+not in `.github/workflows/docs.yml` at all — and edited one file inside `linkcheck`'s `SKIP_DIRS`.
+**A prediction of "none" that comes true is only informative because the two named-as-doubtful ones
+were re-argued from mechanism rather than from precedent**, and the mechanism is what held.
+
+### Phase 1 as executed — what the list did not predict *(task 1.11)*
+
+Three things, and none of them is a defect in what shipped:
+
+1. **The drift control inverts**, and read the old way it now reports drift in a copy that has not
+   drifted. Recorded above with the pair that replaces it.
+2. **AC1's instrument exits 2 while meeting AC1**, because the shipped tool absorbed the filter its
+   positive control asserts is not yet shipped. Friction 44 from a second direction; the note to
+   phase 5 is above.
+3. **A control's own harness is an instrument.** `design.md` §10.2's four lines are shorthand and
+   returned `2` when run verbatim, `census()` being a two-tuple. Recorded in § *Phase 1 prediction*
+   rather than quietly fixed, because the only thing that made it obvious was that `2` is absurd.
+
+**All three are the same shape**, which is why they are grouped rather than listed apart: *an
+instrument built to measure a change stops being able to measure it once the change ships.* The
+probes, the drift control and `methodprobe`'s positive control are all single-use by construction,
+and each says something false at exactly the moment its subject lands. Phase 2 inherits that as a
+warning, because P0-3's runner is the next single-use instrument this spec builds.
+
+**One prose repair the list did not plan, and obligation 4 asks for.** `tools/README.md` described
+`--census` and `--verify-list` as one pair of commands reading the sibling repositories, which was
+true until this phase gave them **different refs**. A paragraph now says which reads the pin, which
+follows `origin/master`, and why the asymmetry is the point — the same reasoning the constant
+carries in `symbolcheck.py`, stated once in each place it is needed rather than cross-referenced.
+**No gate number changed**, so constraint 10 is not engaged; `linkcheck` re-run after the edit,
+unmoved at `tools/README.md`'s figure, because an existing `.md` file gained prose and no links.
+
+**What shipped:** `CENSUS_PINS`, `resolve_sha`, a four-row SHA header, and `MEMBER_DECL_RE` applied
+per page beside `DECL_RE` with the `strip_noncode` asymmetry commented in place. **929 → 819 at
+`09f5d988f` / `2f76cda`**, both halves at one SHA pair, the prediction written first.

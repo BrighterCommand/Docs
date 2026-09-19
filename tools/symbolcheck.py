@@ -351,6 +351,23 @@ def _clip(text, width=100):
 DECL_RE = re.compile(
     r'\b(?:class|interface|record|struct|enum)\s+([A-Za-z_][A-Za-z0-9_]*)')
 
+# A method declaration: a modifier, a return type, the name, an open paren.
+# Anchored on the modifier, so a bare call `Foo(bar)` cannot match.
+#
+# P0-1. It is applied PER PAGE, beside DECL_RE inside census(), and not
+# all-or-nothing across the corpus: a name declared on page X is not a candidate
+# on page X, and a page using it bare still contributes. Both filters yield 819
+# names, so the headline number does not discriminate between them -- the
+# difference is page-spread, which is the report's ordering.
+#
+# The blind spot is measured, not assumed: a declaration carrying NO modifier
+# cannot match this at all, and exactly one census candidate is declared that
+# way (`Greeting`, at 7 pages).
+MEMBER_DECL_RE = re.compile(
+    r'\b(?:public|private|protected|internal|static|async|override|virtual|'
+    r'sealed|partial|extern|new)\b[^;=(\n]*?'
+    r'\b([A-Za-z_][A-Za-z0-9_]*)\s*(?:<[^>()]*>)?\s*\(')
+
 LINE_COMMENT_RE = re.compile(r'//[^\n]*')
 BLOCK_COMMENT_RE = re.compile(r'/\*.*?\*/', re.S)
 STRING_RE = re.compile(r'@?"(?:[^"\\\n]|\\.|"")*"')
@@ -496,6 +513,13 @@ def census(pages):
         declared = set()
         for body in blocks:
             declared.update(DECL_RE.findall(body))
+            # strip_noncode here and NOT on the line above, deliberately: a
+            # method declaration inside a comment is not a declaration, while a
+            # commented-out `class Foo` is rare enough never to have mattered.
+            # Tidying DECL_RE into the stripped body would move the type
+            # filter's output in the same commit as the member filter's, and
+            # neither movement could then be attributed.
+            declared.update(MEMBER_DECL_RE.findall(strip_noncode(body)))
         for body in blocks:
             raw.update(TOKEN_RE.findall(body))
             for token in TOKEN_RE.findall(strip_noncode(body)):
