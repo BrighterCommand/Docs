@@ -624,7 +624,7 @@ the close. **Changes no published page.**
     `PROMPT.md` said 39 while its own body cited a friction 40, for two sessions. Friction is what
     the next spec inherits and it is as much a product of 015 as `triage.md` is
 
-- [ ] **Task 5.6:** Close — the README checklist and the residual gap
+- [x] **Task 5.6:** Close — the README checklist and the residual gap
   - Input: `spec/015-census_triage/README.md`'s status checklist; the acceptance walk
   - Output: the README checklist completed, and **one sentence** naming what 015 leaves behind, in
     the shape of 014's *"a dead API written into prose on an existing page — uncompiled, and not on
@@ -2662,3 +2662,113 @@ introducing it, and left a third paragraph asserting the old figure in the prese
 > **A friction repaired where it was found is not repaired.** The next ledger entry that names a
 > class of defect should say which files the class applies to, because *"this applies to
 > `CLAUDE.md`"* is how 32 came back.
+
+---
+
+## The close *(task 5.6)*
+
+**`README.md`'s checklist is complete at 41 of 41**, re-derived rather than incremented, and the
+figure agrees with the phase table's independent sum:
+
+```bash
+grep -c '^- \[x\] \*\*Task' spec/015-census_triage/tasks.md   # 41
+grep -c '^- \[.\] \*\*Task' spec/015-census_triage/tasks.md   # 41
+```
+
+**`.accepted` is not created here.** It is the maintainer's marker and it goes in after the walk is
+read — 014's pattern, and the reason the last checklist box is about the spec rather than about the
+work.
+
+### The acceptance walk's own result, in one line each
+
+| | |
+|---|---|
+| **Criteria** | **12 of 12 met** — AC4, AC6 and AC10 read first with no instrument; AC1, AC2, AC3, AC5, AC7, AC9, AC11 and AC12 each with its instrument **run at the walk** |
+| **Repairs taken during the walk** | **three**, all of them in this spec's own documents: `design.md` §5's slice survival, `triage.md` §1.1's stale gate figure, and `tools/README.md` contradicting its own row |
+| **Where they came from** | **two from the uninstrumented three**, one from reconciling AC9 against the file that owns the numbers. The precedent held: 009's AC7, 012's AC1 and 014's five all came from unmarked criteria |
+| **Gates** | eight of eight at `tools/README.md`'s figures, including `symbolcheck` at *0 findings, **3 silenced**, 22 entries* — which is a different claim from *0 findings* |
+| **Prediction** | *"at least one finding"* from the unmarked three; three arrived. *"All eight instrumented criteria green and uninformative"*; eight were green, and **AC5 was not uninformative** — walking it turned up the 20-name difference between today's census and the corpus the record was taken from |
+
+### The residual gap
+
+> **A name that still resolves — to a different signature, to a dependency's removed member, or to
+> a package with no release — is caught by nothing here, because the only instrument that sees it
+> was built in `/tmp` and was never committed.**
+
+**The candidate list in task 5.6's notes had four entries and the walk chose none of them.** The
+prose surface, the using-directive debt and `Use{DB}Outbox` are all real and all recorded in
+`README.md` § *The residual gap*, but each of them is a **name that fails to resolve** — the same
+class 014 named and 015 built machinery for. What phase 4 found is a class this programme had not
+met: **a name that resolves to the wrong thing.** `S3Region.EUW1` is a live enum member of a
+package that is not Brighter; `IAmAMessageMapper<T>` resolves and has since grown a member and a
+parameter; `Paramore.Brighter.MySql.Dapper` is spelled correctly and stops at 9.9.13.
+
+**Six of thirty defects came from the compiler, and the compiler is not in the repository.** Three
+scratch projects under `/tmp/claude-501/blockcheck/`, one per package family because
+`AWSSDK.Core` 3.x and 4.x cannot coexist (`NU1107`), rebuilt at this walk and red-proofed again —
+and gone the next time `/tmp` is cleared. **`tools/README.md` lists eight gates and none of them
+compiles a line of C#**, which is the sentence the next spec starts from.
+
+---
+
+## Phase 5 as executed
+
+### The eight gates, reconciled *(the phase 5 prediction)*
+
+Measured at `af0301a` with `git add -A` before the `--changed` pass. **Eight predicted "none",
+eight measured unmoved**, and the phase's own edits are confined to `spec/` and `tools/README.md`,
+neither of which any gate's corpus contains except `linkcheck`'s — which walks `tools/` and found
+the edit harmless because it added no link.
+
+| # | Gate | Predicted | Measured |
+|---:|---|---|---|
+| 1 | `linkcheck` | none | **unmoved** — 165 files, 0 broken |
+| 2 | `pagelint` | none, errors and warnings both | **unmoved** — 0 errors, 744 warnings, 162 pages; `--changed origin/master` identical |
+| 3 | shape | none | **unmoved** |
+| 4 | redirects | none | **unmoved** |
+| 5 | `versioncheck` | none | **unmoved** — 0 stale pins **of 18** |
+| 6 | `optioncheck` | none | **unmoved** — 0 mismatches across 59 tables, 519 rows |
+| 7 | `--verify` | none | **unmoved** — 161 predicted = 161 published |
+| 8 | `symbolcheck` | none, gate **and** `--verify-list` | **unmoved** — 0 findings, **3 silenced**, 22 entries; all 22 DEAD |
+
+**No figure in `tools/README.md` changed**, so obligation 10 is not engaged — the edit that file
+took was the removal of a *stale copy* of a figure, not a change to one.
+
+### Phase 5 as executed — what the list did not predict
+
+**Five, and the first would have been read as a failed criterion by anyone who ran one command.**
+
+**1. AC5's instrument measures a world the record was not taken in.** `--census` reports **799**
+today against the record's **819 rows**, because phase 4's repairs removed twenty names from the
+corpus the census reads. Run at HEAD, AC5's own command reads as a criterion gone red; run at
+`3be2a78^` it reads 819 = 819. **A criterion whose instrument reads the corpus the spec edits
+cannot be checked at HEAD after the edit**, and nothing in AC5's wording says which corpus it
+means. The 20-name difference then turned out to be the best single piece of evidence in the walk:
+**seventeen `SURFACE` names plus `EUW1`, `AmqpUri` and `RabbitMqConfiguration`, and zero new
+candidates from fifteen hand-rewritten blocks.**
+
+**2. Three worktrees, because a before-figure stops being measurable once the change ships.** AC2
+and AC3 both compare a state that no longer exists at HEAD. `git worktree add` at `dfc2196`,
+`b262975` and `3be2a78^` makes both checkable in minutes, and the `b262975` one — **P0-2 shipped,
+P0-1 not** — is the only place in the world where *929 at a printed SHA pair* can be produced.
+**This is friction 46 in documentary form**: the instrument absorbed the change, and the fix was to
+go back and stand where the measurement was taken rather than to rewrite the criterion.
+
+**3. The acceptance walk found the corpus of its own sweep.** Friction 47, above, and the sharpest
+thing in this phase: AC10's sweep read five documents and cleared them, and the defect was in a
+sixth that the deliverables table had listed all along.
+
+**4. An up-to-date build prints a green.** The first `dotnet build` of the three scratch projects
+returned in **0.54 seconds with 0 warnings** — and phase 4 recorded *0 errors, 4 warnings*. Nothing
+had been compiled; MSBuild found the outputs current and said so in a form indistinguishable from a
+pass. `--no-incremental` reproduced phase 4's four warnings exactly. **A build is an instrument and
+"it printed 0 errors" is not evidence that it ran**, which is this programme's plausible zero in a
+shape it had not seen: not a query returning zero, but a *tool declining to work* and reporting the
+absence of problems it never looked for.
+
+**5. The `--changed` scope line is the assertion, not the verdict.** `pagelint --changed 473a1c0`
+prints `10 documentation page(s), 15 code block(s) strict` above its `0 errors`, and **fifteen is
+exactly the number of blocks phase 4 edited**. A strict run that made nothing strict prints the
+same verdict, so AC12's linter half is only checked by reading the line above the one that gates.
+`tools/README.md` § *Reading a number before you trust it* says this about four gates; it is true
+of a fifth.
