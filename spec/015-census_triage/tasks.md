@@ -320,7 +320,7 @@ it still owes obligations 1 and 2.
 and a runner that can execute it over 819 names without a person retyping a git command 1,638 times.
 **Changes no published page.**
 
-- [ ] **Task 2.1:** Write `triage.md`'s method section
+- [x] **Task 2.1:** Write `triage.md`'s method section
   - Input: `design.md` §4 in full — §4.1 (the discriminator already inside the census), §4.2 (three
     verdicts), §4.3 (the bracket-class form and the `\b` trap), §4.4 (two stages and stage 2.5),
     §4.5 (the stopping condition), §4.6 (the planted positives)
@@ -334,7 +334,7 @@ and a runner that can execute it over 819 names without a person retyping a git 
     page-spread ordering puts the invented domain first and any run-length rule stops before the
     part of the list most likely to hold a real name (friction 45)
 
-- [ ] **Task 2.2:** Write `probe/triagerun.py`
+- [x] **Task 2.2:** Write `probe/triagerun.py`
   - Input: `design.md` §4.3's two queries and §10.5's pilot output; finding 2 above
   - Output: `spec/015-census_triage/probe/triagerun.py`, taking the census's candidate list and
     emitting one row per name: name, page-spread, stage-1 counts per product, stage-2 counts per
@@ -343,7 +343,7 @@ and a runner that can execute it over 819 names without a person retyping a git 
     resumable or checkpointed — stage 1 alone is 420s and stage 2 about 18 minutes, and a run that
     loses its output to a timeout is a run nobody repeats
 
-- [ ] **Task 2.3:** Red-proof the query form — the `\b` trap, recorded as a broken instrument
+- [x] **Task 2.3:** Red-proof the query form — the `\b` trap, recorded as a broken instrument
   - Input: `design.md` §4.3's four-row table
   - Output: in § *Phase 2 as executed*, all four forms run against `IAmACommandStoreAsync` (which
     **must** stay > 0) and `Date`, with the two `\b`/`\<\>` forms shown returning **0 for the
@@ -352,7 +352,7 @@ and a runner that can execute it over 819 names without a person retyping a git 
     eight** and the second one this programme has found in a word-boundary flag; the paste is the
     only thing that stops a later reader "simplifying" the bracket class back to `\b`
 
-- [ ] **Task 2.4:** Wire the three two-way controls and the two planted positives into the runner
+- [x] **Task 2.4:** Wire the three two-way controls and the two planted positives into the runner
   - Input: `design.md` §10.4's control block, §4.6 (why the plant stays now the corpus yields)
   - Output: `triagerun.py` asserting, on every run: `IAmACommandStoreAsync` → EXISTED, REMOVED;
     `IAmAMessageScheduler` → LIVE; `OrderId` → NEVER EXISTED; and both planted names classifying
@@ -361,13 +361,13 @@ and a runner that can execute it over 819 names without a person retyping a git 
     plant's justification changed when Q2 was reversed and it still stands: twelve positives
     somewhere in 819 rows does not show that row 400 was classified by a working instrument
 
-- [ ] **Task 2.5:** Re-run the eight gates; predicted **none**
+- [x] **Task 2.5:** Re-run the eight gates; predicted **none**
   - Input: `tools/README.md`'s table, `design.md` §11
   - Output: the eight-row predicted-against-measured table in § *Phase 2 as executed*
   - Notes: predicted none because this phase writes only under `spec/`, which `linkcheck` skips and
     no other gate walks. Say that, rather than reporting a pass
 
-- [ ] **Task 2.6:** Write § *Phase 2 as executed*
+- [x] **Task 2.6:** Write § *Phase 2 as executed*
   - Input: tasks 2.3 and 2.4's output
   - Output: a section in this file with the four query forms, the control block, and the runner's
     measured cost per name per product
@@ -1023,3 +1023,202 @@ unmoved at `tools/README.md`'s figure, because an existing `.md` file gained pro
 **What shipped:** `CENSUS_PINS`, `resolve_sha`, a four-row SHA header, and `MEMBER_DECL_RE` applied
 per page beside `DECL_RE` with the `strip_noncode` asymmetry commented in place. **929 → 819 at
 `09f5d988f` / `2f76cda`**, both halves at one SHA pair, the prediction written first.
+
+---
+
+## Phase 2 as executed
+
+**Branch `spec/015-phase2-method`, 2026-09-19.** Six tasks, no published page touched. Two files:
+`triage.md` (D3, the method) and `probe/triagerun.py` (D5, the runner). **Every figure below is
+measured at the pin — `../Brighter` `09f5d988f`, `../Darker` `2f76cda`** — and the runner prints
+all four refs it resolved before it does anything else, per obligation 9.
+
+### The four query forms, red-proofed *(task 2.3)*
+
+`python3 spec/015-census_triage/probe/triagerun.py --query-forms`. **It is a flag on the runner
+rather than a paste**, so the claim stays runnable and a later reader tempted to "simplify" the
+bracket class back to `\b` can see the cost in one command:
+
+```text
+  form                                           IAmACommandStoreAsync    Date
+                                                         MUST STAY > 0
+  -S<name>                    substring                              4     118
+  -S'\b<name>\b'  --pickaxe-regex                                    0       0  <- BROKEN
+  -S'\<<name>\>'  --pickaxe-regex                                    0       0  <- BROKEN
+  -S[^A-Za-z0-9_]<name>[…]  --pickaxe-regex                          2       5
+```
+
+**All four numbers reproduce `design.md` §4.3 exactly**, at the pin rather than at `origin/master`.
+The two broken forms return **0 for the positive control**, which is the whole point: read without
+a control that must be non-zero, they say *no candidate has ever existed* about every name in the
+census. **Plausible zero number eight.**
+
+The runner asserts only the shipped form. Whether git's regex engine grows `\b` support one day is
+not its business; whether the form the method uses can still find a known-removed API is.
+
+### Plausible zero number NINE, found while costing the stages
+
+**The same bracket-class form, parameterised into zsh, returns 0 for every name including the
+positive control.** Printed by `--query-forms` beside the table above:
+
+```text
+the same form through zsh, with the name in a variable:
+  stdout (what a `$(...)` capture reads) : '0'
+  stderr (what nobody looks at)          : "zsh:1: bad math expression: operand expected at `^A-Za-z0-9...'"
+  argument list, no shell                : 2
+```
+
+**`$name[` is an array subscript in zsh**, so `$name[^A-Za-z0-9_]` is parsed as a subscript and
+evaluated as arithmetic. The command dies, the error goes to stderr, the count goes to stdout, and
+a loop capturing only the count sees a tidy column of zeros. It was found by running exactly that
+loop, and it produced `0` for `IAmACommandStoreAsync` — **the positive control, silently**.
+
+**`design.md` §4.3's literal form has no `$` in it and is immune, which is why this survived the
+design review.** The trap lives in the *parameterised* form, and the parameterised form is the only
+one anybody can run 819 times. `triagerun.py` opens no shell for that reason: every query is a
+`subprocess` argument list. This is the third word-boundary-shaped trap and the second one whose
+victim was the control rather than the data.
+
+### The controls, printed on every run *(task 2.4)*
+
+```text
+  OK   positive IAmACommandStoreAsync    want EXISTED, REMOVED  got EXISTED, REMOVED  [ 0p    0s  s1  4/0  s2 2/0  live   0/0 ]
+         brighter history: -        private readonly IAmACommandStoreAsync _commandStore;
+  OK   negative IAmAMessageScheduler     want LIVE              got LIVE              [ 0p    0s  s1 10/0  s2 9/0  live 102/0 ]
+         brighter history: …c)provider.GetRequiredService<IAmAMessageScheduler>());
+  OK   negative OrderId                  want NEVER EXISTED     got NEVER EXISTED     [31p  113s  s1  0/0  s2 0/0  live   0/0 ]
+  OK   positive UseExternalInbox         want EXISTED, REMOVED  got EXISTED, REMOVED  [ 0p    0s  s1  2/0  s2 2/0  live   0/0 ]
+         brighter history: …ublic static IBrighterBuilder UseExternalInbox(
+  can they fail? the 4 controls require 3 DISTINCT verdicts: EXISTED, REMOVED, LIVE, NEVER EXISTED
+  OK   plant      IAmACommandStoreAsync    absent from the census…: True
+  OK   plant      UseExternalInbox         absent from the census…: True
+```
+
+They are **asserted before any row is written** and the run exits 2 if any fails, so a checkpoint
+cannot fill up with rows from an instrument nobody checked.
+
+**Friction 44 — can each control pass at all — is checked two ways rather than assumed.** A stuck
+classifier would satisfy one control and fail the others, so the four required verdicts must come
+out **three distinct values**; and each planted name is verified **absent from the census**, because
+a plant that had drifted into the corpus would be testing the corpus rather than the mechanism.
+Both checks print their own answer rather than being conditions in a comment.
+
+### The runner reproduces the design's hand-run pilot *(task 2.2)*
+
+Four names overlap between `design.md` §10.5's stage-2 table and a 60-name pilot run here. **All
+four agree on both products' commit counts**, which is what says the runner executes the method the
+design measured rather than a near relative of it:
+
+| Name | `design.md` §10.5 B/D | `triagerun.py` B/D | |
+|---|---:|---:|---|
+| `Date` | 5 / 0 | **5 / 0** | agree |
+| `AddHours` | 2 / 0 | **2 / 0** | agree |
+| `Repository` | 7 / 3 | **7 / 3** | agree |
+| `BuildServiceProvider` | 0 / 4 | **0 / 4** | agree |
+
+The design's pilot ran at `origin/master` and this one at the pin. **That is not an independent
+check of the pin** — the two refs are one commit apart, and friction 43 applies: a number that
+survives a change is not evidence that nothing changed.
+
+### The measured cost, per name and per product *(task 2.6)*
+
+Phase 3's budget derives from these and not from `design.md` §5, which is an inherited number.
+Raw per-stage, both products, measured at the pin:
+
+| Stage | Brighter | Darker | Both |
+|---|---:|---:|---:|
+| 1 — plain `-S` | 0.48s | 0.04s | **0.52s** |
+| 2 — bracket class | 5.6s | 0.14s | **5.75s** |
+| live — `grep -lwF`, per ref | 0.06s | 0.04s | 0.10s |
+
+**Darker costs a fortieth of Brighter and the design charged it the same.** `design.md` §5 budgets
+stage 2 at `99 × 2 × 5.4s ≈ 18 min`; the measured figure is `99 × 5.75s ≈ 9.5 min`.
+
+End to end as the runner actually executes it — including the live query at **all four refs**,
+which the design costed at nothing — over a 60-name pilot:
+
+| | Names | Per name |
+|---|---:|---:|
+| cleared by stage 1 | 47 | **0.66s** |
+| went on to stage 2 | 13 | **5.76s** |
+| **projected over the census** at §10.5's 720/99 split | 819 | ≈ **17.4 min** |
+
+**The 720/99 split is the design's measurement, not the pilot's**, and phase 3 re-derives it: the
+pilot takes the top 60 by page-spread and friction 45 says the head is unrepresentative of the tail
+by construction. Only the per-name costs are phase 2's to hand over.
+
+### The eight gates, reconciled *(task 2.5)*
+
+Predicted **none**, and the reason rather than the pass: this phase writes only under `spec/`,
+which is in `linkcheck`'s `SKIP_DIRS` (`tools/linkcheck.py:52`), and no other gate walks that
+directory at all. `git add -A` ran before the `--changed` pass so the strict run had a diff to see.
+
+| # | Gate | Predicted | Measured |
+|---:|---|---|---|
+| 1 | `linkcheck` | none | **unmoved** at `tools/README.md`'s figure |
+| 2 | `pagelint` | none; `--changed` 0 errors | **unmoved**, `--changed` clean |
+| 3 | shape | none | **unmoved** |
+| 4 | redirects | none | **unmoved** |
+| 5 | `versioncheck` | none | **unmoved** |
+| 6 | `optioncheck` | none | **unmoved** |
+| 7 | `--verify` | none | **unmoved** |
+| 8 | `symbolcheck` | none | **unmoved** |
+
+**Eight predicted, eight measured, nothing moved.** Unlike phase 1 this green needs no suspicion:
+phase 1 edited a file inside `linkcheck`'s walk and had to argue from mechanism, while this phase
+edits nothing any gate opens. **No figure in `tools/README.md` changed**, so constraint 10 and
+obligation 10 are not engaged.
+
+### Phase 2 as executed — what the list did not predict
+
+**1. `git log` and `git grep` disagree about what exit 1 means, and the runner's first run stopped
+on it.** `git grep` exits **1 for no matches** — the live query's commonest and most informative
+answer — while `git log` exits 0 whether or not the pickaxe matched, so 1 from it is a real
+failure. One set of accepted codes for both either swallows a broken `log` or refuses every absent
+name, **and an absent name is what this method exists to find**. The check is per command. It is
+recorded here rather than quietly fixed because it failed in the safe direction — it refused to
+classify anything — and the unsafe version of the same bug reads every failed query as `0` and
+calls the whole census NEVER EXISTED.
+
+**2. The pickaxe reads string literals; the census does not.** `strip_noncode()` takes comments and
+strings out of the *documentation* side before a token is nominated, and nothing does that on the
+*history* side. **20 of `Date`'s 26 whole-word history occurrences carry a quote on the line** —
+`[DynamoDBHashKey("Command+Date")]`, `AttributeName = "Topic+Date"`. So `EXISTED, REMOVED` has a
+**third** reading beyond the two `design.md` §10.6 names: *this name was once a substring of a
+string literal in the product's source*. `triage.md` §1.2 carries it.
+
+**3. `head -1` on the evidence is how a provisional verdict hardens into a wrong reason.**
+`design.md` §10.6 read the seven head survivors with `… | head -1`. On `Date` that line is
+`Get<T>(DateTime date, …)`, a parameter name, and the table concludes *Own API? no*. The full set
+of 26 also holds `-        public DateTime Date { get; set; }` — a **public property of
+`DynamoDbMessage`** in `src/Paramore.Brighter.Outbox.DynamoDB/`, removed in 2019.
+
+> **This does not overturn the verdict on `Date`. It overturns the reason**, and under a
+> three-valued vocabulary the reason *is* the verdict. `Date` clears because the documentation's
+> `Date` is a token of its own example domain — **not** because Brighter never had a public `Date`.
+> Brighter did.
+
+The runner's own first draft kept **four** evidence lines and would have repeated the defect at
+scale; it now keeps up to 40 distinct lines per name per product, with the `dotted`/`bare` totals
+taken over *all* matches beside them so a reader can see whether they have the whole set. **Phase 3
+reads the set, never its first line.**
+
+**4. Stage 2.5's dot evidence discriminates — and `Date` shows why it must never be a filter.**
+Measured: `AddHours` 2 dotted / 0 bare and `BuildServiceProvider` 8 / 0, both pure calls on somebody
+else's type; the plant `IAmACommandStoreAsync` 0 / 4, pure declaration position. The design
+predicted exactly that. But `Date` comes out **0 dotted / 26 bare**, which reads as
+declaration-shaped, and most of those 26 are inside string literals; and `Repository` comes out
+**64 / 64**, precisely ambiguous. **Two of the four names the tell was supposed to help with are
+names it would have misled on.** Printed for the person, never applied — as `design.md` §4.4 §3
+required before any of this was measured.
+
+**Three candidate frictions for phase 5, which now numbers from 46**: the zsh subscript zero, the
+two-commands-two-meanings-of-exit-1 case, and evidence truncation as a source of right-answers-with-
+wrong-reasons. Phase 5 decides how they are numbered; all three are recorded in full above.
+
+**What shipped:** `spec/015-census_triage/triage.md` §§1–4 — three verdicts, four stages, the query
+forms with both traps, and an **exhaustive** stopping condition — and
+`spec/015-census_triage/probe/triagerun.py`, checkpointed per row with `--controls-only`,
+`--query-forms`, `--limit`, `--names`, `--restart` and `--report`. **No checkpoint is committed**:
+the record over all 819 is phase 3's deliverable, and this phase's pilots were written to scratch
+so that phase 3's first run is a real run.
