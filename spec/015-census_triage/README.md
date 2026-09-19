@@ -1,8 +1,8 @@
 # Spec 015: Census Triage
 
 **Created:** 2026-09-17
-**Status:** **Writing complete, 41 of 41, 2026-09-19 — the acceptance walk is read and
-`.accepted` is the maintainer's to create.**
+**Status:** **ACCEPTED — 41 of 41, 2026-09-19. The acceptance walk was read and `.accepted`
+exists.**
 
 > **Read `requirements.md` and `tasks.md`, not this file, on every content claim.** This README was
 > written before anyone looked; its figures are 2026-09-17's, its acceptance criteria are a first
@@ -242,8 +242,10 @@ Read `requirements.md` for anything this section touches.
       `tools/README.md`'s figures. The three uninstrumented criteria were walked **first** and
       produced two of the three repairs; the third came out of reconciling AC9 against the file
       that owns the gate figures
-- [x] Spec closed — 2026-09-19, at 41 of 41. **`.accepted` is the maintainer's to create**, after
-      the walk is read
+- [x] Spec closed — 2026-09-19, at 41 of 41, and **accepted the same day**: the maintainer read
+      the walk and `.accepted` exists. `spec/.current-spec` **stays** at `015-census_triage` until
+      a 016 directory exists — repointing it at a directory that does not exist breaks
+      `/spec:status` and `/spec:switch`
 
 ## What 015 shipped
 
