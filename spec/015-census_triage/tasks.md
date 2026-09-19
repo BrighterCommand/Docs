@@ -616,7 +616,7 @@ the close. **Changes no published page.**
     found by re-derivation at the top of this list, not by any gate — and the twelve names were
     found by a design measuring something it had been told to skip
 
-- [ ] **Task 5.5:** Write the friction ledger, from 46
+- [x] **Task 5.5:** Write the friction ledger, from 46
   - Input: this spec's phases; the ledger stands at **45**, with 41–42 in `requirements.md` and
     43–45 in `design.md`
   - Output: a § *Workflow friction* section in this file, numbered from **46**, contiguous
@@ -2570,3 +2570,95 @@ more from a control catching the thing that was supposed to be doing the checkin
 an argument against instruments; it is the measurement behind standing obligation 1. Every one of
 defects 14, 15, 23, 24, 25, 27, 28 and 29 is a **green thing that was wrong**, and each was found by
 somebody asking what the green meant rather than whether it was there.
+
+---
+
+## Workflow friction
+
+**Task 5.5. The ledger stands at 45 and 015's entries are 46 to 51.** Re-derived rather than
+inherited from any header — the count in `PROMPT.md` said 39 while its own body cited a friction 40,
+for two sessions:
+
+```bash
+# every numbered friction entry across the specs, with its source spec and gaps
+grep -rhoE '^(\*\*)?[0-9]{1,2}\. ' spec/*/*.md | sort -un
+#   contiguous 15 → 42, no gaps; 43, 44 and 45 are `design.md`'s, written `**43. …**`
+```
+
+**Two enumerations agree on 45**: the contiguity scan above, and the three entries
+`spec/015-census_triage/design.md` adds at §13 (43 *a number that survives a change*, 44 *a control
+that cannot pass*, 45 *page-spread ordering buries what it was chosen to surface*). Entries 1–14
+predate the `spec/` tree and are not re-derivable from it; the high-water mark is what matters here
+and it is **45**.
+
+---
+
+**46. An instrument absorbs its own control the moment the change it was built to measure ships.**
+*Phase 1, three times in one afternoon.* The drift control in `design.md` §10.2 asks the probe's
+no-extra-filter path to reproduce the shipped tool; after P0-1 that is false **by design**, and read
+the old way it reports drift in a copy that has not drifted. AC1's own probe prints the **0
+removable** the criterion asks for and then fails `positive ConfigureBrighter caught`, because the
+shipped tool now removes that name before the probe sees it — **the control is unsatisfiable
+precisely because the criterion is met**. And §10.2's four-line shorthand, run verbatim, returns
+`2`: `census()` is a `(candidates, counts)` tuple, so the *harness of the control* was the broken
+thing while both the tool and the probe were fine.
+
+> This is **not** friction 44 again. 44 says *check that a control can pass at all*. 46 says **what
+> makes it stop being able to** — and therefore what to do: **re-anchor the pair, do not rewrite the
+> probe.** Neither probe was rewritten here, deliberately, because they are the evidence base for
+> figures an approved design was signed off on and a re-anchored probe no longer reproduces them.
+
+**47. An acceptance criterion whose corpus is a phrase gets whatever corpus the walker imagines.**
+*Phase 5, found by the next task.* AC10 reads *"no count in any document 015 ships is unanchored"*.
+The walk swept the five documents under `spec/015-census_triage/` — and 015 also ships
+`tools/symbolcheck.py`, `tools/symbolwatch.tsv` and **`tools/README.md`**, which is where the
+defect was. Task 5.2 found it eight minutes later while reconciling AC9, by reading a gate's output
+against the row that owns it. **The deliverables table had the list all along**; nothing connected
+it to the criterion, so the sweep defined its own corpus and then reported clean about it. **Write
+the corpus into the criterion, or the criterion is about whatever was convenient to read.**
+
+**48. A query form that is safe as a literal can be unsafe parameterised — and only the
+parameterised form is ever run at scale.** *Phase 2, plausible zero number nine.* `design.md`
+§4.3's stage-2 query is a single-quoted literal with no `$` in it, and it is correct; the same
+query with the name in a variable is **`$name[…]`, an array subscript in zsh**, which dies with a
+bad-math error on stderr and prints `0` to stdout. A loop capturing `$(…)` reads a tidy column of
+zeros, **including for the positive control**. The design review read the safe form and could not
+have seen it. **Review the form that will be run, not the form that was written down** — and build
+queries as `subprocess` argument lists, which is what `triagerun.py` does.
+
+**49. An exit code is a property of the command, not of the runner.** *Phase 2.* `git grep` exits
+**1 for no matches** — the live query's commonest and most informative answer — while `git log`
+exits 0 whether or not the pickaxe matched, so a 1 from it is a real failure. A runner with one
+accepted set for both either swallows a broken `log` or refuses every absent name, **and an absent
+name is what the method exists to find**. It failed in the safe direction here; the same bug
+written the other way reads every failed query as `0` and calls the whole census NEVER EXISTED.
+
+**50. Truncated evidence produces right answers with wrong reasons — and where the reason is the
+verdict, a wrong reason is a wrong verdict that has not surfaced yet.** *Phase 2, from re-deriving
+the design's own table.* `design.md` §10.6 read the head survivors with `… | head -1`. On `Date`
+that first line is `Get<T>(DateTime date, …)`, a parameter name, and the table concludes *Own API?
+no*. The full set of 26 also holds `- public DateTime Date { get; set; }`, a public property of
+`DynamoDbMessage` removed in 2019. The verdict on `Date` survives; **the reason does not**, and
+under a three-valued vocabulary the reason is what the row asserts. The runner's own first draft
+kept four evidence lines and would have shipped the defect 819 times.
+
+**51. The unit of a repair is the block, not the site.** *Phase 4, and it changed how the phase was
+worked.* The task list reads as twenty-eight lines to remove. It is not: AC12 puts an **edited
+block** in strict scope, so deleting `options.UseScoped = true;` leaves the rest of the block to be
+made to compile — and every one of the fifteen edited blocks needed more than its site removed, four
+of them a defect no census could see. **A spec that budgets a repair pass by sites has costed the
+wrong unit**, and the ratio here was 28 sites to 15 blocks to roughly four hours of compiler work.
+
+---
+
+**And one entry that is deliberately *not* a new number: friction 32 recurred, in the file most
+exposed to it.** *"A rationale sentence that quotes a measurement in the present tense outlives the
+measurement"* was raised in 014 against `CLAUDE.md`, repaired there, and its stated remedy — **a
+measurement inside a rationale needs the ref it was taken at, exactly as a gate number does** —
+was applied to `CLAUDE.md` and **not** to `tools/README.md`, which is the file that owns every gate
+number in the repository. Phase 4 moved `pagelint`'s count, updated the row and the paragraph
+introducing it, and left a third paragraph asserting the old figure in the present tense.
+
+> **A friction repaired where it was found is not repaired.** The next ledger entry that names a
+> class of defect should say which files the class applies to, because *"this applies to
+> `CLAUDE.md`"* is how 32 came back.
