@@ -1,8 +1,11 @@
 # Spec 015: Census Triage — Requirements
 
 **Created:** 2026-09-17
-**Status:** Reviewed 2026-09-18 — **six open questions ruled**, two acceptance criteria repaired at
-the review. Awaiting `.requirements-approved`.
+**Status:** **APPROVED 2026-09-18** — `.requirements-approved`. Reviewed 2026-09-18 — **six open
+questions ruled**, two acceptance criteria repaired at the review.
+**AMENDED 2026-09-18 at the tasks review**, at the maintainer's instruction: **AC11 and P0-6**, plus
+two places found beside them, still named the slice Q2's reversal abolished. The prior wording and
+the reason are recorded in § *What AC11 and P0-6 said before the tasks review*.
 
 > **Two rulings overturned this document's own recommendation and both change what gets built:**
 > **Q4 — confirmed-dead names are repaired in 015, not listed for later**, and **Q6 — `--census`
@@ -199,8 +202,9 @@ The probe is preserved **as evidence against adopting it**, in `probe/` and deli
 1. `--census` no longer reports a page's own helper methods as unresolved APIs, and **prints the
    SHA of every ref it resolved** — including the **pinned** head refs (Q6), so any figure it
    produces can be reproduced later by anyone with the same two checkouts.
-2. A **written triage method** exists, with a stated **stopping condition** and a stated **slice**.
-3. That method has been **executed once** over a bounded slice, and its verdicts are recorded per
+2. A **written triage method** exists, with a stated **stopping condition** — which after Q2's
+   reversal is **exhaustion**, not a slice boundary.
+3. That method has been **executed once over the whole census**, and its verdicts are recorded per
    name with the evidence and the control behind each.
 4. Names confirmed dead are `symbolwatch.tsv` rows — 014's machinery, unchanged — or carry a
    written reason they are not.
@@ -235,10 +239,10 @@ during P0-6**, which Q4 added and which is the only part of 015 that writes to t
 |---|---|---|
 | **P0-1** | **Restore the page-declared-member filter to `--census`**, at the candidates stage, with two-way controls whose positive case sits outside the enumeration (friction 36). Predict the movement before the change | `--census`; `probe/methodprobe.py` |
 | **P0-2** | **`--census` pins its head refs and prints every resolved SHA** — the SHAs, not the ref names — in its header, so any figure it produces is reproducible later. **Census path only**: `PRODUCT_REFS` is shared with the gate, and the gate keeps following `origin/master` | the header's SHAs against `git rev-parse`, four of four |
-| **P0-3** | **The triage method, written down**, with its slice, its per-name evidence requirement, and its **stopping condition** | no instrument — read |
+| **P0-3** | **The triage method, written down**, with its **corpus** — the whole census, after Q2 — its per-name evidence requirement, and its **stopping condition** | no instrument — read |
 | **P0-4** | **Execute it over the WHOLE census** — every candidate P0-1 leaves, not a slice (Q2, reversed). Ordered by page-spread, because that ordering is what has found something before | the triage record; `wc -l` against the count `--census` reports |
 | **P0-5** | **Every confirmed-dead name becomes a `symbolwatch.tsv` row or carries a written reason it does not** | `--verify-list`; row count moves by the number added |
-| **P0-6** | **Repair the pages carrying a confirmed-dead name** (Q4), bounded by what P0-4 finds in the ≥3-page slice. A repaired C# block enters `pagelint` rule 6 **strict scope** under `--changed`, so it needs its `using` directives or a declared `// ...` omission, and it **compiles against the released packages** before it ships | `pagelint --changed origin/master`; a build of each repaired block; `symbolcheck` |
+| **P0-6** | **Repair the pages carrying a confirmed-dead name** (Q4), bounded by what P0-4 confirms **across the whole census** — amended at the tasks review 2026-09-18, because the ≥3-page slice this line used to name contains **no** Brighter API and would have bounded P0-6 to nothing. A repaired C# block enters `pagelint` rule 6 **strict scope** under `--changed`, so it needs its `using` directives or a declared `// ...` omission, and it **compiles against the released packages** before it ships | `pagelint --changed origin/master`; a build of each repaired block; `symbolcheck` |
 
 **P0-4's corpus after P0-1's filter is the whole census.** The bands below are kept because they
 are the **ordering** the triage walks and the shape of the work, not a scope boundary any more —
@@ -352,16 +356,44 @@ unmarked criterion below is a declared risk.
 | **AC8** | What 015 did **not** triage is stated as a number with its boundary. **Q2's reversal did not retire this criterion, it moved it**: the untriaged set is no longer the tail but the surfaces the census never reaches — the **110** names P0-1's filter removes as page-declared members, the tokens `NOISE_EXACT` and `NOISE_PREFIX` drop, and the **prose** surface D12 ruled unusable | `grep` for each figure in `tasks.md`; each must carry its own command |
 | **AC9** | The eight gates are at `tools/README.md`'s figures, or moved on purpose with that file changed and nowhere else | the eight commands in `tools/README.md` |
 | **AC10** | No count in any document 015 ships is unanchored | *no instrument — read.* 014 found **three** unanchored counts in `CLAUDE.md`; 015 quotes more numbers than 014 did |
-| **AC11** | Every confirmed-dead name in the slice is **gone from `contents/`**, or its remaining sites carry a written opt-out (P0-6) | `grep -rn '<name>' contents/` per name, against the triage record; `symbolcheck` prints the opt-out count, and *0 findings, N silenced* is a different claim from *0 findings* |
+| **AC11** | Every confirmed-dead name — **all of them, not a slice** (Q2, reversed; amended at the tasks review 2026-09-18) — is **gone from `contents/`**, or its remaining sites carry a written opt-out (P0-6) | `grep -rn '<name>' contents/` per name, against the triage record; `symbolcheck` prints the opt-out count, and *0 findings, N silenced* is a different claim from *0 findings* |
 | **AC12** | Every C# block P0-6 edited **builds against the released packages**, and any block left deliberately incomplete says so with `// ...` | the build, per block; `python3 tools/pagelint.py --changed origin/master` at **0 errors** — rule 6 is error-level on a block the diff touches |
 
 **On AC1's phrasing:** it says *contains no* rather than *ends with* or *is clean*, because what is
 being tested is a property of the whole list. 013's AC7 said a guide *"ends with"* a verification
 step where it meant *"contains"* one, and that is the failure this wording avoids.
 
-**On AC5 not being "a file exists":** the row count is checked against a slice count derived from
-the tool, so something consumes the artefact. 013's AC8 was checked by a row count in
+**On AC5 not being "a file exists":** the row count is checked against the candidate count the tool
+itself reports, so something consumes the artefact. 013's AC8 was checked by a row count in
 `pagetypes.tsv` that nothing read, which made it unmarked in practice.
+
+### What AC11 and P0-6 said before the tasks review, and why they changed
+
+**Recorded before it was fixed** — standing obligation 2 — and amended 2026-09-18 at the tasks
+review, at the maintainer's instruction.
+
+Q2's reversal abolished the slice, and AC5, AC8 and the *Out of scope* section were all amended for
+it at the design review. **Four places were not**, and they read as live constraints rather than as
+survivals:
+
+| Where | Said | Now |
+|---|---|---|
+| **AC11** | *"Every confirmed-dead name **in the slice**"* | every confirmed-dead name |
+| **P0-6** | *"bounded by what P0-4 finds in the **≥3-page slice**"* | bounded by what P0-4 confirms across the whole census |
+| **Target state 2 and 3** | *"a stated **slice**"*, *"over a **bounded slice**"* | exhaustion as the stopping condition; the whole census |
+| **The note under AC5** | *"checked against a **slice count**"* | checked against the count the tool reports |
+
+**P0-6's was the one that mattered, and it is not a wording defect.** The ≥3-page slice contains
+**no Brighter API** — `design.md` §10.6 read all seven of its survivors and all seven are *uses* of
+somebody else's names. A P0-6 bounded by that slice is a P0-6 bounded to **nothing**, and it would
+have been satisfiable by doing no repair at all while the twelve dead APIs stayed on
+`ShowMeTheCode.md` and `BrighterBasicConfiguration.md`.
+
+> **An amendment that lands in some places and not others leaves the unamended ones looking
+> deliberate.** Q2 was reversed in the two criteria a reader checks first and left standing in the
+> scope row that decides what gets built. This is [friction 45](#workflow-friction)'s shape one
+> level up: the slice was not merely the wrong place to *look*, it survived as the wrong place to
+> *stop*.
 
 ### What AC2 and AC3 said before the review, and why they changed
 
@@ -489,7 +521,8 @@ practical line the recommendation drew — *repair what needs no fence edited, l
 
 **This is 014's ruling 7 applied at the scale of a spec** — *a defect found beside a repair gets
 repaired* — and it is the ruling that gives 015 a reader on the other end. It also makes P0-6 the
-only unbounded item here, which is why it is bounded by P0-4's slice and by nothing else.
+only unbounded item here, which is why it is bounded by **what P0-4 confirms** and by nothing else —
+a set, not a slice, once Q2 was reversed.
 
 **5. How does `--census` become reproducible, given it reads two moving `origin/master` refs?**
 *Recommendation:* **print the resolved SHAs in the header** (P0-2). The report already prints
