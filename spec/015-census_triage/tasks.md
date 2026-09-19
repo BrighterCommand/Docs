@@ -583,7 +583,7 @@ loses the only proof the rows do anything.
 **Branch:** `spec/015-phase5-acceptance`. **Goal:** the walk, the backwards check, both ledgers and
 the close. **Changes no published page.**
 
-- [ ] **Task 5.1:** Walk the criteria with **no instrument** first — AC4, AC6, AC10
+- [x] **Task 5.1:** Walk the criteria with **no instrument** first — AC4, AC6, AC10
   - Input: `requirements.md` § *Acceptance criteria*; `triage.md`; every document 015 ships
   - Output: a § *Acceptance walk* section, three entries, each naming who read what and what they
     found
@@ -2056,3 +2056,154 @@ phase that edits no page; what it *can* do is be quoted wrongly. Phase 4 took it
 down, so this is the first phase in 015 that inherits a figure which moved during the spec, and a
 walk that reproduces it from memory rather than from `tools/README.md` would be reporting a number
 that was true a phase ago. That is the failure AC10 is pointed at, arriving through the gate table.
+
+---
+
+## Acceptance walk
+
+**Walked 2026-09-19 on `spec/015-phase5-acceptance`.** The three unmarked criteria are below, first
+and on their own, before any instrument was run — that ordering is task 5.1's whole point, and it is
+the ordering that found something.
+
+### AC4, AC6 and AC10 — the three with no instrument *(task 5.1)*
+
+**Read by:** the author of this phase, against `triage.md` end to end, `stage3.tsv`'s 65 lines,
+`requirements.md` § *Acceptance criteria*, and a scripted sweep of every numeric claim outside a
+fenced block in all five documents 015 ships.
+
+---
+
+**AC4 — *the triage method is written down and names its stopping condition*. MET, and the
+condition is the stronger of the two available.**
+
+`triage.md` §4 states it in a blockquote before it argues for it: *"the method stops when
+every name in the census has a verdict"* — exhaustion, not a budget and not a run-length rule.
+Three things make it a real stopping condition rather than a sentence satisfying a criterion:
+
+- **It names what it rejected and why.** *"Stop after 20 consecutive NEVER EXISTED"* was drafted and
+  refused, on a measured property of this corpus: page-spread ordering ranks the documentation's own
+  invented domain highest and dead product surface lowest, so **any run-length rule stops before the
+  part of the list most likely to hold a real name**. Phase 3 then proved the point — the head
+  contains no Brighter API and the 1–2 page tail holds all seventeen.
+- **It bounds itself.** §4.1 states what sits *outside* "every name" — page-declared members, the
+  noise sets, prose, and anything under `TOKEN_RE`'s four-character floor — so the condition
+  inherits the census's boundaries rather than implying it swept more than it did.
+- **It was executed to exhaustion and the record proves it, not the prose.** 819 rows against 819
+  candidates, checked by a generator that refuses to emit when the two disagree.
+
+**What a reader should distrust:** nothing found. The one thing worth saying is that AC4 was always
+the likeliest of the three to pass, because it asks for a sentence to exist and the sentence is the
+deliverable's own §4.
+
+---
+
+**AC6 — *each verdict cites evidence and a control*. MET, and the controls were re-measured rather
+than read.**
+
+This is the criterion the requirements name as the one that fails quietly, so reading it was not
+enough. The walk did three things:
+
+**1. Counted, at the structural level.** 44 stage-3 entries in `triage.md` §5.3, 44 `**Ruling:**`
+lines, 44 `**Control:**` lines — no entry is missing either half:
+
+```bash
+grep -c '^#### ' spec/015-census_triage/triage.md        # 44
+grep -c '^\*\*Ruling:\*\*'  spec/015-census_triage/triage.md   # 44
+grep -c '^\*\*Control:\*\*' spec/015-census_triage/triage.md   # 44
+```
+
+**2. Read all 44 control lines for whether they discriminate.** They are of three kinds, and none of
+them is an adjective: *the plant, read in the same run* (a declaration against a call — `Date`,
+`AddHours`, `DbParameter`); *a named sibling measured live* (`HandlerLifetime` against
+`CommandProcessorLifetime`, `UseOutboxSweeper` against `UseMsSqlOutbox`, `S3LuggageOptions` against
+`S3LuggageStoreCreation`); and *the honest admission that the counts do not discriminate*, on
+`Repository` at 64 dotted / 64 bare, where the ruling says so and rests on the lines instead. **The
+third kind is the one that shows the criterion was taken seriously**: a control that reports its own
+inability to decide is worth more than one that quietly agrees.
+
+**3. Re-measured seven of the control figures at the pin, and re-checked all seventeen `SURFACE`
+names against all four refs.** The controls are claims about the world and this walk does not
+inherit them:
+
+```bash
+for n in IAmABoxTransactionProvider UseOutboxSweeper MediaTypeNames ContentType \
+         S3LuggageOptions HandlerLifetime NoExternalBus; do
+  git -C ../Brighter grep -lwF -- "$n" 09f5d988f -- 'src/*.cs' | wc -l   # pin
+  git -C ../Brighter grep -lwF -- "$n" c1b8af886 -- 'src/*.cs' | wc -l   # 10.7.0
+done
+```
+
+| Control name | Cited in the rulings | Measured at the pin | At `10.7.0` |
+|---|---:|---:|---:|
+| `IAmABoxTransactionProvider` | 26 | **26** | 26 |
+| `MediaTypeNames` | 27 | **27** | 27 |
+| `ContentType` | 67 | **67** | 67 |
+| `S3LuggageOptions` | 4 | **4** | 4 |
+| `HandlerLifetime` | 2 | **2** | 2 |
+| `NoExternalBus` | 2 | **2** | 2 |
+| `UseOutboxSweeper` | 1 | **1** | 1 |
+
+**Seven of seven reproduce**, and the negative half reproduces too: all **17** `SURFACE` names
+return **0 files at every one of the four refs** — `../Brighter` `09f5d988f` and `c1b8af886`,
+`../Darker` `2f76cda` and `ddb71ee`. A control that is live where the ruled-dead name is absent, in
+the same query at the same ref, is a control that could have failed.
+
+**The judgement AC6 turns on, stated rather than buried:** the 775 rows that never reached a person
+carry **their own counts as evidence** and share **the run's four controls** rather than each
+carrying one of their own. `triage.md` §5.1 argues for that and the walk agrees with it — every one
+of those rows was produced by one invocation of one instrument, so a per-row control would be the
+same instrument tested 819 times. What makes it honest is that the four controls demand **three
+distinct verdicts** between them, so a classifier stuck on any single value fails them, and both
+plants are checked absent from the census on every run.
+
+---
+
+**AC10 — *no count in any document 015 ships is unanchored*. MET AFTER TWO REPAIRS, and both were
+found here rather than by any gate.**
+
+**How it was walked.** Every line outside a fenced block carrying a two-or-more digit figure, in all
+five documents, extracted and read — 509 lines:
+
+```bash
+python3 - <<'PY'   # per file: lines with a bare figure, fences excluded
+import re
+for f in ['requirements.md','design.md','tasks.md','triage.md','README.md']:
+    inf=False; n=0
+    for l in open('spec/015-census_triage/'+f):
+        if l.startswith('```'): inf=not inf; continue
+        if not inf and re.search(r'(?<![\w.#-])\d{2,}(?![\w.-])', l): n+=1
+    print(f, n)
+PY
+# requirements.md 104 · design.md 78 · tasks.md 239 · triage.md 36 · README.md 52
+```
+
+**Finding 1 — the fifth survival of the abolished slice, in `design.md` §5.** *"P0-4's deliverable
+is `triage.md`: one row per name in the slice — **103 rows**"*, two lines below *"AC5 requires a row
+for all 819"*. Q2 was reversed at that design's own review and §2, §5's boxes and §9 were amended;
+this sentence was not. **Repaired in place with the original struck through and the reason recorded**
+— which is the treatment `requirements.md` got for its four, and the reason the count is worth
+stating as *four plus one* rather than as five: the tasks review found four and thought it had
+finished.
+
+**Finding 2 — `757` is a gate figure that moved during this spec, quoted bare in nine places.** It
+is `pagelint`'s using-directive warning count; phase 4 took it to 744, `tools/README.md` records
+both with their refs, and obligation 10 forbids either number appearing anywhere else. Nine
+occurrences across five documents, none carrying a ref or a command:
+
+| Where | What it is | Ruling |
+|---|---|---|
+| `triage.md`:72 | a **present-tense claim in a shipped deliverable** — *"the 757 using-directive blocks sit on"* that boundary | **Repaired.** Now cites `tools/README.md` and names the figure as one that fell during this spec |
+| `requirements.md`:289, 293 · `design.md`:741 | a **dated prediction** — *"expect the repo-wide 757 to fall by a small number and say which blocks moved it"* | **Left.** The prediction came true and phase 4 named the thirteen blocks. Rewriting a prediction after the fact destroys the only evidence that it was made |
+| `tasks.md`:634, 645 · `requirements.md`:193 · `design.md`:711 · `README.md`:137 | the **approved plan and its arguments**, all written before phase 4 ran | **Left.** They are dated statements of what was planned and what was true then; amending them would make the task list disagree with the list that was approved |
+
+**The rule this walk applies, and it is the one worth carrying forward:** a figure in a *prediction*
+or in an *approved plan* is anchored by its date and must not be updated; a figure in a **present-
+tense claim in a deliverable** must carry its ref or cite the file that owns it. Only one of the
+nine was the second kind, and it was the only one repaired.
+
+**What AC10 could not check, and nobody should read it as having checked.** The sweep finds figures
+that lack an anchor. It cannot find a figure that carries an anchor and is wrong — `triage.md`
+§5.2's line references into `MessageMappers.md` (sites at 41, 94, 104, 112, 116; the replacement at
+132) were true when phase 3 wrote them and are stale now that phase 4 has repaired the page. They
+are **anchored** — §5 opens *"Written 2026-09-19, phase 3"* — and left, because a record of what was
+found is supposed to describe the world it was found in.

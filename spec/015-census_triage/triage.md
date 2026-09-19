@@ -69,8 +69,9 @@ One is a call on somebody else's type; the other is a type in declaration positi
 REMOVED` therefore means *this name left the product's source*, never *the product removed this
 API*** — and the second claim is the one a watchlist row makes. Promoting the first to the second
 is stage 3's job and stage 3 is a person, by construction rather than by under-investment: the
-boundary here is the one D12 drew and the 757 using-directive blocks sit on. **Only a compiler
-resolves a reference.**
+boundary here is the one D12 drew and the using-directive blocks sit on — `tools/README.md` owns
+that count, which **fell during this spec** and is therefore the one figure here nobody should
+carry in their head. **Only a compiler resolves a reference.**
 
 **Do not let the provisional verdict harden by being written down.** Every row phase 3 emits
 carries the verdict *and* the evidence it was taken from, so a later reader can see which of the
