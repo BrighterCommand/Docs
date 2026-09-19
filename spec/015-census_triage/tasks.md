@@ -515,7 +515,7 @@ loses the only proof the rows do anything.
     control and task 4.9's green run is the other**; neither half means anything alone, because a
     gate that has never been red and a gate that is still red are both uninformative
 
-- [ ] **Task 4.4:** Repair the two starting pages
+- [x] **Task 4.4:** Repair the two starting pages
   - Input: task 4.3's site list for `ShowMeTheCode.md` and `BrighterBasicConfiguration.md`;
     `../Brighter/samples/` for the V10 form of whatever the dead call did; `CLAUDE.md`'s
     version-marker and complete-code-block conventions
@@ -525,7 +525,7 @@ loses the only proof the rows do anything.
     here; phase 3 may add more. **Change nothing else about the page** — no banner, no page type, no
     opening sentence; a triage repair that reorganises a page cannot be reviewed as a triage repair
 
-- [ ] **Task 4.5:** Repair the outbox and sweeper family
+- [x] **Task 4.5:** Repair the outbox and sweeper family
   - Input: task 4.3's site list for `SweeperCircuitBreaking.md`, `UsingSweeperCircuitBreaking.md`,
     `DapperOutbox.md`, `DynamoOutbox.md`, `S3LuggageStore.md`
   - Output: the named fenced sites gone from all five pages, `using` directives carried
@@ -533,14 +533,14 @@ loses the only proof the rows do anything.
     misspelling of a name that was itself removed — record which of the two defects it is before
     repairing it, because they are different findings
 
-- [ ] **Task 4.6:** Repair `DispatchingARequest.md` and `FeatureSwitches.md`
+- [x] **Task 4.6:** Repair `DispatchingARequest.md` and `FeatureSwitches.md`
   - Input: task 4.3's site list for both; `IUnitOfWork` and `NoTaskQueues` are the design's names
   - Output: the named fenced sites gone from both pages, `using` directives carried
   - Notes: `FeatureSwitches.md` is one of the five pages carrying 011's unresolved Darker exclusion
     claim. **Do not touch that claim here** — it is blocked on Darker source ahead of the deployed
     release and is not this spec's to rule on
 
-- [ ] **Task 4.7:** Rule on the four prose sites — rewrite or opt out
+- [x] **Task 4.7:** Rule on the four prose sites — rewrite or opt out
   - Input: `SweeperCircuitBreaking.md:230,232,234` (a bulleted list of provider methods) and
     `S3LuggageStore.md:38`; ruling 6 and ruling 4
   - Output: each prose site either rewritten or carrying a `<!-- symbolcheck: allow <name> -->`
@@ -549,7 +549,7 @@ loses the only proof the rows do anything.
     claims and only one of them is true. `DispatcherConfigurationReference.md`'s `UseExternalInbox`
     is the existing precedent
 
-- [ ] **Task 4.8:** Build every edited block against the **released** packages
+- [x] **Task 4.8:** Build every edited block against the **released** packages
   - Input: each block task 4.4–4.6 touched; `CLAUDE.md` § *Compiling an example, and against what*
   - Output: in § *Phase 4 as executed*, a per-block build result — the scratch project's package
     references and the build output — and `python3 tools/pagelint.py --changed origin/master` at
@@ -559,7 +559,7 @@ loses the only proof the rows do anything.
     before the `--changed` run or the strict pass sees nothing. A block whose omission is genuine
     says `// ...` and is downgraded to a counted warning, not silenced
 
-- [ ] **Task 4.9:** Re-run the eight gates, reconcile, and update `tools/README.md`
+- [x] **Task 4.9:** Re-run the eight gates, reconcile, and update `tools/README.md`
   - Input: `tools/README.md`'s table, `design.md` §11
   - Output: the predicted-against-measured table in § *Phase 4 as executed*, and the `symbolcheck`
     row in `tools/README.md` updated to the new entry count — **that file and nowhere else**
@@ -569,7 +569,7 @@ loses the only proof the rows do anything.
     drops for unexplained reasons stops meaning anything. `--verify-list` must stay at 0 findings
     with every new row DEAD at both refs of its product
 
-- [ ] **Task 4.10:** Write § *Phase 4 as executed*, and ask for the merge
+- [x] **Task 4.10:** Write § *Phase 4 as executed*, and ask for the merge
   - Input: tasks 4.3 to 4.9
   - Output: a section in this file carrying the red run, the repairs by page, the per-block build
     results, the gate reconciliation — and, separately, the merge ask naming the branch to delete
@@ -1850,3 +1850,169 @@ rather than wrong.
 **And the silenced line is still there and still says 1.** *0 findings* and *0 findings, 1 silenced*
 are different claims; so are *28 sites* and *28 sites, 1 silenced*. The green run at task 4.9 is the
 other half of this control.
+
+### The repairs, page by page *(tasks 4.4 to 4.7)*
+
+**All 28 sites are gone or deliberately kept**, and the split is 26 repaired to 2 opted out. Every
+replacement was established against the **released assemblies** before it was written — see the
+build evidence below — and no page's banner, page type or opening sentence was touched.
+
+| Page | Sites | What the repair was |
+|---|---:|---|
+| `BrighterBasicConfiguration.md` | 2 | `UseScoped` and `CommandProcessorLifetime` deleted from the `AddConsumers` options: neither exists on `BrighterOptions` at 10.7.0 and neither has a successor property |
+| `ShowMeTheCode.md` | 2 | same two lines, plus `UseInMemoryOutbox()` → `configure.Outbox = new InMemoryOutbox(TimeProvider.System)` inside `AddProducers` |
+| `DapperOutbox.md` | 4 | `UseMySqlOutbox`/`UseMySqTransactionConnectionProvider` → `Outbox`, `ConnectionProvider`, `TransactionProvider` on `AddProducers`; `UnitOfWork` → `IAmATransactionConnectionProvider`; `BeginOrGetTransactionAsync` → `GetTransactionAsync` |
+| `DynamoOutbox.md` | 3 | the same shape, with `DynamoDbUnitOfWork` as **both** providers; `BeginOrGetTransaction` → `GetTransactionAsync` |
+| `MessageMappers.md` | 5 | `ApplicationJson` → `new ContentType(MediaTypeNames.Application.Json)`, and the three printed constructor signatures replaced with the ones the product ships |
+| `S3LuggageStore.md` | 5 | `AddS3LuggageStore` → `UseExternalLuggageStore`; `StoreCreation`/`S3LuggageStoreCreation` → `Strategy`/`StorageStrategy`. **Two prose sites kept** behind opt-outs |
+| `SweeperCircuitBreaking.md` | 4 | the fenced `UseMsSqlOutbox` → `AddProducers`; the three-name bulleted list rewritten to the live Outbox **types** |
+| `DispatchingARequest.md` | 1 | `IUnitOfWork` → `IAmATransactionConnectionProvider`, with `GetTransactionAsync` and provider-level commit/rollback |
+| `FeatureSwitches.md` | 1 | `NoTaskQueues()` → `NoExternalBus()`, inside a fluent chain that had moved underneath it |
+| `UsingSweeperCircuitBreaking.md` | 1 | `UseMsSqlOutbox` → `AddProducers`, and the sweeper options moved onto `UseOutboxSweeper` |
+
+**The two kept sites are ruling 6 working as intended** (task 4.7). `S3LuggageStore.md` now carries
+the `DispatcherConfigurationReference.md` pattern — two `<!-- symbolcheck: allow … -->` comments
+above a visible *Coming from V9?* blockquote naming `AddS3LuggageStore` and `S3LuggageStoreCreation`
+as removed — so a reader arriving from a V9 sample lands on the page that tells them so. The gate
+now prints **0 findings, 3 silenced**, where it printed **0 findings, 1 silenced** before this
+phase: *0 findings* alone would have been a different and weaker claim.
+
+**Three prose sites were rewritten rather than silenced**, and the choice is the same ruling read
+the other way. `SweeperCircuitBreaking.md`'s bulleted list was not *about* the removed names — it
+claimed they were how you configure each store — so it now names `MsSqlOutbox`, `PostgreSqlOutbox`,
+`MySqlOutbox`, `SqliteOutbox`, `DynamoDbOutbox` and `MongoDbOutbox`, each confirmed LIVE at both
+refs. **Three of those six bullets named dead methods that are not on any watchlist** —
+`UsePostgreSqlOutbox`, `UseSqliteOutbox` and `UseMongoDbOutbox`, all `0 at 10.7.0, 0 at
+origin/master` — and they were repaired because they were beside a site the gate did name.
+
+### Every edited block built against the released packages *(task 4.8)*
+
+**Three scratch projects, one per package family, and no `ProjectReference` into `../Brighter/src`
+anywhere.** The AWS SDK forces the split: `Paramore.Brighter.DynamoDb` pulls `AWSSDK.Core` 3.x and
+`Paramore.Brighter.Transformers.AWS.V4` pulls 4.x, and NuGet refuses the pair (`NU1107`). A reader
+installing one page's packages never hits it; a harness compiling every page at once does.
+
+| Project | Packages, all at **10.7.0** unless noted | Blocks | Result |
+|---|---|---:|---|
+| `core` | `Paramore.Brighter`, `.Extensions.DependencyInjection`, `.ServiceActivator` ×3, `.MessagingGateway.RMQ.Async`, `.Outbox.Hosting`, `.MySql`, `.Dapper`, `.Outbox.MySql`, `.Inbox.MySql`, `.MsSql`, `.Outbox.MsSql`, `Dapper` 2.1.35 | 10 | **0 errors, 4 warnings** |
+| `dynamo` | `Paramore.Brighter`, `.Extensions.DependencyInjection`, `.DynamoDb`, `.Outbox.DynamoDB`, `.Outbox.Hosting` | 2 | **0 errors, 0 warnings** |
+| `s3` | `Paramore.Brighter`, `.Extensions.DependencyInjection`, `.Transformers.AWS.V4` | 1 | **0 errors, 0 warnings** |
+
+**The block that gets compiled IS the block on the page.** `extract.py` reads the page through
+`pagelint.Page` — the shipped parser, not a second one — copies the fenced body **byte for byte**,
+and adds only a wrapper: a class for a bare method, a method for bare statements, nothing for a
+block that is already a compilation unit. Identifiers a page names in a declared omission
+(`producerRegistry`, `outboxConfiguration`, `credentials`, `dynamoDb`, `_handlerFactory`,
+`_registry`, and the `Person`/`Greeting`/`AddGreeting`/`GreetingMade` domain) come from a scaffold
+file that **is not part of any block** and is listed here so the boundary is visible.
+
+**The harness was red-proofed before any result from it was believed.** One character changed in a
+repaired block — `configure.Outbox` to `configure.OutboxThatDoesNotExist` — and the build failed
+`CS1061` at that line; changed back, 0 errors. A compile harness that has never failed is the same
+uninformative instrument as a gate that has never been red.
+
+**The four warnings are named rather than suppressed.** Three are `CS0649` on
+`DispatchingARequest.md`'s fields, which the block declares and never assigns because it is an
+excerpt of a class with no constructor. The fourth is **`CS0618`: `BrighterOptions.PolicyRegistry`
+is obsolete — *Migrate to ResiliencePipeline***, on `BrighterBasicConfiguration.md`. That line is
+**live and therefore out of this spec's scope**: 015 rules on names the product *removed*, and a
+name the product deprecated is a different finding with a different owner. It is recorded here so
+the next spec does not have to find it twice.
+
+**Two blocks are quotations of a signature and cannot compile by construction** —
+`MessageMappers.md`'s printed `MessageBody` constructors, which are fragments of a class the page
+does not own. They were checked the only way that means anything: **against the released
+declaration, by reflection**, with `NullabilityInfoContext` so the `?` annotations are read rather
+than assumed.
+
+```text
+public MessageBody(String? body, ContentType? contentType = null, CharacterEncoding characterEncoding = UTF8)
+public MessageBody(Byte[]? bytes, ContentType? contentType = null, CharacterEncoding characterEncoding = UTF8)
+public MessageBody(in ReadOnlyMemory`1 body, ContentType? contentType = null, CharacterEncoding characterEncoding = UTF8)
+```
+
+Both blocks now print exactly that, and both declare their elided body with `// ...`, which
+`pagelint` rule 6 downgrades to a counted warning rather than silence.
+
+### What compiling found that no watchlist could have
+
+**Four defects, none of them a watchlisted name, all four fatal to a reader who copies the block.**
+This is the AC12 argument made concrete: the census finds a name that no longer resolves; only a
+compiler finds a name that resolves to something else.
+
+| Found | Page | What it was |
+|---|---|---|
+| **`S3Region.EUW1` does not exist in AWS SDK v4** | `S3LuggageStore.md` | The page **recommends** the V4 package and then prints a v3-only enum member. `AWSSDK.S3` 3.7.500.5 has both `EUW1` and `EUWest1`; 4.0.101.5 has only `EUWest1`. Repaired to `EUWest1` |
+| **`IAmAMessageMapper<T>` has a third member and a second parameter** | `MessageMappers.md` | V10's interface is `Context { get; set; }` plus `MapToMessage(TRequest, Publication)`. The page's mapper implemented neither, so the corpus's canonical mapper example **did not implement the interface it claimed** |
+| **The fluent builder moved underneath `NoTaskQueues`** | `FeatureSwitches.md` | `With()` → `StartNew()`, `DefaultPolicy()` → `DefaultResilience()`, and `Build()` is now unreachable without `NoInstrumentation()` and `RequestSchedulerFactory(…)`. The page also passed an undeclared `fluentConfig` to `ConfigureFeatureSwitches` while building a registry it never used |
+| **`Paramore.Brighter.{DB}.Dapper` has no V10 release at all** | `DapperOutbox.md` | `Paramore.Brighter.MySql.Dapper` and `.MsSql.Dapper` both stop at **9.9.13** on NuGet; `.Sqlite.Dapper` reaches only a `10.0.0-preview.6`. The page's *packages you need* list was unbuyable, and **`Paramore.Brighter.Dapper` 10.7.0 exists but carries only `DbConnectionStringProvider`** |
+
+**The fourth is the one to read twice.** A package list is prose, it contains no identifier the
+census tokenises, and it is the **first** thing a reader acts on. Nothing in this repository was
+watching it, and nothing in this repository is watching it now.
+
+### The eight gates, reconciled *(task 4.9)*
+
+Measured at **`3be2a78`**, with `git add -A` before the `--changed` pass.
+
+| # | Gate | Predicted | Measured |
+|---:|---|---|---|
+| 1 | `linkcheck` | none | **unmoved** — 165 files, 0 broken |
+| 2 | `pagelint` | 0 errors; warnings may **fall** | **0 errors**, `--changed` included; warnings **757 → 744** |
+| 3 | shape | none | **unmoved** |
+| 4 | redirects | none | **unmoved** |
+| 5 | `versioncheck` | none | **unmoved** |
+| 6 | `optioncheck` | none, and a real check | **unmoved** — 0 mismatches across 59 tables, 519 rows, with `DynamoOutbox.md` and `SweeperCircuitBreaking.md` both in its corpus |
+| 7 | `--verify` | none | **unmoved** — 161 predicted = 161 published |
+| 8 | `symbolcheck` | **red, then green**; entries 5 → 22 | **28 sites red, then 0 findings, 3 silenced, 22 entries**; `--verify-list` green with all 22 DEAD and every named replacement LIVE |
+
+**Both moving figures moved for the reason predicted, and both are named in `tools/README.md` and
+nowhere else** (obligation 10). The **13** blocks that took `pagelint`'s warning count down are the
+fifteen edited blocks minus the two `MessageBody` signature quotations, which declared their
+omission with `// ...` and stayed counted. **Predicting the direction of that fall is what makes it
+evidence**: a debt figure that drops without an explanation stops meaning anything, and an
+unexplained fall of exactly the wrong size would have meant somebody had written `// ...` to make a
+warning go away.
+
+### Phase 4 as executed — what the list did not predict
+
+Five, and the first is the one that changed how the phase was worked.
+
+**1. A repair is not a deletion, because an edited block owes a compile.** The list reads as though
+each site were a line to remove. It is not: removing `options.UseScoped = true;` leaves a block
+that was **already broken in four other ways** — a missing parenthesis, a missing comma, four
+undeclared variables, and `configure.TransactionProvider = transactionProvider` hiding the fact
+that the property takes a **`Type`**. AC12 says an edited block compiles, so the block around the
+site is in scope whether or not the list says so. **Every one of the fifteen edited blocks needed
+more than its site removed**, and four of them needed a defect fixed that no census could see.
+
+**2. Six of seventeen replacement columns buy nothing from `--verify-list`, for a stated reason.**
+`symbolcheck.py:726` skips a replacement that begins `(`, so prose replacements are never
+re-resolved. The four `Use{DB}Outbox` rows, `CommandProcessorLifetime` and `UseScoped` all carry
+prose, because the answer is a *shape* — set a property inside `AddProducers` — and a column
+holding `Outbox` would pass the check while telling a writer nothing. **Eleven rows do carry a
+resolvable name**, and those eleven are what keeps `--verify-list` a real check rather than a
+formality.
+
+**3. The template a census cannot see: `Use{DB}Outbox` in prose.** Three pages carried the
+sentence *"we configure Brighter to use an outbox with the Use{DB}Outbox method call"*.
+`Use{DB}Outbox` is not an identifier, tokenises as nothing, and appears in **no** census candidate
+list; `symbolcheck` will never fire on it. Two of the three were in this phase's scope and are
+repaired. **`EFCoreOutbox.md` is the third and still carries both sentences** — measured after the
+repairs, `grep -rn 'Use{DB}' contents/` returns **2, all on that page** — and it is the sharpest
+form of the finding: **its code block was already repaired to the V10 API by somebody, and the
+prose above the block was not.** It is out of 015's scope by task 4.1's list and is left for the
+closing sentence to name.
+
+**4. A heading is a published URL, so the prose under it moved and the heading did not.**
+`DapperOutbox.md`'s `## Brighter Unit of Work without Dapper` now sits above a paragraph about the
+transaction provider, because renaming it would move an anchor GitBook has published. `grep`
+confirms nothing in `contents/`, `SUMMARY.md` or `.gitbook.yaml` links to it — the risk is an
+external link, which is exactly the one this repository cannot see. Recorded rather than tidied.
+
+**5. `S3Region.EUW1` is a class of defect this programme has not met before.** It is not a Brighter
+name, not stale, and not wrong in the version it was written for: it is a **dependency's** enum
+member, removed in AWS SDK v4, on a page that recommends the v4 package. Neither the census nor any
+watchlist can reach it, because the name belongs to neither product. **Only compiling against the
+packages the page tells a reader to install finds it**, which is the argument for AC12 stated as a
+case rather than as a principle.
