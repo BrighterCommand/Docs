@@ -592,7 +592,7 @@ the close. **Changes no published page.**
     every instrumented one was green and uninformative. AC6 is the one that fails quietly: sample
     verdict rows and check each cites a control, not just an adjective
 
-- [ ] **Task 5.2:** Walk the instrumented criteria — AC1, AC2, AC3, AC5, AC7, AC9, AC11, AC12
+- [x] **Task 5.2:** Walk the instrumented criteria — AC1, AC2, AC3, AC5, AC7, AC9, AC11, AC12
   - Input: each criterion's named instrument in `requirements.md`
   - Output: eight entries in the same section, each with the command **run at the walk** and its
     output, against what the criterion claims
@@ -2207,3 +2207,235 @@ that lack an anchor. It cannot find a figure that carries an anchor and is wrong
 132) were true when phase 3 wrote them and are stale now that phase 4 has repaired the page. They
 are **anchored** — §5 opens *"Written 2026-09-19, phase 3"* — and left, because a record of what was
 found is supposed to describe the world it was found in.
+
+### The eight instrumented criteria, each instrument run at the walk *(task 5.2)*
+
+**Run 2026-09-19 on `spec/015-phase5-acceptance`, at `1b7b165`.** Friction 39: every command below
+was executed here and its output read against what the criterion claims. **Nothing is ticked from a
+phase write-up**, and two of the eight needed a worktree to be checkable at all.
+
+**Three worktrees were built to run these, and they are how a before-figure stays measurable after
+the change ships.** `git worktree add` at three commits, all removed afterwards:
+
+| Worktree | Commit | What it is |
+|---|---|---|
+| `wt-015pre` | `dfc2196` | 015's tasks merged, **no instrument change yet** — the census as 014 left it |
+| `wt-015pin` | `b262975` | **P0-2 shipped, P0-1 not** — pinned refs and the SHA header, no member filter |
+| `wt-015walk` | `3be2a78^` | **the whole instrument, the corpus unrepaired** — the world the record was taken from |
+
+---
+
+**AC1 — *`--census` contains no candidate declared as a method on every page using it*. MET, 0
+removable.**
+
+```bash
+python3 spec/015-census_triage/probe/methodprobe.py
+#   unresolved candidates                      : 799
+#   declared as a method on EVERY page using it: 0     <- AC1
+#   declared on SOME pages using it            : 0
+#   controls: positive ConfigureBrighter caught : False
+```
+
+**Read the number, not the exit code** — phase 1's finding, and it is still true at the walk. The
+probe prints `CONTROLS FAILED` because its positive control asks to catch `ConfigureBrighter`, and
+the shipped tool now removes that name *before* the probe sees it. The control is unsatisfiable
+**because AC1 is met**, which is friction 44 from the inside.
+
+**The candidate total is 799 here and was 819 in phase 3.** That is not drift — see AC5.
+
+---
+
+**AC2 — *the count moved from 929 by exactly the predicted amount, both figures at the same
+resolved SHA pair, prediction written first*. MET, and re-derived live rather than inherited.**
+
+| Run at the walk | Tool | Corpus | `UNRESOLVED` |
+|---|---|---|---:|
+| `wt-015pin` (`b262975`) | P0-2 shipped, **no member filter** | pre-repair | **929** |
+| `wt-015walk` (`3be2a78^`) | P0-1 **and** P0-2 | pre-repair | **819** |
+
+**Movement: exactly 110**, the predicted amount. Both runs print the same four SHAs and the header
+`diff` is empty — *byte-identical*, which is the whole of AC2's "same SHA pair" clause:
+
+```bash
+diff <(cd ../wt-015pin  && python3 tools/symbolcheck.py --census | sed -n 1,6p) \
+     <(cd ../wt-015walk && python3 tools/symbolcheck.py --census | sed -n 1,6p)   # no output
+```
+
+**"The prediction was written before the change" is checkable by commit order, not by a date in
+prose**, and that is the better instrument:
+
+```bash
+git log --oneline --reverse f506e66^..a2ed267
+#   f506e66 spec: 015 phase 1 prediction — dated and committed ahead of the change
+#   b262975 tools: census reads a pinned SHA, and its header prints all four it resolved
+#   a2ed267 tools: the census stops counting a page's own methods — 929 -> 819 at the pin
+```
+
+---
+
+**AC3 — *the header prints, for each of the four refs, the SHA git resolves it to*. MET, 4 of 4 —
+and the pre-change run reproduces the "0 of 4" it was failing at.**
+
+| Ref | Header prints | `git rev-parse --short` |
+|---|---|---|
+| `../Brighter` `10.7.0` | `c1b8af886` | **`c1b8af886`** |
+| `../Brighter` pinned master | `09f5d988f` | **`09f5d988f`** |
+| `../Darker` `4.1.1` | `ddb71ee` | **`ddb71ee`** |
+| `../Darker` pinned master | `2f76cda` | **`2f76cda`** |
+
+**The `wt-015pre` run is the control, and it is the one that makes AC3 a real criterion**: at
+`dfc2196` the header reads `brighter@origin/master   7713 tokens` — a ref **name**, no SHA anywhere
+— which is the state AC3 was rewritten because it could not detect.
+
+**The pin has earned itself since phase 1, and by more than it had.** `../Brighter`'s
+`origin/master` is **`6145913a0`** today, **four commits** ahead of the pinned `09f5d988f`
+(`git -C ../Brighter rev-list --count 09f5d988f..6145913a0` → 4). The census reads the pin and the
+gate's `--verify-list` reads `origin/master`, so AC6's *"a real check rather than a rhetorical one"*
+has more daylight in it than the one commit it had when it was written.
+
+---
+
+**AC5 — *every name in the census has a verdict row*. MET at the corpus the record was taken from,
+and the difference between that corpus and today's is itself the evidence.**
+
+```bash
+awk '/^### 5.4/{f=1} f && /^\| `/' spec/015-census_triage/triage.md | wc -l   # 819 rows
+(cd ../wt-015walk && python3 tools/symbolcheck.py --census | grep UNRESOLVED) # 819
+python3 tools/symbolcheck.py --census | grep UNRESOLVED                       # 799  <- today
+```
+
+**819 rows against 819 candidates.** Today's census reports **799**, and a walk that stopped at the
+first command would have recorded a criterion that had quietly gone red. The 20 are what phase 4
+removed from the pages, taken as a set difference rather than assumed:
+
+```bash
+comm -23 <(census at 3be2a78^ | names | sort -u) <(census today | names | sort -u)
+```
+
+| Gone from the census | Count | |
+|---|---:|---|
+| the **17** names ruled `SURFACE` | **17** | every one of them, which is AC11 arriving from the other direction |
+| `EUW1` | 1 | the AWS SDK v4 defect the compiler found |
+| `AmqpUri` · `RabbitMqConfiguration` | 2 | collateral of the repairs — identifiers that left with the blocks they sat in |
+| **new candidates introduced by fifteen rewritten blocks** | **0** | |
+
+**Zero new candidates is the number to keep.** Fifteen C# blocks were rewritten by hand against the
+released packages, and not one of them introduced a name that fails to resolve in either product.
+
+---
+
+**AC7 — *every confirmed-dead name is a `symbolwatch.tsv` row or has a written reason it is not*.
+MET, 22 entries, 0 findings.**
+
+```bash
+python3 tools/symbolcheck.py --verify-list | tail -1
+#   All 22 entries still dead at both refs of their product, and every named replacement still live.
+grep -c $'\t' tools/symbolwatch.tsv    # 23 = 1 header + 22 entries
+grep -c '015 triage' tools/symbolwatch.tsv    # 17
+```
+
+**22 = 014's five plus 015's seventeen**, and all seventeen ruled `SURFACE` got a row — there is no
+"written reason it is not" to read, because the set of exceptions is empty.
+
+---
+
+**AC9 — *the eight gates are at `tools/README.md`'s figures*. MET, eight of eight, and one defect
+found in the file that owns them.**
+
+| # | Gate | Measured at the walk | vs `tools/README.md` |
+|---:|---|---|---|
+| 1 | `linkcheck` | 165 files, 0 broken | ✓ |
+| 2 | `pagelint` | **0 errors**, 744 warnings, 162 pages | ✓ at `3be2a78` |
+| 3 | shape | 161 pages, 12 sections, widest 12 of 20, deepest 4 of 4 | ✓ |
+| 4 | redirects | 77 entries, 7858 bytes | ✓ |
+| 5 | `versioncheck` | 0 stale pins **of 18**, across 5 pages | ✓ |
+| 6 | `optioncheck` | 0 mismatches across 59 tables, 519 rows | ✓ |
+| 7 | `--verify` | predicted 161, published 161, 161 agree | ✓ |
+| 8 | `symbolcheck` | 0 findings — **22 entries, 161 pages, 3 silenced** | ✓ at `3be2a78` |
+
+**Finding — `tools/README.md` contradicted itself about the one figure it owns.** Its § *Reading a
+number before you trust it* still opened *"`pagelint`'s **757** is a warning count, not an error
+count"* while row 2, eight lines above, reads **744 at `3be2a78`**. Phase 4 updated the row and the
+paragraph introducing it and left this one behind, in the present tense, in the file obligation 10
+names as the single place a gate number lives. **Repaired at the walk** — the paragraph now points
+at the row instead of repeating the number.
+
+**This is the finding task 5.1's AC10 sweep should have made and could not**, and the reason is
+worth more than the defect: **that sweep's corpus was the five documents under
+`spec/015-census_triage/`, and `tools/README.md` is also something 015 ships** (deliverable 2). An
+instrument aimed at a corpus cannot report what sits outside it, which is D12's conclusion wearing
+a third suit. Friction 47.
+
+---
+
+**AC11 — *every confirmed-dead name is gone from `contents/`, or its remaining sites carry a
+written opt-out*. MET, 15 gone outright and 2 behind visible opt-outs.**
+
+```bash
+awk -F'\t' '$2=="SURFACE"{print $1}' spec/015-census_triage/stage3.tsv |
+  while read -r n; do printf '%-42s %s\n' "$n" "$(grep -rownw "$n" contents/ | wc -l)"; done
+```
+
+**Fifteen of the seventeen return 0.** The two that do not are `AddS3LuggageStore` and
+`S3LuggageStoreCreation`, at **two hits each**, and the second hit of each is the opt-out directive
+naming the symbol:
+
+```text
+contents/S3LuggageStore.md:49  <!-- symbolcheck: allow AddS3LuggageStore -->
+contents/S3LuggageStore.md:52  > **Coming from V9?** The IServiceCollection extension AddS3LuggageStore()
+                               was removed at V10, along with the S3LuggageStoreCreation enum…
+```
+
+So the real remaining surface is **one prose sentence**, kept on purpose so a reader arriving from a
+V9 sample lands on the page that tells them the name is gone. `symbolcheck` prints it rather than
+swallowing it: **`0 findings, 3 silenced`**, where the third is 014's `UseExternalInbox` opt-out on
+`DispatcherConfigurationReference.md`. *0 findings* and *0 findings, 3 silenced* are different
+claims and the second is the one this spec makes.
+
+---
+
+**AC12 — *every C# block P0-6 edited builds against the released packages*. MET, rebuilt at the
+walk, and the harness was red-proofed again before its green was believed.**
+
+**First, that the harness still compiles the pages rather than a copy of them.** Each of the 13
+block files was checked to contain, verbatim, the body `pagelint.Page` reads off the page **today**:
+
+```text
+13 blocks checked across 10 pages · 0 mismatched
+```
+
+**Then the three projects, forced clean** (`--no-incremental`; the first attempt returned in 0.5s
+with 0 warnings, which is what an up-to-date build looks like and is not a result):
+
+| Project | Blocks | At the walk | Phase 4 |
+|---|---:|---|---|
+| `core` | 10 | **0 errors, 4 warnings** | identical |
+| `dynamo` | 2 | **0 errors, 0 warnings** | identical |
+| `s3` | 1 | **0 errors, 0 warnings** | identical |
+
+The four warnings are the three `CS0649`s on `DispatchingARequest.md`'s unassigned fields and the
+`CS0618` on `BrighterOptions.PolicyRegistry` — *Migrate to ResiliencePipeline* — a **live**
+deprecation that 015 deliberately does not rule on.
+
+**The red-proof, re-run rather than cited:**
+
+```text
+configure.Outbox -> configure.OutboxThatDoesNotExist
+  blocks/Dapper_1.cs(28,23): error CS1061: 'IServiceProvider' does not contain a definition
+  for 'OutboxThatDoesNotExist' …                                              1 Error(s)
+restored, byte-identical to before the proof                     0 Error(s), 4 Warning(s)
+```
+
+**And the linter half, on the diff that actually contains the repairs:**
+
+```bash
+python3 tools/pagelint.py --changed 473a1c0
+#   15 file(s), 88 hunk(s) in the diff; 10 documentation page(s), 15 code block(s) strict.
+#   0 errors, 744 warnings … across 162 pages.
+```
+
+**`15 code block(s) strict` is the line that matters, not the `0 errors`.** A strict run that made
+nothing strict prints the same verdict as one that made fifteen blocks strict, and phase 4 edited
+exactly fifteen. The two blocks that cannot compile by construction — `MessageMappers.md`'s
+`MessageBody` signature quotations — are in that fifteen, carry `// ...`, and are therefore counted
+warnings rather than silence.
