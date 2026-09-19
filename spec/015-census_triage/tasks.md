@@ -382,7 +382,34 @@ and a runner that can execute it over 819 names without a person retyping a git 
 each with evidence and a control. **Changes no published page.** Roughly 25 minutes of machine time
 and an afternoon of stage 3.
 
-- [ ] **Task 3.1:** Run stage 1 over the whole census, at the pin
+> ### Amendment, 2026-09-19 — task 3.3 asked for the truncation phase 2 found was a defect
+>
+> **Taken at the maintainer's instruction, at the top of phase 3, and recorded before it was
+> applied** (obligation 2). Task 3.3's Output read:
+>
+> > *"for every stage-2 survivor, the **first** historical `+`/`-` line its name appears on, in the
+> > row"*
+>
+> That is `design.md` §10.6's `… | head -1`, and phase 2 measured it as the defect that produces
+> **right answers with wrong reasons**. On `Date` the first line is `Get<T>(DateTime date, …)` — a
+> parameter name, from which §10.6's table concluded *Own API? no*. The full set of 26 also holds
+> `public DateTime Date { get; set; }`, a public property of `DynamoDbMessage` in
+> `src/Paramore.Brighter.Outbox.DynamoDB/`, removed in 2019. **Same name, same query, opposite
+> readings; only the truncation decided which one a person saw.** `triage.md` §1.3.
+>
+> **It does not overturn the verdict on `Date` — it overturns the reason, and under a three-valued
+> vocabulary the reason is the verdict.** So the Output now asks for the whole distinct evidence
+> set, capped, with the `dotted`/`bare` totals taken over **all** matches beside it so a reader can
+> always see whether the lines in front of them are the whole set.
+>
+> **The runner already does this** — `EVIDENCE_CAP = 40`, `probe/triagerun.py:98` — so nothing about
+> phase 3's execution changes. What changes is that the task list no longer asks for something the
+> phase before it proved wrong. **The wording was the last place the finding had not reached**,
+> which is [AC11 and P0-6's shape](#what-ac11-and-p0-6-said-before-the-tasks-review-and-why-they-changed)
+> one phase later: an amendment that lands in some places and not others leaves the unamended ones
+> looking deliberate.
+
+- [x] **Task 3.1:** Run stage 1 over the whole census, at the pin
   - Input: phase 1's `--census` output as the candidate list; `triagerun.py`
   - Output: a checkpoint file under `spec/015-census_triage/` holding one stage-1 row per name, and
     in this file the measured wall clock, the count screened out and the count surviving
@@ -390,23 +417,26 @@ and an afternoon of stage 3.
     A zero at stage 1 is **conclusive** — if the identifier ever existed, its substring existed — and
     that asymmetry is what makes it safe to screen 720 names and never look at them again
 
-- [ ] **Task 3.2:** Run stage 2 over the survivors
+- [x] **Task 3.2:** Run stage 2 over the survivors
   - Input: task 3.1's checkpoint
   - Output: stage-2 counts per product appended to every survivor row, with the run's wall clock
   - Notes: the bracket-class form only. If the survivor count is far from 99, stop and reconcile
     before spending 18 minutes — a large divergence from the design's measurement means the corpus
     or the query changed, and finding 1 says the corpus can move under you
 
-- [ ] **Task 3.3:** Add the stage-2.5 dot evidence
+- [x] **Task 3.3:** Add the stage-2.5 dot evidence
   - Input: `design.md` §10.6 — `ConfigurationManager.GetSection(…)` against
     `private readonly IAmACommandStoreAsync _commandStore;`
-  - Output: for every stage-2 survivor, the first historical `+`/`-` line its name appears on, in
-    the row
+  - Output: for every stage-2 survivor, **the whole distinct evidence set** its name appears on —
+    every `+`/`-` line, deduplicated, to `EVIDENCE_CAP` per product — with the `dotted`/`bare`
+    totals taken over **all** matches beside it, so the row says whether the lines shown are the
+    whole set. **Amended 2026-09-19; this read "the first … line" and the amendment is above**
   - Notes: **evidence, never a filter.** A Brighter extension method is called with a dot too, which
     is the collision D12 named and `bclprobe` demonstrated. Presenting it as a filter is how the
-    twelve would have been lost
+    twelve would have been lost — and presenting **one line of it** is how `Date`'s public property
+    was lost, which is what the amendment is for
 
-- [ ] **Task 3.4:** Stage 3 — read the survivors and rule each one
+- [x] **Task 3.4:** Stage 3 — read the survivors and rule each one
   - Input: task 3.3's rows; for each survivor, the diff hunks its name appears in
   - Output: a `LIVE` / `EXISTED, REMOVED` / `NEVER EXISTED` verdict per survivor, each with the
     quoted source line that decided it and the control it was checked against
@@ -415,7 +445,7 @@ and an afternoon of stage 3.
     the twelve in the tail read as **declarations**. **87 of the 99 are unread** and the twelve are
     a floor. A `LIVE` verdict is a defect in the instrument, not in a page, and gets recorded as one
 
-- [ ] **Task 3.5:** Write `triage.md`'s record — one row per name
+- [x] **Task 3.5:** Write `triage.md`'s record — one row per name
   - Input: tasks 3.1 to 3.4
   - Output: `triage.md` §5, a table with **one row per census name**, each carrying the verdict, the
     two commands that produced it, and its control
@@ -423,7 +453,7 @@ and an afternoon of stage 3.
     the sum of the three verdict classes against the same total. The 720 screened at stage 1 get
     rows too: *screened at stage 1, 0 history* is a verdict with evidence
 
-- [ ] **Task 3.6:** Write AC8 — what 015 did **not** triage, each figure with its command
+- [x] **Task 3.6:** Write AC8 — what 015 did **not** triage, each figure with its command
   - Input: `design.md` §9's table
   - Output: a § *What 015 did not triage* section in this file, carrying the page-declared members
     P0-1 removes — **110 today, re-derived from phase 1's own run at the pin, not from this
@@ -434,13 +464,13 @@ and an afternoon of stage 3.
     document reporting 819 verdicts invites the reading that the documentation has been. D12
     conclusion 2: 160 of 161 pages carry an unresolved prose token
 
-- [ ] **Task 3.7:** Re-run the eight gates; predicted **none**
+- [x] **Task 3.7:** Re-run the eight gates; predicted **none**
   - Input: `tools/README.md`, `design.md` §11
   - Output: the predicted-against-measured table in § *Phase 3 as executed*
   - Notes: `symbolwatch.tsv` is untouched in this phase — the rows are phase 4's, deliberately, for
     the reason in finding 4
 
-- [ ] **Task 3.8:** Write § *Phase 3 as executed*
+- [x] **Task 3.8:** Write § *Phase 3 as executed*
   - Input: the run outputs and the stage-3 rulings
   - Output: a section in this file carrying the three stages' measured costs, the survivor counts by
     band, the confirmed-dead set with its page and site counts, and any finding the design missed
@@ -1222,3 +1252,380 @@ forms with both traps, and an **exhaustive** stopping condition — and
 `--query-forms`, `--limit`, `--names`, `--restart` and `--report`. **No checkpoint is committed**:
 the record over all 819 is phase 3's deliverable, and this phase's pilots were written to scratch
 so that phase 3's first run is a real run.
+
+---
+
+## Phase 3 prediction
+
+**Written 2026-09-19 on `spec/015-phase3-triage`, before the run it predicts finished and before any
+deliverable in this phase was written.** Obligation 6 for the gates; obligation 1 for everything
+else — a figure inherited from `design.md` is named here as *what to re-derive*, never as a result.
+
+### What is predicted, and what is only inherited
+
+| | Design's figure | Status here |
+|---|---:|---|
+| census candidates | **819** | **re-derived at the run's start: 819**, printed by the runner from `census_candidates()`, which calls the shipped `census()` rather than a copy |
+| screened out at stage 1 | 720 | **inherited — phase 3 re-derives it.** `design.md` §10.5 measured it at the pin |
+| survivors into stage 2 | 99, as **19 / 12 / 68** by band | **inherited.** Task 3.2's guard: if this is far from 99, stop and reconcile rather than spend the time |
+| machine cost | 25 min (design) · **17.4 min** (phase 2, measured) | phase 2's, and it is the one to beat — `design.md` §5 charged Darker Brighter's price |
+| names stage 3 confirms as removed product surface | **at least twelve** | a **floor**, not a prediction. 87 of the 99 are unread, and the twelve came from looking only where the shape was obvious |
+
+**The one prediction this phase makes that could genuinely fail is the survivor count**, and it is
+the only one with a stopping rule attached to it.
+
+### Tasks 3.1 and 3.2 come out of one run, not two, and that is a departure worth naming
+
+The list plans stage 1 and stage 2 as two passes over the corpus. **`triagerun.py` fuses them per
+name** — for each candidate it runs the live query, then stage 1, then stage 2 *only* where stage 1
+was non-zero — so one invocation produces both tasks' outputs and the split is recovered from the
+checkpoint rather than from two wall clocks:
+
+```bash
+python3 spec/015-census_triage/probe/triagerun.py            # both stages, checkpointed per row
+```
+
+**Recorded rather than quietly done** (obligation 2). Two things fall out of it and neither is free:
+
+- **The per-stage wall clocks are derived, not measured directly.** Every row carries its own
+  `seconds`, so *screened at stage 1* and *went to stage 2* are two populations with two means —
+  which is what phase 2's cost table already is. The figures § *Phase 3 as executed* reports are
+  those, with the count of rows behind each.
+- **Task 3.2's "stop before spending 18 minutes" guard survives, in a different form.** The
+  barrier it assumed does not exist, so the guard is the **running survivor rate against the
+  checkpoint**: the rows accumulate in page-spread order and the rate is readable at any point.
+  The run is resumable, so stopping costs only the rows not yet written. Friction 45 says the head
+  over-represents survivors, so an early rate **above** 99/819 is expected and is not the
+  divergence the guard is for.
+
+### The eight gates, predicted before the work
+
+Per obligation 6, including every "none" with its reason. Figures are **cited from
+`tools/README.md`, never pasted** (obligation 10).
+
+| # | Gate | Predicted | Why |
+|---:|---|---|---|
+| 1 | `linkcheck` | **none** | Everything this phase writes is under `spec/`, which is in `SKIP_DIRS` (`tools/linkcheck.py:52`), and the walk opens only `.md` files (`tools/linkcheck.py:112`) — so the committed `.jsonl` checkpoint cannot enter it either. The 164 → 165 precedent was a new `.md` **inside `tools/`**; this phase adds no file anywhere in the walk |
+| 2 | `pagelint` | **none**, errors and warnings both | Its corpus is `contents/` plus the root `README.md`. This phase edits neither, and writes no C# fence on any page. `--changed` must be clean |
+| 3 | shape | **none** | `SUMMARY.md` is untouched; no page is created, nested or moved |
+| 4 | redirects | **none** | Redirects follow `SUMMARY.md`, which is untouched |
+| 5 | `versioncheck` | **none** | It reads version pins in published pages; this phase writes spec documents |
+| 6 | `optioncheck` | **none** | It reflects over marked option tables in pages; none is touched |
+| 7 | `--verify` | **none** | The published-URL set is unchanged, for the same reason as shape |
+| 8 | `symbolcheck` | **none** — gate **and** `--verify-list` | `symbolwatch.tsv` is untouched in this phase, deliberately: the rows are phase 4's, because a row added while its name is still printed on nine pages turns the gate red on `master` (finding 4). No tool changes, so the census is unmoved too |
+
+**The gate nobody should trust a "none" from here is 8**, and the reason is not that it might move
+by accident — it is that a green `symbolcheck` in this phase is *not evidence the triage found
+nothing*. The instrument knows only the names already on the watchlist. That is 014's third
+sentence — *a green from a single-use instrument is a claim about the instrument* — and it is why
+the twelve were invisible to it for a year.
+
+---
+
+## What 015 did not triage
+
+**Task 3.6, AC8. Measured 2026-09-19 at the pinned SHA pair** — `../Brighter` `09f5d988f`,
+`../Darker` `2f76cda` — except where a row says otherwise, and every figure carries the command that
+produced it rather than a number carried forward from `design.md` §9.
+
+**819 verdicts is a statement about C# fenced blocks, not about the documentation.** A record that
+rules on 819 names invites the reading that the site has been swept. It has not been. What follows
+is the boundary, stated as numbers so that the next spec starts from a measurement rather than from
+this document's silence.
+
+### The four surfaces the census never reaches
+
+Three of these commands read no git history at all, so they reproduce without either sibling
+repository:
+
+```bash
+python3 - <<'PY'
+import os, sys
+sys.path.insert(0, 'tools')
+import symbolcheck as sc
+pages = sorted(os.path.join(b, f) for b, _, fs in os.walk('contents')
+               for f in fs if f.endswith('.md'))
+cand, counts = sc.census(pages)
+print('pages examined                    :', len(pages))
+print('...with at least one C# fence     :', counts['fenced'])
+print('...with NO C# fence               :', len(pages) - counts['fenced'])
+print('distinct tokens in those fences   :', counts['raw'])
+print('...after comments and strings     :', counts['stripped'])
+print('...after page declarations, noise :', counts['candidates'])
+stripped, declared = set(), set()
+for rel in pages:
+    for body in sc.csharp_blocks(open(rel, encoding='utf-8').read().splitlines()):
+        declared.update(sc.DECL_RE.findall(body))
+        declared.update(sc.MEMBER_DECL_RE.findall(sc.strip_noncode(body)))
+        stripped.update(sc.TOKEN_RE.findall(sc.strip_noncode(body)))
+noise = {t for t in stripped if t in sc.NOISE_EXACT or t.startswith(sc.NOISE_PREFIX)}
+print('tokens struck by the noise sets   :', len(noise),
+      '=', len({t for t in noise if t in sc.NOISE_EXACT}), 'exact +',
+      len({t for t in noise if t.startswith(sc.NOISE_PREFIX)}), 'prefix')
+print('distinct names declared on a page :', len(declared & stripped))
+PY
+```
+
+| Not triaged | Measured | What the number means |
+|---|---:|---|
+| **Pages with no C# fence at all** | **16 of 161** | The census walks `csharp_blocks()` (`tools/symbolcheck.py:499`) and nothing else, so every token on these sixteen pages has never been a candidate in any run of this instrument |
+| **Tokens inside comments and string literals** | **484** (2764 → 2280) | `strip_noncode()`. A name in a comment is not a use — and note that the *history* side does no such thing, which is `triage.md` §1.2's third reading |
+| **Names a page declares itself** | **583 distinct**, of which the member filter is P0-1's share | `DECL_RE` plus `MEMBER_DECL_RE`, applied **per page**: a name declared on page X is not a candidate on page X and still counts on page Y. So this is not a set-level subtraction and cannot be reported as one |
+| **The noise sets** | **68 distinct** — 44 `NOISE_EXACT`, 24 `NOISE_PREFIX` | `System*`, `Microsoft*`, `Task`, `Guid` and the rest, `tools/symbolcheck.py:348-359`. Deliberate, documented, and **never triaged by anything** |
+| **Names that resolve** | **930** (1749 candidates → 819 unresolved) | The point of the instrument: they are live at `src/` of one of the two products, at one of the four refs |
+| **The prose surface** | **160 of 161 pages**, 1,346 unresolved tokens — **inherited, not re-measured** | 014's D12 conclusion 2, `spec/014-documentation_workflow/tasks.md:213`. The figure is quoted with its source because re-deriving it needs the prose census D12 built and ruled unusable; what *is* re-derived here is the mechanism above it — the census has never opened anything but a C# fence |
+
+**The prose row is the one to read slowly.** It is the largest untriaged surface, it is where twelve
+dead APIs also appear — four of the eighteen sites finding 3 counted are in running text — and it is
+the row most likely to be misread as covered. **015 swept C# fences. It did not sweep the
+documentation.**
+
+### The number `design.md` §9 leads with, re-derived rather than carried
+
+§9's table names **110** page-declared members that P0-1 removes. That figure is about the
+*unresolved* list, not the candidate list, and the two are different measurements of the same
+filter:
+
+| | Before P0-1 | After | Removed |
+|---|---:|---:|---|
+| **census candidates** (`...after page declarations, noise`) | 2019 | **1749** | **270** |
+| **unresolved candidates** (what `--census` reports) | 929 | **819** | **110** |
+
+Both are re-derived at the pin in § *Phase 1 as executed* — tasks 1.5 and 1.7, two `--census` runs
+with byte-identical headers — and the 270 by `perpageprobe.py --stages`. **Quoting one where the
+other belongs is how a filter's cost gets misstated by a factor of two and a half**, which is why
+both are printed here with the thing each one counts.
+
+---
+
+## Phase 3 as executed
+
+**Written 2026-09-19 on `spec/015-phase3-triage`**, against § *Phase 3 prediction* above.
+
+### The instrument could not read its own corpus, and it found out 597 names in *(task 3.1)*
+
+**Recorded before it was fixed** (obligation 2). The first full run died at **name 597 of 819**,
+`HttpRequestException`, with the whole process and not the row:
+
+```text
+596/819 rows written, then
+
+  File ".../probe/triagerun.py", line 177, in stage2
+    out = git(repo, ['log', '-S', bracket_pattern(name), … '-p', sha, …])
+  …
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xa9 in position 18562: invalid start byte
+```
+
+**`git log -p` emits the bytes that are in the tree, and one of them is not UTF-8.** Located by
+reading the raw stream rather than by guessing:
+
+```text
+b'#region Licence\n /* The MIT License (MIT)\n-Copyright \xa9 2014 Ian Cooper <…>'
+  src/Paramore.Brighter.MessagingGateway.RESTMS/RestMsMessageConsumer.cs
+```
+
+A Latin-1 `©` in a 2014 licence header, in a gateway since deleted. `subprocess.run(text=True)`
+decodes as UTF-8 and **raises**, so a corpus containing one such byte anywhere stops the run dead
+whenever a name's history happens to reach that commit.
+
+**The fix is `errors='replace'` in `git()`, and it cannot move a verdict** — `TOKEN_RE` nominates
+ASCII identifiers and `word_re()` matches ASCII, so every byte the replacement touches is a byte no
+query could ever have matched. That argument is a claim about the instrument, so it was run rather
+than asserted, **both ways**:
+
+```text
+positive  HttpRequestException   fixed reader 3 commits, raw bytes 3 commits   MATCH
+          dotted 0, bare 5, 2 distinct evidence lines
+negative  DbParameter            row identical to the pre-fix run: True
+negative  UseMsSqlOutbox         row identical to the pre-fix run: True
+```
+
+The **positive** half counts the same commits a second way — by counting `\x01` record marks in the
+undecoded byte stream — so the fixed reader is checked against something that never decodes at all.
+The **negative** half re-runs two names the pre-fix run had already written rows for and requires
+the new rows to be **identical in every field**: a fix that quietly changed a clean name's evidence
+would be caught there rather than at the next person to read the table.
+
+> **Three things about where this landed.** It failed **loudly**, which is the safe direction and
+> the opposite of this programme's usual finding — the same shape as phase 2's exit-1 case, where
+> the unsafe version reads a broken query as `0`. It landed at **597 of 819**, deep in the one-page
+> tail, so **no pilot over the head would have met it**: phase 2's 60-name pilot ran clean, and
+> friction 45 says the head is unrepresentative by construction. And the checkpoint is what made it
+> cost four minutes instead of thirteen — **596 rows were already fsynced**, and the resumed run
+> skipped every one of them.
+
+### The run, and the design's split reproduced to the name *(tasks 3.1 and 3.2)*
+
+```text
+python3 spec/015-census_triage/probe/triagerun.py      # 596 rows, 13:21.18, then the crash
+python3 spec/015-census_triage/probe/triagerun.py      # 223 rows,  5:19.60, resumed from the checkpoint
+
+census candidates: 819
+controls -- four, three distinct verdicts required, both plants absent: all OK
+
+verdicts:
+  LIVE                  0
+  EXISTED, REMOVED     44
+  NEVER EXISTED       775
+  total               819
+```
+
+**Two runs, 18:41 of wall clock, and the costs land on phase 2's table rather than the design's.**
+Derived from the rows' own `seconds`, which is how tasks 3.1 and 3.2 are separable at all when the
+runner fuses the stages:
+
+| | Names | Mean | Total |
+|---|---:|---:|---:|
+| **screened at stage 1** | **720** | **0.65s** | 467.5s |
+| **stage-1 survivors** | **99** | **6.11s** | 604.5s |
+| …of which stage 2 found a whole identifier | 44 | 6.06s | 266.6s |
+| …of which the hits were substrings only | 55 | 6.14s | 337.9s |
+| **all** | **819** | **1.31s** | **1072s = 17.9 min** |
+
+**Phase 2 projected 17.4 minutes and measured 17.9.** The design's 25 was the figure that would have
+been budgeted from, and it was wrong in the direction that matters least; phase 2's was wrong by
+3%.
+
+**The split is the design's, to the name:**
+
+| | `design.md` §10.5 | Measured here | |
+|---|---:|---:|---|
+| screened out at stage 1 | 720 | **720** | |
+| survivors | 99 | **99** | |
+| …at ≥3 pages | 19 | **19** | |
+| …at 2 pages | 12 | **12** | |
+| …at 1 page | 68 | **68** | |
+
+> **This is two methods agreeing, not one method repeated.** The design's figures came from a
+> hand-run shell pilot over the whole census; these come from `triagerun.py`, which opens no shell,
+> queries the pin through `CENSUS_PINS` rather than `origin/master`, and reads exit codes per
+> command. **Different code, same corpus, same five numbers.** That is obligation 1 satisfied by
+> construction rather than by re-running the same script twice — and it is the check friction 43
+> asks for, because the numbers reproduced here are the ones the *decision* turned on, not the total
+> the report leads with.
+
+**The stage-1 asymmetry paid for itself exactly as designed.** 720 names cost 0.65s each and were
+never looked at again; the 99 that survived cost nine times as much. Had every name been asked the
+honest question, the run would have been **819 × 6.11s ≈ 83 minutes** instead of 18.
+
+### Stage 2.5, and what it would have decided if anyone had let it *(task 3.3)*
+
+The dot evidence is printed beside every survivor and **applied to nothing**. Measured over the 44:
+
+| | Dotted / bare | Reads as | Stage 3 ruled |
+|---|---:|---|---|
+| `LogCritical` | 18 / 0 | a call on somebody else's type | NOT SURFACE ✓ |
+| `DeserializeObject` | 48 / 0 | the same | NOT SURFACE ✓ |
+| `UseMsSqlOutbox` | 0 / 2 | declaration position | SURFACE ✓ |
+| `Repository` | 64 / 64 | **precisely ambiguous** | NOT SURFACE, on the lines |
+| `Date` | 0 / 26 | declaration position | **NOT SURFACE** — 20 of the 26 are string literals |
+| `UseScoped` | 2 / 6 | mixed | SURFACE, on the lines |
+
+**It is a good tell and it is not a verdict.** Two of the six above would have been decided wrongly
+by the counts alone, and both failures are in the dangerous direction: `Date` reads
+*declaration-shaped* because a string literal has no dot in front of it either. The tell is a
+property of the **character before the match**, and three different things share that property —
+a declaration, a string literal, and a bare identifier in an initialiser.
+
+### Stage 3: seventeen, where twelve was the floor *(task 3.4)*
+
+**The full rulings are `spec/015-census_triage/stage3.tsv`** — one row per survivor, each with its
+quoted evidence line and a control measured by the same query at the pin. `triage.md` §5.2 carries
+the set and §5.3 the evidence. The counts:
+
+```bash
+python3 spec/015-census_triage/probe/triagetable.py --check
+#   needing a stage-3 ruling : 44
+#     ruled SURFACE          : 17
+#     ruled NOT SURFACE      : 27
+#     ruled INSTRUMENT       :  0
+```
+
+**Ten pages, twenty-eight sites — 23 fenced across 15 distinct blocks, 5 in prose** — re-derived by
+two agreeing greps in `triage.md` §5.2, against finding 3's nine pages and eighteen sites for the
+twelve.
+
+**`triagetable.py` is a new check, so it owes a red-proof, and it is two-way in both directions**
+(obligation 3). The record is refused when the machine's output and the person's disagree about
+which names need a ruling — either way round:
+
+```text
+$ triagetable.py --check --rulings <a copy with UseMsSqlOutbox deleted>
+the record would misstate the run: 1 survivor(s) have no stage-3 ruling, so the
+triage is unfinished: UseMsSqlOutbox                                        exit 2
+
+$ triagetable.py --check --rulings <a copy with ZzNotASurvivor added>
+the record would misstate the run: 1 ruling(s) name something that is not a
+survivor of this run: ZzNotASurvivor                                        exit 2
+
+$ triagetable.py --check                                                    exit 0
+```
+
+**The positive case is planted from outside the enumeration** (friction 36): `ZzNotASurvivor` is
+not a census candidate, not a survivor and not a name in either product, so it tests the check
+rather than the corpus. And the **green** third line is the half that shows the first two are
+findings rather than a checker that refuses everything.
+
+**Zero `LIVE`, and that is a measurement rather than a quiet pass.** A `LIVE` verdict would have
+been a defect in the census — a name it called unresolved that resolves — and the run was capable of
+returning one: the control `IAmAMessageScheduler` classifies `LIVE` at 102 live files in the same
+run, immediately before the 819 rows are written.
+
+### Phase 3 as executed — what the list did not predict
+
+**1. The instrument could not read its own corpus.** Above, in full: a Latin-1 `©` from 2014, at
+name 597 of 819, fixed with `errors='replace'` and controlled both ways.
+
+**2. Twelve was a floor and it rose to seventeen — and the five extra ones arrived in families.**
+`S3LuggageStoreCreation` and `StoreCreation` sit beside `AddS3LuggageStore`; `BeginOrGetTransactionAsync`
+sits beside `BeginOrGetTransaction`; `UnitOfWork` sits beside `IUnitOfWork`. **Four of the five are
+the neighbour of a name the design already had** — the option enum next to its registration method,
+the async twin next to the sync one, the class next to its interface.
+
+> **A dead API keeps company, because APIs are removed in families and pages document them in
+> families.** Every one of the five is a **one-page** name, so no page-spread ordering would have
+> surfaced them; what would have is asking *what else was in that commit*. Phase 4 should read the
+> **block**, not the name.
+
+**3. The fifth is `ApplicationJson`, and it is the one worth quoting at any green gate.**
+`MessageMappers.md` prints Brighter's constructor signature with a default the product removed —
+and **at line 132 the same page already uses the replacement**, `MediaTypeNames.Application.Octet`,
+sixteen lines after the last of its five `ApplicationJson` sites. A page contradicting itself, on a name no watchlist carried, in
+a block nobody compiles. It is on no list the design produced because the design never looked at
+that page.
+
+**4. The documentation reproduced the product's own typo, and that is evidence about how it rots.**
+`UseMySqTransactionConnectionProvider` — `MySq`, not `MySql` — is spelled that way in Brighter's
+removed source *and* on `DapperOutbox.md`. The page was copied from the source when the source was
+right, which is exactly why it is wrong now: **a page that was accurate by transcription decays the
+moment the thing it transcribed moves**, and nothing in this repository was watching.
+
+**5. The survivor count is not the interesting count, and neither is the census total.** 819
+candidates → 99 survivors → 44 with a whole-identifier history → **17 confirmed**. The design read
+**7 of 7** head survivors and found **zero** product surface; the tail's 44 hold seventeen. The
+funnel's last step is the only one a machine cannot take, and it is where every real finding was.
+
+### The eight gates, reconciled *(task 3.7)*
+
+Predicted **none**, eight of eight, with `git add -A` run before the `--changed` pass so the strict
+run had a diff to see.
+
+| # | Gate | Predicted | Measured |
+|---:|---|---|---|
+| 1 | `linkcheck` | none | **unmoved** at `tools/README.md`'s figure |
+| 2 | `pagelint` | none, errors and warnings both | **unmoved**; `--changed` **0 errors** |
+| 3 | shape | none | **unmoved** |
+| 4 | redirects | none | **unmoved** |
+| 5 | `versioncheck` | none | **unmoved** |
+| 6 | `optioncheck` | none | **unmoved** |
+| 7 | `--verify` | none | **unmoved** |
+| 8 | `symbolcheck` | none, gate and `--verify-list` | **unmoved**, and `--verify-list` reports all 5 entries still dead with every replacement live |
+
+**No figure in `tools/README.md` changed**, so constraint 6 and obligation 10 are not engaged. The
+warning count did not move either: this phase edits no page.
+
+> **And the green from gate 8 is the one to distrust, exactly as predicted.** `symbolcheck` reports
+> *no watchlisted symbols found — 5 entries, 161 pages, 1 silenced* while **seventeen dead APIs are
+> printed on ten of those pages**, because it has never been told their names. That is not a defect
+> in the gate; it is the gate's scope, and it is what phase 4's rows are for. **A green from an
+> instrument that has never been given the corpus is a claim about the instrument.**
