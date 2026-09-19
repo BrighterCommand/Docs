@@ -206,7 +206,7 @@ has never had anything to find, which is the trap this programme has now met eig
 and stops counting a page's own helper methods. **Changes no published page**, so no sign-off — but
 it still owes obligations 1 and 2.
 
-- [ ] **Task 1.1:** Re-run the drift control, and write the movement prediction **dated and before
+- [x] **Task 1.1:** Re-run the drift control, and write the movement prediction **dated and before
       any edit to `tools/symbolcheck.py`**
   - Input: `design.md` §10.2 (the drift control), §2's table, §11's gate predictions
   - Output: a § *Phase 1 prediction* section in this file, committed **ahead of** the commit that
@@ -619,3 +619,100 @@ the close. **Changes no published page.**
   tutorial-samples exception is not reached.
 - **P1-2**, withdrawn when Q2 was reversed — a policy about what you did not triage is not needed
   once you have triaged it.
+
+---
+
+## Phase 1 prediction
+
+**Written 2026-09-19, on `spec/015-phase1-instrument`, and committed in its own commit *before* any
+edit to `tools/symbolcheck.py`.** AC2 asks for a before- and an after-count, and a prediction
+committed alongside the change it predicts is a prediction nobody can date. Task 1.1.
+
+### The drift control, re-run first
+
+Every figure below rests on `perpageprobe.py` still being a faithful copy of `census()`
+(`design.md` §10.2). Run with no extra filter it must reproduce the shipped tool exactly, and its
+two code paths must agree:
+
+```text
+sc.census(pages())[0]                  -> 2019   (counts['candidates'] = 2019)
+stage_count(pages(), [])               -> 2019   MATCH
+stage_count(pages(), [METHOD_DECL_RE]) -> 1749
+len(census_per_page(pages()))          -> 1749   AGREE
+```
+
+**2019 = 2019, and the two probe paths agree at 1749.** The copy has not drifted, so §2's table is
+measuring what P0-1 would ship.
+
+> **`design.md` §10.2's four lines are shorthand, not a runnable script, and the first attempt to
+> run them verbatim returned `2`.** `census()` returns a **tuple** — `(candidates, counts)` — so
+> `len(sc.census(pages()))` is the length of that tuple and not a candidate count. The harness was
+> wrong and the tool was fine. It is recorded because `2` is only obviously absurd here: had the
+> control been `len()` of something two-element-shaped and plausible, it would have read as drift in
+> `census()` and sent phase 1 looking for a defect that does not exist. **A control's own harness is
+> an instrument and it gets no exemption from being checked.** Both halves are now asserted by
+> name — `MATCH` against the shipped tool, `AGREE` between the probe's two paths — rather than
+> eyeballed.
+
+### The refs, re-resolved today
+
+Unmoved since this list was written on 2026-09-18, which is a measurement and not an assumption:
+
+```bash
+git -C ../Brighter rev-parse --short origin/master   # 6145913a0
+git -C ../Brighter rev-parse --short 10.7.0          # c1b8af886
+git -C ../Brighter rev-parse --short 09f5d988f       # 09f5d988f   the pin, still resolves
+git -C ../Darker   rev-parse --short origin/master   # 2f76cda
+git -C ../Darker   rev-parse --short 4.1.1           # ddb71ee
+git -C ../Darker   rev-parse --short 2f76cda         # 2f76cda
+```
+
+**Brighter's `origin/master` is still one commit ahead of the pin; Darker's *is* the pin.** So this
+phase is the first thing 015 does with the two Brighter refs genuinely different, which is what
+makes task 1.4's AC6 check informative rather than rhetorical.
+
+### The prediction: 929 → 819
+
+Re-derived today by two methods that agree, at `6145913a0` / `2f76cda`:
+
+```bash
+python3 spec/015-census_triage/probe/methodprobe.py  | head -4   # 929, 110, 31, 819
+python3 spec/015-census_triage/probe/perpageprobe.py | head -4   # 929 / 819 / 819
+```
+
+| | names | ≥7 | ≥5 | ≥4 | ≥3 | ≥2 |
+|---|---:|---:|---:|---:|---:|---:|
+| shipped today, types only | 929 | 40 | 63 | 73 | 115 | 233 |
+| all-or-nothing (`methodprobe`) | 819 | 38 | 60 | 70 | 112 | 220 |
+| **per page — what P0-1 ships** | **819** | 36 | 57 | 65 | 103 | 210 |
+
+**Predicted after P0-1: 819 candidates, a movement of 110 names.** Predicted blind spot: **1** name,
+`Greeting`, at 7 pages — a modifier-less declaration the filter is anchored not to see.
+
+> **This prediction was measured at `6145913a0`, and task 1.5's before-run is at the pin
+> `09f5d988f`.** They are one commit apart — a one-line change in `CommandProcessor.cs` — so this is
+> a prediction about a world one commit away from the one the phase measures. **If the before-run at
+> the pin is not 929, that is a finding about the census's sensitivity to the ref, not a failed
+> prediction** (finding 1, and obligation 9). Record it, and carry the *pinned* figure forward: the
+> pinned pair is the one that counts, because it is the pair both halves of AC2 are measured at.
+
+### The eight gates, predicted before the work
+
+Per obligation 6 — including every "none", with the reason it is none. Figures are **cited from
+`tools/README.md`, not pasted here** (obligation 10); the prediction is movement, not a number.
+
+| # | Gate | Predicted | Why |
+|---:|---|---|---|
+| 1 | `linkcheck` | **none** | Two independent reasons, and the second is the load-bearing one. `spec/` is in `SKIP_DIRS` (`tools/linkcheck.py:52`), so this file is outside the corpus — **and the walk only opens `.md` files at all** (`tools/linkcheck.py:112`), so `tools/symbolcheck.py` cannot enter it either. The 164 → 165 precedent was a **new `.md` file inside `tools/`**; phase 1 adds no `.md` anywhere in the walk |
+| 2 | `pagelint` | **none**, errors and warnings both | Its corpus is `contents/` plus the root `README.md`. Phase 1 touches neither. The warning count is the number most likely to move unintentionally across this spec, but only P0-6 edits a C# block on a page |
+| 3 | shape | **none** | `SUMMARY.md` is untouched; no page is created, nested or moved |
+| 4 | redirects | **none** | Redirects follow `SUMMARY.md`, which is untouched |
+| 5 | `versioncheck` | **none** | It reads version pins in published pages; phase 1 edits a tool and a spec document |
+| 6 | `optioncheck` | **none** | It reflects over marked option tables in pages; none is touched |
+| 7 | `--verify` | **none** | The published-URL set is unchanged, for the same reason as shape |
+| 8 | `symbolcheck` | **none** — gate **and** `--verify-list` | The mechanical reason, not a judgement: `census()` and `universe()` are reached **only** from `run_census`, which is reached only from `--census` (`tools/symbolcheck.py:761`). `CENSUS_PINS` and `MEMBER_DECL_RE` are both inside that path. The gate and `verify_row` read `PRODUCT_REFS` directly (`:623`), which task 1.2 must not touch |
+
+**The two predictions of "none" worth distrusting are 1 and 2** (`design.md` §11 names both). Neither
+is trusted here on the grounds that it did not move last time: `linkcheck`'s is re-argued from the
+`.md`-only walk, and `pagelint`'s from a corpus phase 1 does not touch. Task 1.10 reconciles all
+eight against this table, and an unpredicted movement is a finding rather than a number to adopt.
