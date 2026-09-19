@@ -225,14 +225,14 @@ services.AddSingleton<IAmAnOutboxCircuitBreaker>(
 
 ### Other Transports
 
-Circuit breaking works with all Brighter Outbox implementations:
+Circuit breaking works with all Brighter Outbox implementations. Set the one you want as `Outbox` on the options passed to `AddProducers()`:
 
-- **MS SQL Server** (`UseMsSqlOutbox`)
-- **PostgreSQL** (`UsePostgreSqlOutbox`)
-- **MySQL** (`UseMySqlOutbox`)
-- **SQLite** (`UseSqliteOutbox`)
-- **DynamoDB** (`UseDynamoDbOutbox`)
-- **MongoDB** (`UseMongoDbOutbox`)
+- **MS SQL Server** (`MsSqlOutbox`)
+- **PostgreSQL** (`PostgreSqlOutbox`)
+- **MySQL** (`MySqlOutbox`)
+- **SQLite** (`SqliteOutbox`)
+- **DynamoDB** (`DynamoDbOutbox`)
+- **MongoDB** (`MongoDbOutbox`)
 
 ## Bulk Dispatch Support
 
@@ -305,10 +305,21 @@ When topics trip repeatedly:
 Circuit breaking is designed to work with the Outbox Sweeper:
 
 ```csharp
-// Always enable UseOutboxSweeper when using circuit breaking
-services.AddBrighter(/* configuration */)
-    .UseOutboxSweeper()  // Required for circuit breaking to function
-    .UseMsSqlOutbox(/* outbox config */);
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MsSql;
+using Paramore.Brighter.Outbox.Hosting;
+using Paramore.Brighter.Outbox.MsSql;
+
+// ... outboxConfiguration comes from your database configuration
+services.AddBrighter()
+    .AddProducers(configure =>
+    {
+        configure.Outbox = new MsSqlOutbox(outboxConfiguration);
+        configure.ConnectionProvider = typeof(MsSqlConnectionProvider);
+        configure.TransactionProvider = typeof(MsSqlTransactionProvider);
+    })
+    .UseOutboxSweeper();  // Required for circuit breaking to function
 ```
 
 ### 6. Consider Immediate vs. Sweeper Clearing

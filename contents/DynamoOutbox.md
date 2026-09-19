@@ -28,72 +28,98 @@ For this we will need the *Outbox* package for DynamoDb:
 
 See [AWS SQS Migration](/contents/AWSSQSMigrateToV10.md#migrating-from-aws-sdk-v3-to-v4) for migration guidance between v3 and v4.
 
-As described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support), we configure Brighter to use an outbox with the Use{DB}Outbox method call.
+As described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support), we configure Brighter to use an outbox by setting **Outbox** on the options passed to **AddProducers()**.
 
-As we want to use DynamoDb with the outbox, we also call: Use{DB}TransactionConnectionProvider so that we can share your transaction scope when persisting messages to the outbox.
+As we want to use DynamoDb with the outbox, we also set **ConnectionProvider** and **TransactionProvider** — both to **DynamoDbUnitOfWork**, which is one type playing both parts — so that we can share your transaction scope when persisting messages to the outbox.
 
 
 ``` csharp
+using System;
+using Amazon.DynamoDBv2;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.DynamoDb;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.DynamoDB;
+using Paramore.Brighter.Outbox.Hosting;
+
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
-        .AddProducers(...)
-        .UseDynamoDbOutbox(ServiceLifetime.Singleton)
-        .UseDynamoDbTransactionConnectionProvider(typeof(DynamoDbUnitOfWork), ServiceLifetime.Scoped)
+    // ... dynamoDb is your IAmazonDynamoDB client, producerRegistry your transport
+    services.AddBrighter()
+        .AddProducers(configure =>
+        {
+            configure.ProducerRegistry = producerRegistry;
+            configure.Outbox = new DynamoDbOutbox(
+                dynamoDb, new DynamoDbConfiguration(), TimeProvider.System);
+            configure.ConnectionProvider = typeof(DynamoDbUnitOfWork);
+            configure.TransactionProvider = typeof(DynamoDbUnitOfWork);
+        })
         .UseOutboxSweeper()
-
-        ...
+        .AutoFromAssemblies();
 }
 
 ```
 
-In our handler we take a dependency on Brighter's **IAmABoxTransactionConnectionProvider** interface and convert it to a **DynamoDbUnitofWork**. We explicitly start a transaction within the handler on the Database within the Unit of Work.  
+In our handler we take a dependency on Brighter's **IAmADynamoDbTransactionProvider** interface, which **DynamoDbUnitOfWork** implements. We explicitly start a transaction within the handler on the Database within that provider.  
 
 We call **DepositPostAsync** within that transaction to write the message to the Outbox. Once the transaction has closed we can call **ClearOutboxAsync** to immediately clear, or we can rely on the Outbox Sweeper, if we have configured one to clear for us. (There are equivalent synchronous versions of these APIs).
 
 > **Running more than one instance?** Configure a [distributed lock](/contents/DistributedLock.md) so only one Sweeper (and Archiver) runs at a time — see [DynamoDB Distributed Lock](/contents/DynamoDbDistributedLock.md).
 
 ``` csharp
-public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default(CancellationToken))
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.Model;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+
+public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default)
 {
-	var posts = new List<Guid>();
+    var posts = new List<Id>();
 
-	//We use the unit of work to grab connection and transaction, because Outbox needs
-	//to share them 'behind the scenes'
-	var context = new DynamoDBContext(_unitOfWork.DynamoDb);
-	var transaction = _unitOfWork.BeginOrGetTransaction();
-	try
-	{
-		var person = await context.LoadAsync<Person>(addGreeting.Name);
+    //We use the transaction provider to grab connection and transaction, because Outbox needs
+    //to share them 'behind the scenes'
+    var context = new DynamoDBContext(_transactionProvider.DynamoDb);
+    var transaction = await _transactionProvider.GetTransactionAsync(cancellationToken);
+    try
+    {
+        var person = await context.LoadAsync<Person>(addGreeting.Name, cancellationToken);
 
-		person.Greetings.Add(addGreeting.Greeting);
+        person.Greetings.Add(addGreeting.Greeting);
 
-		var document = context.ToDocument(person);
-		var attributeValues = document.ToAttributeMap();
+        var document = context.ToDocument(person);
+        var attributeValues = document.ToAttributeMap();
 
-		//write the added child entity to the Db - just replace the whole entity as we grabbed the original
-		//in production code, an update expression would be faster
-		transaction.TransactItems.Add(new TransactWriteItem{Put = new Put{TableName = "People", Item = attributeValues}});
+        //write the added child entity to the Db - just replace the whole entity as we grabbed the original
+        //in production code, an update expression would be faster
+        transaction.TransactItems.Add(new TransactWriteItem{Put = new Put{TableName = "People", Item = attributeValues}});
 
-		//Now write the message we want to send to the Db in the same transaction.
-		posts.Add(await _postBox.DepositPostAsync(new GreetingMade(addGreeting.Greeting), cancellationToken: cancellationToken));
+        //Now write the message we want to send to the Db in the same transaction.
+        posts.Add(await _postBox.DepositPostAsync(
+            new GreetingMade(addGreeting.Greeting),
+            _transactionProvider,
+            cancellationToken: cancellationToken));
 
-		//commit both new greeting and outgoing message
-		await _unitOfWork.CommitAsync(cancellationToken);
-	}
-	catch (Exception e)
-	{   
-		_logger.LogError(e, "Exception thrown handling Add Greeting request");
-		//it went wrong, rollback the entity change and the downstream message
-		_unitOfWork.Rollback();
-		return await base.HandleAsync(addGreeting, cancellationToken);
-	}
+        //commit both new greeting and outgoing message
+        await _transactionProvider.CommitAsync(cancellationToken);
+    }
+    catch (Exception e)
+    {
+        _logger.LogError(e, "Exception thrown handling Add Greeting request");
+        //it went wrong, rollback the entity change and the downstream message
+        _transactionProvider.Rollback();
+        return await base.HandleAsync(addGreeting, cancellationToken);
+    }
 
-	//Send this message via a transport. We need the ids to send just the messages here, not all outstanding ones.
-	//Alternatively, you can let the Sweeper do this, but at the cost of increased latency
-	await _postBox.ClearOutboxAsync(posts, cancellationToken:cancellationToken);
+    //Send this message via a transport. We need the ids to send just the messages here, not all outstanding ones.
+    //Alternatively, you can let the Sweeper do this, but at the cost of increased latency
+    await _postBox.ClearOutboxAsync(posts, cancellationToken: cancellationToken);
 
-	return await base.HandleAsync(addGreeting, cancellationToken);
+    return await base.HandleAsync(addGreeting, cancellationToken);
 }
 ```
 
