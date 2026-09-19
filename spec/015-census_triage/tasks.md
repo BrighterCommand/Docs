@@ -600,7 +600,7 @@ the close. **Changes no published page.**
     says**, do not tick from the phase write-up. AC3 is the worked example of why: its first form
     was green before its feature existed, satisfied by `cceeded` inside `Succeeded`
 
-- [ ] **Task 5.3:** The backwards check — what changed that should not have
+- [x] **Task 5.3:** The backwards check — what changed that should not have
   - Input: `git diff --stat 1524662..HEAD`
   - Output: a paragraph naming every file 015 touched, with the pages reconciled against task 4.1's
     list and any file outside `tools/symbolcheck.py`, `tools/symbolwatch.tsv`, `tools/README.md`,
@@ -2439,3 +2439,61 @@ nothing strict prints the same verdict as one that made fifteen blocks strict, a
 exactly fifteen. The two blocks that cannot compile by construction — `MessageMappers.md`'s
 `MessageBody` signature quotations — are in that fifteen, carry `// ...`, and are therefore counted
 warnings rather than silence.
+
+### The backwards check — what changed that should not have *(task 5.3)*
+
+```bash
+git diff --stat 1524662..HEAD        # 22 files, 6653 insertions, 233 deletions
+```
+
+**Twenty-two files, and every one of them is on the sanctioned list.** The list is task 5.3's, not
+this diff's — it was written into the task before the phase ran:
+
+| Files | Count | Sanctioned by |
+|---|---:|---|
+| the ten pages under `contents/` | **10** | **task 4.1's table, to the page** — see below |
+| `spec/015-census_triage/` | **9** | the spec's own directory: `tasks.md`, `triage.md`, `design.md`, `requirements.md`, `stage3.tsv`, `triage-checkpoint.jsonl`, `probe/triagerun.py`, `probe/triagetable.py`, `.tasks-approved` |
+| `tools/symbolcheck.py` | 1 | P0-1 and P0-2, deliverable 1 |
+| `tools/symbolwatch.tsv` | 1 | P0-5, deliverable 4 — **+17 rows** |
+| `tools/README.md` | 1 | deliverable 2, and obligation 10's single home for a gate figure |
+| **nothing else** | **0** | |
+
+**The ten pages reconcile exactly against task 4.1's table** — same ten names, no eleventh:
+
+```bash
+diff <(git diff --name-only 1524662..HEAD -- contents/ | xargs -n1 basename | sort) \
+     <(the ten page names in task 4.1's table, sorted)        # no output
+```
+
+**Nothing was tidied in passing, and this was checked rather than asserted.** The three edits a
+repair pass most easily makes by accident are a heading, a banner and a `description:`, and all
+three would be defects here — phase 4 was forbidden from changing a page's type, banner or opening
+sentence:
+
+```bash
+git diff 1524662..HEAD -- contents/ | grep -E '^[+-]#'                                    # no output
+git diff 1524662..HEAD -- contents/ | grep -E '^[+-](> \*\*(Tutorial|How-to|Reference|Explanation)|description:)'
+                                                                                          # no output
+```
+
+**Zero heading changes across ten pages and 548 changed lines** (`+343 -205`), which is also why
+`--verify` and the shape gate could not have moved: a heading is a published anchor.
+
+**Every prose change was read, not counted.** Of the 343 added lines, **34 sit outside a fenced
+block**, on **four** pages — `S3LuggageStore.md` 14, `DapperOutbox.md` 10, `SweeperCircuitBreaking.md`
+7, `DynamoOutbox.md` 3, and **zero on the other six**. The fenced/prose split is taken through
+`pagelint.Page` rather than by eye. Each of the 34 is about the name being repaired or the API that
+replaced it:
+`DapperOutbox.md`'s package list (the `Paramore.Brighter.{DB}.Dapper` packages that have no V10
+release), `DynamoOutbox.md`'s `Use{DB}TransactionConnectionProvider` sentence and its
+`IAmABoxTransactionConnectionProvider` paragraph, `S3LuggageStore.md`'s *Coming from V9?* opt-out,
+and `SweeperCircuitBreaking.md`'s bulleted list of `Use{DB}Outbox` methods. **No page gained a
+sentence about anything else.**
+
+**Both product repositories are untouched, and their working trees are somebody else's.**
+`../Brighter` carries a staged `specs/9999-show-me-fixture/` and two untracked `PROMPT-*.md` files;
+`../Darker` carries a modified `Directory.Packages.props` and an untracked `Darker.sln`. **None of
+it is 015's** — this spec wrote nothing in either repository, and the tutorial-samples exception in
+`CLAUDE.md` was never reached. It also cannot affect a single figure in this document: every
+product query in `symbolcheck.py` and `triagerun.py` names a **SHA** and reads the object database,
+never the working tree. A dirty checkout is invisible to `git grep <sha>` by construction.
