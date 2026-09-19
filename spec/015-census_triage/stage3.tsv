@@ -1,0 +1,65 @@
+# Stage 3 -- the rulings a person took, one row per name the machine could not
+# finish. `triage.md` 2.4: the boundary is THE PRODUCT'S OWN PUBLIC SURFACE
+# against A NAME THE PRODUCT'S SOURCE MERELY CONTAINED.
+#
+# name <TAB> ruling <TAB> evidence <TAB> control
+#
+# ruling is SURFACE, NOT SURFACE or INSTRUMENT. `probe/triagetable.py --check`
+# reads this file and refuses to build the record when a survivor has no row
+# here, or when a row here names something this run did not produce.
+#
+# THE RULING IS ABOUT WHAT THE DOCUMENTATION CLAIMS, NOT ONLY WHAT THE HISTORY
+# HOLDS. `Date` was a public property of DynamoDbMessage until 2019 and the
+# pages using it mean `DateTime.UtcNow.Date` and their own example command --
+# so the history alone would have ruled it the wrong way round. `triage.md` 1.3.
+#
+# Evidence lines are quoted from the run's own checkpoint. Controls are measured
+# at the pin with the same query the row was: `git -C ../Brighter grep -lwF
+# "$name" 09f5d988f -- 'src/*.cs' | wc -l`.
+#
+# -------------------------------------------------------------------- SURFACE
+UseMsSqlOutbox	SURFACE	`- public static IBrighterBuilder UseMsSqlOutbox(` -- an extension method on Brighter's own builder, removed	`UseOutboxSweeper`, the surviving member of the same extension family, is live at 1 file by the same query; this name is 0
+UseMySqlOutbox	SURFACE	`- public static IBrighterBuilder UseMySqlOutbox(`, with a second overload on `IBrighterHandlerBuilder`	as `UseMsSqlOutbox`: `UseOutboxSweeper` live at 1, this name 0
+UseDynamoDbOutbox	SURFACE	`- public static IBrighterBuilder UseDynamoDbOutbox(`	as `UseMsSqlOutbox`: `UseOutboxSweeper` live at 1, this name 0
+UseInMemoryOutbox	SURFACE	`- public static IBrighterBuilder UseInMemoryOutbox(this IBrighterBuilder brighterBuilder)`	as `UseMsSqlOutbox`: `UseOutboxSweeper` live at 1, this name 0
+UseDynamoDbTransactionConnectionProvider	SURFACE	`- public static IBrighterBuilder UseDynamoDbTransactionConnectionProvider(`	`IAmABoxTransactionProvider`, the interface that replaced the connection-provider family, is live at 26 files; this name is 0
+UseMySqTransactionConnectionProvider	SURFACE	`- public static IBrighterBuilder UseMySqTransactionConnectionProvider(` -- and note the product's own typo, `MySq`, which the page reproduces faithfully	as above: `IAmABoxTransactionProvider` live at 26, this name 0
+AddS3LuggageStore	SURFACE	`- public static void AddS3LuggageStore(this IServiceCollection services, Action<S3LuggageOptions> configure)`	`S3LuggageOptions` is live at 4 files and `S3LuggageStore` is a live class, so the FEATURE survives and only its registration API is gone
+S3LuggageStoreCreation	SURFACE	`- public enum S3LuggageStoreCreation` -- a public enum of Brighter's own	`S3LuggageOptions` live at 4; this name 0. The options class outlived the enum it carried
+StoreCreation	SURFACE	`- public S3LuggageStoreCreation StoreCreation { get; set; }` -- a public property of the options class	`S3LuggageOptions` live at 4; this name 0
+CommandProcessorLifetime	SURFACE	`- public ServiceLifetime CommandProcessorLifetime { get; set; } = ServiceLifetime.Transient;`, plus the interface member `- ServiceLifetime CommandProcessorLifetime { get; set; }`	`HandlerLifetime`, a sibling property on the same `BrighterOptions`, is live at 2 files; this name is 0. Same class, same shape, opposite answer
+UseScoped	SURFACE	`- public bool UseScoped { get; set; } = false;`, and `- if (options.UseScoped)` reading it	`BrighterOptions` itself is live at 3 files, so the options class is not what went away
+NoTaskQueues	SURFACE	`public INeedARequestContext NoTaskQueues()` and the interface member `- INeedARequestContext NoTaskQueues();` -- a step in the fluent builder	`NoExternalBus` -- the surviving member of the same fluent step -- is live at 2 files; this name is 0
+IUnitOfWork	SURFACE	`- public interface IUnitOfWork : IAmABoxTransactionConnectionProvider, IDisposable`	`IAmABoxTransactionProvider` is live at 26 files; the interface that replaced it survives and this one does not
+UnitOfWork	SURFACE	`- public class UnitOfWork : IUnitOfWork` -- the implementation the page names by its full type, `Paramore.Brighter.MySql.Dapper.UnitOfWork`	as `IUnitOfWork`: `IAmABoxTransactionProvider` live at 26, this name 0
+BeginOrGetTransaction	SURFACE	`- DbTransaction BeginOrGetTransaction();` -- an interface member, with implementations returning `SqlTransaction`, `MySqlTransaction` and `TransactWriteItemsRequest`	`IAmABoxTransactionProvider` live at 26; this name 0 at both refs of both products
+BeginOrGetTransactionAsync	SURFACE	`- Task<DbTransaction> BeginOrGetTransactionAsync(CancellationToken cancellationToken);` -- the async twin, and a name the design's twelve did not carry	as `BeginOrGetTransaction`: `IAmABoxTransactionProvider` live at 26, this name 0
+ApplicationJson	SURFACE	`- public const string ApplicationJson = "application/json";` -- and `MessageMappers.md` prints it inside Brighter's own constructor signature, `public MessageBody(string body, string contentType = ApplicationJson, …)`	`MediaTypeNames` is live at 27 files and `ContentType` at 67; the constructor today reads `MessageBody(string? body, ContentType? contentType = null, …)`. The same page already uses `MediaTypeNames.Application.Octet` eighty lines further down
+# ---------------------------------------------------------------- NOT SURFACE
+Date	NOT SURFACE	The pages mean `DateTimeOffset.UtcNow.Date` and their own `GenerateDailyReportCommand { Date = … }`. Brighter DID have `- public DateTime Date { get; set; }` on `DynamoDbMessage` until 2019, and 20 of the 26 whole-word history lines are inside string literals such as `[DynamoDBHashKey("Command+Date")]`	the planted positive `IAmACommandStoreAsync`, whose evidence in the same run is `- private readonly IAmACommandStoreAsync _commandStore;` -- declaration position for a name the product published. This one's decisive lines are a BCL property and a page's own example
+AddHours	NOT SURFACE	`DateTime.UtcNow.AddHours(-1 * hoursDispatchedSince)` -- 2 dotted, 0 bare, a call on `DateTime`	as `Date`: read against the planted declaration, which is 0 dotted / 4 bare
+Repository	NOT SURFACE	`eventType.GetPropertyPortable("Repository")` and `logger.Repository` -- log4net reflection, and 64 dotted against 64 bare, precisely ambiguous in the counts alone	the counts do not discriminate here at all, so the ruling rests on the lines; the plant's lines are declarations and these are a string literal and a property access
+BuildServiceProvider	NOT SURFACE	`_services.BuildServiceProvider().GetService(handlerType)` in Darker -- 8 dotted, 0 bare, the ASP.NET extension	as `AddHours`: the plant is 0 dotted / 4 bare in the same run
+DbParameter	NOT SURFACE	`- private DbParameter CreateSqlParameter(…)` and `params DbParameter[] parameters` -- `System.Data.Common.DbParameter` in PRIVATE signatures	the plant is a `public interface` and a field of a published type; every decisive line here is `private`
+GetSection	NOT SURFACE	`var configSection = ConfigurationManager.GetSection(BrighterConfigSectionName)` -- the case `design.md` 10.6 chose as its worked example	the plant, in the same run, at identical counts: 2 commits, live 0. Same numbers, opposite readings
+TenantId	NOT SURFACE	`- TenantId = _azureTenantId,` -- Azure credential plumbing, assigned to a private field	as `DbParameter`: nothing here is a published member
+GetEnvironmentVariable	NOT SURFACE	`Environment.GetEnvironmentVariable(_azureUserNameKey)` -- 16 dotted, 0 bare in Brighter	as `AddHours`
+AddTransient	NOT SURFACE	`services.AddTransient(…)` -- the Microsoft DI extension, 4 dotted in Brighter and 8 in Darker, 0 bare in both	as `AddHours`
+Authorization	NOT SURFACE	`_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(` -- a property of `HttpClient`'s headers	as `AddHours`
+Categories	NOT SURFACE	`entryType.GetPropertyPortable("Categories")` -- a log4net property name inside a STRING LITERAL, in both products. The page means `_dbContext.Categories`, an EF DbSet in its own example	`triage.md` 1.2's third reading, measured: a string-literal match is not a use of a name at all
+ConfigurationManager	NOT SURFACE	the `System.Configuration` type, in the same removed block as `GetSection`	as `GetSection`, and the two names come from one line of history
+DeserializeObject	NOT SURFACE	`JsonConvert.DeserializeObject(…)` -- 48 dotted, 0 bare, Newtonsoft	as `AddHours`. `Newtonsoft` is a `NOISE_PREFIX`; the method name on it is not
+General	NOT SURFACE	`// General Information about an assembly is controlled through the following` -- an AssemblyInfo COMMENT. The pages use the word in prose headings	the census strips comments from the documentation side and nothing strips them from the history side; this row is that asymmetry, visible
+GetCurrentClassLogger	NOT SURFACE	`LogProvider.GetCurrentClassLogger()` -- LibLog, vendored into both products and removed with it. The page prints it in a constructor a reader cannot compile today	the plant is Brighter's own published interface; this is third-party code that was carried, not published
+Globals	NOT SURFACE	Brighter's history holds `Globals.DispatchedAtKey` and `Globals.StreamArg`; the page means its OWN constants holder, `Globals.MYRETRYPIPELINE`. Same name, two different things	the collision D12 named, measured: the name resolves in history and the documentation is not claiming that name
+HttpRequestException	NOT SURFACE	`catch (HttpRequestException he)` -- `System.Net.Http`. This is the name the first full run died on, at 597 of 819	as `DbParameter`: a catch clause is not a published member
+HttpResponseMessage	NOT SURFACE	`public T ParseResponse<T>(HttpResponseMessage response)` -- a BCL type in a Brighter signature, which is a parameter type and not a name Brighter published	the plant is the NAME being declared; here the declared name is `ParseResponse`
+InfoFormat	NOT SURFACE	`_logger.Value.InfoFormat(…)`, 110 dotted in Brighter, and Darker's own `- public static void InfoFormat(this ILog logger, …)` -- LibLog's extension, vendored. The page prints `logger.InfoFormat(…)` in a handler a reader cannot compile today	as `GetCurrentClassLogger`, and the two rows are the same finding twice
+LogCritical	NOT SURFACE	`s_logger.LogCritical(configurationException, …)` -- 18 dotted, 0 bare, `Microsoft.Extensions.Logging`	as `AddHours`. `Microsoft` is a `NOISE_PREFIX` and the method name on it is not
+Octet	NOT SURFACE	`MediaTypeNames.Application.Octet` -- and the page prints exactly that, correctly	`MediaTypeNames` is live at 27 files, so the page's line is current; only the leaf token failed to resolve
+Outcome	NOT SURFACE	`if (result.Outcome != OutcomeType.Successful)` -- Polly. The page means `Outcome.FromResult(Product.Default)`, Polly v8	as `AddHours`. `Polly` is a `NOISE_PREFIX`; a member on a Polly type is not
+ReadCapacityUnits	NOT SURFACE	`new ProvisionedThroughput{ReadCapacityUnits = 10, WriteCapacityUnits = 10}` -- an AWS SDK model property. The page's DynamoDB table-creation example is current	`Amazon` is a `NOISE_PREFIX`, so the namespace is filtered and the member name on it is not: this row is the noise set's own boundary, visible
+WriteCapacityUnits	NOT SURFACE	as `ReadCapacityUnits`, from the same object initialiser	as `ReadCapacityUnits`
+Resources	NOT SURFACE	`Paramore.Brighter.MessageViewer.Adaptors.API.Resources;` -- a namespace segment in a removed project	the plant is a type; a namespace segment is not a name anything can use
+SetBasePath	NOT SURFACE	`.SetBasePath(env.ContentRootPath).Build()` -- `Microsoft.Extensions.Configuration`	as `AddHours`
+StackExchange	NOT SURFACE	the `StackExchange.Redis` namespace, and the pages use it in a package name and a `using`	as `Resources`: a namespace segment, and the one prose page that names it says explicitly that the connection string is ServiceStack's and not this one's

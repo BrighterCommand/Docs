@@ -115,10 +115,21 @@ def git(repo, args, allow=(0,)):
     which is the live query's commonest and most informative answer. One set of
     accepted codes for both would either swallow a broken `log` or refuse every
     absent name -- and an absent name is what this method is looking for.
+
+    `errors='replace'` IS NOT TIDINESS, and phase 3 added it 597 names into the
+    first full run. `git log -p` emits the bytes that are in the tree, and
+    src/Paramore.Brighter.MessagingGateway.RESTMS/RestMsMessageConsumer.cs
+    carried a Latin-1 (c) in its 2014 licence header before it was deleted, so
+    `text=True` raised UnicodeDecodeError mid-corpus and took the process with
+    it. Replacing the undecodable byte cannot move a verdict: TOKEN_RE nominates
+    ASCII identifiers only, and word_re() matches ASCII only, so every byte this
+    touches is one no query could ever have matched. The control is in tasks.md
+    -- the crashing name against a byte-level count, and a clean name against
+    the row the pre-fix run had already written for it.
     """
     path = os.path.join(ROOT, repo)
     proc = subprocess.run(['git', '-C', path] + args,
-                          capture_output=True, text=True)
+                          capture_output=True, text=True, errors='replace')
     if proc.returncode not in allow:
         raise TriageError(f'git -C {repo} {" ".join(args[:3])}...: '
                           f'exit {proc.returncode}: '
