@@ -2016,3 +2016,43 @@ member, removed in AWS SDK v4, on a page that recommends the v4 package. Neither
 watchlist can reach it, because the name belongs to neither product. **Only compiling against the
 packages the page tells a reader to install finds it**, which is the argument for AC12 stated as a
 case rather than as a principle.
+
+---
+
+## Phase 5 prediction
+
+**Written 2026-09-19 on `spec/015-phase5-acceptance`, in its own commit before any criterion was
+walked and before any gate was run.** Obligation 6 for the gates; obligation 1 for everything else.
+An acceptance phase that predicts nothing has no way to be surprised, and the two criteria this
+programme has ever found unmet at a close were both found by a person reading, not by a gate.
+
+### What this phase expects to find, and what would count as a surprise
+
+| | Expected | What a miss would mean |
+|---|---|---|
+| **AC4, AC6, AC10 — the unmarked three** | **at least one finding**, on the precedent that 014's five acceptance repairs all came out of its two uninstrumented criteria | a clean walk of three unmarked criteria is the outcome to distrust, not the one to celebrate |
+| **The eight instrumented criteria** | all eight green, **and uninformative** — each one was green when its phase shipped | a red here is a claim that a phase's own reconciliation was wrong, which is worth stopping for |
+| **AC10 specifically** | the likeliest failure of the three. 015 quotes more numbers than 014 did, across five documents, and three of them were approved before the work that moved the figures | — |
+| **The backwards check (5.3)** | **ten pages, `tools/symbolcheck.py`, `tools/symbolwatch.tsv`, `tools/README.md`, `spec/015-census_triage/`** and nothing else | a file outside that set is either scope creep or an undocumented dependency |
+
+### The eight gates, predicted before the work
+
+Per obligation 6, including every "none" with its reason. Figures are **cited from
+`tools/README.md`, never pasted** (obligation 10).
+
+| # | Gate | Predicted | Why |
+|---:|---|---|---|
+| 1 | `linkcheck` | **none** | Everything this phase writes is under `spec/`, which is in `SKIP_DIRS` (`tools/linkcheck.py:52`). No file is added anywhere in the walk, and `tools/` — the directory whose precedent moved it 164 → 165 — gains nothing |
+| 2 | `pagelint` | **none**, errors and warnings both | Its corpus is `contents/` plus the root `README.md`. This phase edits no page and writes no C# fence. The 744 warnings stand where phase 4 left them; `tools/README.md` owns the figure |
+| 3 | shape | **none** | `SUMMARY.md` is untouched |
+| 4 | redirects | **none** | Redirects follow `SUMMARY.md`, which is untouched |
+| 5 | `versioncheck` | **none** | It reads version pins in published pages |
+| 6 | `optioncheck` | **none** | It reflects over marked option tables in pages; none is touched |
+| 7 | `--verify` | **none** | The published-URL set is unchanged, for the same reason as shape |
+| 8 | `symbolcheck` | **none** — gate **and** `--verify-list` | `symbolwatch.tsv` and `tools/symbolcheck.py` are both untouched in this phase. It stays at *0 findings, 3 silenced, 22 entries* — and **the three silenced are part of the claim**, not a footnote |
+
+**The "none" to distrust here is 2, and not for the usual reason.** `pagelint` cannot move on a
+phase that edits no page; what it *can* do is be quoted wrongly. Phase 4 took its warning count
+down, so this is the first phase in 015 that inherits a figure which moved during the spec, and a
+walk that reproduces it from memory rather than from `tools/README.md` would be reporting a number
+that was true a phase ago. That is the failure AC10 is pointed at, arriving through the gate table.
