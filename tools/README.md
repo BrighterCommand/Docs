@@ -99,6 +99,14 @@ Two of them need the sibling repositories checked out beside this one:
 guess** when they are absent. A shallow clone is not enough — rows resolve at a pinned tag *and*
 at `origin/master`, so `fetch-depth: 0` is load-bearing.
 
+**They do not read the same refs, and the difference is deliberate.** `--verify-list` follows
+`origin/master`, because what invalidates a watchlist row is a removal in another repository and a
+gate on a daily schedule exists to notice the world moving. `--census` reads a **recorded SHA**
+(`CENSUS_PINS` in `tools/symbolcheck.py`), so that a figure it printed last week can be reproduced
+this week; its header prints all four refs it resolved, with the SHA beside each. Refreshing the pin
+is a deliberate commit with the new count beside it. A pin the checkout cannot resolve is **exit
+2 — nothing was checked**, never a silent fall back to a branch.
+
 **`pagelint --changed` needs `git add` first.** A new file is 100% added lines, but an *untracked*
 one has no diff at all, so the strict pass sees nothing and reports a green it did not earn.
 
