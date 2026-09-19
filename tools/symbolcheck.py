@@ -105,6 +105,19 @@ PRODUCT_REFS = {
     'darker': ('../Darker', ('4.1.1', 'origin/master')),
 }
 
+# Q6: the census reads a RECORDED SHA, not whatever origin/master is today, so a
+# figure it prints can be reproduced. Refreshing it is a deliberate commit with
+# the new count beside it -- constraint 10.
+#
+# CENSUS-SCOPED. PRODUCT_REFS above feeds --verify-list too, and that gate runs
+# on a daily schedule precisely because what invalidates a watchlist row is a
+# removal in ANOTHER repository. Pinning the shared constant would freeze the one
+# gate whose purpose is noticing the world move.
+CENSUS_PINS = {
+    'brighter': '09f5d988f',   # origin/master @ 2026-09-16
+    'darker': '2f76cda',       # origin/master @ 2026-09-16
+}
+
 # A PascalCase-ish word, four characters or more. Three would admit `Add`, `Get`
 # and every acronym in the corpus; the probe measured this threshold and kept it.
 TOKEN_RE = re.compile(r'[A-Z][A-Za-z0-9_]{3,}')
@@ -399,16 +412,37 @@ def source_tokens(repo, ref):
     return tokens
 
 
+def resolve_sha(repo, rev):
+    """The SHA `rev` names, or CensusError. Exit 2 -- nothing was checked."""
+    proc = subprocess.run(['git', '-C', os.path.join(ROOT, repo),
+                           'rev-parse', '--short', rev],
+                          capture_output=True, text=True)
+    if proc.returncode or not proc.stdout.strip():
+        raise CensusError(
+            f'{repo} cannot resolve {rev}: {proc.stderr.strip()[:120]}. '
+            f'A pinned census that silently falls back to a branch is a figure '
+            f'wearing another figure\'s SHA')
+    return proc.stdout.strip()
+
+
 def universe():
-    """Token sets for every (product, ref), with the controls walked."""
+    """Token sets for every (product, ref), with the controls walked.
+
+    Keyed by (product, label, sha): every set carries the SHA it was actually
+    built from, so the header cannot print a ref the tokens did not come from.
+    The moving ref is CENSUS_PINS' recorded SHA -- see the constant. Called from
+    run_census and nowhere else, which is what keeps the pin census-scoped.
+    """
     sets = {}
-    for product, (repo, refs) in sorted(PRODUCT_REFS.items()):
-        for ref in refs:
-            sets[f'{product}@{ref}'] = source_tokens(repo, ref)
+    for product, (repo, (tag, _head)) in sorted(PRODUCT_REFS.items()):
+        for label, rev in ((tag, tag), ('pinned master', CENSUS_PINS[product])):
+            sha = resolve_sha(repo, rev)
+            sets[(product, label, sha)] = source_tokens(repo, sha)
 
     failures = []
-    for name, tokens in sorted(sets.items()):
-        if name.startswith('brighter') and CONTROL_PRESENT not in tokens:
+    for (product, label, sha), tokens in sorted(sets.items()):
+        name = f'{product}@{label} ({sha})'
+        if product == 'brighter' and CONTROL_PRESENT not in tokens:
             failures.append(f'{CONTROL_PRESENT} absent from {name}')
         if CONTROL_ABSENT in tokens:
             failures.append(f'{CONTROL_ABSENT} present in {name}')
@@ -487,9 +521,9 @@ def run_census(pages):
         print(f'census cannot run: {exc}', file=sys.stderr)
         return 2
 
-    print('token sets, src/ only, both refs per product:')
-    for name, tokens in sorted(sets.items()):
-        print(f'  {name:28} {len(tokens):>6} tokens')
+    print('token sets, src/ only, release tag and pinned master per product:')
+    for (product, label, sha), tokens in sorted(sets.items()):
+        print(f'  {product:<9} {label:<15} {sha:<12} {len(tokens):>5} tokens')
     print(f'controls OK: {CONTROL_PRESENT} present in every Brighter set, '
           f'{CONTROL_ABSENT} in none\n')
 

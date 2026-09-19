@@ -222,7 +222,7 @@ it still owes obligations 1 and 2.
     about the census's sensitivity to the ref, not a failed prediction** — record it and carry the
     pinned figure forward, because obligation 9 makes the pinned pair the one that counts
 
-- [ ] **Task 1.2:** Add `CENSUS_PINS` and `resolve_sha` to `tools/symbolcheck.py`, census-scoped
+- [x] **Task 1.2:** Add `CENSUS_PINS` and `resolve_sha` to `tools/symbolcheck.py`, census-scoped
   - Input: `design.md` §3.1 (the constant, the function and the comment that explains the scoping),
     `tools/symbolcheck.py:103-106` (`PRODUCT_REFS`, which must not change), `:484-488` (`CensusError`
     → exit 2)
@@ -234,7 +234,7 @@ it still owes obligations 1 and 2.
     freeze the one gate whose purpose is noticing the world move. The tags carry **no `v` prefix**:
     `v10.7.0` is `fatal: Needed a single revision` in both repositories
 
-- [ ] **Task 1.3:** Red-proof `resolve_sha` both ways
+- [x] **Task 1.3:** Red-proof `resolve_sha` both ways
   - Input: `design.md` §3.2's recorded run
   - Output: both outputs pasted into § *Phase 1 as executed* — four refs resolving to the four SHAs
     in §2's table above, and an unresolvable pin producing `CensusError` with **exit code 2** shown
@@ -243,7 +243,7 @@ it still owes obligations 1 and 2.
     `origin/master` produces a census whose header says one thing and whose numbers mean another;
     `tools/README.md`'s exit-code contract already makes exit 2 *nothing was checked*
 
-- [ ] **Task 1.4:** Prove the gate and `--verify-list` still follow `origin/master`, not the pin
+- [x] **Task 1.4:** Prove the gate and `--verify-list` still follow `origin/master`, not the pin
   - Input: `tools/symbolcheck.py:623` (`verify_row` reads `PRODUCT_REFS` directly),
     `design.md` §3.3
   - Output: in § *Phase 1 as executed*, the output of `python3 tools/symbolcheck.py --verify-list`
@@ -253,7 +253,7 @@ it still owes obligations 1 and 2.
     checkable rather than rhetorical: the two refs now resolve to different commits, so a gate that
     had silently adopted the pin would say so
 
-- [ ] **Task 1.5:** Record the **before** census count, at the pin
+- [x] **Task 1.5:** Record the **before** census count, at the pin
   - Input: task 1.2's header
   - Output: in § *Phase 1 as executed*, the full `--census` header and the candidate total, with the
     four SHAs visible in the same paste
@@ -716,3 +716,91 @@ Per obligation 6 — including every "none", with the reason it is none. Figures
 is trusted here on the grounds that it did not move last time: `linkcheck`'s is re-argued from the
 `.md`-only walk, and `pagelint`'s from a corpus phase 1 does not touch. Task 1.10 reconciles all
 eight against this table, and an unpredicted movement is a finding rather than a number to adopt.
+
+---
+
+## Phase 1 as executed
+
+**Written across 2026-09-19, on `spec/015-phase1-instrument`.** Tasks 1.3 to 1.8's recorded output,
+the reconciliation against § *Phase 1 prediction*, and the findings the list did not predict.
+
+### The pin resolves, and an unresolvable one is exit 2 *(task 1.3)*
+
+Both halves run, because a function printed in a design is a function nobody has executed. The
+**positive** half — all four refs the header will print, resolved through `resolve_sha` itself
+rather than through a shell `git rev-parse` standing in for it:
+
+```text
+../Brighter  10.7.0       -> c1b8af886
+../Brighter  09f5d988f    -> 09f5d988f
+../Darker    4.1.1        -> ddb71ee
+../Darker    2f76cda      -> 2f76cda
+```
+
+The **negative** half is the one that matters. `CENSUS_PINS['brighter']` set to `deadbeef1` — a SHA
+this checkout has never had — driven through the real `--census` entry point, not through a direct
+call to `resolve_sha`:
+
+```text
+census cannot run: ../Brighter cannot resolve deadbeef1: fatal: Needed a single revision. A pinned
+census that silently falls back to a branch is a figure wearing another figure's SHA
+exit 2
+```
+
+**Exit 2, and not one census number printed** — `tools/README.md`'s contract is *nothing was
+checked*, and nothing was. The tempting alternative, a warning and a fall back to `origin/master`,
+produces a census whose header says one thing and whose numbers mean another; this is the run that
+shows it cannot happen.
+
+### The gate and `--verify-list` still follow `origin/master` *(task 1.4)*
+
+AC6. This is checkable rather than rhetorical only because finding 1 moved the two refs apart:
+`origin/master` is `6145913a0` and the pin is `09f5d988f`, so a gate that had silently adopted the
+pin would now say so.
+
+```text
+control: CommandProcessor         LIVE         43 files at 10.7.0, 45 at origin/master
+control: IAmAnIbox                DEAD         0 files at 10.7.0, 0 at origin/master
+
+IAmACommandStoreAsync        brighter  DEAD         0 at 10.7.0, 0 at origin/master
+UseExternalInbox             brighter  DEAD         0 at 10.7.0, 0 at origin/master
+IAmAnIbox                    brighter  DEAD         0 at 10.7.0, 0 at origin/master
+IMessageScheduler            brighter  DEAD         0 at 10.7.0, 0 at origin/master
+IMessageSchedulerFactory     brighter  DEAD         0 at 10.7.0, 0 at origin/master
+
+All 5 entries still dead at both refs of their product, and every named replacement still live.
+```
+
+**Seven rows, and every one names `origin/master`.** Not a SHA, and not the pin. Beside it the gate
+itself, at `tools/README.md`'s figure and unmoved: `No watchlisted symbols found (5 entries, 161
+pages checked, 1 silenced)`, exit 0 — the silenced site being
+`DispatcherConfigurationReference.md`'s `UseExternalInbox`, which is a precedent and not a hole.
+
+### The before-count, at the pin *(task 1.5)*
+
+Obligation 9: this run is one half of AC2, and it is worthless unless the header beside it shows
+the SHAs. Here they are in the same paste, which is the whole point of AC3:
+
+```text
+token sets, src/ only, release tag and pinned master per product:
+  brighter  10.7.0          c1b8af886     7593 tokens
+  brighter  pinned master   09f5d988f     7713 tokens
+  darker    4.1.1           ddb71ee        313 tokens
+  darker    pinned master   2f76cda        313 tokens
+controls OK: CommandProcessor present in every Brighter set, IAmAnIbox in none
+
+pages examined                     : 161
+...with at least one C# fence      : 145
+distinct tokens in those fences    : 2764
+...after comments and strings      : 2280
+...after page declarations, noise  : 2019
+UNRESOLVED at src/ of both products, both refs : 929
+pages carrying at least one        : 129 of 145
+```
+
+**929 at the pin, which is what the prediction said — and the prediction was measured at
+`6145913a0`.** The census therefore reports the same total at both SHAs, and **friction 43 says
+exactly what that is worth: a number that survives a change is not evidence that nothing changed.**
+The commit between them touches `CommandProcessor.cs`, and `CommandProcessor` is a name the census
+resolves at every ref, so there was never a mechanism by which this number could have moved. The
+figure carried forward is the pinned one, because both halves of AC2 must come from one world.
