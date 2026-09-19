@@ -444,10 +444,17 @@ uncontrolled per name, and AC5 requires a row for all 819 with the evidence besi
 that measured the answer has not produced the artefact the spec is for** — and the twelve above are
 a *lower bound*, since 87 of the 99 survivors have not been read.
 
-**P0-4's deliverable is `triage.md`**: one row per name in the slice — 103 rows — carrying the
-verdict, the two commands that produced it, and the control. AC5 counts the rows against the slice
-count the tool reports; AC6 is the criterion that fails quietly, and it is why every row carries a
+**P0-4's deliverable is `triage.md`**: one row per name in the census — **819 rows** — carrying the
+verdict, the two commands that produced it, and the control. AC5 counts the rows against the count
+the tool reports; AC6 is the criterion that fails quietly, and it is why every row carries a
 command rather than an adjective.
+
+> **This paragraph said ~~*"one row per name in the slice — 103 rows"*~~ and ~~*"against the slice
+> count"*~~ until the acceptance walk, 2026-09-19 (task 5.1).** Q2 was reversed at this design's own
+> review and §2, §5's boxes and §9 were all amended for it; this sentence was not, and it sat two
+> lines below *"AC5 requires a row for all 819"* contradicting it. **A fifth survival of the
+> abolished slice**, after the four `requirements.md` carried into the tasks review — recorded
+> rather than quietly corrected, because the pattern is the finding and one instance of it is not.
 
 ## 6. P0-5: routing to the watchlist
 

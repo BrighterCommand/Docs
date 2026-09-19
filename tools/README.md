@@ -65,10 +65,17 @@ Four of these gates print their **scope** before their verdict, and that line is
 claim as `0 findings, 1 silenced`. A gate that has silently degraded to checking nothing passes
 every corpus ever written.
 
-`pagelint`'s 757 is a **warning count, not an error count** — the using-directive debt, visible on
-purpose so it is not forgotten and not blocking so it does not tax unrelated work. The number that
-gates is `0 errors`. It moves down when a block earns its `using` lines and up when a page adds a
-C# block that lacks them; treat a *rise* as something to explain, not as a failure.
+**`pagelint`'s second figure is a warning count, not an error count** — the using-directive debt,
+visible on purpose so it is not forgotten and not blocking so it does not tax unrelated work. The
+number that gates is `0 errors`. The debt figure itself is **row 2 above, with its ref**; it moves
+down when a block earns its `using` lines and up when a page adds a C# block that lacks them, so
+treat a *rise* as something to explain, not as a failure.
+
+> **This paragraph opened `pagelint`'s 757 is… until 2026-09-19**, when spec 015's acceptance walk
+> read it against row 2 and found the two disagreeing: phase 4 had taken the count to 744, updated
+> the row and the paragraph above it, and left this one asserting the old figure in the present
+> tense. **The file that owns a number is the file where a stale copy of it is hardest to see.**
+> Naming the row instead of repeating the figure is what stops it happening a third time.
 
 ## Exit codes — one contract, all of them
 

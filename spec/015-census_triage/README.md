@@ -1,7 +1,14 @@
 # Spec 015: Census Triage
 
 **Created:** 2026-09-17
-**Status:** Requirements Phase
+**Status:** **Writing complete, 41 of 41, 2026-09-19 — the acceptance walk is read and
+`.accepted` is the maintainer's to create.**
+
+> **Read `requirements.md` and `tasks.md`, not this file, on every content claim.** This README was
+> written before anyone looked; its figures are 2026-09-17's, its acceptance criteria are a first
+> draft that `requirements.md`'s twelve superseded, and **its open questions were superseded twice**
+> — see *Superseded by `requirements.md`* below. What is current here is the *Status Checklist* and
+> everything after it.
 
 > **Re-derive this README before executing it.** It was written before anyone looked — check every
 > count and every named gap against the tree, with the command beside the figure.
@@ -225,18 +232,65 @@ Read `requirements.md` for anything this section touches.
 - [x] Outline reviewed and approved — 2026-09-18. **Q2 was reversed at this review**, taking P0-4
       from a 103-name slice to all 819 candidates; the screen that followed found **twelve dead
       Brighter APIs in the tail and none in the head**. `.design-approved` exists
-- [ ] Writing tasks identified
-- [ ] Writing complete
-- [ ] Documentation reviewed
-- [ ] Spec closed
+- [x] Writing tasks identified — `tasks.md`, 2026-09-18, **41 tasks / 5 phases / 5 PRs**, approved;
+      three findings applied at the review and the total unmoved at 41, because all three were
+      repairs to existing tasks
+- [x] Writing complete — **41 of 41**, 2026-09-19. Re-derived, not incremented:
+      `grep -c '^- \[x\] \*\*Task' tasks.md` against `grep -c '^- \[.\] \*\*Task' tasks.md`
+- [x] Documentation reviewed — the acceptance walk, `tasks.md` § *Acceptance walk*. **Twelve of
+      twelve criteria met, three repairs taken during the walk**, all eight gates at
+      `tools/README.md`'s figures. The three uninstrumented criteria were walked **first** and
+      produced two of the three repairs; the third came out of reconciling AC9 against the file
+      that owns the gate figures
+- [x] Spec closed — 2026-09-19, at 41 of 41. **`.accepted` is the maintainer's to create**, after
+      the walk is read
 
-## Next Steps
+## What 015 shipped
 
-1. Re-derive the counts above
-2. Read `SUMMARY.md` for where this sits, and `contents/` for what already covers it
-3. Identify source material — 014's `tasks.md` (the defect ledger and D12), `tools/symbolcheck.py`'s
-   own `--census` docstring, and `tools/README.md` for the gates
-4. Run `/spec:requirements`, and get the requirements approved before going further
+| | |
+|---|---|
+| **The instrument** | `--census` no longer counts a page's own methods (**110** names) and prints the **four SHAs** it resolved, so every figure it produces is reproducible. Census-scoped: the gate still follows `origin/master` |
+| **The method** | `triage.md` §§1–4 — three verdicts, four stages, both broken query forms recorded, and an **exhaustive** stopping condition |
+| **The record** | 819 verdicts, one per candidate, generated from a committed checkpoint; 44 rulings by a person, each with a quoted line and a control; `stage3.tsv` is the person's output |
+| **The rows** | **17** new `symbolwatch.tsv` entries, all `DEAD` at both refs of their product |
+| **The repairs** | **ten pages**, 26 of 28 sites removed and 2 kept behind visible opt-outs; **fifteen C# blocks rebuilt against the released packages** |
+| **The ledgers** | thirty defects with a *found by* column, and friction **46–51** plus one recurrence |
+
+## The residual gap — the line the next spec starts from
+
+> **A name that still resolves — to a different signature, to a dependency's removed member, or to
+> a package with no release — is caught by nothing here, because the only instrument that sees it
+> was built in `/tmp` and was never committed.**
+
+015 answered 014's sentence for the surface a census can reach: every dead Brighter name in a C#
+fence now has a verdict, and the ten pages carrying one are repaired. **What it found on the way is
+that the census was never the binding constraint.** Six of its thirty defects came from a compiler,
+and four of those six are invisible to every census, watchlist and linter in this repository —
+`S3Region.EUW1` belongs to the AWS SDK, a mapper that did not implement `IAmAMessageMapper<T>`
+resolves perfectly, and `Paramore.Brighter.MySql.Dapper` is a package name that is **spelled
+correctly and cannot be installed**.
+
+Three smaller things are left on purpose, each measured rather than estimated:
+
+- **`Use{DB}Outbox` in prose on `EFCoreOutbox.md`** — `grep -rn 'Use{DB}' contents/` returns **2**,
+  both on that page. It is not an identifier, tokenises as nothing, and no census will ever
+  nominate it. **Its code block was already repaired to V10 by somebody and the prose above it was
+  not**, which is the whole gap in one page.
+- **The using-directive debt** — the other half of the same problem, and the figure lives in
+  `tools/README.md` with its ref.
+- **The prose surface** — D12's **160 of 161** pages, ruled unusable for a census and fine only for
+  a curated watchlist.
+
+## Next Steps — as executed
+
+1. ~~Re-derive the counts above~~ — done, and **four moved**: `origin/master` had left `09f5d988f`,
+   and the twelve names touched nine pages rather than "at least six". `tasks.md` §2
+2. ~~Read `SUMMARY.md` and `contents/`~~ — done; **015 creates no page**, and `design.md` §12
+   records why the outline, nesting, redirect and glossary sections are N/A
+3. ~~Identify source material~~ — done, `requirements.md` § *Source material*
+4. ~~Run `/spec:requirements`~~ — done, approved 2026-09-18, six questions ruled, **two overturning
+   the recommendation**; then `/spec:design` (Q2 reversed at the review), `/spec:tasks`, and five
+   phases merged as #171, #172, #173, #174 and this one
 
 ## Notes
 
