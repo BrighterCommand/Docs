@@ -488,7 +488,7 @@ deletion in the same breath.
 **The order inside the branch is rows → red run → repairs → green run** (finding 4). Reversing it
 loses the only proof the rows do anything.
 
-- [ ] **Task 4.1:** Re-derive the repair scope from phase 3's confirmed-dead set
+- [x] **Task 4.1:** Re-derive the repair scope from phase 3's confirmed-dead set
   - Input: task 3.8's list
   - Output: in this file, a table of confirmed-dead name → pages → sites → fenced blocks, each count
     produced by **two** methods (per-name `grep -rlw` piped to `sort -u`, and one alternation
@@ -496,7 +496,7 @@ loses the only proof the rows do anything.
   - Notes: today, for the design's twelve, that is **9 pages, 18 sites, 10 fenced blocks, 4 prose
     sites** (finding 3). Phase 3 will have added names, so re-derive rather than starting from this
 
-- [ ] **Task 4.2:** Add the `symbolwatch.tsv` rows
+- [x] **Task 4.2:** Add the `symbolwatch.tsv` rows
   - Input: `tools/symbolwatch.tsv`'s existing rows as the format, task 4.1's list, `design.md` §6
   - Output: one row per confirmed-dead name — symbol, product, replacement, evidence, first_seen —
     committed **before** any page is edited
@@ -505,7 +505,7 @@ loses the only proof the rows do anything.
     compile. Read the replacement type's members before writing it down. A name with no replacement
     says so rather than inventing one
 
-- [ ] **Task 4.3:** Record the red run — the gate firing on every site, before the repair
+- [x] **Task 4.3:** Record the red run — the gate firing on every site, before the repair
   - Input: task 4.2's rows
   - Output: the full `python3 tools/symbolcheck.py` output pasted into § *Phase 4 as executed*,
     exit code shown, naming every site of every new row
@@ -1629,3 +1629,224 @@ warning count did not move either: this phase edits no page.
 > printed on ten of those pages**, because it has never been told their names. That is not a defect
 > in the gate; it is the gate's scope, and it is what phase 4's rows are for. **A green from an
 > instrument that has never been given the corpus is a claim about the instrument.**
+
+---
+
+## Phase 4 prediction
+
+**Written 2026-09-19 on `spec/015-phase4-repairs`, before any row was added and before any page was
+touched.** Obligation 6 for the gates; obligation 1 for the scope. **This is the only phase whose
+prediction includes a gate going RED**, and the red is a deliverable rather than an accident.
+
+### The repair scope, re-derived from phase 3's rulings *(task 4.1)*
+
+**Not inherited from finding 3, and not inherited from the head of any file.** The input is
+`stage3.tsv`'s `SURFACE` rows — the person's output, not the machine's — and every count below was
+produced twice by two different mechanisms:
+
+```bash
+awk -F'\t' '$2=="SURFACE"{print $1}' spec/015-census_triage/stage3.tsv   # 17 names
+
+# pages, method 1 -- per name, -w, unioned
+while read n; do grep -rlw "$n" contents/; done < names | sort -u | wc -l          # 10
+# pages, method 2 -- one alternation
+grep -rlE "\b($(paste -sd'|' names))\b" contents/ | sort -u | wc -l                # 10
+# sites, third mechanism -- every match, not every matching line
+grep -rhoE "\b($(paste -sd'|' names))\b" contents/ | wc -l                         # 28
+```
+
+The fenced/prose split needs a fence parser, so it too was taken twice: once with a hand-rolled
+toggle over ```` ``` ```` lines, and once through **`pagelint.Page`** — the shipped parser, which
+handles tilde fences, indented fences and marker lengths the toggle does not. **Both return 23
+fenced in 15 blocks and 5 in prose.**
+
+| Page | Sites | Fenced | Blocks | Prose |
+|---|---:|---:|---:|---:|
+| `MessageMappers.md` | 5 | 5 | **4** | 0 |
+| `S3LuggageStore.md` | 5 | 3 | 1 | **2** |
+| `DapperOutbox.md` | 4 | 4 | 2 | 0 |
+| `SweeperCircuitBreaking.md` | 4 | 1 | 1 | **3** |
+| `DynamoOutbox.md` | 3 | 3 | 2 | 0 |
+| `BrighterBasicConfiguration.md` | 2 | 2 | 1 | 0 |
+| `ShowMeTheCode.md` | 2 | 2 | 1 | 0 |
+| `DispatchingARequest.md` | 1 | 1 | 1 | 0 |
+| `FeatureSwitches.md` | 1 | 1 | 1 | 0 |
+| `UsingSweeperCircuitBreaking.md` | 1 | 1 | 1 | 0 |
+| **10 pages** | **28** | **23** | **15** | **5** |
+
+| Name | Sites | Where |
+|---|---:|---|
+| `ApplicationJson` | 5 | `MessageMappers.md` ×5, in **four** blocks |
+| `UseMsSqlOutbox` | 3 | `SweeperCircuitBreaking.md` (1 fenced, 1 prose), `UsingSweeperCircuitBreaking.md` |
+| `UseMySqlOutbox` · `UseDynamoDbOutbox` | 2 each | one fenced site and one prose site each |
+| `AddS3LuggageStore` · `StoreCreation` | 2 each | `S3LuggageStore.md`, one fenced and one prose each |
+| `CommandProcessorLifetime` | 2 | `BrighterBasicConfiguration.md`, `ShowMeTheCode.md` |
+| the other ten | 1 each | `UseInMemoryOutbox` `UseDynamoDbTransactionConnectionProvider` `UseMySqTransactionConnectionProvider` `S3LuggageStoreCreation` `UseScoped` `NoTaskQueues` `IUnitOfWork` `UnitOfWork` `BeginOrGetTransaction` `BeginOrGetTransactionAsync` |
+
+**Finding 3's *nine pages, eighteen sites, ten blocks, four prose* was the design's twelve names and
+is now history.** The five names phase 3 added carry one page each, so they add no page of their
+own — except `ApplicationJson`, which brings `MessageMappers.md` in whole: **a tenth page, five
+sites and four of the fifteen blocks, from a single name no watchlist carried.**
+
+**The task list's per-task page allocation is out of date by one page and by five names**, and the
+tasks are executed against this table rather than against their own *Notes*:
+
+| Task | Planned pages | Actually |
+|---|---|---|
+| 4.4 | `ShowMeTheCode.md`, `BrighterBasicConfiguration.md` | unchanged — 4 sites, 2 blocks |
+| 4.5 | the outbox and sweeper family, five pages | unchanged — **plus `MessageMappers.md`**, which belongs to no planned task |
+| 4.6 | `DispatchingARequest.md`, `FeatureSwitches.md` | unchanged — 2 sites |
+| 4.7 | **four** prose sites | **five** — `S3LuggageStore.md:43`'s `StoreCreation` is the new one |
+
+### The eight gates, predicted before the work
+
+Per obligation 6. Figures are cited from `tools/README.md`, never pasted (obligation 10).
+
+| # | Gate | Predicted | Why |
+|---:|---|---|---|
+| 1 | `linkcheck` | **none** | Ten pages are edited and none is created, moved or renamed, so the file count is fixed; the repairs rewrite C# and prose, not links. A repair that adds a link would move nothing either — the gate counts files and broken targets |
+| 2 | `pagelint` | **0 errors**, and the **warning count may FALL** | Rule 6 is the only rule in play: an edited C# block enters strict scope under `--changed` and owes its `using` directives, so a block that had none and gains them takes the repo-wide warning count **down**. Task 4.9 names the blocks that moved it. Errors must stay at zero, `--changed` included |
+| 3 | shape | **none** | `SUMMARY.md` is untouched; no page is created, nested or moved |
+| 4 | redirects | **none** | Redirects follow `SUMMARY.md` |
+| 5 | `versioncheck` | **none** | It reads NuGet and GitHub version pins. None of the ten pages is among the five it examines, and no pin is written |
+| 6 | `optioncheck` | **none**, and it is a **real** check here | Two of the ten pages carry marked option tables — `DynamoOutbox.md:105` and `SweeperCircuitBreaking.md:84` — so this gate has something to see for the first time in three phases. The repairs are outside both tables |
+| 7 | `--verify` | **none** | The published-URL set follows `SUMMARY.md` |
+| 8 | `symbolcheck` | **RED, then GREEN — and the entry count MOVES** | The rows take it from 5 entries to **22**. With the rows added and the pages unrepaired it must report **28 sites across 10 pages** (task 4.3's red run); with the repairs in it must report **0 findings, N silenced**, N re-derived from however many prose sites take an opt-out (task 4.7). `--verify-list` must stay at 0 findings with all 22 rows dead at both refs of their product |
+
+**Two of these predictions can fail informatively and the rest cannot.** Gate 8's red is a
+**prediction about the instrument**: if it sees fewer than 28 sites, the difference is a site the
+gate cannot see and that is a finding about `symbolcheck`, not a rounding error. Gate 2's falling
+warning count is a **prediction about the corpus**: if it does not fall, the repaired blocks did not
+gain their directives, and rule 6 was satisfied by a `// ...` somebody wrote to make a warning go
+away.
+
+---
+
+## Phase 4 as executed
+
+**Written 2026-09-19 on `spec/015-phase4-repairs`**, against § *Phase 4 prediction* above. The
+sections are in the order the branch ran them: rows, red, repairs, green.
+
+### The rows, and what the replacement column says *(task 4.2)*
+
+**Seventeen rows, all `brighter`, all evidenced `015 triage §5.2` and listed `2026-09-19`.** Every
+one was confirmed dead **four ways** before it was written down, and the fourth is new to this
+phase:
+
+| Instrument | What it asked | Result |
+|---|---|---|
+| the census (phase 1) | does the name resolve at `src/` of either product, at either ref? | unresolved — that is why it is a candidate at all |
+| `triagerun.py` (phase 3) | does a whole identifier of this name appear in history? | 17 of 44 ruled `SURFACE` by a person, each with a quoted removal line |
+| `symbolcheck.verify_row` | `git grep -lw` at **10.7.0** and **`origin/master`** | **17 of 17 `DEAD`, 0 files at both refs** |
+| **reflection over the released assemblies** | does the name exist in the **DLLs a reader installs**? | **11 of 11 probed are absent** from `Paramore.Brighter` 10.7.0 and its twelve companion packages |
+
+**The fourth is the one that answers the question the other three only approximate.** The census and
+the triage both read `src/*.cs`; `--verify-list` reads `src/*.cs`; a name can be in `src/` and not be
+in the package a reader installs, and a name can be gone from `src/` for a reason that has nothing to
+do with the published surface. Loading the released `Paramore.*.dll` files and asking
+`GetExportedTypes()` is the only one of the four that asks about **what NuGet ships**. It agreed with
+the other three on every name it could reach.
+
+**The replacement column follows one rule, stated here because it decides whether `--verify-list`
+has anything to check:** the column names **the live member a repair actually writes** when one
+identifier is enough, and otherwise says what happened in parentheses. `symbolcheck.py:726` skips a
+replacement beginning `(`, so a prose replacement is **never re-resolved** — the precedent is
+`UseExternalInbox`'s *(removed at V10 — not a rename)*.
+
+| Replacement | Rows | Live at both refs |
+|---|---|---|
+| `TransactionProvider` | `UseDynamoDbTransactionConnectionProvider`, `UseMySqTransactionConnectionProvider` | 2 files |
+| `IAmATransactionConnectionProvider` | `IUnitOfWork`, `UnitOfWork` | 2 files |
+| `GetTransaction` · `GetTransactionAsync` | `BeginOrGetTransaction`, `BeginOrGetTransactionAsync` | 22 · 17 files |
+| `UseExternalLuggageStore` · `StorageStrategy` · `Strategy` | `AddS3LuggageStore`, `S3LuggageStoreCreation`, `StoreCreation` | 2 · 11 · 9 files |
+| `NoExternalBus` | `NoTaskQueues` | 2 files |
+| **prose, in parentheses — not verified** | the four `Use{DB}Outbox` rows, `CommandProcessorLifetime`, `UseScoped`, `ApplicationJson` | — |
+
+**Six of the seventeen carry a prose replacement and that is a cost, not a preference.** Those six
+buy nothing from `--verify-list` for ever. They are prose because the answer is a *shape* rather than
+a name: you no longer call a method, you set a property inside `AddProducers`, and a column holding
+`Outbox` would pass the check while telling a writer almost nothing. Where one identifier **is** the
+answer — `NoTaskQueues` → `NoExternalBus` — the identifier is what the row carries, and eleven rows
+do.
+
+### The red run — the gate firing on every site, before any repair *(task 4.3)*
+
+**Obligation 2, and the only red-proof these rows will ever get.** Run with the seventeen rows
+committed and **no page touched**:
+
+```bash
+python3 tools/symbolcheck.py    # exit 1
+```
+
+```text
+===== UseMsSqlOutbox — 3 site(s) across 2 page(s) =====
+    (removed at V10 — set Outbox on AddProducers, with MsSqlOutbox)   [015 triage §5.2, listed 2026-09-19]
+contents/SweeperCircuitBreaking.md:230  - **MS SQL Server** (`UseMsSqlOutbox`)
+contents/SweeperCircuitBreaking.md:311  .UseMsSqlOutbox(/* outbox config */);
+contents/UsingSweeperCircuitBreaking.md:39  .UseMsSqlOutbox(/* outbox configuration */)
+===== UseMySqlOutbox — 2 site(s) across 2 page(s) =====
+contents/DapperOutbox.md:47  .UseMySqlOutbox(new MySqlConfiguration(DbConnectionString(), _outBoxTableName), typeof(MySqlConnect…
+contents/SweeperCircuitBreaking.md:232  - **MySQL** (`UseMySqlOutbox`)
+===== UseDynamoDbOutbox — 2 site(s) across 2 page(s) =====
+contents/DynamoOutbox.md:41  .UseDynamoDbOutbox(ServiceLifetime.Singleton)
+contents/SweeperCircuitBreaking.md:234  - **DynamoDB** (`UseDynamoDbOutbox`)
+===== UseInMemoryOutbox — 1 site(s) across 1 page(s) =====
+contents/ShowMeTheCode.md:205  .UseInMemoryOutbox() // Simple outbox for development
+===== UseDynamoDbTransactionConnectionProvider — 1 site(s) across 1 page(s) =====
+contents/DynamoOutbox.md:42  .UseDynamoDbTransactionConnectionProvider(typeof(DynamoDbUnitOfWork), ServiceLifetime.Scoped)
+===== UseMySqTransactionConnectionProvider — 1 site(s) across 1 page(s) =====
+contents/DapperOutbox.md:48  .UseMySqTransactionConnectionProvider(typeof(Paramore.Brighter.MySql.Dapper.UnitOfWork), ServiceLif…
+===== AddS3LuggageStore — 2 site(s) across 1 page(s) =====
+contents/S3LuggageStore.md:29  serviceCollection.AddS3LuggageStore((options) =>
+contents/S3LuggageStore.md:38  You configure an **S3LuggageStore** using the **S3LuggateOptions** provided to the callback in **Ad…
+===== S3LuggageStoreCreation — 1 site(s) across 1 page(s) =====
+contents/S3LuggageStore.md:34  options.StoreCreation = S3LuggageStoreCreation.CreateIfMissing;
+===== StoreCreation — 2 site(s) across 1 page(s) =====
+contents/S3LuggageStore.md:34  options.StoreCreation = S3LuggageStoreCreation.CreateIfMissing;
+contents/S3LuggageStore.md:43  * **StoreCreation**: What should we do when determining if there is a bucket for the store?
+===== CommandProcessorLifetime — 2 site(s) across 2 page(s) =====
+contents/BrighterBasicConfiguration.md:222  options.CommandProcessorLifetime = ServiceLifetime.Scoped;
+contents/ShowMeTheCode.md:203  options.CommandProcessorLifetime = ServiceLifetime.Scoped;
+===== UseScoped — 1 site(s) across 1 page(s) =====
+contents/BrighterBasicConfiguration.md:219  options.UseScoped = true;
+===== NoTaskQueues — 1 site(s) across 1 page(s) =====
+contents/FeatureSwitches.md:163  .NoTaskQueues()
+===== IUnitOfWork — 1 site(s) across 1 page(s) =====
+contents/DispatchingARequest.md:153  private readonly IUnitOfWork _uow;
+===== UnitOfWork — 1 site(s) across 1 page(s) =====
+contents/DapperOutbox.md:48  .UseMySqTransactionConnectionProvider(typeof(Paramore.Brighter.MySql.Dapper.UnitOfWork), ServiceLif…
+===== BeginOrGetTransaction — 1 site(s) across 1 page(s) =====
+contents/DynamoOutbox.md:64  var transaction = _unitOfWork.BeginOrGetTransaction();
+===== BeginOrGetTransactionAsync — 1 site(s) across 1 page(s) =====
+contents/DapperOutbox.md:68  var tx = await _uow.BeginOrGetTransactionAsync(cancellationToken);
+===== ApplicationJson — 5 site(s) across 1 page(s) =====
+contents/MessageMappers.md:41  var body = new MessageBody(payload, ApplicationJson, CharacterEncoding.UTF8);
+contents/MessageMappers.md:94  public MessageBody(string body, string contentType = ApplicationJson, CharacterEncoding characterEn…
+contents/MessageMappers.md:104  var body = new MessageBody(payload, ApplicationJson, CharacterEncoding.UTF8);
+contents/MessageMappers.md:112  public MessageBody(byte[] bytes, string contentType = ApplicationJson, CharacterEncoding characterE…
+contents/MessageMappers.md:116  public MessageBody(in ReadOnlyMemory<byte> body, string contentType = ApplicationJson, CharacterEnc…
+
+----- silenced by opt-out (1 site(s)) -----
+contents/DispatcherConfigurationReference.md  UseExternalInbox ×1
+
+28 site(s) across 10 page(s), from 22 watchlist entries over 161 pages.
+```
+
+*(The per-row `To keep one of these on purpose…` line the gate prints after every group is elided
+here, and only there: it is the same sentence seventeen times. Everything else is verbatim.)*
+
+**28 sites across 10 pages, which is task 4.1's figure to the site.** That equality is the
+prediction that could have failed: task 4.1 counted with two greps and a fence parser, and the gate
+counts by its own `word_pattern()` over whole lines. **A gate seeing fewer sites than the corpus
+holds would have been a finding about the instrument**; it sees all 28.
+
+**One row's two sites are one line, and it is worth naming.** `contents/S3LuggageStore.md:34` carries
+`options.StoreCreation = S3LuggageStoreCreation.CreateIfMissing;` — `StoreCreation` and
+`S3LuggageStoreCreation` are **different rows**, and `word_pattern()`'s lookbehind is what stops the
+shorter one matching inside the longer. `DapperOutbox.md:48` is the same shape, `UnitOfWork` inside
+`Paramore.Brighter.MySql.Dapper.UnitOfWork`, where the `.` before it is what makes the match right
+rather than wrong.
+
+**And the silenced line is still there and still says 1.** *0 findings* and *0 findings, 1 silenced*
+are different claims; so are *28 sites* and *28 sites, 1 silenced*. The green run at task 4.9 is the
+other half of this control.
