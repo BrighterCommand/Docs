@@ -608,7 +608,7 @@ the close. **Changes no published page.**
   - Notes: *"while I'm here"* is how a spec quietly widens. A repaired page that also gained a
     heading fix is two changes in a diff that claims to be one
 
-- [ ] **Task 5.4:** Write the defect ledger
+- [x] **Task 5.4:** Write the defect ledger
   - Input: every phase's *as executed* section
   - Output: a § *Defect ledger* table — every defect 015 found, with a **found by** column
     distinguishing the instrument's wins from the re-derivation's
@@ -2497,3 +2497,76 @@ it is 015's** — this spec wrote nothing in either repository, and the tutorial
 `CLAUDE.md` was never reached. It also cannot affect a single figure in this document: every
 product query in `symbolcheck.py` and `triagerun.py` names a **SHA** and reads the object database,
 never the working tree. A dirty checkout is invisible to `git grep <sha>` by construction.
+
+---
+
+## Defect ledger
+
+**Task 5.4. Every defect 015 found, with a *found by* column** — because the distinction between
+what an instrument caught and what a person caught by re-deriving a number is the thing this
+programme keeps having to relearn. **Thirty defects, in three classes of finder:**
+
+| Found by | | |
+|---|---:|---|
+| **a tool run over the corpus** | **12** | the census, `triagerun.py`, the compiler (**six** of the twelve), reflection over the released DLLs, and twice the run failing on itself |
+| **a control or a red-proof** | **4** | each one a case where the *measurement* was fine and the thing checking it was not |
+| **a person re-deriving a figure or replaying a criterion** | **14** | the largest class, and the reason standing obligation 1 is worded the way it is |
+
+### A. In the published documentation — what a reader would have hit
+
+| # | Defect | Where | Found by | Outcome |
+|---:|---|---|---|---|
+| 1 | **Seventeen removed Brighter APIs**, printed as current across **28 sites** | ten pages | **`triagerun.py` + stage 3** — the instrument nominated, a person ruled | 26 sites repaired, 2 opted out, 17 watchlist rows |
+| 2 | `ApplicationJson` inside **Brighter's own `MessageBody` constructor signature**, sixteen lines above the same page's use of the replacement | `MessageMappers.md` | the census, in the tail the design's ≥3 slice could not reach | repaired against the **reflected** signature |
+| 3 | **The documentation reproduced the product's own typo** — `UseMySqTransactionConnectionProvider`, `MySq` not `MySql`, spelled that way in Brighter's removed source *and* on the page | `DapperOutbox.md` | the census | repaired |
+| 4 | `S3Region.EUW1` **does not exist in AWS SDK v4**, on a page recommending the v4 package | `S3LuggageStore.md` | **the compiler** — a dependency's name, reachable by no census of either product | repaired to `EUWest1` |
+| 5 | The corpus's canonical mapper **did not implement `IAmAMessageMapper<T>`** — V10 added `Context` and a `Publication` parameter | `MessageMappers.md` | **the compiler** | repaired |
+| 6 | The fluent builder moved underneath `NoTaskQueues`: `With()`→`StartNew()`, `DefaultPolicy()`→`DefaultResilience()`, `Build()` unreachable without two more calls; plus an undeclared `fluentConfig` | `FeatureSwitches.md` | **the compiler** | repaired |
+| 7 | **`Paramore.Brighter.{DB}.Dapper` has no V10 release** — the *packages you need* list was unbuyable | `DapperOutbox.md` | **the compiler**, by way of NuGet | list rewritten |
+| 8 | Fifteen edited blocks were **already broken in ways the site was not about** — a missing parenthesis, a missing comma, four undeclared variables, and `TransactionProvider` taking a **`Type`** | the ten pages | **the compiler**, forced by AC12's strict scope | repaired with the sites |
+| 9 | **`Use{DB}Outbox` in prose** — a template that tokenises as nothing and is in no census candidate list | three pages | **re-derivation** during the repair pass | two repaired; `EFCoreOutbox.md` **left**, and named in the closing sentence |
+| 10 | `CS0618`: `BrighterOptions.PolicyRegistry` is obsolete — *Migrate to ResiliencePipeline* | `BrighterBasicConfiguration.md` | **the compiler** | **left on purpose** — 015 rules on names *removed*, not deprecated |
+| 11 | `DapperOutbox.md`'s `## Brighter Unit of Work without Dapper` now sits above prose about the transaction provider | `DapperOutbox.md` | **re-derivation** at the repair | **left on purpose** — a heading is a published URL |
+
+### B. In the instruments — including this spec's own
+
+| # | Defect | Found by | Outcome |
+|---:|---|---|---|
+| 12 | **`--census` counted a page's own methods as unresolved APIs** — 110 of 929, the filter an approved design recorded and the shipped tool lost | 014's finding E, re-read by **re-derivation** | P0-1; 929 → 819 |
+| 13 | **The census printed ref names and no SHAs**, so no figure it produced was reproducible | **re-derivation** — the requirements review, replaying AC3 | P0-2; four SHAs in the header |
+| 14 | **AC3 was green before its feature existed**, satisfied by `cceeded` inside `Succeeded` | **a review reading**, running the criterion's own command | AC3 rewritten to compare four SHAs |
+| 15 | **AC2 was unmeasurable** while both refs moved — an upstream merge could move the count, or move it back | **a review reading** | AC2 now requires the same SHA pair; Q6's pin |
+| 16 | **`-S'\bName\b'` and `-S'\<Name\>'` return 0 for every name, including the positive control** | **the control**, in phase 2's red-proof | bracket class; plausible zero **8** |
+| 17 | **`$name[` is an array subscript in zsh**, so the parameterised stage-2 query dies and prints `0` to stdout | **the control**, while costing the stages | `triagerun.py` opens no shell; plausible zero **9** |
+| 18 | **`git log` and `git grep` disagree about exit 1**; one accepted set for both either swallows a broken `log` or refuses every absent name | **the runner's first run**, failing safe | per-command exit codes |
+| 19 | **A Latin-1 `©` in a 2014 licence header killed the run at name 597 of 819** | **the run itself**, loudly | `errors='replace'`, controlled both ways |
+| 20 | **`head -1` on the evidence hardens a provisional verdict into a wrong reason** — `Date`'s first line is a parameter, its full set holds a removed public property | **re-derivation** of the design's own table | `EVIDENCE_CAP = 40` |
+| 21 | **The pickaxe reads string literals the census strips** — 20 of `Date`'s 26 | **re-derivation** | a third reading of `EXISTED, REMOVED`, in `triage.md` §1.2 |
+| 22 | **Stage 2.5 would have decided 2 of 6 wrongly**, both in the dangerous direction | **measurement**, over all 44 | printed, never applied |
+| 23 | **The drift control inverts once P0-1 ships**: the probe's no-filter path reads 2019 against the tool's 1749 | **the control**, read after the change | the faithful pair restated; friction 44 |
+| 24 | **AC1's own probe exits 2 while AC1 is met** — its positive control is unsatisfiable *because* the tool now removes the name first | **the control** | read the number, not the exit code |
+| 25 | **`design.md` §10.2's four-line control returns 2** — `census()` is a tuple, and only the absurdity of `2` made it visible | **re-derivation**, running the shorthand verbatim | a control's harness is an instrument |
+
+### C. In this spec's own documents
+
+| # | Defect | Found by | Outcome |
+|---:|---|---|---|
+| 26 | **Q2's reversal landed in four places and not four others** — AC11, P0-6, target state 2–3, the note under AC5 — and **P0-6's was not cosmetic**: bounded by the ≥3 slice it was bounded to nothing | **a review reading**, at the tasks review | amended, with the before/after recorded |
+| 27 | **A fifth survival of the same reversal**, `design.md` §5's *"103 rows"*, two lines under *"a row for all 819"* | **the acceptance walk**, task 5.1 | struck through in place, reason recorded |
+| 28 | **`757` — a gate figure that moved during this spec — quoted bare in nine places** across five documents | **the acceptance walk**, task 5.1 | one present-tense claim repaired; eight dated ones deliberately left |
+| 29 | **`tools/README.md` contradicted itself about the one number it owns** — *"pagelint's 757"* eight lines under a row reading **744** | **the acceptance walk**, task 5.2, while reconciling AC9 | repaired to name the row rather than repeat the figure |
+| 30 | **Three inherited figures were stale before phase 1 began** — `origin/master` had moved to `6145913a0`; the twelve names touched **nine** pages and **eighteen** sites, not "at least six"; and P0-5 and P0-6 **cannot** be two pull requests in that order | **re-derivation**, at the top of the tasks list | findings 1–4; the pin, and phase 4 as one PR |
+
+### What the split says
+
+**Twelve of thirty were found by a tool, and six of those twelve by a compiler this spec was not
+originally going to run.** Q4 promoted the repairs from P2 to P0-6 on the
+argument that a repair is cheap; what it actually bought was **defects 4 to 8** — five findings, of
+which **four are invisible to every census, watchlist and linter in this repository**, because they
+are names that resolve *to something else* or packages that do not exist.
+
+**Fourteen of thirty came from a person re-deriving a figure or replaying a criterion, and four
+more from a control catching the thing that was supposed to be doing the checking.** That is not
+an argument against instruments; it is the measurement behind standing obligation 1. Every one of
+defects 14, 15, 23, 24, 25, 27, 28 and 29 is a **green thing that was wrong**, and each was found by
+somebody asking what the green meant rather than whether it was there.
