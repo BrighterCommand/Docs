@@ -164,8 +164,10 @@ files and nothing else, which is the check that nothing *else* drifted.
 - [x] Requirements gathered — `requirements.md`, 2026-09-20
 - [x] Requirements reviewed and approved — `.requirements-approved`, 2026-09-20, **with the nine
       open questions left open**; their recommendations are the design's working assumptions
-- [ ] Documentation outline created
-- [ ] Outline reviewed and approved
+- [x] Documentation outline created — `design.md` + `probe/`, 2026-09-20
+- [x] Outline reviewed and approved — `.design-approved`, 2026-09-20. **Q6 ruled *repair*** at that
+      review; Q1, Q2, Q4 and Q7 settled by the probe; **Q3, Q5, Q8, Q9 still open** and none
+      changes the plan
 - [ ] Writing tasks identified
 - [ ] Writing complete
 - [ ] Documentation reviewed
