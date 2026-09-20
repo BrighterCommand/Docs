@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <NoWarn>CS0168;CS0219;CS1998</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.Hosting" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.RMQ.Async" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Hosting" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MySql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Dapper" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MySql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.MySql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MsSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MsSql" Version="10.7.0" />
+    <PackageReference Include="Dapper" Version="2.1.35" />
+  </ItemGroup>
+</Project>
