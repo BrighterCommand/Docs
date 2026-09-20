@@ -44,6 +44,9 @@
 //
 // Usage:
 //     blockcheck <blocksDir> <refs.txt> [outFile]
+//     blockcheck --identifiers <file>...        what a scaffold supplies
+//     blockcheck --parse <blocksDir>            which blocks do not PARSE
+//     blockcheck --explain <blocksDir> <refs.txt> <id>...   diagnostics in full
 //
 // `refs.txt` is written by refs/refs.csproj at build time and holds one
 // absolute assembly path per line -- the 67 pinned packages and the framework
@@ -144,6 +147,72 @@ internal static class Program
         return ExitRan;
     }
 
+    /// <summary>
+    /// Which staged blocks do not PARSE, asked of the parser and not of a list
+    /// of error codes.
+    /// </summary>
+    /// <remarks>
+    /// Spec 016 task 2.2 has to split the failures into the ones that never
+    /// reached the binder and the ones that did, and its stated filter was
+    /// "CS1002/CS1513/CS1519/CS8635 AND FRIENDS" -- an enumeration by
+    /// guesswork, over a corpus where being wrong in the generous direction
+    /// under-reports the class that matters. Roslyn already knows the answer:
+    /// `SyntaxTree.GetDiagnostics()` is the parse, with no references, no
+    /// binder and no compilation.
+    ///
+    /// The code filter is still worth running as the second method, and where
+    /// the two disagree the disagreement is the finding.
+    ///
+    /// Prints id TAB PARSES|BROKEN TAB count TAB codes, and nothing else, so
+    /// the caller can count lines. Reads the staged index for the same reason
+    /// the compile path does: a glob would sweep in the scaffold units.
+    /// </remarks>
+    private static int ParseOnly(string[] args)
+    {
+        if (args.Length != 1)
+        {
+            Console.Error.WriteLine("usage: blockcheck --parse <blocksDir>");
+            return ExitNothingChecked;
+        }
+        var blocksDir = args[0];
+        var indexPath = Path.Combine(blocksDir, "index.tsv");
+        if (!File.Exists(indexPath))
+        {
+            Console.Error.WriteLine($"no index at {indexPath}: nothing was checked");
+            return ExitNothingChecked;
+        }
+        var ids = new List<string>();
+        foreach (var line in File.ReadAllLines(indexPath))
+        {
+            if (line.Length == 0 || line[0] == '#') continue;
+            ids.Add(line.Split('\t')[0]);
+        }
+        if (ids.Count == 0)
+        {
+            Console.Error.WriteLine($"no blocks listed in {indexPath}: nothing was checked");
+            return ExitNothingChecked;
+        }
+        int broken = 0;
+        foreach (var id in ids)
+        {
+            var path = Path.Combine(blocksDir, id + ".cs");
+            if (!File.Exists(path))
+            {
+                Console.Error.WriteLine($"staged block missing: {path}");
+                return ExitNothingChecked;
+            }
+            var tree = CSharpSyntaxTree.ParseText(File.ReadAllText(path), Parse, path);
+            var errors = tree.GetDiagnostics()
+                .Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+            if (errors.Count > 0) broken++;
+            var codes = string.Join(",", errors.Select(e => e.Id).Distinct().OrderBy(c => c));
+            Console.WriteLine(
+                $"{id}\t{(errors.Count == 0 ? "PARSES" : "BROKEN")}\t{errors.Count}\t{codes}");
+        }
+        Console.Error.WriteLine($"{ids.Count} blocks, {broken} do not parse");
+        return ExitRan;
+    }
+
     // Latest, matching what a reader's own project would use; the pin that
     // decides the API surface is the package set in refs/refs.csproj.
     private static readonly CSharpParseOptions Parse =
@@ -152,10 +221,51 @@ internal static class Program
     private static readonly CSharpCompilationOptions Options =
         new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
 
+    // A block written as a Program.cs -- top-level statements, then the types it
+    // uses -- is only legal in an EXECUTABLE. Compile it as a library and every
+    // such block earns CS8805, "Program using top-level statements must be an
+    // executable": a verdict about this tool's output kind, not about the page.
+    // Phase 2 met it the moment `toplevel` blocks stopped being wrapped.
+    private static readonly CSharpCompilationOptions ExeOptions =
+        new CSharpCompilationOptions(OutputKind.ConsoleApplication);
+
+    /// <summary>
+    /// Does this block's own tree carry top-level statements?
+    /// </summary>
+    /// <remarks>
+    /// Asked of the syntax tree rather than taken from the staged index. The
+    /// index's shape is Python's classification, and a verdict that depends on
+    /// it would be trusting the claim instead of the code; `GlobalStatement` is
+    /// what the parser actually found.
+    /// </remarks>
+    private static bool HasTopLevelStatements(SyntaxTree tree) =>
+        tree.GetCompilationUnitRoot().Members
+            .Any(m => m is Microsoft.CodeAnalysis.CSharp.Syntax.GlobalStatementSyntax);
+
     public static int Main(string[] args)
     {
         if (args.Length > 0 && args[0] == "--identifiers")
             return Identifiers(args.Skip(1).ToArray());
+        if (args.Length > 0 && args[0] == "--parse")
+            return ParseOnly(args.Skip(1).ToArray());
+
+        // --explain reads the same staged corpus and the same references, and
+        // prints the diagnostics in full rather than a row of codes. A code is
+        // enough to count a failure and not enough to triage one: phase 2 had
+        // to know whether `CS1729` meant a constructor the page invented or a
+        // type its block never imported, and only the message says which.
+        var explain = new HashSet<string>(StringComparer.Ordinal);
+        if (args.Length > 0 && args[0] == "--explain")
+        {
+            if (args.Length < 4)
+            {
+                Console.Error.WriteLine(
+                    "usage: blockcheck --explain <blocksDir> <refs.txt> <id>...");
+                return ExitNothingChecked;
+            }
+            foreach (var id in args.Skip(3)) explain.Add(id);
+            args = new[] { args[1], args[2] };
+        }
 
         if (args.Length < 2 || args.Length > 3)
         {
@@ -181,7 +291,12 @@ internal static class Program
         var missing = new List<string>();
         foreach (var path in File.ReadAllLines(refsList))
         {
-            if (path.Length == 0) continue;
+            // The first line is refs.csproj's SHA256, written by refs.csproj so
+            // that a STALE reference list cannot pass for a current one. The
+            // comparison is the Python half's; here the line is simply not an
+            // assembly, and treating it as one would trip the missing-reference
+            // guard below with a message about the wrong thing.
+            if (path.Length == 0 || path[0] == '#') continue;
             if (!File.Exists(path)) { missing.Add(path); continue; }
             try
             {
@@ -277,6 +392,7 @@ internal static class Program
         {
             foreach (var (id, path, scaffold) in files)
             {
+                if (explain.Count > 0 && !explain.Contains(id)) continue;
                 var tree = CSharpSyntaxTree.ParseText(File.ReadAllText(path), Parse, path);
                 var trees = scaffold == "-"
                     ? new[] { tree }
@@ -289,7 +405,7 @@ internal static class Program
                     assemblyName: "B_" + id,
                     syntaxTrees: trees,
                     references: references,
-                    options: Options);
+                    options: HasTopLevelStatements(tree) ? ExeOptions : Options);
 
                 var all = compilation.GetDiagnostics()
                     .Where(d => d.Severity == DiagnosticSeverity.Error)
@@ -303,6 +419,17 @@ internal static class Program
                 var errors = all.Where(d => d.Location.SourceTree == tree).ToList();
                 scaffoldErrors += all.Count - errors.Count;
                 if (errors.Count == 0) built++;
+
+                if (explain.Count > 0)
+                {
+                    foreach (var d in errors)
+                    {
+                        var pos = d.Location.GetLineSpan().StartLinePosition;
+                        rows.WriteLine($"{id}\t{d.Id}\t{pos.Line + 1}:{pos.Character + 1}\t" +
+                                       d.GetMessage());
+                    }
+                    continue;
+                }
 
                 var codes = string.Join(",", errors.Select(e => e.Id).Distinct().OrderBy(c => c));
                 rows.WriteLine($"{id}\t{(errors.Count == 0 ? "BUILT" : "FAILED")}\t{errors.Count}\t{codes}");

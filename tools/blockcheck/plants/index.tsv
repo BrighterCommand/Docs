@@ -12,6 +12,8 @@
 #   Plant_Unparseable   FAILED   5   CS1026,CS1513
 #   Plant_Leak_A        BUILT    0
 #   Plant_Leak_B        FAILED   1   CS0246      <-- the one that guards obligation 8
+#   Plant_TopLevel      BUILT    0               <-- top-level statements, then a type
+#   Plant_TopLevel_Bad  FAILED   1   CS8803      <-- the same two, in the other order
 #
 # Plant_Leak_B is the guard. It names a type declared by Plant_Leak_A, in a
 # namespace they share, and it must NOT resolve: the two are different blocks.
@@ -19,9 +21,19 @@
 # back BUILT -- a false clean, with nothing in the output to say so. Measured
 # 2026-09-20, both ways.
 #
+# The two TopLevel plants are phase 2's pair, and they are two-way in the sense
+# that matters: the difference between them is LINE ORDER, not content. A block
+# that puts its statements above its types is a Program.cs and must BUILD --
+# which needs both the `toplevel` shape (or it is wrapped, and CS0116) and
+# OutputKind.ConsoleApplication (or it is a library, and CS8805). Reverse the
+# two halves and C# forbids it: CS8803, and the instrument must still say so.
+# A rule that rescued both would be rescuing by shape rather than by grammar.
+#
 # id  page  ordinal  shape  n_usings  n_open  n_rest  scaffold
 Plant_Clean	planted	0	types	0	0	3	-
 Plant_Missing	planted	0	statements	0	0	3	-
 Plant_Unparseable	planted	0	types	0	0	3	-
 Plant_Leak_A	planted	0	namespaced	0	0	4	-
 Plant_Leak_B	planted	0	namespaced	0	0	7	-
+Plant_TopLevel	planted	0	toplevel	0	0	6	-
+Plant_TopLevel_Bad	planted	0	toplevel	0	0	6	-
