@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <NoWarn>CS0168;CS0219;CS1998</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Transformers.AWS.V4" Version="10.7.0" />
+  </ItemGroup>
+</Project>
