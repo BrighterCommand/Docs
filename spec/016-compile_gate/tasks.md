@@ -83,57 +83,57 @@ mostly tooling.
 **Goal:** `python3 tools/blockcheck.py` gives every C# block a verdict, from committed files, with
 no CI job and no baseline. **It is a tool at the end of this phase, not a gate.**
 
-- [ ] **Task 1.1:** Write the enumerator and extractor in `tools/blockcheck.py`
+- [x] **Task 1.1:** Write the enumerator and extractor in `tools/blockcheck.py`
   - Input: `tools/pagelint.py` (`FENCE_RE`, `class Page`, `load_pages`), `spec/016-compile_gate/probe/gen.py`, `spec/016-compile_gate/harness/extract.py`
   - Output: `tools/blockcheck.py` with a `--list` mode printing one line per C# block as `page<TAB>ordinal<TAB>shape`, and **no absolute path anywhere** — `grep -c '/Users/' tools/blockcheck.py` → 0
   - Notes: the probe and the harness both hardcode a path to `tools/`; that is acceptable in a probe and is the first thing a tool must not do.
 
-- [ ] **Task 1.2:** Implement the four wrapper rules and re-derive their counts
+- [x] **Task 1.2:** Implement the four wrapper rules and re-derive their counts
   - Input: `design.md` § *The four wrapper rules*
   - Output: the classifier in `tools/blockcheck.py`, and a table in this file recording `namespaced / types / members / statements` **measured twice** — once by `blockcheck.py --list`, once by an independent script — with both commands shown
   - Notes: the design's figures are 11 / 306 / 136 / 532 summing to 985. They are the *design's*; obligation 1 says measure, not inherit.
 
-- [ ] **Task 1.3:** Write the Roslyn compiler tool
+- [x] **Task 1.3:** Write the Roslyn compiler tool
   - Input: `spec/016-compile_gate/probe/roslyn/Program.cs`, `tools/optioncheck/Program.cs` for the committed-tool shape
   - Output: `tools/blockcheck/blockcheck.csproj` and `tools/blockcheck/Program.cs`, compiling **one `CSharpCompilation` per block** and emitting `id<TAB>verdict<TAB>error count<TAB>distinct codes`
   - Notes: obligation 8 is the whole design here. A single `Compilation` holding many blocks is the defect, not an optimisation.
 
-- [ ] **Task 1.4:** Write the reference project — the pin, in one place
+- [x] **Task 1.4:** Write the reference project — the pin, in one place
   - Input: `tools/optioncheck/optioncheck.csproj`, `spec/016-compile_gate/probe/refs.csproj`
   - Output: `tools/blockcheck/refs/refs.csproj` — the package set with an explicit version on every entry, `CopyLocalLockFileAssemblies=true`, **no sources**, and a comment saying the pin lives here and nowhere else
   - Notes: a project that compiles blocks cannot also assemble references — its build fails and leaves `bin/` empty. That is friction 56, and this task exists because of it.
 
-- [ ] **Task 1.5:** Implement the scaffold mechanism and its listing
+- [x] **Task 1.5:** Implement the scaffold mechanism and its listing
   - Input: `spec/016-compile_gate/harness/preludes/`, `harness/core/blocks/Scaffold.cs`, `design.md` § *The scaffold*
   - Output: `tools/blockcheck/scaffold/` holding at least the harness's four preludes, and `--list-scaffold` printing every identifier supplied from outside a page, with a count
   - Notes: AC8. A `CLEAN` verdict that does not say what it was given is not a verdict.
 
-- [ ] **Task 1.6:** Implement the exit-code contract and the report modes
+- [x] **Task 1.6:** Implement the exit-code contract and the report modes
   - Input: `tools/README.md` § *Exit codes — one contract, all of them*
   - Output: `--report` writing to a file and returning **0 / 1 / 2** read bare; the run's last line printing `N findings` or `N findings, M skipped`; **and the conditions that must exit 2 named in the source** — the reference set unrestored, the scaffold directory absent, `pagelint` unimportable
   - Notes: obligation 11. The contract is unreadable downstream of a `|`, so the tool must not require one. **2 is the code this tool is most likely to need and least likely to emit:** with `bin/` empty every one of the 985 blocks fails, which is a believable red in the direction that confirms the thesis — friction 56, as a runtime state rather than a documentation defect. A gate with no references has *not checked* the corpus.
 
-- [ ] **Task 1.6a:** Red-proof exit 2 — the unchecked state, with its control *(review finding 4)*
+- [x] **Task 1.6a:** Red-proof exit 2 — the unchecked state, with its control *(review finding 4)*
   - Input: task 1.6, `tools/README.md` § *Exit codes — one contract, all of them*
   - Output: two recorded runs, both codes read **bare** — the reference set deliberately unrestored → **exit 2** with a message naming what was missing and **no per-block verdicts printed**; the same command with references present → **0 or 1**
   - Notes: obligation 3, applied to the code no other task produces. Without this, exit 2 is a promise in a task description, and the failure it guards is the one that looks most like a successful measurement.
 
-- [ ] **Task 1.7:** Red-proof the extraction — byte-identity, two-way
+- [x] **Task 1.7:** Red-proof the extraction — byte-identity, two-way
   - Input: task 1.1's output
   - Output: `--verify-extraction` reporting **N of N identical** where N is task 1.2's corpus count; **and** a recorded run where one staged block has a byte appended and the check reports exactly that block
   - Notes: the green half is the half that feels unnecessary and the half that catches a check which has stopped running.
 
-- [ ] **Task 1.8:** Red-proof the compile verdict — planted pair, outside the corpus
+- [x] **Task 1.8:** Red-proof the compile verdict — planted pair, outside the corpus
   - Input: `design.md` § *Its controls*
   - Output: recorded output showing a planted `NoSuchTypeXyz123` block → `FAIL` with `CS0246`, and a planted trivial class → `CLEAN`; **neither planted file is a block from `contents/`**. **A third plant, and it is the one that guards obligation 8:** a deliberately unparseable block in the **same run** as the `CS0246` plant, with the run still reporting `CS0246` on the second — recorded, and re-run whenever the compilation structure is touched
   - Notes: obligation 3, and *(review finding 5)* for the third plant. The first two cannot detect the defect this design exists to prevent: friction 54's mechanism is **a parse failure suppressing binding across a shared compilation**, so a regression to batching would leave a `CS0246` plant and a clean plant both reported and the instrument looking sensitive. **Obligation 8 is load-bearing and, without this plant, is the one rule here that no check has ever been able to fail.**
 
-- [ ] **Task 1.9:** Red-proof the no-vacuous-pass rule
+- [x] **Task 1.9:** Red-proof the no-vacuous-pass rule
   - Input: `design.md`'s cost table; session 75's finding that a 0.54s build reporting 0 warnings is MSBuild declining to work
   - Output: two consecutive runs with nothing touched, recorded, reporting the **same** block count and the same verdict distribution; plus the wall-clock of each. **And the second direction:** one further run over an input changed on purpose — a single staged block broken — which must report a **different** distribution, the change then reverted and `git diff` shown empty
   - Notes: AC5, and *(review finding 6)* for the second direction. **Two identical runs are also exactly what a tool that cached, or that silently did nothing the second time, would print** — which is the same shape as session 75's 0.54s build reporting 0 warnings. Sameness is only evidence once difference has been shown to be reachable. **Do not quote a single wall-clock as the figure** — four probe runs over identical inputs gave 6.5s, 22.9s, 39.5s and 26.2s.
 
-- [ ] **Task 1.10:** Predict and reconcile the eight gates
+- [x] **Task 1.10:** Predict and reconcile the eight gates
   - Input: `tools/README.md` § *The eight gates*, `design.md` § *Predicted gate movement*
   - Output: a § *Phase 1 prediction* and § *Phase 1 as executed* in this file, each gate with its predicted movement, its mechanism, and what it actually did
   - Notes: the prediction is **none** for all eight and the mechanism matters — `tools/` **is** inside `linkcheck`'s walk, so adding any `.md` there moves it. This phase deliberately adds none.
@@ -402,3 +402,718 @@ so rather than hiding it.
 **Next step: `/spec:review`.** Two things want confirming rather than assuming: **P0-9's boundary**
 (task 2.3 makes it measurable, and the claim list's size decides whether phase 4 is a phase), and
 **the choice to keep page edits out of phase 3** so that only one phase needs a sign-off.
+
+---
+
+## Phase 1 prediction
+
+**Written 2026-09-20, before any gate was run in this phase** — which is the thing AC11 is about.
+`tools/blockcheck.py` existed when this section was typed; no gate had been executed since the
+phase began, so the prediction below is a prediction and not a reading. `tools/README.md` owns the
+expected figures and this section cites rather than copies them.
+
+**All eight: none.** The mechanism is what makes that checkable, and it is not the same mechanism
+twice:
+
+| # | Gate | Prediction | Why, from mechanism |
+|---:|---|---|---|
+| 1 | `linkcheck` | **none** | It walks `.md` files and `tools/` **is inside that walk** — writing `tools/README.md` moved it 164 → 165. Phase 1 adds `tools/blockcheck.py`, `tools/blockcheck/*.cs`, `*.csproj` and files under `tools/blockcheck/scaffold/`, and **not one `.md`**. The gate's documentation is row 9 of the file that already exists, which is task 3.7. Adding `tools/blockcheck/README.md` would move this row to 166 — a choice, and this phase declines it |
+| 2 | `pagelint` | **none** | Corpus is `contents/` + `README.md`. A `.py`, a `.cs` and a `.csproj` cannot enter it. **The predicted fall to come is phase 4's, not this phase's**: rule 6's warning count moves only when a *page's* C# block gains `using` directives |
+| 3 | shape | **none** | Reads `SUMMARY.md`. No page is added, moved or renamed |
+| 4 | redirects | **none** | Reads `.gitbook.yaml`. Untouched |
+| 5 | `versioncheck` | **none** | It reads version pins **in page prose** — 18 across 5 pages. Task 1.4 pins 67 packages in a `.csproj`, where `optioncheck`'s 63 already sit unread |
+| 6 | `optioncheck` | **none** | Reflects marked option tables in `contents/` against pinned types. No table is touched. **It is the row most likely to move by accident**, because it is the other `dotnet` tool under `tools/` and task 1.3 adds a second project beside it — but its corpus is pages, not projects |
+| 7 | `--verify` | **none** | Fetches the live sitemap and compares it with the predicted tree. Nothing published changes |
+| 8 | `symbolcheck` | **none** | Corpus is `contents/`. No page is edited in this phase at all |
+
+**Seven of these are vacuous passes and the eighth is too.** That is the case worth writing down:
+a gate that has silently stopped checking looks exactly like a gate that correctly reports no
+movement, and the only defence is that the *before* figures were read at the start and the *after*
+figures at the end, both against `tools/README.md`.
+
+---
+
+## Phase 1 as executed
+
+### The eight gates, read before the work *(the prediction's baseline)*
+
+Run at `1f5fc10` with `tools/blockcheck.py` present and nothing else built. **Each verdict line is
+the gate's own last line, and each exit code was read bare** — `<cmd> > /tmp/g.out 2>&1; echo $?`:
+
+```text
+exit=0  No broken internal links (165 files checked).
+exit=0  0 errors, 744 warnings (using-directive debt: 744 blocks across 115 pages) across 162 pages.
+exit=0  0 shape failures — 161 pages, 12 sections, deepest 4 of 4 segments, widest 12 of 20 top-level entries
+exit=0  0 redirect failures — 77 entries, 7858 bytes, all printable ASCII
+exit=0  0 stale pins of 18 examined across 5 page(s).
+exit=0  0 mismatches across 59 tables and 519 rows.
+exit=0  No watchlisted symbols found (22 entries, 161 pages checked, 3 silenced).
+exit=0  predicted 161, published 161, 161 agree
+```
+
+**Eight for eight against `tools/README.md`'s rows**, including both rows that carry the second ref
+`3be2a78`. Nothing has moved, which is what makes the end-of-phase reading in task 1.10 a
+comparison rather than a fresh measurement.
+
+> **The first attempt at this table read every exit code through a pipe.** The form was
+> `python3 tools/linkcheck.py | tail -3; echo $?`, which prints `tail`'s code and would have read
+> **0** for all eight however they had ended. That is **constraint 11**, met while running the
+> check that exists because of it, within an hour of typing the obligation out. The second form
+> above redirects to a file and reads `$?` with nothing between. Recorded rather than quietly
+> re-run: the pipe is what a person reaches for, which is why the rule needs to be a rule.
+
+### The enumerator and extractor *(task 1.1)*
+
+`tools/blockcheck.py` enumerates through `pagelint.load_pages()` and `pagelint.Page`, filters on
+`pagelint.CSHARP_TAGS`, and hoists `using` directives with `pagelint.USING_RE`. **Four names
+imported, no second copy of any of them** — constraint 2, and friction 53's answer.
+
+```bash
+python3 tools/blockcheck.py --list > /tmp/l.tsv; echo $?      # 0, read bare
+wc -l < /tmp/l.tsv                                            # 985
+awk -F'\t' '{print $1}' /tmp/l.tsv | sort -u | wc -l          # 145
+grep -c '/Users/' tools/blockcheck.py                         # 0
+grep -c '^contents/KafkaConfiguration.md	' /tmp/l.tsv      # 20
+```
+
+```text
+985 C# blocks across 145 pages: 11 namespaced, 306 types, 136 members, 532 statements
+```
+
+**985 across 145 is `requirements.md` § *Current state* reproduced by the tool**, and the 20
+`KafkaConfiguration.md` rows are AC2's named case — the page whose every fence is ` ``` csharp`
+with a space, which a grep-shaped extractor sees as holding no C# at all.
+
+**The corpus is defined as "the pages `pagelint` lints", not "the pages under `contents/`".** Those
+are the same 985 blocks today, because the only other page it loads is `README.md` and that page
+carries **0** C# blocks. Defining it the wider way means a C# block arriving on the site root is
+compiled rather than silently exempt; defining it the narrower way would have been invisible until
+the day it mattered.
+
+**`--list` prints rows to stdout and its summary to stderr**, so `wc -l` of a redirect is the
+number of blocks and nothing else, and every row is newline-terminated — friction 55, which cost
+this programme a member of an enumeration once already.
+
+**Exit codes, all read bare:**
+
+```text
+--list, corpus present            0
+--show <page> <n>, block exists   0
+--show <page> 99, no such block   2
+no mode at all (the gate)         2    "the gate itself is not built yet: nothing was checked"
+```
+
+**An empty enumeration is exit 2 and not exit 0**, written into the tool rather than left to a
+future task: zero blocks is a broken corpus walk, and a gate reporting a clean nothing is this
+programme's twelve-times-met failure.
+
+**The extractor is observable**, which is what makes task 1.7 possible at all. `--show` writes the
+block body verbatim to stdout:
+
+```bash
+python3 tools/blockcheck.py --show contents/KafkaConfiguration.md 1 > /tmp/b1.cs
+sed -n '72,86p' contents/KafkaConfiguration.md > /tmp/page.cs
+diff /tmp/page.cs /tmp/b1.cs        # empty
+```
+
+The line range is the tool's own report — `lines 71-87` on stderr, the fences — and the block is a
+**tab-indented** one, so the diff is also a check that leading whitespace survives. That is a spot
+check by hand; the corpus-wide claim is task 1.7's, and this one is not a substitute for it.
+
+**The shape counts reproduce the design's 11 / 306 / 136 / 532 exactly**, from a classifier that
+uses `pagelint.USING_RE` where the probe used its own weaker one. That agreement is recorded here
+and **is not task 1.2's second method** — both figures come from the same classifier, run once.
+Task 1.2 still owes an independent count.
+
+**What this task did not do, deliberately:** it classifies but does not wrap. The four wrapper
+rules have a *test* half and an *emission* half; `--list` cannot print a shape the tool has not
+decided, so the tests land here and the emission lands in task 1.2 with its counts.
+
+**A drift found while reading the inputs, not fixed here:** `requirements.md` AC1 names the
+verdicts `BUILT · SKIPPED · NOT COMPILABLE · FAILED`, and `design.md` § *The verdict model* names
+them `CLEAN · FAILED · SKIPPED · NOT COMPILABLE`. **`BUILT` and `CLEAN` are the same verdict under
+two names**, and the tool can only print one. Recorded now, before the tool emits either, so that
+whichever one task 1.3 prints is a decision rather than a coin toss — obligation 2.
+
+**Ruled at task 1.3: the tool prints `BUILT`.** AC1 is what phase 5 walks, and its instrument reads
+the verdict as a field of the report; a criterion cannot be satisfied by a tool that prints a
+synonym of what it asks for. `design.md`'s `CLEAN` stands in the approved design as the same
+verdict under its older name, and is not edited — a figure or a term inside approved plan text is
+anchored by its approval.
+
+### The four wrapper rules, and their counts measured twice *(task 1.2)*
+
+`WRAPPERS` in `tools/blockcheck.py` holds the emission half; `classify()` holds the test half. The
+closing braces are **derived** — one `}` per `{` in the opening lines — because a wrapper whose two
+halves are maintained separately is a wrapper that will one day not balance.
+
+| Shape | Test | Wrapper | `--list` | the probe |
+|---|---|---|---:|---:|
+| `namespaced` | declares its own `namespace` | none; `using`s hoisted above it | 11 | 11 |
+| `types` | declares a `class`/`record`/`interface`/`struct`/`enum` | `namespace B_<id>` | 306 | 306 |
+| `members` | a line opens with an access or member modifier | the above, plus `public class Holder` | 136 | 136 |
+| `statements` | anything else | the above, plus `public async Task Run()` | 532 | 532 |
+| | | | **985** | **985** |
+
+**Method 1 — this tool.** Method 2 — the **committed** probe, a different implementation of the
+same four tests, run from `/tmp` so that nothing in the working directory could be feeding it
+*(obligation 12)*:
+
+```bash
+python3 tools/blockcheck.py --stage /tmp/bc12/staged
+awk -F'\t' '{n[$4]++} END{for(k in n) print n[k], k}' /tmp/bc12/staged/index.tsv
+
+cd /tmp && python3 <repo>/spec/016-compile_gate/probe/gen.py /tmp/bc12probe/blocks
+```
+
+**They agree on all four, and they are not the same code**: the probe's `using` test is its own
+and rejects `using static X;` and `using Alias = X.Y;`, where this tool uses `pagelint.USING_RE`.
+The agreement says the shape of a block does not turn on that difference — every block that is
+nothing but directives classifies `statements` under both.
+
+**What this pair does NOT double-measure, and saying so is the point:** both walk the corpus
+through `pagelint.Page`, because constraint 2 forbids a second fence parser. The corpus *size*
+therefore needs its second method from somewhere else, and it has one — the grep, which is
+**friction 53's own number**:
+
+```bash
+grep -r '^```csharp$' contents/ | wc -l      # 835 blocks
+grep -rl '^```csharp$' contents/ | wc -l     # 117 pages
+```
+
+**835 against 985, and the 150 reconcile exactly**, by opening-fence spelling:
+
+```text
+  835  exactly ```csharp
+  140  ``` csharp (one space)
+    8  indented
+    1  c# tag
+    1  ```csharp + trailing space
+  985  total
+```
+
+The grep's 835 is not an approximation of 985 and must not be read as corroborating it: it is the
+**visible** part of the corpus, and the gap is a decomposed list rather than a discrepancy. Two
+methods agreeing is evidence; two methods disagreeing by a number you can name, line by line, is
+better evidence.
+
+**985 blocks produced 985 files.** That is a collision check and not a formality — `<page>_<n>`
+identifiers that collided would overwrite each other silently, and the staged directory would hold
+fewer files than the index has rows:
+
+```bash
+wc -l < /tmp/bc12/staged/index.tsv      # 985
+ls /tmp/bc12/staged/*.cs | wc -l        # 985
+```
+
+**`NOT COMPILABLE` is 0 of 985**, by construction rather than by luck: `classify()` ends in an
+unconditional `statements`, so a block can only be unwrapped if it raises. The verdict stays in the
+model because a future rule could narrow that fall-through, and a category that exists only when it
+is non-zero is a category nobody notices arriving.
+
+### The Roslyn tool, and the reference pin *(tasks 1.3 and 1.4)*
+
+`tools/blockcheck/Program.cs` compiles **one `CSharpCompilation` per block** — obligation 8, written
+into the code's opening comment with friction 54's measurements beside it, so that a later reader
+meets the reason before the loop. Reference assemblies **are** shared between compilations and
+diagnostics are not: a `MetadataReference` is an immutable input, a diagnostic bag is a sink, and
+the defect was always the sink.
+
+It prints `id<TAB>verdict<TAB>error count<TAB>distinct codes` and nothing else to stdout. **Its own
+exit code is 0 or 2, never 1** — a failing block is data, and the corpus verdict belongs to the
+Python half that owns the 0/1/2 contract.
+
+`tools/blockcheck/refs/refs.csproj` is **67 packages, every one with an explicit version, and no
+sources**, carried forward verbatim from the probe:
+
+```bash
+grep -c 'PackageReference' tools/blockcheck/refs/refs.csproj   # 67
+grep -c 'Version="'        tools/blockcheck/refs/refs.csproj   # 67
+grep -c 'ProjectReference' tools/blockcheck/refs/refs.csproj   # 0
+grep -c 'ProjectReference' tools/blockcheck/blockcheck.csproj  # 0
+```
+
+Both projects target **net9.0**, where the probe used net8.0 — matching `tools/optioncheck` and the
+`options` job's `setup-dotnet 9.0.x`, so that phase 3's CI job needs no second runtime. The move is
+recorded here because it is the named cause of any difference from the probe's figures. There was
+none; see below.
+
+#### The reference set states itself, because the step that is documented is the step that gets skipped
+
+**The probe's recipe has a hand-copy in it**, and it is load-bearing:
+
+```bash
+cp bin/Debug/net8.0/*.dll <refdir>/
+cp $(dirname $(which dotnet))/packs/Microsoft.NETCore.App.Ref/8.0.0/ref/net8.0/*.dll <refdir>/
+```
+
+**The first build of this tool did the first line and not the second**, because globbing the output
+directory is the obvious thing and the second line is a step in a README. What came back:
+
+```text
+233 reference assemblies
+985 blocks, 1 built, 984 failing
+981 CS0518   predefined type 'System.Object' is not defined
+```
+
+**99.9% of the corpus broken, and the gate had not checked one line of it.** That is friction 56
+again, one layer down: not a probe recipe nobody ran, but a *step* nobody ran, and the failure is
+believable and points the way the thesis does. The repair is not to document the step harder.
+`refs.csproj` now writes its **own** resolved reference set at build time —
+
+```xml
+<Target Name="WriteReferenceList" AfterTargets="ResolveReferences">
+  <WriteLinesToFile File="$(OutputPath)refs.txt" Lines="@(ReferencePath)" ... />
+</Target>
+```
+
+— which is exactly what the compiler would have been handed: the 67 packages **and** the targeting
+pack for the project's own `TargetFramework`, with no SDK version written down anywhere and no copy
+step to forget. **497 assemblies**, against the probe's hand-assembled 391. The tool takes that file
+rather than a directory, and **exits 2 if it is absent or names an assembly that is not there**,
+because a partly-present reference set fails blocks for a reason that is not the block's.
+
+#### The corpus run, and the probe reproduced exactly
+
+```bash
+dotnet build tools/blockcheck/refs/refs.csproj -c Release          # exit 0
+dotnet build tools/blockcheck/blockcheck.csproj -c Release         # exit 0
+python3 tools/blockcheck.py --stage /tmp/bc12/staged               # 985 staged
+dotnet tools/blockcheck/bin/Release/net9.0/blockcheck.dll \
+    /tmp/bc12/staged tools/blockcheck/refs/bin/Release/net9.0/refs.txt /tmp/bc12/verdicts.tsv
+```
+
+```text
+497 reference assemblies
+985 blocks, 60 built, 925 failing
+22.0s total, 22ms per block
+```
+
+**60 and 925 are the probe's numbers to the block** — and not by inheritance. Joined on block id
+against the **committed** `probe/verdicts.tsv`:
+
+```bash
+join -t$'\t' -j1 <mine, BUILT→CLEAN> <probe/verdicts.tsv> | wc -l    # 985
+awk -F'\t' '$2!=$3{d++} END{print d+0, "disagreements"}'             # 0
+```
+
+**985 of 985 verdicts identical**, across a different target framework, a differently assembled
+reference set of a different size, and a second implementation of the tool. That is the strongest
+control this phase has, and it is the one nobody planned: it was available only because the probe
+was committed with its output.
+
+**A correction to the design's error-code figures, in the direction that matters.** `design.md`
+quotes `CS0246` at 714 and `CS0103` at 653; this run reads **738** and **677** over the same
+verdicts. The probe's row wrote `.Take(6)` distinct codes per block, so **every per-code figure it
+published is a floor**, and a block failing seven different ways contributed six. The design's
+figures are not wrong about anything they decided — the gap is 24 blocks and 24 blocks — but a
+number that silently truncates is worth catching before phase 2 builds a triage on it. This tool
+writes every distinct code.
+
+### The scaffold, and the two-way control that says it does something *(task 1.5)*
+
+**A scaffold is declared in `tools/blockcheck/scaffold/pages.tsv`, one row per page**, and it has
+two parts because the harness 015 built had two:
+
+| Part | Where | What it does |
+|---|---|---|
+| a **unit** | `scaffold/units/*.cs` | an extra compilation unit, compiled **in that block's own compilation** — types and values the page names but no block defines |
+| a **prelude** | `scaffold/preludes/*.txt` | **replaces** the generic wrapper for that page's blocks: a typed handler class, so a block that is the body of a method has the method to sit in |
+
+A unit also declares the `using` lines it wants injected, in the unit itself rather than in a
+second file:
+
+```csharp
+// blockcheck: using static PageContext;
+```
+
+That one line is the whole mechanism by which a page's named-but-undefined values — a connection
+string, a producer registry, an outbox configuration — reach a block, and it is `015`'s. The four
+preludes and `PageContext.cs` are carried forward verbatim from
+`spec/016-compile_gate/harness/`.
+
+**The unit rides in the block's own compilation and nowhere else**, so obligation 8 is untouched:
+one block, one `CSharpCompilation`, now with two trees in it. A scaffold can help the block it was
+given to and cannot silence another.
+
+**A scaffold that does not parse stops the run** — exit 2, nothing checked. That is friction 54's
+mechanism arriving through the back door: a parse error in a shared tree suppresses semantic
+binding across the compilation it is in, so a broken scaffold would hand every page that uses it a
+**silent pass**. It is checked once, before any block is compiled.
+
+**Errors reported against a scaffold's tree are not counted against the block.** They are an
+instrument fault, not a documentation defect, and charging them to the page would fail every page
+sharing that scaffold for a reason no reader could act on. They are not swallowed either: the run
+prints `WARNING: N error(s) reported against scaffold trees`.
+
+#### `--list-scaffold`, and why it reads the tree rather than grepping it
+
+```bash
+python3 tools/blockcheck.py --list-scaffold > /tmp/sc.txt; echo $?    # 0, read bare
+wc -l < /tmp/sc.txt                                                   # 56
+find tools/blockcheck/scaffold -type f | wc -l                        # 6
+```
+
+```text
+55 identifiers from 1 unit(s) and 4 prelude(s); 1 page(s) scaffolded
+```
+
+**Six files, five of them scaffold and one the map** — AC8's count, stated with the map named
+rather than quietly included. The 56th row is the injected `using`, which is supplied from outside
+the page exactly as the identifiers are and would otherwise be the one thing the listing did not
+say.
+
+The identifiers come from **Roslyn's syntax tree**, not a regex: a listing that under-reports
+claims the block was helped less than it was, and that is the only direction that matters here.
+Preludes are fragments — they open braces they do not close — so each is rendered the way `wrap()`
+renders it, with `__NAME__` substituted and one `}` per `{@`, which is also a check that its braces
+balance under the rule the tool actually applies.
+
+#### The control: one page in, one block moves
+
+`contents/DapperOutbox.md` is the phase-1 row in `pages.tsv`. Same corpus, same references, the
+scaffold the only difference:
+
+```text
+                  no scaffold                  PageContext
+DapperOutbox_1    FAILED  1 error   CS0103     BUILT   0 errors
+DapperOutbox_2    FAILED 16 errors  CS0103…    FAILED 12 errors  CS0103,CS0115,CS0117
+corpus            985 blocks, 60 built         985 blocks, 61 built
+```
+
+**Both directions, and neither is the whole corpus.** Block 1 moves from `FAILED` to `BUILT`, which
+is the scaffold doing something; block 2 stays `FAILED` with a *different* error set, which is the
+scaffold not being a way to make a page green. The corpus moves by exactly one block. A scaffold
+that had quietly helped everything would have shown up here as a jump, and that is the failure this
+control is for.
+
+**The staged directory holds 986 `.cs` files and the corpus is 985.** The extra one is the staged
+copy of the unit, and the tool reads `index.tsv` rather than globbing the directory — a glob would
+have compiled the scaffold as though it were documentation and reported a corpus of 986:
+
+```bash
+ls /tmp/bc15/*.cs | wc -l        # 986
+wc -l < /tmp/bc15/index.tsv      # 985
+wc -l < /tmp/bc15/verdicts.tsv   # 985
+```
+
+The unit is **copied** into the staged directory rather than referenced where it lives, so that
+what was compiled can be read afterwards by somebody who does not know how the run was configured.
+
+### The exit contract, and exit 2 red-proofed four ways *(tasks 1.6 and 1.6a)*
+
+`--report` compiles the whole corpus and writes one row per block, **verdict first**:
+
+```text
+BUILT	contents/AWSSQSConfiguration.md	1	AWSSQSConfiguration_1	0
+FAILED	contents/AWSSQSConfiguration.md	2	AWSSQSConfiguration_2	6	CS0103,CS0246,CS1002
+```
+
+```bash
+python3 tools/blockcheck.py --report > /tmp/r.tsv; echo $?    # 0, read bare
+awk '{n[$1]++} END{for(k in n) print k, n[k]}' /tmp/r.tsv     # BUILT 61, FAILED 924
+wc -l < /tmp/r.tsv                                            # 985
+```
+
+**61 + 924 = 985**, which is AC1's sum. Rows go to stdout (or the named file) and **every other
+line goes to stderr**, so the redirect holds rows and nothing else.
+
+**`NOT_COMPILABLE` carries an underscore, and that is a repair to AC1's instrument, not a typo.**
+AC1 counts verdicts with `awk '{n[$1]++}'`, whose default field separator is whitespace; the
+spelling `NOT COMPILABLE` would split into two fields and be counted as `NOT`. It is invisible
+today — the count is 0 of 985 — and it is a trap the first day it is not. Same family as the
+criteria that read an exit code through a pipe: the instrument, not the claim.
+
+**The run states its scope before its verdict, and states what it is not:**
+
+```text
+985 blocks: 61 BUILT, 924 FAILED
+no baseline yet: this is a measurement, not a gate
+0 findings
+```
+
+**`0 findings` over 924 failures is a true statement and a dangerous one**, so the line above it is
+mandatory. Nothing is required to compile until `baseline.tsv` exists in phase 3, and a run that
+printed only the zero would read as a green gate over an unchecked corpus. This is the phase that
+says *"it is a tool, not a gate"*; the tool has to say it too.
+
+#### Exit 2, proved four ways, every code read bare
+
+**Obligation 3 and review finding 4.** Exit 2's real-world cause makes all 985 blocks fail
+*believably*, so the proof is not only the code but **no per-block verdicts printed**:
+
+| The state | Exit | Report rows |
+|---|---:|---:|
+| the reference set unrestored — `refs/bin` moved away | **2** | **0** |
+| `refs.txt` present, naming **one** assembly that is not there | **2** | **0** |
+| the Roslyn tool not built | **2** | **0** |
+| **the control: everything restored** | **0** | **985** |
+
+```text
+no reference list at …/refs/bin/Release/net9.0/refs.txt: the reference project has not been
+restored and built, so nothing was checked
+  dotnet build tools/blockcheck/refs/refs.csproj -c Release
+  dotnet build tools/blockcheck/blockcheck.csproj -c Release
+
+1 of 498 reference assemblies are missing or unreadable, first: /nonexistent/Paramore.Brighter.dll
+NOTHING WAS CHECKED
+```
+
+**The second row is the one worth having.** A reference list that is 497 of 498 present is the
+state that reads as a measurement: the blocks that needed that assembly fail, with the compiler's
+own error codes, and everything else passes. It is exit 2 rather than a warning, because a gate
+that checked 99.8% of what it was told to check has not checked the corpus.
+
+`refs.txt` was restored and `diff`ed byte-identical afterwards, and every exit code above was read
+with `echo $?` directly after the command, never after a pipe — **constraint 11**, which this
+session had already broken once while reading the eight gates.
+
+**Nine states exit 2 and they are named in one place**, as a block comment above `mode_report` in
+`tools/blockcheck.py`: four are enforced in Python, three in `tools/blockcheck/Program.cs` and
+propagated, and the remaining two — `pagelint` unimportable, and an empty enumeration — sit in
+`main`. Four of the nine are proved above; the scaffold-parse one is proved by task 1.8's third
+plant.
+
+### Extraction, red-proofed both ways *(task 1.7)*
+
+```bash
+python3 tools/blockcheck.py --verify-extraction; echo $?     # 0, read bare
+```
+
+```text
+985 of 985 identical, 1 with `using` directives hoisted
+```
+
+**N of N, with N the corpus count.** The check reconstructs the same split the stager made —
+`using` directives hoisted above the wrapper, the rest in place — rather than ignoring the
+difference, so "identical" means *every other byte*: not a space, not an indent, not a line ending.
+
+**The red half, and it is one byte.** A single trailing space appended to line 9 of one staged
+block, inside the block's own body:
+
+```text
+exit=1
+984 of 985 identical, 1 with `using` directives hoisted
+contents/KafkaConfiguration.md	1	KafkaConfiguration_1	NOT IDENTICAL
+```
+
+**Exactly that block, named, and nothing else moved.** The green half is the half that feels
+unnecessary and the half that catches a check which has stopped running — 985 of 985 is only worth
+something because 984 of 985 is reachable.
+
+#### The hoisting count is 1, and the block it names is a finding for phase 2
+
+`985 of 985 identical, **1** with directives hoisted` looked wrong — 248 blocks carry a `using`
+line, so the number that moves lines ought to be larger. It is not: hoisting only *moves* anything
+when a directive sits below a non-directive line, and in 984 blocks the directives are already at
+the top. The one exception:
+
+```bash
+python3 tools/blockcheck.py --show contents/AWSSQSMigrateToV10.md 1
+```
+
+```csharp
+// V3
+using Amazon.SimpleNotificationService;
+using Amazon.SQS;
+
+// V4 - Same namespaces, different package versions
+using Amazon.SimpleNotificationService;
+using Amazon.SQS;
+```
+
+**That is a before/after pair inside one fence**, of exactly the shape task 2.5 confirms — and it
+is not on the design's list, nor on the nine candidates the tasks review produced, because it
+carries no `// Before`, `// After`, `// V9` or `// V10` comment. The marker method cannot see it;
+**a duplicated `using` directive can**. Carried to task 2.5 as a second method to run, not repaired
+here: phase 1 touches no page.
+
+It is also the one block where the difference between *the page's bytes* and *what the compiler
+read* is visible, which is why this check reports the hoisting count rather than folding it into
+the identical count.
+
+### The compile verdict red-proofed — and the design's central mechanism did not reproduce *(task 1.8)*
+
+**Five plants, committed at `tools/blockcheck/plants/`, none of them a block from `contents/`:**
+
+```bash
+dotnet tools/blockcheck/bin/Release/net9.0/blockcheck.dll \
+    tools/blockcheck/plants tools/blockcheck/refs/bin/Release/net9.0/refs.txt
+```
+
+```text
+Plant_Clean	BUILT	0
+Plant_Missing	FAILED	1	CS0246
+Plant_Unparseable	FAILED	5	CS1026,CS1513
+Plant_Leak_A	BUILT	0
+Plant_Leak_B	FAILED	1	CS0246
+5 blocks, 2 built, 3 failing
+```
+
+The first two are the pair the design asked for, and they are the easy half: a name that does not
+exist must come back `FAILED` with the compiler's own code, and a trivial class must come back
+`BUILT`, because a harness that had silently stopped compiling would report everything `FAILED` and
+read as thorough.
+
+#### Review finding 5 was right that obligation 8 had no red-proof, and wrong about what would give it one
+
+The task list specified a **parse-broken third plant** in the same run as the `CS0246` plant, on the
+design's stated mechanism: a parse failure suppresses semantic binding across a shared compilation,
+so under batching the `CS0246` plant would go silent.
+
+**It does not go silent.** Built with the blocks deliberately batched into one `CSharpCompilation` —
+the regression the rule forbids — all three plants reported exactly what they report per-block:
+
+```text
+                      per block                    batched
+Plant_Clean           BUILT   0                    BUILT   0
+Plant_Missing         FAILED  1  CS0246            FAILED  1  CS0246
+Plant_Unparseable     FAILED  5  CS1026,CS1513     FAILED  5  CS1026,CS1513
+```
+
+**The third plant cannot fail when the rule is broken**, which is the exact defect review finding 5
+set out to fix, one level further in. It was caught by doing what the finding asked — building the
+regression and running the control against it — rather than by planting the file and assuming.
+
+#### What batching actually does, measured over all 985
+
+A scratch probe put every staged block in **one** compilation and reported diagnostics per tree:
+
+```text
+one compilation per block      985 blocks, 61 built, 924 failing
+one compilation, all 985       985 blocks, 64 built, 921 failing
+                               6,331 errors: 865 CS1xxx/CS8xxx, 5,466 semantic
+```
+
+**Four false `BUILT` verdicts**, named, and every one a tutorial:
+
+```text
+TutorialFirstCommand_2   TutorialFirstCommand_3   TutorialFirstMessage_3   TutorialDurableOutbox_3
+```
+
+All four fail alone with **`CS0246`** and build in the batch, and the mechanism is **visibility, not
+diagnostics**: a tutorial declares a type in one block and uses it in the next, and the 11
+`namespaced` blocks are emitted verbatim into the namespace the page wrote. In one compilation,
+block 2 resolves a name block 1 declared — which is precisely what a reader copying block 2 alone
+cannot do. **The verdict a batch gives those four is the opposite of the fact the gate exists to
+state.**
+
+So `Plant_Leak_A` and `Plant_Leak_B` replace the parse-broken plant as obligation 8's guard, and
+they reproduce the corpus defect in two files:
+
+```text
+                      per block                    batched
+Plant_Leak_A          BUILT   0                    BUILT   0
+Plant_Leak_B          FAILED  1  CS0246            BUILT   0      <- false clean
+```
+
+**`Plant_Unparseable` stays**, because the parse-failure case is still a case — it is how the
+scaffold-parse guard is stated, and a corpus of 218 blocks with `CS1xxx` errors is not hypothetical
+— but it is no longer claimed to guard obligation 8, because it does not.
+
+#### The correction, stated plainly: obligation 8 stands, its published cause does not
+
+`design.md` § *The finding nobody was looking for* reports that batching suppressed semantic
+binding wholesale — *1,444 errors and not one semantic error* across all 985, and *446 blocks
+certified clean of which a 20-block sample was 100% false-clean*. **Re-run in this repository, with
+Roslyn 4.11 on net9.0, that does not reproduce**: one compilation of all 985 reported **6,331**
+errors of which **5,466 were semantic**, and it certified **64** clean against 61 — three more, not
+386 more.
+
+**The design's conclusion is untouched and is now proved by a control that can fail.** One
+compilation per block remains the only arrangement in which a verdict means anything, obligation 8
+is unchanged, and the argument for it is this repository's own measurement rather than an inherited
+one. The design is **not edited**: an approved document's figures are anchored at their approval,
+and a spec that rewrites its own history keeps no evidence that it ever measured anything.
+
+**What this cost and why it was worth it:** the plant the plan named would have been committed,
+recorded as passing, and believed — a red-proof that is green for the wrong reason, which is the
+same shape as every plausible zero in this programme's ledger. It took building the regression to
+find out. **A control is only a control once you have watched it fail.**
+
+### No vacuous pass, and the second direction that makes the first mean something *(task 1.9)*
+
+**Two consecutive runs, nothing touched:**
+
+```text
+run1  exit=0  wall=26s   985 blocks: 61 BUILT, 924 FAILED
+run2  exit=0  wall=23s   985 blocks: 61 BUILT, 924 FAILED
+diff /tmp/run1.tsv /tmp/run2.tsv      empty
+```
+
+**Same corpus count, same distribution, same 985 rows to the byte** — and *that is also exactly
+what a tool which had cached, or silently done nothing the second time, would print*. Session 75's
+0.54s MSBuild run reporting 0 warnings is the same shape: a tool declining to work and reporting no
+problems.
+
+**So the second direction, over an input changed on purpose.** One line added inside block 1 of
+`contents/AWSSQSConfiguration.md`, a block that was `BUILT`:
+
+```csharp
+        NoSuchTypeXyz123 deliberate = null;
+```
+
+```text
+run3  exit=0   985 blocks: 60 BUILT, 925 FAILED
+
+1c1
+< BUILT	contents/AWSSQSConfiguration.md	1	AWSSQSConfiguration_1	0
+> FAILED	contents/AWSSQSConfiguration.md	1	AWSSQSConfiguration_1	1	CS0246
+```
+
+**One block moved and exactly one line of the report changed.** The change was then reverted:
+
+```bash
+git checkout contents/AWSSQSConfiguration.md
+git diff contents/AWSSQSConfiguration.md      # empty
+```
+
+```text
+run4  exit=0   985 blocks: 61 BUILT, 924 FAILED
+diff /tmp/run1.tsv /tmp/run4.tsv      empty
+```
+
+**Four runs: same, same, different, same again.** Sameness is only evidence once difference has
+been shown to be reachable, and run 4 is what says the difference was the input rather than the
+instrument drifting.
+
+**Do not quote a single wall-clock as the figure.** 26s and 23s here; the probe's four runs over
+identical inputs gave 6.5s, 22.9s, 39.5s and 26.2s. The cost of this corpus is *tens of seconds*,
+which is the shape of the number phase 3's CI job is budgeted from — not 23.
+
+### The eight gates, reconciled *(task 1.10)*
+
+Run at the end of the phase, `git add -A` first so that `--changed` sees the diff, every exit code
+read bare:
+
+| # | Gate | Predicted | Read at the start | Read at the end | |
+|---:|---|---|---|---|---|
+| 1 | `linkcheck` | none | 165 files, 0 broken | **165 files, 0 broken** | ✅ |
+| 2 | `pagelint` | none | 0 errors, 744 warnings, 162 pages | **0 errors, 744 warnings, 162 pages** | ✅ |
+| 3 | shape | none | 161 pages, 12 sections | **161 pages, 12 sections** | ✅ |
+| 4 | redirects | none | 77 entries, 7858 bytes | **77 entries, 7858 bytes** | ✅ |
+| 5 | `versioncheck` | none | 0 stale pins of 18 | **0 stale pins of 18** | ✅ |
+| 6 | `optioncheck` | none | 0 mismatches, 59 tables, 519 rows | **0 mismatches, 59 tables, 519 rows** | ✅ |
+| 7 | `symbolcheck` | none | 0 findings, 22 entries, 3 silenced | **0 findings, 22 entries, 3 silenced** | ✅ |
+| 8 | `--verify` | none | 161 predicted = 161 published | **161 predicted = 161 published** | ✅ |
+
+**Eight for eight, and `pagelint --changed origin/master` is green too** — the mode that matters on
+a pull request, and the one that would have caught a C# block added to a page.
+
+**The mechanism held where it was most likely to break.** `linkcheck` walks `tools/`, so the
+prediction depended on this phase adding **no `.md`** there, and it did not:
+
+```bash
+git diff --cached --name-only | grep '^tools/' | sed 's/.*\.//' | sort | uniq -c
+#    7 cs      2 csproj      1 py      2 tsv      4 txt
+git diff --cached --name-only --diff-filter=A | grep '\.md$'      # nothing
+```
+
+Seventeen files changed and not one of them is a page or a `.md`. The gate's documentation is row 9
+of `tools/README.md`, which task 3.7 writes; a `tools/blockcheck/README.md` would have taken
+`linkcheck` to 166, and that would have been a choice rather than an accident.
+
+**"None" for all eight is a vacuous pass eight times over**, which is why the before-figures were
+read at the top of the phase and cited to `tools/README.md` rather than re-derived at the end from
+the same run. A gate that had silently stopped checking reads exactly like a gate correctly
+reporting no movement.

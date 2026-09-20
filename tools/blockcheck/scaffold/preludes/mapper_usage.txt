@@ -1,0 +1,6 @@
+public class __NAME__
+{@
+    private readonly GreetingMade request = new GreetingMade("hello");
+
+    public void Run()
+    {@

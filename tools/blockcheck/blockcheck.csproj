@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- net9.0, matching tools/optioncheck and the `options` CI job's
+         setup-dotnet 9.0.x. The probe measured on net8.0; the reference
+         project below moved with this one, so any difference from the probe's
+         figures has a named cause rather than an unexplained one. -->
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>blockcheck</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The compiler this tool drives. It is NOT the pin that decides what a
+         documentation block compiles against — that is refs/refs.csproj, and
+         it is deliberately a separate project. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- refs/ is a project in its own right, not sources of this one. Without
+         this, the default glob would sweep it in and the two pins would become
+         one. -->
+    <Compile Remove="refs/**" />
+    <Compile Remove="scaffold/**" />
+    <!-- The plants are deliberately broken C#. One of them does not parse, by
+         design, and it is the control that says so. -->
+    <Compile Remove="plants/**" />
+  </ItemGroup>
+
+</Project>
