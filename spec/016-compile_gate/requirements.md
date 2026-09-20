@@ -12,6 +12,11 @@ repaired, with the prior wording recorded in § *What the review found in this d
 > built**, and Q6 in particular decides whether *Target audience* stays N/A and whether obligation
 > 7 binds. They carry forward to `/spec:design`'s review, where 015 ruled its six.
 >
+> **That is what happened. At the design review on 2026-09-20, Q1, Q2, Q4 and Q7 were settled by
+> the design's probe, and Q6 was RULED *repair* by the maintainer** — so P1-1 became **P0-9**,
+> *Target audience* stopped being N/A, and obligation 7 now binds. **Q3, Q5, Q8 and Q9 remain
+> open**, and none of them changes what gets built.
+>
 > **015's Q4 is why this paragraph exists.** Two of its six recommendations were overturned at
 > review, one of them falsifying its own subject section — so a recommendation carried silently
 > into a design is a decision nobody took.
@@ -36,7 +41,7 @@ Three sections are **N/A**, named rather than left empty:
 | Section | Why N/A |
 |---|---|
 | **SUMMARY.md changes** | A category error here rather than an empty heading. `SUMMARY.md` carries pages; this spec ships a tool, a baseline file, a CI job and a row in `tools/README.md`, none of which is published |
-| **Target audience** | The audience is whoever runs the gates — this programme and CI. **Conditional on Q6**: if this spec repairs what it finds, the audience of those repairs is the ordinary reader, exactly as 015's Q4 discovered *after* the document had declared the section N/A |
+| ~~**Target audience**~~ | **NO LONGER N/A — Q6 was ruled *repair* on 2026-09-20.** The audience of P0-1 to P0-8 is whoever runs the gates, this programme and CI. **The audience of P0-9 is the ordinary reader of a repaired page** — the audience `CLAUDE.md` writes for. The conditional this row used to carry was written precisely so the ruling would not leave a stale N/A behind, which is what 015's Q4 did |
 | **Mode mix** | Diátaxis applies to whole pages and to choosing what a page is for. Nothing here decides what a page is for |
 
 > **015's Q4 is the warning this section is written against.** 015 declared itself "not a page",
@@ -308,12 +313,14 @@ Read before writing, and cited above where used:
 | **P0-7** | **The red-proof and its controls.** The gate is seen failing before it is trusted; the positive control is planted **outside** the enumeration the tool was built from (obligation 3) |
 | **P0-8** | **The CI job**, on the `options` pattern, and the `tools/README.md` row that owns its number |
 
+| **P0-9** | **Repair what the run finds**, on 015's P0-6 pattern. **Promoted from P1-1 by Q6's ruling**, 2026-09-20. **Scoped to defects of *claim*:** a block that cannot compile *by construction* (the six before/after-in-one-fence blocks), a name that resolves to the wrong thing (`CS1061`, `CS7036` — 015's class), a package that has no release, a type whose signature moved. **Not** the ~900 blocks failing on `CS0246`/`CS0103` for want of imports or page context: that is backlog item 2, it is the 744-block debt `tools/README.md` row 2 counts, and folding it in makes this spec unbounded. **Every block admitted to the baseline is repaired to compiling as a side effect**, which is how the debt actually falls — page by page, with a verdict, rather than by a sweep nothing checks |
+
 ### P1 — wanted, and cut first if the spec is too big
 
 | | What |
 |---|---|
-| **P1-1** | **Repair what the run finds**, on 015's P0-6 pattern. **Q6 decides whether this is P0 or P1** and the answer changes this document's N/A table |
-| **P1-2** | **A `--changed` mode**, so a pull request compiles the blocks its diff touches — `pagelint`'s two-strictness-level pattern, which already has a working implementation to copy |
+| ~~**P1-1**~~ | **Promoted to P0-9** by Q6's ruling |
+| ~~**P1-2**~~ | **WITHDRAWN at the design review**, not deferred. A `--changed` mode existed to control cost; the design measured the whole corpus at **6.5–39.5s**, so there is no cost to control |
 
 ### P2 — named so it is not silently assumed
 
@@ -340,9 +347,9 @@ Read before writing, and cited above where used:
 ## Deliverables
 
 Specific files. **None is a page**, so the "which of the four page types" rule does not bind — said
-out loud, because a deliverables list with no page types otherwise reads as an omission. **If Q6
-rules P1-1 into P0, the pages it edits bind in the opposite direction: no banner, type or opening
-sentence may change.**
+out loud, because a deliverables list with no page types otherwise reads as an omission.
+**Q6 was ruled *repair* on 2026-09-20, so deliverable 8 is live and binds in the opposite
+direction: on a page P0-9 repairs, no banner, page type or opening sentence may change.**
 
 | | File | What it is |
 |---|---|---|
@@ -353,7 +360,7 @@ sentence may change.**
 | 5 | `tools/README.md` | the ninth row, its number, and its ref — **and the number lives nowhere else** |
 | 6 | `.github/workflows/docs.yml` | the new job |
 | 7 | `spec/016-compile_gate/{requirements,design,tasks}.md` | this spec's own record, including the run of P0-6 |
-| 8 | *conditional on Q6* | repairs under `contents/` |
+| 8 | **repairs under `contents/`** | **live — Q6 ruled *repair*, 2026-09-20.** Scope is P0-9's: defects of claim. The six before/after blocks are the opening list |
 
 ## SUMMARY.md changes
 
@@ -477,17 +484,35 @@ be; if it is most of the 668, the spec's shape changes.
 decide it at the review and stop thinking about it.
 
 **Q6 — Does this spec repair what it finds, or hand over a list?**
-*Recommendation:* **repair, and rule it now.** 015 asked this as Q4, answered *list*, was
+**RULED 2026-09-20 at the design review, by the maintainer: REPAIR — *"It should fix documentation
+issues."*** The recommendation is preserved below, because a recommendation that was *upheld* is
+still evidence about how the spec was reasoned.
+
+*Recommendation was:* **repair, and rule it now.** 015 asked this as Q4, answered *list*, was
 overturned, and the overturn falsified its own subject section mid-spec. The cost of ruling it at
 the review is zero; the cost of discovering it at phase 4 is an amended requirements document.
-**If the ruling is *repair*, Target audience stops being N/A and obligation 7 binds on that PR.**
-*Depends on:* P0-6's distribution — a handful of failures is a repair pass, three hundred is a
-second spec.
+
+**Three consequences, all applied:** *Target audience* stops being N/A — the audience of a repaired
+page is its ordinary reader; **obligation 7 binds** on whichever PR carries the repairs; and
+**P1-1 becomes P0-9**.
+
+> **THE RULING SETS THE ANSWER, NOT THE BOUNDARY — and here the boundary carries the weight.**
+> The design's probe measured **925 of 985 blocks failing**, and roughly 900 of those fail on
+> `CS0246`/`CS0103`: missing `using` directives and undefined page-context identifiers. **That is
+> the debt already named as backlog item 2** — a programme, not a phase. So **P0-9 is scoped to
+> defects of *claim*, not defects of *context***, as § *Scope* now states. **If the wider reading
+> was intended, that scope line is the thing to overrule** — and it would make 016 a multi-spec
+> effort rather than a gate.
 
 **Q7 — Does the gate run on every pull request, or only over changed blocks?**
-*Recommendation:* **whole baseline on every PR to begin with**, because the `options` precedent
-costs **35 seconds** and the baseline starts small; add `--changed` (P1-2) when the baseline is
-large enough to hurt. *Depends on:* the measured cost of restore plus build for Q2's project count.
+**DISSOLVED at the design review, 2026-09-20 — the question was about cost, and the cost is not
+there.** The design measured the **whole 985-block corpus at 6.5–39.5 seconds**, against the
+`options` job's 35s. So the gate runs over everything on every pull request, and **P1-2 is
+withdrawn rather than deferred**.
+
+*Recommendation was:* whole baseline on every PR to begin with, adding `--changed` when the
+baseline grew large enough to hurt. *It depended on* the measured cost, which is why it dissolved
+rather than being ruled.
 
 **Q8 — Does it get a `schedule:` trigger?**
 *Recommendation:* **no.** `docs.yml` argues this for `optioncheck` already: a gate over **pinned**
