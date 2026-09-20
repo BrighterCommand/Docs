@@ -1,0 +1,27 @@
+# Planted blocks. NONE OF THESE IS A BLOCK FROM contents/ -- that is the point:
+# a control drawn from the enumeration the instrument was built from cannot say
+# whether the instrument works, only that it is consistent.
+#
+#   dotnet tools/blockcheck/bin/Release/net9.0/blockcheck.dll \
+#       tools/blockcheck/plants tools/blockcheck/refs/bin/Release/net9.0/refs.txt
+#
+# Expected, and RE-RUN WHENEVER THE COMPILATION STRUCTURE IS TOUCHED:
+#
+#   Plant_Clean         BUILT    0
+#   Plant_Missing       FAILED   1   CS0246
+#   Plant_Unparseable   FAILED   5   CS1026,CS1513
+#   Plant_Leak_A        BUILT    0
+#   Plant_Leak_B        FAILED   1   CS0246      <-- the one that guards obligation 8
+#
+# Plant_Leak_B is the guard. It names a type declared by Plant_Leak_A, in a
+# namespace they share, and it must NOT resolve: the two are different blocks.
+# Put every block in one compilation and it resolves, and Plant_Leak_B comes
+# back BUILT -- a false clean, with nothing in the output to say so. Measured
+# 2026-09-20, both ways.
+#
+# id  page  ordinal  shape  n_usings  n_open  n_rest  scaffold
+Plant_Clean	planted	0	types	0	0	3	-
+Plant_Missing	planted	0	statements	0	0	3	-
+Plant_Unparseable	planted	0	types	0	0	3	-
+Plant_Leak_A	planted	0	namespaced	0	0	4	-
+Plant_Leak_B	planted	0	namespaced	0	0	7	-

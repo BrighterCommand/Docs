@@ -1,0 +1,21 @@
+# Which scaffold a page's blocks are compiled with. One row per page.
+#
+#   page <TAB> unit <TAB> prelude
+#
+# `unit`    a file under scaffold/units/, compiled alongside every block of
+#           that page, supplying identifiers the page names but no block
+#           defines. `-` for none.
+# `prelude` a file under scaffold/preludes/, which REPLACES the generic wrapper
+#           for that page's blocks -- a typed handler class, say, so that a
+#           block which is the body of a method has the method to sit in.
+#           `-` for none.
+#
+# THE UNIT OF ADMISSION IS A PAGE, NOT A BLOCK. A page's blocks share a world,
+# which is what makes the hand-work tractable and what stops a scaffold being
+# tuned until one stubborn block goes green.
+#
+# Phase 1 populates this with the pages it needed to red-proof the mechanism in
+# both directions. Phase 3 owns the real population, one page at a time, and
+# `baseline.tsv` then records the scaffold each admitted block was measured
+# with.
+contents/DapperOutbox.md	PageContext	-
