@@ -56,10 +56,30 @@
        given: the 67 packages AND the targeting pack for this TargetFramework,
        with no SDK version written down anywhere. tools/blockcheck reads this
        file, and refuses to run — exit 2, nothing checked — when it is absent
-       or names an assembly that is not there. -->
+       or names an assembly that is not there.
+
+       THE FIRST LINE IS A STAMP, AND PHASE 2 ADDED IT AFTER BEING BITTEN.
+       Adding Darker to this file for Q3 introduced an XML error — an MSBuild
+       comment may not contain a double hyphen — so the project failed to LOAD,
+       no target ran, and the previous refs.txt stayed exactly where it was. The
+       corpus run that followed reported the same 61 built as before and looked
+       entirely healthy: it had measured the old pin. An absent refs.txt was
+       already exit 2; a STALE one was indistinguishable from a current one, and
+       it is the more believable of the two failures because nothing is missing.
+
+       Deleting the file before the build would not have caught it either: a
+       project that fails to load runs no targets, including that one. So the
+       file states which refs.csproj produced it, and tools/blockcheck.py hashes
+       refs.csproj and compares. Wrong hash, or no stamp, is exit 2. -->
   <Target Name="WriteReferenceList" AfterTargets="ResolveReferences">
-    <WriteLinesToFile File="$(OutputPath)refs.txt" Lines="@(ReferencePath)"
+    <GetFileHash Files="$(MSBuildProjectFullPath)" Algorithm="SHA256">
+      <Output TaskParameter="Items" ItemName="_RefsProjectHash" />
+    </GetFileHash>
+    <WriteLinesToFile File="$(OutputPath)refs.txt"
+                      Lines="# refs.csproj SHA256 %(_RefsProjectHash.FileHash)"
                       Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile File="$(OutputPath)refs.txt" Lines="@(ReferencePath)"
+                      Overwrite="false" WriteOnlyWhenDifferent="true" />
   </Target>
 
   <ItemGroup>
@@ -130,6 +150,23 @@
     <PackageReference Include="Paramore.Brighter.Transformers.Azure" Version="10.7.0" />
     <PackageReference Include="Paramore.Brighter.Transformers.Gcp" Version="10.7.0" />
     <PackageReference Include="Paramore.Brighter.Transformers.MongoGridFS" Version="10.7.0" />
+
+    <!-- DARKER, AND IT IS PINNED SEPARATELY BECAUSE IT VERSIONS SEPARATELY.
+         Brighter is at 10.7.0 and Darker's latest release is 4.1.1; there has
+         never been a "Darker V10". Spec 016 Q3 asked whether Darker's surface
+         joins the first baseline and phase 2 ruled YES by measurement: the four
+         packages restore alongside Brighter's 67 with no conflict, and they are
+         what 42 pages of Darker documentation is written against.
+
+         Four packages, not six. `Paramore.Darker.Builder` and
+         `Paramore.Darker.Policies.Constants` are a namespace and a type, and
+         requirements.md P2-2 counts all six as strings on purpose: a string
+         in a `using` is not a package, and pinning the two that are not would
+         fail the restore. -->
+    <PackageReference Include="Paramore.Darker" Version="4.1.1" />
+    <PackageReference Include="Paramore.Darker.AspNetCore" Version="4.1.1" />
+    <PackageReference Include="Paramore.Darker.Policies" Version="4.1.1" />
+    <PackageReference Include="Paramore.Darker.QueryLogging" Version="4.1.1" />
   </ItemGroup>
 
 </Project>

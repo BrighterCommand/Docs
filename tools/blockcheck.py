@@ -59,6 +59,7 @@ it exits 2, because a gate that does not exist must not look green.
 Every state that exits 2 is listed in one place, above `mode_report`.
 """
 import glob
+import hashlib
 import os
 import re
 import shutil
@@ -104,7 +105,22 @@ MEMBER_RE = re.compile(
     r'^\s*(?:\[.*\]\s*)?'
     r'(?:public|private|protected|internal|static|async|override|virtual)\s')
 
-SHAPES = ('namespaced', 'types', 'members', 'statements')
+# A line that carries no code: blank, a comment, an attribute on its own line,
+# a preprocessor directive, or a lone brace. `toplevel` asks what comes BEFORE
+# a block's first declaration, and a comment before a class is not a statement.
+NOT_CODE_RE = re.compile(r'^\s*(?://|/\*|\*|\*/|\[|#|\{|\}|$)')
+
+SHAPES = ('namespaced', 'toplevel', 'types', 'members', 'statements')
+
+# The verdict vocabulary, in full, and it is printed in full even where a
+# verdict has no members. `requirements.md` AC1 asks that the four counts SUM
+# TO THE CORPUS COUNT, and a summary that lists only the verdicts it happened
+# to see cannot be added up: a run printing `61 BUILT, 924 FAILED` is
+# indistinguishable from a tool that has no SKIPPED verdict at all. Two of the
+# four are 0 today for reasons a reader should be told rather than left to infer
+# -- SKIPPED has no opt-out to carry it until phase 3, and NOT_COMPILABLE is
+# empty by construction because four wrapper rules cover 985 of 985.
+VERDICTS = ('BUILT', 'FAILED', 'SKIPPED', 'NOT_COMPILABLE')
 
 
 class Block:
@@ -152,10 +168,39 @@ def hoist(body):
     return usings, rest
 
 
+def is_toplevel_unit(rest):
+    """Does the block put statements ABOVE a declaration, as a Program.cs does?
+
+    C# allows top-level statements followed by type declarations, and 17 blocks
+    in this corpus are written that way -- a couple of `services.Add…` calls,
+    then the handler class they register. Such a block is already a compilation
+    unit and needs no wrapper.
+
+    Wrapped as `types` it cannot parse AT ALL: the leading statements land at
+    namespace level and Roslyn reports CS0116. Phase 2's parse triage found
+    those blocks by staging all 187 parse failures under all four rules and
+    asking which parsed -- 7 parsed under a rule `classify()` had not chosen,
+    and every one of them is this shape.
+
+    ORDER IS THE WHOLE RULE, and it is what keeps this from over-reaching. A
+    statement AFTER a declaration is CS8803 and cannot parse unwrapped either,
+    so `UsingTheContextBag.md` block 16 -- a class, then a line of usage -- is
+    NOT this shape and is a page defect. The two cases look alike in a diff and
+    the compiler separates them.
+    """
+    first_decl = next((i for i, line in enumerate(rest)
+                       if DECL_RE.match(line) or MEMBER_RE.match(line)), None)
+    if first_decl is None:
+        return False
+    return any(not NOT_CODE_RE.match(line) for line in rest[:first_decl])
+
+
 def classify(rest):
-    """Which of the four wrapper rules applies. `rest` is the hoisted body."""
+    """Which of the wrapper rules applies. `rest` is the hoisted body."""
     if any(NAMESPACE_RE.match(line) for line in rest):
         return 'namespaced'
+    if is_toplevel_unit(rest):
+        return 'toplevel'
     if any(DECL_RE.match(line) for line in rest):
         return 'types'
     if any(MEMBER_RE.match(line) for line in rest):
@@ -211,6 +256,7 @@ def find_block(blocks, page, ordinal):
 # -- and a verdict line names the page and the ordinal that produced it.
 WRAPPERS = {
     'namespaced': [],
+    'toplevel': [],
     'types': [
         'namespace __NS__',
         '{',
@@ -583,15 +629,47 @@ def mode_show(blocks, args):
 #   7. refs.txt is absent                       -- the reference project is unrestored
 #   8. refs.txt names an assembly that is not there
 #   9. the staged index is missing or malformed
+#  10. refs.txt was written by a DIFFERENT refs.csproj -- a stale pin
 #
-# 3 to 9 are enforced across the two halves: 3, 4, 6 and 7 here, 5, 8 and 9 in
+# 10 is phase 2's, and it is the one that had already happened. Adding Darker's
+# packages for Q3 left an XML error in refs.csproj, so the project failed to LOAD
+# and no target ran; refs.txt survived from the previous build, and the corpus
+# run reported the same 61 built as before while the author read it as the new
+# pin. Nothing was missing, which is what made it believable. The stamp is the
+# first line of refs.txt and this is where it is checked.
+#
+# 3 to 10 are enforced across the two halves: 3, 4, 6, 7 and 10 here, 5, 8 and 9 in
 # tools/blockcheck/Program.cs, which returns 2 for each and is propagated.
 TOOL_DLL = os.path.join(ROOT, 'tools', 'blockcheck', 'bin', 'Release', 'net9.0',
                         'blockcheck.dll')
 REFS_LIST = os.path.join(ROOT, 'tools', 'blockcheck', 'refs', 'bin', 'Release',
                          'net9.0', 'refs.txt')
+REFS_PROJECT = os.path.join(ROOT, 'tools', 'blockcheck', 'refs', 'refs.csproj')
 BUILD_HINT = ('  dotnet build tools/blockcheck/refs/refs.csproj -c Release\n'
               '  dotnet build tools/blockcheck/blockcheck.csproj -c Release')
+
+
+def stale_pin():
+    """Was `refs.txt` written by the `refs.csproj` on disk right now?
+
+    Returns a reason, or None when the stamp matches. The stamp is refs.txt's
+    first line, written by refs.csproj itself; a list with no stamp is stale by
+    definition, because the only thing that writes one is a build of the current
+    project.
+    """
+    with open(REFS_LIST, encoding='utf-8') as handle:
+        first = handle.readline().strip()
+    want = hashlib.sha256(
+        open(REFS_PROJECT, 'rb').read()).hexdigest().lower()
+    prefix = '# refs.csproj SHA256 '
+    if not first.startswith(prefix):
+        return (f'{REFS_LIST} carries no pin stamp on its first line, so it '
+                'cannot be told from a stale one')
+    got = first[len(prefix):].strip().lower()
+    if got != want:
+        return (f'{REFS_LIST} was written by a different refs.csproj\n'
+                f'  refs.txt   {got}\n  refs.csproj {want}')
+    return None
 
 
 def mode_report(blocks, args):
@@ -622,6 +700,10 @@ def mode_report(blocks, args):
               'been restored and built, so nothing was checked\n' + BUILD_HINT,
               file=sys.stderr)
         return 2
+    stale = stale_pin()
+    if stale is not None:
+        print(f'{stale}\nnothing was checked\n' + BUILD_HINT, file=sys.stderr)
+        return 2
 
     staged = tempfile.mkdtemp(prefix='blockcheck-')
     try:
@@ -641,7 +723,7 @@ def mode_report(blocks, args):
             ident, verdict, count, codes = line.split('\t')
             verdicts[ident] = (verdict, count, codes)
 
-        rows, counts = [], {}
+        rows, counts = [], {verdict: 0 for verdict in VERDICTS}
         for block in blocks:
             verdict, count, codes = verdicts.get(
                 block.ident, ('NOT_COMPILABLE', '0', ''))
@@ -663,7 +745,7 @@ def mode_report(blocks, args):
     # out of 985 are different claims, and only one of them is worth having.
     skipped = counts.get('SKIPPED', 0)
     print(f'{len(rows)} blocks: '
-          + ', '.join(f'{n} {v}' for v, n in sorted(counts.items())),
+          + ', '.join(f'{counts[v]} {v}' for v in VERDICTS),
           file=sys.stderr)
 
     # NO BASELINE EXISTS YET, so nothing is REQUIRED to compile and a failing

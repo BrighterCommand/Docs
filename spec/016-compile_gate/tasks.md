@@ -145,32 +145,32 @@ no CI job and no baseline. **It is a tool at the end of this phase, not a gate.*
 **Goal:** P0-6. The distribution nobody has, and the evidence P0-9's boundary and phase 3's baseline
 both depend on.
 
-- [ ] **Task 2.1:** Run the instrument over all 985 blocks and publish the distribution
+- [x] **Task 2.1:** Run the instrument over all 985 blocks and publish the distribution
   - Input: phase 1's tool, run from a clean checkout per obligation 12
   - Output: § *The corpus run* in this file — `BUILT / FAILED / SKIPPED / NOT COMPILABLE` counts summing to the corpus count, the command beside them, and `tools/blockcheck/verdicts.tsv` committed
   - Notes: the design measured 60 clean / 925 failing with **no scaffold**. With phase 1's scaffold the clean count should rise; **if it does not, that is a finding about the scaffold, not a number to adopt.**
 
-- [ ] **Task 2.2:** Triage the blocks that fail to parse
+- [x] **Task 2.2:** Triage the blocks that fail to parse
   - Input: task 2.1's output, filtered to `CS1002`/`CS1513`/`CS1519`/`CS8635` and friends
   - Output: a table splitting them into *before/after pair in one fence*, *genuine fragment the wrapper mis-shaped*, and *the page is wrong* — with a count per class and a named example each
   - Notes: the design counted **131** unparsed and explicitly did not split them. A wrapper defect found here is a phase-1 bug to fix in this PR, not a page defect.
 
-- [ ] **Task 2.3:** Split the failures into defects of claim and defects of context
+- [x] **Task 2.3:** Split the failures into defects of claim and defects of context
   - Input: task 2.1's verdicts, `requirements.md` P0-9's scope line
   - Output: two lists in this file — the **claim** list, which is P0-9's input, and the **context** count, which is backlog item 2's; plus the command that produces each
   - Notes: this is the boundary the maintainer's ruling did not set and the assistant proposed. **If the claim list is large, say so plainly** — it is the number that decides whether phase 4 is a phase or a spec.
 
-- [ ] **Task 2.4:** Rule Q3 by measurement — does Darker join?
+- [x] **Task 2.4:** Rule Q3 by measurement — does Darker join?
   - Input: the 6 `Paramore.Darker*` strings, `requirements.md` Q3
   - Output: a recorded restore of the reference project **with** Darker's packages added, its exit code read bare, and a one-line ruling in this file — **and, if the ruling is *yes*, the sentence saying which phase carries the work**: the pin is phase 1's file, so a *yes* edits it from phase 2, and Darker's blocks then enter phase 3's baseline like any others
   - Notes: two of the six strings are namespaces, not packages. Resolve which is which before adding anything. P2-2 is the requirements' out-of-scope entry for Darker; a *yes* here promotes it, and a promotion with no task is how scope arrives unowned.
 
-- [ ] **Task 2.5:** Confirm the before/after-in-one-fence set, and look for more of the shape
+- [x] **Task 2.5:** Confirm the before/after-in-one-fence set, and look for more of the shape
   - Input: `design.md` § *What the repair phase will actually repair*
   - Output: the confirmed list with page and ordinal per block, **re-derived by two methods** — the `CS0101` verdicts and a comment-marker grep covering **both vocabularies**, `// Before` / `// After` *and* `// V9` / `// V10` — plus, explicitly, **the blocks the second method finds that the first does not AND the candidates that reading strikes out**
   - Notes: the design says six blocks across four pages, of which exactly one raises `CS0101`. The other five collide with nothing and are invisible to the compiler — **so the grep is not a corroboration of the compiler here, it is the only instrument that sees five of the six.** *(Review finding 2:)* **the marker method at the review's HEAD returns nine candidates across five pages, and reading subtracts four of them** — see § *What the tasks review found*. This list is therefore expected to *shrink* as well as grow, and a candidate struck out is recorded with the reason, not deleted.
 
-- [ ] **Task 2.6:** Predict and reconcile the eight gates
+- [x] **Task 2.6:** Predict and reconcile the eight gates
   - Input: as task 1.10
   - Output: § *Phase 2 prediction* and § *Phase 2 as executed*
   - Notes: prediction is **none**; this phase commits a `.tsv` and edits this file.
@@ -1117,3 +1117,334 @@ of `tools/README.md`, which task 3.7 writes; a `tools/blockcheck/README.md` woul
 read at the top of the phase and cited to `tools/README.md` rather than re-derived at the end from
 the same run. A gate that had silently stopped checking reads exactly like a gate correctly
 reporting no movement.
+
+---
+
+## Phase 2 prediction
+
+**The prediction is the task list's own, and it pre-dates the work by commit order rather than by a
+date in prose.** Task 2.6's *Notes* read **"prediction is none; this phase commits a `.tsv` and edits
+this file"**, and they were approved at `7b493c3` — before a line of phase 2 ran. That is the form
+015's acceptance walk settled on: *"the prediction came first"* is checked with `git log`, not with a
+sentence claiming it.
+
+**All eight: none**, and the mechanism is phase 1's, unchanged. No page under `contents/` is edited,
+so rules 1–7, `symbolcheck`'s corpus, `optioncheck`'s marked tables and `versioncheck`'s prose pins
+cannot move; `SUMMARY.md`, `.gitbook.yaml` and the published tree are untouched, so shape, redirects
+and `--verify` cannot. `linkcheck` walks `tools/`, so the prediction depends on this phase adding no
+`.md` **there** — and this phase adds a `.tsv`, two `.cs` plants, and edits to a `.py`, a `.cs` and a
+`.csproj`.
+
+**Eight vacuous passes again**, with the same defence as phase 1: the before-figures were read
+against `tools/README.md` at the top of the phase, not re-derived from the closing run.
+
+---
+
+## Phase 2 as executed
+
+### The corpus run *(task 2.1)*
+
+**985 blocks: 68 BUILT, 917 FAILED, 0 SKIPPED, 0 NOT_COMPILABLE.** The command, and its exit code
+read bare:
+
+```bash
+dotnet build tools/blockcheck/refs/refs.csproj -c Release
+dotnet build tools/blockcheck/blockcheck.csproj -c Release
+python3 tools/blockcheck.py --report /tmp/r.tsv; echo $?      # 0
+awk '{n[$1]++} END{for(k in n) print k,n[k]}' /tmp/r.tsv      # BUILT 68, FAILED 917
+```
+
+```text
+985 blocks staged in …, 2 with a scaffold unit, 1 pages in the map
+501 reference assemblies
+985 blocks, 68 built, 917 failing, 1 scaffold unit(s)
+7.8s total, 8ms per block
+985 blocks: 68 BUILT, 917 FAILED, 0 SKIPPED, 0 NOT_COMPILABLE
+no baseline yet: this is a measurement, not a gate
+0 findings
+```
+
+**`tools/blockcheck/verdicts.tsv` is that run, committed** — 985 rows, one per block, `verdict TAB
+page TAB ordinal TAB ident TAB error count TAB distinct codes`. It carries no header, deliberately:
+phase 3 diffs a run against a baseline, and a comment row would have to be stripped by both sides.
+
+**The run is the committed form from a clean directory** — obligation 12. `git ls-files` piped
+through `tar` into a scratch directory, both projects built there, and the output `diff`ed against
+the in-tree run: **identical, 985 of 985 rows**. The clean copy is what produced `verdicts.tsv`.
+
+**The four counts sum to the corpus count, and two of them are 0 for reasons that are not the same
+reason.** Phase 2 made the run print all four:
+
+| Verdict | Count | Why |
+|---|---:|---|
+| `BUILT` | **68** | compiles against the released packages, with its declared wrapper and page scaffold |
+| `FAILED` | **917** | at least one error attributed to the block's own tree |
+| `SKIPPED` | **0** | **there is no opt-out to carry it.** Q5 is open and `<!-- blockcheck: skip … -->` is phase 3's |
+| `NOT_COMPILABLE` | **0** | `classify()` returns a shape for every block, so nothing can reach this verdict — see the parse triage below, which is where that stops being a good thing |
+
+> **A summary that lists only the verdicts it saw cannot be added up.** Before this change the run
+> printed `61 BUILT, 924 FAILED`, which is indistinguishable from a tool that has no `SKIPPED`
+> verdict at all — and AC1 asks for *four counts summing to the corpus count*. `VERDICTS` is now the
+> vocabulary in one place and the summary is built from it.
+
+**Per shape, because the wrapper is the thing most likely to be buying a verdict** (AC14's subject):
+
+```text
+namespaced      4 built of   11
+toplevel        0 built of    9
+types          29 built of  303
+members        11 built of  130
+statements     24 built of  532
+```
+
+**And per page, which is the number phase 3's baseline actually needs:** 35 pages have at least one
+block that builds, and **only 5 pages — 7 blocks — build in their entirety**
+(`BoxProvisioning.md`, `FirestoreInbox.md`, `FirestoreOutbox.md`, `SpannerInbox.md`,
+`SpannerOutbox.md`). A per-*page* ratchet would therefore admit 7 blocks of 985. The baseline has to
+be per block, and phase 3's task 3.1 should say so.
+
+**The design measured 60 clean with no scaffold; this run reads 68.** The movement is accounted for
+and none of it is drift: **+1** `DapperOutbox.md` from phase 1's scaffold unit, **+7** from Q3
+admitting Darker's four packages (task 2.4). With the reference set at phase 1's 497 assemblies the
+same instrument reads **61**, which is phase 1's figure re-derived rather than inherited.
+
+### The parse triage *(task 2.2)*
+
+**180 of 985 blocks do not parse.** Three numbers exist for this and they are not the same
+measurement, which is the finding:
+
+| | Count | Instrument |
+|---|---:|---|
+| `design.md` § *The probe* | **131** | the probe, a different TFM and reference set, un-triaged |
+| task 2.2's own filter — `CS1002`/`CS1513`/`CS1519`/`CS8635` | **165** | `grep -cE` over the corpus run |
+| **the parser** | **180** | `blockcheck --parse`, syntax-only, no references and no binder |
+
+**The filter is a subset, and the 22 blocks it misses are named.** `comm` over the two id lists:
+**22 in the parser's set and not the filter's, 0 the other way.** They fail on `CS1525`,
+`CS1022`, `CS0116`, `CS8124`, `CS8803` — `AzureBlobDistributedLock_2`, `FAQ_16`,
+`HangfireScheduler_18`, `MigratingToPollyV8_12`, `QuartzScheduler_15`, `QuartzScheduler_16`,
+`ShowMeTheCode_3`, `SweeperCircuitBreaking_4`, `UsingTheContextBag_16`, `V10MigrationGuide_19` and
+twelve more. **"And friends" is an enumeration by guesswork**, and it under-reports in the direction
+that makes the corpus look healthier. `--parse` asks the parser instead:
+`SyntaxTree.GetDiagnostics()` *is* the parse.
+
+**Two-way red-proof of `--parse`, against the plants and not against `contents/`:**
+
+```text
+Plant_Unparseable   BROKEN   5   CS1026,CS1513     <- the check fires
+Plant_Missing       PARSES   0                     <- FAILS the compile on CS0246, and parses
+Plant_Clean         PARSES   0
+Plant_Leak_A/B      PARSES   0
+```
+
+`Plant_Missing` is the direction that matters: it is a *failing* block that parses, so the mode is
+separating parse from bind rather than echoing the compile verdict. Bad arguments and a directory
+with no `index.tsv` both exit **2** with no rows.
+
+**The triage, 180 blocks across 67 pages, and the class the task list did not name is the biggest
+one:**
+
+| | Blocks | What it is | Named example |
+|---|---:|---|---|
+| **A documented omission written where C# needs a token** | **93** | `...` or a comment standing in for an expression — `opt.Outbox = /* your MS SQL Outbox */;`, `Partition = //derived from the region…`, `.AddBrighter(options => { ... })`. The page is honest and the fence can never parse | `MsSqlDistributedLock.md#2`, `AWSSQSConfiguration.md#2` |
+| **An excerpt of a larger expression** | **77** | the fence holds part of an argument list, an object initializer or a fluent chain — `new Subscription(` with no `;`, a block opening on `.UseAsyncApi(opts => …)`, `OnConflict = OnSchedulerConflict.Overwrite` alone | `AsyncAPISupport.md#6`, `AwsScheduler.md#23` |
+| **A declaration and a statement in one fence, in the order C# forbids** | **10** | a full class, then the line that registers it. C# allows top-level statements *above* type declarations and not below: `CS8803`. 9 of the 10 are exactly that; the tenth is two constructor signatures with elided bodies | `HangfireScheduler.md#18`, `UsingTheContextBag.md#16` |
+| **before/after pair in one fence** | **0** | task 2.5's set is in the triage's scope and not in its result: all four confirmed pairs **parse**, and fail on binding | — |
+| **a genuine fragment the wrapper mis-shaped** | **7 → 0** | measured, fixed in this PR, below | `FAQ.md#16` |
+
+**The wrapper question was answered by trying all four rules, not by opinion.** Every one of the 187
+parse failures was re-staged under each of the four wrapper rules — 748 variants — and the parser
+asked which of them parse. **7 blocks parse under a rule `classify()` had not chosen**, and all 7 are
+one shape: **statements above a declaration**, which is a `Program.cs` and needs no wrapper at all.
+Wrapped as `types` the leading statements land at namespace level and the block cannot parse under
+any circumstances.
+
+So `classify()` gained a fifth shape, `toplevel`, with the empty wrapper:
+
+```text
+before   11 namespaced, 306 types, 136 members, 532 statements
+after    11 namespaced, 9 toplevel, 303 types, 130 members, 532 statements
+parse    187 broken  ->  180 broken          exactly the 7 the variant sweep predicted
+verdict  0 blocks moved BUILT -> FAILED or FAILED -> BUILT
+```
+
+**Order is the whole rule, and that is what stops it over-reaching.** A statement *after* a
+declaration is `CS8803` and cannot parse unwrapped either, so `UsingTheContextBag.md` block 16 — a
+class, then a line of usage — is **not** this shape and stays a page defect. The two look alike in a
+diff and the compiler separates them. `plants/Plant_TopLevel.cs` and `Plant_TopLevel_Bad.cs` are
+that pair, and the difference between them is line order:
+
+```text
+Plant_TopLevel                        BUILT    0
+Plant_TopLevel_Bad                    FAILED   1   CS8803
+Plant_TopLevel, wrapped as `types`    FAILED  10   CS0106,CS0116,CS1002,CS1022,CS1026,CS1031,CS1520,CS8124
+```
+
+**The third line is the red-proof**: the same plant, under the rule the old code chose, with ten
+errors. A rule that rescued both plants would be rescuing by shape rather than by grammar.
+
+**And the fix uncovered an instrument artefact underneath it.** A block with top-level statements is
+only legal in an executable, so every `toplevel` block earned `CS8805` — *"Program using top-level
+statements must be an executable"* — a verdict about `OutputKind.DynamicallyLinkedLibrary` and not
+about the page. The Roslyn half now asks the syntax tree whether the block has global statements and
+compiles those as `ConsoleApplication`: **`CS8805` on 15 blocks before, 0 after, and no verdict
+changed.** It is asked of `GlobalStatementSyntax` rather than read from the staged index's shape,
+because the index is Python's *claim* and the tree is what the parser found.
+
+### Claim and context *(task 2.3)*
+
+**This is the boundary the maintainer's ruling did not set, and it is flagged in `requirements.md`
+P0-9 as the sentence to overrule.** The answer: **the claim list is small — 14 blocks across 12
+pages — and phase 4 is a phase, not a spec.** The context count is the rest, and it is large by
+construction.
+
+**The split is measured in four steps, each with its command:**
+
+```bash
+# 1. blocks carrying a diagnostic whose SHAPE is a claim about an API
+grep -cE 'CS0117|CS1729|CS1061|CS0535|CS0115|CS1503|CS7036|CS0738|CS0311|CS0308' \
+     tools/blockcheck/verdicts.tsv                                      # 69 blocks
+# 2. the diagnostics in full, which is what tells a cascade from a claim
+dotnet tools/blockcheck/bin/Release/net9.0/blockcheck.dll --explain <staged> <refs.txt> <id>...
+```
+
+| | Diagnostics | Blocks | What it is |
+|---|---:|---:|---|
+| **cascade of the wrapper** | 32 | 23 | the base type never resolved, so the base is `object` and the override reports `CS0117`/`CS0115`: *"'object' does not contain a definition for 'HandleAsync'"*. **Context** |
+| **cascade of an unresolved name** | 22 | 20 | the named type, or an argument's type, is one the same block failed to resolve. **Context** |
+| **the page's own type, partly shown** | 22 | 8 | `CS0535` on `MyOutbox`, `CS1729` on a handler the page declares elsewhere — the page elides members it does not need. **Context** |
+| **a library name** | 35 | 19 | the type resolved out of a pinned package and the member or signature is not there. **The claim list's input** |
+
+**Of the 19, eleven name a Brighter or Darker type and eight name a third-party one**, and the two
+halves are not equally decidable:
+
+| Block | Diagnostic | Verdict |
+|---|---|---|
+| `Telemetry.md#1` | `InstrumentationOptions` has none of `RecordRequestInformation`, `RecordRequestBody`, `RecordRequestContext`, `RecordMessageInformation`, `RecordMessageBody`, `RecordMessageHeaders`, `RecordServerInformation` | **claim.** The released names are `RequestInformation`, `MessageBody`, `MessageHeaders` — the `Record` prefix is gone. Seven members, one page, and the page is *about* telemetry |
+| `TurningOnReplayOnSeen.md#1`, `#6` | `OnceOnlyAction` has no `Replay`; and `contextKey:` takes `string?`, not `System.Type` | **claim**, twice in one attribute, on the page about replay-on-seen |
+| `CausationTrackingStores.md#1`, `ReplayOnSeenReference.md#1` | `RequestContextBagNames` has no `CausationId` | **claim** |
+| `CQRSWithBrighterAndDarker.md#7` | `RequestLoggingAttribute` has a required `timing` parameter the block omits | **claim** |
+| `InMemoryOptions.md#2`, `#3` | `IAmACommandProcessor.ClearOutbox` has a required `posts`; `IAmAnOutbox` is not generic | **claim** |
+| `InMemoryScheduler.md#4` | `IAmAMessageSchedulerFactory` cannot be the `T` the block passes it as | **claim** |
+| `PostgreSQLMessageBroker.md#3` | a `RelationalDatabaseConfiguration` where a messaging-gateway configuration is wanted | **claim** |
+| `Logging.md#4` | `INeedAHandlers` has no `Build` | **struck out by reading.** The block's `// ... handler configuration, policies …` elides the chain steps *between* `StartNew()` and `Build()`. It is class A of the parse triage wearing a semantic diagnostic |
+| `QuartzScheduler.md#1`, `TickerQScheduler.md#1` | `IServiceProvider` has no `GetRequiredService` | **struck out, and proved.** `GetRequiredService` is an extension method; the block lacks the `using`. Two planted blocks differing only by `using Microsoft.Extensions.DependencyInjection;` read **FAILED CS1061** and **BUILT** |
+| `ConfiguringOpenTelemetry.md#1`, `#6`, `#7`, `HangfireScheduler.md#11`, `MigratingToPollyV8.md#1`, `#8` | `AddJaegerExporter`, `TracerProvider.Run`/`RunAsync`, `DashboardContext.GetHttpContext`, `int.Seconds` | **undecided, and it is the pin's question not the page's.** No Jaeger exporter and no `Hangfire.AspNetCore` assembly is in the reference set at all. Phase 3 decides whether the pin grows; only then does the diagnostic mean anything about the page |
+
+**So P0-9's input is 10 blocks of claim plus task 2.5's 4 fence-pairs — 14 blocks across 12 pages.**
+
+> **The claim list is a FLOOR, and the mechanism is demonstrable rather than argued.** A block that
+> fails to resolve its own base type never reaches the binding that would expose a false claim
+> underneath. `ImplementingAHandler.md` block 1 reports three diagnostics, of which `CS1729` on
+> `Command` is a cascade; add the two `using` directives it omits and it is **BUILT** — so there was
+> no claim defect hiding there. That cuts both ways, and it is why the ratchet is page by page:
+> **every block admitted to the baseline is one whose claims have actually been checked.** The 917
+> failures cannot be triaged once, at the top, by a tool.
+
+**The context count is 903 blocks** — 917 failing less the 14 — and it is dominated by `CS0246`
+(736 blocks) and `CS0103` (675). That is backlog item 2, the debt `tools/README.md` row 2 counts as
+744 `using`-directive warnings, and it falls page by page as pages enter the baseline.
+
+### Q3 ruled by measurement — Darker joins *(task 2.4)*
+
+**Yes.** Darker's packages restore alongside Brighter's with no conflict, and admitting them moved
+**7 blocks from FAILED to BUILT and 0 the other way**:
+
+```text
+refs.txt   497 assemblies  ->  501       61 built  ->  68 built
+gained     ImplementAQueryHandler#1 #2, PaginationQueryPatterns#1,
+           ParameterizedQueryPatterns#3 #5, QueriesAndQueryObjects#2 #3
+lost       none
+```
+
+**Four packages, not six.** `Paramore.Darker`, `.AspNetCore`, `.Policies` and `.QueryLogging` at
+**4.1.1**; `requirements.md` P2-2's other two strings — `Paramore.Darker.Builder` and
+`Paramore.Darker.Policies.Constants` — are a namespace and a type, and pinning them would fail the
+restore. Darker versions independently of Brighter and the pin says so in its own comment.
+
+**The work is carried here, in phase 2, and the sentence is the one task 2.4 asked for**: the pin is
+phase 1's file, so a *yes* edits `refs.csproj` from phase 2 — done — and **Darker's blocks then enter
+phase 3's baseline like any others.** 17 Darker-only pages carry 135 of the 985 blocks, so this is
+not a rounding error in the corpus; P2-2 is promoted to in-scope by this ruling, and the task that
+owns it is phase 3's baseline task rather than a new one.
+
+### The before/after-in-one-fence set *(task 2.5)*
+
+**Confirmed: 4 blocks across 2 pages.** The design said six across four, and the difference is all
+reading:
+
+| Block | Two methods | Verdict |
+|---|---|---|
+| `ImplementAQueryHandler.md#10` | `CS0101` **and** markers | **confirmed** — two `GetOrderQueryHandler` classes in one fence, the corpus's only `CS0101` |
+| `CloudEventsSupport.md#7`, `#8` | `CS0128` **and** markers | **confirmed** — `var messageId` / `var correlationId` declared twice, V9 then V10 |
+| `CloudEventsSupport.md#9` | markers only | **confirmed**, and it is **task 4.3a's case**: two method *signatures* with no bodies, so splitting yields two fragments and no compilable block |
+| `AgreementDispatcherRouting.md#3` | markers only | **struck out.** `// Before Jan 2025` / `// After Jan 2025` are tax rules inside one routing lambda, exactly as the tasks review said |
+| `PolicyRetryAndCircuitBreaker.md#6` | markers only | **struck out.** The V9 form is *commented out* inside a single live class — already the shape `CLAUDE.md` prescribes, not a pair of live declarations |
+
+**The design's claim that the grep is the only instrument that sees five of the six is false, and
+that matters more than the count.** `CS0101` is duplicate *types* only; the family is
+`CS0101`/`CS0111`/`CS0128`, and with all three the compiler sees **21 blocks**, including
+`CloudEventsSupport.md#7` and `#8`. So method 1 is the wider net here and the marker grep is the
+narrower one:
+
+```bash
+grep -E 'CS0101|CS0111|CS0128' tools/blockcheck/verdicts.tsv | cut -f4   # 21 blocks
+# markers, both vocabularies, comment-initial only:
+#   ^\s*//+\s*(Before|V9|Old)\b  AND  ^\s*//+\s*(After|V10|New)\b        #  6 blocks
+```
+
+**The marker vocabulary has to be narrow or it is useless.** A wide version — any comment mentioning
+*before*, *after*, *old*, *new*, ❌ or ✅ — returns **18 candidates**, including three tutorials
+whose prose says *"before the call"*. Comment-initial markers return 6, of which reading keeps 4.
+
+**And the 21 the compiler finds are mostly a different shape, which phase 4 should not silently
+inherit:**
+
+| | Blocks | Shape | P0-9? |
+|---|---:|---|---|
+| version pair, V9 → V10 | 3 (+1 marker-only) | the set above | **yes** |
+| bad/good pair, ❌/✅ or `// Good`/`// Bad` | 9 | `QueryPatterns.md#2`, `NullableReferenceTypes.md#10`, `HangfireScheduler.md#25` … | **no** — nothing false is claimed; it is a teaching device |
+| problem/solution, or two alternatives | 7 | `AWSSQSMigrateToV10.md#5` `#6`, `BrighterSchedulerSupport.md#2` `#3`, `PostgreSQLBrokerTradeOffs.md#1` | **no**, on the same reasoning |
+| duplicate for another reason | 2 | `FAQ.md#8`, `InMemoryOptions.md#2` | **no** |
+
+**All 18 share one mechanism with the 4** — two mutually exclusive snippets in one fence, so the
+fence can never compile — and the repair is identical: one fence each. **That is a recommendation and
+not a decision:** P0-9 is scoped to defects of *claim*, and a ❌/✅ pair asserts nothing false. If the
+maintainer wants the shape repaired wherever it appears, phase 4 grows by 18 mechanical splits and
+this is the sentence to say so against.
+
+**`AWSSQSMigrateToV10.md#1` — phase 1's finding — is not in either list**, and that is the honest
+result rather than an oversight: it is a before/after pair carrying **no marker at all**, found only
+because `--verify-extraction` reported one block with a duplicated `using`. A third method, for one
+block, and it stays on the record as the case both of these methods miss.
+
+### The eight gates, reconciled *(task 2.6)*
+
+Run at the end of the phase with `git add -A` first, every exit code read bare:
+
+| # | Gate | Predicted | Read at the start | Read at the end | |
+|---:|---|---|---|---|---|
+| 1 | `linkcheck` | none | 165 files, 0 broken | **165 files, 0 broken** | ✅ |
+| 2 | `pagelint` | none | 0 errors, 744 warnings, 162 pages | **0 errors, 744 warnings, 162 pages** | ✅ |
+| 3 | shape | none | 161 pages, 12 sections | **161 pages, 12 sections** | ✅ |
+| 4 | redirects | none | 77 entries, 7858 bytes | **77 entries, 7858 bytes** | ✅ |
+| 5 | `versioncheck` | none | 0 stale pins of 18 | **0 stale pins of 18** | ✅ |
+| 6 | `optioncheck` | none | 0 mismatches, 59 tables, 519 rows | **0 mismatches, 59 tables, 519 rows** | ✅ |
+| 7 | `symbolcheck` | none | 0 findings, 22 entries, 3 silenced | **0 findings, 22 entries, 3 silenced** | ✅ |
+| 8 | `--verify` | none | 161 predicted = 161 published | **161 predicted = 161 published** | ✅ |
+
+**Eight for eight.** `tools/README.md` owns these figures and this table cites them; the one row that
+could have moved by accident is `linkcheck`, and the phase added no `.md` under `tools/`.
+
+### Frictions 57, 58 and 59 — for task 5.5, which writes the ledger
+
+| | |
+|---:|---|
+| **57** | **A generated reference list survives the build that failed to produce it.** Adding Darker to `refs.csproj` left a double hyphen inside an XML comment, so the project failed to **load**; no target ran, the previous `refs.txt` stayed on disk, and the corpus run that followed reported the same **61 built** and looked healthy. It had measured the old pin. An *absent* reference list was already exit 2; a **stale** one was indistinguishable from a current one, and it is the more believable failure because nothing is missing. Deleting the file before the build would not have caught it either — a project that fails to load runs no targets. `refs.txt` now opens with `# refs.csproj SHA256 …` and `blockcheck.py` hashes the project and compares: wrong stamp, or no stamp, is exit 2 with no report file at all. Red-proofed both ways |
+| **58** | **`zsh` does not word-split an unquoted variable, so a 68-argument list arrives as one argument.** `--explain … $ids` printed **nothing**, and nothing is exactly what "no claim defects in the corpus" looks like. The same shape as friction 52 in the reassuring direction: a control that measures nothing reports agreement. `${=ids}`, or an array, or counting the arguments the tool received |
+| **59** | **A verdict nothing can emit reports zero of itself and the zero reads as coverage.** `NOT COMPILABLE` is **0 of 985** — `design.md` Q4 calls that *"a verdict that currently has no members"* and phase 1 called it *"by construction"* — yet **77 blocks are excerpts of a larger expression** and **93 carry an omission where C# needs a token**. They are reported as `FAILED`, which says the documentation is broken when what is true is that the fence was never a program. `classify()` cannot return *no*, so the verdict is unreachable rather than empty. **Phase 3's decision, flagged and not taken here:** the opt-out Q5 describes is the mechanism, and the direction of risk runs the wrong way — a heuristic that guesses `NOT COMPILABLE` would silence real defects, so the reason has to be written on the page by a person |
+
+**Phase 2 is six tasks and it changed the instrument in four places**, each one a defect it met:
+the fifth shape (`toplevel`), the output kind for top-level statements, the `--parse` and `--explain`
+modes, and the pin stamp. `--verify-extraction` still reports **985 of 985 identical**, and the seven
+plants read exactly as `plants/index.tsv` predicts.
