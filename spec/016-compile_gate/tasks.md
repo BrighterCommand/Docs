@@ -182,7 +182,7 @@ both depend on.
 **Goal:** P0-4, P0-5 and P0-8. The gate and the corpus that satisfies it merge **together**, per
 `tools/README.md`'s rule 3.
 
-- [ ] **Task 3.1:** Rule Q5 and implement the opt-out
+- [x] **Task 3.1:** Rule Q5 and implement the opt-out
   - Input: `tools/pagelint.py`'s `allow-serviceactivator` comment, `tools/symbolcheck.py`'s `allow <name>` comment
   - Output: the marker implemented in `tools/blockcheck.py`, **requiring a reason**, and a recorded run showing a skip printed with its reason
   - Notes: ruling 4 — an opt-out is never silent, and `0 findings` and `0 findings, 8 skipped` are different claims.
@@ -1448,3 +1448,128 @@ could have moved by accident is `linkcheck`, and the phase added no `.md` under 
 the fifth shape (`toplevel`), the output kind for top-level statements, the `--parse` and `--explain`
 modes, and the pin stamp. `--verify-extraction` still reports **985 of 985 identical**, and the seven
 plants read exactly as `plants/index.tsv` predicts.
+
+---
+
+## Phase 3 prediction
+
+**The prediction is the approved task list's own, and it pre-dates the work by commit order.** Task
+3.9's *Notes* read **"`linkcheck` is predicted to MOVE if and only if this phase adds a `.md` under
+`tools/`. The design chose not to. If the reconciliation shows 166, the cause is a file somebody
+added without noticing the rule"** — approved at `1f5fc10`, before a line of phase 3 ran. That is
+015's form: *"the prediction came first"* is checked with `git log`, not with a sentence claiming it.
+
+**All nine: none**, and row 9 is a special case worth stating rather than glossing. No page under
+`contents/` is edited in this phase — that is the whole reason phase 3 is site-neutral and phase 4 is
+the only one needing a sign-off — so rules 1–7, `symbolcheck`'s corpus, `optioncheck`'s marked tables
+and `versioncheck`'s prose pins cannot move; `SUMMARY.md`, `.gitbook.yaml` and the published tree are
+untouched, so shape, redirects and `--verify` cannot. `linkcheck` walks `tools/`, and this phase adds
+a `.tsv`, a `.json`, edits to a `.py` and a `.yml`, and **prose inside an existing `.md`** — row 9
+goes into `tools/README.md`, which is already in the corpus at 165.
+
+**Row 9 predicts its own first figure rather than a movement**, since a gate that did not exist
+cannot have moved. Its expected reading is recorded when task 3.7 writes it, with the ref it was
+measured at, per obligation 10.
+
+**Nine vacuous passes**, with phases 1 and 2's defence: the before-figures are read against
+`tools/README.md` at the top of the phase, not re-derived from the closing run.
+
+---
+
+## Phase 3 as executed
+
+### The opt-out, and why this one has to say why *(task 3.1)*
+
+**Q5 is ruled: `<!-- blockcheck: skip <reason> -->`, on its own line, binding THE NEXT C# BLOCK, and
+the reason is part of the syntax.** Two of those three follow the opt-outs this repository already
+has. The third does not, and the difference is the ruling.
+
+`pagelint` has `<!-- pagelint: allow-serviceactivator -->` and `symbolcheck` has
+`<!-- symbolcheck: allow IMessageScheduler -->`. **Neither carries a reason, and neither needs one:**
+each names what it silences, the page discusses that name, and a reader who wants the reason reads
+the paragraph the marker sits in. **A block that fails to compile carries no such recovery.** It can
+fail for a dozen reasons; "somebody decided this one was fine" is not checkable against anything, and
+`design.md`'s own words for friction 59 are that *"the reason has to be written on the page by a
+person, never guessed by a heuristic"*. So a marker without a reason binds nothing and is reported.
+
+**Page-wide was rejected, and the argument is `symbolcheck`'s transplanted verbatim.** Its `opt_outs`
+docstring already says a page-wide silence *"would let a page opting out of a name it discusses on
+purpose silently opt out of a second, dead name that arrived on that page two years later, and
+nothing would ever say so"*. A page-wide `skip` written for one ❌ V9 example would absorb the next
+block someone adds beneath it. The marker binds one block.
+
+**Three ways a marker binds nothing, and they are not one defect:**
+
+| | Reported as | Why |
+|---|---|---|
+| no reason given | **error**, a finding, exit 1 | It reads as an opt-out and grants none. The block it appears to excuse is **still judged** — which is the trap, and the reason the reason is mandatory |
+| no C# block follows it | warning | Dead weight. `symbolcheck`'s rule: debt that fails the build gets deleted rather than understood |
+| that block already has a marker | warning | Two reasons, no way to tell which the tool used |
+
+#### Red-proofed five ways against the real code path, none of them a page under `contents/`
+
+Five synthetic pages built through the real `pagelint.Page` and the real `enumerate_blocks`:
+
+```text
+binds                blocks=1 skip=['V9 form, required by CLAUDE.md']  problems=[]
+no-reason            blocks=1 skip=[None]  problems=[('no reason given', 4)]
+binds-nothing        blocks=1 skip=[None]  problems=[('no C# block follows it', 8)]
+two-markers          blocks=1 skip=['first reason']  problems=[('that block already has a marker', 5)]
+control-no-marker    blocks=1 skip=[None]  problems=[]
+```
+
+**The last row is the control that makes the other four mean something** — a page with no marker
+produces no binding *and no problem*, so the three problem kinds are not firing on everything they
+see. **The positive case is first and it passes**, which obligation 3 requires of a two-way control.
+
+#### And end to end, over the whole corpus, four runs
+
+`contents/MigratingToPollyV8.md` block 5 — line 97, the `❌ **V9 — superseded**` block, and a real
+member of task 3.2's set rather than a plant:
+
+```text
+run 1  control, unmodified      985: 68 BUILT, 917 FAILED, 0 SKIPPED, 0 NOT_COMPILABLE   exit 0
+                                0 findings
+       the block                FAILED  contents/MigratingToPollyV8.md  5  ...  2  CS0103
+
+run 2  marker with a reason     985: 68 BUILT, 916 FAILED, 1 SKIPPED, 0 NOT_COMPILABLE   exit 0
+                                ----- skipped by opt-out (1) -----
+                                contents/MigratingToPollyV8.md:98  block 5 — V9 form, required
+                                  by CLAUDE.md § Version markers on code
+                                0 findings, 1 skipped
+
+run 3  the SAME marker, reason  985: 68 BUILT, 917 FAILED, 0 SKIPPED, 0 NOT_COMPILABLE   exit 1
+       removed                  ----- malformed opt-out (1) -----
+                                contents/MigratingToPollyV8.md:96  no reason given —
+                                  <!-- blockcheck: skip -->
+                                1 findings
+
+run 4  reverted                 985: 68 BUILT, 917 FAILED, 0 SKIPPED, 0 NOT_COMPILABLE   exit 0
+                                0 findings          985 of 985 rows identical to run 1
+```
+
+**Run 3 is the one worth reading twice.** The marker is still there and still says `skip`; the block
+is back at `FAILED` and counted. A reasonless opt-out does not quietly become a silence — the
+corpus is judged exactly as if the marker were absent, and the run says so and fails.
+
+**Run 4 is phase 1's no-vacuous-pass discipline**: `git checkout -- contents/MigratingToPollyV8.md`,
+`git diff --stat` on that path empty, and `diff` of run 4's report against run 1's reports no
+difference across all 985 rows. Same, different, different, same again.
+
+**`0 findings` and `0 findings, 1 skipped` are printed as different strings**, which is ruling 4 and
+was already wired in phase 1 — this task gave it something to count. The four verdicts still sum to
+985 in every run above, which is AC1.
+
+#### Two things this task changed beyond the marker
+
+**`VERDICTS`' comment was carrying a claim that had just become false.** It read *"SKIPPED has no
+opt-out to carry it until phase 3"*; phase 3 is now, so it says what is true instead, and it takes
+the correction phase 2 made to `NOT_COMPILABLE` with it — **empty by construction, which friction 59
+records as a defect rather than as coverage.**
+
+**`enumerate_blocks` now filters the page's C# fences once and enumerates them**, where it used to
+carry a manual `ordinal` counter through a loop over every fence. The refactor is not cosmetic: the
+skip scan needs the list of C# fence start lines *before* the blocks are built. It is behaviour-
+preserving and was checked as such — `--list` reads **985 C# blocks across 145 pages: 11 namespaced,
+9 toplevel, 303 types, 130 members, 532 statements**, identical to phase 2's figures on every one of
+the five shapes.

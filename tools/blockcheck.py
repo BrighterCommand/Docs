@@ -50,8 +50,26 @@ linkcheck, pagelint, symbolcheck and urlmap. An empty enumeration is exit 2, not
 exit 0: a tool that silently degrades to zero blocks passes every corpus ever
 written, and it does it in the direction that looks like success.
 
-`--report` MEASURES; it does not yet gate. There is no `baseline.tsv` until
-phase 3, so no block is required to compile and a failing one is not a finding.
+THE OPT-OUT, AND WHY IT DEMANDS A REASON
+----------------------------------------
+A block excuses itself from the gate with a comment on its own line, above the
+block it excuses:
+
+    <!-- blockcheck: skip V9 form, required by CLAUDE.md -->
+
+It binds the NEXT C# block, never the page, and the reason is part of the
+syntax: a marker without one binds nothing and is reported as an error. The two
+opt-outs this repository already has -- pagelint's `allow-serviceactivator` and
+symbolcheck's `allow <name>` -- need no reason because each names what it
+silences and the page discusses that name. A block that fails to compile can
+fail for a dozen reasons, so here the reason is the only thing a later reader
+can check. Every skip is printed, with its reason, on green runs too.
+
+`--report` MEASURES COMPILATION; it does not yet gate on it. There is no
+`baseline.tsv` until later in phase 3, so no block is required to compile and a
+failing one is not a finding. A MALFORMED MARKER IS A FINDING even so: it is
+not a claim about whether a block compiles, it is a claim about the corpus that
+is wrong on its own terms.
 The run says that in those words rather than printing a clean-looking `0
 findings` over 924 failures, and the no-argument form is not the gate either --
 it exits 2, because a gate that does not exist must not look green.
@@ -116,11 +134,38 @@ SHAPES = ('namespaced', 'toplevel', 'types', 'members', 'statements')
 # verdict has no members. `requirements.md` AC1 asks that the four counts SUM
 # TO THE CORPUS COUNT, and a summary that lists only the verdicts it happened
 # to see cannot be added up: a run printing `61 BUILT, 924 FAILED` is
-# indistinguishable from a tool that has no SKIPPED verdict at all. Two of the
-# four are 0 today for reasons a reader should be told rather than left to infer
-# -- SKIPPED has no opt-out to carry it until phase 3, and NOT_COMPILABLE is
-# empty by construction because four wrapper rules cover 985 of 985.
+# indistinguishable from a tool that has no SKIPPED verdict at all. The two
+# that read 0 today do so for DIFFERENT reasons, and the difference is the
+# point: NOT_COMPILABLE is empty BY CONSTRUCTION, because `classify` cannot
+# return *no* -- phase 2 recorded that as friction 59 rather than as coverage.
+# SKIPPED is empty only because no page carries a marker yet; it acquired its
+# opt-out in phase 3 and is whatever the corpus says from here on.
 VERDICTS = ('BUILT', 'FAILED', 'SKIPPED', 'NOT_COMPILABLE')
+
+# THE OPT-OUT. Q5, ruled in phase 3 task 3.1, and it is deliberately stricter
+# than the two opt-outs already in this repository: it REQUIRES A REASON.
+#
+# `pagelint`'s `<!-- pagelint: allow-serviceactivator -->` and `symbolcheck`'s
+# `<!-- symbolcheck: allow IMessageScheduler -->` each name what they silence
+# and are reported on every run. Neither carries a reason, because for both the
+# reason is recoverable: the page discusses the name, and the name is in the
+# marker. Here it is not. A block that does not compile can fail to compile for
+# a dozen reasons, and "somebody decided this one was fine" is not a claim a
+# later reader can check against anything. So the reason is part of the syntax
+# and a marker without one binds nothing and is reported as an error.
+#
+# It binds THE NEXT C# BLOCK on the page, never the page. That is
+# `symbolcheck`'s argument transplanted: a page-wide skip written for one V9
+# example would silently absorb a second block that arrived two years later,
+# and nothing would ever say so.
+SKIP_RE = re.compile(r'^<!--\s*blockcheck:\s*skip\s+(\S.*?)\s*-->$')
+SKIP_ANY_RE = re.compile(r'^<!--\s*blockcheck:\s*skip\b')
+SKIP_EXAMPLE = '<!-- blockcheck: skip V9 form, required by CLAUDE.md -->'
+
+# Markers that bind nothing, accumulated by `enumerate_blocks` and reported by
+# `mode_report`. Reset on every call, because a tool that accumulates across
+# calls reports the second run's problems twice.
+SKIP_PROBLEMS = []
 
 
 class Block:
@@ -141,6 +186,9 @@ class Block:
         self.ident = f'{stem}_{ordinal}'
         self.usings, self.rest = hoist(body)
         self.shape = classify(self.rest)
+        # Set by `enumerate_blocks` from the page's markers; None means the
+        # gate judges this block. A reason here means it does not.
+        self.skip_reason = None
 
     @property
     def text(self):
@@ -211,6 +259,43 @@ def classify(rest):
 # --------------------------------------------------------------------------
 # Enumeration
 # --------------------------------------------------------------------------
+def scan_skips(lines, csharp_starts):
+    """Bind each skip marker on a page to the block it precedes.
+
+    Returns `(bindings, problems)` -- `{fence start lineno: reason}` and a list
+    of `(lineno, kind, text)` for every marker that binds nothing.
+
+    A marker binds THE NEXT C# FENCE THAT OPENS AFTER IT. That is the reading a
+    human gives it, and it is the only rule that needs no second thought: the
+    marker sits above the block it excuses, the way the ❌ label already does in
+    `CLAUDE.md` § *Version markers on code*.
+
+    THREE WAYS A MARKER BINDS NOTHING, AND ALL THREE ARE REPORTED. It carries no
+    reason, so it is malformed and the block it appears to excuse is still
+    judged. It follows the page's last C# block, so there is nothing after it to
+    bind. Or a block already has one, and a second marker would leave a reader
+    with two reasons and no way to tell which the tool used.
+    """
+    bindings, problems = {}, []
+    starts = sorted(csharp_starts)
+    for lineno, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if not SKIP_ANY_RE.match(stripped):
+            continue
+        match = SKIP_RE.match(stripped)
+        if not match:
+            problems.append((lineno, 'no reason given', stripped))
+            continue
+        target = next((start for start in starts if start > lineno), None)
+        if target is None:
+            problems.append((lineno, 'no C# block follows it', stripped))
+        elif target in bindings:
+            problems.append((lineno, 'that block already has a marker', stripped))
+        else:
+            bindings[target] = match.group(1)
+    return bindings, problems
+
+
 def enumerate_blocks(pages=None):
     """Every C# block in the corpus, in page order then block order.
 
@@ -223,14 +308,19 @@ def enumerate_blocks(pages=None):
     if pages is None:
         pages = load_pages()
     blocks = []
+    del SKIP_PROBLEMS[:]
     for rel, page in sorted(pages.items()):
-        ordinal = 0
-        for fence in page.blocks:
-            if (fence['info'] or '').strip().lower() not in CSHARP_TAGS:
-                continue
-            ordinal += 1
-            blocks.append(Block(rel, ordinal, fence['start'], fence['end'],
-                                [text for _, text in fence['body']]))
+        csharp = [fence for fence in page.blocks
+                  if (fence['info'] or '').strip().lower() in CSHARP_TAGS]
+        bindings, problems = scan_skips(page.lines,
+                                        [fence['start'] for fence in csharp])
+        for lineno, kind, text in problems:
+            SKIP_PROBLEMS.append((rel, lineno, kind, text))
+        for ordinal, fence in enumerate(csharp, 1):
+            block = Block(rel, ordinal, fence['start'], fence['end'],
+                          [text for _, text in fence['body']])
+            block.skip_reason = bindings.get(fence['start'])
+            blocks.append(block)
     return blocks
 
 
@@ -725,8 +815,16 @@ def mode_report(blocks, args):
 
         rows, counts = [], {verdict: 0 for verdict in VERDICTS}
         for block in blocks:
-            verdict, count, codes = verdicts.get(
-                block.ident, ('NOT_COMPILABLE', '0', ''))
+            if block.skip_reason:
+                # A skipped block IS still staged and compiled -- the cost is
+                # 7ms and `--verify-extraction` needs the full 985 -- but its
+                # verdict is discarded unread. SKIPPED means the gate did not
+                # judge this block, so reporting an error count beside it would
+                # be reporting a judgement it just declined to make.
+                verdict, count, codes = 'SKIPPED', '0', ''
+            else:
+                verdict, count, codes = verdicts.get(
+                    block.ident, ('NOT_COMPILABLE', '0', ''))
             counts[verdict] = counts.get(verdict, 0) + 1
             rows.append(f'{verdict}\t{block.rel}\t{block.ordinal}\t'
                         f'{block.ident}\t{count}\t{codes}')
@@ -748,11 +846,50 @@ def mode_report(blocks, args):
           + ', '.join(f'{counts[v]} {v}' for v in VERDICTS),
           file=sys.stderr)
 
+    # NEVER SILENT. Every skip is printed with the reason its author wrote,
+    # on a green run too, because `0 findings` and `0 findings, 8 skipped` are
+    # different claims about the corpus and only one of them is checkable.
+    # This is `symbolcheck`'s rule, and ruling 4.
+    excused = [block for block in blocks if block.skip_reason]
+    if excused:
+        print(f'\n----- skipped by opt-out ({len(excused)}) -----',
+              file=sys.stderr)
+        for block in excused:
+            print(f'{block.rel}:{block.start}  block {block.ordinal} — '
+                  f'{block.skip_reason}', file=sys.stderr)
+
+    # A MARKER THAT BINDS NOTHING IS REPORTED, and the two kinds are not the
+    # same defect. One carrying no reason is MALFORMED: it reads as an opt-out,
+    # grants none, and the block it appears to excuse is still judged -- so it
+    # is an error, and it is the reason the reason is part of the syntax. One
+    # that binds no block is DEAD WEIGHT, and that is a warning for
+    # `symbolcheck`'s reason: debt that fails the build gets deleted rather
+    # than understood.
+    malformed = [row for row in SKIP_PROBLEMS if row[2] == 'no reason given']
+    dead = [row for row in SKIP_PROBLEMS if row[2] != 'no reason given']
+    if dead:
+        print(f'\n----- stale opt-out (warning: {len(dead)}) -----',
+              file=sys.stderr)
+        for rel, lineno, kind, text in dead:
+            print(f'{rel}:{lineno}  {kind} — {text}', file=sys.stderr)
+    if malformed:
+        print(f'\n----- malformed opt-out ({len(malformed)}) -----',
+              file=sys.stderr)
+        for rel, lineno, kind, text in malformed:
+            print(f'{rel}:{lineno}  {kind} — {text}', file=sys.stderr)
+        print(f'    A skip states why, on its own line: {SKIP_EXAMPLE}',
+              file=sys.stderr)
+
     # NO BASELINE EXISTS YET, so nothing is REQUIRED to compile and a failing
-    # block is not a finding. Phase 3 adds baseline.tsv and the ratchet; until
-    # then this tool measures and does not gate, and it says so rather than
-    # printing a clean-looking zero.
-    findings = 0
+    # block is not a finding. Phase 3's later tasks add baseline.tsv and the
+    # ratchet; until then this tool does not gate on compilation, and it says
+    # so rather than printing a clean-looking zero.
+    #
+    # A malformed marker is a finding REGARDLESS, because it is not a claim
+    # about whether a block compiles -- it is a claim about the corpus that is
+    # wrong on its own terms, and it is wrong today whether or not a baseline
+    # exists tomorrow.
+    findings = len(malformed)
     print('no baseline yet: this is a measurement, not a gate', file=sys.stderr)
     print(f'{findings} findings' + (f', {skipped} skipped' if skipped else ''),
           file=sys.stderr)
