@@ -111,13 +111,18 @@ Here's a brief example of a Brighter command handler. For complete details, see 
 
 ```csharp
 using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 // Command: represents an intent to change state
-public class PlaceOrderCommand : IRequest
+public class PlaceOrderCommand : Command
 {
     public PlaceOrderCommand(int customerId, List<OrderItem> items)
+        : base(Id.Random())
     {
         CustomerId = customerId;
         Items = items;
@@ -141,8 +146,8 @@ public class PlaceOrderCommandHandler : RequestHandlerAsync<PlaceOrderCommand>
         _commandProcessor = commandProcessor;
     }
 
-    [RequestLogging(step: 1)]
-    [UsePolicy("OrderServiceRetry", step: 2)]
+    [RequestLoggingAsync(step: 1, timing: HandlerTiming.Before)]
+    [UseResiliencePipelineAsync("OrderServiceRetry", step: 2)]
     public override async Task<PlaceOrderCommand> HandleAsync(
         PlaceOrderCommand command,
         CancellationToken cancellationToken = default)
@@ -618,16 +623,15 @@ Let's walk through a complete example of placing and viewing an order using Brig
 using Paramore.Brighter;
 using System.Collections.Generic;
 
-public class PlaceOrderCommand : IRequest
+public class PlaceOrderCommand : Command
 {
     public PlaceOrderCommand(int customerId, List<OrderItemDto> items)
+        : base(Id.Random())
     {
-        Id = Guid.NewGuid();
         CustomerId = customerId;
         Items = items;
     }
 
-    public Guid Id { get; }
     public int CustomerId { get; }
     public List<OrderItemDto> Items { get; }
 }
@@ -666,8 +670,8 @@ public class PlaceOrderCommandHandler : RequestHandlerAsync<PlaceOrderCommand>
         _commandProcessor = commandProcessor;
     }
 
-    [RequestLogging(step: 1)]
-    [UsePolicy("OrderRetryPolicy", step: 2)]
+    [RequestLoggingAsync(step: 1, timing: HandlerTiming.Before)]
+    [UseResiliencePipelineAsync("OrderRetryPolicy", step: 2)]
     public override async Task<PlaceOrderCommand> HandleAsync(
         PlaceOrderCommand command,
         CancellationToken cancellationToken = default)

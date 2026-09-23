@@ -500,10 +500,11 @@ See: [Scheduler Support](/contents/BrighterSchedulerSupport.md)
 Use `SendAsync()` or `PostAsync()` with a delay:
 
 ```csharp
+// ...
 // Schedule with DateTimeOffset
 await commandProcessor.SendAsync(
     new DateTimeOffset(2025, 1, 15, 10, 0, 0, TimeSpan.Zero),
-    new MyCommand())
+    new MyCommand()
 );
 
 // Schedule with TimeSpan delay
@@ -513,7 +514,7 @@ await commandProcessor.PostAsync(
 );
 
 // Returns scheduler ID for cancellation/reschedule
-var schedulerId = await commandProcessor.SendAsync(command, delay);
+var schedulerId = await commandProcessor.SendAsync(delay, command);
 ```
 
 **Note**: Requires a configured scheduler (Quartz, Hangfire, AWS, Azure, or InMemory).
@@ -524,18 +525,22 @@ See: [Scheduler Support](/contents/BrighterSchedulerSupport.md)
 
 Yes, using the scheduler ID returned when scheduling:
 
+`scheduler` is the `IAmARequestSchedulerAsync` that Brighter registers when you configure one.
+
 **Cancel:**
 
 ```csharp
-var schedulerId = await commandProcessor.SendAsync(command, delay);
+// ...
+var schedulerId = await commandProcessor.SendAsync(delay, command);
 await scheduler.CancelAsync(schedulerId);
 ```
 
 **Reschedule:**
 
 ```csharp
-var schedulerId = await commandProcessor.SendAsync(command, delay);
-await scheduler.RescheduleAsync(schedulerId, newDelay);
+// ...
+var schedulerId = await commandProcessor.SendAsync(delay, command);
+await scheduler.ReSchedulerAsync(schedulerId, newDelay);
 ```
 
 **Note**: Azure Service Bus Scheduler does NOT support reschedule - you must cancel and create a new schedule.

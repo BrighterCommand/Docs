@@ -127,7 +127,7 @@ Brighter uses two internal message types for scheduling:
 ```text
 Your Application
        ↓
-CommandProcessor.SendAsync(command, delay)
+CommandProcessor.SendAsync(delay, command)
        ↓
 [Creates FireSchedulerRequest with your command]
        ↓
@@ -147,10 +147,10 @@ Your Handler executes
 To use scheduling, you need to configure a scheduler when setting up Brighter:
 
 ```csharp
+// ...
 services.AddBrighter(options => { ... })
-    .UseScheduler(scheduler: new HangfireMessageSchedulerFactory(
-        connectionString: Configuration.GetConnectionString("Hangfire")
-    ))
+    // Hangfire's own storage is configured with AddHangfire, not on the factory
+    .UseScheduler(new HangfireMessageSchedulerFactory())
     .AutoFromAssemblies();
 ```
 

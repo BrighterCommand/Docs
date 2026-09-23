@@ -123,20 +123,17 @@ builder.Services.AddOpenTelemetry()
             });
     });
 
-// Configure Brighter instrumentation
-var instrumentation = BrighterInstrumentation.InstrumentationOptions;
-instrumentation.CommandProcessorInstrumentationOptions.RecordRequestInformation = true;
-instrumentation.MessagingInstrumentationOptions.RecordMessageInformation = true;
-instrumentation.MessagingInstrumentationOptions.RecordServerInformation = true;
-
-// Configure Brighter
+// Configure Brighter, and how much its spans record
 builder.Services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
+    options.InstrumentationOptions = InstrumentationOptions.RequestInformation;
 })
 .AddProducers(configure =>
 {
     // Producer configuration
+    configure.InstrumentationOptions = InstrumentationOptions.RequestInformation
+                                     | InstrumentationOptions.Messaging;
 })
 .AutoFromAssemblies();
 
@@ -171,15 +168,13 @@ builder.ConfigureServices(services =>
                 });
         });
 
-    // Configure Brighter instrumentation
-    var instrumentation = BrighterInstrumentation.InstrumentationOptions;
-    instrumentation.MessagingInstrumentationOptions.RecordMessageInformation = true;
-    instrumentation.MessagingInstrumentationOptions.RecordMessageBody = false; // Expensive
-
-    // Configure Brighter Consumer
+    // Configure Brighter Consumer, and how much its spans record
     services.AddConsumers(options =>
     {
         options.Subscriptions = subscriptions;
+        // Leave out RequestBody, which records the message body and is expensive
+        options.InstrumentationOptions = InstrumentationOptions.RequestInformation
+                                       | InstrumentationOptions.Messaging;
     })
     .AutoFromAssemblies();
 });

@@ -21,9 +21,9 @@ Both use attributes with step numbers to control decorator execution order:
 ```csharp
 // ...
 // Brighter
-[RequestLogging(1)]
-[UsePolicy("RetryPolicy", 2)]
-public override Task<AddGreetingResponse> HandleAsync(AddGreetingCommand command, ...)
+[RequestLoggingAsync(1, HandlerTiming.Before)]
+[UseResiliencePipelineAsync("RetryPolicy", 2)]
+public override Task<AddGreetingCommand> HandleAsync(AddGreetingCommand command, ...)
 
 // Darker
 [QueryLogging(1)]

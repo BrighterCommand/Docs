@@ -130,7 +130,7 @@ services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
-.UseOutboxArchiver(new InMemoryArchiveProvider())
+.UseOutboxArchiver<CommittableTransaction>(new InMemoryArchiveProvider())  // the InMemory Outbox's transaction type
 .AddProducers(/* producer configuration */);
 ```
 
