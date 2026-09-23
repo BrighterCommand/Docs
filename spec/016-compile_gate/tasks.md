@@ -197,7 +197,7 @@ both depend on.
   - Output: one prelude per admitted page under `tools/blockcheck/scaffold/`, each listed by `--list-scaffold`
   - Notes: **a prelude supplies identifiers, never behaviour, and never a type the page tells the reader to write.** AC13 is a maintainer reading this boundary.
 
-- [ ] **Task 3.4:** Define and populate `baseline.tsv`
+- [x] **Task 3.4:** Define and populate `baseline.tsv`
   - Input: tasks 2.1 and 3.3
   - Output: `tools/blockcheck/baseline.tsv` — page, ordinal, scaffold, and the ref it was admitted at — holding **only blocks that compile without any page being edited**, plus the count in this file
   - Notes: keeping page edits out of this phase is what makes phase 3 site-neutral. Blocks needing a `using` on the page belong to phase 4 or to backlog item 2.
@@ -1794,3 +1794,36 @@ not a reason to open it.
 committed corpus run, and no tool reads it (`grep` over `tools/*.py`, `tools/README.md` and
 `.github/`). Regenerating it would rewrite a record to match a later state. Task 3.4's `baseline.tsv`
 is the file that carries the current admitted set.
+
+### The baseline *(task 3.4)*
+
+**`tools/blockcheck/baseline.tsv`: 92 rows across 44 pages, measured at `280d1b7`, no page edited
+to earn one.** Columns as the design specified: page, ordinal, scaffold, and the ref it was
+admitted at. The file's own header states them, so a reader of the file needs nothing else.
+
+**The population is the whole BUILT set, and requirements say so; the task text does not.**
+Task 3.5 names one direction of AC9: a row whose block has gone. AC9's own instrument names the
+other: *"delete one line from `baseline.tsv` and confirm exit 1"*. P0-4 says the gate is red
+*"when the list disagrees with the corpus in either direction"*. So a block that builds and has no
+row is a failure too, and the baseline cannot be a hand-picked subset of what builds. That is
+the ratchet: a repair that makes a block build brings its row in the same PR. Task 3.5 implements
+all three conditions, not the two its text names.
+
+**How it was generated, since there is deliberately no mode that writes it.** Filter the
+`--report` rows to `BUILT`, and take the scaffold name from `load_scaffold()` as `--list-scaffold`
+prints it. A `--write-baseline` flag would make *regenerate until green* one command. Without one,
+a change to this file is a diff someone reads.
+
+| | Rows |
+|---|---:|
+| no scaffold | 46 |
+| a scaffold, and it is **needed** — 24 from task 3.3, plus `DapperOutbox.md#1` on phase 1's `PageContext` | 25 |
+| a scaffold present on the page and **not needed**, BUILT before any unit existed | 21 |
+| **total** | **92** — equal to the corpus run's `BUILT` count |
+
+**The 21 are recorded as compiled, not as needed.** The column says what the block *was compiled
+with*, and it was compiled with its page's scaffold. Writing `-` would describe a compilation that
+did not happen. The table above is where the difference lives, for AC13's reader.
+
+**`MigratingToNullableReferenceTypes.md` carries 17 rows**, the most of any page. It is the page
+whose blocks are one-line nullable-annotation illustrations, and its unit supplies one `string`.
