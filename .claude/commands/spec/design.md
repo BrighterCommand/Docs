@@ -93,7 +93,7 @@ is a 404 for everyone holding the old link, and it is the deliverable that gets 
 
 ### Predict which gates the work will move — including "none"
 
-Name each gate the work will move, the direction, and the cause. `tools/README.md` has the eight,
+Name each gate the work will move, the direction, and the cause. `tools/README.md` has the nine,
 what each checks, and **the corpus each one walks** — the part that catches people out. Cite it for
 the expected numbers; do not paste them here.
 

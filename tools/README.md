@@ -1,6 +1,6 @@
 # The gates
 
-Eight commands check this repository. This file is what they are, what each one checks, and the
+Nine commands check this repository. This file is what they are, what each one checks, and the
 number each prints when nothing is wrong — so that a command, a pull request or a person can
 **cite** the expected figure instead of pasting a copy of it that starts going stale the day it
 is written.
@@ -18,7 +18,7 @@ open-question log stay in `PROMPT.md`, which stays untracked. If you find yourse
 `PROMPT.md` from a command file, the thing you reached for either belongs in this file or should
 not be in a command.
 
-## The eight gates at `412fd34`
+## The nine gates at `412fd34`
 
 `412fd34` is `master` as of 2026-09-13 — spec 014 phase 4, PR #161. Re-derive these before
 quoting them; the command is in the row so that you can.
@@ -34,6 +34,11 @@ opt-outs. `pagelint`'s warning count **fell**, 757 → **744**, because thirteen
 gained the `using` directives rule 6 asks for; two more declared their omission with `// ...`,
 which is honest and still counted. The other six rows are unmoved at both refs.
 
+**Row 9 is spec 016's and carries its own ref, `1e1944d`**, because it did not exist at the other
+two. It is the only gate that compiles C#, and the only one whose expected figure is **set by a
+committed file** rather than by the corpus alone: `tools/blockcheck/baseline.tsv` lists the blocks
+required to build, and the figure moves when that file does.
+
 | # | Gate | Command | Expected at `412fd34` |
 |---:|---|---|---|
 | 1 | `linkcheck` | `python3 tools/linkcheck.py` | **165 files, 0 broken** |
@@ -44,8 +49,9 @@ which is honest and still counted. The other six rows are unmoved at both refs.
 | 6 | `optioncheck` | `dotnet run --project tools/optioncheck` | **0 mismatches across 59 tables, 519 rows** |
 | 7 | `--verify` | `python3 tools/urlmap.py --verify` | **161 predicted = 161 published** |
 | 8 | `symbolcheck` | `python3 tools/symbolcheck.py` | **0 findings — 22 entries, 161 pages, 3 silenced** — at `3be2a78`; it read **5 entries, 1 silenced** at `412fd34` |
+| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **985 blocks: 92 BUILT, 881 FAILED, 12 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 12 skipped** — at `1e1944d` |
 
-**Three of the eight are not in the `check` job of `.github/workflows/docs.yml`, and each absence
+**Four of the nine are not in the `check` job of `.github/workflows/docs.yml`, and each absence
 is a decision rather than an oversight:**
 
 - **7, `--verify`, is deliberately not in CI at all.** It fetches the live sitemap, and a check
@@ -57,12 +63,21 @@ is a decision rather than an oversight:**
   docs.
 - **6 runs in its own `options` job** and has no schedule, because it reflects over a *pinned*
   package: nothing outside this repository can change its verdict.
+- **9 runs in its own `blocks` job** and has no schedule, for 6's reason: it compiles against the
+  packages pinned in `tools/blockcheck/refs/refs.csproj`. It needs two builds first, and **without
+  them it exits 2 rather than failing every block**:
+
+  ```bash
+  dotnet build tools/blockcheck/refs/refs.csproj -c Release
+  dotnet build tools/blockcheck/blockcheck.csproj -c Release
+  ```
 
 ### Reading a number before you trust it
 
-Four of these gates print their **scope** before their verdict, and that line is the one to read:
+Five of these gates print their **scope** before their verdict, and that line is the one to read:
 `0 stale pins` out of 0 is not the same claim as `0` out of 18, and `0 findings` is not the same
-claim as `0 findings, 1 silenced`. A gate that has silently degraded to checking nothing passes
+claim as `0 findings, 1 silenced`, and `blockcheck`'s `0 findings` is only as wide as its
+baseline — it prints the count of blocks it requires to build beside it. A gate that has silently degraded to checking nothing passes
 every corpus ever written.
 
 **`pagelint`'s second figure is a warning count, not an error count** — the using-directive debt,
@@ -106,6 +121,10 @@ python3 tools/urlmap.py                              # print the predicted tree
 python3 tools/urlmap.py --redirects OLD_SUMMARY      # the .gitbook.yaml block for moved pages
 python3 tools/versioncheck.py --release-notes ../Brighter/release_notes.md
 dotnet run --project tools/optioncheck -- <paths>    # just these files or directories
+python3 tools/blockcheck.py --list                   # every C# block, page, ordinal and wrapper shape
+python3 tools/blockcheck.py --show <page> <n>        # one block, verbatim
+python3 tools/blockcheck.py --list-scaffold          # every identifier supplied from outside a page
+python3 tools/blockcheck.py --verify-extraction      # is every block staged byte-identical?
 ```
 
 Two of them need the sibling repositories checked out beside this one:
@@ -125,7 +144,9 @@ is a deliberate commit with the new count beside it. A pin the checkout cannot r
 one has no diff at all, so the strict pass sees nothing and reports a green it did not earn.
 
 **`symbolcheck` has no `--watchlist <path>` flag, and must not get one.** A gate that can be
-pointed at another list can be silenced by pointing it at an empty one.
+pointed at another list can be silenced by pointing it at an empty one. **`blockcheck` has no
+`--baseline <path>` for the same reason, and no mode that writes `baseline.tsv`** — a change to
+that file is a diff someone reads, not a command someone reruns until the build is green.
 
 ## What each gate actually checks
 
@@ -156,6 +177,23 @@ pointed at another list can be silenced by pointing it at an empty one.
 - **`symbolcheck`** — no page names a symbol on `tools/symbolwatch.tsv`: a name dead in the
   product at both the pinned release and its `master`. Opt-outs are **per symbol**, written
   `<!-- symbolcheck: allow SymbolName -->`, and always print a count.
+
+- **`blockcheck`** — every C# block under `contents/` (and the root `README.md`), enumerated
+  through `pagelint`'s parser rather than a grep, **compiled one block per compilation** against
+  the pinned packages, each with the wrapper its shape needs and its page's declared scaffold. The
+  gate is `tools/blockcheck/baseline.tsv`, which must **equal** the set of blocks that build: a
+  listed block that stops building, a listed block that no longer exists, a block that builds and
+  is not listed, and a listed block now compiled with a different scaffold are each a finding. A
+  failing block with no row is debt, not a finding. A block opts out with
+  `<!-- blockcheck: skip <reason> -->` on the line above it; **the reason is mandatory**, every skip
+  prints with its reason, and a skip cannot excuse a baselined block. The scaffold's own rule —
+  it supplies values typed from a pinned package, never a type the page tells the reader to write —
+  is stated in `tools/blockcheck/scaffold/pages.tsv`.
+
+> **A green `blockcheck` means the listed blocks compile. It does not mean they are right.** A
+> block that compiles can still assert behaviour that is false; `CLAUDE.md` § *Compiling an
+> example, and against what* is why a block that claims behaviour is also run, with a control,
+> in review. No gate here runs one.
 
 > **A green `symbolcheck` does not mean a page is correct.** The watchlist's replacement column is
 > a **name**, not a **type**: `IAmAMessageScheduler` is a marker interface with no members, so a

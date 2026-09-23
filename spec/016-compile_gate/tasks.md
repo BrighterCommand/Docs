@@ -212,7 +212,7 @@ both depend on.
   - Output: three recorded runs — a baselined block broken on purpose → exit 1 with the compiler's code; a phantom row added → exit 1; and **the unmodified state → exit 0**. Every edit reverted, verified by `git diff` → empty
   - Notes: the third run is the control that the first two were not passing for some other reason.
 
-- [ ] **Task 3.7:** Add row 9 to `tools/README.md`
+- [x] **Task 3.7:** Add row 9 to `tools/README.md`
   - Input: `tools/README.md` § *The eight gates*, § *What each gate actually checks*
   - Output: the row — command, corpus, expected figure, **and the ref it was measured at** — plus the heading and any prose that says "eight" updated to nine
   - Notes: obligation 10. **And grep the whole repository for "eight gates"** — the count lives in prose in more than one place, and a header that disagrees with its own body is this programme's most-repeated defect.
@@ -1895,3 +1895,55 @@ the row"*.
 
 **The other modes did not move:** `--list` reads 985 across 145 in the same five shapes;
 `--verify-extraction` reads 985 of 985 identical; the bare invocation exits 2.
+
+### Row 9 *(task 3.7)*
+
+**`tools/README.md` row 9: `python3 tools/blockcheck.py --report`, its figure, measured at
+`1e1944d`**, plus the heading and the opening line changed to *nine*, the CI-placement list, the
+scope paragraph, the other modes, a `--baseline`-flag sentence beside `symbolcheck`'s
+`--watchlist` one, and a *what it checks* entry. That entry is followed by the AC15 sentence: a
+green `blockcheck` means the listed blocks compile, not that they are right.
+
+**The grep the task asked for was blind on its first run, and that is the finding.**
+`git grep -i -E '\beight\b'` returned **nothing**, with `tools/README.md:3` reading *"Eight
+commands"* in plain sight. git's ERE has no `\b`. `git grep -w` found **seven** hits outside
+`spec/`:
+
+| Where | Changed? |
+|---|---|
+| `tools/README.md` ×3: opening line, heading, *"Three of the eight"* | **yes**: nine, and *four of the nine* |
+| `.claude/commands/spec/review.md`: *"All eight run here"*, *"Two of the eight…"*, *"same for all eight"* | **yes** |
+| `.claude/commands/spec/review.md:117`: *"`/spec:review` runs eight gates"* | **no**: it quotes 014's AC5 verbatim, as the example of a bad instrument |
+| `.claude/commands/spec/design.md`: *"`tools/README.md` has the eight"* | **yes** |
+| `contents/MSSQLMessageBroker.md` ×2, `PostgreSQLMessageBroker.md` | **no**: eight *options* |
+
+**`/spec:review` runs the gates, so row 9 also had to join it**: a `### blockcheck` section that
+builds both projects and runs `--report`, and three `allowed-tools` grants. Its output filters the
+twelve skip lines (they carry ` block N — `, which no finding line does) so a finding cannot be
+pushed out of its `tail`. The command line was run as written and prints the scope, the
+`skipped by opt-out (12)` heading with its count, `baseline: 92 blocks required to build` and the
+verdict.
+
+**A sentence was written and then withdrawn before the commit:** *"Rows 1–8 were re-run at
+`1e1944d` and read exactly as below."* They had not been, at that ref. That is task 3.9's
+reconciliation, and a README that asserted it in advance would be the pasted-figure problem the
+file exists to prevent.
+
+#### AC10, and the instrument's own defect
+
+```text
+grep -rn '92 BUILT, 881 FAILED' --include='*.md' --include='*.yml' --include='*.py' . > /tmp/f
+grep -vcE '^(\./)?spec/' /tmp/f      ->  1    tools/README.md:52, row 9
+same for '985 blocks'                 ->  2    tools/README.md and a comment in tools/blockcheck.py   <- the control
+```
+
+**AC10's instrument as `requirements.md` writes it, `grep -vc '^./spec/'`, excludes nothing on
+macOS.** BSD `grep -rn … .` prints `spec/016…` without the leading `./`, so `^./spec/` never
+matches. On the first run the headline read 1 anyway, but only because no spec file carries the
+exact string, and the first control read **3**, two of them inside `spec/`. It *"returned >1"*,
+which is the pass AC10 names, for the wrong reason. `^(\./)?spec/` matches both forms. Recorded as
+a defect in an approved criterion, **not** edited there, following phase 1's rule about approved
+documents. Phase 5's acceptance walk should use the working form.
+
+**`linkcheck` reads 165 files, 0 broken**, unmoved: row 9 went into a file already in its corpus,
+and no `.md` was added under `tools/`.
