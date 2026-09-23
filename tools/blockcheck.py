@@ -65,14 +65,19 @@ silences and the page discusses that name. A block that fails to compile can
 fail for a dozen reasons, so here the reason is the only thing a later reader
 can check. Every skip is printed, with its reason, on green runs too.
 
-`--report` MEASURES COMPILATION; it does not yet gate on it. There is no
-`baseline.tsv` until later in phase 3, so no block is required to compile and a
-failing one is not a finding. A MALFORMED MARKER IS A FINDING even so: it is
-not a claim about whether a block compiles, it is a claim about the corpus that
-is wrong on its own terms.
-The run says that in those words rather than printing a clean-looking `0
-findings` over 924 failures, and the no-argument form is not the gate either --
-it exits 2, because a gate that does not exist must not look green.
+`--report` IS THE GATE, and `tools/blockcheck/baseline.tsv` is what it holds
+the corpus to. The baseline must EQUAL the set of blocks that build, in both
+directions, and each disagreement is a finding: a listed block that no longer
+builds, a listed block that no longer exists, a block that builds and is not
+listed, and a listed block now compiled with a different scaffold. The first is
+the regression the gate exists for. The second stops a deleted page shrinking
+the corpus while the run still says `0 findings`. The third is the ratchet: a
+repair that makes a block build brings its row in the same PR, so the bar can
+only rise. A failing block with NO row is not a finding -- that is the debt the
+baseline exists to make bearable. A MALFORMED MARKER IS A FINDING regardless: it
+is a claim about the corpus that is wrong on its own terms. The no-argument form
+is not the gate -- it exits 2, because a run that checked nothing must not look
+green.
 
 Every state that exits 2 is listed in one place, above `mode_report`.
 """
@@ -720,6 +725,7 @@ def mode_show(blocks, args):
 #   8. refs.txt names an assembly that is not there
 #   9. the staged index is missing or malformed
 #  10. refs.txt was written by a DIFFERENT refs.csproj -- a stale pin
+#  11. baseline.tsv is absent or malformed     -- nothing to hold the corpus to
 #
 # 10 is phase 2's, and it is the one that had already happened. Adding Darker's
 # packages for Q3 left an XML error in refs.csproj, so the project failed to LOAD
@@ -728,8 +734,14 @@ def mode_show(blocks, args):
 # pin. Nothing was missing, which is what made it believable. The stamp is the
 # first line of refs.txt and this is where it is checked.
 #
-# 3 to 10 are enforced across the two halves: 3, 4, 6, 7 and 10 here, 5, 8 and 9 in
-# tools/blockcheck/Program.cs, which returns 2 for each and is propagated.
+# 11 is phase 3's. A missing baseline is not an empty one: an empty file would
+# be a baseline with no rows, which holds no block to anything, and the run
+# would say `0 findings` about a corpus nobody had admitted. So the file must
+# exist, every row must have four fields, and no block may be listed twice.
+#
+# 3 to 11 are enforced across the two halves: 3, 4, 6, 7, 10 and 11 here, 5, 8
+# and 9 in tools/blockcheck/Program.cs, which returns 2 for each and is
+# propagated.
 TOOL_DLL = os.path.join(ROOT, 'tools', 'blockcheck', 'bin', 'Release', 'net9.0',
                         'blockcheck.dll')
 REFS_LIST = os.path.join(ROOT, 'tools', 'blockcheck', 'refs', 'bin', 'Release',
@@ -737,6 +749,43 @@ REFS_LIST = os.path.join(ROOT, 'tools', 'blockcheck', 'refs', 'bin', 'Release',
 REFS_PROJECT = os.path.join(ROOT, 'tools', 'blockcheck', 'refs', 'refs.csproj')
 BUILD_HINT = ('  dotnet build tools/blockcheck/refs/refs.csproj -c Release\n'
               '  dotnet build tools/blockcheck/blockcheck.csproj -c Release')
+# One path, and no flag to change it: a gate that can be pointed at another
+# list can be silenced (design Constraint 6).
+BASELINE = os.path.join(ROOT, 'tools', 'blockcheck', 'baseline.tsv')
+BASELINE_REL = os.path.relpath(BASELINE, ROOT)
+
+
+class BaselineError(Exception):
+    """A baseline that cannot be read as one: nothing was checked."""
+
+
+def load_baseline():
+    """`{(page, ordinal): (scaffold, ref, lineno)}` from baseline.tsv.
+
+    Absent, a row without four fields, a non-numeric ordinal, or a block listed
+    twice is BaselineError -- exit 2, because each makes the file mean
+    something other than what it says. A duplicate is the subtle one: two rows
+    for one block would let one of them be deleted without the gate noticing.
+    """
+    if not os.path.exists(BASELINE):
+        raise BaselineError(f'no baseline at {BASELINE}')
+    rows = {}
+    with open(BASELINE, encoding='utf-8') as fh:
+        for lineno, line in enumerate(fh, 1):
+            if not line.strip() or line.startswith('#'):
+                continue
+            fields = line.rstrip('\n').split('\t')
+            if len(fields) != 4 or not fields[1].isdigit():
+                raise BaselineError(
+                    f'{BASELINE}:{lineno}: expected page, ordinal, scaffold, '
+                    f'ref -- got {line.rstrip()!r}')
+            key = (fields[0], int(fields[1]))
+            if key in rows:
+                raise BaselineError(
+                    f'{BASELINE}:{lineno}: {key[0]} block {key[1]} is already '
+                    f'listed at line {rows[key][2]}')
+            rows[key] = (fields[2], fields[3], lineno)
+    return rows
 
 
 def stale_pin():
@@ -794,6 +843,12 @@ def mode_report(blocks, args):
     if stale is not None:
         print(f'{stale}\nnothing was checked\n' + BUILD_HINT, file=sys.stderr)
         return 2
+    try:
+        baseline = load_baseline()
+        scaffolds = load_scaffold()
+    except (BaselineError, ScaffoldError) as exc:
+        print(f'{exc}: nothing was checked', file=sys.stderr)
+        return 2
 
     staged = tempfile.mkdtemp(prefix='blockcheck-')
     try:
@@ -814,6 +869,7 @@ def mode_report(blocks, args):
             verdicts[ident] = (verdict, count, codes)
 
         rows, counts = [], {verdict: 0 for verdict in VERDICTS}
+        judged = {}
         for block in blocks:
             if block.skip_reason:
                 # A skipped block IS still staged and compiled -- the cost is
@@ -826,6 +882,7 @@ def mode_report(blocks, args):
                 verdict, count, codes = verdicts.get(
                     block.ident, ('NOT_COMPILABLE', '0', ''))
             counts[verdict] = counts.get(verdict, 0) + 1
+            judged[(block.rel, block.ordinal)] = (block, verdict, codes)
             rows.append(f'{verdict}\t{block.rel}\t{block.ordinal}\t'
                         f'{block.ident}\t{count}\t{codes}')
 
@@ -880,17 +937,56 @@ def mode_report(blocks, args):
         print(f'    A skip states why, on its own line: {SKIP_EXAMPLE}',
               file=sys.stderr)
 
-    # NO BASELINE EXISTS YET, so nothing is REQUIRED to compile and a failing
-    # block is not a finding. Phase 3's later tasks add baseline.tsv and the
-    # ratchet; until then this tool does not gate on compilation, and it says
-    # so rather than printing a clean-looking zero.
+    # THE RATCHET. The baseline must equal the BUILT set, and each of the four
+    # ways it can disagree is printed under its own heading, because they are
+    # fixed in different places: a regression on the page, a vanished row and
+    # an unlisted block in baseline.tsv, a changed scaffold in either.
     #
-    # A malformed marker is a finding REGARDLESS, because it is not a claim
-    # about whether a block compiles -- it is a claim about the corpus that is
-    # wrong on its own terms, and it is wrong today whether or not a baseline
-    # exists tomorrow.
-    findings = len(malformed)
-    print('no baseline yet: this is a measurement, not a gate', file=sys.stderr)
+    # A baselined block that is SKIPPED counts as no longer building. A skip
+    # marker added above a baselined block would otherwise be a way to take a
+    # block out of the gate without touching the gate's own file.
+    regressed, vanished, unlisted, rescaffolded = [], [], [], []
+    for key, (want_scaffold, ref, lineno) in sorted(baseline.items()):
+        if key not in judged:
+            vanished.append(f'{BASELINE_REL}:{lineno}  {key[0]} block {key[1]} '
+                            f'-- admitted at {ref}, and the page has no such block')
+            continue
+        block, verdict, codes = judged[key]
+        if verdict != 'BUILT':
+            why = {'FAILED': f'FAILED {codes}',
+                   'SKIPPED': 'SKIPPED by an opt-out, which cannot excuse a '
+                              'baselined block -- remove the marker or the row'
+                   }.get(verdict, verdict)
+            regressed.append(f'{block.rel}:{block.start}  block {block.ordinal} '
+                             f'-- {why}, admitted BUILT at {ref}')
+            continue
+        have = scaffolds[block.rel].name if block.rel in scaffolds else '-'
+        if have != want_scaffold:
+            rescaffolded.append(f'{block.rel}:{block.start}  block '
+                                f'{block.ordinal} -- admitted with '
+                                f'{want_scaffold}, now compiled with {have}')
+    for key, (block, verdict, codes) in sorted(judged.items()):
+        if verdict == 'BUILT' and key not in baseline:
+            have = scaffolds[block.rel].name if block.rel in scaffolds else '-'
+            unlisted.append(f'{block.rel}:{block.start}  block {block.ordinal} '
+                            f'-- BUILT, not in the baseline. Add:  '
+                            f'{block.rel}\t{block.ordinal}\t{have}\t<ref>')
+
+    for title, items in (('stopped building', regressed),
+                         ('baselined block no longer exists', vanished),
+                         ('builds and is not baselined', unlisted),
+                         ('scaffold changed since admission', rescaffolded)):
+        if items:
+            print(f'\n----- {title} ({len(items)}) -----', file=sys.stderr)
+            for item in items:
+                print(item, file=sys.stderr)
+
+    # A malformed marker is a finding REGARDLESS of the baseline, because it
+    # is not a claim about whether a block compiles -- it is a claim about the
+    # corpus that is wrong on its own terms.
+    findings = (len(malformed) + len(regressed) + len(vanished)
+                + len(unlisted) + len(rescaffolded))
+    print(f'baseline: {len(baseline)} blocks required to build', file=sys.stderr)
     print(f'{findings} findings' + (f', {skipped} skipped' if skipped else ''),
           file=sys.stderr)
     return 1 if findings else 0

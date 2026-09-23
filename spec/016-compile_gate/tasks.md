@@ -202,12 +202,12 @@ both depend on.
   - Output: `tools/blockcheck/baseline.tsv` — page, ordinal, scaffold, and the ref it was admitted at — holding **only blocks that compile without any page being edited**, plus the count in this file
   - Notes: keeping page edits out of this phase is what makes phase 3 site-neutral. Blocks needing a `using` on the page belong to phase 4 or to backlog item 2.
 
-- [ ] **Task 3.5:** Implement the ratchet, enforced in both directions
+- [x] **Task 3.5:** Implement the ratchet, enforced in both directions
   - Input: AC9
   - Output: exit 1 when a baselined block stops being `CLEAN`, **and** exit 1 when a baselined row names a block that no longer exists
   - Notes: without the second, deleting a page silently shrinks the gate's corpus and the gate still says `0 findings`.
 
-- [ ] **Task 3.6:** Red-proof the ratchet, both directions, with its green control
+- [x] **Task 3.6:** Red-proof the ratchet, both directions, with its green control
   - Input: task 3.5
   - Output: three recorded runs — a baselined block broken on purpose → exit 1 with the compiler's code; a phantom row added → exit 1; and **the unmodified state → exit 0**. Every edit reverted, verified by `git diff` → empty
   - Notes: the third run is the control that the first two were not passing for some other reason.
@@ -1827,3 +1827,71 @@ did not happen. The table above is where the difference lives, for AC13's reader
 
 **`MigratingToNullableReferenceTypes.md` carries 17 rows**, the most of any page. It is the page
 whose blocks are one-line nullable-annotation illustrations, and its unit supplies one `string`.
+
+### The ratchet *(task 3.5)*
+
+**`--report` is now the gate.** It holds the corpus to `baseline.tsv` and reports **four**
+disagreements, each under its own heading because each is fixed in a different place:
+
+| Heading | Means | Fixed in |
+|---|---|---|
+| `stopped building` | a listed block is `FAILED`, `NOT_COMPILABLE` or **`SKIPPED`** | the page |
+| `baselined block no longer exists` | a row names a page/ordinal the corpus does not have | `baseline.tsv` |
+| `builds and is not baselined` | the ratchet. The line printed is the row to add | `baseline.tsv` |
+| `scaffold changed since admission` | the block builds, but with a different scaffold than it was admitted on | either |
+
+**Two of the four go beyond the task text, and each has its reason.** *Builds and is not baselined*
+is AC9's own instrument and P0-4's *"either direction"*, recorded under task 3.4. *Scaffold
+changed* follows from the column. A row claims *"this block builds given this scaffold"*, and a
+block that still builds after its scaffold grew has not had that claim checked. **`SKIPPED`
+counts as stopped building** because otherwise a one-line marker on the page would take a block
+out of the gate without touching the gate's own file.
+
+**A missing or malformed baseline is exit 2, condition 11 in the tool's list.** That covers an
+absent file, a row without four fields, a non-numeric ordinal, and **a block listed twice**. The
+duplicate is the subtle case: two rows for one block would let one be deleted with nothing noticing.
+
+**What is still not a finding, deliberately:** a failing block with no row. That is the 881-block
+debt the baseline exists to make bearable. The `no baseline yet` line is gone, replaced by
+`baseline: 92 blocks required to build`, and the module docstring's paragraph saying the tool
+*"does not yet gate"* was rewritten rather than left to become false.
+
+### The red-proof *(task 3.6)*
+
+**Every condition, both ways, each exit code read bare, and every edit reverted.** The task named
+three runs. The ratchet has four findings and two new exit-2 states, so the red-proof covers all of
+them. `TickerQScheduler.md#6` is the subject throughout: a real baselined block, admitted on a
+scaffold.
+
+```text
+1  baselined block broken    ReSchedulerAsync -> ReScheduleAsync   exit 1   stopped building: FAILED CS1061
+2  phantom row                block 99 appended                    exit 1   baselined block no longer exists
+3  a row deleted (AC9)        block 6's row removed                exit 1   builds and is not baselined + the row to add
+4  scaffold column wrong      TickerQSchedulerContext.cs -> -      exit 1   scaffold changed since admission
+5  skip marker above it       <!-- blockcheck: skip … -->          exit 1   stopped building: SKIPPED by an opt-out
+6  duplicate row              first row appended again             exit 2   "is already listed at line 22"
+7  baseline absent            file moved away                      exit 2   "no baseline at …: nothing was checked"
+8  CONTROL, all reverted                                          exit 0   0 findings, 12 skipped
+                              985 of 985 rows identical to the pre-red-proof run;  git status: tools/blockcheck.py only
+```
+
+**Two of the first attempts were bad experiments, and they are recorded because both read as a
+result.**
+
+- **Run 5, first attempt:** the marker was inserted by line number *inside* block 6's fence.
+  Block 6 failed on the garbage (`CS1002, CS1022…`) and the marker bound block 7, so the run read
+  *13 skipped*. The finding fired, but for the wrong reason. It would have "proved" the SKIPPED rule
+  without exercising it. Re-run with the marker directly above the fence.
+- **Run 6, first attempt:** `grep -m1 … baseline.tsv >> baseline.tsv` appended **nothing**,
+  because `grep` refuses to read a file that is also its output. So the run read **exit 0** on an
+  unmodified file, and looked like the duplicate check did not work. Calling `load_baseline()`
+  directly on a genuinely duplicated file raised as designed, and re-run from a copy the gate
+  exits 2. **The control that caught it was reading the file after the edit.** An edit that did not
+  happen and a check that does not fire give the same output.
+
+**One defect found and fixed by the red-proof:** run 5 printed `SKIPPED SKIPPED`. It now says
+what to do: *"SKIPPED by an opt-out, which cannot excuse a baselined block — remove the marker or
+the row"*.
+
+**The other modes did not move:** `--list` reads 985 across 145 in the same five shapes;
+`--verify-extraction` reads 985 of 985 identical; the bare invocation exits 2.
