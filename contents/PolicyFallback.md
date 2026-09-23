@@ -70,6 +70,7 @@ public class MyFallbackProtectedHandler: RequestHandler<MyCommand>
 
 ### Example with Legacy Policies (V9)
 
+<!-- blockcheck: skip V9 form, shown beside its V10 replacement (under Legacy Policies (V9)) -->
 ```csharp
 public class MyFallbackProtectedHandler: RequestHandler<MyCommand>
 {

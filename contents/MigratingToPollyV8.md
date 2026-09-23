@@ -32,6 +32,7 @@ current reference.
 
 **V9**:
 
+<!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled V9) -->
 ```csharp
 // ...
 var policyRegistry = new PolicyRegistry();
@@ -62,6 +63,7 @@ resiliencePipelineRegistry.TryAddBuilder("MyRetryPipeline",
 
 **V9**:
 
+<!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled V9) -->
 ```csharp
 // ...
 internal class MyHandler : RequestHandler<MyCommand>
@@ -94,6 +96,7 @@ internal class MyHandler : RequestHandler<MyCommand>
 
 ❌ **V9 — superseded**
 
+<!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled V9, superseded) -->
 ```csharp
 // ...
 var commandProcessor = CommandProcessorBuilder.With()

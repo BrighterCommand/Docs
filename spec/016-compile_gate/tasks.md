@@ -182,47 +182,47 @@ both depend on.
 **Goal:** P0-4, P0-5 and P0-8. The gate and the corpus that satisfies it merge **together**, per
 `tools/README.md`'s rule 3.
 
-- [ ] **Task 3.1:** Rule Q5 and implement the opt-out
+- [x] **Task 3.1:** Rule Q5 and implement the opt-out
   - Input: `tools/pagelint.py`'s `allow-serviceactivator` comment, `tools/symbolcheck.py`'s `allow <name>` comment
   - Output: the marker implemented in `tools/blockcheck.py`, **requiring a reason**, and a recorded run showing a skip printed with its reason
   - Notes: ruling 4 — an opt-out is never silent, and `0 findings` and `0 findings, 8 skipped` are different claims.
 
-- [ ] **Task 3.2:** Mark the ❌ V9 blocks as skipped
+- [x] **Task 3.2:** Mark the ❌ V9 blocks as skipped
   - Input: the blocks behind a ❌ marker — the design counted **8 across 3 pages**; re-derive
   - Output: the markers in place, and the run reporting the skip count
   - Notes: `CLAUDE.md` § *Version markers on code* **requires** these blocks to exist. A gate demanding they compile would demand the documentation stop showing what it must show.
 
-- [ ] **Task 3.3:** Write the scaffold files the initial baseline needs
+- [x] **Task 3.3:** Write the scaffold files the initial baseline needs
   - Input: task 2.1's failures in the context class, grouped by page
   - Output: one prelude per admitted page under `tools/blockcheck/scaffold/`, each listed by `--list-scaffold`
   - Notes: **a prelude supplies identifiers, never behaviour, and never a type the page tells the reader to write.** AC13 is a maintainer reading this boundary.
 
-- [ ] **Task 3.4:** Define and populate `baseline.tsv`
+- [x] **Task 3.4:** Define and populate `baseline.tsv`
   - Input: tasks 2.1 and 3.3
   - Output: `tools/blockcheck/baseline.tsv` — page, ordinal, scaffold, and the ref it was admitted at — holding **only blocks that compile without any page being edited**, plus the count in this file
   - Notes: keeping page edits out of this phase is what makes phase 3 site-neutral. Blocks needing a `using` on the page belong to phase 4 or to backlog item 2.
 
-- [ ] **Task 3.5:** Implement the ratchet, enforced in both directions
+- [x] **Task 3.5:** Implement the ratchet, enforced in both directions
   - Input: AC9
   - Output: exit 1 when a baselined block stops being `CLEAN`, **and** exit 1 when a baselined row names a block that no longer exists
   - Notes: without the second, deleting a page silently shrinks the gate's corpus and the gate still says `0 findings`.
 
-- [ ] **Task 3.6:** Red-proof the ratchet, both directions, with its green control
+- [x] **Task 3.6:** Red-proof the ratchet, both directions, with its green control
   - Input: task 3.5
   - Output: three recorded runs — a baselined block broken on purpose → exit 1 with the compiler's code; a phantom row added → exit 1; and **the unmodified state → exit 0**. Every edit reverted, verified by `git diff` → empty
   - Notes: the third run is the control that the first two were not passing for some other reason.
 
-- [ ] **Task 3.7:** Add row 9 to `tools/README.md`
+- [x] **Task 3.7:** Add row 9 to `tools/README.md`
   - Input: `tools/README.md` § *The eight gates*, § *What each gate actually checks*
   - Output: the row — command, corpus, expected figure, **and the ref it was measured at** — plus the heading and any prose that says "eight" updated to nine
   - Notes: obligation 10. **And grep the whole repository for "eight gates"** — the count lives in prose in more than one place, and a header that disagrees with its own body is this programme's most-repeated defect.
 
-- [ ] **Task 3.8:** Add the CI job
+- [x] **Task 3.8:** Add the CI job
   - Input: `.github/workflows/docs.yml`'s `options` job and its comments
   - Output: the new job — `setup-dotnet`, restore the pinned refs, run the gate — with **no guard, no `|| true`, and no `schedule:`**, each choice carrying the comment that says why
   - Notes: Q8 and Q9 are ruled by this task's choices; record both rulings in one line each.
 
-- [ ] **Task 3.9:** Predict and reconcile the eight — now nine — gates
+- [x] **Task 3.9:** Predict and reconcile the eight — now nine — gates
   - Input: as task 1.10
   - Output: § *Phase 3 prediction* and § *Phase 3 as executed*
   - Notes: **`linkcheck` is predicted to MOVE if and only if this phase adds a `.md` under `tools/`.** The design chose not to. If the reconciliation shows 166, the cause is a file somebody added without noticing the rule.
@@ -1448,3 +1448,567 @@ could have moved by accident is `linkcheck`, and the phase added no `.md` under 
 the fifth shape (`toplevel`), the output kind for top-level statements, the `--parse` and `--explain`
 modes, and the pin stamp. `--verify-extraction` still reports **985 of 985 identical**, and the seven
 plants read exactly as `plants/index.tsv` predicts.
+
+---
+
+## Phase 3 prediction
+
+**The prediction is the approved task list's own, and it pre-dates the work by commit order.** Task
+3.9's *Notes* read **"`linkcheck` is predicted to MOVE if and only if this phase adds a `.md` under
+`tools/`. The design chose not to. If the reconciliation shows 166, the cause is a file somebody
+added without noticing the rule"** — approved at `1f5fc10`, before a line of phase 3 ran. That is
+015's form: *"the prediction came first"* is checked with `git log`, not with a sentence claiming it.
+
+**All nine: none**, and row 9 is a special case worth stating rather than glossing. No page under
+`contents/` is edited in this phase — that is the whole reason phase 3 is site-neutral and phase 4 is
+the only one needing a sign-off — so rules 1–7, `symbolcheck`'s corpus, `optioncheck`'s marked tables
+and `versioncheck`'s prose pins cannot move; `SUMMARY.md`, `.gitbook.yaml` and the published tree are
+untouched, so shape, redirects and `--verify` cannot. `linkcheck` walks `tools/`, and this phase adds
+a `.tsv`, a `.json`, edits to a `.py` and a `.yml`, and **prose inside an existing `.md`** — row 9
+goes into `tools/README.md`, which is already in the corpus at 165.
+
+**Row 9 predicts its own first figure rather than a movement**, since a gate that did not exist
+cannot have moved. Its expected reading is recorded when task 3.7 writes it, with the ref it was
+measured at, per obligation 10.
+
+**Nine vacuous passes**, with phases 1 and 2's defence: the before-figures are read against
+`tools/README.md` at the top of the phase, not re-derived from the closing run.
+
+**AMENDED BY TASK 3.2, ruled by the maintainer in session 81: `contents/` IS edited, and the site
+is still not.** The paragraph above says *"No page under `contents/` is edited in this phase"*, and
+task 3.2 cannot be done without editing one: a skip marker lives on the page, above the block it
+excuses. **Five pages gain twelve lines, every one an HTML comment**, which renders to nothing. The
+same shape is already on six pages as `<!-- pagelint: allow-serviceactivator -->`. So phase 3
+remains site-neutral in the sense obligation 7 cares about, **no sign-off is owed**, and the prediction
+for rules 1–7, `symbolcheck`, `optioncheck` and `versioncheck` stands, because none of them reads
+an HTML comment as prose. The paragraph above is left as written, since this amendment is the
+record of it being wrong.
+
+---
+
+## Phase 3 as executed
+
+### The opt-out, and why this one has to say why *(task 3.1)*
+
+**Q5 is ruled: `<!-- blockcheck: skip <reason> -->`, on its own line, binding THE NEXT C# BLOCK, and
+the reason is part of the syntax.** Two of those three follow the opt-outs this repository already
+has. The third does not, and the difference is the ruling.
+
+`pagelint` has `<!-- pagelint: allow-serviceactivator -->` and `symbolcheck` has
+`<!-- symbolcheck: allow IMessageScheduler -->`. **Neither carries a reason, and neither needs one:**
+each names what it silences, the page discusses that name, and a reader who wants the reason reads
+the paragraph the marker sits in. **A block that fails to compile carries no such recovery.** It can
+fail for a dozen reasons; "somebody decided this one was fine" is not checkable against anything, and
+`design.md`'s own words for friction 59 are that *"the reason has to be written on the page by a
+person, never guessed by a heuristic"*. So a marker without a reason binds nothing and is reported.
+
+**Page-wide was rejected, and the argument is `symbolcheck`'s transplanted verbatim.** Its `opt_outs`
+docstring already says a page-wide silence *"would let a page opting out of a name it discusses on
+purpose silently opt out of a second, dead name that arrived on that page two years later, and
+nothing would ever say so"*. A page-wide `skip` written for one ❌ V9 example would absorb the next
+block someone adds beneath it. The marker binds one block.
+
+**Three ways a marker binds nothing, and they are not one defect:**
+
+| | Reported as | Why |
+|---|---|---|
+| no reason given | **error**, a finding, exit 1 | It reads as an opt-out and grants none. The block it appears to excuse is **still judged** — which is the trap, and the reason the reason is mandatory |
+| no C# block follows it | warning | Dead weight. `symbolcheck`'s rule: debt that fails the build gets deleted rather than understood |
+| that block already has a marker | warning | Two reasons, no way to tell which the tool used |
+
+#### Red-proofed five ways against the real code path, none of them a page under `contents/`
+
+Five synthetic pages built through the real `pagelint.Page` and the real `enumerate_blocks`:
+
+```text
+binds                blocks=1 skip=['V9 form, required by CLAUDE.md']  problems=[]
+no-reason            blocks=1 skip=[None]  problems=[('no reason given', 4)]
+binds-nothing        blocks=1 skip=[None]  problems=[('no C# block follows it', 8)]
+two-markers          blocks=1 skip=['first reason']  problems=[('that block already has a marker', 5)]
+control-no-marker    blocks=1 skip=[None]  problems=[]
+```
+
+**The last row is the control that makes the other four mean something** — a page with no marker
+produces no binding *and no problem*, so the three problem kinds are not firing on everything they
+see. **The positive case is first and it passes**, which obligation 3 requires of a two-way control.
+
+#### And end to end, over the whole corpus, four runs
+
+`contents/MigratingToPollyV8.md` block 5 — line 97, the `❌ **V9 — superseded**` block, and a real
+member of task 3.2's set rather than a plant:
+
+```text
+run 1  control, unmodified      985: 68 BUILT, 917 FAILED, 0 SKIPPED, 0 NOT_COMPILABLE   exit 0
+                                0 findings
+       the block                FAILED  contents/MigratingToPollyV8.md  5  ...  2  CS0103
+
+run 2  marker with a reason     985: 68 BUILT, 916 FAILED, 1 SKIPPED, 0 NOT_COMPILABLE   exit 0
+                                ----- skipped by opt-out (1) -----
+                                contents/MigratingToPollyV8.md:98  block 5 — V9 form, required
+                                  by CLAUDE.md § Version markers on code
+                                0 findings, 1 skipped
+
+run 3  the SAME marker, reason  985: 68 BUILT, 917 FAILED, 0 SKIPPED, 0 NOT_COMPILABLE   exit 1
+       removed                  ----- malformed opt-out (1) -----
+                                contents/MigratingToPollyV8.md:96  no reason given —
+                                  <!-- blockcheck: skip -->
+                                1 findings
+
+run 4  reverted                 985: 68 BUILT, 917 FAILED, 0 SKIPPED, 0 NOT_COMPILABLE   exit 0
+                                0 findings          985 of 985 rows identical to run 1
+```
+
+**Run 3 is the one worth reading twice.** The marker is still there and still says `skip`; the block
+is back at `FAILED` and counted. A reasonless opt-out does not quietly become a silence — the
+corpus is judged exactly as if the marker were absent, and the run says so and fails.
+
+**Run 4 is phase 1's no-vacuous-pass discipline**: `git checkout -- contents/MigratingToPollyV8.md`,
+`git diff --stat` on that path empty, and `diff` of run 4's report against run 1's reports no
+difference across all 985 rows. Same, different, different, same again.
+
+**`0 findings` and `0 findings, 1 skipped` are printed as different strings**, which is ruling 4 and
+was already wired in phase 1 — this task gave it something to count. The four verdicts still sum to
+985 in every run above, which is AC1.
+
+#### Two things this task changed beyond the marker
+
+**`VERDICTS`' comment was carrying a claim that had just become false.** It read *"SKIPPED has no
+opt-out to carry it until phase 3"*; phase 3 is now, so it says what is true instead, and it takes
+the correction phase 2 made to `NOT_COMPILABLE` with it — **empty by construction, which friction 59
+records as a defect rather than as coverage.**
+
+**`enumerate_blocks` now filters the page's C# fences once and enumerates them**, where it used to
+carry a manual `ordinal` counter through a loop over every fence. The refactor is not cosmetic: the
+skip scan needs the list of C# fence start lines *before* the blocks are built. It is behaviour-
+preserving and was checked as such — `--list` reads **985 C# blocks across 145 pages: 11 namespaced,
+9 toplevel, 303 types, 130 members, 532 statements**, identical to phase 2's figures on every one of
+the five shapes.
+
+### The V9 skips, and why the design's 8 was the wrong 8 *(task 3.2)*
+
+**Re-derived rather than inherited, and the set is 12 blocks across 5 pages. The design's 8 was a
+different set.** Two methods, then reading:
+
+```text
+grep -rn '^❌' contents/   ->    8 lines, 3 pages     the design's figure, reproduced
+grep -rn '❌'  contents/   ->   43 lines, 11 pages
+```
+
+**Of the anchored 8, one is a version marker.** `MigratingToPollyV8.md:95` reads
+`❌ **V9 — superseded**`. The other seven are `❌ Bad:` in `QueryPipeline.md` (5) and
+`CQRSWithBrighterAndDarker.md` (2), which is the bad/good convention and has nothing to do with
+`CLAUDE.md` § *Version markers on code*. **Of the unanchored 35, none is a version marker either.**
+Reading all 43 lines by context, they are table cells (`BrighterSchedulerSupport.md`, `FAQ.md`),
+pro/con bullets (`EFCoreQueryIntegration.md`, `PaginationQueryPatterns.md`, `FAQ.md`), or trailing
+comments inside a fence marking a problem line (`AWSSQSMigrateToV10.md`, `KafkaConfiguration.md`,
+`QueryPatterns.md`, `TurningOnReplayOnSeen.md`, `EFCoreQueryIntegration.md`). The claim PROMPT.md
+flagged for checking, *"most are inline in tables and prose"*, holds for all 35.
+
+**So ❌ finds one V9 block, and the V9 blocks are not the ❌ blocks.** A third method, the label
+directly above each C# fence, finds eleven V9 forms that carry no ❌ at all, because those pages
+predate the convention and label in their own words: `**Before (V9)**:`, `**V9**:`, `**Old (V9):**`,
+`### V9 Configuration (Deprecated)`, `### Example with Legacy Policies (V9)`. **The task's own
+Notes are the reason they belong:** *"`CLAUDE.md` requires these blocks to exist"* is true of a
+superseded form whether or not a ❌ sits above it.
+
+| Page | Blocks | Label on the page |
+|---|---|---|
+| `MigratingToPollyV8.md` | #1, #3, #5 | `**V9**:` twice; `❌ **V9 — superseded**` |
+| `V10MigrationGuide.md` | #1, #4, #6, #8, #19, #15 | `**Before (V9)**` ×5; `Before:`, a `Guid` request Id, which the prose above it names as V9 |
+| `FAQ.md` | #15 | `**Old (V9):**` |
+| `ReactorAndProactor.md` | #11 | `### V9 Configuration (Deprecated)` |
+| `PolicyFallback.md` | #2 | `### Example with Legacy Policies (V9)` |
+
+**Three were read and left out, and the reason for each is written down so that nobody adds them by
+pattern:**
+
+- `V10MigrationGuide.md` #23, `**Before**:` under KIP-848: V10 API marked `[Obsolete]`, which the page
+  says *"still work"*. That makes it a V10 block with a warning, and the gate should judge it.
+- `MigratingToPollyV8.md` #7–#11, under `### Using Brighter's UsePolicy Attribute (Legacy)`: the page
+  presents these as *legacy* V10 usage and does not label them V9. The page labels them, and
+  this set does not relabel them.
+- `AWSSQSMigrateToV10.md` #2, `**V3 Approach**`: that is the AWS SDK's v3, used through a Brighter V10
+  package. The page is about the SDK, not about Brighter V9.
+
+**The rule is the page's label, not whether the API was removed, and that choice has a cost.** It
+was nearly written the other way. The first draft of this record excluded #7–#11 because
+*"`UsePolicy` still ships"*, and checking that claim against `../Brighter/src` found that it is true
+of **four of the twelve as well**. `FAQ.md` #15 and `MigratingToPollyV8.md` #3 use `TimeoutPolicy`,
+`PolicyFallback.md` #2 uses `UsePolicy` and `FallbackPolicy`, and `MigratingToPollyV8.md` #1 uses a
+Polly v7 `PolicyRegistry`. All four still ship in V10, `UsePolicy` marked
+`[Obsolete("Migrate to UseResiliencePipeline")]`. The other eight are described by their pages as
+surfaces V10 removed or changed, such as `isAsync`/`runAsync` on `Subscription` or a `Guid` request
+Id. **Those eight were not each checked against source**, so *"an API-removal rule would give eight"*
+is an upper bound, not a count. A label rule gives twelve. The label rule was chosen because
+it is the one a reader can check against the page. **The cost:** those four could be made to compile
+against the pin with a scaffold, and the skip now means the gate will not notice if they stop doing
+so. The skip is acceptable for a form the page tells the reader to migrate away from. It is a choice,
+not a certainty, and this paragraph exists so it can be overruled.
+
+**All 12 were `FAILED` before the markers went in. None was `BUILT`.** A skip on a building block
+would have hidden nothing and still claimed an exemption. That was checked against run 0 rather than
+assumed.
+
+#### The run
+
+```text
+run 0  control, unmodified   985: 68 BUILT, 917 FAILED,  0 SKIPPED, 0 NOT_COMPILABLE   exit 0
+                             0 findings
+run 1  twelve markers        985: 68 BUILT, 905 FAILED, 12 SKIPPED, 0 NOT_COMPILABLE   exit 0
+                             ----- skipped by opt-out (12) -----   each with its reason
+                             0 findings, 12 skipped
+```
+
+**`diff` of run 0 against run 1 shows exactly 12 rows changed, every one of them `FAILED → SKIPPED`**,
+with page and ordinal unchanged on all 985. The markers therefore bound the blocks they were written
+for and did not shift another page's ordinals. `git diff --stat` reads **5 files, 12 insertions, 0
+deletions**. Every reason names the label the page uses, so a reader can check a skip against the
+page without trusting the tool's word for it.
+
+**Seven of eight gates were re-run after the edit, and all read `tools/README.md`'s figures:**
+`linkcheck` 165/0; `pagelint` 0 errors, 744 warnings, 162 pages; shape 161/12/12-of-20/4-of-4;
+redirects 77 entries, 7858 bytes; `versioncheck` 0 of 18 across 5; `optioncheck` 0 across 59
+tables, 519 rows; `symbolcheck` 0 findings, 22 entries, 161 pages, 3 silenced. `--verify` was not
+run. It compares against the published tree, and nothing it reads has changed.
+
+**This does not add ❌ to the eleven.** Putting the convention's label on a page is a change a
+reader sees, and that belongs in phase 4 or the backlog. The skip reason says what each block is
+without it.
+
+### The scaffold, and the line AC13 will be read against *(task 3.3)*
+
+**68 → 92 BUILT: +24 blocks across 13 pages, from 12 new units. No block moved the other way, no
+error landed on a scaffold tree, and every one of the 100 identifiers `--list-scaffold` prints is
+named by a block that builds with it.** No prelude was added. Every admitted block needed values,
+not a method to sit in.
+
+#### What the scaffold could be for: measured, not guessed
+
+Every one of the 905 failing blocks run through `--explain`, and every missing name looked up in a
+dump of **27,921 public types** from the 501 pinned assemblies (`System.Reflection.Metadata` over
+`refs.txt`, in a scratch project, not committed):
+
+| | Blocks | What it means |
+|---|---:|---|
+| **import** | 364 | at least one missing name **is** a pinned type: the page needs a `using`. **Not scaffoldable.** Task 3.4 puts these in phase 4 or backlog item 2 |
+| **other** | 342 | a diagnostic that is not a missing name: parse, claim, cascade |
+| **context** | **199** | every error is a missing name, and none of them is a type anything ships |
+
+**The 199 then split three ways, and only the first is admitted in this task:**
+
+| | Blocks | Example | This task |
+|---|---:|---|---|
+| **values only**, lower-case or `_` names | **76** across 26 pages | `services`, `builder`, `commandProcessor`, `resiliencePipelineRegistry` | **scaffolded** |
+| **a type the page names and never shows** | 102 | `StandardHandler`, `OrderStatus`, `IPersonRepository` | **not scaffolded: the maintainer's call at AC13** |
+| **a type another block on the same page declares** | 21 | `GreetingCommand` in the tutorials | **not scaffolded.** Copying the page's own type into the harness recreates obligation 8's leak by hand, with a copy that can drift from the page |
+
+**Why the middle row is left for the maintainer.** Design rule 1 reads *"it may not define a type
+the page tells the reader to write"*. An empty `StandardHandler : RequestHandler<MyCommand>` is not
+behaviour, but whether a handler the page routes to and never prints is one the page *"tells the
+reader to write"* is the judgement AC13 names a reader for. A scaffold that settles it quietly in
+102 places is the outcome AC13 exists to prevent. **One sentence to overrule:** if the maintainer
+reads the row as identifiers, it is the next tranche and needs no new mechanism.
+
+#### The rule the 76 were held to, and what it excluded before anything ran
+
+**A value is typed from a pinned package or the BCL, returns a default, and does nothing.** Two
+consequences, both deliberate:
+
+- **No `dynamic`, ever.** A `dynamic` value would compile every member access on it, which is the
+  false-green this gate exists to prevent.
+- **A value needing a type nothing ships is not a value.** `entity` and `_repository` in
+  `HangfireScheduler.md#22` / `QuartzScheduler.md#19` need a domain type, so they are excluded.
+  Quartz's `q` and `store` (8 blocks) need `IServiceCollectionQuartzConfigurator`, which is **not in
+  the pin**, so they are excluded as well. That is the pin's question, like the Jaeger and
+  `Hangfire.AspNetCore` rows in phase 2's claim table.
+
+#### What the 76 did, with context supplied
+
+```text
+76 value-only candidates
+   10 excluded by the rule above, before the run
+   24 BUILT                                    <- admitted
+   42 still FAILED, now for a reason the missing name was hiding:
+        38  CS1061 / CS0246 on an extension method or type the block never imported,
+            or one from a package the pin does not carry (AddBrighter, AddHangfireServer,
+            AddTickerQ, AddHttpClient, AddOpenTelemetry, AddMsSqlOutbox, AddCircuitBreaker)
+         4  CLAIMS, new since phase 2's list
+```
+
+**The four claims are the most useful thing this task found.** Unscaffolded, they read `CS0103` and
+nobody could tell them from the other 653:
+
+| Block | Diagnostic | What the page says that is not so |
+|---|---|---|
+| `FAQ.md#18`, `#19` | `CS1503`: argument 2 cannot convert `TimeSpan` to `RequestContext?` | `commandProcessor.SendAsync(command, delay)`, which has the arguments in the wrong order |
+| `FAQ.md#19` | `CS1061`: no `RescheduleAsync` on `IAmAMessageSchedulerAsync` | the method is `ReSchedulerAsync`, which `TickerQScheduler.md#6` spells correctly and which builds |
+| `AzureScheduler.md#18` | `CS1061`: no `ReScheduleAsync` | the block's comment says *"Won't work!"*, and it cannot even compile. The page's claim is about Azure behaviour; the block makes it by calling a method that does not exist |
+| `SweeperCircuitBreaking.md#9` | `CS7036`: `IAmAnOutboxProducerMediator.ClearOutboxAsync` requires `requestContext` | the call omits a required argument |
+
+**These go to task 4.1's re-derivation as input, not as adopted rows.** The FAQ unit that exposed
+them is **not** in the committed scaffold, because FAQ admits no block and a page is listed only if
+its unit makes one build. Phase 4 re-adds it when it repairs the page. That is task 4.4's job
+already.
+
+#### The trim, and why it did not move the result
+
+The first run mapped 26 pages to 20 units. **13 of those pages admitted nothing** (every candidate hit
+a missing `using`), so their units and rows came out, and members only a still-failing block used
+were deleted from the units that stayed. Re-run: **the BUILT set is identical, 92 of 92 by
+`diff`.** So the committed scaffold is the smallest one that buys these 24, which is what AC13 has to
+read:
+
+```text
+python3 tools/blockcheck.py --list-scaffold    ->  100 identifiers from 13 unit(s) and 4 prelude(s);
+                                                   14 page(s) scaffolded
+find tools/blockcheck/scaffold -type f | wc -l ->  18    13 units + 4 preludes + the map
+```
+
+**The listing's line count is 114.** That is 100 identifiers plus one injected `using static` per
+scaffolded page, as phase 1 described.
+
+#### Red-proof: a scaffolded value does not buy a verdict
+
+`TickerQScheduler.md#6` is admitted on a unit that supplies `_scheduler` as
+`IAmAMessageSchedulerAsync`. One character changed on the page, `ReSchedulerAsync` → `ReScheduleAsync`:
+
+```text
+control      TickerQScheduler_6   BUILT   0
+broken       TickerQScheduler_6   FAILED  1  CS1061       corpus 91 BUILT
+reverted     TickerQScheduler_6   BUILT   0               985 of 985 rows identical to the control
+```
+
+**The value is typed, so the member is checked.** That is the difference between a value and
+`dynamic`, and it is why the rule forbids one. `git diff --stat contents/` is empty after the
+revert. The broken run exits **0**: there is no baseline until task 3.5, so this is a measurement
+and not yet a gate. Task 3.6 proves the exit code.
+
+#### One instrument quirk, recorded and not fixed
+
+`--explain` prints `985 blocks, 0 built, 985 failing` on stderr whatever it is asked, because blocks
+it was not asked about fall through uncounted as built. The rows on stdout are right. The summary
+line is wrong only in this mode. Worth a one-line fix when `Program.cs` is next opened for a reason,
+not a reason to open it.
+
+**`tools/blockcheck/verdicts.tsv` still reads 68 BUILT and is left that way.** It is phase 2's
+committed corpus run, and no tool reads it (`grep` over `tools/*.py`, `tools/README.md` and
+`.github/`). Regenerating it would rewrite a record to match a later state. Task 3.4's `baseline.tsv`
+is the file that carries the current admitted set.
+
+### The baseline *(task 3.4)*
+
+**`tools/blockcheck/baseline.tsv`: 92 rows across 44 pages, measured at `280d1b7`, no page edited
+to earn one.** Columns as the design specified: page, ordinal, scaffold, and the ref it was
+admitted at. The file's own header states them, so a reader of the file needs nothing else.
+
+**The population is the whole BUILT set, and requirements say so; the task text does not.**
+Task 3.5 names one direction of AC9: a row whose block has gone. AC9's own instrument names the
+other: *"delete one line from `baseline.tsv` and confirm exit 1"*. P0-4 says the gate is red
+*"when the list disagrees with the corpus in either direction"*. So a block that builds and has no
+row is a failure too, and the baseline cannot be a hand-picked subset of what builds. That is
+the ratchet: a repair that makes a block build brings its row in the same PR. Task 3.5 implements
+all three conditions, not the two its text names.
+
+**How it was generated, since there is deliberately no mode that writes it.** Filter the
+`--report` rows to `BUILT`, and take the scaffold name from `load_scaffold()` as `--list-scaffold`
+prints it. A `--write-baseline` flag would make *regenerate until green* one command. Without one,
+a change to this file is a diff someone reads.
+
+| | Rows |
+|---|---:|
+| no scaffold | 46 |
+| a scaffold, and it is **needed** — 24 from task 3.3, plus `DapperOutbox.md#1` on phase 1's `PageContext` | 25 |
+| a scaffold present on the page and **not needed**, BUILT before any unit existed | 21 |
+| **total** | **92** — equal to the corpus run's `BUILT` count |
+
+**The 21 are recorded as compiled, not as needed.** The column says what the block *was compiled
+with*, and it was compiled with its page's scaffold. Writing `-` would describe a compilation that
+did not happen. The table above is where the difference lives, for AC13's reader.
+
+**`MigratingToNullableReferenceTypes.md` carries 17 rows**, the most of any page. It is the page
+whose blocks are one-line nullable-annotation illustrations, and its unit supplies one `string`.
+
+### The ratchet *(task 3.5)*
+
+**`--report` is now the gate.** It holds the corpus to `baseline.tsv` and reports **four**
+disagreements, each under its own heading because each is fixed in a different place:
+
+| Heading | Means | Fixed in |
+|---|---|---|
+| `stopped building` | a listed block is `FAILED`, `NOT_COMPILABLE` or **`SKIPPED`** | the page |
+| `baselined block no longer exists` | a row names a page/ordinal the corpus does not have | `baseline.tsv` |
+| `builds and is not baselined` | the ratchet. The line printed is the row to add | `baseline.tsv` |
+| `scaffold changed since admission` | the block builds, but with a different scaffold than it was admitted on | either |
+
+**Two of the four go beyond the task text, and each has its reason.** *Builds and is not baselined*
+is AC9's own instrument and P0-4's *"either direction"*, recorded under task 3.4. *Scaffold
+changed* follows from the column. A row claims *"this block builds given this scaffold"*, and a
+block that still builds after its scaffold grew has not had that claim checked. **`SKIPPED`
+counts as stopped building** because otherwise a one-line marker on the page would take a block
+out of the gate without touching the gate's own file.
+
+**A missing or malformed baseline is exit 2, condition 11 in the tool's list.** That covers an
+absent file, a row without four fields, a non-numeric ordinal, and **a block listed twice**. The
+duplicate is the subtle case: two rows for one block would let one be deleted with nothing noticing.
+
+**What is still not a finding, deliberately:** a failing block with no row. That is the 881-block
+debt the baseline exists to make bearable. The `no baseline yet` line is gone, replaced by
+`baseline: 92 blocks required to build`, and the module docstring's paragraph saying the tool
+*"does not yet gate"* was rewritten rather than left to become false.
+
+### The red-proof *(task 3.6)*
+
+**Every condition, both ways, each exit code read bare, and every edit reverted.** The task named
+three runs. The ratchet has four findings and two new exit-2 states, so the red-proof covers all of
+them. `TickerQScheduler.md#6` is the subject throughout: a real baselined block, admitted on a
+scaffold.
+
+```text
+1  baselined block broken    ReSchedulerAsync -> ReScheduleAsync   exit 1   stopped building: FAILED CS1061
+2  phantom row                block 99 appended                    exit 1   baselined block no longer exists
+3  a row deleted (AC9)        block 6's row removed                exit 1   builds and is not baselined + the row to add
+4  scaffold column wrong      TickerQSchedulerContext.cs -> -      exit 1   scaffold changed since admission
+5  skip marker above it       <!-- blockcheck: skip … -->          exit 1   stopped building: SKIPPED by an opt-out
+6  duplicate row              first row appended again             exit 2   "is already listed at line 22"
+7  baseline absent            file moved away                      exit 2   "no baseline at …: nothing was checked"
+8  CONTROL, all reverted                                          exit 0   0 findings, 12 skipped
+                              985 of 985 rows identical to the pre-red-proof run;  git status: tools/blockcheck.py only
+```
+
+**Two of the first attempts were bad experiments, and they are recorded because both read as a
+result.**
+
+- **Run 5, first attempt:** the marker was inserted by line number *inside* block 6's fence.
+  Block 6 failed on the garbage (`CS1002, CS1022…`) and the marker bound block 7, so the run read
+  *13 skipped*. The finding fired, but for the wrong reason. It would have "proved" the SKIPPED rule
+  without exercising it. Re-run with the marker directly above the fence.
+- **Run 6, first attempt:** `grep -m1 … baseline.tsv >> baseline.tsv` appended **nothing**,
+  because `grep` refuses to read a file that is also its output. So the run read **exit 0** on an
+  unmodified file, and looked like the duplicate check did not work. Calling `load_baseline()`
+  directly on a genuinely duplicated file raised as designed, and re-run from a copy the gate
+  exits 2. **The control that caught it was reading the file after the edit.** An edit that did not
+  happen and a check that does not fire give the same output.
+
+**One defect found and fixed by the red-proof:** run 5 printed `SKIPPED SKIPPED`. It now says
+what to do: *"SKIPPED by an opt-out, which cannot excuse a baselined block — remove the marker or
+the row"*.
+
+**The other modes did not move:** `--list` reads 985 across 145 in the same five shapes;
+`--verify-extraction` reads 985 of 985 identical; the bare invocation exits 2.
+
+### Row 9 *(task 3.7)*
+
+**`tools/README.md` row 9: `python3 tools/blockcheck.py --report`, its figure, measured at
+`1e1944d`**, plus the heading and the opening line changed to *nine*, the CI-placement list, the
+scope paragraph, the other modes, a `--baseline`-flag sentence beside `symbolcheck`'s
+`--watchlist` one, and a *what it checks* entry. That entry is followed by the AC15 sentence: a
+green `blockcheck` means the listed blocks compile, not that they are right.
+
+**The grep the task asked for was blind on its first run, and that is the finding.**
+`git grep -i -E '\beight\b'` returned **nothing**, with `tools/README.md:3` reading *"Eight
+commands"* in plain sight. git's ERE has no `\b`. `git grep -w` found **seven** hits outside
+`spec/`:
+
+| Where | Changed? |
+|---|---|
+| `tools/README.md` ×3: opening line, heading, *"Three of the eight"* | **yes**: nine, and *four of the nine* |
+| `.claude/commands/spec/review.md`: *"All eight run here"*, *"Two of the eight…"*, *"same for all eight"* | **yes** |
+| `.claude/commands/spec/review.md:117`: *"`/spec:review` runs eight gates"* | **no**: it quotes 014's AC5 verbatim, as the example of a bad instrument |
+| `.claude/commands/spec/design.md`: *"`tools/README.md` has the eight"* | **yes** |
+| `contents/MSSQLMessageBroker.md` ×2, `PostgreSQLMessageBroker.md` | **no**: eight *options* |
+
+**`/spec:review` runs the gates, so row 9 also had to join it**: a `### blockcheck` section that
+builds both projects and runs `--report`, and three `allowed-tools` grants. Its output filters the
+twelve skip lines (they carry ` block N — `, which no finding line does) so a finding cannot be
+pushed out of its `tail`. The command line was run as written and prints the scope, the
+`skipped by opt-out (12)` heading with its count, `baseline: 92 blocks required to build` and the
+verdict.
+
+**A sentence was written and then withdrawn before the commit:** *"Rows 1–8 were re-run at
+`1e1944d` and read exactly as below."* They had not been, at that ref. That is task 3.9's
+reconciliation, and a README that asserted it in advance would be the pasted-figure problem the
+file exists to prevent.
+
+#### AC10, and the instrument's own defect
+
+```text
+grep -rn '92 BUILT, 881 FAILED' --include='*.md' --include='*.yml' --include='*.py' . > /tmp/f
+grep -vcE '^(\./)?spec/' /tmp/f      ->  1    tools/README.md:52, row 9
+same for '985 blocks'                 ->  2    tools/README.md and a comment in tools/blockcheck.py   <- the control
+```
+
+**AC10's instrument as `requirements.md` writes it, `grep -vc '^./spec/'`, excludes nothing on
+macOS.** BSD `grep -rn … .` prints `spec/016…` without the leading `./`, so `^./spec/` never
+matches. On the first run the headline read 1 anyway, but only because no spec file carries the
+exact string, and the first control read **3**, two of them inside `spec/`. It *"returned >1"*,
+which is the pass AC10 names, for the wrong reason. `^(\./)?spec/` matches both forms. Recorded as
+a defect in an approved criterion, **not** edited there, following phase 1's rule about approved
+documents. Phase 5's acceptance walk should use the working form.
+
+**`linkcheck` reads 165 files, 0 broken**, unmoved: row 9 went into a file already in its corpus,
+and no `.md` was added under `tools/`.
+
+### The CI job *(task 3.8)*
+
+**`.github/workflows/docs.yml` gains a `blocks` job:** checkout, `setup-dotnet` 9.0.x,
+`setup-python` 3.12, the two builds as their own steps, then
+`python3 tools/blockcheck.py --report "$RUNNER_TEMP/blockcheck.tsv"`. That means no guard, no
+`|| true`, and rows to a file rather than a pipeline, so the step's exit code is the tool's.
+
+**Q8 — RULED: no scheduled run, and it is an `if: github.event_name != 'schedule'`, not an
+omission.** **Q9 — RULED: pinned**, and it already was: all 71 `PackageReference`s in
+`refs.csproj` name one exact version.
+
+**Q8 could not be done the way the task text says, and the reason is a defect in the existing
+workflow.** *"No `schedule:`"* reads as *do not add one*. But `schedule:` is declared once, at the
+top of the file, and it triggers **every** job without an event filter. The most recent scheduled
+run, `35722167211`, ran **`check`, `versions` and `options`**, all `success`. **The `options` job's
+comment says *"NO `schedule:` TRIGGER either"* and it runs daily.** Nothing has gone wrong, because
+its verdict is pinned and so repeats. But the comment asserts something false about the workflow,
+and a new job copied from it would inherit the same false claim. **Not fixed here:** it changes an
+existing gate's triggers. It is one line (`if: github.event_name != 'schedule'` on `options`) and
+the maintainer's call. The `blocks` job's comment names it as its evidence.
+
+**The job replayed on a clean checkout, obligation 12:** `git ls-files` through `tar` into a
+scratch directory with no `bin/`, both builds, the gate invocation as written. **Exit 0, `baseline:
+92 blocks required to build`, `0 findings, 12 skipped`, and 985 of 985 rows identical to the
+in-tree run.** The workflow parses (Ruby's YAML: four jobs, the `if:` and six steps as written).
+**What this cannot show is the job on GitHub's runner**, which is Linux with a cold NuGet cache.
+That is the PR's first run, and its result goes in task 3.9's reconciliation.
+
+### The nine gates, reconciled *(task 3.9)*
+
+**All nine at `ecefa13`, every exit code read bare, and every one of the eight existing rows at
+`tools/README.md`'s figure. The prediction was *none* for all eight, and none moved.**
+
+| # | Gate | Predicted | Read at `ecefa13` | |
+|---:|---|---|---|---|
+| 1 | `linkcheck` | none — **moves iff a `.md` is added under `tools/`** | 165 files, 0 broken | ✅ none added; row 9 went into `tools/README.md`, already counted |
+| 2 | `pagelint` | none | 0 errors, 744 warnings, 162 pages | ✅ the twelve skip markers are HTML comments and reach no rule |
+| 3 | shape | none | 161 / 12 sections / 4 of 4 / 12 of 20 | ✅ |
+| 4 | redirects | none | 77 entries, 7858 bytes | ✅ |
+| 5 | `versioncheck` | none | 0 stale of 18, across 5 | ✅ |
+| 6 | `optioncheck` | none | 0 mismatches, 59 tables, 519 rows | ✅ |
+| 7 | `--verify` | none | 161 predicted = 161 published | ✅ run, not skipped. It reached the live sitemap |
+| 8 | `symbolcheck` | none | 0 findings, 22 entries, 161 pages, 3 silenced | ✅ |
+| 9 | `blockcheck` | **its first figure, not a movement** | row 9's figure, 0 findings, 12 skipped | ✅ equal to the row task 3.7 wrote |
+
+**Nine vacuous passes, defended as the prediction said:** the before-figures are `tools/README.md`'s
+rows as they stood at the top of the phase. They are not re-derived from this run, and rows 1–8 are
+unedited in this phase's diff of that file.
+
+**The prediction was wrong once, and the amendment under § *Phase 3 prediction* is where.**
+*"No page under `contents/` is edited"* did not survive task 3.2. Twelve HTML-comment lines went
+onto five pages, ruled site-neutral by the maintainer. Row 2 and row 8 are the two that could have
+seen them, and neither moved, which is the check that the ruling's premise, *"none of them reads an
+HTML comment as prose"*, was true rather than assumed.
+
+#### Phase 3 in one table
+
+| | |
+|---|---|
+| **The corpus** | 985 blocks: 92 BUILT, 881 FAILED, 12 SKIPPED, 0 NOT_COMPILABLE (row 9 owns the figure) |
+| **The gate** | `baseline.tsv`, 92 rows across 44 pages. Four findings, both directions, red-proofed seven ways |
+| **The scaffold** | 13 units, 4 preludes, 100 identifiers, 14 pages. Values only, typed from the pin |
+| **For the maintainer** | the 102 blocks needing an unshown type (AC13); the `options` job's schedule; AC10's `^./spec/` under BSD grep; the label-vs-API rule for the V9 skips |
+| **For phase 4** | four new claims found by scaffolding: `FAQ.md#18`, `#19`, `AzureScheduler.md#18`, `SweeperCircuitBreaking.md#9` |

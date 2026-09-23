@@ -1,0 +1,113 @@
+# Blocks required to stay BUILT. One row per block; the gate reads this file
+# and no other (there is no --baseline <path>, design Constraint 6).
+#
+#   page <TAB> ordinal <TAB> scaffold <TAB> ref
+#
+# `ordinal`  the block's 1-based position among that page's C# blocks, as
+#            `--list` numbers it. Adding a block above it on the page moves it,
+#            and the gate says so -- that is the price of an address a reader
+#            can check against the page.
+# `scaffold` what the block was compiled with, as `--list-scaffold` names it,
+#            or `-` for nothing. The scaffold is part of the claim a row makes.
+# `ref`      the commit the block was measured BUILT at.
+#
+# THE LIST MUST EQUAL THE BUILT SET, in both directions (AC9, P0-4). A row for
+# a block that no longer builds, or no longer exists, fails the gate; so does
+# a block that builds and has no row. The second is what makes this a ratchet:
+# a repair that makes a block build lands its row in the same PR.
+#
+# Admitted in phase 3 with NO PAGE EDITED: only blocks that build against the
+# pin as the page prints them, given their page's scaffold. Blocks that need a
+# `using` on the page belong to phase 4 or to backlog item 2.
+contents/AWSSQSConfiguration.md	1	-	280d1b7
+contents/AWSSQSConfiguration.md	3	-	280d1b7
+contents/AWSSQSConfiguration.md	4	-	280d1b7
+contents/AWSSQSConfiguration.md	5	-	280d1b7
+contents/AWSSQSMigrateToV10.md	1	-	280d1b7
+contents/AWSSQSMigrateToV10.md	7	-	280d1b7
+contents/AnalyzerSupport.md	1	-	280d1b7
+contents/AnalyzerSupport.md	2	-	280d1b7
+contents/AnalyzerSupport.md	7	-	280d1b7
+contents/AsyncAPISupport.md	5	-	280d1b7
+contents/AwsScheduler.md	19	-	280d1b7
+contents/AzureScheduler.md	1	AzureSchedulerContext.cs	280d1b7
+contents/AzureScheduler.md	17	AzureSchedulerContext.cs	280d1b7
+contents/AzureScheduler.md	20	AzureSchedulerContext.cs	280d1b7
+contents/AzureScheduler.md	21	AzureSchedulerContext.cs	280d1b7
+contents/BoxProvisioning.md	1	-	280d1b7
+contents/BuildingAnAsyncPipeline.md	1	-	280d1b7
+contents/ClaimCheck.md	3	-	280d1b7
+contents/CommandProcessorConfigurationReference.md	4	-	280d1b7
+contents/DapperOutbox.md	1	PageContext.cs	280d1b7
+contents/DynamoOutbox.md	1	DynamoOutboxContext.cs	280d1b7
+contents/DynamoOutbox.md	4	DynamoOutboxContext.cs	280d1b7
+contents/FirestoreInbox.md	1	-	280d1b7
+contents/FirestoreOutbox.md	1	-	280d1b7
+contents/HandlingPoisonMessages.md	4	HandlingPoisonMessagesContext.cs	280d1b7
+contents/HandlingPoisonMessages.md	5	HandlingPoisonMessagesContext.cs	280d1b7
+contents/HandlingPoisonMessages.md	6	HandlingPoisonMessagesContext.cs	280d1b7
+contents/HangfireScheduler.md	24	-	280d1b7
+contents/HangfireScheduler.md	28	-	280d1b7
+contents/HowConfiguringTheCommandProcessorWorks.md	10	HowConfiguringTheCommandProcessorWorksContext.cs	280d1b7
+contents/ImplementAQueryHandler.md	1	-	280d1b7
+contents/ImplementAQueryHandler.md	2	-	280d1b7
+contents/Logging.md	1	-	280d1b7
+contents/Logging.md	2	-	280d1b7
+contents/MSSQLOutbox.md	1	-	280d1b7
+contents/MSSQLTransportInboxAndOutbox.md	1	RelationalTransportContext.cs	280d1b7
+contents/MSSQLTransportInboxAndOutbox.md	2	RelationalTransportContext.cs	280d1b7
+contents/MSSQLTransportInboxAndOutbox.md	3	RelationalTransportContext.cs	280d1b7
+contents/MSSQLTransportInboxAndOutbox.md	4	RelationalTransportContext.cs	280d1b7
+contents/MSSQLTransportInboxAndOutbox.md	7	RelationalTransportContext.cs	280d1b7
+contents/MSSQLTransportInboxAndOutbox.md	10	RelationalTransportContext.cs	280d1b7
+contents/MessageMappers.md	3	MessageMappersContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	1	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	2	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	3	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	5	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	6	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	9	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	10	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	11	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	12	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	13	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	14	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	15	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	16	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	17	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	18	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	19	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToNullableReferenceTypes.md	20	MigratingToNullableReferenceTypesContext.cs	280d1b7
+contents/MigratingToPollyV8.md	6	MigratingToPollyV8Context.cs	280d1b7
+contents/NullableReferenceTypes.md	8	-	280d1b7
+contents/NullableReferenceTypes.md	16	-	280d1b7
+contents/PaginationQueryPatterns.md	1	-	280d1b7
+contents/ParameterizedQueryPatterns.md	3	-	280d1b7
+contents/ParameterizedQueryPatterns.md	5	-	280d1b7
+contents/PolicyRetryAndCircuitBreaker.md	16	PolicyRetryAndCircuitBreakerContext.cs	280d1b7
+contents/PostgreSQLMessageBroker.md	11	-	280d1b7
+contents/PostgreSQLTransportAndOutbox.md	1	RelationalTransportContext.cs	280d1b7
+contents/PostgreSQLTransportAndOutbox.md	2	RelationalTransportContext.cs	280d1b7
+contents/PostgreSQLTransportAndOutbox.md	3	RelationalTransportContext.cs	280d1b7
+contents/PostgreSQLTransportAndOutbox.md	7	RelationalTransportContext.cs	280d1b7
+contents/PostgresOutbox.md	1	-	280d1b7
+contents/ProjectionQueryPatterns.md	4	-	280d1b7
+contents/QueriesAndQueryObjects.md	1	-	280d1b7
+contents/QueriesAndQueryObjects.md	2	-	280d1b7
+contents/QueriesAndQueryObjects.md	3	-	280d1b7
+contents/QueryPipelinePolicies.md	3	-	280d1b7
+contents/RequestValidation.md	2	-	280d1b7
+contents/RequestValidation.md	11	-	280d1b7
+contents/SpannerInbox.md	1	-	280d1b7
+contents/SpannerInbox.md	2	-	280d1b7
+contents/SpannerOutbox.md	1	-	280d1b7
+contents/SpannerOutbox.md	2	-	280d1b7
+contents/SweeperCircuitBreaking.md	6	SweeperCircuitBreakingContext.cs	280d1b7
+contents/SweeperCircuitBreaking.md	8	SweeperCircuitBreakingContext.cs	280d1b7
+contents/TickerQScheduler.md	5	TickerQSchedulerContext.cs	280d1b7
+contents/TickerQScheduler.md	6	TickerQSchedulerContext.cs	280d1b7
+contents/TutorialDurableOutbox.md	2	-	280d1b7
+contents/TutorialFirstCommand.md	1	-	280d1b7
+contents/TutorialFirstMessage.md	1	-	280d1b7
+contents/UsingSweeperCircuitBreaking.md	1	UsingSweeperCircuitBreakingContext.cs	280d1b7
+contents/UsingTheContextBag.md	12	-	280d1b7

@@ -188,3 +188,39 @@ jobs:
         with:
           dotnet-version: '9.0.x'
       - run: dotnet run --project tools/optioncheck
+
+  # Spec 016. tools/blockcheck.py compiles every C# block in contents/, one
+  # block per compilation, against the packages pinned in
+  # tools/blockcheck/refs/refs.csproj, and fails when the blocks that build
+  # disagree with tools/blockcheck/baseline.tsv in either direction.
+  #
+  # NO GUARD, for optioncheck's reason above: a guard that outlives its tool
+  # silently un-gates the check it was protecting.
+  #
+  # NO SCHEDULED RUN (Q8), and here that takes an `if:`, not an omission. The
+  # `schedule:` at the top of this file triggers the WHOLE workflow, so a job
+  # without a filter runs daily whatever its comment says -- the options job
+  # above does, and its run on the most recent schedule is the evidence. The
+  # pin is exact (Q9: every PackageReference in refs.csproj names one version),
+  # so nothing outside this repository can change this job's verdict; a daily
+  # run could only repeat the last push's answer or go red because NuGet was
+  # unreachable.
+  #
+  # The two builds are separate steps, and before the gate, because without
+  # them the gate exits 2 -- "nothing was checked" -- rather than failing every
+  # block. The invocation is bare, rows go to a file and not a pipeline, and
+  # there is no `|| true`: exit 2 is an unchecked corpus, not a pass.
+  blocks:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: dotnet build tools/blockcheck/refs/refs.csproj -c Release
+      - run: dotnet build tools/blockcheck/blockcheck.csproj -c Release
+      - run: python3 tools/blockcheck.py --report "$RUNNER_TEMP/blockcheck.tsv"

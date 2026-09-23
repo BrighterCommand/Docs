@@ -14,8 +14,24 @@
 # which is what makes the hand-work tractable and what stops a scaffold being
 # tuned until one stubborn block goes green.
 #
-# Phase 1 populates this with the pages it needed to red-proof the mechanism in
-# both directions. Phase 3 owns the real population, one page at a time, and
-# `baseline.tsv` then records the scaffold each admitted block was measured
-# with.
+# Phase 1 populated this with the page it needed to red-proof the mechanism in
+# both directions. Phase 3 task 3.3 added the rest, under one rule: A UNIT
+# SUPPLIES VALUES, TYPED FROM A PINNED PACKAGE OR THE BCL, AND NOTHING ELSE --
+# no domain type, no type another block on the page declares, no `dynamic`.
+# A page is listed here only if its unit makes at least one block build, and
+# every member of a unit is named by a block that builds with it.
+# `baseline.tsv` records the scaffold each admitted block was measured with.
 contents/DapperOutbox.md	PageContext	-
+contents/AzureScheduler.md	AzureSchedulerContext	-
+contents/DynamoOutbox.md	DynamoOutboxContext	-
+contents/HandlingPoisonMessages.md	HandlingPoisonMessagesContext	-
+contents/HowConfiguringTheCommandProcessorWorks.md	HowConfiguringTheCommandProcessorWorksContext	-
+contents/MSSQLTransportInboxAndOutbox.md	RelationalTransportContext	-
+contents/MessageMappers.md	MessageMappersContext	-
+contents/MigratingToNullableReferenceTypes.md	MigratingToNullableReferenceTypesContext	-
+contents/MigratingToPollyV8.md	MigratingToPollyV8Context	-
+contents/PolicyRetryAndCircuitBreaker.md	PolicyRetryAndCircuitBreakerContext	-
+contents/PostgreSQLTransportAndOutbox.md	RelationalTransportContext	-
+contents/SweeperCircuitBreaking.md	SweeperCircuitBreakingContext	-
+contents/TickerQScheduler.md	TickerQSchedulerContext	-
+contents/UsingSweeperCircuitBreaking.md	UsingSweeperCircuitBreakingContext	-

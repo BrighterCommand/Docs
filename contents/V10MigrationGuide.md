@@ -97,6 +97,7 @@ dotnet list package
 
 **Before (V9)**:
 
+<!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled Before (V9)) -->
 ```csharp
 public class CreatePersonCommand : Command
 {
@@ -151,6 +152,7 @@ public class PersonCreatedMapper : IAmAMessageMapper<PersonCreated>
 **Breaking Change**: Builder methods renamed for clarity.
 
 **Before (V9)**:
+<!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled Before (V9)) -->
 ```csharp
 services.AddBrighter()
     .UseExternalBus(new RmqProducerRegistryFactory(...).Create())
@@ -202,6 +204,7 @@ returns, so the consumer registration comes first and the producer registration 
 
 **Before (V9)**:
 
+<!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled Before (V9)) -->
 ```csharp
 var subscription = new Subscription<MyEvent>(
     new SubscriptionName("my-subscription"),
@@ -237,6 +240,7 @@ var subscription = new Subscription<MyEvent>(
 
 **Before (V9)**:
 
+<!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled Before (V9)) -->
 ```csharp
 public class MyHandler : RequestHandlerAsync<MyCommand>
 {
@@ -390,6 +394,7 @@ If you were using a `Guid` to create a random identity, you can just use `Id.Ran
 
 Before:
 
+<!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled Before, a Guid request Id) -->
 ```csharp
 
 class MyCommand() : Command(Guid.NewGuid())
@@ -473,6 +478,7 @@ V10 allows you to omit message mappers for simple JSON serialization.
 
 **Before (V9) - Required Mapper**:
 
+<!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled Before (V9)) -->
 ```csharp
 public class PersonCreatedMapper : IAmAMessageMapper<PersonCreated>
 {

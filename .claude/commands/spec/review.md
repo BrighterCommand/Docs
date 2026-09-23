@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(cat:*), Bash(echo:*), Bash(test:spec/*), Bash(ls:spec/*), Bash(touch:spec/*), Bash(grep:*), Bash(tail:*), Bash(git diff:*), Bash(git log:*), Bash(python3 tools/linkcheck.py:*), Bash(python3 tools/pagelint.py:*), Bash(python3 tools/urlmap.py:*), Bash(python3 tools/versioncheck.py:*), Bash(python3 tools/symbolcheck.py:*), Bash(dotnet run --project tools/optioncheck:*), Read
+allowed-tools: Bash(cat:*), Bash(echo:*), Bash(test:spec/*), Bash(ls:spec/*), Bash(touch:spec/*), Bash(grep:*), Bash(tail:*), Bash(git diff:*), Bash(git log:*), Bash(python3 tools/linkcheck.py:*), Bash(python3 tools/pagelint.py:*), Bash(python3 tools/urlmap.py:*), Bash(python3 tools/versioncheck.py:*), Bash(python3 tools/symbolcheck.py:*), Bash(dotnet run --project tools/optioncheck:*), Bash(dotnet build tools/blockcheck/refs/refs.csproj:*), Bash(dotnet build tools/blockcheck/blockcheck.csproj:*), Bash(python3 tools/blockcheck.py:*), Read
 description: Review current specification phase
 ---
 
@@ -9,12 +9,12 @@ Current spec: !`cat spec/.current-spec 2>/dev/null || echo "No active spec"`
 
 ## Gates
 
-**All eight run here.** `pagelint` is filtered to its errors and its summary line: the
+**All nine run here.** `pagelint` is filtered to its errors and its summary line: the
 using-directive warnings are counted debt rather than findings, and there are enough of them to
 bury everything else. The filter keeps every error — proved by planting one and watching it
 survive.
 
-Two of the eight reach the network and one needs a build, so any of the three may report
+Two of the nine reach the network and two need a build, so any of the four may report
 **exit 2 — nothing was checked**. That is not a pass and not a corpus failure; read it as
 unchecked and say so.
 
@@ -39,6 +39,9 @@ unchecked and say so.
 ### optioncheck
 !`dotnet run --project tools/optioncheck 2>&1 | tail -5`
 
+### blockcheck
+!`dotnet build tools/blockcheck/refs/refs.csproj -c Release -v q -nologo >/dev/null; dotnet build tools/blockcheck/blockcheck.csproj -c Release -v q -nologo >/dev/null; python3 tools/blockcheck.py --report /dev/null 2>&1 | grep -v ' block [0-9]* — ' | tail -20`
+
 ### verify (live sitemap)
 !`python3 tools/urlmap.py --verify | tail -5`
 
@@ -56,7 +59,7 @@ unchecked and say so.
 
 ### How to read a gate result
 
-**The rule is the same for all eight, and `linkcheck` is where it came from: is this breakage
+**The rule is the same for all nine, and `linkcheck` is where it came from: is this breakage
 pre-existing, or is it yours?**
 
 - **Requirements and design phases** — nothing has been written yet, so any breakage is
