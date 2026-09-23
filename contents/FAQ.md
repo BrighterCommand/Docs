@@ -443,6 +443,7 @@ See: [Resilience Pipelines](/contents/PolicyRetryAndCircuitBreaker.md)
 
 **Old (V9):**
 
+<!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled Old (V9)) -->
 ```csharp
 [TimeoutPolicy(step: 1, milliseconds: 5000)]
 public class MyHandler : RequestHandlerAsync<MyCommand> { }

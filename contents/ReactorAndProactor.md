@@ -336,6 +336,7 @@ In Brighter V9, concurrency was configured using `isAsync` and `runAsync` flags.
 
 ### V9 Configuration (Deprecated)
 
+<!-- blockcheck: skip V9 form, shown beside its V10 replacement (under V9 Configuration (Deprecated)) -->
 ```csharp
 // V9 - DEPRECATED
 var subscription = new Subscription<MyCommand>(

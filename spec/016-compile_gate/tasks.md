@@ -187,7 +187,7 @@ both depend on.
   - Output: the marker implemented in `tools/blockcheck.py`, **requiring a reason**, and a recorded run showing a skip printed with its reason
   - Notes: ruling 4 — an opt-out is never silent, and `0 findings` and `0 findings, 8 skipped` are different claims.
 
-- [ ] **Task 3.2:** Mark the ❌ V9 blocks as skipped
+- [x] **Task 3.2:** Mark the ❌ V9 blocks as skipped
   - Input: the blocks behind a ❌ marker — the design counted **8 across 3 pages**; re-derive
   - Output: the markers in place, and the run reporting the skip count
   - Notes: `CLAUDE.md` § *Version markers on code* **requires** these blocks to exist. A gate demanding they compile would demand the documentation stop showing what it must show.
@@ -1474,6 +1474,16 @@ measured at, per obligation 10.
 **Nine vacuous passes**, with phases 1 and 2's defence: the before-figures are read against
 `tools/README.md` at the top of the phase, not re-derived from the closing run.
 
+**AMENDED BY TASK 3.2, ruled by the maintainer in session 81: `contents/` IS edited, and the site
+is still not.** The paragraph above says *"No page under `contents/` is edited in this phase"*, and
+task 3.2 cannot be done without editing one: a skip marker lives on the page, above the block it
+excuses. **Five pages gain twelve lines, every one an HTML comment**, which renders to nothing. The
+same shape is already on six pages as `<!-- pagelint: allow-serviceactivator -->`. So phase 3
+remains site-neutral in the sense obligation 7 cares about, **no sign-off is owed**, and the prediction
+for rules 1–7, `symbolcheck`, `optioncheck` and `versioncheck` stands, because none of them reads
+an HTML comment as prose. The paragraph above is left as written, since this amendment is the
+record of it being wrong.
+
 ---
 
 ## Phase 3 as executed
@@ -1573,3 +1583,94 @@ skip scan needs the list of C# fence start lines *before* the blocks are built. 
 preserving and was checked as such — `--list` reads **985 C# blocks across 145 pages: 11 namespaced,
 9 toplevel, 303 types, 130 members, 532 statements**, identical to phase 2's figures on every one of
 the five shapes.
+
+### The V9 skips, and why the design's 8 was the wrong 8 *(task 3.2)*
+
+**Re-derived rather than inherited, and the set is 12 blocks across 5 pages. The design's 8 was a
+different set.** Two methods, then reading:
+
+```text
+grep -rn '^❌' contents/   ->    8 lines, 3 pages     the design's figure, reproduced
+grep -rn '❌'  contents/   ->   43 lines, 11 pages
+```
+
+**Of the anchored 8, one is a version marker.** `MigratingToPollyV8.md:95` reads
+`❌ **V9 — superseded**`. The other seven are `❌ Bad:` in `QueryPipeline.md` (5) and
+`CQRSWithBrighterAndDarker.md` (2), which is the bad/good convention and has nothing to do with
+`CLAUDE.md` § *Version markers on code*. **Of the unanchored 35, none is a version marker either.**
+Reading all 43 lines by context, they are table cells (`BrighterSchedulerSupport.md`, `FAQ.md`),
+pro/con bullets (`EFCoreQueryIntegration.md`, `PaginationQueryPatterns.md`, `FAQ.md`), or trailing
+comments inside a fence marking a problem line (`AWSSQSMigrateToV10.md`, `KafkaConfiguration.md`,
+`QueryPatterns.md`, `TurningOnReplayOnSeen.md`, `EFCoreQueryIntegration.md`). The claim PROMPT.md
+flagged for checking, *"most are inline in tables and prose"*, holds for all 35.
+
+**So ❌ finds one V9 block, and the V9 blocks are not the ❌ blocks.** A third method, the label
+directly above each C# fence, finds eleven V9 forms that carry no ❌ at all, because those pages
+predate the convention and label in their own words: `**Before (V9)**:`, `**V9**:`, `**Old (V9):**`,
+`### V9 Configuration (Deprecated)`, `### Example with Legacy Policies (V9)`. **The task's own
+Notes are the reason they belong:** *"`CLAUDE.md` requires these blocks to exist"* is true of a
+superseded form whether or not a ❌ sits above it.
+
+| Page | Blocks | Label on the page |
+|---|---|---|
+| `MigratingToPollyV8.md` | #1, #3, #5 | `**V9**:` twice; `❌ **V9 — superseded**` |
+| `V10MigrationGuide.md` | #1, #4, #6, #8, #19, #15 | `**Before (V9)**` ×5; `Before:`, a `Guid` request Id, which the prose above it names as V9 |
+| `FAQ.md` | #15 | `**Old (V9):**` |
+| `ReactorAndProactor.md` | #11 | `### V9 Configuration (Deprecated)` |
+| `PolicyFallback.md` | #2 | `### Example with Legacy Policies (V9)` |
+
+**Three were read and left out, and the reason for each is written down so that nobody adds them by
+pattern:**
+
+- `V10MigrationGuide.md` #23, `**Before**:` under KIP-848: V10 API marked `[Obsolete]`, which the page
+  says *"still work"*. That makes it a V10 block with a warning, and the gate should judge it.
+- `MigratingToPollyV8.md` #7–#11, under `### Using Brighter's UsePolicy Attribute (Legacy)`: the page
+  presents these as *legacy* V10 usage and does not label them V9. The page labels them, and
+  this set does not relabel them.
+- `AWSSQSMigrateToV10.md` #2, `**V3 Approach**`: that is the AWS SDK's v3, used through a Brighter V10
+  package. The page is about the SDK, not about Brighter V9.
+
+**The rule is the page's label, not whether the API was removed, and that choice has a cost.** It
+was nearly written the other way. The first draft of this record excluded #7–#11 because
+*"`UsePolicy` still ships"*, and checking that claim against `../Brighter/src` found that it is true
+of **four of the twelve as well**. `FAQ.md` #15 and `MigratingToPollyV8.md` #3 use `TimeoutPolicy`,
+`PolicyFallback.md` #2 uses `UsePolicy` and `FallbackPolicy`, and `MigratingToPollyV8.md` #1 uses a
+Polly v7 `PolicyRegistry`. All four still ship in V10, `UsePolicy` marked
+`[Obsolete("Migrate to UseResiliencePipeline")]`. The other eight are described by their pages as
+surfaces V10 removed or changed, such as `isAsync`/`runAsync` on `Subscription` or a `Guid` request
+Id. **Those eight were not each checked against source**, so *"an API-removal rule would give eight"*
+is an upper bound, not a count. A label rule gives twelve. The label rule was chosen because
+it is the one a reader can check against the page. **The cost:** those four could be made to compile
+against the pin with a scaffold, and the skip now means the gate will not notice if they stop doing
+so. The skip is acceptable for a form the page tells the reader to migrate away from. It is a choice,
+not a certainty, and this paragraph exists so it can be overruled.
+
+**All 12 were `FAILED` before the markers went in. None was `BUILT`.** A skip on a building block
+would have hidden nothing and still claimed an exemption. That was checked against run 0 rather than
+assumed.
+
+#### The run
+
+```text
+run 0  control, unmodified   985: 68 BUILT, 917 FAILED,  0 SKIPPED, 0 NOT_COMPILABLE   exit 0
+                             0 findings
+run 1  twelve markers        985: 68 BUILT, 905 FAILED, 12 SKIPPED, 0 NOT_COMPILABLE   exit 0
+                             ----- skipped by opt-out (12) -----   each with its reason
+                             0 findings, 12 skipped
+```
+
+**`diff` of run 0 against run 1 shows exactly 12 rows changed, every one of them `FAILED → SKIPPED`**,
+with page and ordinal unchanged on all 985. The markers therefore bound the blocks they were written
+for and did not shift another page's ordinals. `git diff --stat` reads **5 files, 12 insertions, 0
+deletions**. Every reason names the label the page uses, so a reader can check a skip against the
+page without trusting the tool's word for it.
+
+**Seven of eight gates were re-run after the edit, and all read `tools/README.md`'s figures:**
+`linkcheck` 165/0; `pagelint` 0 errors, 744 warnings, 162 pages; shape 161/12/12-of-20/4-of-4;
+redirects 77 entries, 7858 bytes; `versioncheck` 0 of 18 across 5; `optioncheck` 0 across 59
+tables, 519 rows; `symbolcheck` 0 findings, 22 entries, 161 pages, 3 silenced. `--verify` was not
+run. It compares against the published tree, and nothing it reads has changed.
+
+**This does not add ❌ to the eleven.** Putting the convention's label on a page is a change a
+reader sees, and that belongs in phase 4 or the backlog. The skip reason says what each block is
+without it.
