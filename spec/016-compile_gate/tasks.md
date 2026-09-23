@@ -222,7 +222,7 @@ both depend on.
   - Output: the new job — `setup-dotnet`, restore the pinned refs, run the gate — with **no guard, no `|| true`, and no `schedule:`**, each choice carrying the comment that says why
   - Notes: Q8 and Q9 are ruled by this task's choices; record both rulings in one line each.
 
-- [ ] **Task 3.9:** Predict and reconcile the eight — now nine — gates
+- [x] **Task 3.9:** Predict and reconcile the eight — now nine — gates
   - Input: as task 1.10
   - Output: § *Phase 3 prediction* and § *Phase 3 as executed*
   - Notes: **`linkcheck` is predicted to MOVE if and only if this phase adds a `.md` under `tools/`.** The design chose not to. If the reconciliation shows 166, the cause is a file somebody added without noticing the rule.
@@ -1975,3 +1975,40 @@ scratch directory with no `bin/`, both builds, the gate invocation as written. *
 in-tree run.** The workflow parses (Ruby's YAML: four jobs, the `if:` and six steps as written).
 **What this cannot show is the job on GitHub's runner**, which is Linux with a cold NuGet cache.
 That is the PR's first run, and its result goes in task 3.9's reconciliation.
+
+### The nine gates, reconciled *(task 3.9)*
+
+**All nine at `ecefa13`, every exit code read bare, and every one of the eight existing rows at
+`tools/README.md`'s figure. The prediction was *none* for all eight, and none moved.**
+
+| # | Gate | Predicted | Read at `ecefa13` | |
+|---:|---|---|---|---|
+| 1 | `linkcheck` | none — **moves iff a `.md` is added under `tools/`** | 165 files, 0 broken | ✅ none added; row 9 went into `tools/README.md`, already counted |
+| 2 | `pagelint` | none | 0 errors, 744 warnings, 162 pages | ✅ the twelve skip markers are HTML comments and reach no rule |
+| 3 | shape | none | 161 / 12 sections / 4 of 4 / 12 of 20 | ✅ |
+| 4 | redirects | none | 77 entries, 7858 bytes | ✅ |
+| 5 | `versioncheck` | none | 0 stale of 18, across 5 | ✅ |
+| 6 | `optioncheck` | none | 0 mismatches, 59 tables, 519 rows | ✅ |
+| 7 | `--verify` | none | 161 predicted = 161 published | ✅ run, not skipped. It reached the live sitemap |
+| 8 | `symbolcheck` | none | 0 findings, 22 entries, 161 pages, 3 silenced | ✅ |
+| 9 | `blockcheck` | **its first figure, not a movement** | row 9's figure, 0 findings, 12 skipped | ✅ equal to the row task 3.7 wrote |
+
+**Nine vacuous passes, defended as the prediction said:** the before-figures are `tools/README.md`'s
+rows as they stood at the top of the phase. They are not re-derived from this run, and rows 1–8 are
+unedited in this phase's diff of that file.
+
+**The prediction was wrong once, and the amendment under § *Phase 3 prediction* is where.**
+*"No page under `contents/` is edited"* did not survive task 3.2. Twelve HTML-comment lines went
+onto five pages, ruled site-neutral by the maintainer. Row 2 and row 8 are the two that could have
+seen them, and neither moved, which is the check that the ruling's premise, *"none of them reads an
+HTML comment as prose"*, was true rather than assumed.
+
+#### Phase 3 in one table
+
+| | |
+|---|---|
+| **The corpus** | 985 blocks: 92 BUILT, 881 FAILED, 12 SKIPPED, 0 NOT_COMPILABLE (row 9 owns the figure) |
+| **The gate** | `baseline.tsv`, 92 rows across 44 pages. Four findings, both directions, red-proofed seven ways |
+| **The scaffold** | 13 units, 4 preludes, 100 identifiers, 14 pages. Values only, typed from the pin |
+| **For the maintainer** | the 102 blocks needing an unshown type (AC13); the `options` job's schedule; AC10's `^./spec/` under BSD grep; the label-vs-API rule for the V9 skips |
+| **For phase 4** | four new claims found by scaffolding: `FAQ.md#18`, `#19`, `AzureScheduler.md#18`, `SweeperCircuitBreaking.md#9` |
