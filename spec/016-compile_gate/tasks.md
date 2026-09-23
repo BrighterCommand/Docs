@@ -217,7 +217,7 @@ both depend on.
   - Output: the row — command, corpus, expected figure, **and the ref it was measured at** — plus the heading and any prose that says "eight" updated to nine
   - Notes: obligation 10. **And grep the whole repository for "eight gates"** — the count lives in prose in more than one place, and a header that disagrees with its own body is this programme's most-repeated defect.
 
-- [ ] **Task 3.8:** Add the CI job
+- [x] **Task 3.8:** Add the CI job
   - Input: `.github/workflows/docs.yml`'s `options` job and its comments
   - Output: the new job — `setup-dotnet`, restore the pinned refs, run the gate — with **no guard, no `|| true`, and no `schedule:`**, each choice carrying the comment that says why
   - Notes: Q8 and Q9 are ruled by this task's choices; record both rulings in one line each.
@@ -1947,3 +1947,31 @@ documents. Phase 5's acceptance walk should use the working form.
 
 **`linkcheck` reads 165 files, 0 broken**, unmoved: row 9 went into a file already in its corpus,
 and no `.md` was added under `tools/`.
+
+### The CI job *(task 3.8)*
+
+**`.github/workflows/docs.yml` gains a `blocks` job:** checkout, `setup-dotnet` 9.0.x,
+`setup-python` 3.12, the two builds as their own steps, then
+`python3 tools/blockcheck.py --report "$RUNNER_TEMP/blockcheck.tsv"`. That means no guard, no
+`|| true`, and rows to a file rather than a pipeline, so the step's exit code is the tool's.
+
+**Q8 — RULED: no scheduled run, and it is an `if: github.event_name != 'schedule'`, not an
+omission.** **Q9 — RULED: pinned**, and it already was: all 71 `PackageReference`s in
+`refs.csproj` name one exact version.
+
+**Q8 could not be done the way the task text says, and the reason is a defect in the existing
+workflow.** *"No `schedule:`"* reads as *do not add one*. But `schedule:` is declared once, at the
+top of the file, and it triggers **every** job without an event filter. The most recent scheduled
+run, `35722167211`, ran **`check`, `versions` and `options`**, all `success`. **The `options` job's
+comment says *"NO `schedule:` TRIGGER either"* and it runs daily.** Nothing has gone wrong, because
+its verdict is pinned and so repeats. But the comment asserts something false about the workflow,
+and a new job copied from it would inherit the same false claim. **Not fixed here:** it changes an
+existing gate's triggers. It is one line (`if: github.event_name != 'schedule'` on `options`) and
+the maintainer's call. The `blocks` job's comment names it as its evidence.
+
+**The job replayed on a clean checkout, obligation 12:** `git ls-files` through `tar` into a
+scratch directory with no `bin/`, both builds, the gate invocation as written. **Exit 0, `baseline:
+92 blocks required to build`, `0 findings, 12 skipped`, and 985 of 985 rows identical to the
+in-tree run.** The workflow parses (Ruby's YAML: four jobs, the `if:` and six steps as written).
+**What this cannot show is the job on GitHub's runner**, which is Linux with a cold NuGet cache.
+That is the PR's first run, and its result goes in task 3.9's reconciliation.
