@@ -192,7 +192,7 @@ both depend on.
   - Output: the markers in place, and the run reporting the skip count
   - Notes: `CLAUDE.md` § *Version markers on code* **requires** these blocks to exist. A gate demanding they compile would demand the documentation stop showing what it must show.
 
-- [ ] **Task 3.3:** Write the scaffold files the initial baseline needs
+- [x] **Task 3.3:** Write the scaffold files the initial baseline needs
   - Input: task 2.1's failures in the context class, grouped by page
   - Output: one prelude per admitted page under `tools/blockcheck/scaffold/`, each listed by `--list-scaffold`
   - Notes: **a prelude supplies identifiers, never behaviour, and never a type the page tells the reader to write.** AC13 is a maintainer reading this boundary.
@@ -1674,3 +1674,123 @@ run. It compares against the published tree, and nothing it reads has changed.
 **This does not add ❌ to the eleven.** Putting the convention's label on a page is a change a
 reader sees, and that belongs in phase 4 or the backlog. The skip reason says what each block is
 without it.
+
+### The scaffold, and the line AC13 will be read against *(task 3.3)*
+
+**68 → 92 BUILT: +24 blocks across 13 pages, from 12 new units. No block moved the other way, no
+error landed on a scaffold tree, and every one of the 100 identifiers `--list-scaffold` prints is
+named by a block that builds with it.** No prelude was added. Every admitted block needed values,
+not a method to sit in.
+
+#### What the scaffold could be for: measured, not guessed
+
+Every one of the 905 failing blocks run through `--explain`, and every missing name looked up in a
+dump of **27,921 public types** from the 501 pinned assemblies (`System.Reflection.Metadata` over
+`refs.txt`, in a scratch project, not committed):
+
+| | Blocks | What it means |
+|---|---:|---|
+| **import** | 364 | at least one missing name **is** a pinned type: the page needs a `using`. **Not scaffoldable.** Task 3.4 puts these in phase 4 or backlog item 2 |
+| **other** | 342 | a diagnostic that is not a missing name: parse, claim, cascade |
+| **context** | **199** | every error is a missing name, and none of them is a type anything ships |
+
+**The 199 then split three ways, and only the first is admitted in this task:**
+
+| | Blocks | Example | This task |
+|---|---:|---|---|
+| **values only**, lower-case or `_` names | **76** across 26 pages | `services`, `builder`, `commandProcessor`, `resiliencePipelineRegistry` | **scaffolded** |
+| **a type the page names and never shows** | 102 | `StandardHandler`, `OrderStatus`, `IPersonRepository` | **not scaffolded: the maintainer's call at AC13** |
+| **a type another block on the same page declares** | 21 | `GreetingCommand` in the tutorials | **not scaffolded.** Copying the page's own type into the harness recreates obligation 8's leak by hand, with a copy that can drift from the page |
+
+**Why the middle row is left for the maintainer.** Design rule 1 reads *"it may not define a type
+the page tells the reader to write"*. An empty `StandardHandler : RequestHandler<MyCommand>` is not
+behaviour, but whether a handler the page routes to and never prints is one the page *"tells the
+reader to write"* is the judgement AC13 names a reader for. A scaffold that settles it quietly in
+102 places is the outcome AC13 exists to prevent. **One sentence to overrule:** if the maintainer
+reads the row as identifiers, it is the next tranche and needs no new mechanism.
+
+#### The rule the 76 were held to, and what it excluded before anything ran
+
+**A value is typed from a pinned package or the BCL, returns a default, and does nothing.** Two
+consequences, both deliberate:
+
+- **No `dynamic`, ever.** A `dynamic` value would compile every member access on it, which is the
+  false-green this gate exists to prevent.
+- **A value needing a type nothing ships is not a value.** `entity` and `_repository` in
+  `HangfireScheduler.md#22` / `QuartzScheduler.md#19` need a domain type, so they are excluded.
+  Quartz's `q` and `store` (8 blocks) need `IServiceCollectionQuartzConfigurator`, which is **not in
+  the pin**, so they are excluded as well. That is the pin's question, like the Jaeger and
+  `Hangfire.AspNetCore` rows in phase 2's claim table.
+
+#### What the 76 did, with context supplied
+
+```text
+76 value-only candidates
+   10 excluded by the rule above, before the run
+   24 BUILT                                    <- admitted
+   42 still FAILED, now for a reason the missing name was hiding:
+        38  CS1061 / CS0246 on an extension method or type the block never imported,
+            or one from a package the pin does not carry (AddBrighter, AddHangfireServer,
+            AddTickerQ, AddHttpClient, AddOpenTelemetry, AddMsSqlOutbox, AddCircuitBreaker)
+         4  CLAIMS, new since phase 2's list
+```
+
+**The four claims are the most useful thing this task found.** Unscaffolded, they read `CS0103` and
+nobody could tell them from the other 653:
+
+| Block | Diagnostic | What the page says that is not so |
+|---|---|---|
+| `FAQ.md#18`, `#19` | `CS1503`: argument 2 cannot convert `TimeSpan` to `RequestContext?` | `commandProcessor.SendAsync(command, delay)`, which has the arguments in the wrong order |
+| `FAQ.md#19` | `CS1061`: no `RescheduleAsync` on `IAmAMessageSchedulerAsync` | the method is `ReSchedulerAsync`, which `TickerQScheduler.md#6` spells correctly and which builds |
+| `AzureScheduler.md#18` | `CS1061`: no `ReScheduleAsync` | the block's comment says *"Won't work!"*, and it cannot even compile. The page's claim is about Azure behaviour; the block makes it by calling a method that does not exist |
+| `SweeperCircuitBreaking.md#9` | `CS7036`: `IAmAnOutboxProducerMediator.ClearOutboxAsync` requires `requestContext` | the call omits a required argument |
+
+**These go to task 4.1's re-derivation as input, not as adopted rows.** The FAQ unit that exposed
+them is **not** in the committed scaffold, because FAQ admits no block and a page is listed only if
+its unit makes one build. Phase 4 re-adds it when it repairs the page. That is task 4.4's job
+already.
+
+#### The trim, and why it did not move the result
+
+The first run mapped 26 pages to 20 units. **13 of those pages admitted nothing** (every candidate hit
+a missing `using`), so their units and rows came out, and members only a still-failing block used
+were deleted from the units that stayed. Re-run: **the BUILT set is identical, 92 of 92 by
+`diff`.** So the committed scaffold is the smallest one that buys these 24, which is what AC13 has to
+read:
+
+```text
+python3 tools/blockcheck.py --list-scaffold    ->  100 identifiers from 13 unit(s) and 4 prelude(s);
+                                                   14 page(s) scaffolded
+find tools/blockcheck/scaffold -type f | wc -l ->  18    13 units + 4 preludes + the map
+```
+
+**The listing's line count is 114.** That is 100 identifiers plus one injected `using static` per
+scaffolded page, as phase 1 described.
+
+#### Red-proof: a scaffolded value does not buy a verdict
+
+`TickerQScheduler.md#6` is admitted on a unit that supplies `_scheduler` as
+`IAmAMessageSchedulerAsync`. One character changed on the page, `ReSchedulerAsync` → `ReScheduleAsync`:
+
+```text
+control      TickerQScheduler_6   BUILT   0
+broken       TickerQScheduler_6   FAILED  1  CS1061       corpus 91 BUILT
+reverted     TickerQScheduler_6   BUILT   0               985 of 985 rows identical to the control
+```
+
+**The value is typed, so the member is checked.** That is the difference between a value and
+`dynamic`, and it is why the rule forbids one. `git diff --stat contents/` is empty after the
+revert. The broken run exits **0**: there is no baseline until task 3.5, so this is a measurement
+and not yet a gate. Task 3.6 proves the exit code.
+
+#### One instrument quirk, recorded and not fixed
+
+`--explain` prints `985 blocks, 0 built, 985 failing` on stderr whatever it is asked, because blocks
+it was not asked about fall through uncounted as built. The rows on stdout are right. The summary
+line is wrong only in this mode. Worth a one-line fix when `Program.cs` is next opened for a reason,
+not a reason to open it.
+
+**`tools/blockcheck/verdicts.tsv` still reads 68 BUILT and is left that way.** It is phase 2's
+committed corpus run, and no tool reads it (`grep` over `tools/*.py`, `tools/README.md` and
+`.github/`). Regenerating it would rewrite a record to match a later state. Task 3.4's `baseline.tsv`
+is the file that carries the current admitted set.
