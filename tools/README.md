@@ -35,21 +35,24 @@ gained the `using` directives rule 6 asks for; two more declared their omission 
 which is honest and still counted. The other six rows are unmoved at both refs.
 
 **Row 9 is spec 016's and carries its own ref, `1e1944d`**, because it did not exist at the other
-two. It is the only gate that compiles C#, and the only one whose expected figure is **set by a
+two. **Rows 2 and 9 moved again at `b941837`, spec 016 phase 4, the claim repairs:** splitting four
+two-snippet fences made **4 more blocks** and **4 more skips**, the repairs brought **9 blocks** into
+the baseline, and `pagelint` fell 744 → **743** — a net figure, of blocks created by the splits
+and blocks the repairs gave `using` directives, not one block's fix. It is the only gate that compiles C#, and the only one whose expected figure is **set by a
 committed file** rather than by the corpus alone: `tools/blockcheck/baseline.tsv` lists the blocks
 required to build, and the figure moves when that file does.
 
 | # | Gate | Command | Expected at `412fd34` |
 |---:|---|---|---|
 | 1 | `linkcheck` | `python3 tools/linkcheck.py` | **165 files, 0 broken** |
-| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 744 warnings, 162 pages** — at `3be2a78`; it read **757** at `412fd34` |
+| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 743 warnings, 162 pages** — at `b941837`; it read **744** at `3be2a78` and **757** at `412fd34` |
 | 3 | shape | `python3 tools/urlmap.py --check-shape` | **161 pages, 12 sections, widest 12 of 20, deepest 4 of 4** |
 | 4 | redirects | `python3 tools/urlmap.py --check-redirects` | **77 entries, 7858 bytes** |
 | 5 | `versioncheck` | `python3 tools/versioncheck.py` | **0 stale pins of 18, across 5 pages** |
 | 6 | `optioncheck` | `dotnet run --project tools/optioncheck` | **0 mismatches across 59 tables, 519 rows** |
 | 7 | `--verify` | `python3 tools/urlmap.py --verify` | **161 predicted = 161 published** |
 | 8 | `symbolcheck` | `python3 tools/symbolcheck.py` | **0 findings — 22 entries, 161 pages, 3 silenced** — at `3be2a78`; it read **5 entries, 1 silenced** at `412fd34` |
-| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **985 blocks: 92 BUILT, 881 FAILED, 12 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 12 skipped** — at `1e1944d` |
+| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 16 skipped** — at `b941837`; it read **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
 
 **Four of the nine are not in the `check` job of `.github/workflows/docs.yml`, and each absence
 is a decision rather than an oversight:**

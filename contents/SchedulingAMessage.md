@@ -194,11 +194,8 @@ services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
-.UseScheduler(
-    scheduler: new HangfireMessageSchedulerFactory(
-        connectionString: Configuration.GetConnectionString("Hangfire")
-    )
-)
+// Hangfire's own storage is configured with AddHangfire, not on the factory
+.UseScheduler(new HangfireMessageSchedulerFactory())
 .AutoFromAssemblies();
 ```
 
@@ -210,11 +207,13 @@ services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
-.UseScheduler(
-    scheduler: new QuartzMessageSchedulerFactory(
-        configuration: Configuration.GetSection("Quartz")
-    )
-)
+// Quartz itself is configured with AddQuartz; the factory wraps its IScheduler
+.UseScheduler(provider =>
+{
+    var schedulerFactory = provider.GetRequiredService<ISchedulerFactory>();
+    var scheduler = schedulerFactory.GetScheduler().GetAwaiter().GetResult();
+    return new QuartzSchedulerFactory(scheduler);
+})
 .AutoFromAssemblies();
 ```
 
@@ -226,9 +225,7 @@ services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
-.UseScheduler(
-    scheduler: new InMemorySchedulerFactory()
-)
+.UseScheduler(new InMemorySchedulerFactory())
 .AutoFromAssemblies();
 ```
 

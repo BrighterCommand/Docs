@@ -456,8 +456,9 @@ var newSchedulerId = await _commandProcessor.SendAsync(newDelay, command);
 ```
 
 ```csharp
+// ...
 // Bad - Trying to reschedule (not supported)
-await _scheduler.ReScheduleAsync(existingSchedulerId, newDelay);  // Won't work!
+var rescheduled = await _scheduler.ReSchedulerAsync(existingSchedulerId, newDelay);  // Always false: nothing is rescheduled
 ```
 
 ### 4. Set Appropriate Message TTL

@@ -24,6 +24,7 @@
 contents/DapperOutbox.md	PageContext	-
 contents/AzureScheduler.md	AzureSchedulerContext	-
 contents/DynamoOutbox.md	DynamoOutboxContext	-
+contents/FAQ.md	FAQContext	-
 contents/HandlingPoisonMessages.md	HandlingPoisonMessagesContext	-
 contents/HowConfiguringTheCommandProcessorWorks.md	HowConfiguringTheCommandProcessorWorksContext	-
 contents/MSSQLTransportInboxAndOutbox.md	RelationalTransportContext	-

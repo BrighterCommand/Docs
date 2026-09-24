@@ -150,6 +150,8 @@ public class OrderService
 ### Basic Consumer Setup
 
 ```csharp
+using System;
+using System.Collections.Generic;
 using Paramore.Brighter;
 using Paramore.Brighter.MessagingGateway.Postgres;
 using Paramore.Brighter.PostgreSql;
@@ -180,8 +182,8 @@ var subscriptions = new List<PostgresSubscription>
     )
 };
 
-// Channel factory
-var channelFactory = new PostgresChannelFactory(postgresConfiguration);
+// Channel factory: it takes the configuration wrapped in a gateway connection
+var channelFactory = new PostgresChannelFactory(new PostgresMessagingGatewayConnection(postgresConfiguration));
 
 // Configure Brighter Consumer
 services.AddConsumers(options =>

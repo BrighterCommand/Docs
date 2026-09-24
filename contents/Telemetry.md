@@ -29,32 +29,42 @@ V10 provides fine-grained control over which attributes are recorded to optimize
 
 ### Instrumentation Options
 
-Configure instrumentation using `BrighterInstrumentation`:
+`InstrumentationOptions` is a flags enum, so you combine the attributes you want with `|`. Set it on the Command Processor through `AddBrighter`, and on producers through `AddProducers`:
+
+| Flag | Records |
+|---|---|
+| `RequestInformation` | Request ID, type and operation; on messages, the CloudEvents ID, type, source and subject |
+| `RequestBody` | The request body as JSON; on messages, the message body (expensive) |
+| `RequestContext` | Custom attributes from the request context |
+| `Messaging` | Messaging attributes: destination, partition, message ID and type, body size, headers |
+| `DatabaseInformation` | Database attributes for Outbox and Inbox operations |
+| `ClamCheck` | Claim check operations (the member is spelled `ClamCheck`) |
+| `Brighter` | Brighter's handler instrumentation |
+| `All` | Every flag above |
+| `None` | Nothing |
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.Observability;
 
-var instrumentation = BrighterInstrumentation.InstrumentationOptions;
+var services = new ServiceCollection();
 
-// Control Command Processor attributes
-instrumentation.CommandProcessorInstrumentationOptions = new InstrumentationOptions
-{
-    RecordRequestInformation = true,      // Request ID, type, operation
-    RecordRequestBody = false,            // Request body as JSON (expensive)
-    RecordRequestContext = true           // Custom span context attributes
-};
-
-// Control Message attributes (for Producers and Consumers)
-instrumentation.MessagingInstrumentationOptions = new InstrumentationOptions
-{
-    RecordMessageInformation = true,      // Message ID, channel, partition
-    RecordMessageBody = false,            // Message payload (expensive)
-    RecordMessageHeaders = true,          // Message headers
-    RecordServerInformation = true        // Broker address
-};
+services.AddBrighter(options =>
+    {
+        // Command Processor spans: request ID, type and operation, plus the request context
+        options.InstrumentationOptions = InstrumentationOptions.RequestInformation
+                                       | InstrumentationOptions.RequestContext;
+    })
+    .AddProducers(configure =>
+    {
+        // Producer spans: add the messaging attributes, but not the request body
+        configure.InstrumentationOptions = InstrumentationOptions.RequestInformation
+                                         | InstrumentationOptions.Messaging;
+    });
 ```
 
-**Best Practice**: Only enable `RecordRequestBody` and `RecordMessageBody` in development or debugging scenarios, as they can significantly increase trace size and cost.
+**Best Practice**: Only enable `RequestBody` in development or debugging scenarios, as it can significantly increase trace size and cost.
 
 ---
 
@@ -278,20 +288,30 @@ CloudEvents adds alternative attribute names following [CloudEvents Semantic Con
 
 ### Enabling CloudEvents Conventions
 
-```csharp
-var instrumentation = BrighterInstrumentation.InstrumentationOptions;
+There is no separate switch for the CloudEvents attributes. Brighter records them on message spans whenever `InstrumentationOptions.RequestInformation` is set, and records the messaging attributes when `InstrumentationOptions.Messaging` is set:
 
-instrumentation.MessagingInstrumentationOptions.UseCloudEventsConventionsAttributes = true;
-instrumentation.MessagingInstrumentationOptions.UseMessagingSemanticConventionsAttributes = true;
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Observability;
+
+var services = new ServiceCollection();
+
+services.AddBrighter()
+    .AddProducers(configure =>
+    {
+        configure.InstrumentationOptions = InstrumentationOptions.RequestInformation
+                                         | InstrumentationOptions.Messaging;
+    });
 ```
 
-You can enable both conventions simultaneously, and both sets of attributes will be recorded.
+Set both flags and both sets of attributes will be recorded.
 
 ---
 
 ## Telemetry Best Practices
 
-1. **Start with Minimal Instrumentation**: Enable `RecordRequestInformation` and `RecordMessageInformation`, disable expensive options like `RecordRequestBody`
+1. **Start with Minimal Instrumentation**: Enable `RequestInformation` and `Messaging`, and leave out expensive flags like `RequestBody`
 
 2. **Use Sampling**: Configure sampling in production to reduce costs:
    ```csharp
@@ -370,7 +390,7 @@ V9 used custom attribute names. V10 uses OTel standard conventions:
 
 **Solutions**:
 
-- Disable `RecordRequestBody` and `RecordMessageBody`
+- Leave `RequestBody` out of `InstrumentationOptions`
 - Reduce sampling rate: `.SetSampler(new TraceIdRatioBasedSampler(0.1))`
 - Disable unnecessary attribute collection
 - Use tail-based sampling to only keep interesting traces

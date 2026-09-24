@@ -43,7 +43,7 @@ This simple approach makes it perfect for testing but unsuitable for production 
 ```text
 Your Code
     ↓
-CommandProcessor.SendAsync(command, delay)
+CommandProcessor.SendAsync(delay, command)
     ↓
 InMemoryScheduler
     ↓
@@ -169,35 +169,32 @@ Use InMemory for development, production schedulers elsewhere:
 
 ```csharp
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddBrighter(options =>
+var brighter = builder.Services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
-})
-.UseScheduler(GetSchedulerFactory(builder.Environment, builder.Configuration))
-.AutoFromAssemblies();
+});
 
-static IAmAMessageSchedulerFactory GetSchedulerFactory(
-    IHostEnvironment environment,
-    IConfiguration configuration)
+// UseScheduler needs one type that is both a message and a request scheduler factory,
+// so choose the concrete factory here; a helper could only return one of the two interfaces
+if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"))
 {
-    if (environment.IsDevelopment() || environment.IsEnvironment("Testing"))
-    {
-        return new InMemorySchedulerFactory();
-    }
-
-    // Production - use durable scheduler
-    return new HangfireMessageSchedulerFactory(
-        configuration.GetConnectionString("Hangfire")
-    );
+    brighter.UseScheduler(new InMemorySchedulerFactory());
 }
+else
+{
+    // Production - use a durable scheduler; Hangfire's storage is configured with AddHangfire
+    brighter.UseScheduler(new HangfireMessageSchedulerFactory());
+}
+
+brighter.AutoFromAssemblies();
 ```
 
 ### Configuration with Custom Timer Provider

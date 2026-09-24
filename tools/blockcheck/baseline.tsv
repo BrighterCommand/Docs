@@ -19,6 +19,9 @@
 # Admitted in phase 3 with NO PAGE EDITED: only blocks that build against the
 # pin as the page prints them, given their page's scaffold. Blocks that need a
 # `using` on the page belong to phase 4 or to backlog item 2.
+#
+# Phase 4 added the rows at `9c57ae2`: blocks that build because the phase repaired
+# the page, each one a defect of claim, and each row landing in the PR that made it build.
 contents/AWSSQSConfiguration.md	1	-	280d1b7
 contents/AWSSQSConfiguration.md	3	-	280d1b7
 contents/AWSSQSConfiguration.md	4	-	280d1b7
@@ -32,15 +35,21 @@ contents/AsyncAPISupport.md	5	-	280d1b7
 contents/AwsScheduler.md	19	-	280d1b7
 contents/AzureScheduler.md	1	AzureSchedulerContext.cs	280d1b7
 contents/AzureScheduler.md	17	AzureSchedulerContext.cs	280d1b7
+contents/AzureScheduler.md	18	AzureSchedulerContext.cs	9c57ae2
 contents/AzureScheduler.md	20	AzureSchedulerContext.cs	280d1b7
 contents/AzureScheduler.md	21	AzureSchedulerContext.cs	280d1b7
 contents/BoxProvisioning.md	1	-	280d1b7
 contents/BuildingAnAsyncPipeline.md	1	-	280d1b7
+contents/CQRSWithBrighterAndDarker.md	6	-	9c57ae2
 contents/ClaimCheck.md	3	-	280d1b7
+contents/CloudEventsSupport.md	8	-	9c57ae2
+contents/CloudEventsSupport.md	10	-	9c57ae2
 contents/CommandProcessorConfigurationReference.md	4	-	280d1b7
 contents/DapperOutbox.md	1	PageContext.cs	280d1b7
 contents/DynamoOutbox.md	1	DynamoOutboxContext.cs	280d1b7
 contents/DynamoOutbox.md	4	DynamoOutboxContext.cs	280d1b7
+contents/FAQ.md	18	FAQContext.cs	9c57ae2
+contents/FAQ.md	19	FAQContext.cs	9c57ae2
 contents/FirestoreInbox.md	1	-	280d1b7
 contents/FirestoreOutbox.md	1	-	280d1b7
 contents/HandlingPoisonMessages.md	4	HandlingPoisonMessagesContext.cs	280d1b7
@@ -104,6 +113,9 @@ contents/SpannerOutbox.md	1	-	280d1b7
 contents/SpannerOutbox.md	2	-	280d1b7
 contents/SweeperCircuitBreaking.md	6	SweeperCircuitBreakingContext.cs	280d1b7
 contents/SweeperCircuitBreaking.md	8	SweeperCircuitBreakingContext.cs	280d1b7
+contents/SweeperCircuitBreaking.md	9	SweeperCircuitBreakingContext.cs	9c57ae2
+contents/Telemetry.md	1	-	9c57ae2
+contents/Telemetry.md	4	-	9c57ae2
 contents/TickerQScheduler.md	5	TickerQSchedulerContext.cs	280d1b7
 contents/TickerQScheduler.md	6	TickerQSchedulerContext.cs	280d1b7
 contents/TutorialDurableOutbox.md	2	-	280d1b7

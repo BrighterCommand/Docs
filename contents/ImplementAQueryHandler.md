@@ -303,8 +303,11 @@ public sealed class GetStatisticsQueryHandler : QueryHandler<GetStatisticsQuery,
 
 If you later need to add async operations, you can convert a synchronous handler to async:
 
+**Synchronous:**
+
 ```csharp
-// Before (synchronous)
+using Paramore.Darker;
+
 public sealed class GetOrderQueryHandler : QueryHandler<GetOrderQuery, Order>
 {
     public override Order Execute(GetOrderQuery query)
@@ -312,8 +315,15 @@ public sealed class GetOrderQueryHandler : QueryHandler<GetOrderQuery, Order>
         return _repository.GetById(query.OrderId);
     }
 }
+```
 
-// After (asynchronous)
+**Asynchronous:**
+
+```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker;
+
 public sealed class GetOrderQueryHandler : QueryHandlerAsync<GetOrderQuery, Order>
 {
     public override async Task<Order> ExecuteAsync(

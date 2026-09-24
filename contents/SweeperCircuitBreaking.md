@@ -327,8 +327,9 @@ services.AddBrighter()
 Circuit breaking only applies to **sweeper-based clearing**:
 
 ```csharp
+// ...
 // Immediate clearing - NOT subject to circuit breaking
-await postBox.ClearOutboxAsync(messageIds);
+await commandProcessor.ClearOutboxAsync(messageIds);
 
 // Sweeper clearing - subject to circuit breaking
 // Happens automatically via UseOutboxSweeper

@@ -234,27 +234,27 @@ both depend on.
 **Goal:** P0-9. **Obligation 7 binds on this PR** — sign-off before merge, head-ref deletion asked
 for by name in the same breath.
 
-- [ ] **Task 4.1:** Re-derive the claim list before repairing anything
+- [x] **Task 4.1:** Re-derive the claim list before repairing anything
   - Input: task 2.3's claim list
   - Output: the list re-derived at this phase's HEAD, with the command, and any difference from phase 2's explained rather than adopted
   - Notes: phase 2's list was measured at a ref two merges back. 015's phase 4 found three inherited figures stale before it began.
 
-- [ ] **Task 4.2:** Repair the before/after-in-one-fence blocks
+- [x] **Task 4.2:** Repair the before/after-in-one-fence blocks
   - Input: task 2.5's confirmed list, `CLAUDE.md` § *Version markers on code*
   - Output: each such block split into two fenced blocks — **and the labels chosen by what the pair actually is.** A **version** pair (`CloudEventsSupport.md`, `PolicyRetryAndCircuitBreaker.md`: `// V9` above `// V10` in one fence) takes ❌ for the superseded form and ✅ for the current one. A pair that is **not** about versions takes an ordinary labelled heading or bold lead-in and **no ❌/✅ marker at all**
   - Notes: the repair is a convention this repository already has, so this is not an invention — but *(review finding 1)* **the convention is `CLAUDE.md` § *Version markers on code*, which opens *"Where V9 and V10 differ"*, and one block on the list is not that.** `ImplementAQueryHandler.md` block 10 is `// Before (synchronous)` / `// After (asynchronous)` — **Reactor and Proactor, both current in V10.** Marking `Execute` ❌ *superseded* would assert something false on the page and contradict `ReactorAndProactor.md`; label those two *Synchronous* and *Asynchronous* instead. **Do not change any page's banner, type, headings or opening sentence** — a heading is a published URL.
 
-- [ ] **Task 4.3:** Repair the remaining defects of claim
+- [x] **Task 4.3:** Repair the remaining defects of claim
   - Input: task 4.1's list
   - Output: the edits, page by page, each one named in this file with what it claimed and what is true
   - Notes: obligation 2 — record the mismatch before fixing it. **Every edited block is built before the commit**, and a repair that needs more than its defect fixed says so (015's phase 4 found fifteen blocks broken in ways the site was not about).
 
-- [ ] **Task 4.3a:** Give every block this phase creates or leaves uncompilable its opt-out, with a reason *(review finding 3)*
+- [x] **Task 4.3a:** Give every block this phase creates or leaves uncompilable its opt-out, with a reason *(review finding 3)*
   - Input: tasks 4.2 and 4.3, task 3.1's marker, task 3.2's rule
   - Output: a skip marker with a reason on **every ❌ block this phase creates** — the split makes one per version pair, and P0-5's rule covers *any* block that must not compile, not only the eight that existed at phase 3 — **and** on any split half that is still a **fragment** rather than a compilable block; plus the run's `N skipped` before and after, so the count moves by exactly the number added
   - Notes: at least three of the candidates are bare signature comparisons — `CloudEventsSupport.md` shows `public Message MapToMessage(OrderCreated request)` against its V10 form, with no bodies — and **splitting a fragment yields two fragments, neither of which compiles.** Without this task those blocks are silently absent from the baseline and the gate still reports `0 findings`: a repair that leaves nothing measurable behind. The alternative — rewriting them into compilable examples — is a page change beyond the defect, so it is 4.3's *"a repair that needs more than its defect fixed says so"*, not a default.
 
-- [ ] **Task 4.4:** Update the baseline and scaffold for every repaired block
+- [x] **Task 4.4:** Update the baseline and scaffold for every repaired block
   - Input: tasks 4.2 and 4.3
   - Output: `baseline.tsv` rows added for blocks that now compile, and the run green at the end of the branch
   - Notes: the gate shipped in phase 3, so **this branch must end green or it reddens `master`**.
@@ -264,7 +264,7 @@ for by name in the same breath.
   - Output: the list of pages changed, in this file, and the sign-off asked for **with the head-ref deletion named in the same breath**
   - Notes: obligation 7. A merge is not a deletion, and one authorisation covers one PR.
 
-- [ ] **Task 4.6:** Predict and reconcile the nine gates
+- [x] **Task 4.6:** Predict and reconcile the nine gates
   - Input: as task 1.10
   - Output: § *Phase 4 prediction* and § *Phase 4 as executed*
   - Notes: **this is the phase where `pagelint` may move**, and the direction is down if a repaired block gains `using` directives. Predict the number **before** the work and reconcile; `tools/README.md` row 2 owns the figure. `symbolcheck` and `optioncheck` both read `contents/` and may move too — predict each, do not assume.
@@ -2012,3 +2012,194 @@ HTML comment as prose"*, was true rather than assumed.
 | **The scaffold** | 13 units, 4 preludes, 100 identifiers, 14 pages. Values only, typed from the pin |
 | **For the maintainer** | the 102 blocks needing an unshown type (AC13); the `options` job's schedule; AC10's `^./spec/` under BSD grep; the label-vs-API rule for the V9 skips |
 | **For phase 4** | four new claims found by scaffolding: `FAQ.md#18`, `#19`, `AzureScheduler.md#18`, `SweeperCircuitBreaking.md#9` |
+
+---
+
+## Phase 4 prediction
+
+**Written after the page edits and before gates 1 and 3–8 were run, which is half of obligation 6
+and is recorded as such.** `pagelint` and `blockcheck` had already been run to build the repairs,
+so their figures below are readings, not predictions. The mechanism for the rest:
+
+| # | Gate | Predicted | Why |
+|---:|---|---|---|
+| 1 | `linkcheck` | none | no link added or retargeted; no `.md` under `tools/` |
+| 2 | `pagelint` | **moves**, direction down | *read, not predicted:* 744 → 743 |
+| 3, 4, 7 | shape, redirects, `--verify` | none | `SUMMARY.md` and `.gitbook.yaml` untouched; no heading changed |
+| 5 | `versioncheck` | none | no prose pin edited |
+| 6 | `optioncheck` | none | the one table added (`Telemetry.md`'s flags) carries no `optioncheck` marker |
+| 8 | `symbolcheck` | none | no watchlisted name added; `UsePolicy` was removed from two blocks, not added |
+| 9 | `blockcheck` | **moves** | *read, not predicted:* +4 blocks from the splits, +4 skips, +9 BUILT and +9 rows |
+
+---
+
+## Phase 4 as executed
+
+### The claim list, re-derived *(task 4.1)*
+
+**At `master` = `a194c4a`, 18 candidate blocks across 13 pages, and reading kept 14 across 10.**
+Method 1 is phase 2's claim-shaped diagnostic grep, run over a fresh `--report`, then diffed against
+`verdicts.tsv`. Method 2 is `--explain` on every entrant, read one by one.
+
+```bash
+P='CS0117|CS1729|CS1061|CS0535|CS0115|CS1503|CS7036|CS0738|CS0311|CS0308'
+grep -cE "$P" tools/blockcheck/verdicts.tsv    # 69   phase 2
+grep -cE "$P" /tmp/r0.tsv                      # 72   this HEAD
+diff <(grep -E "$P" verdicts.tsv | cut -f4) <(grep -E "$P" r0.tsv | cut -f4)
+#   - MigratingToPollyV8_1, V10MigrationGuide_15        now SKIPPED, task 3.2
+#   + AzureScheduler_18                                  claim, exposed by phase 3's scaffold
+#   + MigratingToPollyV8_12, SweeperCircuitBreaking_2 _5 _7   CS1061 on AddTimeout/AddSingleton/AddBrighter:
+#                                                        a missing `using`, so context
+```
+
+**Every one of phase 2's ten still carries its claim diagnostic**, and phase 3's four were confirmed
+with the FAQ unit restored. **Four were then struck out by reading:**
+
+| Block | Why it is not a defect |
+|---|---|
+| `TurningOnReplayOnSeen.md#1`, `#6` | `OnceOnlyAction.Replay` exists on Brighter `master` and not at 10.7.0, and **the page's second line says so**: *"Not in a released package yet."* Phase 2's second diagnostic, *"`contextKey:` takes `string?`, not `System.Type`"*, is a **cascade**: 10.7.0 has a `UseInboxAttribute(int, Type, …)` overload, and it fails only because `Replay` does not bind |
+| `CausationTrackingStores.md#1`, `ReplayOnSeenReference.md#1` | `RequestContextBagNames.CausationId` is on `master`, not at 10.7.0, and both pages carry the same banner |
+
+**They are left FAILED, not skipped, on purpose.** When the pin moves past 10.7.0 they should
+build, and the ratchet will then demand their rows, which is how the pin bump gets noticed.
+A skip would hide that.
+
+**Two of phase 2's figures were wrong, recorded before being corrected (obligation 2):**
+
+- *"14 blocks across 12 pages"*: the 14 blocks sit on **10** pages, 8 for the claims and 2 for
+  the fence pairs.
+- *"The released names are `RequestInformation`, `MessageBody`, `MessageHeaders` — the `Record`
+  prefix is gone"*: **`InstrumentationOptions` is a `[Flags]` enum** with no members of that kind
+  at all. `MessageBody` and `MessageHeaders` do not exist. `BrighterInstrumentation`, the type the
+  block reads it from, does not exist either. Phase 2 read the diagnostic and guessed the fix.
+
+### The fence pairs *(task 4.2)*
+
+| Block | Now | Labels |
+|---|---|---|
+| `ImplementAQueryHandler.md#10` | #10 and #11 | **Synchronous:** / **Asynchronous:**, as review finding 1 required, with no ❌/✅ |
+| `CloudEventsSupport.md#7`, `#8`, `#9` | #7–#12 | ❌ **V9 — superseded** / ✅ **V10 — current** |
+
+**The split exposed a claim the pair was hiding.** Items 1 and 2 said *"Changed from `Guid` to
+`string`"*. At 10.7.0 `MessageHeader.MessageId` and `.CorrelationId` are **`Id`**, which converts
+implicitly from `string`. The prose and both V10 halves now say `Id`, and both halves build.
+
+### The repairs, page by page *(task 4.3)*
+
+**From the list:**
+
+| Block | Claimed | True at 10.7.0 |
+|---|---|---|
+| `Telemetry.md#1` | `BrighterInstrumentation.InstrumentationOptions.CommandProcessorInstrumentationOptions = new InstrumentationOptions { RecordRequestInformation = true, … }` | `InstrumentationOptions` is a flags enum, set on `BrighterOptions` through `AddBrighter` and on `ProducersConfiguration` through `AddProducers`. The block is rewritten, and the flags table added beside it is read from `BrighterTracer.cs` |
+| `CQRSWithBrighterAndDarker.md#7` | `[RequestLogging(step: 1)]`, `[UsePolicy(…)]` on `HandleAsync` | `RequestLoggingAttribute` requires `timing`. **Both attributes are also the sync forms on an async handler**, which Brighter rejects at pipeline build, and `UsePolicy` is `[Obsolete]`. Now `RequestLoggingAsync` and `UseResiliencePipelineAsync`, matching the page's own `ResiliencePipelineRegistry` |
+| `InMemoryOptions.md#2` | `ClearOutboxAsync()` with no ids; a field declared without a type; `.UseInMemoryArchiveProvider()`; `Assert.Any` | Rewritten and **run** (below) |
+| `InMemoryOptions.md#3` | `IAmAnOutbox<Message, CommittableTransaction>`; `.UseOutbox(…)`; `UseScheduler` given an `IAmAMessageSchedulerFactory`; `new HangfireMessageSchedulerFactory(connectionString)` | `IAmAnOutbox` is not generic; there is no `UseOutbox`, the Outbox is `ProducersConfiguration.Outbox`; `UseScheduler<T>` needs `T` to be **both** factory interfaces, which a helper returning one cannot be; Hangfire's factory has no such constructor. `publication` was also used without being declared |
+| `InMemoryScheduler.md#4` | the same helper, and the same Hangfire constructor | branches at the call site on concrete types. Now fails only on `args`, the toplevel wrapper's quirk (below) |
+| `PostgreSQLMessageBroker.md#3` | `new PostgresChannelFactory(RelationalDatabaseConfiguration)` | takes a `PostgresMessagingGatewayConnection`, as `PostgreSQLTransportAndOutbox.md` already says |
+| `FAQ.md#18`, `#19` | `SendAsync(command, delay)`; `RescheduleAsync` | `SendAsync(delay, command)`; `ReSchedulerAsync`. `scheduler` is now named as the `IAmARequestSchedulerAsync` |
+| `AzureScheduler.md#18` | `ReScheduleAsync` *"Won't work!"* | `ReSchedulerAsync` exists and **returns `false`** in `AzureServiceBusScheduler`. The comment now says that |
+| `SweeperCircuitBreaking.md#9` | `postBox.ClearOutboxAsync(messageIds)` | `postBox` is the internal mediator, whose overload requires a `requestContext`. Now `commandProcessor.ClearOutboxAsync(messageIds)`, as block 5 of the same page already writes it |
+
+**Found by reading, the same falsehood elsewhere.** The rule: a false claim found on a listed block
+is repaired wherever a grep finds it again, and nothing else is.
+
+| Where | Falsehood |
+|---|---|
+| `Telemetry.md#4` | the same invented API, plus `UseCloudEventsConventionsAttributes`, which does not exist. CloudEvents attributes are recorded under `RequestInformation`; there is no switch |
+| `ConfiguringOpenTelemetry.md#6`, `#7` | the same invented API. **Their Jaeger and `TracerProvider.Run` diagnostics are still phase 2's undecided pin question** and are not touched |
+| `CQRSWithBrighterAndDarker.md#2` | the same sync-on-async attributes |
+| `CQRSWithBrighterAndDarker.md#2`, `#6` | `PlaceOrderCommand : IRequest` never implements `Id` or `CorrelationId`. Now `: Command` with `base(Id.Random())`. **#6 builds** |
+| `DarkerAndBrighterPipelines.md#1` | sync attributes on an async handler, and `HandleAsync` returning `Task<AddGreetingResponse>` |
+| `BrighterSchedulerSupport.md#5`, `SchedulingAMessage.md#7` | `new HangfireMessageSchedulerFactory(connectionString: …)`, and a `scheduler:` argument name `UseScheduler` does not have |
+| `SchedulingAMessage.md#8`, `#9` | `QuartzMessageSchedulerFactory` does not exist, it is `QuartzSchedulerFactory(IScheduler)`; and `scheduler:` again |
+| `OutboxArchiver.md#3` | `UseOutboxArchiver(provider)` has no non-generic form. Now `<CommittableTransaction>` |
+| `FAQ.md#17` | a stray `)`: the block did not parse |
+| two ```` ```text ```` diagrams | `SendAsync(command, delay)` in `BrighterSchedulerSupport.md` and `InMemoryScheduler.md` |
+
+#### `InMemoryOptions.md#2`, run with a control
+
+**Compiling would have shipped two more defects.** The block was built and run in a scratch project
+against the 10.7.0 packages, with its tests called directly:
+
+```text
+as first rewritten           ConfigurationException: You must set a message pump type
++ messagePumpType            PASS publish     FAIL schedule: More than one handler was found for FireSchedulerRequest
+- AutoFromAssemblies()       PASS publish     PASS schedule          <- what the page now shows
+control: no RequestType      FAIL publish: No producer found for request type    <- the page's original Publication
+```
+
+The schedule test carries its own control: `Assert.Empty` before the delay, `Assert.NotEmpty` after.
+The original's second test also asserted that a scheduled **`SendAsync`** puts a message on the bus.
+It does not: that path fires the command at a local handler. It is now a scheduled **`PostAsync`**.
+
+**The duplicate handler is a Brighter 10.7.0 defect, not a page one, and it is isolated:**
+
+```text
+services.AddBrighter().AutoFromAssemblies()        FireSchedulerRequestHandler, FireSchedulerRequestHandler
+services.AddBrighter()   (control, no scan)        FireSchedulerRequestHandler
+```
+
+So **any** DI application that calls `AutoFromAssemblies()` and schedules a request through the
+InMemory scheduler throws at fire time. The page's test registers no handlers and drops the call,
+saying why. **Brighter is read-only to this repository**, so the defect goes to the maintainer.
+
+### The opt-outs *(task 4.3a)*
+
+**12 → 16 skipped, +4, exactly the markers added:** the three ❌ halves in `CloudEventsSupport.md`,
+and the V10 half of item 3, `public Message MapToMessage(…)`, which is a bare signature and a
+**fragment**. The V9 half of item 3 is both, and carries the V9 reason. The `ImplementAQueryHandler`
+halves are complete classes that still fail on the page's own `_repository` and domain types.
+That is context, not a fragment, so they carry no marker.
+
+### The baseline *(task 4.4)*
+
+**92 → 101 rows, +9, at `9c57ae2`, every one a block a repair made build:** `AzureScheduler.md#18`,
+`CQRSWithBrighterAndDarker.md#6`, `CloudEventsSupport.md#8`, `#10`, `FAQ.md#18`, `#19`,
+`SweeperCircuitBreaking.md#9`, `Telemetry.md#1`, `#4`. **No baselined block moved**, even though the
+splits renumbered every later block on two pages: none of those later blocks was in the baseline.
+
+**`FAQ.md` regains the unit phase 3 trimmed**, as phase 3 said it would: `FAQContext`, five values.
+**Red-proofed:** with the page's original text restored, `FAQ_18` reads `FAILED CS1503` and `FAQ_19`
+`CS1061,CS1503`. The revert restores both to BUILT.
+
+### Found and not repaired — for 017
+
+- **`InMemoryScheduler.md` § *Configuration with Custom Timer Provider*.** `ITimerProvider` does not
+  exist at 10.7.0, and the scheduler takes a `TimeProvider`. That is a section rewrite, not a repair.
+- **The sync-attribute-on-async-handler shape was not surveyed.** It was repaired on the three
+  blocks it was found on. `ReactorAndProactor.md`, `HowConfiguringTheCommandProcessorWorks.md`,
+  `PolicyFallback.md` and `ImplementingExternalBus.md` also carry `[UsePolicy(`.
+- **`CQRSWithBrighterAndDarker.md:700`**, `Id = command.Id`: `command.Id` is now an `Id`, and the
+  page never shows `Order`, so whether that assigns is unknown.
+- **The toplevel wrapper supplies no `args`**, so `InMemoryScheduler.md#4` fails on a name every
+  `Program.cs` has. An instrument quirk, in the friction ledger's column, not the page's.
+
+### The site change *(task 4.5)*
+
+```text
+git diff --stat master -- contents/     15 pages
+AzureScheduler  BrighterSchedulerSupport  CQRSWithBrighterAndDarker  CloudEventsSupport
+ConfiguringOpenTelemetry  DarkerAndBrighterPipelines  FAQ  ImplementAQueryHandler  InMemoryOptions
+InMemoryScheduler  OutboxArchiver  PostgreSQLMessageBroker  SchedulingAMessage
+SweeperCircuitBreaking  Telemetry
+```
+
+**No banner, page type, heading or opening sentence changed**, so no URL and no `description:`
+moved, which gates 3, 4 and 7 confirm. Sign-off asked for with the head-ref deletion named, per
+obligation 7.
+
+### The nine gates, reconciled *(task 4.6)*
+
+| # | Gate | Predicted | Read at `b941837` | |
+|---:|---|---|---|---|
+| 1 | `linkcheck` | none | 165 files, 0 broken | ✅ |
+| 2 | `pagelint` | down | 0 errors, **743** warnings, 162 pages | ✅ read, not predicted |
+| 3 | shape | none | 161 / 12 sections / 4 of 4 / 12 of 20 | ✅ |
+| 4 | redirects | none | 77 entries, 7858 bytes | ✅ |
+| 5 | `versioncheck` | none | 0 stale of 18, across 5 | ✅ |
+| 6 | `optioncheck` | none | 0 mismatches, 59 tables, 519 rows | ✅ |
+| 7 | `--verify` | none | 161 predicted = 161 published | ✅ |
+| 8 | `symbolcheck` | none | 0 findings, 22 entries, 161 pages, 3 silenced | ✅ |
+| 9 | `blockcheck` | moves | **989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED — 0 findings, 16 skipped** | ✅ read, not predicted |
+
+`tools/README.md` rows 2 and 9 now carry `b941837`, and no other file quotes either figure.

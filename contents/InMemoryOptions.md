@@ -83,24 +83,25 @@ For more details on service provider overloads and the Options pattern, see [Ser
 Here's a complete example showing how to use multiple InMemory components together:
 
 ```csharp
+using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.Inbox;
 using Paramore.Brighter.Observability;
 using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+using Xunit;
 
 public class IntegrationTests : IDisposable
 {
+    private readonly InternalBus _internalBus = new();
     private readonly ServiceProvider _serviceProvider;
     private readonly IAmACommandProcessor _commandProcessor;
-    private readonly InMemoryMessageProducer _inMemoryProducer;
-    private readonly _internalBus  = new InternalBus();
 
     public IntegrationTests()
     {
         var services = new ServiceCollection();
-        var internalBus  = new InternalBus();
 
         services.AddConsumers(options =>
         {
@@ -117,7 +118,8 @@ public class IntegrationTests : IDisposable
                 new InMemorySubscription<PersonCreated>(
                     new SubscriptionName("PersonAnalytics"),
                     new ChannelName("person.created"),
-                    new RoutingKey("PersonCreated")
+                    new RoutingKey("PersonCreated"),
+                    messagePumpType: MessagePumpType.Proactor
                 )
             };
 
@@ -125,54 +127,51 @@ public class IntegrationTests : IDisposable
         })
         .AddProducers(options =>
         {
-            var publication = new Publication() { Topic = new RoutingKey("PersonCreated") };
+            // RequestType is how Brighter finds the publication for a PersonCreated
+            var publication = new Publication
+            {
+                Topic = new RoutingKey("PersonCreated"),
+                RequestType = typeof(PersonCreated)
+            };
 
             options.ProducerRegistry = new InMemoryProducerRegistryFactory(_internalBus, new[] { publication }, InstrumentationOptions.All)
                 .Create();
             options.Outbox = new InMemoryOutbox(TimeProvider.System);
         })
-        .UseScheduler(new InMemorySchedulerFactory())  // InMemory Scheduler
-        .UseInMemoryArchiveProvider()  // InMemory Archive
-        .AutoFromAssemblies();
+        .UseScheduler(new InMemorySchedulerFactory());  // InMemory Scheduler
+        // This test registers no handlers of its own, so it has no need of AutoFromAssemblies
 
         _serviceProvider = services.BuildServiceProvider();
         _commandProcessor = _serviceProvider.GetRequiredService<IAmACommandProcessor>();
     }
 
     [Fact]
-    public async Task Should_Publish_And_Consume_Message_With_InMemory_Components()
+    public async Task Should_Publish_Message_With_InMemory_Components()
     {
-        // Arrange
-        var command = new CreatePersonCommand { Name = "Alice", Email = "alice@example.com" };
+        // Act - Post writes to the InMemory Outbox, then dispatches to the InMemory transport
+        await _commandProcessor.PostAsync(new PersonCreated { Name = "Alice" });
 
-        // Act - Publish with InMemory Outbox
-        await _commandProcessor.SendAsync(command);
-        await _commandProcessor.ClearOutboxAsync();
-
-        // Wait for InMemory consumer to process
-        await Task.Delay(100);
-
-         var messages = _internalBus.Stream(new RoutingKey("PersonCreated"));
-         Assert.Any(messages);
+        // Assert - the message is on the InMemory bus
+        var messages = _internalBus.Stream(new RoutingKey("PersonCreated"));
+        Assert.NotEmpty(messages);
     }
 
     [Fact]
     public async Task Should_Schedule_Message_With_InMemory_Scheduler()
     {
-        // Arrange
-        var command = new SendEmailCommand { To = "alice@example.com" };
-
-        // Act - Schedule with InMemory Scheduler
-        var schedulerId = await _commandProcessor.SendAsync(
+        // Act - schedule the post with the InMemory Scheduler
+        await _commandProcessor.PostAsync(
             TimeSpan.FromMilliseconds(100),
-            command
+            new PersonCreated { Name = "Bob" }
         );
 
-        // Assert - Wait for execution
-        await Task.Delay(150);
+        // Assert - nothing is sent until the delay has passed
+        Assert.Empty(_internalBus.Stream(new RoutingKey("PersonCreated")));
+
+        await Task.Delay(500);
 
         var messages = _internalBus.Stream(new RoutingKey("PersonCreated"));
-         Assert.Any(messages);
+        Assert.NotEmpty(messages);
     }
 
     public void Dispose()
@@ -193,6 +192,7 @@ using Microsoft.Extensions.Hosting;
 using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.Inbox;
+using Paramore.Brighter.MessageScheduler.Hangfire;
 using Paramore.Brighter.Observability;
 using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 
@@ -215,9 +215,9 @@ public static class BrighterConfiguration
         .AddProducers(options =>
         {
             options.ProducerRegistry = GetProducerRegistry(environment, configuration, internalBus);
+            options.Outbox = GetOutbox(environment, configuration);
         })
-        .UseOutbox(GetOutbox(environment, configuration))
-        .UseScheduler(GetSchedulerFactory(environment, configuration))
+        .UseEnvironmentScheduler(environment)
         .AutoFromAssemblies();
 
         return services;
@@ -230,6 +230,12 @@ public static class BrighterConfiguration
     {
         if (environment.IsDevelopment() || environment.IsEnvironment("Testing"))
         {
+            var publication = new Publication
+            {
+                Topic = new RoutingKey("PersonCreated"),
+                RequestType = typeof(PersonCreated)
+            };
+
             return new InMemoryProducerRegistryFactory(bus , new[] { publication }, InstrumentationOptions.All)
                 .Create();
         }
@@ -238,22 +244,22 @@ public static class BrighterConfiguration
         return new RmqProducerRegistryFactory(/* production config */).Create();
     }
 
-    private static IAmAMessageSchedulerFactory GetSchedulerFactory(
-        IHostEnvironment environment,
-        IConfiguration configuration)
+    // UseScheduler needs one type that is both a message and a request scheduler factory,
+    // so this chooses the concrete factory itself rather than returning one of the two interfaces
+    private static IBrighterBuilder UseEnvironmentScheduler(
+        this IBrighterBuilder brighter,
+        IHostEnvironment environment)
     {
         if (environment.IsDevelopment() || environment.IsEnvironment("Testing"))
         {
-            return new InMemorySchedulerFactory();
+            return brighter.UseScheduler(new InMemorySchedulerFactory());
         }
 
-        // Production: Quartz, Hangfire, AWS Scheduler, etc.
-        return new HangfireMessageSchedulerFactory(
-            configuration.GetConnectionString("Hangfire")
-        );
+        // Production: Quartz, Hangfire, AWS Scheduler, etc.; Hangfire's storage is configured with AddHangfire
+        return brighter.UseScheduler(new HangfireMessageSchedulerFactory());
     }
 
-    private static IAmAnOutbox<Message, CommittableTransaction> GetOutbox(
+    private static IAmAnOutbox GetOutbox(
         IHostEnvironment environment,
         IConfiguration configuration)
     {

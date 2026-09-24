@@ -269,30 +269,59 @@ See [Claim Check Pattern](ClaimCheck.md) for more details.
 
 When migrating to V10, be aware of these CloudEvents-related breaking changes:
 
-1. **Message ID**: Changed from `Guid` to `string`
-   ```csharp
-   // V9
-   var messageId = Guid.NewGuid();
+1. **Message ID**: Changed from `Guid` to `Id`, which converts implicitly from a `string`
 
-   // V10
-   var messageId = Guid.NewGuid().ToString(); // or any unique string
+   ❌ **V9 — superseded**
+
+   <!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled V9, superseded) -->
+   ```csharp
+   // ...
+   var messageId = Guid.NewGuid();
    ```
 
-2. **Correlation ID**: Changed from `Guid` to `string`
-   ```csharp
-   // V9
-   var correlationId = Guid.NewGuid();
+   ✅ **V10 — current**
 
-   // V10
-   var correlationId = Guid.NewGuid().ToString(); // or any unique string
+   ```csharp
+   using System;
+   using Paramore.Brighter;
+
+   Id messageId = Guid.NewGuid().ToString(); // or any unique string
+   ```
+
+2. **Correlation ID**: Changed from `Guid` to `Id`, which converts implicitly from a `string`
+
+   ❌ **V9 — superseded**
+
+   <!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled V9, superseded) -->
+   ```csharp
+   // ...
+   var correlationId = Guid.NewGuid();
+   ```
+
+   ✅ **V10 — current**
+
+   ```csharp
+   using System;
+   using Paramore.Brighter;
+
+   Id correlationId = Guid.NewGuid().ToString(); // or any unique string
    ```
 
 3. **Publication passed to mapper**: Message mappers now receive `Publication` parameter
-   ```csharp
-   // V9
-   public Message MapToMessage(OrderCreated request)
 
-   // V10
+   ❌ **V9 — superseded**
+
+   <!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled V9, superseded) -->
+   ```csharp
+   // ...
+   public Message MapToMessage(OrderCreated request)
+   ```
+
+   ✅ **V10 — current**
+
+   <!-- blockcheck: skip a method signature shown for comparison, with no body or class to compile in -->
+   ```csharp
+   // ...
    public Message MapToMessage(OrderCreated request, Publication publication)
    ```
 
