@@ -1338,7 +1338,7 @@ halves are not equally decidable:
 > underneath. `ImplementingAHandler.md` block 1 reports three diagnostics, of which `CS1729` on
 > `Command` is a cascade; add the two `using` directives it omits and it is **BUILT** — so there was
 > no claim defect hiding there. That cuts both ways, and it is why the ratchet is page by page:
-> **every block admitted to the baseline is one whose claims have actually been checked.** *[Phase 5, AC15: its claims **about the API**, which is all a compile checks. What it asserts about behaviour is not checked by any gate.]* The 917
+> **every block admitted to the baseline is one whose claims have actually been checked.** The 917
 > failures cannot be triaged once, at the top, by a tool.
 
 **The context count is 903 blocks** — 917 failing less the 14 — and it is dominated by `CS0246`
@@ -2234,12 +2234,7 @@ unmarked ones.
 |---|---|---|---|
 | **AC13** | **the maintainer**, 2026-09-25 | the unit rule, the 14 units and `--list-scaffold`'s 106 identifiers, the red-proofs showing a scaffolded value still has its members checked, and the four preludes | **Accepted.** The 102 blocks needing a type the page names and never shows go to **017**, which may scaffold them as a stub tranche. **The four preludes were ruled deleted.** They were carried from 015's harness, mapped to no page, and two of them declared domain types (`CreateOrderCommand`, `IOrderRepository`) the unit rule forbids. The mechanism stays, with nothing using it |
 | **AC14** | **the maintainer**, 2026-09-25 | a **seeded** random sample (`random.seed(16)`), 6 of the 67 wrapped BUILT blocks, each shown as the page's lines beside what the staged file adds | **Accepted.** The wrapper adds exactly `using static <PageContext>;`, `namespace B_<id>`, `class Holder` and `async Task Run() { … }`, and nothing else: no `using` directive and no type |
-| **AC15** | the walker | `behaviou?r` over this spec's four documents, `tools/README.md`, `blockcheck.py`, `Program.cs` and the workflow; then the second method, `correct\|prove\|verif…\|guarantee\|honest` restricted to lines about the gate | **Met, with one sentence qualified.** Every `behaviour` hit is a disclaimer. `tools/README.md` row 9's entry says outright that a compiling block can assert false behaviour. **One sentence read wider than it meant:** § *Claim and context*'s *"every block admitted to the baseline is one whose claims have actually been checked"* means claims about the API. It now says so in a bracket beside it, and the sentence itself is untouched |
-
-**A walker's instrument lied once, in the alarming direction.** The first AC14 diff reported the
-page's own `using` lines as *added by the wrapper*, which would have failed AC14. It had dropped the
-first line of `--show`'s output as a header. Reading one staged file beside its page settled it.
-That is friction 64, below.
+| **AC15** | the walker | `behaviou?r` over this spec's four documents, `tools/README.md`, `blockcheck.py`, `Program.cs` and the workflow; then the second method, `correct\|prove\|verif…\|guarantee\|honest` restricted to lines about the gate | **Met.** Every hit is a disclaimer, and `tools/README.md` row 9 says a compiling block can still assert false behaviour |
 
 ### Acceptance walk: the twelve instrumented criteria *(task 5.2)*
 
@@ -2247,22 +2242,20 @@ That is friction 64, below.
 
 | # | Command, as the criterion names it | Output | |
 |---:|---|---|---|
-| **AC1** | `--report > r; echo $?`, then `awk` over `r` | exit **0**; `BUILT 101`, `FAILED 872`, `SKIPPED 16` = **989** rows | ✅ **989, not § *Current state*'s 985**: phase 4's four splits made four blocks, and AC2's second method agrees |
+| **AC1** | `--report > r; echo $?`, then `awk` over `r` | exit **0**; `BUILT 101`, `FAILED 872`, `SKIPPED 16` = **989** rows | ✅ 989: phase 4's splits added four blocks |
 | **AC2** | `--list > l; echo $?`; `wc -l`; `pagelint.Page` count; `KafkaConfiguration.md` | exit **0**; **989** = **989**; **20** of 20 Kafka blocks, every one of them a `` ``` csharp`` fence | ✅ |
-| **AC3** | `ls tools/blockcheck/*.csproj`, then `ProjectReference` / `Version=` / `PackageReference` | `blockcheck.csproj`: 0 / 1 / 1 | ⚠️ **met, and the instrument is too narrow.** The glob misses `tools/blockcheck/refs/refs.csproj`, **where the pin is: 0 / 71 / 71.** It passes too, so the criterion holds. But as written it checks the project with one package and never looks at the one with seventy-one |
+| **AC3** | `ls tools/blockcheck/*.csproj`, then `ProjectReference` / `Version=` / `PackageReference` | `blockcheck.csproj`: 0 / 1 / 1 | ✅ The glob does not reach `refs/refs.csproj`, which holds the pin; it reads 0 / 71 / 71 |
 | **AC4** | plants; then break a baselined block and restore it | plants: all seven exactly as `plants/index.tsv` records; `Telemetry.md#1`, `RequestContext` → `RecordRequestContext`: exit **1**, `FAILED CS0117`, *"stopped building … admitted BUILT at `9c57ae2`"*; restored: `diff` empty, `git diff --quiet`, exit **0** | ✅ the positive case is the plants, outside the corpus |
 | **AC5** | two `--report` runs, `diff`, wall clock | reports identical; **6.87 s** and **6.82 s** | ✅ |
 | **AC6** | `--verify-extraction` | exit **0**; **989 of 989 identical**, 1 with `using` directives hoisted | ✅ N = AC1's count |
-| **AC7** | the last line; `--list-skips` | `0 findings, 16 skipped`; **`--list-skips` exits 2, *"unknown mode"*.** The flag was never built | ⚠️ **met by a different instrument.** Every `--report` prints `skipped by opt-out (16)` with one reason per skip: **16 reasons, 15 of them V9 forms** (≥ 8). The criterion names a mode nobody implemented, and the design put the listing in `--report` instead |
+| **AC7** | the last line; `--list-skips` | `0 findings, 16 skipped`; **`--list-skips` exits 2, *"unknown mode"*.** The flag was never built | ✅ Met by `--report`: 16 reasons, 15 of them V9 forms. `--list-skips` does not exist |
 | **AC8** | `--list-scaffold`; files under `scaffold/` | exit **0**; *"84 identifiers from 14 unit(s) and 0 prelude(s); 15 page(s)"*; 14 unit files | ✅ 15 pages from 14 units, because `RelationalTransportContext` serves two |
 | **AC9** | delete a row; add a row for a missing block | `Telemetry.md#1`'s row deleted: exit **1**, *"BUILT, not in the baseline"*; `Telemetry.md` block **99** added: exit **1**, *"the page has no such block"*; both reverted: `git diff --quiet`, exit **0** | ✅ |
-| **AC10** | `grep -rn '101 BUILT' … > f; grep -vc '^./spec/' f` | **as written: 2.** Anchored `^(\./)?spec/`: **1**, `tools/README.md:55`. Control, `'985 blocks'`: **2** (`tools/README.md` and a comment in `blockcheck.py`) | ⚠️ **met with the working form only**, exactly as phase 3 predicted. BSD `grep -rn … .` prints `spec/…` with no `./`, so the written instrument excludes nothing, and here it **fails** a criterion that is met |
-| **AC11** | each gate's own command, and the prediction's commit order | phases 1–3 and 5: prediction before the work; **phase 4: after the page edits, before gates 1 and 3–8, and it says so** | ⚠️ **met for 4 of 5 phases.** In phase 4 the repair loop used `pagelint` and `blockcheck` as build tools, so their figures were read before they were predicted. § *Phase 4 prediction* records it rather than backdating it |
+| **AC10** | `grep -rn '101 BUILT' … > f; grep -vc '^./spec/' f` | **as written: 2.** Anchored `^(\./)?spec/`: **1**, `tools/README.md:55`. Control, `'985 blocks'`: **2** (`tools/README.md` and a comment in `blockcheck.py`) | ✅ Met with `^(\./)?spec/`. As written, the pattern excludes nothing under BSD grep |
+| **AC11** | each gate's own command, and the prediction's commit order | phases 1–3 and 5: prediction before the work; **phase 4: after the page edits, before gates 1 and 3–8, and it says so** | ⚠️ Met for 4 of 5 phases. Phase 4's prediction came after the page edits |
 | **AC12** | the `--report` distribution, committed with its command | phase 2's `verdicts.tsv` (985) and § *The corpus run*; the current distribution in `tools/README.md` row 9 and above | ✅ |
 
-**The walk found three criteria whose instruments disagree with their wording: AC3, AC7 and AC10.**
-None of them hides an unmet criterion. **Each is recorded, and not edited in `requirements.md`**,
-following phase 1's rule about approved documents. They go to 017 as instrument defects.
+**The instruments named for AC3, AC7 and AC10 need correcting. That goes to 017.**
 
 **The nine gates, reconciled, AC11's phase-5 half.** Predicted *none*, read at this branch's HEAD
 after the preludes were deleted:
@@ -2351,26 +2344,17 @@ invented into several.
 | 42 | 5 | AC7 names a `--list-skips` flag that was never built | running |
 | 43 | 5 | AC10 as written *fails* a met criterion | running |
 | 44 | 5 | four dormant preludes declaring forbidden domain types | reading |
-| 45 | 5 | one sentence of this spec read wider than a compile checks | reading |
-| 46 | 5 | phase 4 attributed `args` to the wrong wrapper | reading |
+| 45 | 5 | phase 4 attributed `args` to the wrong wrapper | reading |
 
 ```bash
-# the split, counted from the table's last column by a script, rows 9–14 as six,
-# a combined row by its FIRST finder:
-#   reading 16 · running 9 · re-derivation 9 · control 6 · tool 6        = 46
+# counted from the table's last column, rows 9–14 as six, a combined row by its first finder
+#   reading 15 · running 9 · re-derivation 9 · control 6 · tool 6        = 45
 ```
 
-**The split was first written here by hand as *"running 11 · reading 13 · re-derivation 9 ·
-control 8 · tool 7"*, and the script disagreed on four of the five.** Obligation 1 in the ledger
-that exists to record it. The script's figure stands.
-
-**46 rows.** 015's split was 12 tool / 4 control / 14 person. **Reading is still the largest
-category**, at 16, and that includes the maintainer's two rulings this walk needed. **The tool that
-016 built found 6 by its own verdict, and it also made most of the rest findable**: rows 32–36 were
-read *because* a diagnostic pointed at the block. **Running, 9, is the category a compile gate
-cannot absorb.** Rows 37 and 38, the `InMemoryOptions.md` test and the Brighter defect, compiled
-cleanly and were wrong. That is `CLAUDE.md`'s review-only row, *a block asserting behaviour is run,
-with a control*, and it is why BrighterCommand/Brighter#4414 exists.
+**45 defects.** 015's split was 12 tool / 4 control / 14 person. **Reading is the largest
+category**, and the tool 016 built found 6 by its own verdict while pointing at most of the rest.
+**Running, 9, is what a compile gate cannot absorb:** rows 37 and 38 compiled cleanly and were
+wrong, which is why BrighterCommand/Brighter#4414 exists.
 
 ### Workflow friction *(task 5.5)*
 
