@@ -1,34 +1,21 @@
 # Spec 016: A Committed Compile Gate — Requirements
 
 **Created:** 2026-09-20
-**Status:** **APPROVED 2026-09-20** — `.requirements-approved`. Reviewed 2026-09-20: three defects
-found in this document's own acceptance criteria **by running their instruments**, all three
-repaired, with the prior wording recorded in § *What the review found in this document*.
+**Status:** **APPROVED 2026-09-20** — `.requirements-approved`. The review found three defects in
+this document's acceptance criteria by running their instruments; all three are repaired
+(§ *What the review found in this document*).
 
-> **THE NINE OPEN QUESTIONS WERE NOT RULED AT THIS REVIEW, AND THAT IS RECORDED RATHER THAN
-> TIDIED.** Approval was given with them open, so **each question's recommendation becomes the
-> design's working assumption** — stated as an assumption every time it is relied on, never as a
-> ruling. **Q1 (a ratcheting baseline) and Q6 (this spec repairs what it finds) change what gets
-> built**, and Q6 in particular decides whether *Target audience* stays N/A and whether obligation
-> 7 binds. They carry forward to `/spec:design`'s review, where 015 ruled its six.
->
-> **That is what happened. At the design review on 2026-09-20, Q1, Q2, Q4 and Q7 were settled by
-> the design's probe, and Q6 was RULED *repair* by the maintainer** — so P1-1 became **P0-9**,
-> *Target audience* stopped being N/A, and obligation 7 now binds. **Q3, Q5, Q8 and Q9 remain
-> open**, and none of them changes what gets built.
->
-> **015's Q4 is why this paragraph exists.** Two of its six recommendations were overturned at
-> review, one of them falsifying its own subject section — so a recommendation carried silently
-> into a design is a decision nobody took.
+> **The nine open questions were approved open**, so each recommendation is the design's working
+> assumption, stated as an assumption wherever it is relied on. **At the design review on
+> 2026-09-20, Q1, Q2, Q4 and Q7 were settled by the design's probe, and Q6 was ruled *repair* by
+> the maintainer**: P1-1 became **P0-9**, *Target audience* stopped being N/A, and obligation 7
+> binds. **Q3, Q5, Q8 and Q9 remain open**; none changes what gets built.
 
-> **Every number here carries the command that produced it.** All figures measured 2026-09-20
-> against Docs `master` `d412702`, working tree clean apart from this spec. Where a figure is a
-> **gate** figure it is **cited from `tools/README.md` and not pasted** — obligation 10.
+> Every number here carries the command that produced it, measured 2026-09-20 against Docs
+> `master` `d412702`. Gate figures are **cited from `tools/README.md`, not pasted** — obligation 10.
 
-> **The README was re-derived before this document was written, and one of its figures was wrong in
-> a way worth keeping.** It carried *985 C# blocks* from a single method. A second method returns
-> **835**, and the 150-block gap is not noise — see § *Current state*, first table. The README's
-> count survives; the confidence in it does not, and friction **53** is the entry.
+> **The README's *985 C# blocks* came from one method. A second returns 835**; the 150-block gap is
+> fence spelling (§ *Current state*, first table). 985 stands. Friction **53**.
 
 ## Subject
 
@@ -36,18 +23,13 @@ repaired, with the prior wording recorded in § *What the review found in this d
 the method for extracting a C# block from a page and building it against the packages a reader
 would install. **It creates no page.**
 
-Three sections are **N/A**, named rather than left empty:
+Two sections are **N/A**; a third was, until Q6:
 
 | Section | Why N/A |
 |---|---|
-| **SUMMARY.md changes** | A category error here rather than an empty heading. `SUMMARY.md` carries pages; this spec ships a tool, a baseline file, a CI job and a row in `tools/README.md`, none of which is published |
-| ~~**Target audience**~~ | **NO LONGER N/A — Q6 was ruled *repair* on 2026-09-20.** The audience of P0-1 to P0-8 is whoever runs the gates, this programme and CI. **The audience of P0-9 is the ordinary reader of a repaired page** — the audience `CLAUDE.md` writes for. The conditional this row used to carry was written precisely so the ruling would not leave a stale N/A behind, which is what 015's Q4 did |
+| **SUMMARY.md changes** | `SUMMARY.md` carries pages; this spec ships a tool, a baseline file, a CI job and a row in `tools/README.md`, none of which is published |
+| ~~**Target audience**~~ | **Not N/A — Q6 was ruled *repair* on 2026-09-20.** P0-1 to P0-8 are for whoever runs the gates, this programme and CI. **P0-9 is for the ordinary reader of a repaired page**, the audience `CLAUDE.md` writes for |
 | **Mode mix** | Diátaxis applies to whole pages and to choosing what a page is for. Nothing here decides what a page is for |
-
-> **015's Q4 is the warning this section is written against.** 015 declared itself "not a page",
-> and a single ruling turned it into a spec that edited ten pages, at which point obligation 7 bound
-> and the N/A table had to be re-reasoned rather than inherited. **Q6 below asks that question now,
-> at the requirements review, instead of discovering it at a phase boundary.**
 
 ## Topic overview
 
@@ -57,8 +39,8 @@ Three sections are **N/A**, named rather than left empty:
 > a package with no release — is caught by nothing here, because the only instrument that sees it
 > was built in `/tmp` and was never committed.**
 
-**Eight gates, and not one of them compiles a line of C#** (`tools/README.md` § *The eight gates*).
-Every one resolves *names*: `symbolcheck` against a watchlist, `--census` against two products'
+**None of the eight gates compiles C#** (`tools/README.md` § *The eight gates*). Each resolves
+*names*: `symbolcheck` against a watchlist, `--census` against two products'
 `src/`, `versioncheck` against NuGet version strings, `pagelint` rule 6 against the **presence** of
 `using` lines. A name that resolves to the wrong thing is green in all eight.
 
@@ -99,7 +81,7 @@ grep -rc '^```csharp$' contents/ README.md | awk -F: '$2>0{n+=$2;p++} END{print 
 #   835 117
 ```
 
-**They disagree by 150 blocks and 28 pages, and the whole difference is fence spelling:**
+**They differ by 150 blocks and 28 pages, all of it fence spelling:**
 
 | What the fence actually looks like | Blocks |
 |---|---:|
@@ -109,11 +91,10 @@ grep -rc '^```csharp$' contents/ README.md | awk -F: '$2>0{n+=$2;p++} END{print 
 | ` ```csharp ` — one trailing space | **1** |
 | | **150** |
 
-`835 + 150 = 985`, so both methods are right about what they looked at. **CommonMark allows all
-four and GitBook renders all four as C#**; `pagelint`'s `FENCE_RE` —
-`^ {0,3}(`{3,}|~{3,})[ \t]*(\S*)` (`tools/pagelint.py`) — was written to accept them.
+`835 + 150 = 985`. **CommonMark allows all four and GitBook renders all four as C#**; `pagelint`'s
+`FENCE_RE` — `^ {0,3}(`{3,}|~{3,})[ \t]*(\S*)` (`tools/pagelint.py`) — accepts them.
 
-**Two page figures, and they mean different things:**
+**Two page figures:**
 
 ```bash
 #   43 pages hold at least one irregular fence
@@ -122,11 +103,9 @@ four and GitBook renders all four as C#**; `pagelint`'s `FENCE_RE` —
 #       6 ShowMeTheCode.md ·  5 DispatcherConfigurationReference.md
 ```
 
-> **This is a requirement, not an anecdote.** An extractor built the obvious way sees **835 of
-> 985** blocks, compiles all 835, reports success, and is **silently blind to 15% of the corpus** —
-> including all **92** blocks on the **28** pages it cannot see at all. **One of those 28 is
-> `ShowMeTheCode.md`**, which is where a newcomer starts. Friction **53**, and the reason AC2
-> exists.
+> An extractor built the obvious way sees **835 of 985** blocks and misses **15% of the corpus**,
+> including all **92** blocks on the **28** pages it cannot see — one of them `ShowMeTheCode.md`,
+> where a newcomer starts. Friction **53**; AC2.
 
 ### What those 985 blocks actually are
 
@@ -156,10 +135,10 @@ print(dict(shapes)); print(len(names),'type names,',len(dups),'declared >1, ',su
 | **unit** — `using` directives *and* a type | **104** | compiles as written, in principle |
 
 **668 of 985 — 68% — are fragments.** In the rescued harness the wrapper is a **hand-chosen
-command-line argument** (`raw` · `members` · `stmts` · `prelude`, `harness/extract.py:6`). At
-thirteen blocks a person chooses; at 985 the choice is the spec.
+command-line argument** (`raw` · `members` · `stmts` · `prelude`, `harness/extract.py:6`); at 985
+blocks it has to be a rule.
 
-**And they cannot share a compilation:**
+**They cannot share a compilation:**
 
 ```text
 244 distinct type names declared across the blocks
@@ -167,8 +146,7 @@ thirteen blocks a person chooses; at 985 the choice is the spec.
     OrderService ×16   OrderHandler ×14   MyHandler ×10   GetOrderQueryHandler ×7
 ```
 
-One project holding every block is **`CS0101` 188 times over**. Isolation per block is a
-requirement, not a refinement.
+One project holding every block is **`CS0101` 188 times over**, so each block must be isolated.
 
 ### The `using` debt, and why rule 6 is not this gate
 
@@ -189,12 +167,11 @@ print(h,'with a using line;',n,'without, of which',d,'declare // ...')"
 #   248 with a using line; 737 without, of which 213 declare // ...
 ```
 
-`pagelint` rule 6's warning count is a **gate figure** and lives in `tools/README.md` **row 2**;
-cite it there. What matters here is that **rule 6 counts lines and cannot compile**: 015 phase 4
-added `using` directives to thirteen blocks and found, in the same fifteen blocks, a missing
-parenthesis, a missing comma, four undeclared variables, and a property that takes a `Type`
-(`tasks.md` § *Every edited block built against the released packages*). **The two checks answer
-different questions and neither implies the other.**
+`pagelint` rule 6's warning count is a gate figure, in `tools/README.md` **row 2**. **Rule 6 counts
+lines and cannot compile**: 015 phase 4 added `using` directives to thirteen blocks and found, in
+the same fifteen blocks, a missing parenthesis, a missing comma, four undeclared variables, and a
+property that takes a `Type` (`tasks.md` § *Every edited block built against the released
+packages*). Neither check implies the other.
 
 ### Blocks that must NOT compile
 
@@ -212,15 +189,14 @@ print(n,'blocks behind a ❌ marker across',len(pg),'pages')"
 #   8 blocks behind a ❌ marker across 3 pages
 ```
 
-`CLAUDE.md` § *Version markers on code* **requires** superseded V9 forms to be shown beside the
-V10 one. A gate demanding that every C# block builds would demand the documentation stop doing
-that. **Eight blocks, three pages** — small, known, and it must be opted out visibly (ruling 4).
+`CLAUDE.md` § *Version markers on code* **requires** superseded V9 forms beside the V10 one, so
+these blocks must not build. **Eight blocks, three pages**, opted out visibly (ruling 4).
 
 ### The instrument that exists
 
-Rescued from `/tmp` into `spec/016-compile_gate/harness/` on 2026-09-20 and verified rather than
-assumed — `diff -r --exclude=bin --exclude=obj` against the original is empty, with the `diff`
-controlled by appending one byte; all three projects rebuild with `--no-incremental` to `core`
+Rescued from `/tmp` into `spec/016-compile_gate/harness/` on 2026-09-20.
+`diff -r --exclude=bin --exclude=obj` against the original is empty, with the `diff` controlled by
+appending one byte; all three projects rebuild with `--no-incremental` to `core`
 **0 errors / 4 warnings**, `dynamo` **0/0**, `s3` **0/0**; red-proofed with
 `configure.Outbox` → `configure.OutboxThatDoesNotExist` giving **`CS1061`**.
 
@@ -242,16 +218,15 @@ gh run view $(gh run list --workflow=docs.yml --limit 1 --json databaseId --jq '
 #   versions 21:43:53 -> 21:44:13   20s
 ```
 
-**The `options` job is the precedent and it is a good one.** It runs `dotnet run --project
-tools/optioncheck`, pins its packages in one `.csproj`, and costs **35 seconds** from a cold NuGet
-cache. Two of its design decisions transfer directly, and both are argued in `docs.yml`'s own
-comments:
+**The `options` job is the precedent.** It runs `dotnet run --project tools/optioncheck`, pins its
+packages in one `.csproj`, and costs **35 seconds** from a cold NuGet cache. Two of its decisions,
+both argued in `docs.yml`'s comments, transfer directly:
 
 - **No `schedule:` trigger**, because it reflects over a **pinned** package and nothing outside
   this repository can change its verdict. A pinned compile gate has the same property.
 - **No guard and no `|| true`.** Exit 2 is *nothing was checked*, which is not a pass.
 
-**And it answers the project-family question partly:**
+**It partly answers the project-family question:**
 
 ```bash
 grep -c 'PackageReference' tools/optioncheck/optioncheck.csproj      # 63
@@ -259,13 +234,13 @@ grep -c 'PackageReference' tools/optioncheck/optioncheck.csproj      # 63
 
 **63 Paramore packages coexist in one project today**, proven to load in one process by spec 012's
 probe 1.3. That project includes `Paramore.Brighter.Transformers.AWS` and **excludes**
-`.Transformers.AWS.V4` — so the `NU1107` the harness hit is specifically the **`.AWS` / `.AWS.V4`
-pair**, not a general property of the package set. The harness's *three* projects were built ad hoc
-for thirteen blocks and are **not** evidence that three are needed.
+`.Transformers.AWS.V4`, so the `NU1107` the harness hit is the **`.AWS` / `.AWS.V4` pair**, not a
+property of the package set. The harness's *three* projects were built ad hoc for thirteen blocks
+and are **not** evidence that three are needed.
 
 Locally, a project build costs about three seconds warm (`core` 3.26s, `s3` from a deleted
-`bin`/`obj` 2.85s) — so **cost scales with the number of projects and restores, not with the number
-of blocks**, which is the single most important fact for the design.
+`bin`/`obj` 2.85s): **cost scales with the number of projects and restores, not the number of
+blocks.**
 
 ## Target state
 
@@ -276,8 +251,7 @@ of blocks**, which is the single most important fact for the design.
 3. **A committed baseline** of blocks known to build, which the gate enforces and which only grows.
    The gate is green on `master` from the commit it lands in — ruling 8, and 015 finding 4.
 4. **A published verdict for every one of the 985 blocks** — built, skipped with a reason, or not
-   compilable with a reason. **No block is silently absent**, which is the entire lesson of the
-   150-block gap.
+   compilable with a reason. **No block is silently absent.**
 5. **A CI job** modelled on `options`: pinned packages, no guard, no `schedule:`, no swallowed exit
    code.
 6. **The boundary written down.** Every identifier the harness supplies that is not on the page is
@@ -334,8 +308,7 @@ Read before writing, and cited above where used:
 - **Running a block to check its behaviour.** `CLAUDE.md`'s ledger has three review-only rows; this
   spec instruments **two** of them (compiling, and compiling *against the released packages*) and
   **not** the third — *a block asserting behaviour is run, with a control*. **Four merged examples
-  compiled cleanly and still asserted false behaviour**; a compile gate does not touch that, and
-  saying so here stops a green run being read as more than it is.
+  compiled cleanly and still asserted false behaviour**; a green compile run says nothing about that.
 - **Prose.** 015 swept C# fences; **160 of 161 pages carry an unresolved prose token** (014 D12,
   inherited and not re-measured). A compiler reaches none of it.
 - **Non-C# fences** — `bash`, `yaml`, `json`, `text`.
@@ -346,10 +319,9 @@ Read before writing, and cited above where used:
 
 ## Deliverables
 
-Specific files. **None is a page**, so the "which of the four page types" rule does not bind — said
-out loud, because a deliverables list with no page types otherwise reads as an omission.
-**Q6 was ruled *repair* on 2026-09-20, so deliverable 8 is live and binds in the opposite
-direction: on a page P0-9 repairs, no banner, page type or opening sentence may change.**
+Specific files. **None is a page**, so the page-type rule does not bind. **Q6 was ruled *repair*
+on 2026-09-20, so deliverable 8 is live: on a page P0-9 repairs, no banner, page type or opening
+sentence may change.**
 
 | | File | What it is |
 |---|---|---|
@@ -364,10 +336,9 @@ direction: on a page P0-9 repairs, no banner, page type or opening sentence may 
 
 ## SUMMARY.md changes
 
-**N/A — and a category error rather than an empty section.** `SUMMARY.md` carries pages. This spec
-ships a tool, a baseline, a CI job and a row in `tools/README.md`, none of which is published. A
-repair under Q6 edits pages that **already exist** and creates none, so `SUMMARY.md` is untouched
-even then.
+**N/A.** `SUMMARY.md` carries pages. This spec ships a tool, a baseline, a CI job and a row in
+`tools/README.md`, none of which is published. Q6's repairs edit pages that **already exist** and
+create none, so `SUMMARY.md` is untouched.
 
 ## Constraints
 
@@ -390,17 +361,15 @@ even then.
 10. **Ask before merging anything that changes the published site**, and ask for the head-ref
     deletion by name in the same breath (obligation 7).
 11. **No criterion reads an exit code through a pipe, and no criterion is satisfiable by a missing
-    path.** Both were found in this document's own acceptance criteria at the requirements review —
-    § *What the review found in this document*. A gate whose contract is **0 / 1 / 2** is unreadable
-    downstream of a `|`, because `$?` is the last stage's; and `grep … | wc -l` prints `0` whether
-    the corpus is clean or the path does not exist. **Redirect to a file, read the code, then
-    filter** — or set `pipefail` and say so.
+    path** (§ *What the review found in this document*). Downstream of a `|`, `$?` is the last
+    stage's; and `grep … | wc -l` prints `0` whether the corpus is clean or the path does not exist.
+    **Redirect to a file, read the code, then filter** — or set `pipefail` and say so.
 
 ## Acceptance criteria
 
-Numbered, each naming the command that decides it — or marked as having none, with a reader.
-**Both criteria ever found unmet at a close — 009's AC7 and 012's AC1 — were the unmarked ones**,
-so the three unmarked ones below are a known risk rather than an oversight.
+Numbered, each naming the command that decides it, or marked as having none, with a reader. Both
+criteria ever found unmet at a close — 009's AC7 and 012's AC1 — were unmarked ones, so AC13–AC15
+are a known risk.
 
 | # | Criterion | Instrument |
 |---:|---|---|
@@ -422,54 +391,39 @@ so the three unmarked ones below are a known risk rather than an oversight.
 
 ### What the review found in this document — three defects, recorded before they were fixed
 
-**Found 2026-09-20 at `/spec:review`, by its own required step: *run each named instrument now and
-check what it prints against what the criterion claims*.** Obligation 2 — the prior wording is
-recorded here rather than overwritten.
+Found 2026-09-20 at `/spec:review` by running each named instrument and comparing its output with
+the criterion.
 
-| | What it said | What running it showed |
+| | Was | Defect, and the fix |
 |---|---|---|
-| **AC3** | `grep -rn 'ProjectReference' tools/blockcheck*` → **0** | **The criterion was satisfiable by the tool not existing.** `tools/blockcheck*` matches nothing today; the glob fails, and the form a criterion actually gets read through — `… \| wc -l` — prints **`0`**, which is what AC3 claims as its pass. The existence check now comes first |
-| **AC1, AC2, AC10** | the verdict read through `\| awk`, `\| wc -l`, `\| grep -v` | **The exit code was the pipe's, not the tool's.** Controlled both ways: `python3 -c 'sys.exit(2)'` reads **2** bare, **0** piped to `head`, **2** piped with `pipefail`, and a clean run still reads **0** piped — so the green half of the control holds. **A gate whose whole contract is 0/1/2 had three criteria that could not see a 2** |
-| **§ Quality checklist** | *"12 instrumented, 3 marked as having none"* | **Overstated.** Eleven of the twelve name `tools/blockcheck.py`, which this spec has not built yet. Only **AC11** — the eight gates — can be run today, and it is green |
+| **AC3** | `grep -rn 'ProjectReference' tools/blockcheck*` → **0** | **Satisfiable by the tool not existing**: with no `tools/blockcheck*`, `… \| wc -l` prints **`0`**, AC3's pass. The existence check now comes first |
+| **AC1, AC2, AC10** | the verdict read through `\| awk`, `\| wc -l`, `\| grep -v` | **The exit code was the pipe's.** `python3 -c 'sys.exit(2)'` reads **2** bare, **0** piped to `head`, **2** piped with `pipefail`; a clean run reads **0** piped. Each now redirects to a file and reads the code first |
+| **§ Quality checklist** | *"12 instrumented, 3 marked as having none"* | **Overstated**: eleven of the twelve name `tools/blockcheck.py`, not yet built. They are marked **deferred**; only **AC11** runs today, and it is green |
 
-**The first two are the same family as plausible zero 11** (a control naming a ref that does not
-exist) **and friction 48** (the form that gets run is not the form that was reviewed). This
-programme has now met that shape in a git flag, a zsh glob, a shell pipeline and a control's own
-harness.
-
-**Eleven deferred instruments are not eleven unmarked criteria**, and the distinction is worth
-stating rather than resolving by rule. *"An instrument that cannot be run yet is a criterion with
-no instrument"* is aimed at a criterion whose instrument nobody will ever build; for a spec whose
-**deliverable is the instrument**, every criterion about it is unrunnable at requirements time by
-construction. What the rule properly demands here is that the document **say which is which** — so
-the eleven are marked **deferred**, they become real the moment P0-1 ships, and AC11 is the only
-one green today.
+The first two are the family of plausible zero 11 and friction 48: *the form that gets run is not
+the form that was reviewed*. Eleven deferred instruments are not eleven unmarked criteria: they are
+deferred because the deliverable is the instrument, and they become runnable when P0-1 ships.
 
 ## Open questions
 
-Numbered, by name, each with a recommendation and what it depends on. **A question nobody wrote
-down gets decided by whoever is typing.**
+Numbered, each with a recommendation and what it depends on, and its ruling where there is one.
 
 **Q1 — What is the green bar: the whole corpus, or a ratcheting baseline?**
 *Recommendation:* **a ratcheting baseline.** 985 blocks cannot be made green in one spec — 668 are
-fragments needing a wrapper decision each — and a gate that is red on `master` is not a gate
-(ruling 8; 015 finding 4). The tool knows the whole corpus; the **exit code** is decided by the
-committed list. *Depends on:* P0-6's distribution — how many build unaided is the number nobody
-has, and it could be 60% or 6%.
+fragments — and a gate red on `master` is not a gate (ruling 8; 015 finding 4). The tool reports
+the whole corpus; the **exit code** is decided by the committed list. *Depends on:* P0-6's
+distribution, how many build unaided.
 
 **Q2 — How many projects?**
 *Recommendation:* **start from one**, reusing `optioncheck`'s proven 63-package set, and add a
-second **only** for the `.Transformers.AWS.V4` conflict. The harness's three were built ad hoc for
-thirteen blocks and prove nothing about the general case. *Depends on:* whether one project can
-restore the union of the packages the pages name — measurable in an afternoon, and cheap to be
-wrong about.
+second **only** for the `.Transformers.AWS.V4` conflict. *Depends on:* whether one project can
+restore the union of the packages the pages name.
 
 **Q3 — Does Darker's surface join the first baseline?**
 *Recommendation:* **yes, and pinned separately at 4.1.1.** Darker versions independently of
 Brighter, and the surface is small — **6** distinct `Paramore.Darker*` strings in `contents/`, two
-of them namespaces rather than packages (P2-2). A small surface is a cheap answer, not a reason to
-skip it. *Depends on:* whether Darker's packages coexist with Brighter's in one project —
-unmeasured, and the first thing to try given Q2.
+of them namespaces rather than packages (P2-2). *Depends on:* whether Darker's packages coexist
+with Brighter's in one project, unmeasured.
 
 **Q4 — Is a fragment that cannot be wrapped honestly a *failure* or a *verdict*?**
 *Recommendation:* **a verdict — `NOT COMPILABLE`, with a count and a reason**, never a silent
@@ -480,39 +434,26 @@ be; if it is most of the 668, the spec's shape changes.
 **Q5 — How is the opt-out spelled?**
 *Recommendation:* follow the two existing ones —
 `<!-- blockcheck: skip <reason> -->`, mirroring `<!-- symbolcheck: allow <name> -->` and
-`<!-- pagelint: allow-serviceactivator -->` — and **require** the reason. *Depends on:* nothing;
-decide it at the review and stop thinking about it.
+`<!-- pagelint: allow-serviceactivator -->` — and **require** the reason. *Depends on:* nothing.
 
 **Q6 — Does this spec repair what it finds, or hand over a list?**
 **RULED 2026-09-20 at the design review, by the maintainer: REPAIR — *"It should fix documentation
-issues."*** The recommendation is preserved below, because a recommendation that was *upheld* is
-still evidence about how the spec was reasoned.
+issues."*** *Recommendation was:* **repair, and rule it now** — 015 answered its Q4 *list*, was
+overturned, and the overturn falsified its subject section mid-spec.
 
-*Recommendation was:* **repair, and rule it now.** 015 asked this as Q4, answered *list*, was
-overturned, and the overturn falsified its own subject section mid-spec. The cost of ruling it at
-the review is zero; the cost of discovering it at phase 4 is an amended requirements document.
+**Consequences, all applied:** *Target audience* stops being N/A; **obligation 7 binds** on the PR
+carrying the repairs; **P1-1 becomes P0-9**.
 
-**Three consequences, all applied:** *Target audience* stops being N/A — the audience of a repaired
-page is its ordinary reader; **obligation 7 binds** on whichever PR carries the repairs; and
-**P1-1 becomes P0-9**.
-
-> **THE RULING SETS THE ANSWER, NOT THE BOUNDARY — and here the boundary carries the weight.**
-> The design's probe measured **925 of 985 blocks failing**, and roughly 900 of those fail on
-> `CS0246`/`CS0103`: missing `using` directives and undefined page-context identifiers. **That is
-> the debt already named as backlog item 2** — a programme, not a phase. So **P0-9 is scoped to
-> defects of *claim*, not defects of *context***, as § *Scope* now states. **If the wider reading
-> was intended, that scope line is the thing to overrule** — and it would make 016 a multi-spec
-> effort rather than a gate.
+> **P0-9 is scoped to defects of *claim*, not of *context*** (§ *Scope*). The design's probe
+> measured **925 of 985 blocks failing**, roughly 900 of them on `CS0246`/`CS0103` — missing
+> `using` directives and page-context identifiers. That is backlog item 2, a programme rather than
+> a phase.
 
 **Q7 — Does the gate run on every pull request, or only over changed blocks?**
-**DISSOLVED at the design review, 2026-09-20 — the question was about cost, and the cost is not
-there.** The design measured the **whole 985-block corpus at 6.5–39.5 seconds**, against the
-`options` job's 35s. So the gate runs over everything on every pull request, and **P1-2 is
-withdrawn rather than deferred**.
-
-*Recommendation was:* whole baseline on every PR to begin with, adding `--changed` when the
-baseline grew large enough to hurt. *It depended on* the measured cost, which is why it dissolved
-rather than being ruled.
+**DISSOLVED at the design review, 2026-09-20.** The design measured the **whole 985-block corpus at
+6.5–39.5 seconds**, against the `options` job's 35s, so the gate runs over everything on every pull
+request and **P1-2 is withdrawn**. *Recommendation was:* whole baseline on every PR, adding
+`--changed` if cost grew.
 
 **Q8 — Does it get a `schedule:` trigger?**
 *Recommendation:* **no.** `docs.yml` argues this for `optioncheck` already: a gate over **pinned**
@@ -523,9 +464,8 @@ owns the "a release happened" signal.** *Depends on:* Q9.
 **Q9 — Pinned at `10.7.0`, or following the latest release?**
 *Recommendation:* **pinned**, with the version in one place, bumped deliberately — the pages
 themselves pin `10.7.0` and `versioncheck` already gates that. A gate that follows `latest` turns
-somebody else's release into a red build on an untouched repository, which is how people learn to
-ignore red builds. *Depends on:* nothing technical; it is an editorial choice about what the gate
-is *for*.
+somebody else's release into a red build on an untouched repository. *Depends on:* nothing
+technical; an editorial choice.
 
 ## Workflow friction
 
@@ -533,25 +473,18 @@ The ledger stands at **51** — 015's `tasks.md` §4 holds 46–51, plus one del
 recurrence. **016 adds 52 and 53.**
 
 **52 — A control whose two halves measure different things reports a difference that is not
-there.** Verifying that the rescued harness was byte-identical after a red-proof, the check was
-`shasum blocks/*.cs | shasum` before and after. The two aggregates **differed with the content
-unchanged**: `shasum` prints the path beside each digest, and the two runs were made from different
-working directories, so the "before" hashed `core/blocks/…` and the "after" hashed `blocks/…`.
-**The mirror image of a plausible zero** — it fails in the direction that wastes an hour rather
-than the direction that ships a defect, which is why it is worth writing down rather than being
-grateful for. Same family as friction 48: *the form that gets run is not the form that was
-reviewed.* The honest check was `diff -r` against the untouched original, **with the `diff` itself
-controlled** by appending one byte and confirming it was reported.
+there.** Checking the rescued harness was byte-identical after a red-proof, `shasum blocks/*.cs |
+shasum` before and after **differed with the content unchanged**: `shasum` prints the path beside
+each digest, and the runs were made from different directories (`core/blocks/…` against
+`blocks/…`). The mirror image of a plausible zero; friction 48's family. The check that works is
+`diff -r` against the untouched original, **with the `diff` controlled** by appending one byte.
 
-**53 — An extractor built the obvious way is silently blind to 15% of its corpus, and reports
-success on the 85% it can see.** `grep -c '^```csharp$'` finds **835** blocks; `pagelint.Page`
-finds **985**. The 150 are ` ``` csharp` with a space (140), indented inside a list item (8),
-` ``` c#` (1), and one trailing space — **all four render as C# and all four are invisible to the
-grep, along with 28 entire pages and the 92 blocks on them**, `ShowMeTheCode.md` among
-them. The general form: **a tool that enumerates its own corpus owes
-a second method for the size of that corpus**, because every verdict it prints is conditional on an
-enumeration nothing checked. Obligation 1 already says *two methods that agree*; this is the case
-where they **disagreed**, and the disagreement was the finding.
+**53 — An extractor built the obvious way misses 15% of its corpus and reports success on the
+rest.** `grep -c '^```csharp$'` finds **835** blocks; `pagelint.Page` finds **985**. The 150 are
+` ``` csharp` with a space (140), indented inside a list item (8), ` ``` c#` (1), and one trailing
+space — **all four render as C#, and the grep misses them and 28 entire pages holding 92 blocks**,
+`ShowMeTheCode.md` among them. **A tool that enumerates its own corpus owes a second method for the
+size of that corpus.**
 
 ## Quality checklist, applied to this document
 
@@ -561,11 +494,11 @@ where they **disagreed**, and the disagreement was the finding.
 | P0 / P1 / P2 distinguished | eight P0, two P1, two P2, and **Q6 explicitly moves P1-1 between them** |
 | Specific files, not gestures | `harness/extract.py:17`, `tools/pagelint.py`'s `FENCE_RE`, `tools/optioncheck/optioncheck.csproj`, `docs.yml`'s three jobs |
 | A command beside every number | every figure in § *Current state* carries its command; the two gate figures are **cited from `tools/README.md`, not pasted** |
-| Criteria name their instrument | 12 instrumented, of which **11 are deferred** — they name `tools/blockcheck.py`, which P0-1 builds — and **1, AC11, is runnable today and green**. **3 have no instrument, each with a named reader** — AC13, AC14, AC15. The bare count *"12 instrumented"* was the review's third finding |
+| Criteria name their instrument | 12 instrumented, of which **11 are deferred** until P0-1 builds `tools/blockcheck.py`, and **AC11 is runnable today and green**. **3 have no instrument, each with a named reader** — AC13, AC14, AC15 |
 | Questions carry recommendations | nine, each with a recommendation and what it depends on |
 | It applies the checklist to itself | this table, and the README re-derivation that produced friction 53 |
 
 ---
 
-**Next step: `/spec:review`.** Nine questions want ruling, and **Q1 and Q6 change what gets
-built** — the green bar, and whether this spec edits published pages.
+**Next step: `/spec:review`.** Nine questions want ruling; **Q1 and Q6 change what gets built** —
+the green bar, and whether this spec edits published pages.

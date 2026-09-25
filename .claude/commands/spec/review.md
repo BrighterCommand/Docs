@@ -138,7 +138,8 @@ the pages that phase touched.
 - Is there a standing-obligations section, so obligations are stated once and not per task?
 - **Does every new check get a red-proof, with a two-way control?**
 - Are inherited counts re-derived by two methods that agree?
-- Is the mismatch recorded before it is fixed?
+- Is each mismatch recorded before it is fixed — once, as a fact (*said A; measured B*), not as a
+  narrative threaded through the prose?
 - Is there a final acceptance phase owning the walk and the ledgers?
 
 **Writing Review — the three things no gate decides:**
@@ -159,10 +160,38 @@ they mean. No linter will ever report them, so a page that breaks one is green e
 - Walk the criteria **in order of the ones marked as having no instrument first** — they are the
   ones no run has been checking
 - For each, name the command and show its output, or say who read it and what they found
-- **What was found wrong is recorded before it was fixed.** A spec that can only show the corpus
+- **What was found wrong is recorded before it was fixed**, as a fact in the ledger — see
+  *Fixing what the review found*. A spec that can only show the corpus
   is right now cannot show it was ever wrong
 - Did anything change that should not have? Diff the page set against the ref the spec named
 - Are the ledgers written — every defect found, and the workflow friction met on the way?
+
+### Fixing what the review found
+
+**Fix the issue, not the instance.** A review item is usually one example of something the document
+does in many places. Name that underlying problem in one line, find every place it occurs — in this
+document and in the spec's other documents — and fix all of them in the same change. A fix that
+repairs the sentence the reviewer pointed at and leaves its siblings has fixed nothing.
+
+**Rewrite; do not annotate.** Change the text so that it reads correctly on its own, as if it had
+been written that way. Do not leave the original standing beside a correction:
+
+- no bracketed notes, *"Amended:"* or *"Corrected in phase N:"* lines, or *"was X, now Y"* asides
+- no paragraph explaining what changed, why, or how the problem was noticed
+- no narration of the writer's doubts and how they were resolved — state the verdict and the fact
+  that supports it
+
+**Record the finding once, plainly, in the place findings live** — the review's findings table, or
+the spec's defect ledger: what was wrong, and what it is now. Not threaded through the prose it
+fixed.
+
+**A mismatch between an earlier document and the corpus is a fact, and it stays as one:** *"X said
+A; measured B."* That is the evidence a spec exists to produce. The story of how it was noticed is
+not evidence, and it goes.
+
+**Approved text that a later step quotes** — acceptance criteria, which the acceptance walk reads
+word for word, and P0/P1/P2 scope items — is changed only when the maintainer rules it. Otherwise
+record the defect against it and leave the words.
 
 ### Approval
 

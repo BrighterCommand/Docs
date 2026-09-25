@@ -47,7 +47,9 @@ reader to treat the unrestated ones as optional. What belongs there, at minimum:
    already begun to rot — 013's README named six gaps of which five were closed
 2. **Record the mismatch before fixing it.** The corrected state is the only thing left afterwards,
    so a spec that does not write down what was wrong cannot show the corpus was ever wrong. This is
-   the whole evidential product of a repair phase
+   the whole evidential product of a repair phase. Record it **once, as a fact** — *said A;
+   measured B* — where findings live, then rewrite the text; do not narrate how it was found, or
+   leave the original standing beside a correction
 3. **A check that has never failed has not been shown to work.** Every new check gets a red-proof,
    with its output recorded, and **every control is two-way** — a known-present case and a
    known-absent one

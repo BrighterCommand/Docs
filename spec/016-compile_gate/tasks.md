@@ -1277,8 +1277,10 @@ top-level statements, the `--parse` and `--explain` modes, and the pin stamp.
 predicted to MOVE if and only if this phase adds a `.md` under `tools/`. The design chose not to. If
 the reconciliation shows 166, the cause is a file somebody added without noticing the rule"**.
 
-No page under `contents/` is edited, so rules 1–7, `symbolcheck`, `optioncheck` and `versioncheck`
-cannot move; `SUMMARY.md`, `.gitbook.yaml` and the published tree are untouched, so shape, redirects
+Predicted that no page under `contents/` is edited; measured **five pages edited, twelve lines, every
+one an HTML-comment skip marker** (task 3.2), ruled site-neutral by the maintainer, so no sign-off
+was owed. No rule of `pagelint`, `symbolcheck`, `optioncheck` or `versioncheck` reads an HTML
+comment as prose, so none of them can move; `SUMMARY.md`, `.gitbook.yaml` and the published tree are untouched, so shape, redirects
 and `--verify` cannot. `linkcheck` walks `tools/`; this phase adds a `.tsv` and a `.json`, edits a
 `.py` and a `.yml`, and adds prose to `tools/README.md`, already in its 165.
 
@@ -1286,13 +1288,6 @@ and `--verify` cannot. `linkcheck` walks `tools/`; this phase adds a `.tsv` and 
 measured at (obligation 10).
 
 The before-figures are `tools/README.md`'s at the top of the phase.
-
-**Amended by task 3.2, ruled by the maintainer in session 81: `contents/` is edited; the site is
-not.** A skip marker lives on the page above the block it excuses, so **five pages gain twelve
-lines, every one an HTML comment**, which renders to nothing (the same shape as the six pages'
-`<!-- pagelint: allow-serviceactivator -->`). Phase 3 stays site-neutral, **no sign-off is owed**,
-and the prediction for rules 1–7, `symbolcheck`, `optioncheck` and `versioncheck` stands: none of
-them reads an HTML comment as prose.
 
 ---
 
@@ -1722,7 +1717,7 @@ The before-figures are `tools/README.md`'s rows at the top of the phase; rows 1�
 this phase's diff of that file.
 
 **The prediction said *"No page under `contents/` is edited"*; task 3.2 put twelve HTML-comment lines
-on five pages** (amendment under § *Phase 3 prediction*, ruled site-neutral by the maintainer).
+on five pages**, ruled site-neutral by the maintainer.
 Rows 2 and 8, the two that could have seen them, did not move.
 
 #### Phase 3 in one table
