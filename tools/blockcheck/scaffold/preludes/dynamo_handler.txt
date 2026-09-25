@@ -1,6 +1,0 @@
-public class __NAME__ : Paramore.Brighter.RequestHandlerAsync<AddGreeting>
-{@
-    private readonly Paramore.Brighter.DynamoDb.IAmADynamoDbTransactionProvider _transactionProvider = null;
-    private readonly Paramore.Brighter.IAmACommandProcessor _postBox = null;
-    private readonly Microsoft.Extensions.Logging.ILogger _logger = null;
-

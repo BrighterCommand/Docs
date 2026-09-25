@@ -8,7 +8,9 @@
 # `prelude` a file under scaffold/preludes/, which REPLACES the generic wrapper
 #           for that page's blocks -- a typed handler class, say, so that a
 #           block which is the body of a method has the method to sit in.
-#           `-` for none.
+#           `-` for none. THERE ARE NONE, since 016 phase 5: the four carried
+#           from 015's harness were mapped to no page and declared domain
+#           types, so they were deleted. A prelude obeys the unit rule below.
 #
 # THE UNIT OF ADMISSION IS A PAGE, NOT A BLOCK. A page's blocks share a world,
 # which is what makes the hand-work tractable and what stops a scaffold being
