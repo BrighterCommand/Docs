@@ -1,7 +1,7 @@
 # Spec 016: A Committed Compile Gate — Tasks
 
 **Created:** 2026-09-20
-**Status:** Tasks Phase — **reviewed 2026-09-20, six findings, amended**
+**Status:** **CLOSED — 39 of 39, 2026-09-25.** Awaiting the maintainer's reading of § *Acceptance walk* for `.accepted`. Tasks reviewed 2026-09-20, six findings, amended
 **Requirements:** approved 2026-09-20 · **Design:** approved 2026-09-20
 
 **Five phases, 39 tasks, one pull request per phase.** The list was 37 at the review, and
@@ -259,7 +259,7 @@ for by name in the same breath.
   - Output: `baseline.tsv` rows added for blocks that now compile, and the run green at the end of the branch
   - Notes: the gate shipped in phase 3, so **this branch must end green or it reddens `master`**.
 
-- [ ] **Task 4.5:** Record the site change and take the sign-off
+- [x] **Task 4.5:** Record the site change and take the sign-off
   - Input: the branch's `git diff --stat` against `master`
   - Output: the list of pages changed, in this file, and the sign-off asked for **with the head-ref deletion named in the same breath**
   - Notes: obligation 7. A merge is not a deletion, and one authorisation covers one PR.
@@ -273,32 +273,32 @@ for by name in the same breath.
 
 ## Phase 5 — Acceptance *(6 tasks, one PR, no page touched)*
 
-- [ ] **Task 5.1:** Walk the three criteria with no instrument, first
+- [x] **Task 5.1:** Walk the three criteria with no instrument, first
   - Input: AC13, AC14, AC15
   - Output: § *Acceptance walk* — for each, who read it, what they read, and what they found
   - Notes: **both criteria ever found unmet at a close were unmarked ones.** AC13 and AC14 are the maintainer's readings of the scaffold boundary; AC15 is a check that this spec's own documents never claim the gate checks behaviour.
 
-- [ ] **Task 5.2:** Walk the twelve instrumented criteria, running each named instrument
+- [x] **Task 5.2:** Walk the twelve instrumented criteria, running each named instrument
   - Input: AC1–AC12
   - Output: each criterion with its command and that command's actual output
   - Notes: eleven of the twelve were **deferred** at the requirements review — they name a tool that did not exist. This is the walk where they stop being deferred. **Check what the instrument prints against what the criterion claims**, which is how AC3 and AC1's pipe defects were found in the first place. **AC11 is met here rather than by a tenth predict-and-reconcile task**: phases 1–4 each carry one, and this phase touches only `spec/` and `tools/README.md`, so its own prediction is *none* for all nine — say so in the walk rather than leaving the pattern to break silently at the last phase.
 
-- [ ] **Task 5.3:** The backwards check — what changed that should not have
+- [x] **Task 5.3:** The backwards check — what changed that should not have
   - Input: `git diff --stat` against the ref at which 016 opened
   - Output: the page set this spec changed, compared against phase 4's declared list, with any difference explained
   - Notes: *"while I'm here"* is how a spec quietly widens.
 
-- [ ] **Task 5.4:** Write the defect ledger
+- [x] **Task 5.4:** Write the defect ledger
   - Input: every phase's findings, plus the **nine defects found before phase 1 began** — three at the requirements review, three at the design review, the Q6 amendment misses, and the six before/after blocks
   - Output: § *Defect ledger* with a **found by** column distinguishing a tool's win from a re-derivation's
   - Notes: 015's split was 12 tool / 4 control / 14 person. This spec's will look different and the difference is the interesting part.
 
-- [ ] **Task 5.5:** Write the friction ledger
+- [x] **Task 5.5:** Write the friction ledger
   - Input: frictions **52–56**, already written in `requirements.md` and `design.md`, plus anything phases 1–4 met
   - Output: § *Workflow friction* in this file, continuing from 56
   - Notes: re-derive the ledger's total rather than inheriting a header — this file's own count has been wrong in a heading while its body disagreed, twice.
 
-- [ ] **Task 5.6:** Close the spec
+- [x] **Task 5.6:** Close the spec
   - Input: everything above
   - Output: the `README.md` checklist at its final count, § *What 016 shipped*, and **the residual gap in one sentence** — the line 017 starts from
   - Notes: 015's closing sentence became this spec. Write the next one as though somebody will have to execute it, because they will.
@@ -1338,7 +1338,7 @@ halves are not equally decidable:
 > underneath. `ImplementingAHandler.md` block 1 reports three diagnostics, of which `CS1729` on
 > `Command` is a cascade; add the two `using` directives it omits and it is **BUILT** — so there was
 > no claim defect hiding there. That cuts both ways, and it is why the ratchet is page by page:
-> **every block admitted to the baseline is one whose claims have actually been checked.** The 917
+> **every block admitted to the baseline is one whose claims have actually been checked.** *[Phase 5, AC15: its claims **about the API**, which is all a compile checks. What it asserts about behaviour is not checked by any gate.]* The 917
 > failures cannot be triaged once, at the top, by a tool.
 
 **The context count is 903 blocks** — 917 failing less the 14 — and it is dominated by `CS0246`
@@ -2173,6 +2173,9 @@ splits renumbered every later block on two pages: none of those later blocks was
   page never shows `Order`, so whether that assigns is unknown.
 - **The toplevel wrapper supplies no `args`**, so `InMemoryScheduler.md#4` fails on a name every
   `Program.cs` has. An instrument quirk, in the friction ledger's column, not the page's.
+  **Corrected in phase 5:** the repair removed the block's trailing `static` method, so it is now
+  shape **`statements`**, not `toplevel`, and it is the `statements` wrapper, `Holder.Run()`, that
+  has no `args`. The misattribution is left above as written.
 
 ### The site change *(task 4.5)*
 
@@ -2187,6 +2190,10 @@ SweeperCircuitBreaking  Telemetry
 **No banner, page type, heading or opening sentence changed**, so no URL and no `description:`
 moved, which gates 3, 4 and 7 confirm. Sign-off asked for with the head-ref deletion named, per
 obligation 7.
+
+**Signed off 2026-09-24**, with the deletion. PR #183 merged `--admin` as `8ccefd6`, the post-merge
+`master` run `35965289904` passed all four jobs, and `spec/016-phase4` was deleted locally and on the
+remote. Ticked in phase 5's PR, because the tick needed the sign-off.
 
 ### The nine gates, reconciled *(task 4.6)*
 
@@ -2203,3 +2210,202 @@ obligation 7.
 | 9 | `blockcheck` | moves | **989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED — 0 findings, 16 skipped** | ✅ read, not predicted |
 
 `tools/README.md` rows 2 and 9 now carry `b941837`, and no other file quotes either figure.
+
+---
+
+## Phase 5 prediction
+
+**Written before any gate was run in this phase: none, for all nine.** Phase 5 edits `spec/` and
+`tools/`, adds no `.md` under `tools/`, and touches no page. The one change that could move row 9 is
+the deletion of the four preludes the maintainer ruled on. **It was measured before this prediction
+was written, not after:** 989 of 989 `--report` rows are identical with and without them, because no
+page was mapped to one. So it moves `--list-scaffold` (106 → **84** identifiers) and no verdict.
+
+---
+
+## Phase 5 as executed
+
+### Acceptance walk: the three criteria with no instrument *(task 5.1)*
+
+**Walked first, as the task requires**, because both criteria ever found unmet at a close were the
+unmarked ones.
+
+| # | Who read it | What they read | Found |
+|---|---|---|---|
+| **AC13** | **the maintainer**, 2026-09-25 | the unit rule, the 14 units and `--list-scaffold`'s 106 identifiers, the red-proofs showing a scaffolded value still has its members checked, and the four preludes | **Accepted.** The 102 blocks needing a type the page names and never shows go to **017**, which may scaffold them as a stub tranche. **The four preludes were ruled deleted.** They were carried from 015's harness, mapped to no page, and two of them declared domain types (`CreateOrderCommand`, `IOrderRepository`) the unit rule forbids. The mechanism stays, with nothing using it |
+| **AC14** | **the maintainer**, 2026-09-25 | a **seeded** random sample (`random.seed(16)`), 6 of the 67 wrapped BUILT blocks, each shown as the page's lines beside what the staged file adds | **Accepted.** The wrapper adds exactly `using static <PageContext>;`, `namespace B_<id>`, `class Holder` and `async Task Run() { … }`, and nothing else: no `using` directive and no type |
+| **AC15** | the walker | `behaviou?r` over this spec's four documents, `tools/README.md`, `blockcheck.py`, `Program.cs` and the workflow; then the second method, `correct\|prove\|verif…\|guarantee\|honest` restricted to lines about the gate | **Met, with one sentence qualified.** Every `behaviour` hit is a disclaimer. `tools/README.md` row 9's entry says outright that a compiling block can assert false behaviour. **One sentence read wider than it meant:** § *Claim and context*'s *"every block admitted to the baseline is one whose claims have actually been checked"* means claims about the API. It now says so in a bracket beside it, and the sentence itself is untouched |
+
+**A walker's instrument lied once, in the alarming direction.** The first AC14 diff reported the
+page's own `using` lines as *added by the wrapper*, which would have failed AC14. It had dropped the
+first line of `--show`'s output as a header. Reading one staged file beside its page settled it.
+That is friction 64, below.
+
+### Acceptance walk: the twelve instrumented criteria *(task 5.2)*
+
+**Run at this branch's HEAD, every exit code read bare, each against what its criterion claims.**
+
+| # | Command, as the criterion names it | Output | |
+|---:|---|---|---|
+| **AC1** | `--report > r; echo $?`, then `awk` over `r` | exit **0**; `BUILT 101`, `FAILED 872`, `SKIPPED 16` = **989** rows | ✅ **989, not § *Current state*'s 985**: phase 4's four splits made four blocks, and AC2's second method agrees |
+| **AC2** | `--list > l; echo $?`; `wc -l`; `pagelint.Page` count; `KafkaConfiguration.md` | exit **0**; **989** = **989**; **20** of 20 Kafka blocks, every one of them a `` ``` csharp`` fence | ✅ |
+| **AC3** | `ls tools/blockcheck/*.csproj`, then `ProjectReference` / `Version=` / `PackageReference` | `blockcheck.csproj`: 0 / 1 / 1 | ⚠️ **met, and the instrument is too narrow.** The glob misses `tools/blockcheck/refs/refs.csproj`, **where the pin is: 0 / 71 / 71.** It passes too, so the criterion holds. But as written it checks the project with one package and never looks at the one with seventy-one |
+| **AC4** | plants; then break a baselined block and restore it | plants: all seven exactly as `plants/index.tsv` records; `Telemetry.md#1`, `RequestContext` → `RecordRequestContext`: exit **1**, `FAILED CS0117`, *"stopped building … admitted BUILT at `9c57ae2`"*; restored: `diff` empty, `git diff --quiet`, exit **0** | ✅ the positive case is the plants, outside the corpus |
+| **AC5** | two `--report` runs, `diff`, wall clock | reports identical; **6.87 s** and **6.82 s** | ✅ |
+| **AC6** | `--verify-extraction` | exit **0**; **989 of 989 identical**, 1 with `using` directives hoisted | ✅ N = AC1's count |
+| **AC7** | the last line; `--list-skips` | `0 findings, 16 skipped`; **`--list-skips` exits 2, *"unknown mode"*.** The flag was never built | ⚠️ **met by a different instrument.** Every `--report` prints `skipped by opt-out (16)` with one reason per skip: **16 reasons, 15 of them V9 forms** (≥ 8). The criterion names a mode nobody implemented, and the design put the listing in `--report` instead |
+| **AC8** | `--list-scaffold`; files under `scaffold/` | exit **0**; *"84 identifiers from 14 unit(s) and 0 prelude(s); 15 page(s)"*; 14 unit files | ✅ 15 pages from 14 units, because `RelationalTransportContext` serves two |
+| **AC9** | delete a row; add a row for a missing block | `Telemetry.md#1`'s row deleted: exit **1**, *"BUILT, not in the baseline"*; `Telemetry.md` block **99** added: exit **1**, *"the page has no such block"*; both reverted: `git diff --quiet`, exit **0** | ✅ |
+| **AC10** | `grep -rn '101 BUILT' … > f; grep -vc '^./spec/' f` | **as written: 2.** Anchored `^(\./)?spec/`: **1**, `tools/README.md:55`. Control, `'985 blocks'`: **2** (`tools/README.md` and a comment in `blockcheck.py`) | ⚠️ **met with the working form only**, exactly as phase 3 predicted. BSD `grep -rn … .` prints `spec/…` with no `./`, so the written instrument excludes nothing, and here it **fails** a criterion that is met |
+| **AC11** | each gate's own command, and the prediction's commit order | phases 1–3 and 5: prediction before the work; **phase 4: after the page edits, before gates 1 and 3–8, and it says so** | ⚠️ **met for 4 of 5 phases.** In phase 4 the repair loop used `pagelint` and `blockcheck` as build tools, so their figures were read before they were predicted. § *Phase 4 prediction* records it rather than backdating it |
+| **AC12** | the `--report` distribution, committed with its command | phase 2's `verdicts.tsv` (985) and § *The corpus run*; the current distribution in `tools/README.md` row 9 and above | ✅ |
+
+**The walk found three criteria whose instruments disagree with their wording: AC3, AC7 and AC10.**
+None of them hides an unmet criterion. **Each is recorded, and not edited in `requirements.md`**,
+following phase 1's rule about approved documents. They go to 017 as instrument defects.
+
+**The nine gates, reconciled, AC11's phase-5 half.** Predicted *none*, read at this branch's HEAD
+after the preludes were deleted:
+
+| # | Gate | Read | |
+|---:|---|---|---|
+| 1 | `linkcheck` | 165 files, 0 broken | ✅ |
+| 2 | `pagelint` | 0 errors, 743 warnings, 162 pages | ✅ |
+| 3 | shape | 161 / 12 sections / 4 of 4 / 12 of 20 | ✅ |
+| 4 | redirects | 77 entries, 7858 bytes | ✅ |
+| 5 | `versioncheck` | 0 stale of 18, across 5 | ✅ |
+| 6 | `optioncheck` | 0 mismatches, 59 tables, 519 rows | ✅ |
+| 7 | `--verify` | 161 predicted = 161 published | ✅ reached the live sitemap |
+| 8 | `symbolcheck` | 0 findings, 22 entries, 161 pages, 3 silenced | ✅ |
+| 9 | `blockcheck` | 989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED — 0 findings, 16 skipped | ✅ |
+
+### The backwards check *(task 5.3)*
+
+```text
+git diff --name-only dac5954^ HEAD -- contents/ README.md SUMMARY.md .gitbook.yaml   ->  19 files
+  phase 4 (a194c4a..8ccefd6)      15 pages     the declared list, § The site change
+  phase 3 (cfc62c4..a194c4a)       5 pages     12 added lines, every one `<!-- blockcheck: skip … -->`
+  both                             1           FAQ.md
+  in neither                       0
+  phases 1 and 2                   0
+```
+
+**19 = 15 + 5 − 1, and nothing is outside the declared sets.** `SUMMARY.md`, `README.md` and
+`.gitbook.yaml` are untouched. Phase 3's diff was checked line by line: its only `+` or `-` lines
+are the twelve markers. **The "while I'm here" widening happened inside phase 4, not outside it, and
+it is declared:** § *The repairs* names the grep rule it followed and every block it reached.
+
+### Defect ledger *(task 5.4)*
+
+**Found by** is one of five. **tool**: an instrument's own verdict. **control**: a red-proof or
+a control's other half. **running**: executing a written-down command or example as written.
+**re-derivation**: a second method for a figure. **reading**: a person.
+
+**Before phase 1.** The task's input counts nine. The record supports the rows below. The
+*"Q6 amendment misses"* are not enumerated anywhere this walk found, so they are one row, not
+invented into several.
+
+| # | Defect | Found by |
+|---:|---|---|
+| 1 | AC3 was satisfiable by the tool not existing | running |
+| 2 | AC1, AC2, AC10 read the exit code through a pipe | control |
+| 3 | the requirements' checklist overstated *"12 instrumented"* | re-derivation |
+| 4 | the probe's recipe had never been executed (friction 56) | running |
+| 5 | a wall-clock quoted from the fastest of four runs | re-derivation |
+| 6 | a `CS0101` claim in the design was false | running |
+| 7 | the Q6 amendment misses, unenumerated | reading |
+| 8 | the design's *"6 before/after blocks, 4 pages"* over-counted | re-derivation |
+| 9–14 | the tasks review's six: a ❌ that would publish a falsehood; the same over-count; ❌ blocks nothing marked; exit 2 promised and never produced; obligation 8 with no red-proof; a one-way control called two-way | reading ×5, re-derivation ×1 |
+
+**Phases 1–5.**
+
+| # | Phase | Defect | Found by |
+|---:|---|---|---|
+| 15 | 1 | the design's central batching mechanism did not reproduce as described (task 1.8) | control |
+| 16 | 1 | `AWSSQSMigrateToV10.md#1`, a before/after pair with no marker | tool (`--verify-extraction`) |
+| 17 | 2 | a fifth shape, `toplevel`: 7 blocks parse only under a rule `classify()` had not chosen | tool |
+| 18 | 2 | a stale `refs.txt` survived a failed build and measured the old pin (friction 57) | control |
+| 19 | 2 | `$ids` unsplit under zsh, so `--explain` printed nothing (friction 58) | control |
+| 20 | 2 | `NOT COMPILABLE` unreachable, its zero read as coverage (friction 59) | re-derivation |
+| 21 | 2 | 180 blocks fail to parse, against 131 and 165 | re-derivation |
+| 22 | 2 | ten claim blocks and four fence pairs | tool + reading |
+| 23 | 2 | *"the grep is the only instrument that sees five of the six"* was false | tool |
+| 24 | 3 | the design's 8 V9 skips were the wrong 8; the set is 12 on 5 pages | re-derivation |
+| 25 | 3 | four new claims exposed by scaffolding (`FAQ.md#18`, `#19`, `AzureScheduler.md#18`, `SweeperCircuitBreaking.md#9`) | tool |
+| 26 | 3 | `VERDICTS`' comment asserted something that had just become false | reading |
+| 27 | 3 | a finding printed `SKIPPED SKIPPED` | control |
+| 28 | 3 | `git grep '\beight\b'` blind to *"Eight"* | re-derivation |
+| 29 | 3 | AC10's `^./spec/` excludes nothing under BSD grep | control |
+| 30 | 3 | the `options` job runs daily, against its own comment | running (a scheduled run read) |
+| 31 | 3 | a README sentence asserting a re-run that had not happened | reading |
+| 32 | 4 | `Telemetry.md#1` was an invented API, and **phase 2's recorded fix was a guess** | reading (the source) |
+| 33 | 4 | phase 2's *"12 pages"* was 10 | re-derivation |
+| 34 | 4 | four claims were declared-unreleased, not false; one diagnostic was a cascade | reading |
+| 35 | 4 | *"Guid → string"*: the type is `Id` | tool (after the split) |
+| 36 | 4 | the invented API on 2 more blocks; the Hangfire constructor on 4 pages; `QuartzMessageSchedulerFactory`; sync attributes on async handlers ×3; `UseOutbox`; `IAmAnOutbox<,>`; `UseScheduler` given one interface; `PlaceOrderCommand : IRequest` ×2; `UseOutboxArchiver` non-generic; `SendAsync` reversed ×5; a stray `)` | reading + tool |
+| 37 | 4 | `InMemoryOptions.md#2`: a missing message pump type, a `Publication` with no `RequestType`, and a scheduled `Send` asserted to reach the bus | running + control |
+| 38 | 4 | **Brighter 10.7.0: `AutoFromAssemblies()` registers `FireSchedulerRequestHandler` twice** — BrighterCommand/Brighter#4414 | running + control |
+| 39 | 4 | `ITimerProvider` does not exist (not repaired, for 017) | reading |
+| 40 | 4 | the prediction was written after the work | reading |
+| 41 | 5 | AC3's glob misses the file that holds the pin | running |
+| 42 | 5 | AC7 names a `--list-skips` flag that was never built | running |
+| 43 | 5 | AC10 as written *fails* a met criterion | running |
+| 44 | 5 | four dormant preludes declaring forbidden domain types | reading |
+| 45 | 5 | one sentence of this spec read wider than a compile checks | reading |
+| 46 | 5 | phase 4 attributed `args` to the wrong wrapper | reading |
+
+```bash
+# the split, counted from the table's last column by a script, rows 9–14 as six,
+# a combined row by its FIRST finder:
+#   reading 16 · running 9 · re-derivation 9 · control 6 · tool 6        = 46
+```
+
+**The split was first written here by hand as *"running 11 · reading 13 · re-derivation 9 ·
+control 8 · tool 7"*, and the script disagreed on four of the five.** Obligation 1 in the ledger
+that exists to record it. The script's figure stands.
+
+**46 rows.** 015's split was 12 tool / 4 control / 14 person. **Reading is still the largest
+category**, at 16, and that includes the maintainer's two rulings this walk needed. **The tool that
+016 built found 6 by its own verdict, and it also made most of the rest findable**: rows 32–36 were
+read *because* a diagnostic pointed at the block. **Running, 9, is the category a compile gate
+cannot absorb.** Rows 37 and 38, the `InMemoryOptions.md` test and the Brighter defect, compiled
+cleanly and were wrong. That is `CLAUDE.md`'s review-only row, *a block asserting behaviour is run,
+with a control*, and it is why BrighterCommand/Brighter#4414 exists.
+
+### Workflow friction *(task 5.5)*
+
+**The ledger stood at 51 when 016 opened. 016 wrote 52–59 as it went**: 52–53 in
+`requirements.md`, 54–56 in `design.md`, 57–59 above. It adds:
+
+| | |
+|---:|---|
+| **60** | **git's ERE has no `\b`.** `git grep -i -E '\beight\b'` returned nothing with *"Eight commands"* in plain sight; `-w` found seven. A search for the claim you are about to change reports that it is nowhere. Plausible zero, in grep's dialects |
+| **61** | **`grep … file >> file` appends nothing.** An edit that did not happen and a check that does not fire print the same output. The control is reading the file after the edit, not trusting the edit |
+| **62** | **A marker inserted by line number lands wherever the line number is.** Inside a fence it corrupted the block, bound the next one, and fired the finding for the wrong reason. A red-proof that passes for the wrong reason proves nothing |
+| **63** | **`schedule:` at the top of a workflow triggers every job without an event filter**, and a comment saying otherwise survives indefinitely because a pinned verdict repeats. A false claim in a comment costs nothing until a new job copies it |
+| **64** | **A walker's diff dropped `--show`'s first body line as a header**, and reported the page's own `using` directives as added by the wrapper. That is friction 52's direction, the alarming one: it would have failed AC14 on a wrapper that is clean. Reading one staged file beside its page settled it |
+| **65** | **A prediction cannot precede work that uses the gates as instruments** unless it is written before the first edit. Phase 4's repair loop ran `pagelint --changed` and `blockcheck` dozens of times; by the time the prediction was written, two of nine gates had already been read. The remedy is ordering, not discipline: write the prediction as the first commit of the phase |
+| **66** | **A fix written beside a diagnostic reads as a measurement.** Phase 2 recorded *"the released names are `RequestInformation`, `MessageBody`, `MessageHeaders`"* next to a `CS0117` it had measured. The first half was measured; the second was a guess, and two of the three names do not exist. Phase 4 nearly applied it. Keep what the compiler said and what someone inferred in different columns |
+
+```bash
+# 51 + 8 (52–59) + 7 (60–66) = 66
+grep -oE '^\| \*\*6[0-6]\*\*' spec/016-compile_gate/tasks.md | wc -l     # 7
+```
+
+### What 016 shipped *(task 5.6)*
+
+| | |
+|---|---|
+| **The gate** | `tools/blockcheck.py` + a Roslyn compiler, **one `Compilation` per block**, against **71 packages pinned in one file**, stamped so a stale reference list is exit 2 |
+| **The corpus** | **989 C# blocks across 145 pages**, enumerated through `pagelint.Page` and byte-identical to the pages |
+| **The baseline** | **101 blocks required to build**, enforced both ways in CI's `blocks` job; a repair brings its row in the same PR |
+| **The opt-out** | 16 skips, each with a written reason, printed on every run |
+| **The scaffold** | 14 units, 84 identifiers, values only, typed from the pin |
+| **The repairs** | 19 pages changed across phases 3 and 4; 14 listed claims repaired and every recurrence of the same falsehood a grep could find |
+| **Upstream** | BrighterCommand/Brighter#4414 |
+
+**The residual gap, in one sentence — the line 017 starts from:** **872 of 989 C# blocks still do
+not compile against the released packages. Most need a `using` directive or a stub for a type the
+page names but never shows (102 of them are ruled scaffoldable). The gate holds only the 101 that
+do, so 017 raises that number page by page, starting with those 102, and fixes the three
+instrument defects this walk found in AC3, AC7 and AC10.**

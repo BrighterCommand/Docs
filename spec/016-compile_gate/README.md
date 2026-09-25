@@ -1,7 +1,7 @@
 # Spec 016: A Committed Compile Gate
 
 **Created:** 2026-09-20
-**Status:** Requirements Phase
+**Status:** **CLOSED — 39 of 39, 2026-09-25.** `.accepted` waits on the maintainer reading `tasks.md` § *Acceptance walk*
 
 > **Re-derive this README before executing it.** It was written before anyone looked — check every
 > count and every named gap against the tree, with the command beside the figure.
@@ -168,10 +168,15 @@ files and nothing else, which is the check that nothing *else* drifted.
 - [x] Outline reviewed and approved — `.design-approved`, 2026-09-20. **Q6 ruled *repair*** at that
       review; Q1, Q2, Q4 and Q7 settled by the probe; **Q3, Q5, Q8, Q9 still open** and none
       changes the plan
-- [ ] Writing tasks identified
-- [ ] Writing complete
-- [ ] Documentation reviewed
-- [ ] Spec closed
+- [x] Writing tasks identified — `tasks.md`, 2026-09-20, **39 tasks / 5 phases / 5 PRs**, six
+      review findings answered, two tasks inserted as `1.6a` and `4.3a`
+- [x] Writing complete — **39 of 39**, 2026-09-25, re-derived:
+      `grep -c '^- \[x\] \*\*Task' spec/016-compile_gate/tasks.md`. PRs #180–#183, and phase 5's
+- [x] Documentation reviewed — `tasks.md` § *Acceptance walk*. **AC13 and AC14 accepted by the
+      maintainer 2026-09-25**; AC15 met with one sentence qualified; the twelve instrumented
+      criteria met, three of them (AC3, AC7, AC10) by instruments that disagree with their wording
+- [x] Spec closed — 2026-09-25. § *What 016 shipped* and the residual gap are the line 017 starts
+      from. **Not yet accepted**: `.accepted` is the maintainer's
 
 ## Next Steps
 
