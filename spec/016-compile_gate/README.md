@@ -173,8 +173,8 @@ files and nothing else, which is the check that nothing *else* drifted.
 - [x] Writing complete — **39 of 39**, 2026-09-25, re-derived:
       `grep -c '^- \[x\] \*\*Task' spec/016-compile_gate/tasks.md`. PRs #180–#183, and phase 5's
 - [x] Documentation reviewed — `tasks.md` § *Acceptance walk*. **AC13 and AC14 accepted by the
-      maintainer 2026-09-25**; AC15 met with one sentence qualified; the twelve instrumented
-      criteria met, three of them (AC3, AC7, AC10) by instruments that disagree with their wording
+      maintainer 2026-09-25**; AC15 met; the twelve instrumented criteria met, and the
+      instruments for AC3, AC7 and AC10 go to 017 for correcting
 - [x] Spec closed — 2026-09-25. § *What 016 shipped* and the residual gap are the line 017 starts
       from. **Not yet accepted**: `.accepted` is the maintainer's
 

@@ -4,56 +4,48 @@
 **Status:** **CLOSED — 39 of 39, 2026-09-25.** Awaiting the maintainer's reading of § *Acceptance walk* for `.accepted`. Tasks reviewed 2026-09-20, six findings, amended
 **Requirements:** approved 2026-09-20 · **Design:** approved 2026-09-20
 
-**Five phases, 39 tasks, one pull request per phase.** The list was 37 at the review, and
-§ *What the tasks review found* records what that review found and which task each finding
-produced. **The two inserted tasks are numbered `1.6a` and `4.3a` rather than renumbering their
-phases** — every later task keeps the number other tasks already cite, and the insert stays visible
-instead of being smoothed away.
+**Five phases, 39 tasks, one pull request per phase.** The list was 37 at the review; the two
+inserted tasks are numbered `1.6a` and `4.3a` so that no later task is renumbered.
+§ *What the tasks review found* maps each finding to its task.
 
-The contract a phase merges under is
-`tools/README.md` § *One phase is one pull request* — cited, not restated, including its rule that
-**a gate and the corpus that satisfies it merge together, or the gate merges second**, which is
-what puts the CI job in phase 3 and not phase 1.
+Phases merge under `tools/README.md` § *One phase is one pull request*, including its rule that
+**a gate and the corpus that satisfies it merge together, or the gate merges second**. That rule
+puts the CI job in phase 3.
 
 ---
 
 ## 1. Standing obligations — stated once, binding every task
 
-**These are not repeated per task.** Restating some invites the reader to treat the unrestated ones
-as optional.
+They are not repeated per task.
 
 The programme's seven:
 
 1. **Re-derive any count before quoting it** — command beside the figure, **two methods that
    agree**, and re-derive the number the **decision** turns on rather than the one the document
-   leads with. A figure inherited from `requirements.md`, `design.md` or an earlier phase has
-   already begun to rot.
-2. **Record the mismatch before fixing it.** The corrected state is all that survives otherwise, and
-   a spec that cannot show the corpus was *ever* wrong has no evidential product.
+   leads with. A figure inherited from `requirements.md`, `design.md` or an earlier phase is stale.
+2. **Record the mismatch before fixing it**, so the record shows the corpus was wrong.
 3. **A check that has never failed has not been shown to work.** Every new check gets a red-proof
    with its output recorded here, and **every control is two-way** — the positive case goes
    **outside** the enumeration the instrument was built from, **and it must be able to pass**.
 4. **Prose and permission ship together**, read in both directions.
-5. **Cite `CLAUDE.md` and `tools/README.md`; never restate them.** And when a phase edits
+5. **Cite `CLAUDE.md` and `tools/README.md`; never restate them.** When a phase edits
    `CLAUDE.md`, grep the commands for the claim it changed.
 6. **Predict gate movement before the work, including "none"** — with the mechanism, then reconcile.
 7. **Ask before merging anything that changes the published site**, and ask for the head-ref
    deletion **by name** in the same breath.
 
-**016 adds five, and each one is a defect this spec has already met:**
+016 adds five, each from a defect this spec met:
 
 8. **The unit of compilation is one block.** Never a batch, never a shared project. Friction 54:
-   two blocks reporting 20 and 8 errors in a batch of two reported **zero** in a batch of five. Any
-   proposal to "just compile them together" is this defect returning.
+   two blocks reporting 20 and 8 errors in a batch of two reported **zero** in a batch of five.
 9. **A corpus is enumerated through `pagelint.Page`, and its size is re-derived by a second
-   method.** Friction 53: the obvious grep sees 835 of 985 and reports success on what it found.
+   method.** Friction 53: the obvious grep sees 835 of 985.
 10. **A gate number changes in `tools/README.md` and nowhere else.**
 11. **No criterion and no check reads an exit code through a pipe, and none is satisfiable by a
     missing path.** `$?` after a pipe is the last stage's; `grep … | wc -l` prints `0` whether the
-    corpus is clean or the path is absent. Both were found in this spec's own criteria.
+    corpus is clean or the path is absent. Both occurred in this spec's own criteria.
 12. **Run the committed form, from a clean directory.** Friction 56: the probe's documented recipe
-    had never been executed and would have reported all 985 blocks broken — believably, and in the
-    direction that confirms the thesis.
+    had never been executed and would have reported all 985 blocks broken.
 
 ---
 
@@ -67,14 +59,10 @@ The programme's seven:
 | **4** | **The repairs** — P0-9, defects of claim | 7 | **CHANGED — needs sign-off** | one |
 | **5** | **Acceptance** — the walk, the backwards check, both ledgers, the close | 6 | untouched | one |
 
-**Why this is not Research → Core → Supporting → Polish.** The default would put the CI job in a
-"supporting" phase after the baseline, and would put the corpus measurement in "research" before
-the instrument exists. Neither survives contact with this design: **the measurement cannot happen
-until the instrument is built** (phase 1 → 2), and **the gate must not merge before the corpus that
-satisfies it** (`tools/README.md`'s rule 3), which is why phase 3 carries both the baseline and the
-job rather than splitting them. Phase 4 is separate from phase 3 for one reason only: **it is the
-only phase that changes the published site**, and a sign-off should not be buried in a PR that is
-mostly tooling.
+**The order is not Research → Core → Supporting → Polish.** The corpus cannot be measured before the
+instrument exists (phase 1 → 2), and the gate must not merge before the corpus that satisfies it
+(`tools/README.md`'s rule 3), so phase 3 carries both the baseline and the job. Phase 4 is separate
+because it is the only phase that changes the published site, and its sign-off gets its own PR.
 
 ---
 
@@ -307,21 +295,20 @@ for by name in the same breath.
 
 ## What the tasks review found — 2026-09-20, six findings, all before a line was built
 
-**Obligation 2 applies to this list as much as to the corpus**, so the findings are recorded here
-rather than absorbed into the tasks that answer them. Four came from reading the plan against
-`CLAUDE.md` and the corpus; two came from running the second method the plan itself asks for.
+Four came from reading the plan against `CLAUDE.md` and the corpus; two from running the second
+method the plan asks for.
 
 | # | Finding | Answered by |
 |---:|---|---|
 | **1** | **Task 4.2 prescribed a marker that would publish a falsehood.** ❌/✅ is `CLAUDE.md` § *Version markers on code*, which opens *"Where V9 and V10 differ"*. `ImplementAQueryHandler.md` block 10 is sync → async — **Reactor and Proactor, both current in V10** — so ❌ on `Execute` asserts a supersession that `ReactorAndProactor.md` denies | task 4.2, rewritten to choose the label by what the pair is |
-| **2** | **The design's "6 blocks, 4 pages" over-counts, and the second method is what shows it.** Nine candidates, five pages — and reading strikes out four | task 2.5, which now expects the list to shrink |
-| **3** | **Phase 4 creates ❌ blocks and nothing marked them.** P0-5 covers *any* block that must not compile, not only the eight that existed at phase 3; and three candidates are bare signature fragments, where splitting yields two fragments and no compilable block | **task 4.3a, inserted** |
-| **4** | **Exit 2 was promised and never produced.** No task emitted it, and its real-world cause — an unrestored reference set — makes all 985 blocks fail *believably*, in the direction that confirms the thesis | **task 1.6a, inserted**, plus 1.6's named conditions |
-| **5** | **Obligation 8, the load-bearing one, had no red-proof.** Friction 54's mechanism is a parse failure suppressing binding across a shared compilation; a `CS0246` plant and a clean plant are both still reported under batching, so the existing pair cannot fail if the rule is broken | task 1.8's third plant |
-| **6** | **Task 1.9's control was one-way while the checklist called it two-way.** Two identical runs are also what a tool that cached, or did nothing, would print | task 1.9's second direction, and the checklist row now says why |
+| **2** | **The design's "6 blocks, 4 pages" over-counts.** The second method finds nine candidates on five pages, and reading strikes out four | task 2.5, which now expects the list to shrink |
+| **3** | **Phase 4 creates ❌ blocks and nothing marked them.** P0-5 covers *any* block that must not compile, not only the eight that existed at phase 3; three candidates are bare signature fragments, where splitting yields two fragments | **task 4.3a, inserted** |
+| **4** | **Exit 2 was promised and never produced.** No task emitted it, and its real-world cause — an unrestored reference set — makes all 985 blocks fail believably | **task 1.6a, inserted**, plus 1.6's named conditions |
+| **5** | **Obligation 8 had no red-proof.** Friction 54's mechanism is a parse failure suppressing binding across a shared compilation; a `CS0246` plant and a clean plant are both still reported under batching, so the existing pair cannot fail if the rule is broken | task 1.8's third plant |
+| **6** | **Task 1.9's control was one-way while the checklist called it two-way.** Two identical runs are also what a tool that cached, or did nothing, would print | task 1.9's second direction |
 
-**The measurement behind findings 1–3**, run at the review's HEAD, enumerating through
-`pagelint.Page` because the grep is blind to 150 blocks *(friction 53)*:
+**The measurement behind findings 1–3**, run at the review's HEAD through `pagelint.Page`
+*(friction 53)*:
 
 ```bash
 python3 - <<'PY'
@@ -355,34 +342,26 @@ SwitchingSchedulers.md            5   88  Before/After
 SwitchingSchedulers.md            6  109  Before/After
 ```
 
-**Nine candidates, and four are not the defect.** `SwitchingSchedulers.md` already does it the way
-the repair prescribes — *Before* and *After* in **separate** fences, one complete block each — and
-`AgreementDispatcherRouting.md` block 3 is not the shape at all: `// Before Jan 2025` and
-`// After Jan 2025` are comments **inside one routing lambda**, about tax rules and not about two
-forms of the same code. It reached the design's list as a grep hit nobody read.
+**Nine candidates; four are not the defect.** `SwitchingSchedulers.md` already puts *Before* and
+*After* in separate fences, one complete block each. `AgreementDispatcherRouting.md` block 3 is not
+the shape: `// Before Jan 2025` and `// After Jan 2025` are tax-rule comments inside one routing
+lambda.
 
-**The same run re-derives the corpus: 985 C# blocks across 162 pages loaded**, which is the
-design's figure by an independent path, and the reason the numbers above are quotable.
+**The same run loads 985 C# blocks across 162 pages**, the design's figure by an independent path.
 
-**None of this is adopted by arithmetic.** Task 2.5 still owns the confirmed list and still derives
-it two ways at its own HEAD; what changed is that it now knows the list can shrink, and which four
-candidates to examine first.
+Task 2.5 still owns the confirmed list and derives it two ways at its own HEAD.
 
 ---
 
 ## Totals
 
-**39 tasks** — 11 + 6 + 9 + 7 + 6. Re-derive rather than trust this line:
+**39 tasks** — 11 + 6 + 9 + 7 + 6:
 
 ```bash
 grep -c '^- \[.\] \*\*Task' spec/016-compile_gate/tasks.md      # 39
 ```
 
-**The phase table sums to 39 independently**, which is the second method, and the phase headings
-carry the same per-phase figures, which is a third claim that could drift from either.
-
-**It was 37 at the review.** Two tasks were inserted — `1.6a` and `4.3a` — and the numbering says
-so rather than hiding it.
+The phase table sums to 39 independently. It was 37 at the review; `1.6a` and `4.3a` were inserted.
 
 ---
 
@@ -390,46 +369,41 @@ so rather than hiding it.
 
 | | |
 |---|---|
-| Each phase is one PR, deliverable-shaped | five phases, and § *The phases* says **why the default was left** — the measurement cannot precede the instrument, and the gate cannot precede its corpus |
-| Standing obligations stated once | §1, twelve of them, **not repeated per task**; five are 016's own and each is a defect already met |
-| Every new check has a red-proof with a two-way control | tasks 1.6a, 1.7, 1.8, 1.9 and 3.6 — 3.6 carries the green control explicitly, and **1.6a and 1.9's second direction exist because this row was false when the review read it**: 1.9 was one-way and exit 2 had no proof at all |
-| Inherited counts re-derived by two methods | tasks 1.2, 2.5 and 4.1; task 2.5 notes the case where the two methods are **not** corroborating each other, **and that its list can shrink** |
-| Every Output names something that can be seen to exist | file paths, `.tsv` rows, named sections, recorded runs — no "update the docs" |
-| Acceptance last, owning the walk and both ledgers | phase 5, and it starts with the three criteria that have no instrument |
+| Each phase is one PR, deliverable-shaped | five phases; § *The phases* gives the ordering |
+| Standing obligations stated once | §1, twelve, not repeated per task; five are 016's own |
+| Every new check has a red-proof with a two-way control | tasks 1.6a, 1.7, 1.8, 1.9 and 3.6; 3.6 carries the green control. 1.6a and 1.9's second direction were added at the review |
+| Inherited counts re-derived by two methods | tasks 1.2, 2.5 and 4.1; task 2.5 expects its list to shrink |
+| Every Output names something that can be seen to exist | file paths, `.tsv` rows, named sections, recorded runs |
+| Acceptance last, owning the walk and both ledgers | phase 5, starting with the three criteria that have no instrument |
 
 ---
 
-**Next step: `/spec:review`.** Two things want confirming rather than assuming: **P0-9's boundary**
-(task 2.3 makes it measurable, and the claim list's size decides whether phase 4 is a phase), and
-**the choice to keep page edits out of phase 3** so that only one phase needs a sign-off.
+**Next step: `/spec:review`.** To confirm: **P0-9's boundary** (task 2.3 measures it, and the claim
+list's size decides whether phase 4 is a phase), and **keeping page edits out of phase 3** so only
+one phase needs a sign-off.
 
 ---
 
 ## Phase 1 prediction
 
-**Written 2026-09-20, before any gate was run in this phase** — which is the thing AC11 is about.
-`tools/blockcheck.py` existed when this section was typed; no gate had been executed since the
-phase began, so the prediction below is a prediction and not a reading. `tools/README.md` owns the
-expected figures and this section cites rather than copies them.
+**Written 2026-09-20, before any gate was run in this phase.** `tools/README.md` owns the expected
+figures; this section cites them.
 
-**All eight: none.** The mechanism is what makes that checkable, and it is not the same mechanism
-twice:
+**All eight: none.**
 
 | # | Gate | Prediction | Why, from mechanism |
 |---:|---|---|---|
-| 1 | `linkcheck` | **none** | It walks `.md` files and `tools/` **is inside that walk** — writing `tools/README.md` moved it 164 → 165. Phase 1 adds `tools/blockcheck.py`, `tools/blockcheck/*.cs`, `*.csproj` and files under `tools/blockcheck/scaffold/`, and **not one `.md`**. The gate's documentation is row 9 of the file that already exists, which is task 3.7. Adding `tools/blockcheck/README.md` would move this row to 166 — a choice, and this phase declines it |
-| 2 | `pagelint` | **none** | Corpus is `contents/` + `README.md`. A `.py`, a `.cs` and a `.csproj` cannot enter it. **The predicted fall to come is phase 4's, not this phase's**: rule 6's warning count moves only when a *page's* C# block gains `using` directives |
+| 1 | `linkcheck` | **none** | It walks `.md` files, including `tools/`; writing `tools/README.md` moved it 164 → 165. Phase 1 adds `tools/blockcheck.py`, `tools/blockcheck/*.cs`, `*.csproj` and files under `tools/blockcheck/scaffold/`, and **no `.md`**. A `tools/blockcheck/README.md` would move it to 166 |
+| 2 | `pagelint` | **none** | Corpus is `contents/` + `README.md`; a `.py`, `.cs` or `.csproj` cannot enter it. Rule 6's count moves only when a page's C# block gains `using` directives, which is phase 4 |
 | 3 | shape | **none** | Reads `SUMMARY.md`. No page is added, moved or renamed |
 | 4 | redirects | **none** | Reads `.gitbook.yaml`. Untouched |
-| 5 | `versioncheck` | **none** | It reads version pins **in page prose** — 18 across 5 pages. Task 1.4 pins 67 packages in a `.csproj`, where `optioncheck`'s 63 already sit unread |
-| 6 | `optioncheck` | **none** | Reflects marked option tables in `contents/` against pinned types. No table is touched. **It is the row most likely to move by accident**, because it is the other `dotnet` tool under `tools/` and task 1.3 adds a second project beside it — but its corpus is pages, not projects |
-| 7 | `--verify` | **none** | Fetches the live sitemap and compares it with the predicted tree. Nothing published changes |
-| 8 | `symbolcheck` | **none** | Corpus is `contents/`. No page is edited in this phase at all |
+| 5 | `versioncheck` | **none** | Reads version pins in page prose, 18 across 5 pages. Task 1.4's 67 pins are in a `.csproj` |
+| 6 | `optioncheck` | **none** | Reflects marked option tables in `contents/`. No table is touched; task 1.3's second `dotnet` project is outside its corpus |
+| 7 | `--verify` | **none** | Compares the live sitemap with the predicted tree. Nothing published changes |
+| 8 | `symbolcheck` | **none** | Corpus is `contents/`. No page is edited |
 
-**Seven of these are vacuous passes and the eighth is too.** That is the case worth writing down:
-a gate that has silently stopped checking looks exactly like a gate that correctly reports no
-movement, and the only defence is that the *before* figures were read at the start and the *after*
-figures at the end, both against `tools/README.md`.
+All eight are vacuous passes. The defence is that the *before* figures are read at the start and
+the *after* figures at the end, both against `tools/README.md`.
 
 ---
 
@@ -437,8 +411,8 @@ figures at the end, both against `tools/README.md`.
 
 ### The eight gates, read before the work *(the prediction's baseline)*
 
-Run at `1f5fc10` with `tools/blockcheck.py` present and nothing else built. **Each verdict line is
-the gate's own last line, and each exit code was read bare** — `<cmd> > /tmp/g.out 2>&1; echo $?`:
+Run at `1f5fc10` with `tools/blockcheck.py` present and nothing else built. Each line is the gate's
+own last line, each exit code read bare — `<cmd> > /tmp/g.out 2>&1; echo $?`:
 
 ```text
 exit=0  No broken internal links (165 files checked).
@@ -451,22 +425,17 @@ exit=0  No watchlisted symbols found (22 entries, 161 pages checked, 3 silenced)
 exit=0  predicted 161, published 161, 161 agree
 ```
 
-**Eight for eight against `tools/README.md`'s rows**, including both rows that carry the second ref
-`3be2a78`. Nothing has moved, which is what makes the end-of-phase reading in task 1.10 a
-comparison rather than a fresh measurement.
+**Eight for eight against `tools/README.md`'s rows**, including both rows carrying the second ref
+`3be2a78`.
 
-> **The first attempt at this table read every exit code through a pipe.** The form was
-> `python3 tools/linkcheck.py | tail -3; echo $?`, which prints `tail`'s code and would have read
-> **0** for all eight however they had ended. That is **constraint 11**, met while running the
-> check that exists because of it, within an hour of typing the obligation out. The second form
-> above redirects to a file and reads `$?` with nothing between. Recorded rather than quietly
-> re-run: the pipe is what a person reaches for, which is why the rule needs to be a rule.
+> The first reading piped every gate through `tail` before `echo $?`, which reports `tail`'s code
+> — **0** for all eight whatever they returned. Constraint 11; re-read in the form above.
 
 ### The enumerator and extractor *(task 1.1)*
 
 `tools/blockcheck.py` enumerates through `pagelint.load_pages()` and `pagelint.Page`, filters on
 `pagelint.CSHARP_TAGS`, and hoists `using` directives with `pagelint.USING_RE`. **Four names
-imported, no second copy of any of them** — constraint 2, and friction 53's answer.
+imported, no second copy of any** — constraint 2, and friction 53's answer.
 
 ```bash
 python3 tools/blockcheck.py --list > /tmp/l.tsv; echo $?      # 0, read bare
@@ -480,19 +449,15 @@ grep -c '^contents/KafkaConfiguration.md	' /tmp/l.tsv      # 20
 985 C# blocks across 145 pages: 11 namespaced, 306 types, 136 members, 532 statements
 ```
 
-**985 across 145 is `requirements.md` § *Current state* reproduced by the tool**, and the 20
-`KafkaConfiguration.md` rows are AC2's named case — the page whose every fence is ` ``` csharp`
-with a space, which a grep-shaped extractor sees as holding no C# at all.
+**985 across 145** reproduces `requirements.md` § *Current state*. The 20 `KafkaConfiguration.md`
+rows are AC2's named case: every fence on that page is ` ``` csharp` with a space.
 
-**The corpus is defined as "the pages `pagelint` lints", not "the pages under `contents/`".** Those
-are the same 985 blocks today, because the only other page it loads is `README.md` and that page
-carries **0** C# blocks. Defining it the wider way means a C# block arriving on the site root is
-compiled rather than silently exempt; defining it the narrower way would have been invisible until
-the day it mattered.
+**The corpus is "the pages `pagelint` lints", not "the pages under `contents/`".** Today these are
+the same 985 blocks, because the only other page, `README.md`, carries **0** C# blocks. A C# block
+added to the site root will be compiled.
 
-**`--list` prints rows to stdout and its summary to stderr**, so `wc -l` of a redirect is the
-number of blocks and nothing else, and every row is newline-terminated — friction 55, which cost
-this programme a member of an enumeration once already.
+**`--list` prints rows to stdout and its summary to stderr**, so `wc -l` of a redirect counts
+blocks only, and every row is newline-terminated (friction 55).
 
 **Exit codes, all read bare:**
 
@@ -503,12 +468,9 @@ this programme a member of an enumeration once already.
 no mode at all (the gate)         2    "the gate itself is not built yet: nothing was checked"
 ```
 
-**An empty enumeration is exit 2 and not exit 0**, written into the tool rather than left to a
-future task: zero blocks is a broken corpus walk, and a gate reporting a clean nothing is this
-programme's twelve-times-met failure.
+**An empty enumeration is exit 2, not exit 0.**
 
-**The extractor is observable**, which is what makes task 1.7 possible at all. `--show` writes the
-block body verbatim to stdout:
+`--show` writes the block body verbatim to stdout:
 
 ```bash
 python3 tools/blockcheck.py --show contents/KafkaConfiguration.md 1 > /tmp/b1.cs
@@ -516,36 +478,25 @@ sed -n '72,86p' contents/KafkaConfiguration.md > /tmp/page.cs
 diff /tmp/page.cs /tmp/b1.cs        # empty
 ```
 
-The line range is the tool's own report — `lines 71-87` on stderr, the fences — and the block is a
-**tab-indented** one, so the diff is also a check that leading whitespace survives. That is a spot
-check by hand; the corpus-wide claim is task 1.7's, and this one is not a substitute for it.
+The line range is the tool's own report (`lines 71-87`, the fences). The block is tab-indented, so
+the empty diff also shows leading whitespace survives. The corpus-wide check is task 1.7's.
 
-**The shape counts reproduce the design's 11 / 306 / 136 / 532 exactly**, from a classifier that
-uses `pagelint.USING_RE` where the probe used its own weaker one. That agreement is recorded here
-and **is not task 1.2's second method** — both figures come from the same classifier, run once.
-Task 1.2 still owes an independent count.
+**The shape counts reproduce the design's 11 / 306 / 136 / 532 exactly.** Both figures come from
+the same classifier, so this is not task 1.2's second method.
 
-**What this task did not do, deliberately:** it classifies but does not wrap. The four wrapper
-rules have a *test* half and an *emission* half; `--list` cannot print a shape the tool has not
-decided, so the tests land here and the emission lands in task 1.2 with its counts.
+This task classifies but does not wrap; the emission half of the wrapper rules is task 1.2's.
 
-**A drift found while reading the inputs, not fixed here:** `requirements.md` AC1 names the
-verdicts `BUILT · SKIPPED · NOT COMPILABLE · FAILED`, and `design.md` § *The verdict model* names
-them `CLEAN · FAILED · SKIPPED · NOT COMPILABLE`. **`BUILT` and `CLEAN` are the same verdict under
-two names**, and the tool can only print one. Recorded now, before the tool emits either, so that
-whichever one task 1.3 prints is a decision rather than a coin toss — obligation 2.
+**Verdict names drifted between approved documents:** `requirements.md` AC1 says
+`BUILT · SKIPPED · NOT COMPILABLE · FAILED`; `design.md` § *The verdict model* says
+`CLEAN · FAILED · SKIPPED · NOT COMPILABLE`. `BUILT` and `CLEAN` are the same verdict.
 
-**Ruled at task 1.3: the tool prints `BUILT`.** AC1 is what phase 5 walks, and its instrument reads
-the verdict as a field of the report; a criterion cannot be satisfied by a tool that prints a
-synonym of what it asks for. `design.md`'s `CLEAN` stands in the approved design as the same
-verdict under its older name, and is not edited — a figure or a term inside approved plan text is
-anchored by its approval.
+**Ruled at task 1.3: the tool prints `BUILT`**, the name AC1's instrument reads. `design.md`'s
+`CLEAN` is left as approved.
 
 ### The four wrapper rules, and their counts measured twice *(task 1.2)*
 
 `WRAPPERS` in `tools/blockcheck.py` holds the emission half; `classify()` holds the test half. The
-closing braces are **derived** — one `}` per `{` in the opening lines — because a wrapper whose two
-halves are maintained separately is a wrapper that will one day not balance.
+closing braces are derived — one `}` per `{` in the opening lines.
 
 | Shape | Test | Wrapper | `--list` | the probe |
 |---|---|---|---:|---:|
@@ -555,9 +506,8 @@ halves are maintained separately is a wrapper that will one day not balance.
 | `statements` | anything else | the above, plus `public async Task Run()` | 532 | 532 |
 | | | | **985** | **985** |
 
-**Method 1 — this tool.** Method 2 — the **committed** probe, a different implementation of the
-same four tests, run from `/tmp` so that nothing in the working directory could be feeding it
-*(obligation 12)*:
+Method 1 is this tool. Method 2 is the committed probe, a separate implementation of the same four
+tests, run from `/tmp` *(obligation 12)*:
 
 ```bash
 python3 tools/blockcheck.py --stage /tmp/bc12/staged
@@ -566,22 +516,19 @@ awk -F'\t' '{n[$4]++} END{for(k in n) print n[k], k}' /tmp/bc12/staged/index.tsv
 cd /tmp && python3 <repo>/spec/016-compile_gate/probe/gen.py /tmp/bc12probe/blocks
 ```
 
-**They agree on all four, and they are not the same code**: the probe's `using` test is its own
-and rejects `using static X;` and `using Alias = X.Y;`, where this tool uses `pagelint.USING_RE`.
-The agreement says the shape of a block does not turn on that difference — every block that is
-nothing but directives classifies `statements` under both.
+**They agree on all four.** The probe's `using` test rejects `using static X;` and
+`using Alias = X.Y;` where this tool uses `pagelint.USING_RE`; no block's shape turns on the
+difference.
 
-**What this pair does NOT double-measure, and saying so is the point:** both walk the corpus
-through `pagelint.Page`, because constraint 2 forbids a second fence parser. The corpus *size*
-therefore needs its second method from somewhere else, and it has one — the grep, which is
-**friction 53's own number**:
+Both walk the corpus through `pagelint.Page`, so the corpus *size* takes its second method from the
+grep — friction 53's own number:
 
 ```bash
 grep -r '^```csharp$' contents/ | wc -l      # 835 blocks
 grep -rl '^```csharp$' contents/ | wc -l     # 117 pages
 ```
 
-**835 against 985, and the 150 reconcile exactly**, by opening-fence spelling:
+**835 against 985, and the 150 reconcile exactly** by opening-fence spelling:
 
 ```text
   835  exactly ```csharp
@@ -592,36 +539,27 @@ grep -rl '^```csharp$' contents/ | wc -l     # 117 pages
   985  total
 ```
 
-The grep's 835 is not an approximation of 985 and must not be read as corroborating it: it is the
-**visible** part of the corpus, and the gap is a decomposed list rather than a discrepancy. Two
-methods agreeing is evidence; two methods disagreeing by a number you can name, line by line, is
-better evidence.
+The 835 is the part of the corpus a grep can see, not a corroboration of 985.
 
-**985 blocks produced 985 files.** That is a collision check and not a formality — `<page>_<n>`
-identifiers that collided would overwrite each other silently, and the staged directory would hold
-fewer files than the index has rows:
+**985 blocks produced 985 files**, so no `<page>_<n>` identifiers collided:
 
 ```bash
 wc -l < /tmp/bc12/staged/index.tsv      # 985
 ls /tmp/bc12/staged/*.cs | wc -l        # 985
 ```
 
-**`NOT COMPILABLE` is 0 of 985**, by construction rather than by luck: `classify()` ends in an
-unconditional `statements`, so a block can only be unwrapped if it raises. The verdict stays in the
-model because a future rule could narrow that fall-through, and a category that exists only when it
-is non-zero is a category nobody notices arriving.
+**`NOT COMPILABLE` is 0 of 985 by construction:** `classify()` ends in an unconditional
+`statements`, so a block is unwrapped only if it raises. The verdict stays in the model.
 
 ### The Roslyn tool, and the reference pin *(tasks 1.3 and 1.4)*
 
-`tools/blockcheck/Program.cs` compiles **one `CSharpCompilation` per block** — obligation 8, written
-into the code's opening comment with friction 54's measurements beside it, so that a later reader
-meets the reason before the loop. Reference assemblies **are** shared between compilations and
-diagnostics are not: a `MetadataReference` is an immutable input, a diagnostic bag is a sink, and
-the defect was always the sink.
+`tools/blockcheck/Program.cs` compiles **one `CSharpCompilation` per block** (obligation 8; the
+opening comment carries friction 54's measurements). Reference assemblies are shared between
+compilations; diagnostics are not.
 
-It prints `id<TAB>verdict<TAB>error count<TAB>distinct codes` and nothing else to stdout. **Its own
-exit code is 0 or 2, never 1** — a failing block is data, and the corpus verdict belongs to the
-Python half that owns the 0/1/2 contract.
+It prints `id<TAB>verdict<TAB>error count<TAB>distinct codes` and nothing else to stdout. **Its exit
+code is 0 or 2, never 1**: the corpus verdict belongs to the Python half, which owns the 0/1/2
+contract.
 
 `tools/blockcheck/refs/refs.csproj` is **67 packages, every one with an explicit version, and no
 sources**, carried forward verbatim from the probe:
@@ -633,22 +571,19 @@ grep -c 'ProjectReference' tools/blockcheck/refs/refs.csproj   # 0
 grep -c 'ProjectReference' tools/blockcheck/blockcheck.csproj  # 0
 ```
 
-Both projects target **net9.0**, where the probe used net8.0 — matching `tools/optioncheck` and the
-`options` job's `setup-dotnet 9.0.x`, so that phase 3's CI job needs no second runtime. The move is
-recorded here because it is the named cause of any difference from the probe's figures. There was
-none; see below.
+Both projects target **net9.0** (the probe used net8.0), matching `tools/optioncheck` and the
+`options` job's `setup-dotnet 9.0.x`. It changed none of the probe's figures; see below.
 
 #### The reference set states itself, because the step that is documented is the step that gets skipped
 
-**The probe's recipe has a hand-copy in it**, and it is load-bearing:
+The probe's recipe has a hand-copy step:
 
 ```bash
 cp bin/Debug/net8.0/*.dll <refdir>/
 cp $(dirname $(which dotnet))/packs/Microsoft.NETCore.App.Ref/8.0.0/ref/net8.0/*.dll <refdir>/
 ```
 
-**The first build of this tool did the first line and not the second**, because globbing the output
-directory is the obvious thing and the second line is a step in a README. What came back:
+**The first build did the first line and not the second:**
 
 ```text
 233 reference assemblies
@@ -656,10 +591,8 @@ directory is the obvious thing and the second line is a step in a README. What c
 981 CS0518   predefined type 'System.Object' is not defined
 ```
 
-**99.9% of the corpus broken, and the gate had not checked one line of it.** That is friction 56
-again, one layer down: not a probe recipe nobody ran, but a *step* nobody ran, and the failure is
-believable and points the way the thesis does. The repair is not to document the step harder.
-`refs.csproj` now writes its **own** resolved reference set at build time —
+**99.9% of the corpus reported broken with nothing checked** — friction 56, one layer down.
+`refs.csproj` now writes its own resolved reference set at build time:
 
 ```xml
 <Target Name="WriteReferenceList" AfterTargets="ResolveReferences">
@@ -667,11 +600,10 @@ believable and points the way the thesis does. The repair is not to document the
 </Target>
 ```
 
-— which is exactly what the compiler would have been handed: the 67 packages **and** the targeting
-pack for the project's own `TargetFramework`, with no SDK version written down anywhere and no copy
-step to forget. **497 assemblies**, against the probe's hand-assembled 391. The tool takes that file
-rather than a directory, and **exits 2 if it is absent or names an assembly that is not there**,
-because a partly-present reference set fails blocks for a reason that is not the block's.
+That is exactly what the compiler is handed: the 67 packages and the targeting pack for the
+project's own `TargetFramework`, with no SDK version written down and no copy step. **497
+assemblies**, against the probe's hand-assembled 391. The tool takes that file and **exits 2 if it
+is absent or names an assembly that is not there**.
 
 #### The corpus run, and the probe reproduced exactly
 
@@ -689,62 +621,50 @@ dotnet tools/blockcheck/bin/Release/net9.0/blockcheck.dll \
 22.0s total, 22ms per block
 ```
 
-**60 and 925 are the probe's numbers to the block** — and not by inheritance. Joined on block id
-against the **committed** `probe/verdicts.tsv`:
+**60 and 925 match the probe block for block**, joined on block id against the committed
+`probe/verdicts.tsv`:
 
 ```bash
 join -t$'\t' -j1 <mine, BUILT→CLEAN> <probe/verdicts.tsv> | wc -l    # 985
 awk -F'\t' '$2!=$3{d++} END{print d+0, "disagreements"}'             # 0
 ```
 
-**985 of 985 verdicts identical**, across a different target framework, a differently assembled
-reference set of a different size, and a second implementation of the tool. That is the strongest
-control this phase has, and it is the one nobody planned: it was available only because the probe
-was committed with its output.
+**985 of 985 verdicts identical**, across a different target framework, a different reference set
+and a second implementation of the tool.
 
-**A correction to the design's error-code figures, in the direction that matters.** `design.md`
-quotes `CS0246` at 714 and `CS0103` at 653; this run reads **738** and **677** over the same
-verdicts. The probe's row wrote `.Take(6)` distinct codes per block, so **every per-code figure it
-published is a floor**, and a block failing seven different ways contributed six. The design's
-figures are not wrong about anything they decided — the gap is 24 blocks and 24 blocks — but a
-number that silently truncates is worth catching before phase 2 builds a triage on it. This tool
-writes every distinct code.
+**The design's error-code figures are floors.** `design.md` quotes `CS0246` at 714 and `CS0103` at
+653; this run reads **738** and **677** over the same verdicts. The probe wrote `.Take(6)` distinct
+codes per block, so a block failing seven ways contributed six. No decision in the design turns on
+the gap. This tool writes every distinct code.
 
 ### The scaffold, and the two-way control that says it does something *(task 1.5)*
 
-**A scaffold is declared in `tools/blockcheck/scaffold/pages.tsv`, one row per page**, and it has
-two parts because the harness 015 built had two:
+**A scaffold is declared in `tools/blockcheck/scaffold/pages.tsv`, one row per page**, in two parts,
+as 015's harness had:
 
 | Part | Where | What it does |
 |---|---|---|
 | a **unit** | `scaffold/units/*.cs` | an extra compilation unit, compiled **in that block's own compilation** — types and values the page names but no block defines |
 | a **prelude** | `scaffold/preludes/*.txt` | **replaces** the generic wrapper for that page's blocks: a typed handler class, so a block that is the body of a method has the method to sit in |
 
-A unit also declares the `using` lines it wants injected, in the unit itself rather than in a
-second file:
+A unit declares the `using` lines it wants injected, in the unit itself:
 
 ```csharp
 // blockcheck: using static PageContext;
 ```
 
-That one line is the whole mechanism by which a page's named-but-undefined values — a connection
-string, a producer registry, an outbox configuration — reach a block, and it is `015`'s. The four
-preludes and `PageContext.cs` are carried forward verbatim from
-`spec/016-compile_gate/harness/`.
+That line is how a page's named-but-undefined values reach a block. The four preludes and
+`PageContext.cs` are carried forward verbatim from `spec/016-compile_gate/harness/`.
 
-**The unit rides in the block's own compilation and nowhere else**, so obligation 8 is untouched:
-one block, one `CSharpCompilation`, now with two trees in it. A scaffold can help the block it was
-given to and cannot silence another.
+**The unit rides in the block's own compilation and nowhere else**: one block, one
+`CSharpCompilation`, with two trees. A scaffold can help its own block and cannot silence another.
 
-**A scaffold that does not parse stops the run** — exit 2, nothing checked. That is friction 54's
-mechanism arriving through the back door: a parse error in a shared tree suppresses semantic
-binding across the compilation it is in, so a broken scaffold would hand every page that uses it a
-**silent pass**. It is checked once, before any block is compiled.
+**A scaffold that does not parse stops the run** — exit 2, nothing checked, tested once before any
+block compiles. A parse error in a shared tree suppresses binding across its compilation, so a
+broken scaffold would pass every page using it.
 
-**Errors reported against a scaffold's tree are not counted against the block.** They are an
-instrument fault, not a documentation defect, and charging them to the page would fail every page
-sharing that scaffold for a reason no reader could act on. They are not swallowed either: the run
-prints `WARNING: N error(s) reported against scaffold trees`.
+**Errors reported against a scaffold's tree are not counted against the block**, and are printed as
+`WARNING: N error(s) reported against scaffold trees`.
 
 #### `--list-scaffold`, and why it reads the tree rather than grepping it
 
@@ -758,16 +678,11 @@ find tools/blockcheck/scaffold -type f | wc -l                        # 6
 55 identifiers from 1 unit(s) and 4 prelude(s); 1 page(s) scaffolded
 ```
 
-**Six files, five of them scaffold and one the map** — AC8's count, stated with the map named
-rather than quietly included. The 56th row is the injected `using`, which is supplied from outside
-the page exactly as the identifiers are and would otherwise be the one thing the listing did not
-say.
+**Six files: five scaffold and one map** (AC8's count). The 56th row is the injected `using`.
 
-The identifiers come from **Roslyn's syntax tree**, not a regex: a listing that under-reports
-claims the block was helped less than it was, and that is the only direction that matters here.
-Preludes are fragments — they open braces they do not close — so each is rendered the way `wrap()`
-renders it, with `__NAME__` substituted and one `}` per `{@`, which is also a check that its braces
-balance under the rule the tool actually applies.
+The identifiers come from **Roslyn's syntax tree**, not a regex, so the listing cannot under-report.
+Each prelude is rendered as `wrap()` renders it, with `__NAME__` substituted and one `}` per `{@`,
+which also checks its braces balance.
 
 #### The control: one page in, one block moves
 
@@ -781,15 +696,11 @@ DapperOutbox_2    FAILED 16 errors  CS0103…    FAILED 12 errors  CS0103,CS0115
 corpus            985 blocks, 60 built         985 blocks, 61 built
 ```
 
-**Both directions, and neither is the whole corpus.** Block 1 moves from `FAILED` to `BUILT`, which
-is the scaffold doing something; block 2 stays `FAILED` with a *different* error set, which is the
-scaffold not being a way to make a page green. The corpus moves by exactly one block. A scaffold
-that had quietly helped everything would have shown up here as a jump, and that is the failure this
-control is for.
+**Block 1 moves to `BUILT`; block 2 stays `FAILED` with a different error set; the corpus moves by
+exactly one.**
 
-**The staged directory holds 986 `.cs` files and the corpus is 985.** The extra one is the staged
-copy of the unit, and the tool reads `index.tsv` rather than globbing the directory — a glob would
-have compiled the scaffold as though it were documentation and reported a corpus of 986:
+**The staged directory holds 986 `.cs` files for a 985-block corpus.** The extra one is the staged
+unit; the tool reads `index.tsv`, not a glob:
 
 ```bash
 ls /tmp/bc15/*.cs | wc -l        # 986
@@ -797,8 +708,7 @@ wc -l < /tmp/bc15/index.tsv      # 985
 wc -l < /tmp/bc15/verdicts.tsv   # 985
 ```
 
-The unit is **copied** into the staged directory rather than referenced where it lives, so that
-what was compiled can be read afterwards by somebody who does not know how the run was configured.
+The unit is copied into the staged directory, so what was compiled can be read afterwards.
 
 ### The exit contract, and exit 2 red-proofed four ways *(tasks 1.6 and 1.6a)*
 
@@ -815,16 +725,13 @@ awk '{n[$1]++} END{for(k in n) print k, n[k]}' /tmp/r.tsv     # BUILT 61, FAILED
 wc -l < /tmp/r.tsv                                            # 985
 ```
 
-**61 + 924 = 985**, which is AC1's sum. Rows go to stdout (or the named file) and **every other
-line goes to stderr**, so the redirect holds rows and nothing else.
+**61 + 924 = 985**, AC1's sum. Rows go to stdout (or the named file); every other line goes to
+stderr.
 
-**`NOT_COMPILABLE` carries an underscore, and that is a repair to AC1's instrument, not a typo.**
-AC1 counts verdicts with `awk '{n[$1]++}'`, whose default field separator is whitespace; the
-spelling `NOT COMPILABLE` would split into two fields and be counted as `NOT`. It is invisible
-today — the count is 0 of 985 — and it is a trap the first day it is not. Same family as the
-criteria that read an exit code through a pipe: the instrument, not the claim.
+**`NOT_COMPILABLE` carries an underscore.** AC1 counts verdicts with `awk '{n[$1]++}'`, which splits
+on whitespace; `NOT COMPILABLE` would be counted as `NOT`.
 
-**The run states its scope before its verdict, and states what it is not:**
+**The run states its scope before its verdict:**
 
 ```text
 985 blocks: 61 BUILT, 924 FAILED
@@ -832,15 +739,12 @@ no baseline yet: this is a measurement, not a gate
 0 findings
 ```
 
-**`0 findings` over 924 failures is a true statement and a dangerous one**, so the line above it is
-mandatory. Nothing is required to compile until `baseline.tsv` exists in phase 3, and a run that
-printed only the zero would read as a green gate over an unchecked corpus. This is the phase that
-says *"it is a tool, not a gate"*; the tool has to say it too.
+The middle line is mandatory until `baseline.tsv` exists in phase 3: `0 findings` over 924 failures
+is otherwise indistinguishable from a green gate.
 
 #### Exit 2, proved four ways, every code read bare
 
-**Obligation 3 and review finding 4.** Exit 2's real-world cause makes all 985 blocks fail
-*believably*, so the proof is not only the code but **no per-block verdicts printed**:
+Obligation 3 and review finding 4. The proof is the code **and no per-block verdicts printed**:
 
 | The state | Exit | Report rows |
 |---|---:|---:|
@@ -859,20 +763,16 @@ restored and built, so nothing was checked
 NOTHING WAS CHECKED
 ```
 
-**The second row is the one worth having.** A reference list that is 497 of 498 present is the
-state that reads as a measurement: the blocks that needed that assembly fail, with the compiler's
-own error codes, and everything else passes. It is exit 2 rather than a warning, because a gate
-that checked 99.8% of what it was told to check has not checked the corpus.
+**One missing assembly of 498 is exit 2, not a warning.** Otherwise the blocks needing it fail with
+real error codes and the rest pass, which reads as a measurement.
 
-`refs.txt` was restored and `diff`ed byte-identical afterwards, and every exit code above was read
-with `echo $?` directly after the command, never after a pipe — **constraint 11**, which this
-session had already broken once while reading the eight gates.
+`refs.txt` was restored and `diff`ed byte-identical afterwards; every exit code was read with
+`echo $?` directly after the command.
 
-**Nine states exit 2 and they are named in one place**, as a block comment above `mode_report` in
-`tools/blockcheck.py`: four are enforced in Python, three in `tools/blockcheck/Program.cs` and
-propagated, and the remaining two — `pagelint` unimportable, and an empty enumeration — sit in
-`main`. Four of the nine are proved above; the scaffold-parse one is proved by task 1.8's third
-plant.
+**Nine states exit 2, named in one block comment above `mode_report` in `tools/blockcheck.py`**:
+four enforced in Python, three in `tools/blockcheck/Program.cs` and propagated, and two —
+`pagelint` unimportable, an empty enumeration — in `main`. Four are proved above; the scaffold-parse
+one by task 1.8's third plant.
 
 ### Extraction, red-proofed both ways *(task 1.7)*
 
@@ -884,12 +784,11 @@ python3 tools/blockcheck.py --verify-extraction; echo $?     # 0, read bare
 985 of 985 identical, 1 with `using` directives hoisted
 ```
 
-**N of N, with N the corpus count.** The check reconstructs the same split the stager made —
-`using` directives hoisted above the wrapper, the rest in place — rather than ignoring the
-difference, so "identical" means *every other byte*: not a space, not an indent, not a line ending.
+**N of N, with N the corpus count.** The check reconstructs the stager's split — `using`
+directives hoisted above the wrapper, the rest in place — so "identical" covers every other byte,
+including whitespace and line endings.
 
-**The red half, and it is one byte.** A single trailing space appended to line 9 of one staged
-block, inside the block's own body:
+**The red half: one trailing space** appended to line 9 of one staged block:
 
 ```text
 exit=1
@@ -897,16 +796,12 @@ exit=1
 contents/KafkaConfiguration.md	1	KafkaConfiguration_1	NOT IDENTICAL
 ```
 
-**Exactly that block, named, and nothing else moved.** The green half is the half that feels
-unnecessary and the half that catches a check which has stopped running — 985 of 985 is only worth
-something because 984 of 985 is reachable.
+**Exactly that block, named, and nothing else moved.**
 
 #### The hoisting count is 1, and the block it names is a finding for phase 2
 
-`985 of 985 identical, **1** with directives hoisted` looked wrong — 248 blocks carry a `using`
-line, so the number that moves lines ought to be larger. It is not: hoisting only *moves* anything
-when a directive sits below a non-directive line, and in 984 blocks the directives are already at
-the top. The one exception:
+248 blocks carry a `using` line, but hoisting moves a line only when a directive sits below a
+non-directive line. In 984 blocks the directives are already at the top. The one exception:
 
 ```bash
 python3 tools/blockcheck.py --show contents/AWSSQSMigrateToV10.md 1
@@ -922,15 +817,10 @@ using Amazon.SimpleNotificationService;
 using Amazon.SQS;
 ```
 
-**That is a before/after pair inside one fence**, of exactly the shape task 2.5 confirms — and it
-is not on the design's list, nor on the nine candidates the tasks review produced, because it
-carries no `// Before`, `// After`, `// V9` or `// V10` comment. The marker method cannot see it;
-**a duplicated `using` directive can**. Carried to task 2.5 as a second method to run, not repaired
-here: phase 1 touches no page.
-
-It is also the one block where the difference between *the page's bytes* and *what the compiler
-read* is visible, which is why this check reports the hoisting count rather than folding it into
-the identical count.
+**A before/after pair inside one fence**, the shape task 2.5 confirms. It is on neither the
+design's list nor the tasks review's nine candidates, because it carries no `// Before`, `// After`,
+`// V9` or `// V10` marker; the duplicated `using` is what shows it. Carried to task 2.5 as a
+second method. Phase 1 touches no page.
 
 ### The compile verdict red-proofed — and the design's central mechanism did not reproduce *(task 1.8)*
 
@@ -950,19 +840,17 @@ Plant_Leak_B	FAILED	1	CS0246
 5 blocks, 2 built, 3 failing
 ```
 
-The first two are the pair the design asked for, and they are the easy half: a name that does not
-exist must come back `FAILED` with the compiler's own code, and a trivial class must come back
-`BUILT`, because a harness that had silently stopped compiling would report everything `FAILED` and
-read as thorough.
+`Plant_Missing` must come back `FAILED` with the compiler's own code and `Plant_Clean` must come
+back `BUILT`.
 
 #### Review finding 5 was right that obligation 8 had no red-proof, and wrong about what would give it one
 
-The task list specified a **parse-broken third plant** in the same run as the `CS0246` plant, on the
-design's stated mechanism: a parse failure suppresses semantic binding across a shared compilation,
-so under batching the `CS0246` plant would go silent.
+The task list specified a **parse-broken third plant**, on the design's stated mechanism: a parse
+failure suppresses semantic binding across a shared compilation, so under batching the `CS0246`
+plant would go silent.
 
-**It does not go silent.** Built with the blocks deliberately batched into one `CSharpCompilation` —
-the regression the rule forbids — all three plants reported exactly what they report per-block:
+**It does not go silent.** With the blocks deliberately batched into one `CSharpCompilation`, all
+three plants report exactly what they report per block:
 
 ```text
                       per block                    batched
@@ -971,9 +859,7 @@ Plant_Missing         FAILED  1  CS0246            FAILED  1  CS0246
 Plant_Unparseable     FAILED  5  CS1026,CS1513     FAILED  5  CS1026,CS1513
 ```
 
-**The third plant cannot fail when the rule is broken**, which is the exact defect review finding 5
-set out to fix, one level further in. It was caught by doing what the finding asked — building the
-regression and running the control against it — rather than by planting the file and assuming.
+**So the parse-broken plant cannot fail when obligation 8 is broken.**
 
 #### What batching actually does, measured over all 985
 
@@ -985,21 +871,18 @@ one compilation, all 985       985 blocks, 64 built, 921 failing
                                6,331 errors: 865 CS1xxx/CS8xxx, 5,466 semantic
 ```
 
-**Four false `BUILT` verdicts**, named, and every one a tutorial:
+**Four false `BUILT` verdicts, every one a tutorial:**
 
 ```text
 TutorialFirstCommand_2   TutorialFirstCommand_3   TutorialFirstMessage_3   TutorialDurableOutbox_3
 ```
 
-All four fail alone with **`CS0246`** and build in the batch, and the mechanism is **visibility, not
+All four fail alone with **`CS0246`** and build in the batch. The mechanism is **visibility, not
 diagnostics**: a tutorial declares a type in one block and uses it in the next, and the 11
-`namespaced` blocks are emitted verbatim into the namespace the page wrote. In one compilation,
-block 2 resolves a name block 1 declared — which is precisely what a reader copying block 2 alone
-cannot do. **The verdict a batch gives those four is the opposite of the fact the gate exists to
-state.**
+`namespaced` blocks are emitted into the namespace the page wrote. In one compilation block 2
+resolves a name block 1 declared, which a reader copying block 2 alone cannot do.
 
-So `Plant_Leak_A` and `Plant_Leak_B` replace the parse-broken plant as obligation 8's guard, and
-they reproduce the corpus defect in two files:
+`Plant_Leak_A` and `Plant_Leak_B` replace the parse-broken plant as obligation 8's guard:
 
 ```text
                       per block                    batched
@@ -1007,29 +890,19 @@ Plant_Leak_A          BUILT   0                    BUILT   0
 Plant_Leak_B          FAILED  1  CS0246            BUILT   0      <- false clean
 ```
 
-**`Plant_Unparseable` stays**, because the parse-failure case is still a case — it is how the
-scaffold-parse guard is stated, and a corpus of 218 blocks with `CS1xxx` errors is not hypothetical
-— but it is no longer claimed to guard obligation 8, because it does not.
+**`Plant_Unparseable` stays** as the scaffold-parse case (218 corpus blocks carry `CS1xxx` errors),
+and no longer claims to guard obligation 8.
 
 #### The correction, stated plainly: obligation 8 stands, its published cause does not
 
-`design.md` § *The finding nobody was looking for* reports that batching suppressed semantic
-binding wholesale — *1,444 errors and not one semantic error* across all 985, and *446 blocks
-certified clean of which a 20-block sample was 100% false-clean*. **Re-run in this repository, with
-Roslyn 4.11 on net9.0, that does not reproduce**: one compilation of all 985 reported **6,331**
-errors of which **5,466 were semantic**, and it certified **64** clean against 61 — three more, not
-386 more.
+`design.md` § *The finding nobody was looking for* reports that batching suppressed semantic binding
+wholesale: *1,444 errors and not one semantic error* across all 985, and *446 blocks certified clean
+of which a 20-block sample was 100% false-clean*. **Re-run here, with Roslyn 4.11 on net9.0, it does
+not reproduce:** one compilation of all 985 reported **6,331** errors, **5,466** of them semantic,
+and certified **64** clean against 61 — three more, not 386.
 
-**The design's conclusion is untouched and is now proved by a control that can fail.** One
-compilation per block remains the only arrangement in which a verdict means anything, obligation 8
-is unchanged, and the argument for it is this repository's own measurement rather than an inherited
-one. The design is **not edited**: an approved document's figures are anchored at their approval,
-and a spec that rewrites its own history keeps no evidence that it ever measured anything.
-
-**What this cost and why it was worth it:** the plant the plan named would have been committed,
-recorded as passing, and believed — a red-proof that is green for the wrong reason, which is the
-same shape as every plausible zero in this programme's ledger. It took building the regression to
-find out. **A control is only a control once you have watched it fail.**
+**Obligation 8 is unchanged**, now resting on this repository's measurement. `design.md` is not
+edited.
 
 ### No vacuous pass, and the second direction that makes the first mean something *(task 1.9)*
 
@@ -1041,13 +914,9 @@ run2  exit=0  wall=23s   985 blocks: 61 BUILT, 924 FAILED
 diff /tmp/run1.tsv /tmp/run2.tsv      empty
 ```
 
-**Same corpus count, same distribution, same 985 rows to the byte** — and *that is also exactly
-what a tool which had cached, or silently done nothing the second time, would print*. Session 75's
-0.54s MSBuild run reporting 0 warnings is the same shape: a tool declining to work and reporting no
-problems.
-
-**So the second direction, over an input changed on purpose.** One line added inside block 1 of
-`contents/AWSSQSConfiguration.md`, a block that was `BUILT`:
+**Identical to the byte** — which a tool that cached, or did nothing the second time, would also
+print. So the second direction: one line added inside block 1 of `contents/AWSSQSConfiguration.md`,
+a `BUILT` block:
 
 ```csharp
         NoSuchTypeXyz123 deliberate = null;
@@ -1061,7 +930,7 @@ run3  exit=0   985 blocks: 60 BUILT, 925 FAILED
 > FAILED	contents/AWSSQSConfiguration.md	1	AWSSQSConfiguration_1	1	CS0246
 ```
 
-**One block moved and exactly one line of the report changed.** The change was then reverted:
+**One block moved, one line of the report changed.** Reverted:
 
 ```bash
 git checkout contents/AWSSQSConfiguration.md
@@ -1073,13 +942,10 @@ run4  exit=0   985 blocks: 61 BUILT, 924 FAILED
 diff /tmp/run1.tsv /tmp/run4.tsv      empty
 ```
 
-**Four runs: same, same, different, same again.** Sameness is only evidence once difference has
-been shown to be reachable, and run 4 is what says the difference was the input rather than the
-instrument drifting.
+**Four runs: same, same, different, same.**
 
-**Do not quote a single wall-clock as the figure.** 26s and 23s here; the probe's four runs over
-identical inputs gave 6.5s, 22.9s, 39.5s and 26.2s. The cost of this corpus is *tens of seconds*,
-which is the shape of the number phase 3's CI job is budgeted from — not 23.
+**Wall clock is tens of seconds, not a single figure:** 26s and 23s here; the probe's four runs over
+identical inputs gave 6.5s, 22.9s, 39.5s and 26.2s.
 
 ### The eight gates, reconciled *(task 1.10)*
 
@@ -1097,11 +963,9 @@ read bare:
 | 7 | `symbolcheck` | none | 0 findings, 22 entries, 3 silenced | **0 findings, 22 entries, 3 silenced** | ✅ |
 | 8 | `--verify` | none | 161 predicted = 161 published | **161 predicted = 161 published** | ✅ |
 
-**Eight for eight, and `pagelint --changed origin/master` is green too** — the mode that matters on
-a pull request, and the one that would have caught a C# block added to a page.
+**Eight for eight, and `pagelint --changed origin/master` is green.**
 
-**The mechanism held where it was most likely to break.** `linkcheck` walks `tools/`, so the
-prediction depended on this phase adding **no `.md`** there, and it did not:
+`linkcheck`'s prediction depended on no `.md` being added under `tools/`:
 
 ```bash
 git diff --cached --name-only | grep '^tools/' | sed 's/.*\.//' | sort | uniq -c
@@ -1109,34 +973,26 @@ git diff --cached --name-only | grep '^tools/' | sed 's/.*\.//' | sort | uniq -c
 git diff --cached --name-only --diff-filter=A | grep '\.md$'      # nothing
 ```
 
-Seventeen files changed and not one of them is a page or a `.md`. The gate's documentation is row 9
-of `tools/README.md`, which task 3.7 writes; a `tools/blockcheck/README.md` would have taken
-`linkcheck` to 166, and that would have been a choice rather than an accident.
+Seventeen files changed; none is a page or a `.md`.
 
-**"None" for all eight is a vacuous pass eight times over**, which is why the before-figures were
-read at the top of the phase and cited to `tools/README.md` rather than re-derived at the end from
-the same run. A gate that had silently stopped checking reads exactly like a gate correctly
-reporting no movement.
+The before-figures were read at the top of the phase and cited to `tools/README.md`, not re-derived
+from the closing run.
 
 ---
 
 ## Phase 2 prediction
 
-**The prediction is the task list's own, and it pre-dates the work by commit order rather than by a
-date in prose.** Task 2.6's *Notes* read **"prediction is none; this phase commits a `.tsv` and edits
-this file"**, and they were approved at `7b493c3` — before a line of phase 2 ran. That is the form
-015's acceptance walk settled on: *"the prediction came first"* is checked with `git log`, not with a
-sentence claiming it.
+**All eight: none.** Task 2.6's *Notes* read **"prediction is none; this phase commits a `.tsv` and
+edits this file"**, approved at `7b493c3`, before phase 2 ran.
 
-**All eight: none**, and the mechanism is phase 1's, unchanged. No page under `contents/` is edited,
-so rules 1–7, `symbolcheck`'s corpus, `optioncheck`'s marked tables and `versioncheck`'s prose pins
-cannot move; `SUMMARY.md`, `.gitbook.yaml` and the published tree are untouched, so shape, redirects
-and `--verify` cannot. `linkcheck` walks `tools/`, so the prediction depends on this phase adding no
-`.md` **there** — and this phase adds a `.tsv`, two `.cs` plants, and edits to a `.py`, a `.cs` and a
+The mechanism is phase 1's. No page under `contents/` is edited, so rules 1–7, `symbolcheck`,
+`optioncheck` and `versioncheck` cannot move; `SUMMARY.md`, `.gitbook.yaml` and the published tree
+are untouched, so shape, redirects and `--verify` cannot. `linkcheck` walks `tools/`, and this phase
+adds no `.md` there: it adds a `.tsv` and two `.cs` plants, and edits a `.py`, a `.cs` and a
 `.csproj`.
 
-**Eight vacuous passes again**, with the same defence as phase 1: the before-figures were read
-against `tools/README.md` at the top of the phase, not re-derived from the closing run.
+The before-figures are `tools/README.md`'s at the top of the phase, not re-derived from the closing
+run.
 
 ---
 
@@ -1144,8 +1000,7 @@ against `tools/README.md` at the top of the phase, not re-derived from the closi
 
 ### The corpus run *(task 2.1)*
 
-**985 blocks: 68 BUILT, 917 FAILED, 0 SKIPPED, 0 NOT_COMPILABLE.** The command, and its exit code
-read bare:
+**985 blocks: 68 BUILT, 917 FAILED, 0 SKIPPED, 0 NOT_COMPILABLE**, exit code read bare:
 
 ```bash
 dotnet build tools/blockcheck/refs/refs.csproj -c Release
@@ -1164,30 +1019,26 @@ no baseline yet: this is a measurement, not a gate
 0 findings
 ```
 
-**`tools/blockcheck/verdicts.tsv` is that run, committed** — 985 rows, one per block, `verdict TAB
-page TAB ordinal TAB ident TAB error count TAB distinct codes`. It carries no header, deliberately:
-phase 3 diffs a run against a baseline, and a comment row would have to be stripped by both sides.
+**`tools/blockcheck/verdicts.tsv` is that run, committed**: 985 rows, `verdict TAB page TAB ordinal
+TAB ident TAB error count TAB distinct codes`, no header, so phase 3 can diff it against a baseline
+without stripping one.
 
-**The run is the committed form from a clean directory** — obligation 12. `git ls-files` piped
-through `tar` into a scratch directory, both projects built there, and the output `diff`ed against
-the in-tree run: **identical, 985 of 985 rows**. The clean copy is what produced `verdicts.tsv`.
+**Run from a clean directory** (obligation 12): `git ls-files` through `tar` into a scratch
+directory, both projects built there, output identical to the in-tree run, **985 of 985 rows**. The
+clean copy produced `verdicts.tsv`.
 
-**The four counts sum to the corpus count, and two of them are 0 for reasons that are not the same
-reason.** Phase 2 made the run print all four:
+**The four counts sum to the corpus count.** The run now prints all four; before, it printed only
+the verdicts it saw (`61 BUILT, 924 FAILED`), which cannot be added up. `VERDICTS` holds the
+vocabulary in one place.
 
 | Verdict | Count | Why |
 |---|---:|---|
-| `BUILT` | **68** | compiles against the released packages, with its declared wrapper and page scaffold |
-| `FAILED` | **917** | at least one error attributed to the block's own tree |
-| `SKIPPED` | **0** | **there is no opt-out to carry it.** Q5 is open and `<!-- blockcheck: skip … -->` is phase 3's |
-| `NOT_COMPILABLE` | **0** | `classify()` returns a shape for every block, so nothing can reach this verdict — see the parse triage below, which is where that stops being a good thing |
+| `BUILT` | **68** | compiles against the released packages, with its wrapper and page scaffold |
+| `FAILED` | **917** | at least one error in the block's own tree |
+| `SKIPPED` | **0** | no opt-out exists yet; Q5 and the marker are phase 3's |
+| `NOT_COMPILABLE` | **0** | `classify()` returns a shape for every block, so nothing reaches this verdict (friction 59) |
 
-> **A summary that lists only the verdicts it saw cannot be added up.** Before this change the run
-> printed `61 BUILT, 924 FAILED`, which is indistinguishable from a tool that has no `SKIPPED`
-> verdict at all — and AC1 asks for *four counts summing to the corpus count*. `VERDICTS` is now the
-> vocabulary in one place and the summary is built from it.
-
-**Per shape, because the wrapper is the thing most likely to be buying a verdict** (AC14's subject):
+**Per shape** (the wrapper is AC14's subject):
 
 ```text
 namespaced      4 built of   11
@@ -1197,21 +1048,17 @@ members        11 built of  130
 statements     24 built of  532
 ```
 
-**And per page, which is the number phase 3's baseline actually needs:** 35 pages have at least one
-block that builds, and **only 5 pages — 7 blocks — build in their entirety**
-(`BoxProvisioning.md`, `FirestoreInbox.md`, `FirestoreOutbox.md`, `SpannerInbox.md`,
-`SpannerOutbox.md`). A per-*page* ratchet would therefore admit 7 blocks of 985. The baseline has to
-be per block, and phase 3's task 3.1 should say so.
+**Per page:** 35 pages have at least one block that builds; **5 pages, 7 blocks, build in their
+entirety** (`BoxProvisioning.md`, `FirestoreInbox.md`, `FirestoreOutbox.md`, `SpannerInbox.md`,
+`SpannerOutbox.md`). A per-page ratchet would admit 7 of 985, so the baseline is per block.
 
-**The design measured 60 clean with no scaffold; this run reads 68.** The movement is accounted for
-and none of it is drift: **+1** `DapperOutbox.md` from phase 1's scaffold unit, **+7** from Q3
-admitting Darker's four packages (task 2.4). With the reference set at phase 1's 497 assemblies the
-same instrument reads **61**, which is phase 1's figure re-derived rather than inherited.
+**The design measured 60 clean with no scaffold; this run reads 68.** +1 `DapperOutbox.md` from phase
+1's scaffold unit, +7 from Darker's four packages (task 2.4). At phase 1's 497 assemblies the same
+instrument reads **61**, phase 1's figure.
 
 ### The parse triage *(task 2.2)*
 
-**180 of 985 blocks do not parse.** Three numbers exist for this and they are not the same
-measurement, which is the finding:
+**180 of 985 blocks do not parse.** Three measurements exist:
 
 | | Count | Instrument |
 |---|---:|---|
@@ -1219,16 +1066,14 @@ measurement, which is the finding:
 | task 2.2's own filter — `CS1002`/`CS1513`/`CS1519`/`CS8635` | **165** | `grep -cE` over the corpus run |
 | **the parser** | **180** | `blockcheck --parse`, syntax-only, no references and no binder |
 
-**The filter is a subset, and the 22 blocks it misses are named.** `comm` over the two id lists:
-**22 in the parser's set and not the filter's, 0 the other way.** They fail on `CS1525`,
-`CS1022`, `CS0116`, `CS8124`, `CS8803` — `AzureBlobDistributedLock_2`, `FAQ_16`,
-`HangfireScheduler_18`, `MigratingToPollyV8_12`, `QuartzScheduler_15`, `QuartzScheduler_16`,
-`ShowMeTheCode_3`, `SweeperCircuitBreaking_4`, `UsingTheContextBag_16`, `V10MigrationGuide_19` and
-twelve more. **"And friends" is an enumeration by guesswork**, and it under-reports in the direction
-that makes the corpus look healthier. `--parse` asks the parser instead:
-`SyntaxTree.GetDiagnostics()` *is* the parse.
+**The filter is a subset and misses 22 blocks**, by `comm` over the two id lists (0 the other way).
+They fail on `CS1525`, `CS1022`, `CS0116`, `CS8124`, `CS8803`: `AzureBlobDistributedLock_2`,
+`FAQ_16`, `HangfireScheduler_18`, `MigratingToPollyV8_12`, `QuartzScheduler_15`,
+`QuartzScheduler_16`, `ShowMeTheCode_3`, `SweeperCircuitBreaking_4`, `UsingTheContextBag_16`,
+`V10MigrationGuide_19` and twelve more. `--parse` uses `SyntaxTree.GetDiagnostics()`, which is the
+parse itself.
 
-**Two-way red-proof of `--parse`, against the plants and not against `contents/`:**
+**`--parse` red-proofed both ways, against the plants:**
 
 ```text
 Plant_Unparseable   BROKEN   5   CS1026,CS1513     <- the check fires
@@ -1237,29 +1082,25 @@ Plant_Clean         PARSES   0
 Plant_Leak_A/B      PARSES   0
 ```
 
-`Plant_Missing` is the direction that matters: it is a *failing* block that parses, so the mode is
-separating parse from bind rather than echoing the compile verdict. Bad arguments and a directory
-with no `index.tsv` both exit **2** with no rows.
+`Plant_Missing` fails the compile and parses, so the mode separates parse from bind. Bad arguments
+and a directory with no `index.tsv` both exit **2** with no rows.
 
-**The triage, 180 blocks across 67 pages, and the class the task list did not name is the biggest
-one:**
+**The triage, 180 blocks across 67 pages:**
 
 | | Blocks | What it is | Named example |
 |---|---:|---|---|
-| **A documented omission written where C# needs a token** | **93** | `...` or a comment standing in for an expression — `opt.Outbox = /* your MS SQL Outbox */;`, `Partition = //derived from the region…`, `.AddBrighter(options => { ... })`. The page is honest and the fence can never parse | `MsSqlDistributedLock.md#2`, `AWSSQSConfiguration.md#2` |
-| **An excerpt of a larger expression** | **77** | the fence holds part of an argument list, an object initializer or a fluent chain — `new Subscription(` with no `;`, a block opening on `.UseAsyncApi(opts => …)`, `OnConflict = OnSchedulerConflict.Overwrite` alone | `AsyncAPISupport.md#6`, `AwsScheduler.md#23` |
-| **A declaration and a statement in one fence, in the order C# forbids** | **10** | a full class, then the line that registers it. C# allows top-level statements *above* type declarations and not below: `CS8803`. 9 of the 10 are exactly that; the tenth is two constructor signatures with elided bodies | `HangfireScheduler.md#18`, `UsingTheContextBag.md#16` |
-| **before/after pair in one fence** | **0** | task 2.5's set is in the triage's scope and not in its result: all four confirmed pairs **parse**, and fail on binding | — |
-| **a genuine fragment the wrapper mis-shaped** | **7 → 0** | measured, fixed in this PR, below | `FAQ.md#16` |
+| **A documented omission written where C# needs a token** | **93** | `...` or a comment standing in for an expression — `opt.Outbox = /* your MS SQL Outbox */;`, `Partition = //derived from the region…`, `.AddBrighter(options => { ... })` | `MsSqlDistributedLock.md#2`, `AWSSQSConfiguration.md#2` |
+| **An excerpt of a larger expression** | **77** | part of an argument list, object initializer or fluent chain — `new Subscription(` with no `;`, a block opening on `.UseAsyncApi(opts => …)`, `OnConflict = OnSchedulerConflict.Overwrite` alone | `AsyncAPISupport.md#6`, `AwsScheduler.md#23` |
+| **A declaration and a statement in one fence, in the order C# forbids** | **10** | a class, then the line that registers it: `CS8803`. 9 of 10; the tenth is two constructor signatures with elided bodies | `HangfireScheduler.md#18`, `UsingTheContextBag.md#16` |
+| **before/after pair in one fence** | **0** | all four of task 2.5's pairs parse and fail on binding | — |
+| **a genuine fragment the wrapper mis-shaped** | **7 → 0** | fixed in this PR, below | `FAQ.md#16` |
 
-**The wrapper question was answered by trying all four rules, not by opinion.** Every one of the 187
-parse failures was re-staged under each of the four wrapper rules — 748 variants — and the parser
-asked which of them parse. **7 blocks parse under a rule `classify()` had not chosen**, and all 7 are
-one shape: **statements above a declaration**, which is a `Program.cs` and needs no wrapper at all.
-Wrapped as `types` the leading statements land at namespace level and the block cannot parse under
-any circumstances.
+**All 187 parse failures were re-staged under each of the four wrapper rules** (748 variants).
+**7 parse under a rule `classify()` had not chosen**, all one shape: statements above a declaration,
+which is a `Program.cs` and needs no wrapper. Wrapped as `types`, the leading statements land at
+namespace level and cannot parse.
 
-So `classify()` gained a fifth shape, `toplevel`, with the empty wrapper:
+`classify()` gained a fifth shape, `toplevel`, with the empty wrapper:
 
 ```text
 before   11 namespaced, 306 types, 136 members, 532 statements
@@ -1268,11 +1109,9 @@ parse    187 broken  ->  180 broken          exactly the 7 the variant sweep pre
 verdict  0 blocks moved BUILT -> FAILED or FAILED -> BUILT
 ```
 
-**Order is the whole rule, and that is what stops it over-reaching.** A statement *after* a
-declaration is `CS8803` and cannot parse unwrapped either, so `UsingTheContextBag.md` block 16 — a
-class, then a line of usage — is **not** this shape and stays a page defect. The two look alike in a
-diff and the compiler separates them. `plants/Plant_TopLevel.cs` and `Plant_TopLevel_Bad.cs` are
-that pair, and the difference between them is line order:
+**The rule is order.** A statement *after* a declaration is `CS8803` unwrapped too, so
+`UsingTheContextBag.md` block 16, a class then a line of usage, is not this shape and stays a page
+defect. `plants/Plant_TopLevel.cs` and `Plant_TopLevel_Bad.cs` differ only by line order:
 
 ```text
 Plant_TopLevel                        BUILT    0
@@ -1280,25 +1119,20 @@ Plant_TopLevel_Bad                    FAILED   1   CS8803
 Plant_TopLevel, wrapped as `types`    FAILED  10   CS0106,CS0116,CS1002,CS1022,CS1026,CS1031,CS1520,CS8124
 ```
 
-**The third line is the red-proof**: the same plant, under the rule the old code chose, with ten
-errors. A rule that rescued both plants would be rescuing by shape rather than by grammar.
+The third line is the red-proof: the same plant under the old rule, ten errors.
 
-**And the fix uncovered an instrument artefact underneath it.** A block with top-level statements is
-only legal in an executable, so every `toplevel` block earned `CS8805` — *"Program using top-level
-statements must be an executable"* — a verdict about `OutputKind.DynamicallyLinkedLibrary` and not
-about the page. The Roslyn half now asks the syntax tree whether the block has global statements and
-compiles those as `ConsoleApplication`: **`CS8805` on 15 blocks before, 0 after, and no verdict
-changed.** It is asked of `GlobalStatementSyntax` rather than read from the staged index's shape,
-because the index is Python's *claim* and the tree is what the parser found.
+**Top-level blocks then earned `CS8805`**, *"Program using top-level statements must be an
+executable"*, from `OutputKind.DynamicallyLinkedLibrary`, not from the page. The Roslyn half now
+checks the tree for `GlobalStatementSyntax` and compiles those blocks as `ConsoleApplication`:
+**`CS8805` on 15 blocks before, 0 after, no verdict changed.** It reads the tree rather than the
+staged index's shape, because the tree is what the parser found.
 
 ### Claim and context *(task 2.3)*
 
-**This is the boundary the maintainer's ruling did not set, and it is flagged in `requirements.md`
-P0-9 as the sentence to overrule.** The answer: **the claim list is small — 14 blocks across 12
-pages — and phase 4 is a phase, not a spec.** The context count is the rest, and it is large by
-construction.
+**The claim list is 14 blocks across 12 pages, so phase 4 is a phase, not a spec.** `requirements.md`
+P0-9 left this boundary unset. The context count is the rest.
 
-**The split is measured in four steps, each with its command:**
+**The split, measured:**
 
 ```bash
 # 1. blocks carrying a diagnostic whose SHAPE is a claim about an API
@@ -1311,44 +1145,41 @@ dotnet tools/blockcheck/bin/Release/net9.0/blockcheck.dll --explain <staged> <re
 | | Diagnostics | Blocks | What it is |
 |---|---:|---:|---|
 | **cascade of the wrapper** | 32 | 23 | the base type never resolved, so the base is `object` and the override reports `CS0117`/`CS0115`: *"'object' does not contain a definition for 'HandleAsync'"*. **Context** |
-| **cascade of an unresolved name** | 22 | 20 | the named type, or an argument's type, is one the same block failed to resolve. **Context** |
-| **the page's own type, partly shown** | 22 | 8 | `CS0535` on `MyOutbox`, `CS1729` on a handler the page declares elsewhere — the page elides members it does not need. **Context** |
-| **a library name** | 35 | 19 | the type resolved out of a pinned package and the member or signature is not there. **The claim list's input** |
+| **cascade of an unresolved name** | 22 | 20 | the named type, or an argument's type, failed to resolve in the same block. **Context** |
+| **the page's own type, partly shown** | 22 | 8 | `CS0535` on `MyOutbox`, `CS1729` on a handler the page declares elsewhere. **Context** |
+| **a library name** | 35 | 19 | the type resolved from a pinned package and the member or signature is not there. **The claim list's input** |
 
-**Of the 19, eleven name a Brighter or Darker type and eight name a third-party one**, and the two
-halves are not equally decidable:
+**Of the 19, eleven name a Brighter or Darker type and eight a third-party one:**
 
 | Block | Diagnostic | Verdict |
 |---|---|---|
-| `Telemetry.md#1` | `InstrumentationOptions` has none of `RecordRequestInformation`, `RecordRequestBody`, `RecordRequestContext`, `RecordMessageInformation`, `RecordMessageBody`, `RecordMessageHeaders`, `RecordServerInformation` | **claim.** The released names are `RequestInformation`, `MessageBody`, `MessageHeaders` — the `Record` prefix is gone. Seven members, one page, and the page is *about* telemetry |
-| `TurningOnReplayOnSeen.md#1`, `#6` | `OnceOnlyAction` has no `Replay`; and `contextKey:` takes `string?`, not `System.Type` | **claim**, twice in one attribute, on the page about replay-on-seen |
+| `Telemetry.md#1` | `InstrumentationOptions` has none of `RecordRequestInformation`, `RecordRequestBody`, `RecordRequestContext`, `RecordMessageInformation`, `RecordMessageBody`, `RecordMessageHeaders`, `RecordServerInformation` | **claim.** The released names are `RequestInformation`, `MessageBody`, `MessageHeaders` — the `Record` prefix is gone |
+| `TurningOnReplayOnSeen.md#1`, `#6` | `OnceOnlyAction` has no `Replay`; and `contextKey:` takes `string?`, not `System.Type` | **claim**, twice in one attribute |
 | `CausationTrackingStores.md#1`, `ReplayOnSeenReference.md#1` | `RequestContextBagNames` has no `CausationId` | **claim** |
 | `CQRSWithBrighterAndDarker.md#7` | `RequestLoggingAttribute` has a required `timing` parameter the block omits | **claim** |
 | `InMemoryOptions.md#2`, `#3` | `IAmACommandProcessor.ClearOutbox` has a required `posts`; `IAmAnOutbox` is not generic | **claim** |
 | `InMemoryScheduler.md#4` | `IAmAMessageSchedulerFactory` cannot be the `T` the block passes it as | **claim** |
 | `PostgreSQLMessageBroker.md#3` | a `RelationalDatabaseConfiguration` where a messaging-gateway configuration is wanted | **claim** |
-| `Logging.md#4` | `INeedAHandlers` has no `Build` | **struck out by reading.** The block's `// ... handler configuration, policies …` elides the chain steps *between* `StartNew()` and `Build()`. It is class A of the parse triage wearing a semantic diagnostic |
-| `QuartzScheduler.md#1`, `TickerQScheduler.md#1` | `IServiceProvider` has no `GetRequiredService` | **struck out, and proved.** `GetRequiredService` is an extension method; the block lacks the `using`. Two planted blocks differing only by `using Microsoft.Extensions.DependencyInjection;` read **FAILED CS1061** and **BUILT** |
-| `ConfiguringOpenTelemetry.md#1`, `#6`, `#7`, `HangfireScheduler.md#11`, `MigratingToPollyV8.md#1`, `#8` | `AddJaegerExporter`, `TracerProvider.Run`/`RunAsync`, `DashboardContext.GetHttpContext`, `int.Seconds` | **undecided, and it is the pin's question not the page's.** No Jaeger exporter and no `Hangfire.AspNetCore` assembly is in the reference set at all. Phase 3 decides whether the pin grows; only then does the diagnostic mean anything about the page |
+| `Logging.md#4` | `INeedAHandlers` has no `Build` | **not a claim.** `// ... handler configuration, policies …` elides the chain steps between `StartNew()` and `Build()` |
+| `QuartzScheduler.md#1`, `TickerQScheduler.md#1` | `IServiceProvider` has no `GetRequiredService` | **not a claim.** A missing `using`: two plants differing only by `using Microsoft.Extensions.DependencyInjection;` read **FAILED CS1061** and **BUILT** |
+| `ConfiguringOpenTelemetry.md#1`, `#6`, `#7`, `HangfireScheduler.md#11`, `MigratingToPollyV8.md#1`, `#8` | `AddJaegerExporter`, `TracerProvider.Run`/`RunAsync`, `DashboardContext.GetHttpContext`, `int.Seconds` | **undecided: the pin's question.** No Jaeger exporter and no `Hangfire.AspNetCore` assembly is in the reference set |
 
-**So P0-9's input is 10 blocks of claim plus task 2.5's 4 fence-pairs — 14 blocks across 12 pages.**
+**P0-9's input: 10 blocks of claim plus task 2.5's 4 fence pairs, 14 blocks across 12 pages.**
 
-> **The claim list is a FLOOR, and the mechanism is demonstrable rather than argued.** A block that
-> fails to resolve its own base type never reaches the binding that would expose a false claim
-> underneath. `ImplementingAHandler.md` block 1 reports three diagnostics, of which `CS1729` on
-> `Command` is a cascade; add the two `using` directives it omits and it is **BUILT** — so there was
-> no claim defect hiding there. That cuts both ways, and it is why the ratchet is page by page:
-> **every block admitted to the baseline is one whose claims have actually been checked.** *[Phase 5, AC15: its claims **about the API**, which is all a compile checks. What it asserts about behaviour is not checked by any gate.]* The 917
+> **The claim list is a floor.** A block that fails to resolve its own base type never reaches the
+> binding that would expose a false claim. `ImplementingAHandler.md` block 1 reports three
+> diagnostics, `CS1729` on `Command` among them as a cascade; with its two omitted `using`
+> directives it is **BUILT**, so no claim defect was hiding there. The ratchet is page by page, and
+> **every block admitted to the baseline is one whose claims have actually been checked.** The 917
 > failures cannot be triaged once, at the top, by a tool.
 
-**The context count is 903 blocks** — 917 failing less the 14 — and it is dominated by `CS0246`
-(736 blocks) and `CS0103` (675). That is backlog item 2, the debt `tools/README.md` row 2 counts as
-744 `using`-directive warnings, and it falls page by page as pages enter the baseline.
+**The context count is 903 blocks** (917 less 14), dominated by `CS0246` (736 blocks) and `CS0103`
+(675). That is backlog item 2, the 744 `using`-directive warnings `tools/README.md` row 2 counts.
 
 ### Q3 ruled by measurement — Darker joins *(task 2.4)*
 
-**Yes.** Darker's packages restore alongside Brighter's with no conflict, and admitting them moved
-**7 blocks from FAILED to BUILT and 0 the other way**:
+**Yes.** Darker's packages restore alongside Brighter's with no conflict, and moved **7 blocks from
+FAILED to BUILT and 0 the other way**:
 
 ```text
 refs.txt   497 assemblies  ->  501       61 built  ->  68 built
@@ -1358,34 +1189,29 @@ lost       none
 ```
 
 **Four packages, not six.** `Paramore.Darker`, `.AspNetCore`, `.Policies` and `.QueryLogging` at
-**4.1.1**; `requirements.md` P2-2's other two strings — `Paramore.Darker.Builder` and
-`Paramore.Darker.Policies.Constants` — are a namespace and a type, and pinning them would fail the
-restore. Darker versions independently of Brighter and the pin says so in its own comment.
+**4.1.1**. `requirements.md` P2-2's other two, `Paramore.Darker.Builder` and
+`Paramore.Darker.Policies.Constants`, are a namespace and a type; pinning them would fail the
+restore. Darker versions independently of Brighter, and the pin's comment says so.
 
-**The work is carried here, in phase 2, and the sentence is the one task 2.4 asked for**: the pin is
-phase 1's file, so a *yes* edits `refs.csproj` from phase 2 — done — and **Darker's blocks then enter
-phase 3's baseline like any others.** 17 Darker-only pages carry 135 of the 985 blocks, so this is
-not a rounding error in the corpus; P2-2 is promoted to in-scope by this ruling, and the task that
-owns it is phase 3's baseline task rather than a new one.
+`refs.csproj` is edited in phase 2, and **Darker's blocks enter phase 3's baseline like any
+others.** 17 Darker-only pages carry 135 of the 985 blocks. P2-2 is promoted to in-scope, owned by
+phase 3's baseline task.
 
 ### The before/after-in-one-fence set *(task 2.5)*
 
-**Confirmed: 4 blocks across 2 pages.** The design said six across four, and the difference is all
-reading:
+**Confirmed: 4 blocks across 2 pages.** The design said six across four:
 
 | Block | Two methods | Verdict |
 |---|---|---|
 | `ImplementAQueryHandler.md#10` | `CS0101` **and** markers | **confirmed** — two `GetOrderQueryHandler` classes in one fence, the corpus's only `CS0101` |
 | `CloudEventsSupport.md#7`, `#8` | `CS0128` **and** markers | **confirmed** — `var messageId` / `var correlationId` declared twice, V9 then V10 |
-| `CloudEventsSupport.md#9` | markers only | **confirmed**, and it is **task 4.3a's case**: two method *signatures* with no bodies, so splitting yields two fragments and no compilable block |
-| `AgreementDispatcherRouting.md#3` | markers only | **struck out.** `// Before Jan 2025` / `// After Jan 2025` are tax rules inside one routing lambda, exactly as the tasks review said |
-| `PolicyRetryAndCircuitBreaker.md#6` | markers only | **struck out.** The V9 form is *commented out* inside a single live class — already the shape `CLAUDE.md` prescribes, not a pair of live declarations |
+| `CloudEventsSupport.md#9` | markers only | **confirmed**; two method signatures with no bodies, so splitting yields two fragments (task 4.3a) |
+| `AgreementDispatcherRouting.md#3` | markers only | **struck out.** `// Before Jan 2025` / `// After Jan 2025` are tax rules inside one routing lambda |
+| `PolicyRetryAndCircuitBreaker.md#6` | markers only | **struck out.** The V9 form is commented out inside one live class, the shape `CLAUDE.md` prescribes |
 
-**The design's claim that the grep is the only instrument that sees five of the six is false, and
-that matters more than the count.** `CS0101` is duplicate *types* only; the family is
-`CS0101`/`CS0111`/`CS0128`, and with all three the compiler sees **21 blocks**, including
-`CloudEventsSupport.md#7` and `#8`. So method 1 is the wider net here and the marker grep is the
-narrower one:
+**The design said the grep is the only instrument that sees five of the six; that is false.**
+`CS0101` is duplicate types only; with the family `CS0101`/`CS0111`/`CS0128` the compiler sees
+**21 blocks**, including `CloudEventsSupport.md#7` and `#8`. The compiler is the wider net:
 
 ```bash
 grep -E 'CS0101|CS0111|CS0128' tools/blockcheck/verdicts.tsv | cut -f4   # 21 blocks
@@ -1393,30 +1219,25 @@ grep -E 'CS0101|CS0111|CS0128' tools/blockcheck/verdicts.tsv | cut -f4   # 21 bl
 #   ^\s*//+\s*(Before|V9|Old)\b  AND  ^\s*//+\s*(After|V10|New)\b        #  6 blocks
 ```
 
-**The marker vocabulary has to be narrow or it is useless.** A wide version — any comment mentioning
-*before*, *after*, *old*, *new*, ❌ or ✅ — returns **18 candidates**, including three tutorials
-whose prose says *"before the call"*. Comment-initial markers return 6, of which reading keeps 4.
+**Comment-initial markers return 6, of which reading keeps 4.** A wide vocabulary (any comment
+mentioning *before*, *after*, *old*, *new*, ❌ or ✅) returns 18, including three tutorials whose
+prose says *"before the call"*.
 
-**And the 21 the compiler finds are mostly a different shape, which phase 4 should not silently
-inherit:**
+**The 21 the compiler finds are mostly other shapes:**
 
 | | Blocks | Shape | P0-9? |
 |---|---:|---|---|
 | version pair, V9 → V10 | 3 (+1 marker-only) | the set above | **yes** |
-| bad/good pair, ❌/✅ or `// Good`/`// Bad` | 9 | `QueryPatterns.md#2`, `NullableReferenceTypes.md#10`, `HangfireScheduler.md#25` … | **no** — nothing false is claimed; it is a teaching device |
-| problem/solution, or two alternatives | 7 | `AWSSQSMigrateToV10.md#5` `#6`, `BrighterSchedulerSupport.md#2` `#3`, `PostgreSQLBrokerTradeOffs.md#1` | **no**, on the same reasoning |
+| bad/good pair, ❌/✅ or `// Good`/`// Bad` | 9 | `QueryPatterns.md#2`, `NullableReferenceTypes.md#10`, `HangfireScheduler.md#25` … | **no** — a teaching device, nothing false claimed |
+| problem/solution, or two alternatives | 7 | `AWSSQSMigrateToV10.md#5` `#6`, `BrighterSchedulerSupport.md#2` `#3`, `PostgreSQLBrokerTradeOffs.md#1` | **no** |
 | duplicate for another reason | 2 | `FAQ.md#8`, `InMemoryOptions.md#2` | **no** |
 
-**All 18 share one mechanism with the 4** — two mutually exclusive snippets in one fence, so the
-fence can never compile — and the repair is identical: one fence each. **That is a recommendation and
-not a decision:** P0-9 is scoped to defects of *claim*, and a ❌/✅ pair asserts nothing false. If the
-maintainer wants the shape repaired wherever it appears, phase 4 grows by 18 mechanical splits and
-this is the sentence to say so against.
+**All 18 share the mechanism** (two mutually exclusive snippets in one fence) and the repair (one
+fence each). **Recommendation, not decision:** P0-9 is scoped to defects of claim, so these 18 are
+out unless the maintainer extends phase 4 by 18 mechanical splits.
 
-**`AWSSQSMigrateToV10.md#1` — phase 1's finding — is not in either list**, and that is the honest
-result rather than an oversight: it is a before/after pair carrying **no marker at all**, found only
-because `--verify-extraction` reported one block with a duplicated `using`. A third method, for one
-block, and it stays on the record as the case both of these methods miss.
+**`AWSSQSMigrateToV10.md#1`, phase 1's finding, is in neither list**: a before/after pair with no
+marker, found only by `--verify-extraction`'s duplicated `using`.
 
 ### The eight gates, reconciled *(task 2.6)*
 
@@ -1433,56 +1254,40 @@ Run at the end of the phase with `git add -A` first, every exit code read bare:
 | 7 | `symbolcheck` | none | 0 findings, 22 entries, 3 silenced | **0 findings, 22 entries, 3 silenced** | ✅ |
 | 8 | `--verify` | none | 161 predicted = 161 published | **161 predicted = 161 published** | ✅ |
 
-**Eight for eight.** `tools/README.md` owns these figures and this table cites them; the one row that
-could have moved by accident is `linkcheck`, and the phase added no `.md` under `tools/`.
+**Eight for eight.** No `.md` was added under `tools/`.
 
 ### Frictions 57, 58 and 59 — for task 5.5, which writes the ledger
 
 | | |
 |---:|---|
-| **57** | **A generated reference list survives the build that failed to produce it.** Adding Darker to `refs.csproj` left a double hyphen inside an XML comment, so the project failed to **load**; no target ran, the previous `refs.txt` stayed on disk, and the corpus run that followed reported the same **61 built** and looked healthy. It had measured the old pin. An *absent* reference list was already exit 2; a **stale** one was indistinguishable from a current one, and it is the more believable failure because nothing is missing. Deleting the file before the build would not have caught it either — a project that fails to load runs no targets. `refs.txt` now opens with `# refs.csproj SHA256 …` and `blockcheck.py` hashes the project and compares: wrong stamp, or no stamp, is exit 2 with no report file at all. Red-proofed both ways |
-| **58** | **`zsh` does not word-split an unquoted variable, so a 68-argument list arrives as one argument.** `--explain … $ids` printed **nothing**, and nothing is exactly what "no claim defects in the corpus" looks like. The same shape as friction 52 in the reassuring direction: a control that measures nothing reports agreement. `${=ids}`, or an array, or counting the arguments the tool received |
-| **59** | **A verdict nothing can emit reports zero of itself and the zero reads as coverage.** `NOT COMPILABLE` is **0 of 985** — `design.md` Q4 calls that *"a verdict that currently has no members"* and phase 1 called it *"by construction"* — yet **77 blocks are excerpts of a larger expression** and **93 carry an omission where C# needs a token**. They are reported as `FAILED`, which says the documentation is broken when what is true is that the fence was never a program. `classify()` cannot return *no*, so the verdict is unreachable rather than empty. **Phase 3's decision, flagged and not taken here:** the opt-out Q5 describes is the mechanism, and the direction of risk runs the wrong way — a heuristic that guesses `NOT COMPILABLE` would silence real defects, so the reason has to be written on the page by a person |
+| **57** | **A generated reference list survives the build that failed to produce it.** Adding Darker to `refs.csproj` left a double hyphen inside an XML comment, so the project failed to **load**; no target ran, the old `refs.txt` stayed, and the next corpus run reported the same **61 built**. It had measured the old pin. An absent reference list was already exit 2; a **stale** one was not, and deleting it first would not help, because a project that fails to load runs no targets. `refs.txt` now opens with `# refs.csproj SHA256 …`, and `blockcheck.py` compares it to the project's hash: wrong or missing stamp is exit 2 with no report file. Red-proofed both ways |
+| **58** | **`zsh` does not word-split an unquoted variable, so a 68-argument list arrives as one argument.** `--explain … $ids` printed **nothing**, which is also what "no claim defects" looks like. Friction 52's shape in the reassuring direction. `${=ids}`, an array, or counting the arguments received |
+| **59** | **A verdict nothing can emit reports zero of itself, and the zero reads as coverage.** `NOT COMPILABLE` is **0 of 985** (`design.md` Q4: *"a verdict that currently has no members"*; phase 1: *"by construction"*), yet **77 blocks are excerpts of a larger expression** and **93 carry an omission where C# needs a token**. They report `FAILED`, blaming the page for a fence that was never a program. `classify()` cannot return *no*. **For phase 3:** the mechanism is Q5's opt-out, with the reason written on the page by a person, because a heuristic guessing `NOT COMPILABLE` would silence real defects |
 
-**Phase 2 is six tasks and it changed the instrument in four places**, each one a defect it met:
-the fifth shape (`toplevel`), the output kind for top-level statements, the `--parse` and `--explain`
-modes, and the pin stamp. `--verify-extraction` still reports **985 of 985 identical**, and the seven
-plants read exactly as `plants/index.tsv` predicts.
+**Phase 2 changed the instrument in four places:** the fifth shape (`toplevel`), the output kind for
+top-level statements, the `--parse` and `--explain` modes, and the pin stamp.
+`--verify-extraction` still reports **985 of 985 identical**, and the seven plants read as
+`plants/index.tsv` predicts.
 
 ---
 
 ## Phase 3 prediction
 
-**The prediction is the approved task list's own, and it pre-dates the work by commit order.** Task
-3.9's *Notes* read **"`linkcheck` is predicted to MOVE if and only if this phase adds a `.md` under
-`tools/`. The design chose not to. If the reconciliation shows 166, the cause is a file somebody
-added without noticing the rule"** — approved at `1f5fc10`, before a line of phase 3 ran. That is
-015's form: *"the prediction came first"* is checked with `git log`, not with a sentence claiming it.
+**All nine: none.** Task 3.9's *Notes*, approved at `1f5fc10` before phase 3 ran: **"`linkcheck` is
+predicted to MOVE if and only if this phase adds a `.md` under `tools/`. The design chose not to. If
+the reconciliation shows 166, the cause is a file somebody added without noticing the rule"**.
 
-**All nine: none**, and row 9 is a special case worth stating rather than glossing. No page under
-`contents/` is edited in this phase — that is the whole reason phase 3 is site-neutral and phase 4 is
-the only one needing a sign-off — so rules 1–7, `symbolcheck`'s corpus, `optioncheck`'s marked tables
-and `versioncheck`'s prose pins cannot move; `SUMMARY.md`, `.gitbook.yaml` and the published tree are
-untouched, so shape, redirects and `--verify` cannot. `linkcheck` walks `tools/`, and this phase adds
-a `.tsv`, a `.json`, edits to a `.py` and a `.yml`, and **prose inside an existing `.md`** — row 9
-goes into `tools/README.md`, which is already in the corpus at 165.
+Predicted that no page under `contents/` is edited; measured **five pages edited, twelve lines, every
+one an HTML-comment skip marker** (task 3.2), ruled site-neutral by the maintainer, so no sign-off
+was owed. No rule of `pagelint`, `symbolcheck`, `optioncheck` or `versioncheck` reads an HTML
+comment as prose, so none of them can move; `SUMMARY.md`, `.gitbook.yaml` and the published tree are untouched, so shape, redirects
+and `--verify` cannot. `linkcheck` walks `tools/`; this phase adds a `.tsv` and a `.json`, edits a
+`.py` and a `.yml`, and adds prose to `tools/README.md`, already in its 165.
 
-**Row 9 predicts its own first figure rather than a movement**, since a gate that did not exist
-cannot have moved. Its expected reading is recorded when task 3.7 writes it, with the ref it was
-measured at, per obligation 10.
+**Row 9 predicts its first figure, not a movement.** Task 3.7 records it with the ref it was
+measured at (obligation 10).
 
-**Nine vacuous passes**, with phases 1 and 2's defence: the before-figures are read against
-`tools/README.md` at the top of the phase, not re-derived from the closing run.
-
-**AMENDED BY TASK 3.2, ruled by the maintainer in session 81: `contents/` IS edited, and the site
-is still not.** The paragraph above says *"No page under `contents/` is edited in this phase"*, and
-task 3.2 cannot be done without editing one: a skip marker lives on the page, above the block it
-excuses. **Five pages gain twelve lines, every one an HTML comment**, which renders to nothing. The
-same shape is already on six pages as `<!-- pagelint: allow-serviceactivator -->`. So phase 3
-remains site-neutral in the sense obligation 7 cares about, **no sign-off is owed**, and the prediction
-for rules 1–7, `symbolcheck`, `optioncheck` and `versioncheck` stands, because none of them reads
-an HTML comment as prose. The paragraph above is left as written, since this amendment is the
-record of it being wrong.
+The before-figures are `tools/README.md`'s at the top of the phase.
 
 ---
 
@@ -1490,30 +1295,29 @@ record of it being wrong.
 
 ### The opt-out, and why this one has to say why *(task 3.1)*
 
-**Q5 is ruled: `<!-- blockcheck: skip <reason> -->`, on its own line, binding THE NEXT C# BLOCK, and
-the reason is part of the syntax.** Two of those three follow the opt-outs this repository already
-has. The third does not, and the difference is the ruling.
+**Q5 is ruled: `<!-- blockcheck: skip <reason> -->`, on its own line, binding the next C# block, with
+the reason part of the syntax.** The line placement and the one-block binding follow this
+repository's existing opt-outs; the mandatory reason does not.
 
-`pagelint` has `<!-- pagelint: allow-serviceactivator -->` and `symbolcheck` has
-`<!-- symbolcheck: allow IMessageScheduler -->`. **Neither carries a reason, and neither needs one:**
-each names what it silences, the page discusses that name, and a reader who wants the reason reads
-the paragraph the marker sits in. **A block that fails to compile carries no such recovery.** It can
-fail for a dozen reasons; "somebody decided this one was fine" is not checkable against anything, and
-`design.md`'s own words for friction 59 are that *"the reason has to be written on the page by a
-person, never guessed by a heuristic"*. So a marker without a reason binds nothing and is reported.
+`pagelint`'s `<!-- pagelint: allow-serviceactivator -->` and `symbolcheck`'s
+`<!-- symbolcheck: allow IMessageScheduler -->` carry no reason because each names what it silences,
+and the surrounding paragraph discusses that name. A block that fails to compile can fail for many
+reasons, none recoverable from the marker, and `design.md` (friction 59) requires that *"the reason
+has to be written on the page by a person, never guessed by a heuristic"*. A marker without a
+reason binds nothing and is reported.
 
-**Page-wide was rejected, and the argument is `symbolcheck`'s transplanted verbatim.** Its `opt_outs`
-docstring already says a page-wide silence *"would let a page opting out of a name it discusses on
-purpose silently opt out of a second, dead name that arrived on that page two years later, and
-nothing would ever say so"*. A page-wide `skip` written for one ❌ V9 example would absorb the next
-block someone adds beneath it. The marker binds one block.
+**Page-wide was rejected**, on `symbolcheck`'s argument: its `opt_outs` docstring says a page-wide
+silence *"would let a page opting out of a name it discusses on purpose silently opt out of a
+second, dead name that arrived on that page two years later, and nothing would ever say so"*. A
+page-wide `skip` for one ❌ V9 example would absorb the next block added beneath it. The marker
+binds one block.
 
-**Three ways a marker binds nothing, and they are not one defect:**
+**Three ways a marker binds nothing:**
 
 | | Reported as | Why |
 |---|---|---|
-| no reason given | **error**, a finding, exit 1 | It reads as an opt-out and grants none. The block it appears to excuse is **still judged** — which is the trap, and the reason the reason is mandatory |
-| no C# block follows it | warning | Dead weight. `symbolcheck`'s rule: debt that fails the build gets deleted rather than understood |
+| no reason given | **error**, a finding, exit 1 | It grants no opt-out, and the block is **still judged** |
+| no C# block follows it | warning | Dead weight |
 | that block already has a marker | warning | Two reasons, no way to tell which the tool used |
 
 #### Red-proofed five ways against the real code path, none of them a page under `contents/`
@@ -1528,14 +1332,12 @@ two-markers          blocks=1 skip=['first reason']  problems=[('that block alre
 control-no-marker    blocks=1 skip=[None]  problems=[]
 ```
 
-**The last row is the control that makes the other four mean something** — a page with no marker
-produces no binding *and no problem*, so the three problem kinds are not firing on everything they
-see. **The positive case is first and it passes**, which obligation 3 requires of a two-way control.
+The control, a page with no marker, produces no binding and no problem. The positive case passes.
 
 #### And end to end, over the whole corpus, four runs
 
-`contents/MigratingToPollyV8.md` block 5 — line 97, the `❌ **V9 — superseded**` block, and a real
-member of task 3.2's set rather than a plant:
+`contents/MigratingToPollyV8.md` block 5, line 97, the `❌ **V9 — superseded**` block, a real member
+of task 3.2's set:
 
 ```text
 run 1  control, unmodified      985: 68 BUILT, 917 FAILED, 0 SKIPPED, 0 NOT_COMPILABLE   exit 0
@@ -1558,58 +1360,43 @@ run 4  reverted                 985: 68 BUILT, 917 FAILED, 0 SKIPPED, 0 NOT_COMP
                                 0 findings          985 of 985 rows identical to run 1
 ```
 
-**Run 3 is the one worth reading twice.** The marker is still there and still says `skip`; the block
-is back at `FAILED` and counted. A reasonless opt-out does not quietly become a silence — the
-corpus is judged exactly as if the marker were absent, and the run says so and fails.
-
-**Run 4 is phase 1's no-vacuous-pass discipline**: `git checkout -- contents/MigratingToPollyV8.md`,
-`git diff --stat` on that path empty, and `diff` of run 4's report against run 1's reports no
-difference across all 985 rows. Same, different, different, same again.
-
-**`0 findings` and `0 findings, 1 skipped` are printed as different strings**, which is ruling 4 and
-was already wired in phase 1 — this task gave it something to count. The four verdicts still sum to
-985 in every run above, which is AC1.
+In run 3 the reasonless marker leaves the block `FAILED` and counted, and the run fails. Run 4:
+`git checkout -- contents/MigratingToPollyV8.md`, `git diff --stat` on that path empty, and run 4's
+report identical to run 1's across all 985 rows. `0 findings` and `0 findings, 1 skipped` print as
+different strings (ruling 4). The four verdicts sum to 985 in every run (AC1).
 
 #### Two things this task changed beyond the marker
 
-**`VERDICTS`' comment was carrying a claim that had just become false.** It read *"SKIPPED has no
-opt-out to carry it until phase 3"*; phase 3 is now, so it says what is true instead, and it takes
-the correction phase 2 made to `NOT_COMPILABLE` with it — **empty by construction, which friction 59
-records as a defect rather than as coverage.**
+**`VERDICTS`' comment was false and is corrected.** It read *"SKIPPED has no opt-out to carry it
+until phase 3"*. It now also records `NOT_COMPILABLE` as **empty by construction, a defect (friction
+59), not coverage**.
 
-**`enumerate_blocks` now filters the page's C# fences once and enumerates them**, where it used to
-carry a manual `ordinal` counter through a loop over every fence. The refactor is not cosmetic: the
-skip scan needs the list of C# fence start lines *before* the blocks are built. It is behaviour-
-preserving and was checked as such — `--list` reads **985 C# blocks across 145 pages: 11 namespaced,
-9 toplevel, 303 types, 130 members, 532 statements**, identical to phase 2's figures on every one of
-the five shapes.
+**`enumerate_blocks` now filters the page's C# fences once and enumerates them**, replacing a manual
+`ordinal` counter, because the skip scan needs the C# fence start lines before the blocks are built.
+Behaviour is unchanged: `--list` reads **985 C# blocks across 145 pages: 11 namespaced, 9 toplevel,
+303 types, 130 members, 532 statements**, identical to phase 2 in all five shapes.
 
 ### The V9 skips, and why the design's 8 was the wrong 8 *(task 3.2)*
 
-**Re-derived rather than inherited, and the set is 12 blocks across 5 pages. The design's 8 was a
-different set.** Two methods, then reading:
+**The set is 12 blocks across 5 pages. The design said 8, and its 8 was a different set.**
 
 ```text
 grep -rn '^❌' contents/   ->    8 lines, 3 pages     the design's figure, reproduced
 grep -rn '❌'  contents/   ->   43 lines, 11 pages
 ```
 
-**Of the anchored 8, one is a version marker.** `MigratingToPollyV8.md:95` reads
-`❌ **V9 — superseded**`. The other seven are `❌ Bad:` in `QueryPipeline.md` (5) and
-`CQRSWithBrighterAndDarker.md` (2), which is the bad/good convention and has nothing to do with
-`CLAUDE.md` § *Version markers on code*. **Of the unanchored 35, none is a version marker either.**
-Reading all 43 lines by context, they are table cells (`BrighterSchedulerSupport.md`, `FAQ.md`),
-pro/con bullets (`EFCoreQueryIntegration.md`, `PaginationQueryPatterns.md`, `FAQ.md`), or trailing
-comments inside a fence marking a problem line (`AWSSQSMigrateToV10.md`, `KafkaConfiguration.md`,
-`QueryPatterns.md`, `TurningOnReplayOnSeen.md`, `EFCoreQueryIntegration.md`). The claim PROMPT.md
-flagged for checking, *"most are inline in tables and prose"*, holds for all 35.
+**Of the anchored 8, one is a version marker**: `MigratingToPollyV8.md:95`, `❌ **V9 — superseded**`.
+The other seven are `❌ Bad:` in `QueryPipeline.md` (5) and `CQRSWithBrighterAndDarker.md` (2), the
+bad/good convention, not `CLAUDE.md` § *Version markers on code*. **None of the unanchored 35 is a
+version marker**: they are table cells (`BrighterSchedulerSupport.md`, `FAQ.md`), pro/con bullets
+(`EFCoreQueryIntegration.md`, `PaginationQueryPatterns.md`, `FAQ.md`), or trailing comments inside a
+fence (`AWSSQSMigrateToV10.md`, `KafkaConfiguration.md`, `QueryPatterns.md`,
+`TurningOnReplayOnSeen.md`, `EFCoreQueryIntegration.md`).
 
-**So ❌ finds one V9 block, and the V9 blocks are not the ❌ blocks.** A third method, the label
-directly above each C# fence, finds eleven V9 forms that carry no ❌ at all, because those pages
-predate the convention and label in their own words: `**Before (V9)**:`, `**V9**:`, `**Old (V9):**`,
-`### V9 Configuration (Deprecated)`, `### Example with Legacy Policies (V9)`. **The task's own
-Notes are the reason they belong:** *"`CLAUDE.md` requires these blocks to exist"* is true of a
-superseded form whether or not a ❌ sits above it.
+**A third method, the label directly above each C# fence, finds eleven V9 forms with no ❌**, on
+pages that predate the convention and label in their own words: `**Before (V9)**:`, `**V9**:`,
+`**Old (V9):**`, `### V9 Configuration (Deprecated)`, `### Example with Legacy Policies (V9)`. The
+task's Notes, *"`CLAUDE.md` requires these blocks to exist"*, apply to them as much as to the ❌ one.
 
 | Page | Blocks | Label on the page |
 |---|---|---|
@@ -1619,35 +1406,25 @@ superseded form whether or not a ❌ sits above it.
 | `ReactorAndProactor.md` | #11 | `### V9 Configuration (Deprecated)` |
 | `PolicyFallback.md` | #2 | `### Example with Legacy Policies (V9)` |
 
-**Three were read and left out, and the reason for each is written down so that nobody adds them by
-pattern:**
+**Three candidates are excluded:**
 
-- `V10MigrationGuide.md` #23, `**Before**:` under KIP-848: V10 API marked `[Obsolete]`, which the page
-  says *"still work"*. That makes it a V10 block with a warning, and the gate should judge it.
+- `V10MigrationGuide.md` #23, `**Before**:` under KIP-848: a V10 API marked `[Obsolete]`, which the
+  page says *"still work"*. A V10 block with a warning, so the gate judges it.
 - `MigratingToPollyV8.md` #7–#11, under `### Using Brighter's UsePolicy Attribute (Legacy)`: the page
-  presents these as *legacy* V10 usage and does not label them V9. The page labels them, and
-  this set does not relabel them.
-- `AWSSQSMigrateToV10.md` #2, `**V3 Approach**`: that is the AWS SDK's v3, used through a Brighter V10
-  package. The page is about the SDK, not about Brighter V9.
+  presents these as legacy V10 usage, not V9.
+- `AWSSQSMigrateToV10.md` #2, `**V3 Approach**`: the AWS SDK's v3, used through a Brighter V10 package.
 
-**The rule is the page's label, not whether the API was removed, and that choice has a cost.** It
-was nearly written the other way. The first draft of this record excluded #7–#11 because
-*"`UsePolicy` still ships"*, and checking that claim against `../Brighter/src` found that it is true
-of **four of the twelve as well**. `FAQ.md` #15 and `MigratingToPollyV8.md` #3 use `TimeoutPolicy`,
-`PolicyFallback.md` #2 uses `UsePolicy` and `FallbackPolicy`, and `MigratingToPollyV8.md` #1 uses a
-Polly v7 `PolicyRegistry`. All four still ship in V10, `UsePolicy` marked
-`[Obsolete("Migrate to UseResiliencePipeline")]`. The other eight are described by their pages as
-surfaces V10 removed or changed, such as `isAsync`/`runAsync` on `Subscription` or a `Guid` request
-Id. **Those eight were not each checked against source**, so *"an API-removal rule would give eight"*
-is an upper bound, not a count. A label rule gives twelve. The label rule was chosen because
-it is the one a reader can check against the page. **The cost:** those four could be made to compile
-against the pin with a scaffold, and the skip now means the gate will not notice if they stop doing
-so. The skip is acceptable for a form the page tells the reader to migrate away from. It is a choice,
-not a certainty, and this paragraph exists so it can be overruled.
+**The rule is the page's label, not whether the API was removed.** Four of the twelve use APIs V10
+still ships: `FAQ.md` #15 and `MigratingToPollyV8.md` #3 use `TimeoutPolicy`, `PolicyFallback.md` #2
+uses `UsePolicy` and `FallbackPolicy`, and `MigratingToPollyV8.md` #1 uses a Polly v7
+`PolicyRegistry`; `UsePolicy` is marked `[Obsolete("Migrate to UseResiliencePipeline")]`. The other
+eight are described by their pages as removed or changed surfaces (`isAsync`/`runAsync` on
+`Subscription`, a `Guid` request Id) and were not each checked against source, so an API-removal
+rule would give **at most 8**. The label rule gives 12 and can be checked against the page. Its
+cost: those four could be scaffolded to compile, and the skip means the gate will not notice if they
+stop doing so. Open for the maintainer.
 
-**All 12 were `FAILED` before the markers went in. None was `BUILT`.** A skip on a building block
-would have hidden nothing and still claimed an exemption. That was checked against run 0 rather than
-assumed.
+**All 12 were `FAILED` before the markers went in; none was `BUILT`** (run 0).
 
 #### The run
 
@@ -1659,28 +1436,23 @@ run 1  twelve markers        985: 68 BUILT, 905 FAILED, 12 SKIPPED, 0 NOT_COMPIL
                              0 findings, 12 skipped
 ```
 
-**`diff` of run 0 against run 1 shows exactly 12 rows changed, every one of them `FAILED → SKIPPED`**,
-with page and ordinal unchanged on all 985. The markers therefore bound the blocks they were written
-for and did not shift another page's ordinals. `git diff --stat` reads **5 files, 12 insertions, 0
-deletions**. Every reason names the label the page uses, so a reader can check a skip against the
-page without trusting the tool's word for it.
+**Run 0 against run 1: exactly 12 rows changed, every one `FAILED → SKIPPED`**, page and ordinal
+unchanged on all 985. `git diff --stat` reads **5 files, 12 insertions, 0 deletions**. Every reason
+names the label the page uses.
 
-**Seven of eight gates were re-run after the edit, and all read `tools/README.md`'s figures:**
-`linkcheck` 165/0; `pagelint` 0 errors, 744 warnings, 162 pages; shape 161/12/12-of-20/4-of-4;
-redirects 77 entries, 7858 bytes; `versioncheck` 0 of 18 across 5; `optioncheck` 0 across 59
-tables, 519 rows; `symbolcheck` 0 findings, 22 entries, 161 pages, 3 silenced. `--verify` was not
-run. It compares against the published tree, and nothing it reads has changed.
+**Seven of eight gates re-run after the edit, all at `tools/README.md`'s figures:** `linkcheck`
+165/0; `pagelint` 0 errors, 744 warnings, 162 pages; shape 161/12/12-of-20/4-of-4; redirects 77
+entries, 7858 bytes; `versioncheck` 0 of 18 across 5; `optioncheck` 0 across 59 tables, 519 rows;
+`symbolcheck` 0 findings, 22 entries, 161 pages, 3 silenced. `--verify` was not run: nothing it reads
+changed.
 
-**This does not add ❌ to the eleven.** Putting the convention's label on a page is a change a
-reader sees, and that belongs in phase 4 or the backlog. The skip reason says what each block is
-without it.
+**No ❌ was added to the eleven.** That is a visible page change, for phase 4 or the backlog.
 
 ### The scaffold, and the line AC13 will be read against *(task 3.3)*
 
 **68 → 92 BUILT: +24 blocks across 13 pages, from 12 new units. No block moved the other way, no
 error landed on a scaffold tree, and every one of the 100 identifiers `--list-scaffold` prints is
-named by a block that builds with it.** No prelude was added. Every admitted block needed values,
-not a method to sit in.
+named by a block that builds with it.** No prelude was added.
 
 #### What the scaffold could be for: measured, not guessed
 
@@ -1690,37 +1462,32 @@ dump of **27,921 public types** from the 501 pinned assemblies (`System.Reflecti
 
 | | Blocks | What it means |
 |---|---:|---|
-| **import** | 364 | at least one missing name **is** a pinned type: the page needs a `using`. **Not scaffoldable.** Task 3.4 puts these in phase 4 or backlog item 2 |
+| **import** | 364 | a missing name **is** a pinned type: the page needs a `using`. Not scaffoldable; phase 4 or backlog item 2 |
 | **other** | 342 | a diagnostic that is not a missing name: parse, claim, cascade |
 | **context** | **199** | every error is a missing name, and none of them is a type anything ships |
 
-**The 199 then split three ways, and only the first is admitted in this task:**
+**The 199 split three ways; only the first is admitted:**
 
 | | Blocks | Example | This task |
 |---|---:|---|---|
 | **values only**, lower-case or `_` names | **76** across 26 pages | `services`, `builder`, `commandProcessor`, `resiliencePipelineRegistry` | **scaffolded** |
 | **a type the page names and never shows** | 102 | `StandardHandler`, `OrderStatus`, `IPersonRepository` | **not scaffolded: the maintainer's call at AC13** |
-| **a type another block on the same page declares** | 21 | `GreetingCommand` in the tutorials | **not scaffolded.** Copying the page's own type into the harness recreates obligation 8's leak by hand, with a copy that can drift from the page |
+| **a type another block on the same page declares** | 21 | `GreetingCommand` in the tutorials | **not scaffolded**: a copy of the page's own type recreates obligation 8's leak |
 
-**Why the middle row is left for the maintainer.** Design rule 1 reads *"it may not define a type
-the page tells the reader to write"*. An empty `StandardHandler : RequestHandler<MyCommand>` is not
-behaviour, but whether a handler the page routes to and never prints is one the page *"tells the
-reader to write"* is the judgement AC13 names a reader for. A scaffold that settles it quietly in
-102 places is the outcome AC13 exists to prevent. **One sentence to overrule:** if the maintainer
-reads the row as identifiers, it is the next tranche and needs no new mechanism.
+**The middle row is AC13's question.** Design rule 1 reads *"it may not define a type the page tells
+the reader to write"*, and whether a handler the page routes to and never prints falls under it is
+the maintainer's reading. If it is read as identifiers, it is the next tranche and needs no new
+mechanism.
 
 #### The rule the 76 were held to, and what it excluded before anything ran
 
-**A value is typed from a pinned package or the BCL, returns a default, and does nothing.** Two
-consequences, both deliberate:
+**A value is typed from a pinned package or the BCL, returns a default, and does nothing.**
 
-- **No `dynamic`, ever.** A `dynamic` value would compile every member access on it, which is the
-  false-green this gate exists to prevent.
-- **A value needing a type nothing ships is not a value.** `entity` and `_repository` in
-  `HangfireScheduler.md#22` / `QuartzScheduler.md#19` need a domain type, so they are excluded.
-  Quartz's `q` and `store` (8 blocks) need `IServiceCollectionQuartzConfigurator`, which is **not in
-  the pin**, so they are excluded as well. That is the pin's question, like the Jaeger and
-  `Hangfire.AspNetCore` rows in phase 2's claim table.
+- **No `dynamic`.** A `dynamic` value would compile every member access on it.
+- **A value needing a type nothing ships is excluded.** `entity` and `_repository` in
+  `HangfireScheduler.md#22` / `QuartzScheduler.md#19` need a domain type. Quartz's `q` and `store`
+  (8 blocks) need `IServiceCollectionQuartzConfigurator`, which is **not in the pin**, the same pin
+  question as the Jaeger and `Hangfire.AspNetCore` rows in phase 2's claim table.
 
 #### What the 76 did, with context supplied
 
@@ -1735,28 +1502,23 @@ consequences, both deliberate:
          4  CLAIMS, new since phase 2's list
 ```
 
-**The four claims are the most useful thing this task found.** Unscaffolded, they read `CS0103` and
-nobody could tell them from the other 653:
+**Four new claims**, which read `CS0103` unscaffolded:
 
 | Block | Diagnostic | What the page says that is not so |
 |---|---|---|
-| `FAQ.md#18`, `#19` | `CS1503`: argument 2 cannot convert `TimeSpan` to `RequestContext?` | `commandProcessor.SendAsync(command, delay)`, which has the arguments in the wrong order |
-| `FAQ.md#19` | `CS1061`: no `RescheduleAsync` on `IAmAMessageSchedulerAsync` | the method is `ReSchedulerAsync`, which `TickerQScheduler.md#6` spells correctly and which builds |
-| `AzureScheduler.md#18` | `CS1061`: no `ReScheduleAsync` | the block's comment says *"Won't work!"*, and it cannot even compile. The page's claim is about Azure behaviour; the block makes it by calling a method that does not exist |
+| `FAQ.md#18`, `#19` | `CS1503`: argument 2 cannot convert `TimeSpan` to `RequestContext?` | `commandProcessor.SendAsync(command, delay)`: arguments in the wrong order |
+| `FAQ.md#19` | `CS1061`: no `RescheduleAsync` on `IAmAMessageSchedulerAsync` | the method is `ReSchedulerAsync`, as `TickerQScheduler.md#6` spells it |
+| `AzureScheduler.md#18` | `CS1061`: no `ReScheduleAsync` | the block, commented *"Won't work!"*, calls a method that does not exist |
 | `SweeperCircuitBreaking.md#9` | `CS7036`: `IAmAnOutboxProducerMediator.ClearOutboxAsync` requires `requestContext` | the call omits a required argument |
 
-**These go to task 4.1's re-derivation as input, not as adopted rows.** The FAQ unit that exposed
-them is **not** in the committed scaffold, because FAQ admits no block and a page is listed only if
-its unit makes one build. Phase 4 re-adds it when it repairs the page. That is task 4.4's job
-already.
+**They are input to task 4.1, not adopted rows.** The FAQ unit that exposed them is not committed,
+because FAQ admits no block; phase 4 re-adds it when it repairs the page (task 4.4).
 
 #### The trim, and why it did not move the result
 
-The first run mapped 26 pages to 20 units. **13 of those pages admitted nothing** (every candidate hit
-a missing `using`), so their units and rows came out, and members only a still-failing block used
-were deleted from the units that stayed. Re-run: **the BUILT set is identical, 92 of 92 by
-`diff`.** So the committed scaffold is the smallest one that buys these 24, which is what AC13 has to
-read:
+The first run mapped 26 pages to 20 units. **13 pages admitted nothing** (every candidate hit a
+missing `using`), so their units and rows came out, and members used only by still-failing blocks
+were deleted. Re-run: **the BUILT set is identical, 92 of 92 by `diff`.**
 
 ```text
 python3 tools/blockcheck.py --list-scaffold    ->  100 identifiers from 13 unit(s) and 4 prelude(s);
@@ -1764,8 +1526,7 @@ python3 tools/blockcheck.py --list-scaffold    ->  100 identifiers from 13 unit(
 find tools/blockcheck/scaffold -type f | wc -l ->  18    13 units + 4 preludes + the map
 ```
 
-**The listing's line count is 114.** That is 100 identifiers plus one injected `using static` per
-scaffolded page, as phase 1 described.
+**The listing is 114 lines**: 100 identifiers plus one injected `using static` per scaffolded page.
 
 #### Red-proof: a scaffolded value does not buy a verdict
 
@@ -1778,41 +1539,35 @@ broken       TickerQScheduler_6   FAILED  1  CS1061       corpus 91 BUILT
 reverted     TickerQScheduler_6   BUILT   0               985 of 985 rows identical to the control
 ```
 
-**The value is typed, so the member is checked.** That is the difference between a value and
-`dynamic`, and it is why the rule forbids one. `git diff --stat contents/` is empty after the
-revert. The broken run exits **0**: there is no baseline until task 3.5, so this is a measurement
-and not yet a gate. Task 3.6 proves the exit code.
+**The value is typed, so the member is checked.** `git diff --stat contents/` is empty after the
+revert. The broken run exits **0** because there is no baseline until task 3.5; task 3.6 proves the
+exit code.
 
 #### One instrument quirk, recorded and not fixed
 
-`--explain` prints `985 blocks, 0 built, 985 failing` on stderr whatever it is asked, because blocks
-it was not asked about fall through uncounted as built. The rows on stdout are right. The summary
-line is wrong only in this mode. Worth a one-line fix when `Program.cs` is next opened for a reason,
-not a reason to open it.
+`--explain` prints `985 blocks, 0 built, 985 failing` on stderr whatever it is asked: blocks it was
+not asked about fall through uncounted. The stdout rows are right. A one-line fix for the next time
+`Program.cs` is opened.
 
-**`tools/blockcheck/verdicts.tsv` still reads 68 BUILT and is left that way.** It is phase 2's
-committed corpus run, and no tool reads it (`grep` over `tools/*.py`, `tools/README.md` and
-`.github/`). Regenerating it would rewrite a record to match a later state. Task 3.4's `baseline.tsv`
-is the file that carries the current admitted set.
+**`tools/blockcheck/verdicts.tsv` still reads 68 BUILT, deliberately.** It is phase 2's committed
+corpus run, and no tool reads it (`grep` over `tools/*.py`, `tools/README.md` and `.github/`).
+`baseline.tsv` carries the current admitted set.
 
 ### The baseline *(task 3.4)*
 
 **`tools/blockcheck/baseline.tsv`: 92 rows across 44 pages, measured at `280d1b7`, no page edited
-to earn one.** Columns as the design specified: page, ordinal, scaffold, and the ref it was
-admitted at. The file's own header states them, so a reader of the file needs nothing else.
+to earn one.** Columns: page, ordinal, scaffold, and the ref it was admitted at, stated in the file's
+header.
 
-**The population is the whole BUILT set, and requirements say so; the task text does not.**
-Task 3.5 names one direction of AC9: a row whose block has gone. AC9's own instrument names the
-other: *"delete one line from `baseline.tsv` and confirm exit 1"*. P0-4 says the gate is red
-*"when the list disagrees with the corpus in either direction"*. So a block that builds and has no
-row is a failure too, and the baseline cannot be a hand-picked subset of what builds. That is
-the ratchet: a repair that makes a block build brings its row in the same PR. Task 3.5 implements
-all three conditions, not the two its text names.
+**The population is the whole BUILT set.** The task text names one direction of AC9, a row whose
+block has gone; AC9's instrument (*"delete one line from `baseline.tsv` and confirm exit 1"*) and
+P0-4 (*"when the list disagrees with the corpus in either direction"*) name the other. So a block
+that builds and has no row is a failure, and a repair that makes a block build brings its row in the
+same PR. Task 3.5 implements all three conditions.
 
-**How it was generated, since there is deliberately no mode that writes it.** Filter the
-`--report` rows to `BUILT`, and take the scaffold name from `load_scaffold()` as `--list-scaffold`
-prints it. A `--write-baseline` flag would make *regenerate until green* one command. Without one,
-a change to this file is a diff someone reads.
+**There is no mode that writes it.** It was generated by filtering `--report` rows to `BUILT` and
+taking the scaffold name from `load_scaffold()` as `--list-scaffold` prints it. A change to this file
+is a diff someone reads.
 
 | | Rows |
 |---|---:|
@@ -1821,17 +1576,16 @@ a change to this file is a diff someone reads.
 | a scaffold present on the page and **not needed**, BUILT before any unit existed | 21 |
 | **total** | **92** — equal to the corpus run's `BUILT` count |
 
-**The 21 are recorded as compiled, not as needed.** The column says what the block *was compiled
-with*, and it was compiled with its page's scaffold. Writing `-` would describe a compilation that
-did not happen. The table above is where the difference lives, for AC13's reader.
+**The 21 are recorded as compiled, not as needed**: the column says what the block was compiled
+with.
 
-**`MigratingToNullableReferenceTypes.md` carries 17 rows**, the most of any page. It is the page
-whose blocks are one-line nullable-annotation illustrations, and its unit supplies one `string`.
+**`MigratingToNullableReferenceTypes.md` carries 17 rows**, the most of any page: one-line
+nullable-annotation illustrations, on a unit that supplies one `string`.
 
 ### The ratchet *(task 3.5)*
 
-**`--report` is now the gate.** It holds the corpus to `baseline.tsv` and reports **four**
-disagreements, each under its own heading because each is fixed in a different place:
+**`--report` is now the gate.** It holds the corpus to `baseline.tsv` and reports four
+disagreements, each under its own heading:
 
 | Heading | Means | Fixed in |
 |---|---|---|
@@ -1840,28 +1594,23 @@ disagreements, each under its own heading because each is fixed in a different p
 | `builds and is not baselined` | the ratchet. The line printed is the row to add | `baseline.tsv` |
 | `scaffold changed since admission` | the block builds, but with a different scaffold than it was admitted on | either |
 
-**Two of the four go beyond the task text, and each has its reason.** *Builds and is not baselined*
-is AC9's own instrument and P0-4's *"either direction"*, recorded under task 3.4. *Scaffold
-changed* follows from the column. A row claims *"this block builds given this scaffold"*, and a
-block that still builds after its scaffold grew has not had that claim checked. **`SKIPPED`
-counts as stopped building** because otherwise a one-line marker on the page would take a block
-out of the gate without touching the gate's own file.
+*Builds and is not baselined* is AC9's instrument and P0-4's *"either direction"*. *Scaffold changed*
+follows from the column: a row claims the block builds given that scaffold. **`SKIPPED` counts as
+stopped building**, so a marker on the page cannot take a block out of the gate without editing
+`baseline.tsv`.
 
-**A missing or malformed baseline is exit 2, condition 11 in the tool's list.** That covers an
-absent file, a row without four fields, a non-numeric ordinal, and **a block listed twice**. The
-duplicate is the subtle case: two rows for one block would let one be deleted with nothing noticing.
+**A missing or malformed baseline is exit 2** (condition 11): an absent file, a row without four
+fields, a non-numeric ordinal, or **a block listed twice**, which would let one row be deleted
+unnoticed.
 
-**What is still not a finding, deliberately:** a failing block with no row. That is the 881-block
-debt the baseline exists to make bearable. The `no baseline yet` line is gone, replaced by
-`baseline: 92 blocks required to build`, and the module docstring's paragraph saying the tool
-*"does not yet gate"* was rewritten rather than left to become false.
+**A failing block with no row is not a finding**: that is the 881-block debt. The `no baseline yet`
+line is replaced by `baseline: 92 blocks required to build`, and the docstring's *"does not yet
+gate"* paragraph is rewritten.
 
 ### The red-proof *(task 3.6)*
 
-**Every condition, both ways, each exit code read bare, and every edit reverted.** The task named
-three runs. The ratchet has four findings and two new exit-2 states, so the red-proof covers all of
-them. `TickerQScheduler.md#6` is the subject throughout: a real baselined block, admitted on a
-scaffold.
+**Every condition, each exit code read bare, every edit reverted**, on `TickerQScheduler.md#6`, a
+baselined block admitted on a scaffold:
 
 ```text
 1  baselined block broken    ReSchedulerAsync -> ReScheduleAsync   exit 1   stopped building: FAILED CS1061
@@ -1875,23 +1624,12 @@ scaffold.
                               985 of 985 rows identical to the pre-red-proof run;  git status: tools/blockcheck.py only
 ```
 
-**Two of the first attempts were bad experiments, and they are recorded because both read as a
-result.**
+**Runs 5 and 6 each needed a second attempt:** a marker inserted by line number landed inside the
+fence (friction 62), and `grep … baseline.tsv >> baseline.tsv` appended nothing (friction 61). Both
+were re-run correctly; the table shows the valid runs.
 
-- **Run 5, first attempt:** the marker was inserted by line number *inside* block 6's fence.
-  Block 6 failed on the garbage (`CS1002, CS1022…`) and the marker bound block 7, so the run read
-  *13 skipped*. The finding fired, but for the wrong reason. It would have "proved" the SKIPPED rule
-  without exercising it. Re-run with the marker directly above the fence.
-- **Run 6, first attempt:** `grep -m1 … baseline.tsv >> baseline.tsv` appended **nothing**,
-  because `grep` refuses to read a file that is also its output. So the run read **exit 0** on an
-  unmodified file, and looked like the duplicate check did not work. Calling `load_baseline()`
-  directly on a genuinely duplicated file raised as designed, and re-run from a copy the gate
-  exits 2. **The control that caught it was reading the file after the edit.** An edit that did not
-  happen and a check that does not fire give the same output.
-
-**One defect found and fixed by the red-proof:** run 5 printed `SKIPPED SKIPPED`. It now says
-what to do: *"SKIPPED by an opt-out, which cannot excuse a baselined block — remove the marker or
-the row"*.
+**One defect fixed:** run 5 printed `SKIPPED SKIPPED`. It now reads *"SKIPPED by an opt-out, which
+cannot excuse a baselined block — remove the marker or the row"*.
 
 **The other modes did not move:** `--list` reads 985 across 145 in the same five shapes;
 `--verify-extraction` reads 985 of 985 identical; the bare invocation exits 2.
@@ -1899,35 +1637,26 @@ the row"*.
 ### Row 9 *(task 3.7)*
 
 **`tools/README.md` row 9: `python3 tools/blockcheck.py --report`, its figure, measured at
-`1e1944d`**, plus the heading and the opening line changed to *nine*, the CI-placement list, the
-scope paragraph, the other modes, a `--baseline`-flag sentence beside `symbolcheck`'s
-`--watchlist` one, and a *what it checks* entry. That entry is followed by the AC15 sentence: a
-green `blockcheck` means the listed blocks compile, not that they are right.
+`1e1944d`**, plus the heading and opening line changed to *nine*, the CI-placement list, the scope
+paragraph, the other modes, a `--baseline`-flag sentence beside `symbolcheck`'s `--watchlist` one,
+and a *what it checks* entry followed by the AC15 sentence: a green `blockcheck` means the listed
+blocks compile, not that they are right.
 
-**The grep the task asked for was blind on its first run, and that is the finding.**
-`git grep -i -E '\beight\b'` returned **nothing**, with `tools/README.md:3` reading *"Eight
-commands"* in plain sight. git's ERE has no `\b`. `git grep -w` found **seven** hits outside
-`spec/`:
+**`git grep -i -E '\beight\b'` returned nothing**, with `tools/README.md:3` reading *"Eight
+commands"*: git's ERE has no `\b` (friction 60). `git grep -w` found **seven** hits outside `spec/`:
 
 | Where | Changed? |
 |---|---|
 | `tools/README.md` ×3: opening line, heading, *"Three of the eight"* | **yes**: nine, and *four of the nine* |
 | `.claude/commands/spec/review.md`: *"All eight run here"*, *"Two of the eight…"*, *"same for all eight"* | **yes** |
-| `.claude/commands/spec/review.md:117`: *"`/spec:review` runs eight gates"* | **no**: it quotes 014's AC5 verbatim, as the example of a bad instrument |
+| `.claude/commands/spec/review.md:117`: *"`/spec:review` runs eight gates"* | **no**: it quotes 014's AC5 verbatim |
 | `.claude/commands/spec/design.md`: *"`tools/README.md` has the eight"* | **yes** |
 | `contents/MSSQLMessageBroker.md` ×2, `PostgreSQLMessageBroker.md` | **no**: eight *options* |
 
-**`/spec:review` runs the gates, so row 9 also had to join it**: a `### blockcheck` section that
-builds both projects and runs `--report`, and three `allowed-tools` grants. Its output filters the
-twelve skip lines (they carry ` block N — `, which no finding line does) so a finding cannot be
-pushed out of its `tail`. The command line was run as written and prints the scope, the
-`skipped by opt-out (12)` heading with its count, `baseline: 92 blocks required to build` and the
-verdict.
-
-**A sentence was written and then withdrawn before the commit:** *"Rows 1–8 were re-run at
-`1e1944d` and read exactly as below."* They had not been, at that ref. That is task 3.9's
-reconciliation, and a README that asserted it in advance would be the pasted-figure problem the
-file exists to prevent.
+**`/spec:review` gains a `### blockcheck` section** that builds both projects and runs `--report`,
+plus three `allowed-tools` grants. It filters the twelve skip lines (they carry ` block N — `, which
+no finding line does) so a finding cannot fall out of its `tail`. Run as written, it prints the
+scope, `skipped by opt-out (12)`, `baseline: 92 blocks required to build` and the verdict.
 
 #### AC10, and the instrument's own defect
 
@@ -1938,70 +1667,58 @@ same for '985 blocks'                 ->  2    tools/README.md and a comment in 
 ```
 
 **AC10's instrument as `requirements.md` writes it, `grep -vc '^./spec/'`, excludes nothing on
-macOS.** BSD `grep -rn … .` prints `spec/016…` without the leading `./`, so `^./spec/` never
-matches. On the first run the headline read 1 anyway, but only because no spec file carries the
-exact string, and the first control read **3**, two of them inside `spec/`. It *"returned >1"*,
-which is the pass AC10 names, for the wrong reason. `^(\./)?spec/` matches both forms. Recorded as
-a defect in an approved criterion, **not** edited there, following phase 1's rule about approved
-documents. Phase 5's acceptance walk should use the working form.
+macOS**: BSD `grep -rn … .` prints `spec/016…` without the `./`. With it, the control read **3**, two
+of them inside `spec/`. `^(\./)?spec/` matches both forms. Recorded as a defect in an approved
+criterion, not edited there; phase 5 should use the working form.
 
-**`linkcheck` reads 165 files, 0 broken**, unmoved: row 9 went into a file already in its corpus,
-and no `.md` was added under `tools/`.
+**`linkcheck` reads 165 files, 0 broken**: row 9 went into a file already in its corpus.
 
 ### The CI job *(task 3.8)*
 
 **`.github/workflows/docs.yml` gains a `blocks` job:** checkout, `setup-dotnet` 9.0.x,
 `setup-python` 3.12, the two builds as their own steps, then
-`python3 tools/blockcheck.py --report "$RUNNER_TEMP/blockcheck.tsv"`. That means no guard, no
-`|| true`, and rows to a file rather than a pipeline, so the step's exit code is the tool's.
+`python3 tools/blockcheck.py --report "$RUNNER_TEMP/blockcheck.tsv"`, with no guard, no `|| true`,
+and rows to a file, so the step's exit code is the tool's.
 
-**Q8 — RULED: no scheduled run, and it is an `if: github.event_name != 'schedule'`, not an
-omission.** **Q9 — RULED: pinned**, and it already was: all 71 `PackageReference`s in
-`refs.csproj` name one exact version.
+**Q8 — RULED: no scheduled run, via `if: github.event_name != 'schedule'`.** **Q9 — RULED:
+pinned**; all 71 `PackageReference`s in `refs.csproj` already name one exact version.
 
-**Q8 could not be done the way the task text says, and the reason is a defect in the existing
-workflow.** *"No `schedule:`"* reads as *do not add one*. But `schedule:` is declared once, at the
-top of the file, and it triggers **every** job without an event filter. The most recent scheduled
-run, `35722167211`, ran **`check`, `versions` and `options`**, all `success`. **The `options` job's
-comment says *"NO `schedule:` TRIGGER either"* and it runs daily.** Nothing has gone wrong, because
-its verdict is pinned and so repeats. But the comment asserts something false about the workflow,
-and a new job copied from it would inherit the same false claim. **Not fixed here:** it changes an
-existing gate's triggers. It is one line (`if: github.event_name != 'schedule'` on `options`) and
-the maintainer's call. The `blocks` job's comment names it as its evidence.
+**`schedule:` is declared once, at the top of the file, and triggers every job without an event
+filter** (friction 63). Scheduled run `35722167211` ran **`check`, `versions` and `options`**, all
+`success`. **The `options` job's comment says *"NO `schedule:` TRIGGER either"*, and it runs
+daily.** Its pinned verdict repeats, so nothing has failed. Not fixed here, as it changes an existing
+gate's triggers: one line, `if: github.event_name != 'schedule'` on `options`, the maintainer's call.
+The `blocks` job's comment cites it.
 
-**The job replayed on a clean checkout, obligation 12:** `git ls-files` through `tar` into a
-scratch directory with no `bin/`, both builds, the gate invocation as written. **Exit 0, `baseline:
-92 blocks required to build`, `0 findings, 12 skipped`, and 985 of 985 rows identical to the
-in-tree run.** The workflow parses (Ruby's YAML: four jobs, the `if:` and six steps as written).
-**What this cannot show is the job on GitHub's runner**, which is Linux with a cold NuGet cache.
-That is the PR's first run, and its result goes in task 3.9's reconciliation.
+**Replayed on a clean checkout (obligation 12):** `git ls-files` through `tar` into a scratch
+directory with no `bin/`, both builds, the gate invocation as written. **Exit 0, `baseline: 92
+blocks required to build`, `0 findings, 12 skipped`, 985 of 985 rows identical to the in-tree run.**
+The workflow parses (Ruby's YAML: four jobs, the `if:` and six steps as written). The job on GitHub's
+Linux runner, with a cold NuGet cache, is the PR's first run and goes in task 3.9.
 
 ### The nine gates, reconciled *(task 3.9)*
 
-**All nine at `ecefa13`, every exit code read bare, and every one of the eight existing rows at
-`tools/README.md`'s figure. The prediction was *none* for all eight, and none moved.**
+**All nine at `ecefa13`, every exit code read bare. The prediction was *none* for the eight existing
+gates, and none moved.**
 
 | # | Gate | Predicted | Read at `ecefa13` | |
 |---:|---|---|---|---|
-| 1 | `linkcheck` | none — **moves iff a `.md` is added under `tools/`** | 165 files, 0 broken | ✅ none added; row 9 went into `tools/README.md`, already counted |
-| 2 | `pagelint` | none | 0 errors, 744 warnings, 162 pages | ✅ the twelve skip markers are HTML comments and reach no rule |
+| 1 | `linkcheck` | none — **moves iff a `.md` is added under `tools/`** | 165 files, 0 broken | ✅ none added |
+| 2 | `pagelint` | none | 0 errors, 744 warnings, 162 pages | ✅ the skip markers reach no rule |
 | 3 | shape | none | 161 / 12 sections / 4 of 4 / 12 of 20 | ✅ |
 | 4 | redirects | none | 77 entries, 7858 bytes | ✅ |
 | 5 | `versioncheck` | none | 0 stale of 18, across 5 | ✅ |
 | 6 | `optioncheck` | none | 0 mismatches, 59 tables, 519 rows | ✅ |
-| 7 | `--verify` | none | 161 predicted = 161 published | ✅ run, not skipped. It reached the live sitemap |
+| 7 | `--verify` | none | 161 predicted = 161 published | ✅ reached the live sitemap |
 | 8 | `symbolcheck` | none | 0 findings, 22 entries, 161 pages, 3 silenced | ✅ |
-| 9 | `blockcheck` | **its first figure, not a movement** | row 9's figure, 0 findings, 12 skipped | ✅ equal to the row task 3.7 wrote |
+| 9 | `blockcheck` | **its first figure, not a movement** | row 9's figure, 0 findings, 12 skipped | ✅ equal to row 9 |
 
-**Nine vacuous passes, defended as the prediction said:** the before-figures are `tools/README.md`'s
-rows as they stood at the top of the phase. They are not re-derived from this run, and rows 1–8 are
-unedited in this phase's diff of that file.
+The before-figures are `tools/README.md`'s rows at the top of the phase; rows 1–8 are unedited in
+this phase's diff of that file.
 
-**The prediction was wrong once, and the amendment under § *Phase 3 prediction* is where.**
-*"No page under `contents/` is edited"* did not survive task 3.2. Twelve HTML-comment lines went
-onto five pages, ruled site-neutral by the maintainer. Row 2 and row 8 are the two that could have
-seen them, and neither moved, which is the check that the ruling's premise, *"none of them reads an
-HTML comment as prose"*, was true rather than assumed.
+**The prediction said *"No page under `contents/` is edited"*; task 3.2 put twelve HTML-comment lines
+on five pages**, ruled site-neutral by the maintainer.
+Rows 2 and 8, the two that could have seen them, did not move.
 
 #### Phase 3 in one table
 
@@ -2017,9 +1734,8 @@ HTML comment as prose"*, was true rather than assumed.
 
 ## Phase 4 prediction
 
-**Written after the page edits and before gates 1 and 3–8 were run, which is half of obligation 6
-and is recorded as such.** `pagelint` and `blockcheck` had already been run to build the repairs,
-so their figures below are readings, not predictions. The mechanism for the rest:
+**Written after the page edits, before gates 1 and 3–8 were run.** `pagelint` and `blockcheck` had
+already been run to build the repairs, so their rows are readings, not predictions.
 
 | # | Gate | Predicted | Why |
 |---:|---|---|---|
@@ -2028,7 +1744,7 @@ so their figures below are readings, not predictions. The mechanism for the rest
 | 3, 4, 7 | shape, redirects, `--verify` | none | `SUMMARY.md` and `.gitbook.yaml` untouched; no heading changed |
 | 5 | `versioncheck` | none | no prose pin edited |
 | 6 | `optioncheck` | none | the one table added (`Telemetry.md`'s flags) carries no `optioncheck` marker |
-| 8 | `symbolcheck` | none | no watchlisted name added; `UsePolicy` was removed from two blocks, not added |
+| 8 | `symbolcheck` | none | no watchlisted name added; `UsePolicy` removed from two blocks |
 | 9 | `blockcheck` | **moves** | *read, not predicted:* +4 blocks from the splits, +4 skips, +9 BUILT and +9 rows |
 
 ---
@@ -2037,9 +1753,9 @@ so their figures below are readings, not predictions. The mechanism for the rest
 
 ### The claim list, re-derived *(task 4.1)*
 
-**At `master` = `a194c4a`, 18 candidate blocks across 13 pages, and reading kept 14 across 10.**
-Method 1 is phase 2's claim-shaped diagnostic grep, run over a fresh `--report`, then diffed against
-`verdicts.tsv`. Method 2 is `--explain` on every entrant, read one by one.
+**At `master` = `a194c4a`: 18 candidate blocks across 13 pages; 14 across 10 kept.** Method 1 is
+phase 2's claim-shaped diagnostic grep over a fresh `--report`, diffed against `verdicts.tsv`.
+Method 2 is `--explain` on every entrant.
 
 ```bash
 P='CS0117|CS1729|CS1061|CS0535|CS0115|CS1503|CS7036|CS0738|CS0311|CS0308'
@@ -2052,37 +1768,36 @@ diff <(grep -E "$P" verdicts.tsv | cut -f4) <(grep -E "$P" r0.tsv | cut -f4)
 #                                                        a missing `using`, so context
 ```
 
-**Every one of phase 2's ten still carries its claim diagnostic**, and phase 3's four were confirmed
-with the FAQ unit restored. **Four were then struck out by reading:**
+All ten of phase 2's claims still carry their diagnostic, and phase 3's four were confirmed with the
+FAQ unit restored. Four were struck out:
 
 | Block | Why it is not a defect |
 |---|---|
-| `TurningOnReplayOnSeen.md#1`, `#6` | `OnceOnlyAction.Replay` exists on Brighter `master` and not at 10.7.0, and **the page's second line says so**: *"Not in a released package yet."* Phase 2's second diagnostic, *"`contextKey:` takes `string?`, not `System.Type`"*, is a **cascade**: 10.7.0 has a `UseInboxAttribute(int, Type, …)` overload, and it fails only because `Replay` does not bind |
-| `CausationTrackingStores.md#1`, `ReplayOnSeenReference.md#1` | `RequestContextBagNames.CausationId` is on `master`, not at 10.7.0, and both pages carry the same banner |
+| `TurningOnReplayOnSeen.md#1`, `#6` | `OnceOnlyAction.Replay` is on Brighter `master`, not at 10.7.0, and the page says so: *"Not in a released package yet."* Phase 2's second diagnostic, *"`contextKey:` takes `string?`, not `System.Type`"*, is a cascade: 10.7.0 has a `UseInboxAttribute(int, Type, …)` overload, which fails only because `Replay` does not bind |
+| `CausationTrackingStores.md#1`, `ReplayOnSeenReference.md#1` | `RequestContextBagNames.CausationId` is on `master`, not at 10.7.0; both pages carry the same banner |
 
-**They are left FAILED, not skipped, on purpose.** When the pin moves past 10.7.0 they should
-build, and the ratchet will then demand their rows, which is how the pin bump gets noticed.
-A skip would hide that.
+They stay FAILED, not skipped, so that when the pin moves past 10.7.0 and they build, the ratchet
+demands their rows.
 
-**Two of phase 2's figures were wrong, recorded before being corrected (obligation 2):**
+Two of phase 2's figures were wrong:
 
-- *"14 blocks across 12 pages"*: the 14 blocks sit on **10** pages, 8 for the claims and 2 for
-  the fence pairs.
+- *"14 blocks across 12 pages"*: the 14 blocks are on **10** pages, 8 for the claims and 2 for the
+  fence pairs.
 - *"The released names are `RequestInformation`, `MessageBody`, `MessageHeaders` — the `Record`
-  prefix is gone"*: **`InstrumentationOptions` is a `[Flags]` enum** with no members of that kind
-  at all. `MessageBody` and `MessageHeaders` do not exist. `BrighterInstrumentation`, the type the
-  block reads it from, does not exist either. Phase 2 read the diagnostic and guessed the fix.
+  prefix is gone"*: `InstrumentationOptions` is a **`[Flags]` enum**. `MessageBody` and
+  `MessageHeaders` do not exist, and neither does `BrighterInstrumentation`, the type the block
+  reads it from.
 
 ### The fence pairs *(task 4.2)*
 
 | Block | Now | Labels |
 |---|---|---|
-| `ImplementAQueryHandler.md#10` | #10 and #11 | **Synchronous:** / **Asynchronous:**, as review finding 1 required, with no ❌/✅ |
+| `ImplementAQueryHandler.md#10` | #10 and #11 | **Synchronous:** / **Asynchronous:**, no ❌/✅ (review finding 1) |
 | `CloudEventsSupport.md#7`, `#8`, `#9` | #7–#12 | ❌ **V9 — superseded** / ✅ **V10 — current** |
 
-**The split exposed a claim the pair was hiding.** Items 1 and 2 said *"Changed from `Guid` to
-`string`"*. At 10.7.0 `MessageHeader.MessageId` and `.CorrelationId` are **`Id`**, which converts
-implicitly from `string`. The prose and both V10 halves now say `Id`, and both halves build.
+Items 1 and 2 said *"Changed from `Guid` to `string`"*. At 10.7.0 `MessageHeader.MessageId` and
+`.CorrelationId` are **`Id`**, which converts implicitly from `string`. The prose and both V10
+halves now say `Id`, and both halves build.
 
 ### The repairs, page by page *(task 4.3)*
 
@@ -2090,36 +1805,35 @@ implicitly from `string`. The prose and both V10 halves now say `Id`, and both h
 
 | Block | Claimed | True at 10.7.0 |
 |---|---|---|
-| `Telemetry.md#1` | `BrighterInstrumentation.InstrumentationOptions.CommandProcessorInstrumentationOptions = new InstrumentationOptions { RecordRequestInformation = true, … }` | `InstrumentationOptions` is a flags enum, set on `BrighterOptions` through `AddBrighter` and on `ProducersConfiguration` through `AddProducers`. The block is rewritten, and the flags table added beside it is read from `BrighterTracer.cs` |
-| `CQRSWithBrighterAndDarker.md#7` | `[RequestLogging(step: 1)]`, `[UsePolicy(…)]` on `HandleAsync` | `RequestLoggingAttribute` requires `timing`. **Both attributes are also the sync forms on an async handler**, which Brighter rejects at pipeline build, and `UsePolicy` is `[Obsolete]`. Now `RequestLoggingAsync` and `UseResiliencePipelineAsync`, matching the page's own `ResiliencePipelineRegistry` |
+| `Telemetry.md#1` | `BrighterInstrumentation.InstrumentationOptions.CommandProcessorInstrumentationOptions = new InstrumentationOptions { RecordRequestInformation = true, … }` | `InstrumentationOptions` is a flags enum, set on `BrighterOptions` through `AddBrighter` and on `ProducersConfiguration` through `AddProducers`. Block rewritten; the flags table beside it is read from `BrighterTracer.cs` |
+| `CQRSWithBrighterAndDarker.md#7` | `[RequestLogging(step: 1)]`, `[UsePolicy(…)]` on `HandleAsync` | `RequestLoggingAttribute` requires `timing`; both are sync attributes on an async handler, which Brighter rejects at pipeline build; `UsePolicy` is `[Obsolete]`. Now `RequestLoggingAsync` and `UseResiliencePipelineAsync`, matching the page's `ResiliencePipelineRegistry` |
 | `InMemoryOptions.md#2` | `ClearOutboxAsync()` with no ids; a field declared without a type; `.UseInMemoryArchiveProvider()`; `Assert.Any` | Rewritten and **run** (below) |
-| `InMemoryOptions.md#3` | `IAmAnOutbox<Message, CommittableTransaction>`; `.UseOutbox(…)`; `UseScheduler` given an `IAmAMessageSchedulerFactory`; `new HangfireMessageSchedulerFactory(connectionString)` | `IAmAnOutbox` is not generic; there is no `UseOutbox`, the Outbox is `ProducersConfiguration.Outbox`; `UseScheduler<T>` needs `T` to be **both** factory interfaces, which a helper returning one cannot be; Hangfire's factory has no such constructor. `publication` was also used without being declared |
-| `InMemoryScheduler.md#4` | the same helper, and the same Hangfire constructor | branches at the call site on concrete types. Now fails only on `args`, the toplevel wrapper's quirk (below) |
-| `PostgreSQLMessageBroker.md#3` | `new PostgresChannelFactory(RelationalDatabaseConfiguration)` | takes a `PostgresMessagingGatewayConnection`, as `PostgreSQLTransportAndOutbox.md` already says |
-| `FAQ.md#18`, `#19` | `SendAsync(command, delay)`; `RescheduleAsync` | `SendAsync(delay, command)`; `ReSchedulerAsync`. `scheduler` is now named as the `IAmARequestSchedulerAsync` |
-| `AzureScheduler.md#18` | `ReScheduleAsync` *"Won't work!"* | `ReSchedulerAsync` exists and **returns `false`** in `AzureServiceBusScheduler`. The comment now says that |
-| `SweeperCircuitBreaking.md#9` | `postBox.ClearOutboxAsync(messageIds)` | `postBox` is the internal mediator, whose overload requires a `requestContext`. Now `commandProcessor.ClearOutboxAsync(messageIds)`, as block 5 of the same page already writes it |
+| `InMemoryOptions.md#3` | `IAmAnOutbox<Message, CommittableTransaction>`; `.UseOutbox(…)`; `UseScheduler` given an `IAmAMessageSchedulerFactory`; `new HangfireMessageSchedulerFactory(connectionString)` | `IAmAnOutbox` is not generic; there is no `UseOutbox`, the Outbox is `ProducersConfiguration.Outbox`; `UseScheduler<T>` needs `T` to be **both** factory interfaces; Hangfire's factory has no such constructor. `publication` was used without being declared |
+| `InMemoryScheduler.md#4` | the same helper, and the same Hangfire constructor | branches at the call site on concrete types. Now fails only on `args` (below) |
+| `PostgreSQLMessageBroker.md#3` | `new PostgresChannelFactory(RelationalDatabaseConfiguration)` | takes a `PostgresMessagingGatewayConnection`, as `PostgreSQLTransportAndOutbox.md` says |
+| `FAQ.md#18`, `#19` | `SendAsync(command, delay)`; `RescheduleAsync` | `SendAsync(delay, command)`; `ReSchedulerAsync`. `scheduler` is named as the `IAmARequestSchedulerAsync` |
+| `AzureScheduler.md#18` | `ReScheduleAsync` *"Won't work!"* | `ReSchedulerAsync` exists and **returns `false`** in `AzureServiceBusScheduler`; the comment now says so |
+| `SweeperCircuitBreaking.md#9` | `postBox.ClearOutboxAsync(messageIds)` | `postBox` is the internal mediator, whose overload requires a `requestContext`. Now `commandProcessor.ClearOutboxAsync(messageIds)`, as block 5 of the page writes it |
 
-**Found by reading, the same falsehood elsewhere.** The rule: a false claim found on a listed block
-is repaired wherever a grep finds it again, and nothing else is.
+**The same falsehood elsewhere,** repaired wherever a grep found it again:
 
 | Where | Falsehood |
 |---|---|
 | `Telemetry.md#4` | the same invented API, plus `UseCloudEventsConventionsAttributes`, which does not exist. CloudEvents attributes are recorded under `RequestInformation`; there is no switch |
-| `ConfiguringOpenTelemetry.md#6`, `#7` | the same invented API. **Their Jaeger and `TracerProvider.Run` diagnostics are still phase 2's undecided pin question** and are not touched |
+| `ConfiguringOpenTelemetry.md#6`, `#7` | the same invented API. Their Jaeger and `TracerProvider.Run` diagnostics remain phase 2's undecided pin question, untouched |
 | `CQRSWithBrighterAndDarker.md#2` | the same sync-on-async attributes |
 | `CQRSWithBrighterAndDarker.md#2`, `#6` | `PlaceOrderCommand : IRequest` never implements `Id` or `CorrelationId`. Now `: Command` with `base(Id.Random())`. **#6 builds** |
 | `DarkerAndBrighterPipelines.md#1` | sync attributes on an async handler, and `HandleAsync` returning `Task<AddGreetingResponse>` |
 | `BrighterSchedulerSupport.md#5`, `SchedulingAMessage.md#7` | `new HangfireMessageSchedulerFactory(connectionString: …)`, and a `scheduler:` argument name `UseScheduler` does not have |
-| `SchedulingAMessage.md#8`, `#9` | `QuartzMessageSchedulerFactory` does not exist, it is `QuartzSchedulerFactory(IScheduler)`; and `scheduler:` again |
+| `SchedulingAMessage.md#8`, `#9` | `QuartzMessageSchedulerFactory` does not exist; it is `QuartzSchedulerFactory(IScheduler)`. `scheduler:` again |
 | `OutboxArchiver.md#3` | `UseOutboxArchiver(provider)` has no non-generic form. Now `<CommittableTransaction>` |
 | `FAQ.md#17` | a stray `)`: the block did not parse |
 | two ```` ```text ```` diagrams | `SendAsync(command, delay)` in `BrighterSchedulerSupport.md` and `InMemoryScheduler.md` |
 
 #### `InMemoryOptions.md#2`, run with a control
 
-**Compiling would have shipped two more defects.** The block was built and run in a scratch project
-against the 10.7.0 packages, with its tests called directly:
+**The rewritten block compiled and still carried two defects.** Built and run in a scratch project
+against the 10.7.0 packages, tests called directly:
 
 ```text
 as first rewritten           ConfigurationException: You must set a message pump type
@@ -2128,54 +1842,50 @@ as first rewritten           ConfigurationException: You must set a message pump
 control: no RequestType      FAIL publish: No producer found for request type    <- the page's original Publication
 ```
 
-The schedule test carries its own control: `Assert.Empty` before the delay, `Assert.NotEmpty` after.
-The original's second test also asserted that a scheduled **`SendAsync`** puts a message on the bus.
-It does not: that path fires the command at a local handler. It is now a scheduled **`PostAsync`**.
+The schedule test is its own control: `Assert.Empty` before the delay, `Assert.NotEmpty` after. The
+original's second test asserted that a scheduled **`SendAsync`** puts a message on the bus; it fires
+the command at a local handler instead. It is now a scheduled **`PostAsync`**.
 
-**The duplicate handler is a Brighter 10.7.0 defect, not a page one, and it is isolated:**
+**The duplicate handler is a Brighter 10.7.0 defect:**
 
 ```text
 services.AddBrighter().AutoFromAssemblies()        FireSchedulerRequestHandler, FireSchedulerRequestHandler
 services.AddBrighter()   (control, no scan)        FireSchedulerRequestHandler
 ```
 
-So **any** DI application that calls `AutoFromAssemblies()` and schedules a request through the
-InMemory scheduler throws at fire time. The page's test registers no handlers and drops the call,
-saying why. **Brighter is read-only to this repository**, so the defect goes to the maintainer.
+Any DI application that calls `AutoFromAssemblies()` and schedules a request through the InMemory
+scheduler throws at fire time. The page's test registers no handlers and omits the call, with a
+comment. Filed upstream as BrighterCommand/Brighter#4414.
 
 ### The opt-outs *(task 4.3a)*
 
-**12 → 16 skipped, +4, exactly the markers added:** the three ❌ halves in `CloudEventsSupport.md`,
-and the V10 half of item 3, `public Message MapToMessage(…)`, which is a bare signature and a
-**fragment**. The V9 half of item 3 is both, and carries the V9 reason. The `ImplementAQueryHandler`
-halves are complete classes that still fail on the page's own `_repository` and domain types.
-That is context, not a fragment, so they carry no marker.
+**12 → 16 skipped, +4, one per marker added:** the three ❌ halves in `CloudEventsSupport.md`, and the
+V10 half of item 3, `public Message MapToMessage(…)`, a bare signature. The V9 half of item 3 carries
+the V9 reason. The `ImplementAQueryHandler` halves are complete classes failing on the page's own
+`_repository` and domain types, which is context, so they carry no marker.
 
 ### The baseline *(task 4.4)*
 
-**92 → 101 rows, +9, at `9c57ae2`, every one a block a repair made build:** `AzureScheduler.md#18`,
-`CQRSWithBrighterAndDarker.md#6`, `CloudEventsSupport.md#8`, `#10`, `FAQ.md#18`, `#19`,
-`SweeperCircuitBreaking.md#9`, `Telemetry.md#1`, `#4`. **No baselined block moved**, even though the
-splits renumbered every later block on two pages: none of those later blocks was in the baseline.
+**92 → 101 rows, +9, at `9c57ae2`:** `AzureScheduler.md#18`, `CQRSWithBrighterAndDarker.md#6`,
+`CloudEventsSupport.md#8`, `#10`, `FAQ.md#18`, `#19`, `SweeperCircuitBreaking.md#9`,
+`Telemetry.md#1`, `#4`. No baselined block moved; the splits renumbered later blocks on two pages,
+none of them baselined.
 
-**`FAQ.md` regains the unit phase 3 trimmed**, as phase 3 said it would: `FAQContext`, five values.
-**Red-proofed:** with the page's original text restored, `FAQ_18` reads `FAILED CS1503` and `FAQ_19`
-`CS1061,CS1503`. The revert restores both to BUILT.
+`FAQ.md` regains `FAQContext`, five values. **Red-proofed:** with the page's original text restored,
+`FAQ_18` reads `FAILED CS1503` and `FAQ_19` `CS1061,CS1503`; reverted, both BUILT.
 
 ### Found and not repaired — for 017
 
 - **`InMemoryScheduler.md` § *Configuration with Custom Timer Provider*.** `ITimerProvider` does not
-  exist at 10.7.0, and the scheduler takes a `TimeProvider`. That is a section rewrite, not a repair.
-- **The sync-attribute-on-async-handler shape was not surveyed.** It was repaired on the three
-  blocks it was found on. `ReactorAndProactor.md`, `HowConfiguringTheCommandProcessorWorks.md`,
+  exist at 10.7.0; the scheduler takes a `TimeProvider`. A section rewrite.
+- **The sync-attribute-on-async-handler shape was not surveyed**, only repaired on the three blocks
+  it was found on. `ReactorAndProactor.md`, `HowConfiguringTheCommandProcessorWorks.md`,
   `PolicyFallback.md` and `ImplementingExternalBus.md` also carry `[UsePolicy(`.
 - **`CQRSWithBrighterAndDarker.md:700`**, `Id = command.Id`: `command.Id` is now an `Id`, and the
   page never shows `Order`, so whether that assigns is unknown.
-- **The toplevel wrapper supplies no `args`**, so `InMemoryScheduler.md#4` fails on a name every
-  `Program.cs` has. An instrument quirk, in the friction ledger's column, not the page's.
-  **Corrected in phase 5:** the repair removed the block's trailing `static` method, so it is now
-  shape **`statements`**, not `toplevel`, and it is the `statements` wrapper, `Holder.Run()`, that
-  has no `args`. The misattribution is left above as written.
+- **`InMemoryScheduler.md#4` fails on `args`.** The repair removed its trailing `static` method, so it
+  is now shape **`statements`**, and the `statements` wrapper, `Holder.Run()`, has no `args`. An
+  instrument quirk, not a page defect.
 
 ### The site change *(task 4.5)*
 
@@ -2187,13 +1897,11 @@ InMemoryScheduler  OutboxArchiver  PostgreSQLMessageBroker  SchedulingAMessage
 SweeperCircuitBreaking  Telemetry
 ```
 
-**No banner, page type, heading or opening sentence changed**, so no URL and no `description:`
-moved, which gates 3, 4 and 7 confirm. Sign-off asked for with the head-ref deletion named, per
-obligation 7.
+No banner, page type, heading or opening sentence changed, so no URL and no `description:` moved;
+gates 3, 4 and 7 confirm.
 
-**Signed off 2026-09-24**, with the deletion. PR #183 merged `--admin` as `8ccefd6`, the post-merge
-`master` run `35965289904` passed all four jobs, and `spec/016-phase4` was deleted locally and on the
-remote. Ticked in phase 5's PR, because the tick needed the sign-off.
+**Signed off 2026-09-24**, with the deletion. PR #183 merged `--admin` as `8ccefd6`; the post-merge
+`master` run `35965289904` passed all four jobs; `spec/016-phase4` deleted locally and on the remote.
 
 ### The nine gates, reconciled *(task 4.6)*
 
@@ -2209,17 +1917,16 @@ remote. Ticked in phase 5's PR, because the tick needed the sign-off.
 | 8 | `symbolcheck` | none | 0 findings, 22 entries, 161 pages, 3 silenced | ✅ |
 | 9 | `blockcheck` | moves | **989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED — 0 findings, 16 skipped** | ✅ read, not predicted |
 
-`tools/README.md` rows 2 and 9 now carry `b941837`, and no other file quotes either figure.
+`tools/README.md` rows 2 and 9 carry `b941837`; no other file quotes either figure.
 
 ---
 
 ## Phase 5 prediction
 
-**Written before any gate was run in this phase: none, for all nine.** Phase 5 edits `spec/` and
-`tools/`, adds no `.md` under `tools/`, and touches no page. The one change that could move row 9 is
-the deletion of the four preludes the maintainer ruled on. **It was measured before this prediction
-was written, not after:** 989 of 989 `--report` rows are identical with and without them, because no
-page was mapped to one. So it moves `--list-scaffold` (106 → **84** identifiers) and no verdict.
+**None, for all nine, written before any gate was run.** Phase 5 edits `spec/` and `tools/`, adds no
+`.md` under `tools/`, and touches no page. Deleting the four preludes leaves 989 of 989 `--report`
+rows identical, because no page was mapped to one: it moves `--list-scaffold` (106 → **84**
+identifiers) and no verdict.
 
 ---
 
@@ -2227,45 +1934,37 @@ page was mapped to one. So it moves `--list-scaffold` (106 → **84** identifier
 
 ### Acceptance walk: the three criteria with no instrument *(task 5.1)*
 
-**Walked first, as the task requires**, because both criteria ever found unmet at a close were the
-unmarked ones.
+Walked first.
 
 | # | Who read it | What they read | Found |
 |---|---|---|---|
-| **AC13** | **the maintainer**, 2026-09-25 | the unit rule, the 14 units and `--list-scaffold`'s 106 identifiers, the red-proofs showing a scaffolded value still has its members checked, and the four preludes | **Accepted.** The 102 blocks needing a type the page names and never shows go to **017**, which may scaffold them as a stub tranche. **The four preludes were ruled deleted.** They were carried from 015's harness, mapped to no page, and two of them declared domain types (`CreateOrderCommand`, `IOrderRepository`) the unit rule forbids. The mechanism stays, with nothing using it |
-| **AC14** | **the maintainer**, 2026-09-25 | a **seeded** random sample (`random.seed(16)`), 6 of the 67 wrapped BUILT blocks, each shown as the page's lines beside what the staged file adds | **Accepted.** The wrapper adds exactly `using static <PageContext>;`, `namespace B_<id>`, `class Holder` and `async Task Run() { … }`, and nothing else: no `using` directive and no type |
-| **AC15** | the walker | `behaviou?r` over this spec's four documents, `tools/README.md`, `blockcheck.py`, `Program.cs` and the workflow; then the second method, `correct\|prove\|verif…\|guarantee\|honest` restricted to lines about the gate | **Met, with one sentence qualified.** Every `behaviour` hit is a disclaimer. `tools/README.md` row 9's entry says outright that a compiling block can assert false behaviour. **One sentence read wider than it meant:** § *Claim and context*'s *"every block admitted to the baseline is one whose claims have actually been checked"* means claims about the API. It now says so in a bracket beside it, and the sentence itself is untouched |
-
-**A walker's instrument lied once, in the alarming direction.** The first AC14 diff reported the
-page's own `using` lines as *added by the wrapper*, which would have failed AC14. It had dropped the
-first line of `--show`'s output as a header. Reading one staged file beside its page settled it.
-That is friction 64, below.
+| **AC13** | **the maintainer**, 2026-09-25 | the unit rule, the 14 units and `--list-scaffold`'s 106 identifiers, the red-proofs showing a scaffolded value still has its members checked, and the four preludes | **Accepted.** The 102 blocks needing a type the page names and never shows go to **017**, which may scaffold them as stubs. **The four preludes were ruled deleted**: carried from 015's harness, mapped to no page, two of them declaring domain types (`CreateOrderCommand`, `IOrderRepository`) the unit rule forbids. The mechanism stays, unused |
+| **AC14** | **the maintainer**, 2026-09-25 | a **seeded** random sample (`random.seed(16)`), 6 of the 67 wrapped BUILT blocks, each shown as the page's lines beside what the staged file adds | **Accepted.** The wrapper adds exactly `using static <PageContext>;`, `namespace B_<id>`, `class Holder` and `async Task Run() { … }`: no `using` directive and no type |
+| **AC15** | the walker | `behaviou?r` over this spec's four documents, `tools/README.md`, `blockcheck.py`, `Program.cs` and the workflow; then `correct\|prove\|verif…\|guarantee\|honest` restricted to lines about the gate | **Met.** Every hit is a disclaimer, and `tools/README.md` row 9 says a compiling block can still assert false behaviour |
 
 ### Acceptance walk: the twelve instrumented criteria *(task 5.2)*
 
-**Run at this branch's HEAD, every exit code read bare, each against what its criterion claims.**
+Run at this branch's HEAD, every exit code read bare.
 
 | # | Command, as the criterion names it | Output | |
 |---:|---|---|---|
-| **AC1** | `--report > r; echo $?`, then `awk` over `r` | exit **0**; `BUILT 101`, `FAILED 872`, `SKIPPED 16` = **989** rows | ✅ **989, not § *Current state*'s 985**: phase 4's four splits made four blocks, and AC2's second method agrees |
+| **AC1** | `--report > r; echo $?`, then `awk` over `r` | exit **0**; `BUILT 101`, `FAILED 872`, `SKIPPED 16` = **989** rows | ✅ 989: phase 4's splits added four blocks |
 | **AC2** | `--list > l; echo $?`; `wc -l`; `pagelint.Page` count; `KafkaConfiguration.md` | exit **0**; **989** = **989**; **20** of 20 Kafka blocks, every one of them a `` ``` csharp`` fence | ✅ |
-| **AC3** | `ls tools/blockcheck/*.csproj`, then `ProjectReference` / `Version=` / `PackageReference` | `blockcheck.csproj`: 0 / 1 / 1 | ⚠️ **met, and the instrument is too narrow.** The glob misses `tools/blockcheck/refs/refs.csproj`, **where the pin is: 0 / 71 / 71.** It passes too, so the criterion holds. But as written it checks the project with one package and never looks at the one with seventy-one |
+| **AC3** | `ls tools/blockcheck/*.csproj`, then `ProjectReference` / `Version=` / `PackageReference` | `blockcheck.csproj`: 0 / 1 / 1 | ✅ The glob does not reach `refs/refs.csproj`, which holds the pin; it reads 0 / 71 / 71 |
 | **AC4** | plants; then break a baselined block and restore it | plants: all seven exactly as `plants/index.tsv` records; `Telemetry.md#1`, `RequestContext` → `RecordRequestContext`: exit **1**, `FAILED CS0117`, *"stopped building … admitted BUILT at `9c57ae2`"*; restored: `diff` empty, `git diff --quiet`, exit **0** | ✅ the positive case is the plants, outside the corpus |
 | **AC5** | two `--report` runs, `diff`, wall clock | reports identical; **6.87 s** and **6.82 s** | ✅ |
 | **AC6** | `--verify-extraction` | exit **0**; **989 of 989 identical**, 1 with `using` directives hoisted | ✅ N = AC1's count |
-| **AC7** | the last line; `--list-skips` | `0 findings, 16 skipped`; **`--list-skips` exits 2, *"unknown mode"*.** The flag was never built | ⚠️ **met by a different instrument.** Every `--report` prints `skipped by opt-out (16)` with one reason per skip: **16 reasons, 15 of them V9 forms** (≥ 8). The criterion names a mode nobody implemented, and the design put the listing in `--report` instead |
-| **AC8** | `--list-scaffold`; files under `scaffold/` | exit **0**; *"84 identifiers from 14 unit(s) and 0 prelude(s); 15 page(s)"*; 14 unit files | ✅ 15 pages from 14 units, because `RelationalTransportContext` serves two |
+| **AC7** | the last line; `--list-skips` | `0 findings, 16 skipped`; `--list-skips` exits **2**, *"unknown mode"* | ✅ Met by `--report`: 16 reasons, 15 of them V9 forms. `--list-skips` does not exist |
+| **AC8** | `--list-scaffold`; files under `scaffold/` | exit **0**; *"84 identifiers from 14 unit(s) and 0 prelude(s); 15 page(s)"*; 14 unit files | ✅ 15 pages from 14 units: `RelationalTransportContext` serves two |
 | **AC9** | delete a row; add a row for a missing block | `Telemetry.md#1`'s row deleted: exit **1**, *"BUILT, not in the baseline"*; `Telemetry.md` block **99** added: exit **1**, *"the page has no such block"*; both reverted: `git diff --quiet`, exit **0** | ✅ |
-| **AC10** | `grep -rn '101 BUILT' … > f; grep -vc '^./spec/' f` | **as written: 2.** Anchored `^(\./)?spec/`: **1**, `tools/README.md:55`. Control, `'985 blocks'`: **2** (`tools/README.md` and a comment in `blockcheck.py`) | ⚠️ **met with the working form only**, exactly as phase 3 predicted. BSD `grep -rn … .` prints `spec/…` with no `./`, so the written instrument excludes nothing, and here it **fails** a criterion that is met |
-| **AC11** | each gate's own command, and the prediction's commit order | phases 1–3 and 5: prediction before the work; **phase 4: after the page edits, before gates 1 and 3–8, and it says so** | ⚠️ **met for 4 of 5 phases.** In phase 4 the repair loop used `pagelint` and `blockcheck` as build tools, so their figures were read before they were predicted. § *Phase 4 prediction* records it rather than backdating it |
+| **AC10** | `grep -rn '101 BUILT' … > f; grep -vc '^./spec/' f` | **as written: 2.** Anchored `^(\./)?spec/`: **1**, `tools/README.md:55`. Control, `'985 blocks'`: **2** (`tools/README.md` and a comment in `blockcheck.py`) | ✅ Met with `^(\./)?spec/`. As written, the pattern excludes nothing under BSD grep |
+| **AC11** | each gate's own command, and the prediction's commit order | phases 1–3 and 5: prediction before the work; phase 4: after the page edits, before gates 1 and 3–8 | ⚠️ Met for 4 of 5 phases. Phase 4's prediction came after the page edits |
 | **AC12** | the `--report` distribution, committed with its command | phase 2's `verdicts.tsv` (985) and § *The corpus run*; the current distribution in `tools/README.md` row 9 and above | ✅ |
 
-**The walk found three criteria whose instruments disagree with their wording: AC3, AC7 and AC10.**
-None of them hides an unmet criterion. **Each is recorded, and not edited in `requirements.md`**,
-following phase 1's rule about approved documents. They go to 017 as instrument defects.
+**The instruments named for AC3, AC7 and AC10 need correcting. That goes to 017.**
 
-**The nine gates, reconciled, AC11's phase-5 half.** Predicted *none*, read at this branch's HEAD
-after the preludes were deleted:
+**The nine gates, reconciled.** Predicted *none*, read at this branch's HEAD after the preludes were
+deleted:
 
 | # | Gate | Read | |
 |---:|---|---|---|
@@ -2290,10 +1989,9 @@ git diff --name-only dac5954^ HEAD -- contents/ README.md SUMMARY.md .gitbook.ya
   phases 1 and 2                   0
 ```
 
-**19 = 15 + 5 − 1, and nothing is outside the declared sets.** `SUMMARY.md`, `README.md` and
-`.gitbook.yaml` are untouched. Phase 3's diff was checked line by line: its only `+` or `-` lines
-are the twelve markers. **The "while I'm here" widening happened inside phase 4, not outside it, and
-it is declared:** § *The repairs* names the grep rule it followed and every block it reached.
+**19 = 15 + 5 − 1; nothing is outside the declared sets.** `SUMMARY.md`, `README.md` and
+`.gitbook.yaml` are untouched. Phase 3's only `+` or `-` lines are the twelve markers. Phase 4's
+repairs beyond the claim list are all named in § *The repairs*.
 
 ### Defect ledger *(task 5.4)*
 
@@ -2301,9 +1999,8 @@ it is declared:** § *The repairs* names the grep rule it followed and every blo
 a control's other half. **running**: executing a written-down command or example as written.
 **re-derivation**: a second method for a figure. **reading**: a person.
 
-**Before phase 1.** The task's input counts nine. The record supports the rows below. The
-*"Q6 amendment misses"* are not enumerated anywhere this walk found, so they are one row, not
-invented into several.
+**Before phase 1.** The task's input counts nine; the record supports the rows below. The
+*"Q6 amendment misses"* are enumerated nowhere, so they are one row.
 
 | # | Defect | Found by |
 |---:|---|---|
@@ -2338,7 +2035,7 @@ invented into several.
 | 29 | 3 | AC10's `^./spec/` excludes nothing under BSD grep | control |
 | 30 | 3 | the `options` job runs daily, against its own comment | running (a scheduled run read) |
 | 31 | 3 | a README sentence asserting a re-run that had not happened | reading |
-| 32 | 4 | `Telemetry.md#1` was an invented API, and **phase 2's recorded fix was a guess** | reading (the source) |
+| 32 | 4 | `Telemetry.md#1` was an invented API, and phase 2's recorded fix was a guess | reading (the source) |
 | 33 | 4 | phase 2's *"12 pages"* was 10 | re-derivation |
 | 34 | 4 | four claims were declared-unreleased, not false; one diagnostic was a cascade | reading |
 | 35 | 4 | *"Guid → string"*: the type is `Id` | tool (after the split) |
@@ -2351,41 +2048,31 @@ invented into several.
 | 42 | 5 | AC7 names a `--list-skips` flag that was never built | running |
 | 43 | 5 | AC10 as written *fails* a met criterion | running |
 | 44 | 5 | four dormant preludes declaring forbidden domain types | reading |
-| 45 | 5 | one sentence of this spec read wider than a compile checks | reading |
-| 46 | 5 | phase 4 attributed `args` to the wrong wrapper | reading |
+| 45 | 5 | phase 4 attributed `args` to the wrong wrapper | reading |
 
 ```bash
-# the split, counted from the table's last column by a script, rows 9–14 as six,
-# a combined row by its FIRST finder:
-#   reading 16 · running 9 · re-derivation 9 · control 6 · tool 6        = 46
+# counted from the table's last column, rows 9–14 as six, a combined row by its first finder
+#   reading 15 · running 9 · re-derivation 9 · control 6 · tool 6        = 45
 ```
 
-**The split was first written here by hand as *"running 11 · reading 13 · re-derivation 9 ·
-control 8 · tool 7"*, and the script disagreed on four of the five.** Obligation 1 in the ledger
-that exists to record it. The script's figure stands.
-
-**46 rows.** 015's split was 12 tool / 4 control / 14 person. **Reading is still the largest
-category**, at 16, and that includes the maintainer's two rulings this walk needed. **The tool that
-016 built found 6 by its own verdict, and it also made most of the rest findable**: rows 32–36 were
-read *because* a diagnostic pointed at the block. **Running, 9, is the category a compile gate
-cannot absorb.** Rows 37 and 38, the `InMemoryOptions.md` test and the Brighter defect, compiled
-cleanly and were wrong. That is `CLAUDE.md`'s review-only row, *a block asserting behaviour is run,
-with a control*, and it is why BrighterCommand/Brighter#4414 exists.
+**45 defects.** 015's split was 12 tool / 4 control / 14 person. Reading is the largest category;
+the tool found 6 by its own verdict and pointed at most of the rest. **Running, 9**, is what a compile
+gate cannot absorb: rows 37 and 38 compiled cleanly and were wrong.
 
 ### Workflow friction *(task 5.5)*
 
-**The ledger stood at 51 when 016 opened. 016 wrote 52–59 as it went**: 52–53 in
-`requirements.md`, 54–56 in `design.md`, 57–59 above. It adds:
+The ledger stood at 51 when 016 opened. 016 wrote 52–59 as it went: 52–53 in `requirements.md`,
+54–56 in `design.md`, 57–59 above. It adds:
 
 | | |
 |---:|---|
-| **60** | **git's ERE has no `\b`.** `git grep -i -E '\beight\b'` returned nothing with *"Eight commands"* in plain sight; `-w` found seven. A search for the claim you are about to change reports that it is nowhere. Plausible zero, in grep's dialects |
-| **61** | **`grep … file >> file` appends nothing.** An edit that did not happen and a check that does not fire print the same output. The control is reading the file after the edit, not trusting the edit |
-| **62** | **A marker inserted by line number lands wherever the line number is.** Inside a fence it corrupted the block, bound the next one, and fired the finding for the wrong reason. A red-proof that passes for the wrong reason proves nothing |
-| **63** | **`schedule:` at the top of a workflow triggers every job without an event filter**, and a comment saying otherwise survives indefinitely because a pinned verdict repeats. A false claim in a comment costs nothing until a new job copies it |
-| **64** | **A walker's diff dropped `--show`'s first body line as a header**, and reported the page's own `using` directives as added by the wrapper. That is friction 52's direction, the alarming one: it would have failed AC14 on a wrapper that is clean. Reading one staged file beside its page settled it |
-| **65** | **A prediction cannot precede work that uses the gates as instruments** unless it is written before the first edit. Phase 4's repair loop ran `pagelint --changed` and `blockcheck` dozens of times; by the time the prediction was written, two of nine gates had already been read. The remedy is ordering, not discipline: write the prediction as the first commit of the phase |
-| **66** | **A fix written beside a diagnostic reads as a measurement.** Phase 2 recorded *"the released names are `RequestInformation`, `MessageBody`, `MessageHeaders`"* next to a `CS0117` it had measured. The first half was measured; the second was a guess, and two of the three names do not exist. Phase 4 nearly applied it. Keep what the compiler said and what someone inferred in different columns |
+| **60** | **git's ERE has no `\b`.** `git grep -i -E '\beight\b'` returned nothing with *"Eight commands"* in the file; `-w` found seven. A plausible zero |
+| **61** | **`grep … file >> file` appends nothing.** An edit that did not happen and a check that does not fire print the same output. Read the file after the edit |
+| **62** | **A marker inserted by line number landed inside a fence.** It corrupted the block, bound the next one, and fired the finding for the wrong reason |
+| **63** | **`schedule:` at the top of a workflow triggers every job without an event filter.** A comment saying otherwise survived because a pinned verdict repeats |
+| **64** | **A diff dropped `--show`'s first body line as a header** and reported the page's own `using` directives as added by the wrapper, which would have failed AC14 on a clean wrapper. One staged file read beside its page settled it |
+| **65** | **A prediction cannot follow work that uses the gates as instruments.** Phase 4's repair loop ran `pagelint --changed` and `blockcheck` repeatedly, so two of nine gates were read before the prediction was written. Write the prediction as the phase's first commit |
+| **66** | **A fix written beside a diagnostic reads as a measurement.** Phase 2 recorded *"the released names are `RequestInformation`, `MessageBody`, `MessageHeaders`"* beside a measured `CS0117`; the names were a guess and two of the three do not exist. Keep what the compiler said and what was inferred in separate columns |
 
 ```bash
 # 51 + 8 (52–59) + 7 (60–66) = 66
@@ -2401,11 +2088,11 @@ grep -oE '^\| \*\*6[0-6]\*\*' spec/016-compile_gate/tasks.md | wc -l     # 7
 | **The baseline** | **101 blocks required to build**, enforced both ways in CI's `blocks` job; a repair brings its row in the same PR |
 | **The opt-out** | 16 skips, each with a written reason, printed on every run |
 | **The scaffold** | 14 units, 84 identifiers, values only, typed from the pin |
-| **The repairs** | 19 pages changed across phases 3 and 4; 14 listed claims repaired and every recurrence of the same falsehood a grep could find |
+| **The repairs** | 19 pages changed across phases 3 and 4; 14 listed claims repaired, and every recurrence of the same falsehood a grep found |
 | **Upstream** | BrighterCommand/Brighter#4414 |
 
-**The residual gap, in one sentence — the line 017 starts from:** **872 of 989 C# blocks still do
-not compile against the released packages. Most need a `using` directive or a stub for a type the
-page names but never shows (102 of them are ruled scaffoldable). The gate holds only the 101 that
-do, so 017 raises that number page by page, starting with those 102, and fixes the three
-instrument defects this walk found in AC3, AC7 and AC10.**
+**The residual gap, the line 017 starts from:** **872 of 989 C# blocks still do not compile against
+the released packages. Most need a `using` directive or a stub for a type the page names but never
+shows (102 of them are ruled scaffoldable). The gate holds only the 101 that do, so 017 raises that
+number page by page, starting with those 102, and corrects the instruments for AC3, AC7 and AC10.**
+
