@@ -1,7 +1,7 @@
 # Spec 016: A Committed Compile Gate — Tasks
 
 **Created:** 2026-09-20
-**Status:** **CLOSED — 39 of 39, 2026-09-25.** Awaiting the maintainer's reading of § *Acceptance walk* for `.accepted`. Tasks reviewed 2026-09-20, six findings, amended
+**Status:** **ACCEPTED — 39 of 39, 2026-09-26.** Closed 2026-09-25; tasks reviewed 2026-09-20, six findings, amended
 **Requirements:** approved 2026-09-20 · **Design:** approved 2026-09-20
 
 **Five phases, 39 tasks, one pull request per phase.** The list was 37 at the review; the two
