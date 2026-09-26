@@ -171,7 +171,7 @@ Predicted*).
     which carries none, → exit **2**
   - Notes: it must read `scan_skips`, not re-scan, so the two cannot disagree.
 
-- [ ] **Task 1.5:** Expose `--explain` through `tools/blockcheck.py` and correct its summary (P1-2)
+- [x] **Task 1.5:** Expose `--explain` through `tools/blockcheck.py` and correct its summary (P1-2)
   - Input: `Program.cs` `--explain`; requirements § *Instrument quirks recorded by 016*
   - Output: `python3 tools/blockcheck.py --explain <id>...` works; its stderr reads *"N blocks
     explained"*; **control, both ways:** the old binary's line (*"989 blocks, 0 built, 989
@@ -312,6 +312,26 @@ SKIPPED rows are identical (`cmp`).
 | `--list-skips contents/FAQ.md` — carries a skip | exit 0, one row | **0**, `contents/FAQ.md 15 V9 form, shown beside its V10 replacement (labelled Old (V9))` |
 | `--list-skips contents/SpannerOutbox.md` — 2 blocks, no skip | exit 2 | **2**, 0 rows, *"2 blocks, no opt-out: nothing to list"* |
 | `--list-skips contents/Glossary.md` — no C# block | exit 2, a different reason | **2**, *"no C# blocks on contents/Glossary.md: nothing was listed"* |
+
+**Task 1.5 — `--explain` through `blockcheck.py`.** `python3 tools/blockcheck.py --explain <id>...`
+takes the ids in `--report`'s fourth column, stages only those blocks, and passes stdout, stderr
+and the exit code through.
+
+Three defects in the Roslyn half's `--explain`, each measured on the old binary:
+
+| # | Said | Measured | Now |
+|---:|---|---|---|
+| 1 | the stderr summary describes the run | *"989 blocks, 0 built, 989 failing"* on a run that explained **872** ids | *"872 blocks explained, 5654 diagnostics"* |
+| 2 | exit 2 when nothing was checked | an id matching no block → exit **0**, having explained nothing | exit **2**, *"1 id(s) match no staged block, first: NoSuch_9"* (the Python front end refuses it first, the same way) |
+| 3 | a listing diffs clean between runs | three runs over the same 872 ids gave **three different row orders**: Roslyn does not order `GetDiagnostics()` | rows sorted by position, code, message; three runs byte-identical |
+
+| Check | Result |
+|---|---|
+| All 872 FAILED ids | exit **0**, 5,654 rows; **the same row set as the old binary** (`sort \| cmp`) |
+| `ClaimCheck_1` (FAILED) | one row, `CS0246 … 'GreetingEvent'` |
+| `AWSSQSConfiguration_1` (BUILT) | exit 0, **0** rows, *"1 blocks explained, 0 diagnostics"* |
+| `NoSuch_9` / no argument | exit **2** / usage, exit **2** |
+| `--classify` and `--report` after the change | exit 0, **byte-identical** to before |
 
 ## Phase 2 — Tranche 1a *(6 tasks, one PR, CHANGES THE SITE)*
 

@@ -509,6 +509,8 @@ internal static class Program
         var clock = Stopwatch.StartNew();
         int built = 0;
         int scaffoldErrors = 0;
+        var explained = new HashSet<string>(StringComparer.Ordinal);
+        int diagnosticsWritten = 0;
         try
         {
             foreach (var (id, path, scaffold) in files)
@@ -543,7 +545,15 @@ internal static class Program
 
                 if (explain.Count > 0)
                 {
-                    foreach (var d in errors)
+                    explained.Add(id);
+                    diagnosticsWritten += errors.Count;
+                    // Roslyn does not order GetDiagnostics(), and three runs of
+                    // the same 872 ids gave three orders. Sorted by position, so
+                    // two runs diff clean.
+                    foreach (var d in errors
+                                 .OrderBy(e => e.Location.SourceSpan.Start)
+                                 .ThenBy(e => e.Id, StringComparer.Ordinal)
+                                 .ThenBy(e => e.GetMessage(), StringComparer.Ordinal))
                     {
                         var pos = d.Location.GetLineSpan().StartLinePosition;
                         rows.WriteLine($"{id}\t{d.Id}\t{pos.Line + 1}:{pos.Character + 1}\t" +
@@ -562,6 +572,26 @@ internal static class Program
             if (rows != Console.Out) rows.Dispose();
         }
         clock.Stop();
+
+        // --explain says what it explained, not what the corpus holds. It used
+        // to print the verdict line below, over every staged block, and since
+        // the loop skips the blocks it was not asked about, that line read
+        // "989 blocks, 0 built, 989 failing" on a run that explained 872 --
+        // and exited 0 on an id that matched nothing, having explained nothing.
+        if (explain.Count > 0)
+        {
+            var unmatched = explain.Where(id => !explained.Contains(id)).OrderBy(id => id).ToList();
+            Console.Error.WriteLine(
+                $"{explained.Count} blocks explained, {diagnosticsWritten} diagnostics");
+            if (unmatched.Count > 0)
+            {
+                Console.Error.WriteLine(
+                    $"{unmatched.Count} id(s) match no staged block, first: {unmatched[0]}: " +
+                    "they were not explained");
+                return ExitNothingChecked;
+            }
+            return ExitRan;
+        }
 
         // The scope line, before the verdict line. `0 failing` out of 0 is not
         // the same claim as `0 failing` out of 985.

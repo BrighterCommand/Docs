@@ -45,6 +45,7 @@ Usage:
     python3 tools/blockcheck.py --verify-extraction [dir]   # is it byte-identical?
     python3 tools/blockcheck.py --classify [page...]  # what stands between FAILED and BUILT
     python3 tools/blockcheck.py --list-skips [page...]  # page<TAB>ordinal<TAB>reason
+    python3 tools/blockcheck.py --explain <id>...  # every error of those blocks, in full
 
 Exit code is 0 when the run has something to say, 1 when the corpus is wrong,
 and 2 when NOTHING WAS CHECKED -- the contract in `tools/README.md`, shared with
@@ -1000,6 +1001,41 @@ def mode_report(blocks, args):
     return 1 if findings else 0
 
 
+def mode_explain(blocks, args):
+    """Every compiler error for the blocks named, in full: id, code, line:col, message.
+
+    Ids are the ones `--report` prints in its fourth column. This is the
+    Roslyn tool's `--explain`, fronted here so that nobody has to stage the
+    corpus and find `refs.txt` by hand -- and so that ids travel as arguments,
+    not through a shell variable that zsh declines to word-split.
+    """
+    if not args:
+        print('usage: blockcheck.py --explain <id>...', file=sys.stderr)
+        return 2
+    unready = tool_unready()
+    if unready is not None:
+        print(unready, file=sys.stderr)
+        return 2
+    by_ident = {block.ident: block for block in blocks}
+    unknown = sorted(set(args) - set(by_ident))
+    if unknown:
+        print(f'{len(unknown)} id(s) name no block, first: {unknown[0]}: nothing '
+              'was explained', file=sys.stderr)
+        return 2
+    staged = tempfile.mkdtemp(prefix='blockcheck-explain-')
+    try:
+        if mode_stage([by_ident[ident] for ident in dict.fromkeys(args)],
+                      [staged]) != 0:
+            return 2
+        run = subprocess.run(['dotnet', TOOL_DLL, '--explain', staged, REFS_LIST,
+                              *args], capture_output=True, text=True)
+        sys.stdout.write(run.stdout)
+        sys.stderr.write(run.stderr)
+        return run.returncode
+    finally:
+        shutil.rmtree(staged, ignore_errors=True)
+
+
 def mode_list_skips(blocks, args):
     """Every opt-out, or those on the pages named: page, ordinal, reason.
 
@@ -1177,7 +1213,7 @@ def main(argv):
     if mode == '--list-scaffold':
         return mode_list_scaffold(argv[1:])
     if mode not in ('--list', '--show', '--stage', '--report',
-                    '--verify-extraction', '--classify', '--list-skips'):
+                    '--verify-extraction', '--classify', '--list-skips', '--explain'):
         print(__doc__.split('Usage:')[1].split('Exit code')[0].strip(),
               file=sys.stderr)
         print('\nunknown mode: nothing was checked', file=sys.stderr)
@@ -1204,6 +1240,8 @@ def main(argv):
             return mode_classify(blocks, argv[1:])
         if mode == '--list-skips':
             return mode_list_skips(blocks, argv[1:])
+        if mode == '--explain':
+            return mode_explain(blocks, argv[1:])
     except ScaffoldError as exc:
         print(exc, file=sys.stderr)
         return 2
