@@ -163,7 +163,7 @@ Predicted*).
     not. The exit-2 control uses a page with C# blocks, none failing: a page with no C# block at
     all would exit 2 for a different reason.
 
-- [ ] **Task 1.4:** Add `--list-skips` to `tools/blockcheck.py`, with its red-proof
+- [x] **Task 1.4:** Add `--list-skips` to `tools/blockcheck.py`, with its red-proof
   - Input: `design.md` § *The List Skips Mode*; `scan_skips` in `tools/blockcheck.py`
   - Output: the mode; recorded here — `--list-skips > s; echo $?` → **0**, and `wc -l < s` equals
     `--report`'s SKIPPED (16); **control, both ways:** `--list-skips contents/FAQ.md`, which
@@ -300,6 +300,18 @@ not domain types a stub should supply. `Assert` and `Xunit` are unpinned today; 
 after 1.8 pins xunit. **`args` is named by 36 FAILED blocks on 21 pages** (`awk` over the `names`
 column; a count of the per-block listing agrees): `statements`-wrapper blocks that use `string[] args`, which `Holder.Run()` does not supply.
 P1-3 is therefore live, and 1.10 names the tranche pages it reaches.
+
+**Task 1.4 — `--list-skips`.** Said, by 016's AC7: *"`--list-skips` prints one reason per skip"*;
+measured at `c7329bb`: exit **2**, *"unknown mode"*. Now `python3 tools/blockcheck.py --list-skips >
+s; echo $?` → **0**, stderr *"16 skipped of 989 blocks, across 6 pages"*, `wc -l < s` → **16**,
+equal to `--report`'s SKIPPED. **Two methods:** the (page, ordinal) keys of `s` and of `--report`'s
+SKIPPED rows are identical (`cmp`).
+
+| Control | Expected | Result |
+|---|---|---|
+| `--list-skips contents/FAQ.md` — carries a skip | exit 0, one row | **0**, `contents/FAQ.md 15 V9 form, shown beside its V10 replacement (labelled Old (V9))` |
+| `--list-skips contents/SpannerOutbox.md` — 2 blocks, no skip | exit 2 | **2**, 0 rows, *"2 blocks, no opt-out: nothing to list"* |
+| `--list-skips contents/Glossary.md` — no C# block | exit 2, a different reason | **2**, *"no C# blocks on contents/Glossary.md: nothing was listed"* |
 
 ## Phase 2 — Tranche 1a *(6 tasks, one PR, CHANGES THE SITE)*
 

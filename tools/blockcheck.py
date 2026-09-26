@@ -44,6 +44,7 @@ Usage:
     python3 tools/blockcheck.py --report [file]    # compile everything, one row per block
     python3 tools/blockcheck.py --verify-extraction [dir]   # is it byte-identical?
     python3 tools/blockcheck.py --classify [page...]  # what stands between FAILED and BUILT
+    python3 tools/blockcheck.py --list-skips [page...]  # page<TAB>ordinal<TAB>reason
 
 Exit code is 0 when the run has something to say, 1 when the corpus is wrong,
 and 2 when NOTHING WAS CHECKED -- the contract in `tools/README.md`, shared with
@@ -999,6 +1000,33 @@ def mode_report(blocks, args):
     return 1 if findings else 0
 
 
+def mode_list_skips(blocks, args):
+    """Every opt-out, or those on the pages named: page, ordinal, reason.
+
+    Read from the same `skip_reason` that `--report` reads, which
+    `enumerate_blocks` sets from `scan_skips` -- so the listing and the gate's
+    SKIPPED count cannot disagree. An empty listing is exit 2, as for every
+    listing mode: no skips and a broken scan look the same from here.
+    """
+    if args:
+        wanted = {os.path.relpath(os.path.abspath(a), ROOT) for a in args}
+        unknown = wanted - {block.rel for block in blocks}
+        if unknown:
+            print(f'no C# blocks on {", ".join(sorted(unknown))}: nothing was '
+                  'listed', file=sys.stderr)
+            return 2
+        blocks = [block for block in blocks if block.rel in wanted]
+    skipped = [block for block in blocks if block.skip_reason]
+    for block in skipped:
+        print(f'{block.rel}\t{block.ordinal}\t{block.skip_reason}')
+    if not skipped:
+        print(f'{len(blocks)} blocks, no opt-out: nothing to list', file=sys.stderr)
+        return 2
+    print(f'{len(skipped)} skipped of {len(blocks)} blocks, across '
+          f'{len({block.rel for block in skipped})} pages', file=sys.stderr)
+    return 0
+
+
 # --------------------------------------------------------------------------
 # The classification
 # --------------------------------------------------------------------------
@@ -1149,7 +1177,7 @@ def main(argv):
     if mode == '--list-scaffold':
         return mode_list_scaffold(argv[1:])
     if mode not in ('--list', '--show', '--stage', '--report',
-                    '--verify-extraction', '--classify'):
+                    '--verify-extraction', '--classify', '--list-skips'):
         print(__doc__.split('Usage:')[1].split('Exit code')[0].strip(),
               file=sys.stderr)
         print('\nunknown mode: nothing was checked', file=sys.stderr)
@@ -1174,6 +1202,8 @@ def main(argv):
             return mode_verify_extraction(blocks, argv[1:])
         if mode == '--classify':
             return mode_classify(blocks, argv[1:])
+        if mode == '--list-skips':
+            return mode_list_skips(blocks, argv[1:])
     except ScaffoldError as exc:
         print(exc, file=sys.stderr)
         return 2
