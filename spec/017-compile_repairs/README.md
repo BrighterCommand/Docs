@@ -1,7 +1,7 @@
 # Spec 017: Compile Repairs
 
 **Created:** 2026-09-26
-**Status:** Requirements Phase
+**Status:** Writing Phase — tasks approved 2026-09-26; phase 1 next
 
 > **Re-derive this README before executing it.** It was written before anyone looked — check every
 > count and every named gap against the tree, with the command beside the figure.
@@ -149,7 +149,7 @@ taken first, never through a pipe (016's AC1/AC2/AC10 finding).
 - [x] Requirements reviewed and approved — 2026-09-26
 - [x] Documentation outline created — `design.md`, 2026-09-26
 - [x] Outline reviewed and approved — 2026-09-26
-- [ ] Writing tasks identified
+- [x] Writing tasks identified — `tasks.md`, 2026-09-26
 - [ ] Writing complete
 - [ ] Documentation reviewed
 - [ ] Spec closed
