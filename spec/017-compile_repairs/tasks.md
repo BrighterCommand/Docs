@@ -128,7 +128,7 @@ Predicted*).
 **1.6 → 1.7**. **1.8** after 1.3, because 1.3's Q2 reading is taken again once xunit is pinned.
 **1.9** after 1.3–1.8. **1.10** after 1.3 and 1.8. **1.11** last.
 
-- [ ] **Task 1.1:** Re-derive the starting state and write phase 1's prediction
+- [x] **Task 1.1:** Re-derive the starting state and write phase 1's prediction
   - Input: `tools/README.md` rows 1–9; `design.md` § *Gate Movement Predicted*, Phase 1 column
   - Output: § *Phase 1 as executed* in this file, opening with all nine gates' exit codes and
     figures at `master`, and a prediction row per gate. **§ *The AC2 before-report*** below holds
@@ -139,7 +139,7 @@ Predicted*).
     `before.tsv` is **regenerated at each use, never kept**: a file under `$TMPDIR` does not survive
     between sessions (§ 2's work directory did not).
 
-- [ ] **Task 1.2:** Add the `--types` mode to `tools/blockcheck/Program.cs`
+- [x] **Task 1.2:** Add the `--types` mode to `tools/blockcheck/Program.cs`
   - Input: `spec/017-compile_repairs/probe/typedump/Program.cs`; `design.md` § *The Classify Mode*
   - Output: `dotnet tools/blockcheck/bin/Release/net9.0/blockcheck.dll --types <refs.txt>` prints
     `type|ext<TAB>Name<TAB>Ns` rows; **two methods agree**: `diff` against the probe's `typedump`
@@ -239,6 +239,34 @@ Predicted*).
   - Notes: no sign-off is owed (no published page); the `--admin` grant covers the merge.
 
 ---
+
+### Phase 1 as executed
+
+**Starting state, 2026-09-26, `master` `0e1eae9`** — every gate run bare, exit code read from `$?`
+before its output:
+
+| # | Gate | Exit | Read | Phase 1 prediction, and the mechanism |
+|---:|---|---:|---|---|
+| 1 | `linkcheck` | 0 | 165 files, 0 broken | **none** — `tools/README.md` is already walked; phase 1 adds no `.md` |
+| 2 | `pagelint` | 0 | 0 errors, 743 warnings, 162 pages | **none** — no page changes |
+| 3 | shape | 0 | 161 pages, 12 sections, widest 12 of 20, deepest 4 of 4 | **none** — no `SUMMARY.md` change |
+| 4 | redirects | 0 | 77 entries, 7858 bytes | **none** — no `SUMMARY.md` change |
+| 5 | `versioncheck` | 0 | 0 stale of 18, across 5 pages | **none** — it reads its five tutorial pages, not `refs.csproj` |
+| 6 | `optioncheck` | 0 | 0 mismatches, 59 tables, 519 rows | **none** — its pin is its own |
+| 7 | `--verify` | 0 | 161 predicted = 161 published | **none** — no page added or moved |
+| 8 | `symbolcheck` | 0 | 0 findings, 22 entries, 161 pages, 3 silenced | **none** — no page changes |
+| 9 | `blockcheck` | 0 | 989: 101 BUILT, 872 FAILED, 16 SKIPPED; 0 findings; 501 reference assemblies; 14 units, 15 pages mapped | **BUILT, FAILED and SKIPPED unchanged**, and the AC2 diff empty — the grown pin alone moves nothing (design E2). **Reference assemblies 501 → 538.** **Units 14, exit 0** — `PageContext.cs` is cut in the same PR that turns the unit rule on. The scope line gains the rule's result |
+
+**Task 1.2 — `--types`.** `dotnet tools/blockcheck/bin/Release/net9.0/blockcheck.dll --types
+tools/blockcheck/refs/bin/Release/net9.0/refs.txt` → exit **0**, stderr *"501 reference
+assemblies: 21365 types, 3471 extension methods"* — the design's 21,365 and 3,471.
+
+| Check | Result |
+|---|---|
+| Two methods: `cmp` against the probe's `typedump` over the same `refs.txt` | **identical**, 24,836 rows each |
+| Known present | `type UseResiliencePipelineAsyncAttribute Paramore.Brighter.Policies.Attributes`; `ext AddBrighter Paramore.Brighter.Extensions.DependencyInjection` |
+| Known absent | `ITimerProvider` → **0** rows |
+| No such `refs.txt` / no argument | exit **2**, *"nothing was listed"* / usage |
 
 ## Phase 2 — Tranche 1a *(6 tasks, one PR, CHANGES THE SITE)*
 
@@ -452,8 +480,31 @@ widening, both ledgers written, and the residual sentence 018 starts from.
 
 ## The AC2 before-report
 
-*Written by task 1.1: the command that regenerates `before.tsv` at `c7329bb`, and the summary line
-a regenerated copy must match.*
+Every AC2 diff reads against this report. It is rebuilt at each use, from a worktree, with the
+tools as they stood at `c7329bb`:
+
+```bash
+git worktree add --detach $TMPDIR/wt-c7329bb c7329bb
+cd $TMPDIR/wt-c7329bb
+dotnet build tools/blockcheck/refs/refs.csproj -c Release
+dotnet build tools/blockcheck/blockcheck.csproj -c Release
+python3 tools/blockcheck.py --report $TMPDIR/before.tsv; echo $?      # 0
+cd - && git worktree remove --force $TMPDIR/wt-c7329bb
+```
+
+**A regenerated copy must read** `989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED, 0 NOT_COMPILABLE`
+**and have 989 rows** (`wc -l < $TMPDIR/before.tsv`). The diff, from `requirements.md` AC2:
+
+```bash
+awk -F'\t' 'NR==FNR{a[$2 FS $3]=$1;next} a[$2 FS $3]!=$1{print a[$2 FS $3]" -> "$1, $2, $3}' \
+    $TMPDIR/before.tsv <after.tsv>
+```
+
+Measured 2026-09-26 (task 1.1): the regenerated report is **byte-identical** to `--report` at
+`master` `0e1eae9` (`cmp` silent), which is the second method — `git diff --stat c7329bb 0e1eae9 --
+contents tools` is empty, so the two must agree. **Control, both ways:** the diff of the report
+against itself prints **0** lines; against a copy with `Telemetry.md#1` flipped it prints exactly
+`BUILT -> FAILED contents/Telemetry.md 1`.
 
 ## The tranches
 
