@@ -43,6 +43,7 @@ Usage:
     python3 tools/blockcheck.py --list-scaffold    # what the pages were given
     python3 tools/blockcheck.py --report [file]    # compile everything, one row per block
     python3 tools/blockcheck.py --verify-extraction [dir]   # is it byte-identical?
+    python3 tools/blockcheck.py --classify [page...]  # what stands between FAILED and BUILT
 
 Exit code is 0 when the run has something to say, 1 when the corpus is wrong,
 and 2 when NOTHING WAS CHECKED -- the contract in `tools/README.md`, shared with
@@ -811,6 +812,25 @@ def stale_pin():
     return None
 
 
+def tool_unready():
+    """States 3, 6, 7 and 10 above, as a message, or None when the tools are ready.
+
+    Shared by every mode that compiles, so that `--report` and `--classify`
+    cannot disagree about when nothing was checked.
+    """
+    if not os.path.isdir(SCAFFOLD_DIR):
+        return f'no scaffold directory at {SCAFFOLD_DIR}: nothing was checked'
+    if not os.path.exists(TOOL_DLL):
+        return f'{TOOL_DLL} is not built: nothing was checked\n' + BUILD_HINT
+    if not os.path.exists(REFS_LIST):
+        return (f'no reference list at {REFS_LIST}: the reference project has not '
+                'been restored and built, so nothing was checked\n' + BUILD_HINT)
+    stale = stale_pin()
+    if stale is not None:
+        return f'{stale}\nnothing was checked\n' + BUILD_HINT
+    return None
+
+
 def mode_report(blocks, args):
     """Compile every block and report a verdict for each. The whole run.
 
@@ -826,22 +846,9 @@ def mode_report(blocks, args):
     if len(args) > 1:
         print('usage: blockcheck.py --report [file]', file=sys.stderr)
         return 2
-    if not os.path.isdir(SCAFFOLD_DIR):
-        print(f'no scaffold directory at {SCAFFOLD_DIR}: nothing was checked',
-              file=sys.stderr)
-        return 2
-    if not os.path.exists(TOOL_DLL):
-        print(f'{TOOL_DLL} is not built: nothing was checked\n' + BUILD_HINT,
-              file=sys.stderr)
-        return 2
-    if not os.path.exists(REFS_LIST):
-        print(f'no reference list at {REFS_LIST}: the reference project has not '
-              'been restored and built, so nothing was checked\n' + BUILD_HINT,
-              file=sys.stderr)
-        return 2
-    stale = stale_pin()
-    if stale is not None:
-        print(f'{stale}\nnothing was checked\n' + BUILD_HINT, file=sys.stderr)
+    unready = tool_unready()
+    if unready is not None:
+        print(unready, file=sys.stderr)
         return 2
     try:
         baseline = load_baseline()
@@ -992,12 +999,157 @@ def mode_report(blocks, args):
     return 1 if findings else 0
 
 
+# --------------------------------------------------------------------------
+# The classification
+# --------------------------------------------------------------------------
+# WHAT STANDS BETWEEN A FAILED BLOCK AND BUILT, BY THE FIRST RULE THAT MATCHES.
+#
+# Spec 016 split its failures by hand, from a type dump nobody committed, and
+# its figures could not be re-derived a week later. This is that split as a
+# mode, so the next spec starts from a command rather than from a paragraph.
+#
+#   parse      the block does not parse -- a fragment, a signature, a `...`
+#   import     a missing name is a type the pin ships, or a CS1061 names an
+#              extension method it ships: the page needs a `using`
+#   other      any diagnostic that is not a missing name: API the page may
+#              have wrong, or a block shown without its class
+#   same-page  every missing name is a value or a type ANOTHER block on the
+#              page declares, and at least one is the latter. Never stubbed
+#   values     every missing name is lower-case or _: a variable in scope
+#   page-type  the rest: a type the page names and never shows
+#
+# IT CLASSIFIES BY WHAT BLOCKS THE BLOCK TODAY, NOT BY EVERYTHING THAT WILL.
+# The compiler reports the errors it reaches; an `import` block given its
+# `using`s often goes on to need a stub. Spec 017's probe measured 226 of 368.
+CLASS_ORDER = ('parse', 'import', 'other', 'same-page', 'values', 'page-type')
+MISSING_NAME_RE = re.compile(r"name '([^']+)'")
+MISSING_EXT_RE = re.compile(r"no accessible extension method '([^']+)'")
+TYPE_DECL_RE = re.compile(r'\b(?:class|record|interface|struct|enum)\s+([A-Za-z_]\w*)')
+
+
+def classify_failure(diagnostics, broken, types, extensions, declared_elsewhere):
+    """One FAILED block's class and the names that decided it."""
+    missing, ext_missing, other = [], [], False
+    for code, message in diagnostics:
+        name = MISSING_NAME_RE.search(message)
+        ext = MISSING_EXT_RE.search(message)
+        if code in ('CS0246', 'CS0103') and name:
+            missing.append(name.group(1).split('<')[0])
+        elif code == 'CS1061' and ext and ext.group(1) in extensions:
+            ext_missing.append(ext.group(1))
+        else:
+            other = True
+    names = sorted(set(missing + ext_missing))
+    if broken:
+        return 'parse', names
+    if ext_missing or any(n in types for n in missing):
+        return 'import', names
+    if other or not missing:
+        return 'other', names
+    capitalised = [n for n in missing if not (n[0].islower() or n[0] == '_')]
+    if capitalised and all(n in declared_elsewhere for n in capitalised):
+        return 'same-page', names
+    if not capitalised:
+        return 'values', names
+    return 'page-type', names
+
+
+def mode_classify(blocks, args):
+    """Classify every FAILED block, or those of the pages named.
+
+    Rows go to stdout as page, ordinal, class, names -- sorted, so two runs
+    `diff` clean -- and the counts go to stderr. A classification is data, like
+    `--list`, so it exits 0; it exits 2 when the tools are not ready or when
+    there is nothing FAILED to classify, since an empty listing and a clean
+    corpus are different claims.
+    """
+    unready = tool_unready()
+    if unready is not None:
+        print(unready, file=sys.stderr)
+        return 2
+    if args:
+        wanted = {os.path.relpath(os.path.abspath(a), ROOT) for a in args}
+        unknown = wanted - {block.rel for block in blocks}
+        if unknown:
+            print(f'no C# blocks on {", ".join(sorted(unknown))}: nothing was '
+                  'classified', file=sys.stderr)
+            return 2
+        blocks = [block for block in blocks if block.rel in wanted]
+
+    staged = tempfile.mkdtemp(prefix='blockcheck-classify-')
+    try:
+        if mode_stage(blocks, [staged]) != 0:
+            return 2
+
+        def tool(*argv):
+            run = subprocess.run(['dotnet', TOOL_DLL, *argv],
+                                 capture_output=True, text=True)
+            if run.returncode != 0:
+                sys.stderr.write(run.stderr)
+                return None
+            return [line for line in run.stdout.split('\n') if line]
+
+        verdicts = tool(staged, REFS_LIST)
+        if verdicts is None:
+            return 2
+        failed_ids = {line.split('\t')[0] for line in verdicts
+                      if line.split('\t')[1] == 'FAILED'}
+        failed = [block for block in blocks
+                  if block.ident in failed_ids and not block.skip_reason]
+        if not failed:
+            print(f'{len(blocks)} blocks, none FAILED: nothing to classify',
+                  file=sys.stderr)
+            return 2
+
+        parsed = tool('--parse', staged)
+        explained = tool('--explain', staged, REFS_LIST,
+                         *[block.ident for block in failed])
+        dump = tool('--types', REFS_LIST)
+        if parsed is None or explained is None or dump is None:
+            return 2
+    finally:
+        shutil.rmtree(staged, ignore_errors=True)
+
+    broken = {line.split('\t')[0] for line in parsed
+              if line.split('\t')[1] == 'BROKEN'}
+    diagnostics = {}
+    for line in explained:
+        fields = line.split('\t', 3)
+        diagnostics.setdefault(fields[0], []).append((fields[1], fields[3]))
+    types = {line.split('\t')[1] for line in dump if line.startswith('type\t')}
+    extensions = {line.split('\t')[1] for line in dump if line.startswith('ext\t')}
+
+    # Declarations are read from the page's text, not the staged file, so a
+    # wrapper's own class is never mistaken for one the page shows.
+    declared = {}
+    for block in blocks:
+        for name in TYPE_DECL_RE.findall(block.text):
+            declared.setdefault(block.rel, {}).setdefault(name, set()).add(block.ordinal)
+
+    counts = {name: 0 for name in CLASS_ORDER}
+    pages = {name: set() for name in CLASS_ORDER}
+    for block in sorted(failed, key=lambda b: (b.rel, b.ordinal)):
+        elsewhere = {name for name, ordinals in declared.get(block.rel, {}).items()
+                     if ordinals - {block.ordinal}}
+        cls, names = classify_failure(diagnostics.get(block.ident, []),
+                                      block.ident in broken, types, extensions,
+                                      elsewhere)
+        counts[cls] += 1
+        pages[cls].add(block.rel)
+        print(f'{block.rel}\t{block.ordinal}\t{cls}\t{",".join(names) or "-"}')
+
+    print(f'{len(failed)} FAILED blocks classified: '
+          + ', '.join(f'{counts[c]} {c} ({len(pages[c])} pages)' for c in CLASS_ORDER),
+          file=sys.stderr)
+    return 0
+
+
 def main(argv):
     mode = argv[0] if argv else None
     if mode == '--list-scaffold':
         return mode_list_scaffold(argv[1:])
     if mode not in ('--list', '--show', '--stage', '--report',
-                    '--verify-extraction'):
+                    '--verify-extraction', '--classify'):
         print(__doc__.split('Usage:')[1].split('Exit code')[0].strip(),
               file=sys.stderr)
         print('\nunknown mode: nothing was checked', file=sys.stderr)
@@ -1020,6 +1172,8 @@ def main(argv):
             return mode_report(blocks, argv[1:])
         if mode == '--verify-extraction':
             return mode_verify_extraction(blocks, argv[1:])
+        if mode == '--classify':
+            return mode_classify(blocks, argv[1:])
     except ScaffoldError as exc:
         print(exc, file=sys.stderr)
         return 2

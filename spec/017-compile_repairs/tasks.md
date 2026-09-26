@@ -148,7 +148,7 @@ Predicted*).
     `ITimerProvider` is absent
   - Notes: it skips `refs.txt`'s `#` stamp line, as the probe had to.
 
-- [ ] **Task 1.3:** Add `--classify [file]` to `tools/blockcheck.py`, with its red-proof
+- [x] **Task 1.3:** Add `--classify [file]` to `tools/blockcheck.py`, with its red-proof
   - Input: `design.md` § *The Classify Mode* (rules, output, exit codes); `probe/classify.py`;
     requirements Q2
   - Output: the mode; recorded here — two runs `diff` empty; exit 0; its per-class counts beside
@@ -267,6 +267,39 @@ assemblies: 21365 types, 3471 extension methods"* — the design's 21,365 and 3,
 | Known present | `type UseResiliencePipelineAsyncAttribute Paramore.Brighter.Policies.Attributes`; `ext AddBrighter Paramore.Brighter.Extensions.DependencyInjection` |
 | Known absent | `ITimerProvider` → **0** rows |
 | No such `refs.txt` / no argument | exit **2**, *"nothing was listed"* / usage |
+
+**Task 1.3 — `--classify`.** `python3 tools/blockcheck.py --classify > c.tsv 2> c.err; echo $?` →
+**0**, 872 terminated rows, 15 s. Stderr: *"872 FAILED blocks classified: 175 parse (66 pages), 495
+import (108 pages), 32 other (19 pages), 7 same-page (6 pages), 50 values (18 pages), 113 page-type
+(50 pages)"*. A second run is byte-identical (`cmp`). The tool preconditions moved into
+`tool_unready()`, shared with `--report`, whose output is byte-identical before and after, exit 0.
+
+**Against `probe/run.sh` at the same ref, block by block** — the same 872 (page, ordinal) keys:
+
+| Probe | `--classify` | Blocks | Why |
+|---|---|---:|---|
+| page-type / same-page / values / import | the same class | 113 / 7 / 50 / 368 | identical rules |
+| other | **parse** | **175** | the design splits out blocks that do not parse. `--parse` finds **179**; the other 4 are SKIPPED (`CloudEventsSupport` #11, #12, `V10MigrationGuide` #4, #19) |
+| other | **import** | **127** | the design orders *import* before *other*; the probe ordered *other* first. **126** name a pinned type beside another diagnostic; **1** is caught by an extension method alone (`CS1061`), which the probe's type-only rule could not see |
+| other | other | 32 | |
+
+**Controls, both ways:**
+
+| Case | Expected | Result |
+|---|---|---|
+| `AWSSQSConfiguration.md` #1, unmodified (BUILT) | absent | **0** rows |
+| …with its 7 `using` lines deleted (page restored after) | *import* | **import** — `CredentialProfileStoreChain, Environment, IServiceCollection, InvalidOperationException, RegionEndpoint` |
+| `ClaimCheck.md` #1 | *page-type* | **page-type** `GreetingEvent`; the page declares no `GreetingEvent` (`grep -cE '(class\|record\|interface\|struct) GreetingEvent'` → 0) |
+| `PaginationQueryPatterns.md` #3 | *same-page* | **same-page** `OrderDto`; block 1 declares it |
+| `--classify contents/SpannerOutbox.md` — 2 blocks, both BUILT | exit 2 | **2**, *"2 blocks, none FAILED: nothing to classify"*, 0 rows |
+| `--classify contents/Glossary.md` — no C# block | exit 2, a different reason | **2**, *"no C# blocks on contents/Glossary.md"* |
+| `refs.txt` moved aside | exit 2 | **2**, 0 rows, *"no reference list … nothing was checked"* |
+
+**Q2, at the current pin.** The *page-type* names include `Program` ×8, `Assert` ×3 and `Xunit` ×2 —
+not domain types a stub should supply. `Assert` and `Xunit` are unpinned today; they are re-read
+after 1.8 pins xunit. **`args` is named by 36 FAILED blocks on 21 pages** (`awk` over the `names`
+column; a count of the per-block listing agrees): `statements`-wrapper blocks that use `string[] args`, which `Holder.Run()` does not supply.
+P1-3 is therefore live, and 1.10 names the tranche pages it reaches.
 
 ## Phase 2 — Tranche 1a *(6 tasks, one PR, CHANGES THE SITE)*
 
