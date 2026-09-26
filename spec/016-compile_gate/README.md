@@ -1,7 +1,7 @@
 # Spec 016: A Committed Compile Gate
 
 **Created:** 2026-09-20
-**Status:** **CLOSED — 39 of 39, 2026-09-25.** `.accepted` waits on the maintainer reading `tasks.md` § *Acceptance walk*
+**Status:** **ACCEPTED — 39 of 39, 2026-09-26.** The maintainer read `tasks.md` § *Acceptance walk* and `.accepted` exists.
 
 > **Re-derive this README before executing it.** It was written before anyone looked — check every
 > count and every named gap against the tree, with the command beside the figure.
@@ -176,7 +176,7 @@ files and nothing else, which is the check that nothing *else* drifted.
       maintainer 2026-09-25**; AC15 met; the twelve instrumented criteria met, and the
       instruments for AC3, AC7 and AC10 go to 017 for correcting
 - [x] Spec closed — 2026-09-25. § *What 016 shipped* and the residual gap are the line 017 starts
-      from. **Not yet accepted**: `.accepted` is the maintainer's
+      from. **Accepted 2026-09-26** by the maintainer
 
 ## Next Steps
 
