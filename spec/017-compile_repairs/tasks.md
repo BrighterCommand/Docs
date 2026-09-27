@@ -837,7 +837,7 @@ this one.
   - Input: that section's rows; `--classify` on each; `../Darker` at `4.1.1`
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
 
-- [ ] **Task 3.6:** Close phase 3 — checks, figures, PR
+- [x] **Task 3.6:** Close phase 3 — checks, figures, PR
   - Input: 3.1's prediction; the PR's diff
   - Output: as 2.6, for phase 3; plus **the ≤ 60 target read at tranche 1's close** — pages with
     nothing BUILT, by requirements' `awk`, against the 37 that must land
@@ -1173,6 +1173,70 @@ against a worktree at `842b757`). Pages with nothing BUILT **77 → 74**: `Query
   **Pages changed: 4** (`git diff --name-only 842b757..HEAD -- contents`), all on the tranche.
   `PaginationQueryPatterns.md` did not change: its three FAILED blocks are same-page, and each
   follows the block that declares its types
+
+**Task 3.6 — phase 3 closed, 2026-09-27, branch at `2223fcb`.** Every gate run bare, exit code
+read before its output:
+
+| # | Gate | Exit | Read | Predicted (3.1) | Agrees? |
+|---:|---|---:|---|---|---|
+| 1 | `linkcheck` | 0 | 165 files, 0 broken | none | **yes** |
+| 2 | `pagelint` | 0 | 0 errors, **658** warnings across 96 pages, 162 pages | 0 errors; 706 → 664 or 663 | **no — 6 lower**, explained below |
+| 3 | shape | 0 | 161 pages, 12 sections, widest 12 of 20, deepest 4 of 4 | none | **yes** |
+| 4 | redirects | 0 | 77 entries, 7858 bytes | none | **yes** |
+| 5 | `versioncheck` | 0 | 0 stale of 18, across 5 pages | none, scope held at 18 across 5 | **yes** |
+| 6 | `optioncheck` | 0 | 0 mismatches, 59 tables, 519 rows | none | **yes** |
+| 7 | `--verify` | 0 | 161 predicted = 161 published | none | **yes** |
+| 8 | `symbolcheck` | 0 | 0 findings, 22 entries, 161 pages, 3 silenced | none | **yes** |
+| 9 | `blockcheck` | 0 | 983: **189** BUILT, 778 FAILED, 16 SKIPPED; 0 findings; 538 reference assemblies; baseline 189; **30** units, 0 violations; 36 pages mapped | BUILT 153–193; SKIPPED 16; exit 0; 0 violations | **yes** — within the range |
+| — | `attr_mismatch.py` | 1 | **7** | held at 7 | **yes** |
+
+`pagelint --changed origin/master` → exit **0**, 0 errors.
+
+**Gate 9, reconciled against 3.1's 64 reachable.** **58** of them built. The six that did not are
+in § *Blocks that stay FAILED*: `DistributedLock.md` #2 and `DynamoDbDistributedLock.md` #1, #2 for
+the V4 pin, `TickerQScheduler.md` #2, #3 for packages phase 4 asks for, and `QueryPipelinePolicies.md`
+#1 for `Program`. Beside them, one block the tranche added (`SchedulingAMessage.md` #7, the #4414
+workaround) and one off the tranche (`AWSSQSConfiguration.md` #6, after its `SqsAttributes` repair).
+129 + 58 + 1 + 1 = **189**, 4 below the ceiling.
+
+**Every FAILED block on the 20 tranche pages is listed**: `after.tsv`'s FAILED keys on those pages
+and § *Blocks that stay FAILED*'s phase 3 rows are the same 9 — the six above and
+`PaginationQueryPatterns.md` #2–#4, same-page.
+
+**Gate 2, reconciled.** Per-page warnings at `e256e2b` (a worktree) against the branch: the 20
+tranche pages fell by **42**, which is 3.1's 664 — `QueryPipelinePolicies.md` #3 was not touched, so
+not 663. The further **−6** are on four pages outside the tranche, all changed in 3.2 by
+recurrence: `KafkaConfiguration.md` −3 (the `SetConfigHook` and `RequestType` repairs),
+`AWSSQSConfiguration.md`, `InMemoryOptions.md` and `V10MigrationGuide.md` −1 each. 3.1 said
+recurrences would lower it further and would be explained; 3.3's and 3.4's recurrence pages moved
+nothing. 706 − 42 − 6 = **658**, across 96 pages, down from 107.
+
+**AC2, against a `before.tsv` regenerated from `c7329bb` in a worktree** (exit 0, *"989 blocks: 101
+BUILT, 872 FAILED, 16 SKIPPED"*, 989 rows): the diff prints **90** lines. **89** are `FAILED ->
+BUILT` — 30 phase 2's, 58 on this tranche's pages and `AWSSQSConfiguration.md` #6. The 90th is
+` -> BUILT contents/SchedulingAMessage.md 10`, a key `before.tsv` does not hold, read against
+§ *Splits*: the block inserted at #7 moved old #7–#9 to #8–#10. No `-> SKIPPED`. **Control, both
+ways:** a copy of the branch's report with `QueryResultTypes.md` #1 set FAILED prints 89 lines and
+loses that one; a copy with `AWSSQSConfiguration.md` #1 set FAILED prints exactly one line beside the
+new key that is not `FAILED -> BUILT`, `BUILT -> FAILED contents/AWSSQSConfiguration.md 1`.
+
+**The ≤ 60 target, read at tranche 1's close.** Pages with nothing BUILT: **74** — requirements'
+`awk` (FAILED pages absent from the BUILT set, `comm -23`) and a Python join over the same report
+agree. 97 at `c7329bb`, so **23** of the 37 have landed: 9 in phase 2 and **14** in phase 3, one short
+of the 15 3.1 predicted. The one is `DynamoDbDistributedLock.md`, whose two blocks wait on the V4
+pin (3.3). Tranche 1 was to land 24 and landed 23. **74 − 60 = 14 of tranche 2's 19** must now land in
+phases 4 and 5, one more than 3.1's 13; 5 may miss.
+
+**Every behavioural block was run with its control** (P0-10): the tables under 3.2, 3.3, 3.4 and
+3.5, against released 10.7.0 and Darker 4.1.1 packages.
+
+**The PR changes 29 pages** (`git diff --name-only origin/master..HEAD -- contents | wc -l`): **15**
+of the 20 tranche pages, and **14** outside the tranche by recurrence — 8 in 3.2, 4 in 3.3, 2 in
+3.4. The other five tranche pages were made whole by a unit alone (`GcpPubSubConfiguration.md`,
+`MQTTConfiguration.md`, `MSSQLMessageBroker.md`, `MSSQLTransportInboxAndOutbox.md`) or left as they
+were (`PaginationQueryPatterns.md`). Beside them are 13 files under `tools/` — `README.md`, the
+baseline, `pages.tsv` (23 → 36 pages mapped), 8 new units and 2 grown — two probe scripts, and this
+one.
 
 ---
 
