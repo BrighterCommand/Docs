@@ -1262,7 +1262,7 @@ skipped with an accepted reason, or listed. Page list: § *The tranches*, phase 
   - Notes: the lock pages share a shape; a defect found on one is grepped for on all before the
     next is opened.
 
-- [ ] **Task 4.4:** Repair the remaining *Outbox and Inbox* tranche pages
+- [x] **Task 4.4:** Repair the remaining *Outbox and Inbox* tranche pages
   - Input: the phase 4 rows not covered by 4.2 or 4.3 (at § 2's pin: `UsingSweeperCircuitBreaking.md`,
     `AzureBlobArchiveProvider.md`, `ReplayOnSeenReference.md`); 4.1's verdicts
   - Output: each page whole; baseline rows; ledger rows as 4.2
@@ -1525,6 +1525,70 @@ and five of its six hard-only pages.
   `optioncheck` 0 mismatches across 59 tables, 519 rows; shape, redirects and `--verify` unmoved;
   `pagelint --changed origin/master` 0 errors. **Pages changed: 6** (`git diff --name-only
   7d04918..HEAD -- contents`), all on the tranche
+
+**Task 4.4 — the remaining outbox pages.** Three pages. **BUILT 226 → 231** (+5):
+`AzureBlobArchiveProvider.md` #1 and `UsingSweeperCircuitBreaking.md` #2–#5. **One stays FAILED**,
+`ReplayOnSeenReference.md` #1, by P2-2 (§ *Blocks that stay FAILED*). `pagelint` **624 → 620**, the
+four `UsingSweeperCircuitBreaking.md` blocks that opened with `// ...`. Pages with nothing BUILT
+**58 → 57**, `AzureBlobArchiveProvider.md`; `ReplayOnSeenReference.md` stays among them.
+
+- **Said at 4.1:** a ceiling of **230** BUILT. **Measured: 231.** The ceiling left out 4.2's two
+  off-tranche recurrence blocks (`BrighterBasicConfiguration.md` #3, #4) and counted
+  `TickerQScheduler.md` #2, which stays FAILED on `Program`: 230 + 2 − 1 = 231
+- **`UsingSweeperCircuitBreaking.md`.** #2, #3 take their `using`s, and the page's unit gains
+  `services`, which block 1 takes as a parameter. #4, read with its `using`s, named a
+  `CircuitBreakerState` no package or block declares, and shared a `Dictionary` between `TripTopic`
+  and `CoolDown`; it now declares the state as a nested record and uses a `ConcurrentDictionary`
+  with a conditional remove. #5 was the fragment 4.1 read, and **made whole** (design: the reader
+  needs the whole — `TrippedTopics` is the part a distributed breaker has to get right). Its
+  `IDistributedCache` cannot enumerate keys, so a whole version on it could not answer
+  `TrippedTopics`; it is now a Redis sorted set, scored by expiry. A sixth block registering it was
+  written and removed, a new *same-page* FAILED block for a registration #1 already shows; a
+  sentence links #1 instead
+- **`AzureBlobArchiveProvider.md`.** **Said at 4.1:** five defects behind the placeholders.
+  **Measured, compiled with the placeholders filled** (the control below): the six 4.1's row names,
+  and two more — `AzCliCredential` is no type in Azure.Identity (`AzureCliCredential`), and
+  `BlobContainerUri` is a `Uri`. The block is rewritten against 10.7.0. The page gains an opening
+  sentence after its banner, with the `description:` rule 7 checks against it, its Prerequisites, the two
+  packages the provider does not bring in (`dotnet list package --include-transitive` on
+  `Paramore.Brighter.Archive.Azure` 10.7.0 alone: neither `Azure.Identity` nor
+  `Paramore.Brighter.Outbox.Hosting`), and a table of `AzureBlobArchiveProviderOptions`, read from
+  `AzureBlobArchiveProviderOptions.cs`. **It is not `optioncheck`-marked:** marked, the tool reported
+  `CANNOT CONSTRUCT` (it cannot synthesise the `AccessTier` constructor argument) and `ROW NAMES
+  NOTHING` for `TagsFunc` and `StorageLocationFunc`, which are fields — a marker would check nothing
+- **Behaviour, run with controls** against released 10.7.0 packages, net10.0, one process per case;
+  Redis in Docker (`redis:7`):
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | #1: *"default cooldown of 10 sweeps"*; #2: *"Recover after 3 sweeps"*, *"30 sweeps"* — each sweep calls `CoolDown` and then reads `TrippedTopics` (`OutboxProducerMediator.cs:721`, `:735`) | `CooldownCount = 3` → skipped **3** sweeps, retried on the 4th | default → **10**; `30` → **30** |
+  | #4 needs a concurrent map | the old block (its `CircuitBreakerState` written as it uses it), `TripTopic` and `CoolDown` on two threads for 3 s → **`InvalidOperationException`**, *"Collection was modified"*, twice in two runs | the new block → **none**, twice |
+  | #5 shares trips across instances and expires them | two breakers on two connections, cooldown 2 s: A trips → A and B both list `orders`; +1 s, B cools down → both still list it | +2.5 s, B cools down → both empty, **0** members left |
+  | `AzureBlobArchiveProvider.md` #1 configures the Archiver it says | the block in a host, built → `TimerInterval 5`, `ArchiveBatchSize 500`, `MinimumAge 31.00:00:00`, provider `AzureBlobArchiveProvider` | the old block, placeholders filled → `CS1003`; with `New …;` also mended, `CS0029`, `CS0103` ×3, `CS0246`, `CS7036` |
+
+  Read, not run: #3's *"all topics always attempted"* (`_outboxCircuitBreaker?.TrippedTopics` is
+  `null` with none registered, `OutboxProducerMediator.cs:735`); the Azure provider's writes — one
+  blob per message named by its Id, the body only, an existing blob not rewritten, the container
+  never created (`AzureBlobArchiveProvider.cs`), which need Azurite and a token credential it accepts
+- **Found off the tranche:** `SweeperCircuitBreaking.md` #2 and #5 configure the sweeper through
+  `options.OutboxSweeper = new OutboxSweeperOptions { SweepInterval = … }` — no such property or
+  type at 10.7.0; `UseOutboxSweeper` takes a `TimedOutboxSweeperOptions`, whose interval is
+  `TimerInterval`, an `int` of seconds. Line 94's formula names `SweepInterval` too
+  (`grep -rn 'SweepInterval' contents/` → **3**, that page only). The page is in no tranche;
+  recorded for the maintainer, not repaired
+- **Recurrence greps, all 0 beyond the repaired lines:** `AzCliCredential`, `BlobContainerUri *= *"`,
+  `new AzureBlobArchiveProviderOptions()`, `MinimumAge *= *[0-9]`, `BatchSize` within eight lines of
+  `UseOutboxArchiver`, an unshown `CircuitBreakerState`, `IDistributedCache` in code; the page's two
+  breakers are the only `: IAmAnOutboxCircuitBreaker` in `contents/`
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 5 rows at `2defac6`. `--report` → exit **0**, *"983 blocks: 231 BUILT, 736 FAILED,
+  16 SKIPPED"*, baseline 231, 35 units, 0 violations, 0 findings. Joined on page and ordinal
+  against the report at `05fdeaf`, the 5 blocks that moved went `FAILED -> BUILT`, 983 keys both
+  sides
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; no `SUMMARY.md` change, so shape, redirects
+  and `--verify` unmoved; `pagelint --changed origin/master` 0 errors. **Pages changed: 2**
+  (`git diff --name-only 05fdeaf..HEAD -- contents`), both on the tranche
 
 ---
 
@@ -1883,6 +1947,7 @@ is rewritten against the tables below.
 | `PaginationQueryPatterns.md` | 3 | `CS0246` `OrderDto` | same-page: block 1 declares it | 3 |
 | `PaginationQueryPatterns.md` | 4 | `CS0246` `GetOrdersCursorQuery`, `CursorPagedResult<>`, `OrderDto`; `ApplicationDbContext` | same-page: block 3 declares the first two, block 1 `OrderDto`; block 4 is *"Handler with cursor pagination:"*, straight after block 3 | 3 |
 | `QueryPipelinePolicies.md` | 1 | `CS0246` `Program` | instrument: a `Program.cs` with no declaration after its statements takes the `statements` wrapper, which declares no `Program`; Q2 (1.8) rules out a stub. Builds as a `Program.cs` in scratch against Darker 4.1.1, **0** errors | 3 |
+| `ReplayOnSeenReference.md` | 1 | `CS0117` `RequestContextBagNames.CausationId`; `CS0246` `ProcessPayment`; `CS0103` `_commandProcessor`, `batchId`, `orderId` | P2-2: `CausationId` is on Brighter `master` (`RequestContextBagNames.cs:143`), in no release. The pin bump brings it in through the ratchet; the other names are the handler's, and want a unit then | 4 |
 
 ## Splits
 
@@ -1954,6 +2019,10 @@ BUILT, re-admitted at `ec38400`.
 | The InMemory Inbox said to keep every entry until restart (*"No cleanup"*, *"All seen message IDs held in memory"*). An entry expires `EntryTimeToLive` (5 min) after it is written, removed by a scan at most every `ExpirationScanInterval` (10 min); past `EntryLimit` (2048) adding compacts the oldest to half | `InMemoryBox.cs:64–100`, `InMemoryInbox.cs:316`; run, controls both ways | `InMemoryInbox.md` | `grep -rnE 'No cleanup\|All seen message IDs held in memory' contents/` | **2** | **0** | 4.2, reading the page against the source, then running |
 | A global `actionOnExists: Warn` shown beside a `[UseInboxAsync]` that sets no `onceOnlyAction` — the attribute's default `Throw` wins, so a duplicate throws `OnceOnlyException` | `PipelineBuilder.cs:371`, `HasExistingUseInboxAttributesInPipeline`; run, control the attribute with `Warn` | `InMemoryInbox.md` #1, #2 | pages with `actionOnExists: OnceOnlyAction.Warn\|Replay` and a `[UseInbox…]` without `onceOnlyAction` on its line: 2, read — `TurningOnReplayOnSeen.md`'s attributes set it on the next line and the page states the precedence | **1** | **0** | 4.2, running #1 with #2 |
 | A global `InboxConfiguration` in `AddConsumers` reaches the pipeline only through `ExternalBus(…)`, so an application that never calls `AddProducers` gets no global Inbox, and duplicates run again | `ServiceCollectionExtensions.cs:640–660`; run, control with `AddProducers` — **upstream, BrighterCommand/Brighter#4335**, fixed by #4396 on `master`, unreleased | `BrighterInboxSupport.md` states it with the workaround; linked from `MSSQLInbox.md`, `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md`, `DynamoInbox.md`, `MongoDBInbox.md`, `FirestoreInbox.md`, `SpannerInbox.md`, `InMemoryInbox.md`. Not linked: the seven other pages that configure one | `git grep -l 'InboxConfiguration' d8633b1 -- contents` | **16** pages | **stated** on 1, linked from 9 — maintainer's ruling | 4.2, running `InMemoryInbox.md` #1 without #2's attribute |
+| `CircuitBreakerState` — named in a custom `IAmAnOutboxCircuitBreaker` and declared by no package or block (`CS0246`) | `git grep CircuitBreakerState 10.7.0 -- src` → 0 | `UsingSweeperCircuitBreaking.md` #4 | an unshown `CircuitBreakerState` in `contents/` | **1** | **0** | 4.4, `--classify` |
+| A custom breaker's `Dictionary` enumerated by `CoolDown` while `TripTopic` writes it — `InvalidOperationException` | run, control the concurrent form; 10.7.0's own breaker is concurrent for this (`InMemoryOutboxCircuitBreaker.cs`) | `UsingSweeperCircuitBreaking.md` #4 | `grep -rn ': IAmAnOutboxCircuitBreaker' contents/` → the page's two, both concurrent | **1** | **0** | 4.4, reading #4 once it built |
+| A distributed breaker on `IDistributedCache`, with `CoolDown` and `TrippedTopics` left unwritten — the cache cannot enumerate keys, so `TrippedTopics` cannot be written on it | `IDistributedCache` has `Get`, `Set`, `Refresh`, `Remove` and their async forms only; the Redis form run across two connections | `UsingSweeperCircuitBreaking.md` #5 | `grep -rn 'IDistributedCache' contents/` → 1, the prose saying why | **1** | **0** | 4.4, making the fragment whole |
+| The Azure archive block, against 10.7.0: `New AzCliCredential();` in an initialiser — no such type (`AzureCliCredential`); `AzureBlobArchiveProviderOptions` built parameterless, its `init` properties assigned, `BlobContainerUri` a string (`CS7036`, `CS0029`); `UseOutboxArchiver` without `TTransaction`; `BatchSize` for `ArchiveBatchSize`; `MinimumAge = 744` for a `TimeSpan`; option assignments with no `options.` (`CS0103`) | `AzureBlobArchiveProviderOptions.cs`, `HostedServiceCollectionExtensions.cs:52`, `TimedOutboxArchiverOptions.cs`; compiled, control the old block | `AzureBlobArchiveProvider.md` #1 | the seven greps in § *Phase 4 as executed*, 4.4's entry | **1** block, 8 defects | **0** | 4.1 (six), 4.4 (two, compiling the control) |
 
 ## Friction ledger
 
