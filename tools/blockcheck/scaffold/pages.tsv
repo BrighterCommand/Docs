@@ -69,3 +69,6 @@ contents/AWSSQSConfiguration.md	TransportConfigurationContext	-
 contents/BoxProvisioningConfiguration.md	BoxProvisioningConfigurationContext	-
 contents/TransactionalMessagingWithTheOutbox.md	TransactionalMessagingWithTheOutboxContext	-
 contents/SchedulingAMessage.md	SchedulingAMessageContext	-
+contents/QueryResultTypes.md	QueryResultTypesContext	-
+contents/QueryObjectValidation.md	QueryObjectValidationContext	-
+contents/TestingQueryHandlers.md	TestingQueryHandlersContext	-
