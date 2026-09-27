@@ -6,10 +6,13 @@
 //
 // blockcheck: using static UsingSweeperCircuitBreakingContext;
 
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
 
 public static class UsingSweeperCircuitBreakingContext
 {
     public static RelationalDatabaseConfiguration outboxConfiguration => null!;
     public static IAmAProducerRegistry producerRegistry => null!;
+    // blocks 2 and 3: `services.AddSingleton<IAmAnOutboxCircuitBreaker>(…)`, `services.AddBrighter()` — the composition root's collection, which block 1 takes as a parameter
+    public static IServiceCollection services => null!;
 }
