@@ -41,6 +41,15 @@ contents/AzureScheduler.md	18	AzureSchedulerContext.cs	9c57ae2
 contents/AzureScheduler.md	20	AzureSchedulerContext.cs	280d1b7
 contents/AzureScheduler.md	21	AzureSchedulerContext.cs	280d1b7
 contents/BoxProvisioning.md	1	-	280d1b7
+contents/BoxProvisioningConfiguration.md	1	BoxProvisioningConfigurationContext.cs	24e6e53
+contents/BoxProvisioningConfiguration.md	2	BoxProvisioningConfigurationContext.cs	24e6e53
+contents/BoxProvisioningConfiguration.md	3	BoxProvisioningConfigurationContext.cs	24e6e53
+contents/BoxProvisioningConfiguration.md	4	BoxProvisioningConfigurationContext.cs	24e6e53
+contents/BoxProvisioningConfiguration.md	5	BoxProvisioningConfigurationContext.cs	24e6e53
+contents/BoxProvisioningConfiguration.md	6	BoxProvisioningConfigurationContext.cs	24e6e53
+contents/BoxProvisioningConfiguration.md	7	BoxProvisioningConfigurationContext.cs	24e6e53
+contents/BoxProvisioningConfiguration.md	8	BoxProvisioningConfigurationContext.cs	24e6e53
+contents/BoxProvisioningConfiguration.md	9	BoxProvisioningConfigurationContext.cs	24e6e53
 contents/BuildingAnAsyncPipeline.md	1	-	280d1b7
 contents/CQRSWithBrighterAndDarker.md	6	-	9c57ae2
 contents/ClaimCheck.md	1	ClaimCheckContext.cs	71d0c60
@@ -52,6 +61,7 @@ contents/CommandProcessorConfigurationReference.md	4	-	280d1b7
 contents/Compression.md	1	CompressionContext.cs	71d0c60
 contents/Compression.md	2	CompressionContext.cs	71d0c60
 contents/DapperOutbox.md	1	PageContext.cs	280d1b7
+contents/DistributedLock.md	1	-	24e6e53
 contents/DynamoOutbox.md	1	DynamoOutboxContext.cs	280d1b7
 contents/DynamoOutbox.md	4	DynamoOutboxContext.cs	280d1b7
 contents/ErrorHandlingOptions.md	1	ErrorHandlingOptionsContext.cs	71d0c60
@@ -165,6 +175,8 @@ contents/Telemetry.md	1	-	9c57ae2
 contents/Telemetry.md	4	-	9c57ae2
 contents/TickerQScheduler.md	5	TickerQSchedulerContext.cs	280d1b7
 contents/TickerQScheduler.md	6	TickerQSchedulerContext.cs	280d1b7
+contents/TransactionalMessagingWithTheOutbox.md	1	TransactionalMessagingWithTheOutboxContext.cs	24e6e53
+contents/TransactionalMessagingWithTheOutbox.md	2	TransactionalMessagingWithTheOutboxContext.cs	24e6e53
 contents/TutorialDurableOutbox.md	2	-	280d1b7
 contents/TutorialFirstCommand.md	1	-	280d1b7
 contents/TutorialFirstMessage.md	1	-	280d1b7
