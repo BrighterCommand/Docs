@@ -816,7 +816,7 @@ this one.
   - Input: § *The tranches*, phase 3 table; § *Phase 2 as executed*
   - Output: § *Phase 3 as executed* opens with a prediction per gate, from `master` after phase 2
 
-- [ ] **Task 3.2:** Repair the *Transports* tranche pages
+- [x] **Task 3.2:** Repair the *Transports* tranche pages
   - Input: that section's rows; `--classify` on each; `RelationalTransportContext.cs`, which already
     serves two pages
   - Output: each page whole; baseline rows; stubs share an existing unit where the pages share a
@@ -894,6 +894,75 @@ stub with members, **17** needing a typed value. The three same-page blocks are
 - **The open `MessageBody` defect** (§ *Defect ledger*) has no recurrence on a phase 3 page:
   `grep -rnE 'new MessageBody\([^)]*"' contents/` → one line, `KafkaConfiguration.md:709`, which is in
   no tranche. It stays with phase 5
+
+**Task 3.2 — *Transports*.** Nine pages. **BUILT 129 → 147** (+18): all **17** reachable blocks,
+and `AWSSQSConfiguration.md` #6 from a recurrence repair. **None stays FAILED**. `pagelint`
+**706 → 696**. Pages with nothing BUILT **88 → 81**: the seven transport pages that had none.
+
+- **`using`s:** `RabbitMQMigrateToQuorumQueues.md` #1 (`System`, the RMQ `Async` gateway — ten
+  `using`s in `contents/` name `Async`, one `Sync`); `InMemoryTransport.md` #1–#4;
+  `RedisConfiguration.md` #1, `RocketMQConfiguration.md` #1, `PostgreSQLTransportAndOutbox.md` #5
+  (`System`, for `TimeSpan`)
+- **Two units and one grown.** `InMemoryTransportContext.cs` supplies `services`, `subscriptions` and
+  `GreetingMade : Event`. `TransportConfigurationContext.cs` supplies `GreetingEvent : Event` to six
+  pages that share a world — `GcpPubSubConfiguration.md`, `MQTTConfiguration.md`,
+  `MSSQLMessageBroker.md`, `RedisConfiguration.md`, `RocketMQConfiguration.md`, each configuring a
+  publication and a subscription for the reader's event, and `AWSSQSConfiguration.md` (below).
+  `RelationalTransportContext.cs` gains `connection` (step 3's `PostgresMessagingGatewayConnection`),
+  `GreetingEvent(string)` and `AddGreeting` (`Greeting`). Both pages take those two from the samples
+  they link to, and neither tells the reader to write them (rule 1, by reading). The linked Postgres
+  sample, `GreetingsSenderWithOutbox`, is on Brighter `master` and not in 10.7.0's tree; a repository
+  link, not a package, so it stands. `--report` → *"24 units checked, 0 violations"*
+- **`AWSSQSConfiguration.md` joined the shared unit** because the `RequestType` repair (next bullet)
+  made its BUILT blocks #1, #3, #4, #5 name `GreetingEvent`. `--report` read them `BUILT -> FAILED`
+  until it did; they are re-admitted with the unit. #6 builds for the first time, once its
+  `SqsAttributes` defect was repaired
+- **A `Publication` without `RequestType` cannot be posted to.** `InMemoryTransport.md`'s complete
+  example, run verbatim against 10.7.0, throws `ConfigurationException: No producer found for request
+  type. Have you set the request type on the Publication?` at `Post`.
+  `FindPublicationByPublicationTopicOrRequestType.cs:81` finds a publication by a `Destination` on the
+  context, then a `[PublicationTopic]` attribute on the request, then `RequestType` — and a
+  configuration page sets none of them. It is transport-agnostic, so the in-memory run stands for
+  every transport. Brighter's own analyzer says the same (BRT001). Repaired at every publication a
+  reader posts through: **20 on 8 pages** (`spec/017-compile_repairs/probe/pubscan.py`, **23 → 2**;
+  the other repair is `KafkaConfiguration.md`'s `new KafkaPublication() {publication}`, rewritten
+  below). The two left are right as they are: `AnalyzerSupport.md` shows how to suppress BRT001 for
+  exactly this, and `HandlingLargeMessages.md` passes a `Publication` to `WrapAsync`, not a registry
+- **Five more defects, found by the `using`s the recurrence repair required** (`pagelint --changed`
+  rule 6), each verified at 10.7.0 and repaired at every recurrence (§ *Defect ledger*):
+  `SqsPublication.SqsAttributes` is `QueueAttributes`; `Publication.CloudEventsType` is `Type`;
+  `InMemoryOutbox()` takes a `TimeProvider`; `KafkaConfiguration.md` called `SetConfigHook` on the
+  publication, where 10.7.0 has it on `KafkaProducerRegistryFactory`, as the page's own prose says —
+  the old form fails `CS1061` against the Kafka package, the new one builds; and
+  `InMemoryTransport.md`'s *Limitations* said there is no backpressure and no dead letter queue
+- **Behaviour, run with controls** against released 10.7.0 packages, in scratch console apps:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `InMemoryTransport.md` #4, the complete example, delivers a posted event | verbatim → `ConfigurationException`, handler never runs | `RequestType = typeof(GreetingMade)` → handler runs once |
+  | *"No dead letter queues: Failed messages are discarded"* | `InMemorySubscription` with `DeadLetterRoutingKey`, handler throws `RejectMessageAction` → **1** message on the DLQ topic | no `DeadLetterRoutingKey` → 0 anywhere, discarded |
+  | *"No backpressure: Unlimited queue growth"* | `new InternalBus(1)` → send 1 returns, send 2 **blocks** (still waiting at 2 s) | `new InternalBus()` → three sends return, bus holds 3 |
+  | `MSSQLTransportInboxAndOutbox.md` #8: *"Runs once per message id"* | block 8 verbatim, one event published 3 times → handler runs **1** | `onceOnly: false` → **3**. Run on `InMemoryInbox`: `[UseInbox]` is store-independent (`UseInboxHandler.cs:95`, `Warn` returns without calling on) |
+  | `RabbitMQMigrateToQuorumQueues.md` #1: `PersistMessages = true` persists | block 1 verbatim against RabbitMQ 3 in Docker → `delivery_mode` **2** | `PersistMessages = false` → `delivery_mode` **1** |
+
+  Read, not run: the limitation bullets left standing — no persistence, one process, no message TTL
+  (`InternalBus.cs` has no expiry). The configuration pages' other blocks register a transport and
+  assert no behaviour a run without their brokers could falsify
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 18 rows added and `AWSSQSConfiguration.md` #1, #3, #4, #5 re-admitted with
+  `TransportConfigurationContext.cs`, all at `7edaada`. `--report` → exit **0**, *"982 blocks: 147
+  BUILT, 819 FAILED, 16 SKIPPED"*, baseline 147, 0 findings. Against `master`'s report, 18 blocks
+  moved, every one `FAILED -> BUILT`
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; `pagelint --changed origin/master` 0 errors.
+  **Pages changed: 13** (`git diff --name-only e256e2b..HEAD -- contents`) — **5** of the nine
+  tranche pages (the other four were made whole by a unit alone: `GcpPubSubConfiguration.md`,
+  `MQTTConfiguration.md`, `MSSQLMessageBroker.md`, `MSSQLTransportInboxAndOutbox.md`), and **8**
+  outside it by recurrence: `AWSSQSConfiguration.md`, `BrighterBasicConfiguration.md`,
+  `CommandProcessorConfigurationReference.md`, `InMemoryOptions.md`, `InMemoryOutbox.md`,
+  `KafkaConfiguration.md`, `RabbitMQConfiguration.md`, `V10MigrationGuide.md`. Of `pagelint`'s −10,
+  4 are on the tranche (`InMemoryTransport.md` 3, `RabbitMQMigrateToQuorumQueues.md` 1) and 6 on the
+  recurrence pages
 
 ---
 
@@ -1324,6 +1393,12 @@ BUILT, re-admitted at `ec38400`.
 | A log excerpt quoting messages Brighter does not emit (*"Failed to process message … requeueing"*, *"Requeue count exceeded"*) | `Reactor.cs:601–670`, the templates; replaced with a captured run | `HandlingPoisonMessages.md` step 1 | `grep -rnE 'Requeue count exceeded for message\|Failed to process message' contents/` | **3** | **0** | 2.5, reading step 1 against the run's log |
 | `new MessageBody(bytes, "JSON")` / `(s, MediaTypeNames.Application.Octet, …)` — a string where 10.7.0 takes a `ContentType?` | `CS1503` from `--explain` | `KafkaConfiguration.md` #20, `MessageMappers.md` #5 | — | **2** | **open — phases 3 and 5** | 2.5, `--explain` on the touched blocks |
 | Mapper excerpts that omit a required member with no `// ...` (`CS0535` `MapToRequest` / `MapToMessage`) | `CS0535` | `Routing.md` #1, `V10MigrationGuide.md` #3, #18, `NullableReferenceTypes.md` #7, `FAQ.md` #7 | — | **5** | **open — their phases** | 2.5, `--explain` on the touched blocks |
+| A `Publication` a reader posts through with no `RequestType` — `Post` throws `ConfigurationException` (*"No producer found for request type"*); BRT001 warns on it | `FindPublicationByPublicationTopicOrRequestType.cs:81`; run, control both ways | `InMemoryTransport.md`, `AWSSQSConfiguration.md`, `BrighterBasicConfiguration.md`, `CommandProcessorConfigurationReference.md`, `InMemoryOptions.md`, `KafkaConfiguration.md`, `RabbitMQConfiguration.md`, `V10MigrationGuide.md` | `python3 spec/017-compile_repairs/probe/pubscan.py` | **23** | **2** — `AnalyzerSupport.md`'s BRT001 suppression and `HandlingLargeMessages.md`'s `WrapAsync`, both right | 3.2, running the complete example |
+| `InternalBus` said to have no backpressure and the in-memory transport no dead letter queue — `InternalBus(boundedCapacity)` blocks a sender when full; `DeadLetterRoutingKey` moves a rejected message to that topic | `InternalBus.cs:39`, `InMemoryMessageConsumer.cs:218`; run, control both ways | `InMemoryTransport.md` | `grep -rnE 'No backpressure\|No dead letter queues' contents/` | **2** | **0** | 3.2, reading the page against the source |
+| `SqsPublication { SqsAttributes = … }` — the property is `QueueAttributes` (`CS0117`) | `SqsPublication.cs:73` | `AWSSQSConfiguration.md` | `grep -rnE '\bSqsAttributes\s*=' contents/` | **1** | **0** | 3.2, `--explain` after the block's `using`s |
+| `CloudEventsType` as a `Publication` property — it is `Type` (`CS0117`) | `Publication.cs:96` | `V10MigrationGuide.md` (initializer and `publication.CloudEventsType`) | `grep -rnE '\bCloudEventsType\s*=\|\.CloudEventsType\b' contents/` | **2** | **0** | 3.2, `--explain` after the block's `using`s |
+| `new InMemoryOutbox()` — V10's constructor takes a `TimeProvider` (`CS7036`) | `InMemoryOutbox.cs:91` | `InMemoryOptions.md`, `InMemoryOutbox.md` | `grep -rnE 'new InMemoryOutbox\(\)' contents/` | **2** | **0** | 3.2, `--explain` after the block's `using`s |
+| `publication.SetConfigHook(…)` — the hook is on `KafkaProducerRegistryFactory`; the block also wrapped its publication as `new KafkaPublication() {publication}` and dropped a `;` | `KafkaProducerRegistryFactory.cs:87`; compiled, old form `CS1061` | `KafkaConfiguration.md` | `grep -rn 'publication\.SetConfigHook' contents/` | **1** | **0** | 3.2, reading the block beside its prose |
 
 ## Friction ledger
 
