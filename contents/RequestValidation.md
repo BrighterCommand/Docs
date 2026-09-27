@@ -63,6 +63,7 @@ pipeline.
 You mark the target handler's `Handle` method with `[ValidateRequest]`:
 
 ```csharp
+using System;
 using Paramore.Brighter;
 using Paramore.Brighter.RequestValidation.Attributes;
 
@@ -132,6 +133,7 @@ public sealed class RegisterUser() : Command(Id.Random())
 **2. Mark the handler** with `[ValidateRequest]`:
 
 ```csharp
+using System;
 using Paramore.Brighter;
 using Paramore.Brighter.RequestValidation.Attributes;
 
@@ -163,6 +165,7 @@ builder.Services
 invalid one is rejected before the handler runs:
 
 ```csharp
+using System;
 using Paramore.Brighter.RequestValidation;
 
 // Valid — reaches the handler
@@ -234,6 +237,7 @@ Register the validator and call `UseFluentValidation()`:
 
 ```csharp
 using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.Validation.FluentValidation;
 
@@ -267,6 +271,7 @@ The [Quick Start](#request-validation-quick-start) above is a complete DataAnnot
 constraints, and registration is a single call:
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.Validation.DataAnnotations;
 
 builder.Services
@@ -317,6 +322,7 @@ public static class OrderSpecification
 errors. Register the specification and call `UseSpecification()`:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.Validation.Specification;
@@ -368,6 +374,7 @@ public sealed record RequestValidationError(
 code when the provider supplies them. Catch the exception and read the failures:
 
 ```csharp
+using System;
 using Paramore.Brighter.RequestValidation;
 
 try
@@ -413,6 +420,9 @@ Every provider has an asynchronous counterpart for the
 and dispatch with `SendAsync`:
 
 ```csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Paramore.Brighter;
 using Paramore.Brighter.RequestValidation.Attributes;
 
@@ -445,6 +455,7 @@ turns your rules into `RequestValidationError`s, and a `UseX()` extension that m
 the abstract handler to your concrete one.
 
 ```csharp
+using System.Collections.Generic;
 using Paramore.Brighter;
 using Paramore.Brighter.RequestValidation;
 using Paramore.Brighter.RequestValidation.Handlers;

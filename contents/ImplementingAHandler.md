@@ -15,6 +15,9 @@ for the Command or Event.
 For example, assume that you want to handle the **Command** GreetingCommand
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+
 public class GreetingCommand : Command
 {
     public GreetingCommand(string name)
@@ -30,6 +33,9 @@ public class GreetingCommand : Command
 Then derive your handler from **RequestHandler\<GreetingCommand\>** and accept a parameter of that type on the overriden **Handle()** method.
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+
 public class GreetingCommandHandler : RequestHandler<GreetingCommand>
 {
     public override GreetingCommand Handle(GreetingCommand command)

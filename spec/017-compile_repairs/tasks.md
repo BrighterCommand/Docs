@@ -592,6 +592,38 @@ it asserts no behaviour a run could falsify. BrighterCommand/Brighter#4414 is ab
   *"989 blocks: 104 BUILT, 869 FAILED, 16 SKIPPED"*, baseline 104, 0 findings; the AC2 diff against
   `before.tsv` prints exactly the three `FAILED -> BUILT` lines, and nothing else
 
+**Task 2.3 — *Commands, Handlers and Pipelines*.** Five pages. **BUILT 104 → 113** (+9), each block
+listed in the baseline commit; 12 blocks stay FAILED and are listed. `pagelint` **743 → 737**.
+
+- **`using`s:** `ImplementingAHandler.md` #1, #2; `ImplementingAsyncHandler.md` #1, #2;
+  `BuildingAnAsyncPipeline.md` #2, #3; `RequestValidation.md` #1, #3, #5, #7, #8, #10, #12, #13, #15
+- **Two defects, repaired at every recurrence** (§ *Defect ledger*): the V9 `HandleAsync`
+  signature on two pages, and the `Guid Id` that hid `Command.Id` on one. `Command(Guid)` is a
+  live 10.7.0 constructor (`Command.cs:77`), so `base(Guid.NewGuid())` is not one and stays.
+  **Control, both ways:** `ImplementingAsyncHandler.md`'s two blocks compiled together with
+  `IpFyApi` stubbed → **0** diagnostics; with the old signature restored → `CS0115` *"no suitable
+  method found to override"* and `CS1503`. `BuildingAnAsyncPipeline.md`'s three blocks together,
+  with `GreetingCommand` and `IpFyApi` stubbed → **0**
+- **A unit, `RequestValidationContext.cs`:** `GreetingCommand` (`Name`, `Email`) and `PlaceOrder`
+  (`Quantity`, `Sku`), which the page validates and never shows, and `builder`,
+  `commandProcessor`, `command`. `--report` → *"16 units checked, 0 violations"*. Blocks 2 and 11
+  were BUILT before and are now compiled with the unit, so their rows change scaffold
+- **Behaviour, run with controls** against released 10.7.0 packages (a scratch console app, the
+  page's types verbatim; `GreetingCommand`, `PlaceOrder` and a `PlaceOrderHandler` are the
+  harness's):
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | Quick Start: an invalid request prints both failures and never reaches the handler | `Name = "", Email = "not-an-email"` → `RequestValidationException`, 2 errors, the page's two lines verbatim; no *"Registered"* | valid → *"Registered Ada <ada@example.com>"*, no exception |
+  | Specification: `And` reports both errors | both rules broken → 2 errors | one broken → 1 error; none → handler runs |
+  | A missing validator is a `ConfigurationException` | FluentValidation, none registered → `ConfigurationException`; Specification, none → `ConfigurationException` | validator registered → `RequestValidationException`, 2 errors |
+
+  The page's lifetime claim — `Specification<T>` keeps per-evaluation state — holds:
+  `Specification.cs:76`, `private IReadOnlyList<ValidationResult> _lastResults`. **Upstream, not
+  ours:** Brighter's own missing-specification message suggests `services.AddSingleton<ISpecification<PlaceOrder>>(...)`,
+  which that state makes unsafe
+- **`attr_mismatch.py` → 7**, before the baseline rows
+
 ---
 
 ## Phase 3 — Tranche 1b *(6 tasks, one PR, CHANGES THE SITE)*
@@ -1000,6 +1032,18 @@ is rewritten against the tables below.
 | `TutorialFirstMessage.md` | 2 | `CS0246` `GreetingEvent`, `Greetings` | same-page: block 1 declares both; line 132, `dotnet add GreetingsSender reference Greetings` | 2 |
 | `TutorialFirstMessage.md` | 3 | `CS0246` `GreetingEvent`, `Greetings` | same-page; line 221, `dotnet add GreetingsReceiver reference Greetings` | 2 |
 | `TutorialFirstMessage.md` | 4 | `CS0246` `GreetingEvent`, `Greetings` | same-page; line 221 | 2 |
+| `BuildingAnAsyncPipeline.md` | 2 | `CS0246` `UseCommandSourcingAsync`, `GreetingCommand`, `IpFyApi` | same-page: block 3 declares the attribute. The three blocks compile together, with the two never-shown types stubbed, at **0** diagnostics | 2 |
+| `BuildingAnAsyncPipeline.md` | 3 | `CS0246` `CommandSourcingHandlerAsync<>` | same-page: block 1 declares it | 2 |
+| `ImplementingAHandler.md` | 2 | `CS0246` `GreetingCommand` | same-page: block 1; *"Then derive your handler from `RequestHandler<GreetingCommand>`"* | 2 |
+| `ImplementingAsyncHandler.md` | 2 | `CS0246` `GreetingCommand`, `IpFyApi` | same-page: block 1; *"Then derive your handler from `RequestHandlerAsync<GreetingCommand>`"*. With `IpFyApi` stubbed, both blocks compile together at **0** diagnostics | 2 |
+| `RequestValidation.md` | 3 | `CS0246` `RegisterUser` | same-page: block 2, *"2. Mark the handler"* after *"1. Declare the rules on the request"* | 2 |
+| `RequestValidation.md` | 5 | `CS0246` `RegisterUser` | same-page: block 2, step 4 of the numbered Quick Start | 2 |
+| `RequestValidation.md` | 7 | `CS0246` `GreetingCommandValidator` | same-page: block 6, *"Register the validator"* | 2 |
+| `RequestValidation.md` | 10 | `CS0103` `OrderSpecification` | same-page: block 9, *"Register the specification"* | 2 |
+| `RequestValidation.md` | 13 | `CS0246` `RegisterUser` | same-page: block 2; the section reuses the Quick Start's request | 2 |
+| `RequestValidation.md` | 14 | `CS0246` `RegisterUser` | same-page: block 2 | 2 |
+| `RequestValidation.md` | 16 | `CS0246` `MyRequestHandler<>` | same-page: block 15, *"2. Map the provider-agnostic handler to your implementation"* | 2 |
+| `ReturningResultsFromAHandler.md` | 1 | `CS0246` `CreateTaskCommand`; `CS0103` `commandProcessor` | **unit rule 1**: the page tells the reader to write this type (*"add a property to the **Command** that you can initialize from the Handler"*), so it may not be stubbed | 2 |
 
 ## Splits
 
@@ -1008,6 +1052,12 @@ is rewritten against the tables below.
 ## Defect ledger
 
 *One row per defect: defect, page, recurrence grep, before, after, found by.*
+
+| Defect | Verified against 10.7.0 | Page | Recurrence grep | Before | After | Found by |
+|---|---|---|---|---:|---:|---|
+| `HandleAsync(T, CancellationToken? ct = null)` — V9's signature; V10 overrides `Task<TRequest> HandleAsync(TRequest command, CancellationToken cancellationToken = default)` | `RequestHandlerAsync.cs:119` | `ImplementingAsyncHandler.md` (also returned `Task`, not `Task<GreetingCommand>`; its prose said to *"default to null"*), `BuildingAnAsyncPipeline.md` | `grep -rn 'CancellationToken?' contents/` | **2** | **0** | 2.3, `--explain` after the page's `using`s |
+| `public Guid Id { get; set; }` on a request — hides `IRequest.Id`, which is an `Id` | `IRequest.cs:47` | `ImplementingAsyncHandler.md` | `grep -rn 'public Guid Id\b' contents/` | **2** | **1** — the other is not this defect (next row) | 2.3, reading |
+| `IRequestContext` implemented with `Guid Id`, `ISpan Span`, `Dictionary<string, object> Bag`, `CustomHeaders` — at 10.7.0 the interface has no `Id` and no `CustomHeaders`, `Span` is an `Activity`, `Bag` a `ConcurrentDictionary` | `IRequestContext.cs` | `V10MigrationGuide.md:320` | — | **1** | **open — phase 5**, which holds that page for its E4 repair | 2.3, the row above's grep |
 
 ## Friction ledger
 
