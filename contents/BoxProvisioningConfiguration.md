@@ -51,6 +51,7 @@ You install the per-backend package *in addition* to the backend's own Outbox / 
 The simplest configuration registers a single Outbox with an explicit `RelationalDatabaseConfiguration`:
 
 ```csharp
+using Microsoft.Extensions.Configuration;
 using Paramore.Brighter;
 using Paramore.Brighter.BoxProvisioning;
 using Paramore.Brighter.BoxProvisioning.MsSql;
@@ -82,6 +83,11 @@ The `RelationalDatabaseConfiguration` you pass to `AddMsSqlOutbox` is the same c
 If your service uses both an Outbox and an Inbox, configure both inside the same `UseBoxProvisioning` delegate:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.BoxProvisioning;
+using Paramore.Brighter.BoxProvisioning.MsSql;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 var outboxConfig = new RelationalDatabaseConfiguration(
     connectionString: connectionString,
     outBoxTableName: "Outbox");
@@ -110,6 +116,10 @@ Some hosts populate `IConfiguration` after the DI container is built — most no
 Every per-backend extension ships a second overload that takes a `connectionName` instead of a configuration object. The provisioner resolves the connection string from `IConfiguration.GetConnectionString(connectionName)` when the registration actually runs, not when you register it:
 
 ```csharp
+using Paramore.Brighter.BoxProvisioning;
+using Paramore.Brighter.BoxProvisioning.MsSql;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter()
     .AddProducers(producers => { /* ... */ })
     .UseBoxProvisioning(opts =>
@@ -148,6 +158,11 @@ application still needs read access to the history table in the default schema.
 `BoxProvisioningOptions.MigrationLockTimeout` controls how long a replica is willing to wait for the per-table advisory lock during startup. The default is 30 seconds. Override it inside the same delegate, before or after the `Add{Backend}*` calls — the timeout is read late, when registrations actually run, so placement inside the delegate does not matter:
 
 ```csharp
+using System;
+using Paramore.Brighter.BoxProvisioning;
+using Paramore.Brighter.BoxProvisioning.MsSql;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter()
     .UseBoxProvisioning(opts =>
     {
@@ -191,6 +206,8 @@ The shape of every backend's extension is the same — two overloads (explicit c
 Two registration shapes (Outbox and Inbox have the same two-overload pair):
 
 ```csharp
+using Paramore.Brighter.BoxProvisioning.MsSql;
+
 opts.AddMsSqlOutbox(rdbmsConfiguration);
 opts.AddMsSqlOutbox("BrighterDb",
     outboxTableName: "Outbox",
@@ -205,6 +222,8 @@ MSSQL upgrades are all-or-nothing: a mid-chain failure rolls back every migratio
 ### PostgreSQL
 
 ```csharp
+using Paramore.Brighter.BoxProvisioning.PostgreSql;
+
 opts.AddPostgreSqlOutbox(rdbmsConfiguration);
 opts.AddPostgreSqlOutbox("BrighterDb",
     outboxTableName: "Outbox",
@@ -219,6 +238,8 @@ The PostgreSQL Inbox is V1-only — see the [Box Provisioning support matrix](/c
 ### MySQL
 
 ```csharp
+using Paramore.Brighter.BoxProvisioning.MySql;
+
 opts.AddMySqlOutbox(rdbmsConfiguration);
 opts.AddMySqlOutbox("BrighterDb",
     outboxTableName: "Outbox",
@@ -235,6 +256,8 @@ Remember the 1-second minimum on `MigrationLockTimeout` (see [Tuning the migrati
 SQLite has an additional `enableWalMode` parameter on every overload:
 
 ```csharp
+using Paramore.Brighter.BoxProvisioning.Sqlite;
+
 opts.AddSqliteOutbox(rdbmsConfiguration, enableWalMode: true);
 opts.AddSqliteOutbox("BrighterDb",
     outboxTableName: "Outbox",
@@ -249,6 +272,8 @@ There is no `schemaName` parameter: SQLite has no schema concept. Migrations ser
 ### Spanner
 
 ```csharp
+using Paramore.Brighter.BoxProvisioning.Spanner;
+
 opts.AddSpannerOutbox(rdbmsConfiguration);
 opts.AddSpannerOutbox("BrighterDb",
     outboxTableName: "Outbox",

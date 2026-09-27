@@ -11,12 +11,24 @@ layout:
 
 This section provides a complete example showing both **producer** and **consumer** using transactional messaging with the Outbox and Inbox patterns. This is the **production-recommended approach** for guaranteed, at-least-once delivery.
 
+Both handlers are taken from the Brighter sample at `Brighter/samples/WebAPI/WebAPI_Dapper/`: `GreetingsApp` is the producer and `SalutationApp` the consumer. The sample also declares the requests, entities and `Retry` policy names the handlers use.
+
 ## Producer: Using DepositPost with Transactions
 
 The following example shows a handler that writes to the database and sends a message, all within a single transaction:
 
 ``` csharp
-// ...
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Dapper;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 public class AddGreetingHandlerAsync : RequestHandlerAsync<AddGreeting>
 {
     private readonly ILogger<AddGreetingHandlerAsync> _logger;
@@ -100,7 +112,17 @@ public class AddGreetingHandlerAsync : RequestHandlerAsync<AddGreeting>
 The following example shows a consumer that receives a message and uses the Inbox pattern to prevent duplicate processing:
 
 ``` csharp
-// ...
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Dapper;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox.Attributes;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 public class GreetingMadeHandler : RequestHandlerAsync<GreetingMade>
 {
     private readonly ILogger<GreetingMadeHandler> _logger;

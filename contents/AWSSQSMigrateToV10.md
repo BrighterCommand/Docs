@@ -94,6 +94,9 @@ Replace v3 packages with their v4 equivalents:
 | `Paramore.Brighter.Outbox.DynamoDB` | `Paramore.Brighter.Outbox.DynamoDB.V4` |
 | `Paramore.Brighter.Inbox.DynamoDB` | `Paramore.Brighter.Inbox.DynamoDB.V4` |
 | `Paramore.Brighter.Transformers.AWS` | `Paramore.Brighter.Transformers.AWS.V4` |
+| `Paramore.Brighter.DynamoDb` | `Paramore.Brighter.DynamoDb.V4` |
+| `Paramore.Brighter.Locking.DynamoDB` | `Paramore.Brighter.Locking.DynamoDB.V4` |
+| `Paramore.Brighter.MessageScheduler.AWS` | `Paramore.Brighter.MessageScheduler.AWS.V4` |
 
 ```bash
 # Remove v3 package
@@ -105,14 +108,23 @@ dotnet add package Paramore.Brighter.MessagingGateway.AWSSQS.V4
 
 **3. Update Namespace References**
 
-The namespace structure remains the same in most cases, but you'll need to update AWS SDK namespace imports:
+Each Brighter V4 package puts its types in a namespace of its own, with `.V4` appended, so every Brighter `using` for an AWS package changes along with the package:
+
+| V3 namespace | V4 namespace |
+|---|---|
+| `Paramore.Brighter.MessagingGateway.AWSSQS` | `Paramore.Brighter.MessagingGateway.AWSSQS.V4` |
+| `Paramore.Brighter.Outbox.DynamoDB` | `Paramore.Brighter.Outbox.DynamoDB.V4` |
+| `Paramore.Brighter.Inbox.DynamoDB` | `Paramore.Brighter.Inbox.DynamoDB.V4` |
+| `Paramore.Brighter.DynamoDb` | `Paramore.Brighter.DynamoDb.V4` |
+| `Paramore.Brighter.Locking.DynamoDb` | `Paramore.Brighter.Locking.DynamoDB.V4` |
+| `Paramore.Brighter.Transformers.AWS` | `Paramore.Brighter.Transformers.AWS.V4` |
+| `Paramore.Brighter.MessageScheduler.AWS` | `Paramore.Brighter.MessageScheduler.AWS.V4` |
+
+Two V3 names do not map by suffix alone. The lock provider's `Paramore.Brighter.Locking.DynamoDb` becomes `Paramore.Brighter.Locking.DynamoDB.V4`, with a capital `B`. And `DynamoDbTableFactory`, which the V3 `Paramore.Brighter.DynamoDb` package declares in `Paramore.Brighter.Outbox.DynamoDB`, is in `Paramore.Brighter.DynamoDb.V4`.
+
+The AWS SDK's own namespaces do not change between v3 and v4:
 
 ```csharp
-// V3
-using Amazon.SimpleNotificationService;
-using Amazon.SQS;
-
-// V4 - Same namespaces, different package versions
 using Amazon.SimpleNotificationService;
 using Amazon.SQS;
 ```

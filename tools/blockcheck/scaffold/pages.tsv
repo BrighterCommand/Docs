@@ -66,3 +66,5 @@ contents/MSSQLMessageBroker.md	TransportConfigurationContext	-
 contents/RedisConfiguration.md	TransportConfigurationContext	-
 contents/RocketMQConfiguration.md	TransportConfigurationContext	-
 contents/AWSSQSConfiguration.md	TransportConfigurationContext	-
+contents/BoxProvisioningConfiguration.md	BoxProvisioningConfigurationContext	-
+contents/TransactionalMessagingWithTheOutbox.md	TransactionalMessagingWithTheOutboxContext	-
