@@ -513,7 +513,7 @@ recorded in `tools/README.md` row 9.
   - Input: those sections' rows; `--classify` on each
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
 
-- [ ] **Task 2.5:** Repair the *Using an External Bus* tranche pages
+- [x] **Task 2.5:** Repair the *Using an External Bus* tranche pages
   - Input: that section's rows; `--classify` on each
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
 
@@ -692,6 +692,61 @@ listed in the baseline commit; 12 blocks stay FAILED and are listed. `pagelint` 
   BUILT count carries **−2** from deleting false content, not from a regression
 - `linkcheck` 165 files, 0 broken; `symbolcheck` 0 findings; `versioncheck` 0 stale of 18 across 5;
   `pagelint --changed origin/master` 0 errors
+
+**Task 2.5 — *Using an External Bus*.** Five pages. **BUILT 113 → 129** (+16, the table's 16
+reachable), **1 stays FAILED** (same-page). `pagelint` **730 → 706**. Running the blocks found
+nine defects; two are upstream bugs, filed on the maintainer's ruling. All are in § *Defect ledger*.
+
+- **`using`s:** `Compression.md` #1, #2; `ErrorHandlingOptions.md` #1–#6; `HandlingLargeMessages.md`
+  #1 (`System.Net.Http`), #4 (`Xunit`)
+- **Four units and one grown.** `ClaimCheckContext.cs` and `CompressionContext.cs` supply
+  `GreetingEvent : Event`; `ErrorHandlingOptionsContext.cs` supplies `PlaceOrder : Command`;
+  `HandlingLargeMessagesContext.cs` supplies `services`, `awsCredentials` and `LargeOrderPlaced : Event`.
+  `HandlingPoisonMessagesContext.cs` gains `PlaceOrder` (`OrderId`, `Quantity`) and
+  `commandProcessor`. No page tells the reader to write any of them (rule 1, by reading).
+  `--report` → *"22 units checked, 0 violations"*. `ClaimCheck.md` #3 was BUILT before and is
+  re-admitted with the page's new unit
+- **The V9 mapper shape, repaired at every unlabelled occurrence.** `Compression.md` #1 declared
+  `MapToMessage(GreetingEvent request)`; V10's `IAmAMessageMapper<T>` is `MapToMessage(TRequest,
+  Publication)` plus `IRequestContext? Context { get; set; }` (`IAmAMessageMapper.cs:31`, `:33`).
+  Signature: 14 lines on 10 pages → 2, and both of those are skipped V9 forms. Found by a second
+  method: `NullableReferenceTypes.md`'s `MapToMessage(CreateOrderCommand request, string? topic =
+  null)`. `Context`: 17 mapper blocks without it → 1, the skipped V9 form. The touched blocks on
+  other tranches' pages fell under `pagelint --changed`'s rule 6 and got their `using`s; `--explain`
+  confirms that every namespace resolves. They stay FAILED on their pages' own types, for their
+  phases
+- **Behaviour, run with controls** against released 10.7.0 packages, in scratch console apps:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `ClaimCheck`: a body at the threshold is checked in | 1024 bytes, 1 KB → `Claim Check {id}`, bag and `DataRef` set | 1023 bytes → inline, no claim |
+  | `retain: false` deletes the luggage | unwrap → `HasClaimAsync` false | `retain: true` → still true |
+  | unwrap falls back to `DataRef` | bag entry removed → body restored | — |
+  | `HandlingLargeMessages.md` #4's three assertions | verbatim → pass | body under threshold → `StartsWithException` |
+  | a missing store throws `NotImplementedException` | tracer registered, no store → *"This is a null store…"* | no tracer → the tracer's `InvalidOperationException` masks it; store + tracer → posts |
+  | Decompress restores a Compress body | `PostAsync` → `application/gzip; charset=utf-8` on the bus, **not** decompressed (all three methods) | `Post` → `application/gzip`, round-trips; charset stripped → round-trips |
+  | Compress honours its threshold | — | body under 150 KB → uncompressed; Decompress on a plain body → unchanged |
+  | `ErrorHandlingOptions.md` #4's commented values | verbatim → `orders.dlq`, `orders.invalid`, `dead-letter-orders` | — |
+  | `requeueCount: 3` → DLQ | handler runs **3** times, then DLQ | `0` and `1` → 1 run; `2` → 2; `-1` → 80,269 runs in 1.5 s, no DLQ |
+  | `unacceptableMessageLimit` stops the pump | limit 3, 6 throwing messages → 3 runs, `DS_STOPPED` | limit 0 → 6 runs, still running |
+  | `[RejectMessageOnErrorAsync]` sends escapes to the DLQ | Proactor → DLQ 1 | no attribute → DLQ 0; **the page's Reactor** → `ConfigurationException`, pump stops, handler never runs |
+
+  Read, not run: `DepositPostAsync` taking the `WrapAsync` path, the window's reset rule, and the
+  per-transport DLQ keys (10.7.0 consumers; the subagent's reading, spot-checked at
+  `HeaderNames.cs`, `MsSqlMessageConsumer.cs:382` and `MessageHeader.cs:162`)
+- **Upstream, filed on the maintainer's ruling:** BrighterCommand/Brighter#4432 (Decompress vs
+  `WrapAsync`'s charset) and #4433 (`UseExternalLuggageStore` requires a tracer). Each gives a
+  minimal repro with its control, run as written. Both pages now state the limitation and link
+  the issue
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 16 rows added and `ClaimCheck.md` #3 re-admitted with its unit, all at `71d0c60`.
+  `--report` → exit **0**, *"982 blocks: 129 BUILT, 837 FAILED, 16 SKIPPED"*, baseline 129,
+  0 findings. `before.tsv` regenerated from `c7329bb` (989 rows, *"101 BUILT, 872 FAILED,
+  16 SKIPPED"*); the AC2 diff prints **30** lines, every one `FAILED -> BUILT`. No block was added
+  or removed, so no ordinal moved
+- `linkcheck` 165 files, 0 broken; `symbolcheck` 0 findings; `versioncheck` 0 stale of 18 across 5;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows (the twelve `requeueCount` rows changed
+  description only); `pagelint --changed origin/master` 0 errors
 
 ---
 
@@ -1113,6 +1168,7 @@ is rewritten against the tables below.
 | `RequestValidation.md` | 14 | `CS0246` `RegisterUser` | same-page: block 2 | 2 |
 | `RequestValidation.md` | 16 | `CS0246` `MyRequestHandler<>` | same-page: block 15, *"2. Map the provider-agnostic handler to your implementation"* | 2 |
 | `ReturningResultsFromAHandler.md` | 1 | `CS0246` `CreateTaskCommand`; `CS0103` `commandProcessor` | **unit rule 1**: the page tells the reader to write this type (*"add a property to the **Command** that you can initialize from the Handler"*), so it may not be stubbed | 2 |
+| `HandlingLargeMessages.md` | 3 | `CS0246` `LargeOrderMessageMapper` | same-page: block 2 declares it; block 3 follows *"**Register the mapper**, or none of this runs"* | 2 |
 
 ## Splits
 
@@ -1147,6 +1203,17 @@ BUILT, re-admitted at `ec38400`.
 | `app.UseEndpoints(...)` on a `WebApplication` with no `app.UseRouting()` — throws `InvalidOperationException` at startup | run against 10.7.0 packages, net10.0; the control is the page's old block | `HealthChecks.md`, `BrighterControlAPI.md` | `grep -rn 'UseEndpoints' contents/` | **2** | **0** | 2.4, running the block |
 | BRT006–BRT008 (Kafka partitioner analyzers, code fixes) documented as shipped — in no release; only on BrighterCommand/Brighter#4255, open. Also *"includes code fixes"*: 10.7.0 has no code-fix project | `git ls-tree 10.7.0 src/Paramore.Brighter.Analyzer/Analyzers/` → 3 analyzers, BRT001–005 | `AnalyzerSupport.md` | `grep -rln 'BRT00[678]\|code fix' contents/` | **1** | **0** — removed, maintainer's ruling (a) | 2.4, verifying the page's reference code |
 | `IRequestContext` implemented with `Guid Id`, `ISpan Span`, `Dictionary<string, object> Bag`, `CustomHeaders` — at 10.7.0 the interface has no `Id` and no `CustomHeaders`, `Span` is an `Activity`, `Bag` a `ConcurrentDictionary` | `IRequestContext.cs` | `V10MigrationGuide.md:320` | — | **1** | **open — phase 5**, which holds that page for its E4 repair | 2.3, the row above's grep |
+| `MapToMessage(TRequest request)` — V9's mapper signature; V10's takes a `Publication` | `IAmAMessageMapper.cs:33` | `Compression.md`, `Routing.md`, `KafkaConfiguration.md`, `MessageTransforms.md`, `ImplementingExternalBus.md`, `V10MigrationGuide.md`, `MessageMappers.md`, `OutboxArchiver.md`, `NullableReferenceTypes.md` (`string? topic = null`, found by the second method) | `grep -rnE 'MapToMessage\([A-Za-z<>]+ [a-z][A-Za-z]*(, string\? topic = null)?\)' contents/` | **14** lines, 10 pages | **2** — both skipped V9 forms | 2.5, `--explain` |
+| A mapper class without `IRequestContext? Context { get; set; }` — `CS0535` | `IAmAMessageMapper.cs:31` | 11 pages | mapper blocks declaring `: IAmAMessageMapper<` with no `IRequestContext? Context` | **17** | **1** — the skipped V9 form | 2.5, `--explain` after the signature fix |
+| `requeueCount: N` described as N requeues (*"Times a message is requeued"*, *"On the 4th failure"*) — it is N handlings, N−1 requeues; `0` behaves as `1` | `Message.cs:161`, `HandledCount >= requeueCount`; run, table in § *Phase 2 as executed* | 17 pages, including all 12 option tables | `grep -rnE 'requeued before it is treated\|exceed(s\|ed\|ing)? the requeue count\|Requeue up to 3\|Retry up to 3\|4th failure\|RequeueCount. is exceeded\|retries (remain\|exhausted)\|retry a message before\|number of requeue attempts\|requeue count exceeded\)\|When the count is exceeded' contents/` | **25** | **0** | 2.5, running |
+| `requeueDelayInMilliseconds` — V9; V10's `Subscription` takes `TimeSpan? requeueDelay` | `Subscription.cs:115` | `BrighterSchedulerSupport.md`, `DispatcherConfigurationReference.md`, `HowServiceActivatorWorks.md`, `SchedulingAMessage.md` | `grep -rnE 'requeueDelayInMilliseconds\|RequeueDelayInMilliseconds' contents/` | **5** | **0** | 2.5, reading the requeue lines |
+| DLQ enrichment keys given as one PascalCase set for every transport — Kafka writes `OriginalTopic`, `OriginalType`, …; six transports write camelCase; RMQ, ASB, GCP and InMemory write none but the pump's free-text `RejectionReason`; the bag is case-sensitive. Also RMQ and ASB listed as routing invalid messages, and both keys as on *"all"* subscriptions | `KafkaMessageConsumer.cs:1080`, `MsSqlMessageConsumer.cs:382` and five twins, `MessageHeader.cs:162`, `Reactor.cs:426`; `IUseBrighterInvalidMessageSupport` implementors | `ErrorHandlingOptions.md` | `grep -rnE '\| .OriginalMessageType. \|\|Both are constructor parameters available on all' contents/` | **2** | **0** | 2.5, verifying the table |
+| Decompress does not recognise `WrapAsync`'s output — `IsCompressed` compares `ContentType.ToString()` with `application/gzip`, and `WrapAsync` adds `; charset=utf-8` | run; `CompressPayloadTransformer.cs:125`, `:301` — **upstream, BrighterCommand/Brighter#4432** | `Compression.md` states it and links the issue | — | **1** | **stated** — maintainer's ruling | 2.5, running |
+| `UseExternalLuggageStore` resolves `IAmABrighterTracer` with `GetRequiredService` and only `AddBrighterInstrumentation()` registers one, so a claim check without tracing throws on first `Post`; the page's null-store exception appears only with a tracer | run; `ServiceCollectionExtensions.cs:1008` — **upstream, BrighterCommand/Brighter#4433** | `HandlingLargeMessages.md` step 3 and its failures list | — | **1** | **documented** — maintainer's ruling | 2.5, running the null-store claim's control |
+| A Reactor subscription paired with an async handler — the pump stops with `ConfigurationException` (`InvalidCastException` inside), and the handler never runs; the page's own step 4 says so | run, control Proactor | `HandlingPoisonMessages.md` step 3 → `Proactor` | reading: the other four tranche pages have no handler beside their subscriptions | **1** | **0** | 2.5, running block 2's claim |
+| A log excerpt quoting messages Brighter does not emit (*"Failed to process message … requeueing"*, *"Requeue count exceeded"*) | `Reactor.cs:601–670`, the templates; replaced with a captured run | `HandlingPoisonMessages.md` step 1 | `grep -rnE 'Requeue count exceeded for message\|Failed to process message' contents/` | **3** | **0** | 2.5, reading step 1 against the run's log |
+| `new MessageBody(bytes, "JSON")` / `(s, MediaTypeNames.Application.Octet, …)` — a string where 10.7.0 takes a `ContentType?` | `CS1503` from `--explain` | `KafkaConfiguration.md` #20, `MessageMappers.md` #5 | — | **2** | **open — phases 3 and 5** | 2.5, `--explain` on the touched blocks |
+| Mapper excerpts that omit a required member with no `// ...` (`CS0535` `MapToRequest` / `MapToMessage`) | `CS0535` | `Routing.md` #1, `V10MigrationGuide.md` #3, #18, `NullableReferenceTypes.md` #7, `FAQ.md` #7 | — | **5** | **open — their phases** | 2.5, `--explain` on the touched blocks |
 
 ## Friction ledger
 
