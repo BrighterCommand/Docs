@@ -567,6 +567,28 @@ it asserts no behaviour a run could falsify. BrighterCommand/Brighter#4414 is ab
 `AutoFromAssemblies` with a scheduler, not about compiling it. The page's own P0-7 falsehood,
 `ITimerProvider`, is in other blocks and stays in phase 5.
 
+**Task 2.2 — *Get Started*.** Four pages; **no page under `contents/` changed**.
+
+- **P1-3 landed here**, as 1.10 assigned it: the `statements` wrapper's method is
+  `Run(string[] args)`. `TutorialFirstMessage.md` #2 and #4 no longer report `'args'`, and
+  `InMemoryScheduler.md` #4 builds. Nothing moved BUILT → FAILED, as 2.1's simulation said
+- **`TutorialStreamingWithKafka.md` #1 and #2 build** with a new unit,
+  `TutorialStreamingWithKafkaContext.cs`: `Greetings.GreetingEvent : Event` and the one
+  constructor block 1 calls. It is the first unit to supply a type. Rule 1 admits it, because
+  the page names rung 2's `GreetingEvent` (*"`Greetings` | unchanged"*) and never tells the reader
+  to write it. It has no `Greeting` property, because no block on the page names one (rule 3).
+  `--identifiers` → `class GreetingEvent` and a parameter; `--report` → *"15 units checked, 0
+  violations"*. **Control, both ways:** with `: Event` and the base call removed, both blocks
+  fail on `CS0311` (*"cannot be used as type parameter 'T'"*, `KafkaPublication<T>`,
+  `KafkaSubscription<T>`); restored, both have **0** diagnostics
+- **The three other tutorials' seven FAILED blocks are all same-page**, and each page already
+  says the step builds on an earlier one (§ *Blocks that stay FAILED* quotes the line), so
+  **no sentence was added**. `--classify` calls five of them *page-type*, because each also
+  names rung 1's or 2's types from another page, and its *same-page* class needs every missing
+  name to be declared on this page. The probe's SAME-PAGE is the reading the rules act on
+- **`attr_mismatch.py` → 7**, exit 1, run before the baseline rows (obligation 15)
+- **`versioncheck`** untouched: none of its five pages changed
+
 ---
 
 ## Phase 3 — Tranche 1b *(6 tasks, one PR, CHANGES THE SITE)*
@@ -965,6 +987,16 @@ is rewritten against the tables below.
 ## Blocks that stay FAILED
 
 *One row per block a tranche page leaves FAILED: page, ordinal, diagnostic, why it is not 017's.*
+
+| Page | # | Diagnostic | Why it stays | Phase |
+|---|---:|---|---|---:|
+| `TutorialDurableOutbox.md` | 1 | `CS0246` `AddGreeting`, `GreetingsSender`; `GreetingEvent`, `Greetings` | same-page: block 2 declares `AddGreeting` in `namespace GreetingsSender`. The page says so at line 289 (*"`AddGreeting` and its handler arrive in step 5"*) | 2 |
+| `TutorialDurableOutbox.md` | 3 | `CS0246` `AddGreeting`; `GreetingEvent`, `Greetings` | same-page: block 2's `AddGreeting`; line 478, *"all three projects build again"* | 2 |
+| `TutorialFirstCommand.md` | 2 | `CS0246` `GreetingCommand` | same-page: block 1 declares it; step 3 opens *"Deriving from `RequestHandler<GreetingCommand>`"*, in the same project | 2 |
+| `TutorialFirstCommand.md` | 3 | `CS0246` `GreetingCommand`, `HelloWorld` | same-page: block 1 declares both; step 4 names the handler step 3 wrote | 2 |
+| `TutorialFirstMessage.md` | 2 | `CS0246` `GreetingEvent`, `Greetings` | same-page: block 1 declares both; line 132, `dotnet add GreetingsSender reference Greetings` | 2 |
+| `TutorialFirstMessage.md` | 3 | `CS0246` `GreetingEvent`, `Greetings` | same-page; line 221, `dotnet add GreetingsReceiver reference Greetings` | 2 |
+| `TutorialFirstMessage.md` | 4 | `CS0246` `GreetingEvent`, `Greetings` | same-page; line 221 | 2 |
 
 ## Splits
 
