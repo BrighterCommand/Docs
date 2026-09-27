@@ -279,7 +279,7 @@ public class ReportService
 
 ### Cancelling a Scheduled Job
 
-Cancel a previously scheduled job:
+At Brighter 10.7.0 the InMemory scheduler can cancel or reschedule only a request it scheduled itself, through `IAmARequestSchedulerAsync`. The command processor creates a new scheduler for each `SendAsync`, `PublishAsync` or `PostAsync` with a delay, so an id returned by one of those, like `schedulerId` in the examples above, cannot be cancelled: `CancelAsync` returns and the request still runs ([#4437](https://github.com/BrighterCommand/Brighter/issues/4437)). When you need to cancel, schedule through the scheduler:
 
 ```csharp
 using System;
@@ -290,8 +290,18 @@ using Paramore.Brighter;
 public class OrderService
 {
     // ... _repository and _logger, injected as your application supplies them
-    private readonly IAmACommandProcessor _commandProcessor;
-    private readonly IAmAMessageSchedulerAsync _scheduler;
+    private readonly IAmARequestSchedulerAsync _scheduler;
+
+    public async Task CreateOrder(Order order)
+    {
+        // Schedule through the scheduler, so that it can cancel the request later
+        order.ConfirmationSchedulerId = await _scheduler.ScheduleAsync(
+            new SendOrderConfirmationCommand { OrderId = order.Id },
+            RequestSchedulerType.Send,
+            TimeSpan.FromMinutes(5));
+
+        await _repository.SaveAsync(order);
+    }
 
     public async Task CancelOrder(Guid orderId)
     {
@@ -371,10 +381,10 @@ public class SchedulingTests : IDisposable
         // Arrange
         var command = new TestCommand { Id = Guid.NewGuid() };
         var delay = TimeSpan.FromSeconds(10);  // Long delay
-        var scheduler = _serviceProvider.GetRequiredService<IAmAMessageSchedulerAsync>();
+        var scheduler = _serviceProvider.GetRequiredService<IAmARequestSchedulerAsync>();
 
-        // Act
-        var schedulerId = await _commandProcessor.SendAsync(delay, command);
+        // Act - schedule through the scheduler that cancels it
+        var schedulerId = await scheduler.ScheduleAsync(command, RequestSchedulerType.Send, delay);
         await scheduler.CancelAsync(schedulerId);  // Cancel immediately
 
         // Wait to ensure it would have executed

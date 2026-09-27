@@ -18,10 +18,14 @@ This page shows you how to schedule a message or request for deferred execution,
 Schedule a command for a specific absolute time:
 
 ```csharp
-// ...
+using System;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public class OrderService
 {
     private readonly IAmACommandProcessor _commandProcessor;
+    private readonly IOrderRepository _repository;
 
     public async Task CreateOrder(Order order)
     {
@@ -46,10 +50,14 @@ public class OrderService
 Schedule a command with a relative delay:
 
 ```csharp
-// ...
+using System;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public class RegistrationService
 {
     private readonly IAmACommandProcessor _commandProcessor;
+    private readonly IUserRepository _repository;
 
     public async Task RegisterUser(User user)
     {
@@ -73,12 +81,14 @@ public class RegistrationService
 Schedule a message to an external broker:
 
 ```csharp
-// ...
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public class NotificationService
 {
     private readonly IAmACommandProcessor _commandProcessor;
 
-    public async Task ScheduleNotification(NotificationRequest request)
+    public async Task<string> ScheduleNotification(NotificationRequest request)
     {
         // Schedule notification to be sent via external bus
         var schedulerId = await _commandProcessor.PostAsync(
@@ -101,10 +111,14 @@ public class NotificationService
 Cancel a previously scheduled message:
 
 ```csharp
-// ...
+using System;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public class OrderService
 {
     private readonly IAmAMessageSchedulerAsync _scheduler;
+    private readonly IOrderRepository _repository;
 
     public async Task CancelOrder(Guid orderId)
     {
@@ -123,14 +137,17 @@ public class OrderService
 }
 ```
 
-**Note:** Every scheduler supports cancellation. Rescheduling is the operation that varies: the Azure Service Bus scheduler does not reschedule, so cancel the message and schedule it again instead. See [Choosing a Scheduler](/contents/BrighterSchedulerSupport.md#choosing-a-scheduler).
+**Note:** Every scheduler but one supports cancellation. At Brighter 10.7.0 the InMemory scheduler cannot cancel or reschedule a request you scheduled through the command processor: `CancelAsync` returns, and the request still runs when it falls due ([#4437](https://github.com/BrighterCommand/Brighter/issues/4437)). Among the others, rescheduling is the operation that varies: the Azure Service Bus scheduler does not reschedule, so cancel the message and schedule it again instead. See [Choosing a Scheduler](/contents/BrighterSchedulerSupport.md#choosing-a-scheduler).
 
 ### Retry with Exponential Backoff
 
 Implement retry logic with increasing delays:
 
 ```csharp
-// ...
+using System;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public class RetryService
 {
     private readonly IAmACommandProcessor _commandProcessor;
@@ -143,10 +160,8 @@ public class RetryService
         var delay = TimeSpan.FromSeconds(Math.Min(delaySeconds, maxDelay.TotalSeconds));
 
         // Schedule retry
-        await _commandProcessor.SendAsync(
-            delay,
-            command with { AttemptNumber = attemptNumber + 1 }
-        );
+        command.AttemptNumber = attemptNumber + 1;
+        await _commandProcessor.SendAsync(delay, command);
     }
 }
 ```
@@ -154,10 +169,17 @@ public class RetryService
 ### Using Requeue with Delay in a Handler
 
 ```csharp
-// ...
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+
 public class ProcessPaymentHandlerAsync : RequestHandlerAsync<ProcessPaymentCommand>
 {
     private const int MaxRetries = 3;
+    private readonly IPaymentGateway _paymentGateway;
+    private readonly ILogger<ProcessPaymentHandlerAsync> _logger;
 
     public override async Task<ProcessPaymentCommand> HandleAsync(
         ProcessPaymentCommand command,
@@ -186,10 +208,37 @@ public class ProcessPaymentHandlerAsync : RequestHandlerAsync<ProcessPaymentComm
 
 ## Message Scheduling Configuration Examples
 
+### Registering Handlers When You Schedule Requests
+
+At Brighter 10.7.0, `AutoFromAssemblies()` and `AsyncHandlersFromAssemblies` register the scheduler's own handlers twice. When a request you scheduled with `SendAsync`, `PublishAsync` or `PostAsync` falls due, the command processor then throws `ArgumentException` (*"More than one handler was found for the typeof command Paramore.Brighter.Scheduler.Events.FireSchedulerRequest"*). With the InMemory scheduler that exception is unhandled, and it ends the process. The fix, [#4414](https://github.com/BrighterCommand/Brighter/issues/4414), is merged and not yet released.
+
+Until it is, register your async handlers explicitly if you schedule requests:
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
+services.AddBrighter(options =>
+{
+    options.HandlerLifetime = ServiceLifetime.Scoped;
+})
+.UseScheduler(new InMemorySchedulerFactory())
+.AsyncHandlers(registry =>
+{
+    registry.RegisterAsync<ProcessOrderCommand, ProcessOrderHandlerAsync>();
+});
+```
+
+The examples below use `AutoFromAssemblies()`, and they work as shown once you are on a release that carries the fix.
+
 ### Configuring with Hangfire
 
 ```csharp
-// ...
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Hangfire;
+
 services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
@@ -202,7 +251,11 @@ services.AddBrighter(options =>
 ### Configuring with Quartz.NET
 
 ```csharp
-// ...
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Quartz;
+using Quartz;
+
 services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
@@ -220,7 +273,10 @@ services.AddBrighter(options =>
 ### Configuring with InMemory (Development Only)
 
 ```csharp
-// ...
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;

@@ -550,6 +550,8 @@ await scheduler.ReSchedulerAsync(schedulerId, newDelay);
 
 **Note**: Azure Service Bus Scheduler does NOT support reschedule - you must cancel and create a new schedule.
 
+**Note**: At Brighter 10.7.0 the InMemory scheduler cannot cancel or reschedule a request scheduled through the command processor, as in the examples above: `CancelAsync` returns and the request still runs ([#4437](https://github.com/BrighterCommand/Brighter/issues/4437)). With InMemory, schedule through `scheduler.ScheduleAsync` when you need to cancel.
+
 See: [Scheduler Support](/contents/BrighterSchedulerSupport.md)
 
 ---

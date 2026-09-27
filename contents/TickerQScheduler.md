@@ -80,9 +80,15 @@ dashboard, the poll interval — is configured on TickerQ itself through `AddTic
 Configure Brighter with TickerQ scheduler in your `Program.cs`:
 
 ```csharp
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessageScheduler.TickerQ;
-using TickerQ;
+using TickerQ.DependencyInjection;
+using TickerQ.Utilities.Entities;
+using TickerQ.Utilities.Interfaces;
+using TickerQ.Utilities.Interfaces.Managers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -112,22 +118,28 @@ app.UseTickerQ();
 For production scenarios, you should use persistent storage to ensure jobs are not lost during restarts:
 
 ```csharp
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using TickerQ.DependencyInjection;
+using TickerQ.EntityFrameworkCore.DbContextFactory;
+using TickerQ.EntityFrameworkCore.DependencyInjection;
+
 builder.Services.AddTickerQ(options =>
 {
     options.AddOperationalStore(efOptions =>
- {
-     efOptions.UseTickerQDbContext<TickerQDbContext>(dbOptions =>
-     {
-         dbOptions.UseSqlite(
-             "Data Source=tickerq-brighter-sample.db",
-            b => b.MigrationsAssembly(typeof(Program).Assembly));
-     });
- });
+    {
+        efOptions.UseTickerQDbContext<TickerQDbContext>(dbOptions =>
+        {
+            dbOptions.UseSqlite(
+                "Data Source=tickerq-brighter-sample.db",
+                b => b.MigrationsAssembly(typeof(Program).Assembly));
+        });
+    });
 });
 
 var app = builder.Build();
-// you must migrate the database 
 
+// you must migrate the database
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TickerQDbContext>();
@@ -135,8 +147,8 @@ using (var scope = app.Services.CreateScope())
 }
 app.UseTickerQ();
 ```
- for more information refer to the 
- [TickerQ EfCore](https://tickerq.net/features/entity-framework.html)
+
+For more information, see TickerQ's [Entity Framework Core](https://tickerq.net/features/entity-framework.html) documentation.
 
 ### Enabling the Dashboard
 
@@ -146,6 +158,9 @@ dotnet add package TickerQ.Dashboard
 ```
 
 ```csharp
+using TickerQ.Dashboard.DependencyInjection;
+using TickerQ.DependencyInjection;
+
 builder.Services.AddTickerQ(options =>
 {
     options.AddDashboard(o =>
@@ -164,6 +179,10 @@ You can then access the dashboard at `{{appurl}}/dashboard`.
 Scheduling a message with TickerQ execution is identical to other schedulers in Brighter, as the `IAmACommandProcessor` interface abstracts the underlying implementation.
 
 ```csharp
+using System;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public class NotificationService
 {
     private readonly IAmACommandProcessor _commandProcessor;
@@ -230,12 +249,16 @@ Leverage the TickerQ dashboard to inspect job states, failures, and upcoming sch
 
 ### Jobs Not Firing
 - **Check Host**: TickerQ runs as a hosted service. Ensure  TickerQ service started is called and the host is kept alive.
-```csharp 
-app.UseTickerQ(); 
+```csharp
+using TickerQ.DependencyInjection;
 
+app.UseTickerQ();
 ```
 - **Timezone**: Be aware of timezone settings when scheduling absolute times. Brighter typically uses UTC.
 ```csharp
+using System;
+using TickerQ.DependencyInjection;
+
 builder.Services.AddTickerQ(options =>
 {
     options.ConfigureScheduler(c =>

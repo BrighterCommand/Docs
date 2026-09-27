@@ -68,3 +68,4 @@ contents/RocketMQConfiguration.md	TransportConfigurationContext	-
 contents/AWSSQSConfiguration.md	TransportConfigurationContext	-
 contents/BoxProvisioningConfiguration.md	BoxProvisioningConfigurationContext	-
 contents/TransactionalMessagingWithTheOutbox.md	TransactionalMessagingWithTheOutboxContext	-
+contents/SchedulingAMessage.md	SchedulingAMessageContext	-
