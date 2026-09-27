@@ -22,6 +22,9 @@
 #
 # Phase 4 added the rows at `9c57ae2`: blocks that build because the phase repaired
 # the page, each one a defect of claim, and each row landing in the PR that made it build.
+#
+# Spec 017 adds rows per tranche phase, each at the commit that made the block build:
+# the repair (a `using`, a stub, a wrapper change) and its row land in the same PR.
 contents/AWSSQSConfiguration.md	1	-	280d1b7
 contents/AWSSQSConfiguration.md	3	-	280d1b7
 contents/AWSSQSConfiguration.md	4	-	280d1b7
@@ -60,6 +63,7 @@ contents/HangfireScheduler.md	28	-	280d1b7
 contents/HowConfiguringTheCommandProcessorWorks.md	10	HowConfiguringTheCommandProcessorWorksContext.cs	280d1b7
 contents/ImplementAQueryHandler.md	1	-	280d1b7
 contents/ImplementAQueryHandler.md	2	-	280d1b7
+contents/InMemoryScheduler.md	4	-	8090477
 contents/Logging.md	1	-	280d1b7
 contents/Logging.md	2	-	280d1b7
 contents/MSSQLOutbox.md	1	-	280d1b7
@@ -121,5 +125,7 @@ contents/TickerQScheduler.md	6	TickerQSchedulerContext.cs	280d1b7
 contents/TutorialDurableOutbox.md	2	-	280d1b7
 contents/TutorialFirstCommand.md	1	-	280d1b7
 contents/TutorialFirstMessage.md	1	-	280d1b7
+contents/TutorialStreamingWithKafka.md	1	TutorialStreamingWithKafkaContext.cs	8090477
+contents/TutorialStreamingWithKafka.md	2	TutorialStreamingWithKafkaContext.cs	8090477
 contents/UsingSweeperCircuitBreaking.md	1	UsingSweeperCircuitBreakingContext.cs	280d1b7
 contents/UsingTheContextBag.md	12	-	280d1b7

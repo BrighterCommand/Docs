@@ -493,7 +493,7 @@ recorded in `tools/README.md` row 9.
     reachable sum as ceiling), `pagelint` warnings −M, `versioncheck` scope held at **18 across 5**,
     `attr_mismatch` count held or falling
 
-- [ ] **Task 2.2:** Repair the *Get Started* tranche pages
+- [x] **Task 2.2:** Repair the *Get Started* tranche pages
   - Input: the phase 2 table's *Get Started* rows; `--classify` on each; `samples/CommandProcessor/HelloWorld`
     for `TutorialFirstCommand.md`
   - Output: each page whole — `--classify <page>` lists only blocks named in § *Blocks that stay
@@ -588,6 +588,9 @@ it asserts no behaviour a run could falsify. BrighterCommand/Brighter#4414 is ab
   name to be declared on this page. The probe's SAME-PAGE is the reading the rules act on
 - **`attr_mismatch.py` → 7**, exit 1, run before the baseline rows (obligation 15)
 - **`versioncheck`** untouched: none of its five pages changed
+- **Baseline:** three rows at `8090477`, the commit that made them build. `--report` → exit **0**,
+  *"989 blocks: 104 BUILT, 869 FAILED, 16 SKIPPED"*, baseline 104, 0 findings; the AC2 diff against
+  `before.tsv` prints exactly the three `FAILED -> BUILT` lines, and nothing else
 
 ---
 
