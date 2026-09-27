@@ -47,6 +47,7 @@
 //     blockcheck --identifiers <file>...        what a scaffold supplies
 //     blockcheck --parse <blocksDir>            which blocks do not PARSE
 //     blockcheck --explain <blocksDir> <refs.txt> <id>...   diagnostics in full
+//     blockcheck --types <refs.txt>             what the pin can supply a name from
 //
 // `refs.txt` is written by refs/refs.csproj at build time and holds one
 // absolute assembly path per line -- the 67 pinned packages and the framework
@@ -73,6 +74,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -80,6 +84,121 @@ internal static class Program
 {
     private const int ExitRan = 0;
     private const int ExitNothingChecked = 2;
+
+    /// <summary>
+    /// Every public type in the pinned references, and every public extension
+    /// method, so that a missing name can be told apart from a missing import.
+    /// </summary>
+    /// <remarks>
+    /// `--classify` (spec 017) asks of each failing block whether the name it
+    /// could not find is one the pin ships -- then the page lacks a `using` --
+    /// or one no package ships -- then it lacks a stub. Extension methods are
+    /// listed because a missing one is not reported as a missing name at all:
+    /// `services.AddBrighter(...)` without its `using` is `CS1061`, and a
+    /// type-only dump classifies it as a defect in the page.
+    ///
+    /// Read from metadata, not by loading the assemblies: nothing is executed,
+    /// and a reference whose own dependencies are absent still lists.
+    ///
+    /// Prints type|ext TAB name TAB namespace, each row once, and nothing
+    /// else. A generic type loses its arity suffix, since a diagnostic names
+    /// `ResiliencePipelineRegistry`, not ResiliencePipelineRegistry`1.
+    /// </remarks>
+    private static int Types(string[] args)
+    {
+        if (args.Length != 1)
+        {
+            Console.Error.WriteLine("usage: blockcheck --types <refs.txt>");
+            return ExitNothingChecked;
+        }
+        if (!File.Exists(args[0]))
+        {
+            Console.Error.WriteLine($"no reference list at {args[0]}: nothing was listed");
+            return ExitNothingChecked;
+        }
+        // The '#' line is refs.csproj's stamp, not an assembly.
+        var paths = File.ReadAllLines(args[0])
+            .Select(l => l.Trim())
+            .Where(l => l.Length > 0 && l[0] != '#')
+            .ToList();
+        if (paths.Count == 0)
+        {
+            Console.Error.WriteLine($"{args[0]} lists no assemblies: nothing was listed");
+            return ExitNothingChecked;
+        }
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        int types = 0, extensions = 0;
+        foreach (var path in paths)
+        {
+            if (!File.Exists(path))
+            {
+                // As for a compile: a partial listing classifies believably
+                // and wrongly, so it is not a listing.
+                Console.Error.WriteLine($"reference assembly missing: {path}: nothing was listed");
+                return ExitNothingChecked;
+            }
+            using var stream = File.OpenRead(path);
+            using var pe = new PEReader(stream);
+            if (!pe.HasMetadata) continue;
+            var md = pe.GetMetadataReader();
+            foreach (var handle in md.TypeDefinitions)
+            {
+                var type = md.GetTypeDefinition(handle);
+                var visibility = type.Attributes & TypeAttributes.VisibilityMask;
+                if (visibility != TypeAttributes.Public && visibility != TypeAttributes.NestedPublic)
+                    continue;
+                var name = md.GetString(type.Name);
+                var tick = name.IndexOf('`');
+                if (tick >= 0) name = name.Substring(0, tick);
+                var ns = md.GetString(type.Namespace);
+                if (seen.Add($"type\t{name}\t{ns}"))
+                {
+                    Console.WriteLine($"type\t{name}\t{ns}");
+                    types++;
+                }
+                // Extension methods live only on a top-level static class,
+                // which metadata spells abstract AND sealed.
+                if (visibility != TypeAttributes.Public
+                    || (type.Attributes & TypeAttributes.Abstract) == 0
+                    || (type.Attributes & TypeAttributes.Sealed) == 0) continue;
+                foreach (var methodHandle in type.GetMethods())
+                {
+                    var method = md.GetMethodDefinition(methodHandle);
+                    if ((method.Attributes & MethodAttributes.MemberAccessMask) != MethodAttributes.Public)
+                        continue;
+                    if (!method.GetCustomAttributes()
+                            .Any(a => IsExtensionAttribute(md, md.GetCustomAttribute(a))))
+                        continue;
+                    var row = $"ext\t{md.GetString(method.Name)}\t{ns}";
+                    if (seen.Add(row))
+                    {
+                        Console.WriteLine(row);
+                        extensions++;
+                    }
+                }
+            }
+        }
+        Console.Error.WriteLine(
+            $"{paths.Count} reference assemblies: {types} types, {extensions} extension methods");
+        return ExitRan;
+    }
+
+    private static bool IsExtensionAttribute(MetadataReader md, CustomAttribute attribute)
+    {
+        StringHandle name = default;
+        if (attribute.Constructor.Kind == HandleKind.MemberReference)
+        {
+            var parent = md.GetMemberReference((MemberReferenceHandle)attribute.Constructor).Parent;
+            if (parent.Kind == HandleKind.TypeReference)
+                name = md.GetTypeReference((TypeReferenceHandle)parent).Name;
+        }
+        else if (attribute.Constructor.Kind == HandleKind.MethodDefinition)
+        {
+            var method = md.GetMethodDefinition((MethodDefinitionHandle)attribute.Constructor);
+            name = md.GetTypeDefinition(method.GetDeclaringType()).Name;
+        }
+        return !name.IsNil && md.GetString(name) == "ExtensionAttribute";
+    }
 
     /// <summary>
     /// Every name a scaffold file supplies, read off the syntax tree.
@@ -133,8 +252,13 @@ internal static class Program
                         kind = "method"; name = m.Identifier.ValueText; break;
                     case Microsoft.CodeAnalysis.CSharp.Syntax.PropertyDeclarationSyntax p:
                         kind = "property"; name = p.Identifier.ValueText; break;
+                    // A declarator is a member only under a field declaration;
+                    // anywhere else it is a local, and the unit rule (spec 017)
+                    // holds members to account, not the locals of a stub body.
                     case Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax v:
-                        kind = "field"; name = v.Identifier.ValueText; break;
+                        kind = v.Parent?.Parent is Microsoft.CodeAnalysis.CSharp.Syntax.FieldDeclarationSyntax
+                            ? "field" : "local";
+                        name = v.Identifier.ValueText; break;
                     case Microsoft.CodeAnalysis.CSharp.Syntax.ParameterSyntax a:
                         kind = "parameter"; name = a.Identifier.ValueText; break;
                 }
@@ -248,6 +372,8 @@ internal static class Program
             return Identifiers(args.Skip(1).ToArray());
         if (args.Length > 0 && args[0] == "--parse")
             return ParseOnly(args.Skip(1).ToArray());
+        if (args.Length > 0 && args[0] == "--types")
+            return Types(args.Skip(1).ToArray());
 
         // --explain reads the same staged corpus and the same references, and
         // prints the diagnostics in full rather than a row of codes. A code is
@@ -388,6 +514,8 @@ internal static class Program
         var clock = Stopwatch.StartNew();
         int built = 0;
         int scaffoldErrors = 0;
+        var explained = new HashSet<string>(StringComparer.Ordinal);
+        int diagnosticsWritten = 0;
         try
         {
             foreach (var (id, path, scaffold) in files)
@@ -422,7 +550,15 @@ internal static class Program
 
                 if (explain.Count > 0)
                 {
-                    foreach (var d in errors)
+                    explained.Add(id);
+                    diagnosticsWritten += errors.Count;
+                    // Roslyn does not order GetDiagnostics(), and three runs of
+                    // the same 872 ids gave three orders. Sorted by position, so
+                    // two runs diff clean.
+                    foreach (var d in errors
+                                 .OrderBy(e => e.Location.SourceSpan.Start)
+                                 .ThenBy(e => e.Id, StringComparer.Ordinal)
+                                 .ThenBy(e => e.GetMessage(), StringComparer.Ordinal))
                     {
                         var pos = d.Location.GetLineSpan().StartLinePosition;
                         rows.WriteLine($"{id}\t{d.Id}\t{pos.Line + 1}:{pos.Character + 1}\t" +
@@ -441,6 +577,26 @@ internal static class Program
             if (rows != Console.Out) rows.Dispose();
         }
         clock.Stop();
+
+        // --explain says what it explained, not what the corpus holds. It used
+        // to print the verdict line below, over every staged block, and since
+        // the loop skips the blocks it was not asked about, that line read
+        // "989 blocks, 0 built, 989 failing" on a run that explained 872 --
+        // and exited 0 on an id that matched nothing, having explained nothing.
+        if (explain.Count > 0)
+        {
+            var unmatched = explain.Where(id => !explained.Contains(id)).OrderBy(id => id).ToList();
+            Console.Error.WriteLine(
+                $"{explained.Count} blocks explained, {diagnosticsWritten} diagnostics");
+            if (unmatched.Count > 0)
+            {
+                Console.Error.WriteLine(
+                    $"{unmatched.Count} id(s) match no staged block, first: {unmatched[0]}: " +
+                    "they were not explained");
+                return ExitNothingChecked;
+            }
+            return ExitRan;
+        }
 
         // The scope line, before the verdict line. `0 failing` out of 0 is not
         // the same claim as `0 failing` out of 985.

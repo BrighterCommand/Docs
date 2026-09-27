@@ -84,7 +84,7 @@ same probe. The second method for the total is `--report`: the five classes sum 
 FAILED count. The tranche lists get their second method at task 1.10, from `--classify`.
 
 **The tranche membership differs with the pin**, and not only at the edges: **`RequestValidation.md`
-— design tranche 1's largest page, 14 reachable blocks — is absent at the committed pin**, because
+— design tranche 1's largest page, 14 FAILED blocks — is absent at the committed pin**, because
 its blocks wait on the three Validation packages phase 1 adds. So the page lists for phases 2–5 are
 **fixed by task 1.10, against the pin phase 1 commits**, and not quoted here as final. The split
 *by `SUMMARY.md` section* is what this file commits to; which pages fall in each section is 1.10's
@@ -109,7 +109,7 @@ pages: `--classify` and the grown pin are what fix the tranche lists (§ 2), and
 be enforced before a tranche writes the first stub it would check. So phase 1 carries every
 instrument and no page; phases 2–5 are one tranche-half each, split by `SUMMARY.md` section so that
 a reviewer reads related pages together (design § *Phases*). **Tranche 2 is split by where its pages
-are, not in half**: at the committed pin 22 of its 34 pages are in *Outbox and Inbox*, and they
+are, not in half**: at the committed pin 22 of its 38 pages are in *Outbox and Inbox*, and they
 share one scaffold world.
 
 **No phase depends on an unmerged one.** Phase 1's unit rule must be on `master` before phase 2
@@ -128,7 +128,7 @@ Predicted*).
 **1.6 → 1.7**. **1.8** after 1.3, because 1.3's Q2 reading is taken again once xunit is pinned.
 **1.9** after 1.3–1.8. **1.10** after 1.3 and 1.8. **1.11** last.
 
-- [ ] **Task 1.1:** Re-derive the starting state and write phase 1's prediction
+- [x] **Task 1.1:** Re-derive the starting state and write phase 1's prediction
   - Input: `tools/README.md` rows 1–9; `design.md` § *Gate Movement Predicted*, Phase 1 column
   - Output: § *Phase 1 as executed* in this file, opening with all nine gates' exit codes and
     figures at `master`, and a prediction row per gate. **§ *The AC2 before-report*** below holds
@@ -139,7 +139,7 @@ Predicted*).
     `before.tsv` is **regenerated at each use, never kept**: a file under `$TMPDIR` does not survive
     between sessions (§ 2's work directory did not).
 
-- [ ] **Task 1.2:** Add the `--types` mode to `tools/blockcheck/Program.cs`
+- [x] **Task 1.2:** Add the `--types` mode to `tools/blockcheck/Program.cs`
   - Input: `spec/017-compile_repairs/probe/typedump/Program.cs`; `design.md` § *The Classify Mode*
   - Output: `dotnet tools/blockcheck/bin/Release/net9.0/blockcheck.dll --types <refs.txt>` prints
     `type|ext<TAB>Name<TAB>Ns` rows; **two methods agree**: `diff` against the probe's `typedump`
@@ -148,7 +148,7 @@ Predicted*).
     `ITimerProvider` is absent
   - Notes: it skips `refs.txt`'s `#` stamp line, as the probe had to.
 
-- [ ] **Task 1.3:** Add `--classify [file]` to `tools/blockcheck.py`, with its red-proof
+- [x] **Task 1.3:** Add `--classify [file]` to `tools/blockcheck.py`, with its red-proof
   - Input: `design.md` § *The Classify Mode* (rules, output, exit codes); `probe/classify.py`;
     requirements Q2
   - Output: the mode; recorded here — two runs `diff` empty; exit 0; its per-class counts beside
@@ -163,7 +163,7 @@ Predicted*).
     not. The exit-2 control uses a page with C# blocks, none failing: a page with no C# block at
     all would exit 2 for a different reason.
 
-- [ ] **Task 1.4:** Add `--list-skips` to `tools/blockcheck.py`, with its red-proof
+- [x] **Task 1.4:** Add `--list-skips` to `tools/blockcheck.py`, with its red-proof
   - Input: `design.md` § *The List Skips Mode*; `scan_skips` in `tools/blockcheck.py`
   - Output: the mode; recorded here — `--list-skips > s; echo $?` → **0**, and `wc -l < s` equals
     `--report`'s SKIPPED (16); **control, both ways:** `--list-skips contents/FAQ.md`, which
@@ -171,7 +171,7 @@ Predicted*).
     which carries none, → exit **2**
   - Notes: it must read `scan_skips`, not re-scan, so the two cannot disagree.
 
-- [ ] **Task 1.5:** Expose `--explain` through `tools/blockcheck.py` and correct its summary (P1-2)
+- [x] **Task 1.5:** Expose `--explain` through `tools/blockcheck.py` and correct its summary (P1-2)
   - Input: `Program.cs` `--explain`; requirements § *Instrument quirks recorded by 016*
   - Output: `python3 tools/blockcheck.py --explain <id>...` works; its stderr reads *"N blocks
     explained"*; **control, both ways:** the old binary's line (*"989 blocks, 0 built, 989
@@ -179,7 +179,7 @@ Predicted*).
   - Notes: ids go as separate arguments — the zsh `$ids` trap from session 84 does not apply to a
     Python front end, which is part of the reason to have one.
 
-- [ ] **Task 1.6:** Enforce the unit rule in `--report`, with four plants
+- [x] **Task 1.6:** Enforce the unit rule in `--report`, with four plants
   - Input: `design.md` § *The Unit Rule, Enforced* (rules 1–4, output form, exit 1)
   - Output: `--report` prints `SCAFFOLD RULE: <unit>: <what>` and exits **1** on a violation.
     Recorded here: the four plants — a type no block names, a type a block on its page declares, an
@@ -188,14 +188,14 @@ Predicted*).
   - Notes: depends on nothing; 1.7 depends on it. The 26 is the design's dry-run figure;
     re-derive it by the rule as built, and record any difference.
 
-- [ ] **Task 1.7:** Cut `PageContext.cs` to `connectionString` and rewrite `pages.tsv`'s rule comment
+- [x] **Task 1.7:** Cut `PageContext.cs` to `connectionString` and rewrite `pages.tsv`'s rule comment
   - Input: `tools/blockcheck/scaffold/units/PageContext.cs`; `pages.tsv`'s comment;
     `python3 tools/blockcheck.py --show contents/DapperOutbox.md 1`; requirements Q6, P0-3
   - Output: `PageContext.cs` declares `connectionString` and nothing else; `pages.tsv`'s comment
     states rules 1–4 in place of "no domain type"; `--report` → exit **0** with the unit rule on
   - Notes: same PR as 1.6 — otherwise 1.6 turns `master` red (`tools/README.md` rule 3).
 
-- [ ] **Task 1.8:** Grow the pin, measured alone
+- [x] **Task 1.8:** Grow the pin, measured alone
   - Input: `design.md` § *E2* and § *Phases* (the package list, less Jaeger by D2, less the AWS V4
     family by D3, plus the five Brighter packages); `tools/blockcheck/refs/refs.csproj`
   - Output: `refs.csproj` carries the packages, each at the version the design states (Quartz
@@ -205,7 +205,7 @@ Predicted*).
   - Notes: a verdict that moves here moved for a reason nobody repaired. Stop and explain it before
     going on.
 
-- [ ] **Task 1.9:** Update `tools/README.md` — row 9, § *The other modes*, the AC3 and AC10 commands
+- [x] **Task 1.9:** Update `tools/README.md` — row 9, § *The other modes*, the AC3 and AC10 commands
   - Input: `tools/README.md` row 9 and § *Reading a number before you trust it*; `design.md`
     § *The List Skips Mode* (last paragraph); the outputs of 1.3–1.8
   - Output: row 9's scope names the grown pin and the unit rule; § *The other modes* documents
@@ -216,7 +216,7 @@ Predicted*).
     first excluding nothing; `grep -cF '^(\./)?spec/' tools/README.md` → ≥ 1
   - Notes: `--list-skips`'s own instrument is 1.4's.
 
-- [ ] **Task 1.10:** Fix the tranche page lists against the committed pin
+- [x] **Task 1.10:** Fix the tranche page lists against the committed pin
   - Input: 1.8's pin; `probe/pages.py`, `stubs.py`, `tranches.py` with `REFS` at the new
     `refs.txt`; `--classify`; `SUMMARY.md`'s `##` sections; § 2 above
   - Output: § *The tranches* in this file — one table per phase 2–5, one row per page: section,
@@ -232,13 +232,255 @@ Predicted*).
     unless a section is empty or holds most of a tranche; either is recorded and the split redrawn
     here, not in a later phase.
 
-- [ ] **Task 1.11:** Run the nine gates, reconcile phase 1, open the PR
+- [x] **Task 1.11:** Run the nine gates, reconcile phase 1, open the PR
   - Input: 1.1's prediction; `tools/README.md` rows 1–9
   - Output: § *Phase 1 as executed* closes with each gate's exit code and figure against its
     prediction; the PR open, green, no page under `contents/` in `git diff --name-only master`
   - Notes: no sign-off is owed (no published page); the `--admin` grant covers the merge.
 
 ---
+
+### Phase 1 as executed
+
+**Starting state, 2026-09-26, `master` `0e1eae9`** — every gate run bare, exit code read from `$?`
+before its output:
+
+| # | Gate | Exit | Read | Phase 1 prediction, and the mechanism |
+|---:|---|---:|---|---|
+| 1 | `linkcheck` | 0 | 165 files, 0 broken | **none** — `tools/README.md` is already walked; phase 1 adds no `.md` |
+| 2 | `pagelint` | 0 | 0 errors, 743 warnings, 162 pages | **none** — no page changes |
+| 3 | shape | 0 | 161 pages, 12 sections, widest 12 of 20, deepest 4 of 4 | **none** — no `SUMMARY.md` change |
+| 4 | redirects | 0 | 77 entries, 7858 bytes | **none** — no `SUMMARY.md` change |
+| 5 | `versioncheck` | 0 | 0 stale of 18, across 5 pages | **none** — it reads its five tutorial pages, not `refs.csproj` |
+| 6 | `optioncheck` | 0 | 0 mismatches, 59 tables, 519 rows | **none** — its pin is its own |
+| 7 | `--verify` | 0 | 161 predicted = 161 published | **none** — no page added or moved |
+| 8 | `symbolcheck` | 0 | 0 findings, 22 entries, 161 pages, 3 silenced | **none** — no page changes |
+| 9 | `blockcheck` | 0 | 989: 101 BUILT, 872 FAILED, 16 SKIPPED; 0 findings; 501 reference assemblies; 14 units, 15 pages mapped | **BUILT, FAILED and SKIPPED unchanged**, and the AC2 diff empty — the grown pin alone moves nothing (design E2). **Reference assemblies 501 → 538.** **Units 14, exit 0** — `PageContext.cs` is cut in the same PR that turns the unit rule on. The scope line gains the rule's result |
+
+**Task 1.2 — `--types`.** `dotnet tools/blockcheck/bin/Release/net9.0/blockcheck.dll --types
+tools/blockcheck/refs/bin/Release/net9.0/refs.txt` → exit **0**, stderr *"501 reference
+assemblies: 21365 types, 3471 extension methods"* — the design's 21,365 and 3,471.
+
+| Check | Result |
+|---|---|
+| Two methods: `cmp` against the probe's `typedump` over the same `refs.txt` | **identical**, 24,836 rows each |
+| Known present | `type UseResiliencePipelineAsyncAttribute Paramore.Brighter.Policies.Attributes`; `ext AddBrighter Paramore.Brighter.Extensions.DependencyInjection` |
+| Known absent | `ITimerProvider` → **0** rows |
+| No such `refs.txt` / no argument | exit **2**, *"nothing was listed"* / usage |
+
+**Task 1.3 — `--classify`.** `python3 tools/blockcheck.py --classify > c.tsv 2> c.err; echo $?` →
+**0**, 872 terminated rows, 15 s. Stderr: *"872 FAILED blocks classified: 175 parse (66 pages), 495
+import (108 pages), 32 other (19 pages), 7 same-page (6 pages), 50 values (18 pages), 113 page-type
+(50 pages)"*. A second run is byte-identical (`cmp`). The tool preconditions moved into
+`tool_unready()`, shared with `--report`, whose output is byte-identical before and after, exit 0.
+
+**Against `probe/run.sh` at the same ref, block by block** — the same 872 (page, ordinal) keys:
+
+| Probe | `--classify` | Blocks | Why |
+|---|---|---:|---|
+| page-type / same-page / values / import | the same class | 113 / 7 / 50 / 368 | identical rules |
+| other | **parse** | **175** | the design splits out blocks that do not parse. `--parse` finds **179**; the other 4 are SKIPPED (`CloudEventsSupport` #11, #12, `V10MigrationGuide` #4, #19) |
+| other | **import** | **127** | the design orders *import* before *other*; the probe ordered *other* first. **126** name a pinned type beside another diagnostic; **1** is caught by an extension method alone (`CS1061`), which the probe's type-only rule could not see |
+| other | other | 32 | |
+
+**Controls, both ways:**
+
+| Case | Expected | Result |
+|---|---|---|
+| `AWSSQSConfiguration.md` #1, unmodified (BUILT) | absent | **0** rows |
+| …with its 7 `using` lines deleted (page restored after) | *import* | **import** — `CredentialProfileStoreChain, Environment, IServiceCollection, InvalidOperationException, RegionEndpoint` |
+| `ClaimCheck.md` #1 | *page-type* | **page-type** `GreetingEvent`; the page declares no `GreetingEvent` (`grep -cE '(class\|record\|interface\|struct) GreetingEvent'` → 0) |
+| `PaginationQueryPatterns.md` #3 | *same-page* | **same-page** `OrderDto`; block 1 declares it |
+| `--classify contents/SpannerOutbox.md` — 2 blocks, both BUILT | exit 2 | **2**, *"2 blocks, none FAILED: nothing to classify"*, 0 rows |
+| `--classify contents/Glossary.md` — no C# block | exit 2, a different reason | **2**, *"no C# blocks on contents/Glossary.md"* |
+| `refs.txt` moved aside | exit 2 | **2**, 0 rows, *"no reference list … nothing was checked"* |
+
+**Q2, at the current pin.** The *page-type* names include `Program` ×8, `Assert` ×3 and `Xunit` ×2 —
+not domain types a stub should supply. `Assert` and `Xunit` are unpinned today; they are re-read
+after 1.8 pins xunit. **`args` is named by 36 FAILED blocks on 21 pages** (`awk` over the `names`
+column; a count of the per-block listing agrees): `statements`-wrapper blocks that use `string[] args`, which `Holder.Run()` does not supply.
+P1-3 is therefore live, and 1.10 names the tranche pages it reaches.
+
+**Task 1.4 — `--list-skips`.** Said, by 016's AC7: *"`--list-skips` prints one reason per skip"*;
+measured at `c7329bb`: exit **2**, *"unknown mode"*. Now `python3 tools/blockcheck.py --list-skips >
+s; echo $?` → **0**, stderr *"16 skipped of 989 blocks, across 6 pages"*, `wc -l < s` → **16**,
+equal to `--report`'s SKIPPED. **Two methods:** the (page, ordinal) keys of `s` and of `--report`'s
+SKIPPED rows are identical (`cmp`).
+
+| Control | Expected | Result |
+|---|---|---|
+| `--list-skips contents/FAQ.md` — carries a skip | exit 0, one row | **0**, `contents/FAQ.md 15 V9 form, shown beside its V10 replacement (labelled Old (V9))` |
+| `--list-skips contents/SpannerOutbox.md` — 2 blocks, no skip | exit 2 | **2**, 0 rows, *"2 blocks, no opt-out: nothing to list"* |
+| `--list-skips contents/Glossary.md` — no C# block | exit 2, a different reason | **2**, *"no C# blocks on contents/Glossary.md: nothing was listed"* |
+
+**Task 1.5 — `--explain` through `blockcheck.py`.** `python3 tools/blockcheck.py --explain <id>...`
+takes the ids in `--report`'s fourth column, stages only those blocks, and passes stdout, stderr
+and the exit code through.
+
+Three defects in the Roslyn half's `--explain`, each measured on the old binary:
+
+| # | Said | Measured | Now |
+|---:|---|---|---|
+| 1 | the stderr summary describes the run | *"989 blocks, 0 built, 989 failing"* on a run that explained **872** ids | *"872 blocks explained, 5654 diagnostics"* |
+| 2 | exit 2 when nothing was checked | an id matching no block → exit **0**, having explained nothing | exit **2**, *"1 id(s) match no staged block, first: NoSuch_9"* (the Python front end refuses it first, the same way) |
+| 3 | a listing diffs clean between runs | three runs over the same 872 ids gave **three different row orders**: Roslyn does not order `GetDiagnostics()` | rows sorted by position, code, message; three runs byte-identical |
+
+| Check | Result |
+|---|---|
+| All 872 FAILED ids | exit **0**, 5,654 rows; **the same row set as the old binary** (`sort \| cmp`) |
+| `ClaimCheck_1` (FAILED) | one row, `CS0246 … 'GreetingEvent'` |
+| `AWSSQSConfiguration_1` (BUILT) | exit 0, **0** rows, *"1 blocks explained, 0 diagnostics"* |
+| `NoSuch_9` / no argument | exit **2** / usage, exit **2** |
+| `--classify` and `--report` after the change | exit 0, **byte-identical** to before |
+
+**Task 1.6 — the unit rule in `--report`.** `unit_rule_violations()` runs on every `--report`, after
+the compile, and prints `SCAFFOLD RULE: <unit>: <what>` before the verdict counts; each violation
+is a finding, so it exits **1**. The scope line gains *"scaffold rule: N units checked, M
+violations"*. Two readings of design § *The Unit Rule, Enforced*, made here:
+
+- **The holder class is exempt from rule 1.** Every unit declares the static class its own
+  `// blockcheck: using static X;` line brings into scope, and no block names it. Its members are
+  not exempt from rule 3
+- **Rule 3 counts fields, properties and methods, not locals.** `--identifiers` called every
+  variable declarator a `field`; it now says `local` for one outside a field declaration.
+  `--list-scaffold` is byte-identical before and after (99 rows)
+
+**Positive control, the real tree** — `python3 tools/blockcheck.py --report r.tsv 2> err; echo $?`
+→ **1**, *"scaffold rule: 14 units checked, 26 violations"*, **all 26 in `PageContext.cs`**: 9 types
+(8 classes, 1 interface) and 17 members (14 properties, 3 methods) — the design's dry-run figures.
+The one member that passes is `connectionString`. **The other 13 units: 0** — the negative control.
+The verdict rows are byte-identical to before.
+
+**Plants, both ways** — each added to `AzureSchedulerContext.cs` alone, `--report` run, the unit
+restored (`git diff --quiet`). The real tree exits 1 on `PageContext.cs` until 1.7, so the evidence
+is the violation count moving by exactly the planted lines:
+
+| Plant | Exit | Violations | The planted line |
+|---|---:|---:|---|
+| none | 1 | 26 | — |
+| a type no block names (`PlantedStub`) | 1 | **27** | `class PlantedStub is named by no BUILT block on contents/AzureScheduler.md` |
+| a type a block on its page declares (`OrderService`, block 9) | 1 | **28** | `class OrderService is declared by contents/AzureScheduler.md block 9, and a stub must not supply it`, and rule 1's line |
+| a member no block names (`plantedValue`) | 1 | **27** | `property plantedValue is named by no BUILT block on contents/AzureScheduler.md` |
+| `global using System.Text;` | 1 | **27** | `declares a global using, which would supply a namespace to every block it reaches` |
+
+The real scaffold exiting **0** is 1.7's output, in the same PR: this branch is not pushed between
+the two, since CI's `blocks` job would fail on 1.6 alone.
+
+**Task 1.7 — `PageContext.cs` cut.** Said, by `pages.tsv`: *"A UNIT SUPPLIES VALUES … AND NOTHING
+ELSE — no domain type"*; measured: `PageContext.cs` declared **9 types and 17 members** no BUILT
+block on its one page names (1.6). It now declares its holder and `connectionString`, the one
+identifier `DapperOutbox.md` #1 uses (`--show contents/DapperOutbox.md 1`, line 14). The file keeps
+its name, because `baseline.tsv` records `PageContext.cs` as that block's scaffold. `pages.tsv`'s
+comment states rules 1–4 and the holder exemption in place of "no domain type"; rule 1's
+"never a type the reader is told to write" is marked as checked by reading (AC6), since `--report`
+cannot decide it.
+
+| Check | Result |
+|---|---|
+| `python3 tools/blockcheck.py --report r.tsv 2> err; echo $?` | **0**; *"scaffold rule: 14 units checked, 0 violations"*; *"989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED"*; *"0 findings, 16 skipped"* |
+| AC2 diff against `before.tsv` | **0** lines — no verdict moved |
+| `--list-scaffold` | 53 identifiers from 14 units, down from 84; `PageContext.cs` lists `class PageContext` and `property connectionString` only |
+| The one row that changed | `DapperOutbox.md` #2, **FAILED before and after**: 12 errors → 16, because it now misses `AddGreeting`, `Person`, `GreetingMade`, `Greeting`, which the old unit supplied to a block that never built. That is the leak the rule exists to stop. Those four are `DapperOutbox.md`'s page-type names for its tranche |
+
+**Task 1.8 — the pin grown, measured alone.** `refs.csproj` gains **24 packages**, each named on a
+page — the design's E2 set less Jaeger (D2), plus the five Brighter packages, and not the AWS V4
+family (D3). The design names some by family; resolved from Brighter's `src/` at `10.7.0` and the
+NuGet `nuspec` of each, all twelve Brighter packages exist at 10.7.0:
+
+| Group | Packages | Version, and why |
+|---|---|---|
+| Brighter, five | `AsyncAPI.NJsonSchema`, `ServiceActivator.Control`, `ServiceActivator.Control.Api`, `ServiceActivator.Extensions.Diagnostics`, `Testing` | 10.7.0 |
+| Brighter EF, four | `MsSql`, `MySql`, `PostgreSql`, `Sqlite` `.EntityFrameworkCore` | 10.7.0. `MongoDb.EntityFramework` also exists and no page names it |
+| Brighter Validation, three | `DataAnnotations`, `FluentValidation`, `Specification` | 10.7.0 |
+| Hangfire | `Core`, `AspNetCore`, `SqlServer` | **1.8.24** — what `MessageScheduler.Hangfire` 10.7.0 depends on (Brighter's `Directory.Packages.props` at the tag) |
+| Hangfire storage, third party | `MemoryStorage` 1.8.1.2, `MySqlStorage` 2.0.3, `PostgreSql` 1.21.1, `Redis.StackExchange` 1.12.0 | latest stable; the design gave none |
+| Quartz | `Extensions.DependencyInjection`, `Extensions.Hosting` | **3.18.1** — what `MessageScheduler.Quartz` 10.7.0 depends on |
+| EF Core | `Microsoft.EntityFrameworkCore` | **9.0.15**, the net9.0 floor the Brighter EF packages set |
+| Tests | `xunit` 2.9.3 (Brighter's own), `Moq` 4.21.0 (latest stable) | |
+
+| Check | Predicted | Result |
+|---|---|---|
+| Restore and build | clean | exit **0**, no `NU1xxx` |
+| Reference assemblies, `grep -vc '^#' refs.txt` | **538** | **538**; the run's own line reads *"538 reference assemblies"* |
+| `--report` | exit 0, 101 BUILT | exit **0**, *"989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED"*, 0 findings, 0 scaffold-rule violations |
+| AC2 diff against `before.tsv` | **0** lines | **0** |
+| Control: the same diff with `DapperOutbox.md` #1 flipped | that row | exactly `BUILT -> FAILED contents/DapperOutbox.md 1` |
+
+**What did move** is below the verdict. 36 FAILED rows changed their error codes, and `--classify`
+now reads *"175 parse (66 pages), 500 import (109 pages), 15 other (10 pages), 7 same-page (6 pages),
+54 values (19 pages), 121 page-type (54 pages)"*. Block by block against 1.3's run, **19 blocks
+changed class, all out of a more expensive class**: other → page-type 10, other → values 4,
+other → import 3, page-type → import 2. None moved into *other* or *parse*.
+
+**Q2, re-read.** With xunit pinned, `Assert`, `Xunit` and `Fact` leave *page-type* (e.g.
+`InMemoryScheduler.md` #9, `InMemoryOptions.md` #2 now name them as *import*). **`Program` ×8 is
+what remains** — a top-level-statements artefact, not a type any stub should supply.
+
+**A gap the design's set leaves.** `UseNpgsql` is called on `HangfireScheduler.md` and
+`PostgresOutbox.md`, and lives in `Npgsql.EntityFrameworkCore.PostgreSQL`, which E2 did not
+include. Not added here: the pin is the design's measured set. 1.10 records whether either page is
+in a tranche; if one is, adding the package is put to the maintainer in that phase's PR.
+
+**Task 1.9 — `tools/README.md`.** Four changes, each read against the tool as built at `23aa74f`:
+row 9 and the paragraph above the table name the grown pin (71 → **95** packages, `grep -c
+'<PackageReference'` on `master` and the branch; **538** reference assemblies) and the unit rule
+(*"14 units checked, 0 violations"*), with the figure unmoved; § *Reading a number before you trust
+it* names `blockcheck`'s three scope lines and carries the two corrected commands in a table, old
+form beside new, with the reason each old form fails; § *The other modes* lists `--classify`,
+`--list-skips`, `--explain` with their output shapes and exit-2 rule; § *What each gate actually
+checks* says `--report` enforces the unit rule, in place of *"is stated in `pages.tsv`"* alone.
+
+Said, by the `blockcheck` bullet: the scaffold *"supplies values typed from a pinned package, never
+a type the page tells the reader to write"*; measured against `pages.tsv` since 1.7: a stub may
+supply a type a page names and never shows (P0-3). Rewritten to cite `pages.tsv` and say what
+`--report` enforces. The tool's usage line reads `--classify [page...]`, not the design's
+`[file]`; the README documents the tool.
+
+| Check | Old | New |
+|---|---:|---:|
+| `ls tools/blockcheck/*.csproj \| wc -l` / `find tools/blockcheck -name '*.csproj' -not -path '*/obj/*' \| wc -l` | **1** | **2** |
+| `grep -rn '101 BUILT' --include='*.md' --include='*.yml' --include='*.py' . > f` (9 lines, all `spec/…` or `tools/…`, none with `./`), then `grep -vc '^./spec/' f` / `grep -vcE '^(\./)?spec/' f` | **9** — excludes nothing | **1** — `tools/README.md` row 9 |
+| `grep -cF '^(\./)?spec/' tools/README.md` | **0** on `master` | **1** |
+| The same AC13 count after the edit — the new table must not add a copy of the figure | — | **1** (the table says *"the BUILT figure"*, not the figure) |
+| `python3 tools/linkcheck.py` | — | exit **0**, 165 files |
+
+**Task 1.10 — the tranches.** § *The tranches* holds the lists, the reconciliation and the two
+methods. Four facts from it bind later phases: **phase 2 carries P1-3** (`args`, 4 of its blocks);
+**phase 4 asks for `Npgsql.EntityFrameworkCore.PostgreSQL`** (`PostgresOutbox.md` #3); **no P0-7
+page is in a tranche**, so phase 5 keeps them all; and **`--classify` reads `Order` as an import**.
+
+That last one is an instrument defect, found here and not repaired. 1.8's pin added
+`StackExchange.Redis`, whose `enum Order` now satisfies *import* for **27 FAILED blocks on 16 pages** (none declares it) that name a
+domain `Order` their page never shows. `--classify`'s rule has no way to tell a pinned name
+from a page's own type that happens to share it. **Ruled by the maintainer, 2026-09-27:
+`--classify` is not repaired.** Every repair phase reads `Order` as a type the page never shows, as
+§ *The tranches* does. On those 27 blocks an *import* row naming `Order` is a page-type name, and it
+is never answered with `using StackExchange.Redis;`.
+
+**Task 1.11 — phase 1 closed, 2026-09-27, branch at `bfb1009`.** Every gate run bare, exit code
+read before its output:
+
+| # | Gate | Exit | Read | Predicted (1.1) | Agrees? |
+|---:|---|---:|---|---|---|
+| 1 | `linkcheck` | 0 | 165 files, 0 broken | none | **yes** |
+| 2 | `pagelint` | 0 | 0 errors, 743 warnings, 162 pages | none | **yes** |
+| 3 | shape | 0 | 161 pages, 12 sections, widest 12 of 20, deepest 4 of 4 | none | **yes** |
+| 4 | redirects | 0 | 77 entries, 7858 bytes | none | **yes** |
+| 5 | `versioncheck` | 0 | 0 stale of 18, across 5 pages | none | **yes** |
+| 6 | `optioncheck` | 0 | 0 mismatches, 59 tables, 519 rows | none | **yes** |
+| 7 | `--verify` | 0 | 161 predicted = 161 published | none | **yes** |
+| 8 | `symbolcheck` | 0 | 0 findings, 22 entries, 161 pages, 3 silenced | none | **yes** |
+| 9 | `blockcheck` | 0 | 989: 101 BUILT, 872 FAILED, 16 SKIPPED; 0 findings; **538** reference assemblies; 14 units, **0 violations**; 15 pages mapped | counts unchanged; 501 → 538; 14 units, exit 0 | **yes** |
+
+**AC2, against a `before.tsv` regenerated from `c7329bb` in a worktree** (exit 0, *"501 reference
+assemblies"*, *"989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED"*, 989 rows): the `awk` diff against
+the branch's report prints **0** lines. **Control:** the same diff over a copy with
+`AWSSQSConfiguration.md` #1 flipped prints exactly `BUILT -> FAILED contents/AWSSQSConfiguration.md 1`.
+
+**No page changed:** `git diff --name-only master | grep -c '^contents/'` → **0**. The diff is eight
+files, all under `tools/` and `spec/017-compile_repairs/`. Phase 1 moved no gate figure, as
+predicted. What it changed is the scope of gate 9 (the pin and the unit rule), and that is
+recorded in `tools/README.md` row 9.
 
 ## Phase 2 — Tranche 1a *(6 tasks, one PR, CHANGES THE SITE)*
 
@@ -452,12 +694,231 @@ widening, both ledgers written, and the residual sentence 018 starts from.
 
 ## The AC2 before-report
 
-*Written by task 1.1: the command that regenerates `before.tsv` at `c7329bb`, and the summary line
-a regenerated copy must match.*
+Every AC2 diff reads against this report. It is rebuilt at each use, from a worktree, with the
+tools as they stood at `c7329bb`:
+
+```bash
+git worktree add --detach $TMPDIR/wt-c7329bb c7329bb
+cd $TMPDIR/wt-c7329bb
+dotnet build tools/blockcheck/refs/refs.csproj -c Release
+dotnet build tools/blockcheck/blockcheck.csproj -c Release
+python3 tools/blockcheck.py --report $TMPDIR/before.tsv; echo $?      # 0
+cd - && git worktree remove --force $TMPDIR/wt-c7329bb
+```
+
+**A regenerated copy must read** `989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED, 0 NOT_COMPILABLE`
+**and have 989 rows** (`wc -l < $TMPDIR/before.tsv`). The diff, from `requirements.md` AC2:
+
+```bash
+awk -F'\t' 'NR==FNR{a[$2 FS $3]=$1;next} a[$2 FS $3]!=$1{print a[$2 FS $3]" -> "$1, $2, $3}' \
+    $TMPDIR/before.tsv <after.tsv>
+```
+
+Measured 2026-09-26 (task 1.1): the regenerated report is **byte-identical** to `--report` at
+`master` `0e1eae9` (`cmp` silent), which is the second method — `git diff --stat c7329bb 0e1eae9 --
+contents tools` is empty, so the two must agree. **Control, both ways:** the diff of the report
+against itself prints **0** lines; against a copy with `Telemetry.md#1` flipped it prints exactly
+`BUILT -> FAILED contents/Telemetry.md 1`.
 
 ## The tranches
 
-*Written by task 1.10.*
+**Fixed by task 1.10, 2026-09-27, against the pin 1.8 committed (`23aa74f`).** Regenerate with:
+
+```bash
+bash spec/017-compile_repairs/probe/run.sh $W
+awk -F'\t' '!($1=="type" && $2=="Order" && $3=="StackExchange.Redis")' $W/types.tsv > t && mv t $W/types.tsv
+python3 spec/017-compile_repairs/probe/pages.py $W $W/r.tsv
+python3 spec/017-compile_repairs/probe/stubs.py $W
+python3 spec/017-compile_repairs/probe/tranches.py $W
+python3 tools/blockcheck.py --classify > $W/c.tsv; echo $?                  # 0
+```
+
+and a join of `$W/verdicts.tsv`, `$W/stubs.tsv` and `$W/r.tsv` per page, each page's section being
+the `SUMMARY.md` `##` it is listed under. **Hard** is PARSE + DEFECT. **Reachable** is BUILT by a
+`using` or an empty stub, plus MEMBERS and HIDDEN: the blocks a `using` and a stub can reach.
+**Same-page** stays FAILED by rule. *BUILT now* is the page's rows in `--report` today.
+
+**The `awk` line removes one row, and the tables depend on it.** 1.8's pin brought in
+`StackExchange.Redis`, which ships `enum Order`. **27 FAILED blocks** name an `Order` their page
+never declares — a domain type, P0-3's kind. The probe resolves it to the Redis enum, adds `using
+StackExchange.Redis;`, and reports the error that follows as a DEFECT. Without the line the probe
+reads **35 / 40**; with it, **37 / 38**. The two pages that move are `SchedulingAMessage.md` #1
+(*"'Order' does not contain a definition for 'ProcessSchedulerId'"*) and `TestingQueryHandlers.md`
+#1 (*"'Order' does not contain a definition for 'Id'"*), each the page's one hard block. With
+`Order` excluded, both are 0-hard. **`--classify` has the same blind spot**: it puts both blocks
+in *import* on `Order`, so a phase that followed it would add the Redis `using`. **Ruled
+2026-09-27: `--classify` stays as it is, and every repair phase reads `Order` as a type the page
+never shows** (§ *Phase 1 as executed*, 1.10).
+
+| Figure | Design (E2 pin) | § 2 (pin at `c7329bb`) | Now, `Order` excluded |
+|---|---:|---:|---:|
+| Tranche 1 pages (0 hard) / tranche 2 pages (exactly 1) | 35 / 40 | 34 / 34 | **37 / 38** |
+| Tranche 1 reachable / same-page | 88 / 21 | — | **100 / 21** |
+| Tranche 2 reachable / hard | 72 / 40 | — | **62 / 38** |
+| Pages with nothing BUILT; of those, in a tranche with ≥ 1 reachable block; of those, reachable by a `using` or empty stub alone | 97; 43; 25 | — | **97; 43; 25** |
+
+**Reconciled against § 2**, by running the probe again in a worktree at `master` `0e1eae9`, whose
+pin predates 1.8. It reads **34 / 68**, § 2's figures. By page, the grown pin:
+
+| Page | § 2 | Now | Why |
+|---|---|---|---|
+| `RequestValidation.md` | — | tranche 1 | #4, #7, #8, #10 DEFECT → STUB: `DataAnnotations` and the Validation packages resolve |
+| `PaginationQueryPatterns.md` | — | tranche 1 | #2, #4 DEFECT → STUB: EF Core (`DbContext`, `ToListAsync`, `CountAsync`) |
+| `TestingQueryHandlers.md` | — | tranche 1 | #2, #3 DEFECT → STUB: xunit (`[Fact]`, `Assert`) and EF Core |
+| `AggregationQueryPatterns.md`, `ParameterizedQueryPatterns.md`, `ProjectionQueryPatterns.md`, `QueryHandlerDependencies.md` | — | tranche 2 | DEFECT → STUB on EF Core blocks, one hard block left each |
+| `SchedulingAMessage.md` | tranche 1 | tranche 1 | unmoved once `Order` is excluded; tranche 2 if it is not |
+
+34 + 3 = **37**; 34 + 4 = **38**. The design's 35 / 40 is what the committed pin reads when `Order`
+is counted as a defect. E2 carried `Hangfire.Redis.StackExchange` (design § *E2*) and so the same
+enum, which means the design's figures carry the same misreading.
+
+**The ≤ 60 target stands:** 97 − 60 = 37 of the 43 reachable pages must gain a BUILT block — 24 in
+tranche 1, 19 in tranche 2. Pages with nothing BUILT: the FAILED pages in `r.tsv`
+(`awk -F'\t' '$1=="FAILED"{print $2}' | sort -u`, **140**) less those with a BUILT row → **97**.
+
+**Two methods agree.** Block by block over all 872 FAILED blocks, `--classify`'s class against the
+probe's verdict, keys identical:
+
+| `--classify` | probe | Blocks |
+|---|---|---:|
+| parse | PARSE | **175**, every block of both |
+| other | DEFECT | **15**, every *other* is a DEFECT |
+| import | DEFECT | **162**: a missing `using` stops the compiler before the defect, and the probe supplies the `using` and sees it |
+| import / page-type / values / same-page | STUB or BUILT | 520 |
+
+So `--classify`'s hard count (`parse` + `other`) is never above the probe's, on any of the 140
+pages. On the 75 tranche pages it agrees with the probe on all **37** of tranche 1, and on **22** of
+tranche 2. The other **16** read 0 in `--classify` and 1 in the probe, each through one
+*import* → DEFECT block. The tranche lists are therefore the probe's, with `--classify` as their
+lower bound: **a phase that repairs an *import* block should expect a defect behind it.**
+
+**The § 3 split stands.** No section is empty. *Outbox and Inbox* holds 22 of tranche 2's 38
+pages, which is what phase 4 was designed for.
+
+**The P0-7 pages fall in no tranche.** Over the 75 pages, `grep -c` for `HowServiceActivatorWorks`,
+`PipelineValidation`, `PolicyRetryAndCircuitBreaker`, `ReactorAndProactor`, `V10MigrationGuide`
+(E4; `attr_mismatch.py` → **7**, exit 1, unchanged), `InMemoryScheduler` and
+`CQRSWithBrighterAndDarker` → **0** each. Their repairs stay in phase 5.
+
+**P1-3's trigger, `args`.** `python3 tools/blockcheck.py --explain` over the 223 FAILED blocks on
+tranche pages (exit 0, *"223 blocks explained, 1197 diagnostics"*), then `grep -F "'args'"` →
+**11 blocks on 8 pages**, each `CS0103 The name 'args' does not exist`. The same grep over all 872
+FAILED blocks → **36**, 1.3's figure. **Phase 2 holds the first, so phase 2 carries P1-3:**
+
+| Phase | Blocks naming `args` |
+|---:|---|
+| 2 | `TutorialFirstMessage.md` #2, #4; `TutorialStreamingWithKafka.md` #1, #2 |
+| 3 | `GcpPubSubConfiguration.md` #1, `MQTTConfiguration.md` #1, `MSSQLMessageBroker.md` #1, `RedisConfiguration.md` #1, `RocketMQConfiguration.md` #1, `QueryPipelinePolicies.md` #1, `TickerQScheduler.md` #1 |
+
+**`UseNpgsql` reaches phase 4.** `PostgresOutbox.md` is in tranche 2. Its one hard block, #3, reads
+`CS1061 'DbContextOptionsBuilder' does not contain a definition for 'UseNpgsql'` once the probe's
+`using`s are supplied, beside a `CS0116` shape error. Adding `Npgsql.EntityFrameworkCore.PostgreSQL`
+to the pin goes to the maintainer in phase 4's PR (1.8). `HangfireScheduler.md` is in no tranche.
+
+**Said, by design § *Target And Tranches*:** *"`RequestValidation.md` (14 reachable) …
+`AnalyzerSupport.md` (6 each)"*. **Measured:** those are FAILED counts, not reachable ones.
+`RequestValidation.md` is 14 FAILED: 8 reachable and 6 same-page. `AnalyzerSupport.md` has **5**
+FAILED blocks, unchanged since `c7329bb`, since no verdict moved in phase 1. The design's sentence
+is rewritten against the tables below.
+
+### Phase 2 — tranche 1a — 17 pages
+
+| Section | Page | FAILED now | Reachable | Same-page | Hard | BUILT now |
+|---|---|---:|---:|---:|---:|---:|
+| Get Started | `TutorialDurableOutbox.md` | 2 | 0 | 2 | 0 | 1 |
+| Get Started | `TutorialFirstCommand.md` | 2 | 0 | 2 | 0 | 1 |
+| Get Started | `TutorialFirstMessage.md` | 3 | 0 | 3 | 0 | 1 |
+| Get Started | `TutorialStreamingWithKafka.md` | 2 | 2 | 0 | 0 | 0 |
+| Commands, Handlers and Pipelines | `BuildingAnAsyncPipeline.md` | 2 | 0 | 2 | 0 | 1 |
+| Commands, Handlers and Pipelines | `ImplementingAHandler.md` | 2 | 1 | 1 | 0 | 0 |
+| Commands, Handlers and Pipelines | `ImplementingAsyncHandler.md` | 2 | 1 | 1 | 0 | 0 |
+| Commands, Handlers and Pipelines | `RequestValidation.md` | 14 | 8 | 6 | 0 | 2 |
+| Commands, Handlers and Pipelines | `ReturningResultsFromAHandler.md` | 1 | 1 | 0 | 0 | 0 |
+| Brighter Configuration | `AnalyzerSupport.md` | 5 | 5 | 0 | 0 | 3 |
+| Brighter Configuration | `RelationalDatabaseConfigurationReference.md` | 1 | 1 | 0 | 0 | 0 |
+| Using an External Bus | `ClaimCheck.md` | 2 | 2 | 0 | 0 | 1 |
+| Using an External Bus | `Compression.md` | 2 | 2 | 0 | 0 | 0 |
+| Using an External Bus | `ErrorHandlingOptions.md` | 6 | 6 | 0 | 0 | 0 |
+| Using an External Bus | `HandlingLargeMessages.md` | 4 | 3 | 1 | 0 | 0 |
+| Using an External Bus | `HandlingPoisonMessages.md` | 3 | 3 | 0 | 0 | 3 |
+| Health Checks and Observability | `HealthChecks.md` | 1 | 1 | 0 | 0 | 0 |
+| **Total** | **17 pages** | **54** | **36** | **18** | **0** | **13** |
+
+### Phase 3 — tranche 1b — 20 pages
+
+| Section | Page | FAILED now | Reachable | Same-page | Hard | BUILT now |
+|---|---|---:|---:|---:|---:|---:|
+| Transports | `GcpPubSubConfiguration.md` | 1 | 1 | 0 | 0 | 0 |
+| Transports | `InMemoryTransport.md` | 4 | 4 | 0 | 0 | 0 |
+| Transports | `MQTTConfiguration.md` | 1 | 1 | 0 | 0 | 0 |
+| Transports | `MSSQLMessageBroker.md` | 1 | 1 | 0 | 0 | 0 |
+| Transports | `MSSQLTransportInboxAndOutbox.md` | 4 | 4 | 0 | 0 | 6 |
+| Transports | `PostgreSQLTransportAndOutbox.md` | 3 | 3 | 0 | 0 | 4 |
+| Transports | `RabbitMQMigrateToQuorumQueues.md` | 1 | 1 | 0 | 0 | 0 |
+| Transports | `RedisConfiguration.md` | 1 | 1 | 0 | 0 | 0 |
+| Transports | `RocketMQConfiguration.md` | 1 | 1 | 0 | 0 | 0 |
+| Outbox and Inbox | `BoxProvisioningConfiguration.md` | 9 | 9 | 0 | 0 | 0 |
+| Outbox and Inbox | `DistributedLock.md` | 2 | 2 | 0 | 0 | 0 |
+| Outbox and Inbox | `DynamoDbDistributedLock.md` | 2 | 2 | 0 | 0 | 0 |
+| Outbox and Inbox | `TransactionalMessagingWithTheOutbox.md` | 2 | 2 | 0 | 0 | 0 |
+| Scheduler | `SchedulingAMessage.md` | 9 | 9 | 0 | 0 | 0 |
+| Scheduler | `TickerQScheduler.md` | 6 | 6 | 0 | 0 | 2 |
+| Darker | `PaginationQueryPatterns.md` | 3 | 0 | 3 | 0 | 1 |
+| Darker | `QueryObjectValidation.md` | 3 | 3 | 0 | 0 | 0 |
+| Darker | `QueryPipelinePolicies.md` | 5 | 5 | 0 | 0 | 1 |
+| Darker | `QueryResultTypes.md` | 6 | 6 | 0 | 0 | 0 |
+| Darker | `TestingQueryHandlers.md` | 3 | 3 | 0 | 0 | 0 |
+| **Total** | **20 pages** | **67** | **64** | **3** | **0** | **14** |
+
+### Phase 4 — tranche 2a — 22 pages
+
+| Section | Page | FAILED now | Reachable | Same-page | Hard | BUILT now |
+|---|---|---:|---:|---:|---:|---:|
+| Outbox and Inbox | `AzureBlobArchiveProvider.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `AzureBlobDistributedLock.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `DapperOutbox.md` | 1 | 0 | 0 | 1 | 1 |
+| Outbox and Inbox | `DynamoInbox.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `DynamoOutbox.md` | 2 | 1 | 0 | 1 | 2 |
+| Outbox and Inbox | `FirestoreDistributedLock.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `InMemoryInbox.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `InMemoryOutbox.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `MSSQLInbox.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `MSSQLOutbox.md` | 2 | 1 | 0 | 1 | 1 |
+| Outbox and Inbox | `MongoDbDistributedLock.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `MsSqlDistributedLock.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `MySQLInbox.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `MySQLOutbox.md` | 3 | 2 | 0 | 1 | 0 |
+| Outbox and Inbox | `MySqlDistributedLock.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `PostgresDistributedLock.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `PostgresInbox.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `PostgresOutbox.md` | 2 | 1 | 0 | 1 | 1 |
+| Outbox and Inbox | `ReplayOnSeenReference.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `SqliteInbox.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `SqliteOutbox.md` | 3 | 2 | 0 | 1 | 0 |
+| Outbox and Inbox | `UsingSweeperCircuitBreaking.md` | 4 | 3 | 0 | 1 | 1 |
+| **Total** | **22 pages** | **40** | **18** | **0** | **22** | **6** |
+
+### Phase 5 — tranche 2b — 16 pages
+
+| Section | Page | FAILED now | Reachable | Same-page | Hard | BUILT now |
+|---|---|---:|---:|---:|---:|---:|
+| Commands, Handlers and Pipelines | `AgreementDispatcherRouting.md` | 11 | 10 | 0 | 1 | 0 |
+| Commands, Handlers and Pipelines | `BuildingAPipeline.md` | 4 | 3 | 0 | 1 | 0 |
+| Using an External Bus | `CloudEventsReference.md` | 4 | 3 | 0 | 1 | 0 |
+| Using an External Bus | `S3LuggageStore.md` | 2 | 1 | 0 | 1 | 0 |
+| Transports | `BrighterControlAPI.md` | 1 | 0 | 0 | 1 | 0 |
+| Transports | `PostgreSQLBrokerTradeOffs.md` | 1 | 0 | 0 | 1 | 0 |
+| Transports | `PostgreSQLMessageBroker.md` | 12 | 11 | 0 | 1 | 1 |
+| Darker | `AggregationQueryPatterns.md` | 3 | 2 | 0 | 1 | 0 |
+| Darker | `DarkerAndBrighterPipelines.md` | 1 | 0 | 0 | 1 | 0 |
+| Darker | `DarkerConfigurationReference.md` | 4 | 3 | 0 | 1 | 0 |
+| Darker | `ParameterizedQueryPatterns.md` | 4 | 1 | 2 | 1 | 2 |
+| Darker | `ProjectionQueryPatterns.md` | 3 | 2 | 0 | 1 | 1 |
+| Darker | `QueryHandlerDependencies.md` | 4 | 3 | 0 | 1 | 0 |
+| Health Checks and Observability | `Telemetry.md` | 3 | 2 | 0 | 1 | 2 |
+| Understanding Brighter | `CQRSUseCasesAndPatterns.md` | 2 | 1 | 0 | 1 | 0 |
+| Understanding Brighter | `HowConfiguringTheDispatcherWorks.md` | 3 | 2 | 0 | 1 | 0 |
+| **Total** | **16 pages** | **62** | **44** | **2** | **16** | **6** |
 
 ## Blocks that stay FAILED
 

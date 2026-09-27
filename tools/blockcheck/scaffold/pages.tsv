@@ -16,13 +16,26 @@
 # which is what makes the hand-work tractable and what stops a scaffold being
 # tuned until one stubborn block goes green.
 #
-# Phase 1 populated this with the page it needed to red-proof the mechanism in
-# both directions. Phase 3 task 3.3 added the rest, under one rule: A UNIT
-# SUPPLIES VALUES, TYPED FROM A PINNED PACKAGE OR THE BCL, AND NOTHING ELSE --
-# no domain type, no type another block on the page declares, no `dynamic`.
-# A page is listed here only if its unit makes at least one block build, and
-# every member of a unit is named by a block that builds with it.
-# `baseline.tsv` records the scaffold each admitted block was measured with.
+# THE UNIT RULE. A unit supplies what its pages' blocks name and nothing else,
+# typed from a pinned package or the BCL -- never `dynamic`. For a unit mapped
+# to pages P, `--report` checks, and a violation is a finding:
+#
+#   1. every type it declares is named by a BUILT block on P. A stub for a
+#      type a page names and never shows is allowed (spec 017 P0-3); a type
+#      the page tells the reader to write is not. That second half is a
+#      judgement, checked by reading what `--list-scaffold` prints, not here
+#   2. no block on P declares a type of that name -- a stub must never stand
+#      in for a type the page itself declares in another block
+#   3. every member it declares -- field, property, method -- is named by a
+#      BUILT block on P, so a stub carries only what the page calls
+#   4. it declares no `global using`. A missing `using` is the page's to
+#      repair, where the reader sees it; a unit never supplies a namespace
+#
+# The static class a unit's own `// blockcheck: using static X;` line brings
+# into scope is exempt from 1, since no block names it; its members are not
+# exempt from 3. A page is listed here only if its unit makes at least one
+# block build. `baseline.tsv` records the scaffold each admitted block was
+# measured with.
 contents/DapperOutbox.md	PageContext	-
 contents/AzureScheduler.md	AzureSchedulerContext	-
 contents/DynamoOutbox.md	DynamoOutboxContext	-

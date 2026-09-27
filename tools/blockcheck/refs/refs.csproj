@@ -163,6 +163,54 @@
          requirements.md P2-2 counts all six as strings on purpose: a string
          in a `using` is not a package, and pinning the two that are not would
          fail the restore. -->
+    <!-- SPEC 017 GREW THE PIN, AND MEASURED IT ALONE. Every package below is
+         one a page names, and each was added with no page changed: the
+         verdicts before and after were diffed and none moved. A pin that moved
+         a verdict would be a change nobody repaired.
+
+         Brighter packages the pages name that the probe's 67 did not carry. -->
+    <PackageReference Include="Paramore.Brighter.AsyncAPI.NJsonSchema" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MsSql.EntityFrameworkCore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MySql.EntityFrameworkCore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.PostgreSql.EntityFrameworkCore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Control" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Control.Api" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.Diagnostics" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Sqlite.EntityFrameworkCore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Testing" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Validation.DataAnnotations" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Validation.FluentValidation" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Validation.Specification" Version="10.7.0" />
+
+    <!-- What the scheduler pages configure the schedulers WITH. Hangfire and
+         Quartz are at the versions Paramore.Brighter.MessageScheduler.Hangfire
+         and .Quartz 10.7.0 themselves depend on, so a reader who installs the
+         Brighter package gets these. Hangfire's storage packages are third
+         party and version independently; each is its latest stable release.
+
+         NOT HERE: the AWS V4 family (spec 017 D3). Its packages need
+         AWSSDK.SQS 4.x and the V3 ones cap it below 4.0; one project restores
+         one. Nor OpenTelemetry.Exporter.Jaeger (D2), which upstream
+         deprecated for OTLP. -->
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.24" />
+    <PackageReference Include="Hangfire.Core" Version="1.8.24" />
+    <PackageReference Include="Hangfire.MemoryStorage" Version="1.8.1.2" />
+    <PackageReference Include="Hangfire.MySqlStorage" Version="2.0.3" />
+    <PackageReference Include="Hangfire.PostgreSql" Version="1.21.1" />
+    <PackageReference Include="Hangfire.Redis.StackExchange" Version="1.12.0" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.8.24" />
+    <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.18.1" />
+    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.18.1" />
+
+    <!-- The floor Paramore.Brighter.MsSql.EntityFrameworkCore 10.7.0 sets for
+         net9.0. Below it the restore fails NU1605, a package downgrade. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.15" />
+
+    <!-- The test pages' own frameworks: xunit at the version Brighter's own
+         tests use, and Moq. -->
+    <PackageReference Include="Moq" Version="4.21.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+
     <PackageReference Include="Paramore.Darker" Version="4.1.1" />
     <PackageReference Include="Paramore.Darker.AspNetCore" Version="4.1.1" />
     <PackageReference Include="Paramore.Darker.Policies" Version="4.1.1" />
