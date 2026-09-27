@@ -16,37 +16,44 @@ Brighter provides an AspNet Core Health check for the **Dispatcher**.
 The below will configure ASP.Net Core Health checks for Brighter's **Dispatcher**, for more information on [ASP.NET Core Health Check](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks?view=aspnetcore-6.0)
 
 ```csharp
+using System.Linq;
+using System.Text.Json;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.ServiceActivator.Extensions.Diagnostics.HealthChecks;
+
 // Web Application Builder code goes here
 
 builder.Services.AddHealthChecks()
     .AddCheck<BrighterServiceActivatorHealthCheck>("Brighter", HealthStatus.Unhealthy);
 
-var  app = builder.Build();
+var app = builder.Build();
 
-app.UseEndpoints(endpoints =>
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/detail", new HealthCheckOptions
 {
-    endpoints.MapHealthChecks("/health");
-    endpoints.MapHealthChecks("/health/detail", new HealthCheckOptions
+    ResponseWriter = async (context, report) =>
     {
-        ResponseWriter = async (context, report) =>
+        var content = new
         {
-            var content = new
-            {
-                Status = report.Status.ToString(),
-                Results = report.Entries.ToDictionary(e => e.Key,
-                    e => new
-                    {
-                        Status = e.Value.Status.ToString(),
-                        Description = e.Value.Description,
-                        Duration = e.Value.Duration
-                    }),
-                TotalDuration = report.TotalDuration
-            };
+            Status = report.Status.ToString(),
+            Results = report.Entries.ToDictionary(e => e.Key,
+                e => new
+                {
+                    Status = e.Value.Status.ToString(),
+                    Description = e.Value.Description,
+                    Duration = e.Value.Duration
+                }),
+            TotalDuration = report.TotalDuration
+        };
 
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(content, JsonSerialisationOptions.Options));
-        }
-    });
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsync(JsonSerializer.Serialize(content, JsonSerialisationOptions.Options));
+    }
 });
 
 app.Run();

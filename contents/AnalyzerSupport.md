@@ -79,6 +79,9 @@ The code fix adds `Partitioner = Partitioner.Murmur2Random` to the publication i
 **BRT007** warns when a publication uses `Partitioner.ConsistentRandom`:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var publication = new KafkaPublication
 {
     Topic = new RoutingKey("orders.created"),
@@ -89,6 +92,9 @@ var publication = new KafkaPublication
 For a new publication, change the value to `Murmur2Random`:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var publication = new KafkaPublication
 {
     Topic = new RoutingKey("orders.created"),
@@ -103,6 +109,9 @@ The code fix replaces `Partitioner.ConsistentRandom` with `Partitioner.Murmur2Ra
 **BRT008** warns when a publication uses `Partitioner.Consistent`:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var publication = new KafkaPublication
 {
     Topic = new RoutingKey("orders.created"),
@@ -113,6 +122,9 @@ var publication = new KafkaPublication
 For a new publication, change the value to `Murmur2`:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var publication = new KafkaPublication
 {
     Topic = new RoutingKey("orders.created"),
@@ -156,6 +168,9 @@ For an existing publication that must preserve its current key-to-partition mapp
 Use a pragma around a single publication:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 #pragma warning disable BRT007
 var publication = new KafkaPublication
 {
