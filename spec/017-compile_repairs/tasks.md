@@ -188,7 +188,7 @@ Predicted*).
   - Notes: depends on nothing; 1.7 depends on it. The 26 is the design's dry-run figure;
     re-derive it by the rule as built, and record any difference.
 
-- [ ] **Task 1.7:** Cut `PageContext.cs` to `connectionString` and rewrite `pages.tsv`'s rule comment
+- [x] **Task 1.7:** Cut `PageContext.cs` to `connectionString` and rewrite `pages.tsv`'s rule comment
   - Input: `tools/blockcheck/scaffold/units/PageContext.cs`; `pages.tsv`'s comment;
     `python3 tools/blockcheck.py --show contents/DapperOutbox.md 1`; requirements Q6, P0-3
   - Output: `PageContext.cs` declares `connectionString` and nothing else; `pages.tsv`'s comment
@@ -365,6 +365,22 @@ is the violation count moving by exactly the planted lines:
 
 The real scaffold exiting **0** is 1.7's output, in the same PR: this branch is not pushed between
 the two, since CI's `blocks` job would fail on 1.6 alone.
+
+**Task 1.7 — `PageContext.cs` cut.** Said, by `pages.tsv`: *"A UNIT SUPPLIES VALUES … AND NOTHING
+ELSE — no domain type"*; measured: `PageContext.cs` declared **9 types and 17 members** no BUILT
+block on its one page names (1.6). It now declares its holder and `connectionString`, the one
+identifier `DapperOutbox.md` #1 uses (`--show contents/DapperOutbox.md 1`, line 14). The file keeps
+its name, because `baseline.tsv` records `PageContext.cs` as that block's scaffold. `pages.tsv`'s
+comment states rules 1–4 and the holder exemption in place of "no domain type"; rule 1's
+"never a type the reader is told to write" is marked as checked by reading (AC6), since `--report`
+cannot decide it.
+
+| Check | Result |
+|---|---|
+| `python3 tools/blockcheck.py --report r.tsv 2> err; echo $?` | **0**; *"scaffold rule: 14 units checked, 0 violations"*; *"989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED"*; *"0 findings, 16 skipped"* |
+| AC2 diff against `before.tsv` | **0** lines — no verdict moved |
+| `--list-scaffold` | 53 identifiers from 14 units, down from 84; `PageContext.cs` lists `class PageContext` and `property connectionString` only |
+| The one row that changed | `DapperOutbox.md` #2, **FAILED before and after**: 12 errors → 16, because it now misses `AddGreeting`, `Person`, `GreetingMade`, `Greeting`, which the old unit supplied to a block that never built. That is the leak the rule exists to stop. Those four are `DapperOutbox.md`'s page-type names for its tranche |
 
 ## Phase 2 — Tranche 1a *(6 tasks, one PR, CHANGES THE SITE)*
 
