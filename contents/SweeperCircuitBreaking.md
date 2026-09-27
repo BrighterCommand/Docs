@@ -219,8 +219,8 @@ The sweeper does not filter tripped topics itself. It passes `TrippedTopics` to 
 | MongoDB | Yes |
 | Firestore | Yes |
 | InMemory | Yes |
-| DynamoDB, both the V3 and V4 packages | **No** — it accepts the list and ignores it |
-| Spanner | **No** — its query has no place for the filter, so the filter is dropped |
+| DynamoDB, both the V3 and V4 packages | **No** — it accepts the list and ignores it ([#4443](https://github.com/BrighterCommand/Brighter/issues/4443)) |
+| Spanner | **No** — its query has no place for the filter, so the filter is dropped ([#4444](https://github.com/BrighterCommand/Brighter/issues/4444)) |
 
 With DynamoDB or Spanner, a registered breaker still records trips, and `TrippedTopics` still reports them, so the monitoring above works. But every sweep reads and sends a tripped topic's messages as though nothing had tripped.
 
