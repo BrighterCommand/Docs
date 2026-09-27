@@ -1256,7 +1256,7 @@ skipped with an accepted reason, or listed. Page list: § *The tranches*, phase 
   - Output: each page whole; baseline rows; each defect in § *Defect ledger* with its recurrence
     grep (obligation 14)
 
-- [ ] **Task 4.3:** Repair the distributed-lock pages of the tranche
+- [x] **Task 4.3:** Repair the distributed-lock pages of the tranche
   - Input: the phase 4 rows whose page is a Distributed Lock; 4.1's verdicts
   - Output: each page whole; baseline rows; ledger rows as 4.2
   - Notes: the lock pages share a shape; a defect found on one is grepped for on all before the
@@ -1385,7 +1385,7 @@ placeholder leaves them FAILED: `AzureBlobArchiveProvider.md` #1 and the five in
 - **`Order`**: no phase 4 block names it (`grep -cw Order` over each of the 40 FAILED blocks'
   `--show` output → 0). The 1.10 ruling has nothing to act on here
 - **Shared worlds.** The four EF Core outbox pages (`MSSQLOutbox.md`, `MySQLOutbox.md`,
-  `PostgresOutbox.md`, `SqliteOutbox.md`) repeat one block shape, and the five `*DistributedLock.md`
+  `PostgresOutbox.md`, `SqliteOutbox.md`) repeat one block shape, and the six `*DistributedLock.md`
   pages another; a unit or a repair on one is tried on its siblings before the next page is opened.
   `InMemoryInbox.md` #1 wants `services` and `subscriptions`, which `InMemoryTransportContext.cs`
   already supplies
@@ -1479,6 +1479,52 @@ requirements' `awk` and a Python join over the same report.
   **6** outside the tranche — `BrighterBasicConfiguration.md` and `DispatcherConfigurationReference.md`
   by the lambda recurrence, `BrighterInboxSupport.md`, `FirestoreInbox.md`, `MongoDBInbox.md` and
   `SpannerInbox.md` by the #4335 ruling
+
+**Task 4.3 — the distributed-lock pages.** Six pages. **BUILT 214 → 226** (+12): #1 and #2 on each
+of `AzureBlobDistributedLock.md`, `FirestoreDistributedLock.md`, `MongoDbDistributedLock.md`,
+`MsSqlDistributedLock.md`, `MySqlDistributedLock.md` and `PostgresDistributedLock.md`. **None stays
+FAILED.** `pagelint` **636 → 624**, two on each page (per page, against a worktree at `7d04918`).
+Pages with nothing BUILT **64 → 58**, all six; requirements' `awk` and a Python join agree. **The
+≤ 60 target is met**: phase 4 landed all ten of its pages with nothing BUILT and a reachable block,
+and five of its six hard-only pages.
+
+- **Said at 4.1:** *"the five `*DistributedLock.md` pages"* share a shape. **Measured:** the phase 4
+  table holds six, and all six share it. Rewritten above
+- **One repair, tried on all six before any page was opened alone.** Block 1 takes its `using`s.
+  Block 2 takes them too, and its `opt.Outbox = /* your … Outbox */;` becomes `opt.Outbox = outbox;
+  // your … Outbox` — the design's placeholder rule, completing the statement it sat in
+- **One unit.** `DistributedLockProviderContext.cs` supplies `services` and `outbox`, typed
+  `IAmAnOutbox` as `ProducersConfiguration.Outbox` is (`ProducersConfiguration.cs:212`). Each page
+  configures its Outbox on the Outbox's own page and tells the reader to write neither (rule 1, by
+  reading). `--report` → *"35 units checked, 0 violations"*
+- **No defect.** Every page's prose was read against 10.7.0: `sp_getapplock` in `Exclusive` mode at
+  `Session` scope with a zero timeout (`MsSqlLockingQueries.cs`); `GET_LOCK` with a one-second
+  timeout and a SHA-512 name truncated to 160 bits (`MySqlLockingProvider.cs:170`);
+  `pg_try_advisory_lock`; a MongoDB insert on `_id` with the duplicate key refused and a TTL index
+  from `Locking.TimeToLive` (`BaseMongoDb.cs:111`); a Firestore create with `Exists = false`; an
+  Azure blob uploaded if absent and leased for `LeaseValidity`, the container never created.
+  `optioncheck` reads the two tables here, unchanged
+- **Behaviour, run with controls** against released 10.7.0 packages and real servers in Docker
+  (`postgres:16`, `mysql:8`, `azure-sql-edge`), net10.0, one process per case. Each provider is
+  built as its page's block 1 builds it; a "crash" is the holder's server session killed without a
+  release:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `PostgresDistributedLock.md`: released when the session closes, *"including if the holding instance crashes"* | A obtains; B refused; A's backend terminated → a new instance **obtains** | A alive → a new instance **refused** |
+  | `MySqlDistributedLock.md`: the same | A obtains; B refused; A's connection killed → **obtains** | A alive → **refused** |
+  | `MsSqlDistributedLock.md`: the same | A obtains; B refused; A's session killed → **obtains** | A alive → **refused** |
+
+  Read, not run: the MongoDB, Firestore and Azure Blob providers, whose recovery is a TTL or a
+  lease the pages already describe as bounded by it, and which need their emulators
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 12 rows at `b8f21ac`. `--report` → exit **0**, *"983 blocks: 226 BUILT, 741 FAILED,
+  16 SKIPPED"*, baseline 226, 0 findings. Joined on page and ordinal against 4.2's report, all 12
+  blocks that moved went `FAILED -> BUILT`, and there are no new keys
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; shape, redirects and `--verify` unmoved;
+  `pagelint --changed origin/master` 0 errors. **Pages changed: 6** (`git diff --name-only
+  7d04918..HEAD -- contents`), all on the tranche
 
 ---
 
