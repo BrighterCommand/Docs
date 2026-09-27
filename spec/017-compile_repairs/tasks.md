@@ -1251,7 +1251,7 @@ skipped with an accepted reason, or listed. Page list: § *The tranches*, phase 
     before it is touched**: parse (placeholder / fragment / not code) or other (defect / wrapper
     artefact), from `--classify` and `--explain`
 
-- [ ] **Task 4.2:** Repair the outbox and inbox pages of the tranche
+- [x] **Task 4.2:** Repair the outbox and inbox pages of the tranche
   - Input: the phase 4 rows whose page is an Outbox or Inbox; 4.1's verdicts
   - Output: each page whole; baseline rows; each defect in § *Defect ledger* with its recurrence
     grep (obligation 14)
@@ -1396,6 +1396,89 @@ placeholder leaves them FAILED: `AzureBlobArchiveProvider.md` #1 and the five in
   `UseMisfireHandler` and printed `called`; the control, `C.UseMisfireHandlr()`, is `CS0117`. So it is not a compile defect but a
   text one — a search of the page for `UseMisfireHandler` misses the line. The page is in no
   tranche; recorded for phase 5 to remove
+
+**Task 4.2 — the outbox and inbox pages.** Thirteen pages. **BUILT 189 → 214** (+25): all **22**
+FAILED blocks on the thirteen, `TickerQScheduler.md` #3 from the pin, and `BrighterBasicConfiguration.md`
+#3, #4 from the lambda recurrence. **None of the thirteen keeps a FAILED block.** `pagelint`
+**658 → 636**: **19** on the tranche pages, **2** on `BrighterBasicConfiguration.md` and **1** on
+`AzureBlobArchiveProvider.md`, both touched by the recurrence (per page, against a worktree at
+`d8633b1`). Pages with nothing BUILT **74 → 64**: `DynamoInbox.md`, `InMemoryInbox.md`,
+`InMemoryOutbox.md`, `MSSQLInbox.md`, `MySQLInbox.md`, `MySQLOutbox.md`, `PostgresInbox.md`,
+`SqliteInbox.md`, `SqliteOutbox.md` and `BrighterBasicConfiguration.md`. Two methods, one figure:
+requirements' `awk` and a Python join over the same report.
+
+- **The pin, measured alone first** (`bd2b1ed`): `Npgsql.EntityFrameworkCore.PostgreSQL` 9.0.4 and
+  `TickerQ.Dashboard`, `TickerQ.EntityFrameworkCore` 9.0.2; **98** `PackageReference`s, **542**
+  reference assemblies. **Said at 4.1:** +2 BUILT. **Measured:** +1, `TickerQScheduler.md` #3.
+  #2 now fails on `Program` alone — `typeof(Program).Assembly` in a `Program.cs` with no declaration
+  after its statements, the `statements` wrapper's limitation that keeps `QueryPipelinePolicies.md`
+  #1 FAILED (Q2). Its row in § *Blocks that stay FAILED* is rewritten to that reason
+- **The ≤ 60 target.** Of phase 4's ten pages with nothing BUILT and a reachable block, **4** landed
+  (`InMemoryInbox.md`, `InMemoryOutbox.md`, `MySQLOutbox.md`, `SqliteOutbox.md`); the other six are
+  lock pages, 4.3's. Five of the six hard-only pages landed as well, and `BrighterBasicConfiguration.md`
+  off the tranche. 64 − 60 = **4** still to land
+- **`using`s:** every repaired block. On `MSSQLInbox.md`, `InMemoryInbox.md` and `InMemoryOutbox.md`
+  they replace the leading `// ...`
+- **Four units and two grown.** `RelationalOutboxContext.cs` supplies `services` to the four EF Core
+  outbox pages; `RelationalInboxContext.cs` supplies `connectionString` to the four relational inbox
+  pages — two units, because each outbox page's block 2 declares its own `connectionString`.
+  `InMemoryBoxContext.cs` supplies `services`, `subscriptions`, `producerRegistry` and the small
+  `Person` domain both InMemory pages' handlers use. `DynamoInboxContext.cs` supplies `credentials`.
+  `PageContext.cs` (`DapperOutbox.md`) and `DynamoOutboxContext.cs` gain the requests and entities of
+  the samples their handlers come from, `WebAPI_Dapper` and `WebAPI_Dynamo`, typed as 10.7.0's samples
+  type them; each page now names its sample. None is a type a page tells the reader to write (rule 1,
+  by reading). `MSSQLOutbox.md` and `PostgresOutbox.md` #1, BUILT before, are re-admitted with the
+  new unit. `--report` → *"34 units checked, 0 violations"*
+- **The wrapper artefacts, made whole** (design: a fragment the reader needs whole). The EF Core
+  outbox pages' free `public void ConfigureServices` now sits in `public class Startup`, with a
+  comment that in `Program.cs` the same calls go on `builder.Services`. `DapperOutbox.md` and
+  `DynamoOutbox.md` #2, an `override` with no class, are shown in `AddGreetingHandlerAsync` with the
+  fields and constructor the sample declares. `MySQLOutbox.md`'s `....` is `// ... other Brighter
+  options`, as its siblings write it
+- **The unopened `ConfigureServices` lambda, at every recurrence: 13 → 0 on 8 pages**, the two
+  off-tranche pages included. `pagelint --changed` then asked for `using`s on the touched
+  `BrighterBasicConfiguration.md` #3, #4 and `AzureBlobArchiveProvider.md` #1; with them,
+  `--explain` found only a bare `...` in each `BrighterBasicConfiguration.md` block, now `// ...`,
+  and both build. `AzureBlobArchiveProvider.md` #1 keeps its five defects for 4.4. The five
+  `DispatcherConfigurationReference.md` blocks each open with `// ...`, so rule 6 does not reach them;
+  they stay FAILED on placeholders and names the page never shows
+- **Six defects, and one upstream** (§ *Defect ledger*): `[UseInboxAsync]` on a class; `Post` awaited
+  with a `cancellationToken` it does not take; a `;` inside an object initialiser; `opt.` in a lambda
+  whose parameter is `options`; the InMemory Inbox said to keep entries until restart; the page's
+  `Warn` configuration beside an attribute whose default `Throw` wins. **BrighterCommand/Brighter#4335**
+  — a global `InboxConfiguration` is ignored unless the application calls `AddProducers`. Fixed by
+  #4396 on `master`, in no release. **Maintainer's ruling, 2026-09-27: state it once, link from the
+  inbox pages.** `BrighterInboxSupport.md` gains *Global Inbox Configuration in a Consumer-Only
+  Application*, with the workaround, and the nine inbox pages one sentence each after their
+  configuration block
+- **Behaviour, run with controls** against released 10.7.0 packages in scratch console apps,
+  net10.0, one process per case:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `InMemoryInbox.md`: *"No cleanup: Old entries remain until process restart"* | entry written, fake clock +11 min, another add → entry **gone**, count **1** | no advance → present, count **2**; +6 min, under the 10-min scan interval → present |
+  | *"Memory bound: All seen message IDs held in memory"* | `EntryLimit = 4`, 10 adds → **8** held (compacted once, to half, then not again within the interval) | `EntryLimit = -1` → **10** |
+  | #1 with #2: a duplicate reaching the handler | the page's `Warn` configuration and #2's attribute, the same event published twice → publish 2 throws **`OnceOnlyException`**; handler runs **1** | the attribute with `onceOnlyAction: OnceOnlyAction.Warn` → both return; runs **1** |
+  | The global Inbox, from `InboxConfiguration` alone (#4335) | no attribute, `AddConsumers` only → both return; handler runs **2** | the same with `AddProducers` → runs **1**. The attribute without producers → runs **1** |
+  | The deduplication window, end to end | publish, fake clock +11 min, publish another, publish the first again → runs **2** | — the first two rows are its controls |
+  | `SqliteOutbox.md` intro: messages *"saved within the same transaction as your business logic"* | #1's DDL, #3 verbatim in `Startup`, an insert and `DepositPostAsync` in the EF transaction, commit → Greeting **1**, Outbox **1** | rollback → Greeting **0**, Outbox **0** |
+
+  Read, not run: `DapperOutbox.md` #2 is the handler `TransactionalMessagingWithTheOutbox.md` #1 ran
+  in 3.3, unchanged but for its class. `DynamoOutbox.md` #2 and `DynamoInbox.md` #1 need DynamoDB;
+  they register and transact through types each compiled against, and assert nothing the SQLite run
+  above does not. The relational inbox blocks configure the store 3.2's MSSQL inbox run exercised
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 1 row at `bd2b1ed` (the pin), 24 rows and 2 re-admissions at `a8ede7c`. `--report` →
+  exit **0**, *"983 blocks: 214 BUILT, 753 FAILED, 16 SKIPPED"*, baseline 214, 0 findings. Joined on
+  page and ordinal against the report at `9479991`, all 25 blocks that moved went `FAILED -> BUILT`,
+  and there are no new keys
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; shape, redirects and `--verify` unmoved;
+  `pagelint --changed origin/master` 0 errors. **Pages changed: 20** (`git diff --name-only
+  9479991..HEAD -- contents`): the **13** tranche pages, `AzureBlobArchiveProvider.md` (4.4's) and
+  **6** outside the tranche — `BrighterBasicConfiguration.md` and `DispatcherConfigurationReference.md`
+  by the lambda recurrence, `BrighterInboxSupport.md`, `FirestoreInbox.md`, `MongoDBInbox.md` and
+  `SpannerInbox.md` by the #4335 ruling
 
 ---
 
@@ -1749,8 +1832,7 @@ is rewritten against the tables below.
 | `DistributedLock.md` | 2 | `CS0234` `Paramore.Brighter.DynamoDb.V4`, `Locking.DynamoDB.V4`, `Outbox.DynamoDB.V4` | V4 package, not in the pin (D3, 018). The page recommends the V4 package, so the block carries its namespaces; it builds against the released V4 packages in scratch, **0** errors | 3 |
 | `DynamoDbDistributedLock.md` | 1 | `CS0234` `Locking.DynamoDB.V4`; `CS0103` `dynamoDb` | V4 package, not in the pin (D3, 018). `dynamoDb` wants a value stub once V4 is pinned | 3 |
 | `DynamoDbDistributedLock.md` | 2 | `CS0234` `Paramore.Brighter.DynamoDb.V4`, `Locking.DynamoDB.V4`, `Outbox.DynamoDB.V4` | V4 package, not in the pin (D3, 018); builds against the released V4 packages in scratch, **0** errors | 3 |
-| `TickerQScheduler.md` | 2 | `CS0234` `TickerQ.EntityFrameworkCore`; `CS1061` `AddOperationalStore`; `CS0246` `TickerQDbContext` | `TickerQ.EntityFrameworkCore` is not in the pin; phase 4 asks for it at 9.0.2. Builds against the released packages in scratch, net9.0 and net10.0, **0** errors | 3 |
-| `TickerQScheduler.md` | 3 | `CS0234` `TickerQ.Dashboard`; `CS1061` `AddDashboard` | `TickerQ.Dashboard` is not in the pin; phase 4 asks for it at 9.0.2. Builds against the released packages in scratch, net9.0 and net10.0, **0** errors | 3 |
+| `TickerQScheduler.md` | 2 | `CS0246` `Program` | instrument: `typeof(Program).Assembly` in a `Program.cs` with no declaration after its statements takes the `statements` wrapper, which declares no `Program`; Q2 (1.8) rules out a stub. Builds against the released packages in scratch, net9.0 and net10.0, **0** errors | 3 |
 | `PaginationQueryPatterns.md` | 2 | `CS0246` `GetOrdersPageQuery`, `PagedResult<>`, `OrderDto`; `ApplicationDbContext` | same-page: block 1 declares the first three; block 2 is *"Handler with pagination:"*, straight after it | 3 |
 | `PaginationQueryPatterns.md` | 3 | `CS0246` `OrderDto` | same-page: block 1 declares it | 3 |
 | `PaginationQueryPatterns.md` | 4 | `CS0246` `GetOrdersCursorQuery`, `CursorPagedResult<>`, `OrderDto`; `ApplicationDbContext` | same-page: block 3 declares the first two, block 1 `OrderDto`; block 4 is *"Handler with cursor pagination:"*, straight after block 3 | 3 |
@@ -1818,6 +1900,14 @@ BUILT, re-admitted at `ec38400`.
 | Darker's default policies described as *"exponential backoff"* and a breaker that *"opens after consecutive failures"*, and as applying once registered. They retry 3 times after 50, 100 and 150 ms, the breaker opens on 1 failure for 500 ms, and neither runs without `[RetryableQuery]` | Darker 4.1.1 `QueryProcessorBuilderExtensions.cs:51`, `RetryableQueryDecorator.cs`; run, control without the attribute | `QueryPipelinePolicies.md` (the list and block 2's comment) | `grep -rnE 'Retries with exponential backoff\|Opens after consecutive failures\|Retry policy with exponential backoff' contents/` | **3** | **0** | 3.5, reading the page against Darker's source, then running |
 | *"The ASP.NET model binder will validate these attributes before the query reaches your handler"*. Only a controller marked `[ApiController]`, or a minimal API after `AddValidation()` (.NET 10), rejects the query; elsewhere it reaches the code | run on net10.0, controls both ways | `QueryObjectValidation.md` | `grep -rn 'model binder will validate' contents/` | **1** | **0** | 3.5, running block 2's claim |
 | `[RetryableQuery]`'s second argument described and used as a circuit-breaker name that adds a breaker to the retry. It is a policy name, and the decorator runs that one policy. `"DefaultCircuitBreaker"` is not registered by `AddDefaultPolicies()`, so it throws `ConfigurationException`; `circuitBreakerName:` is not a parameter (`CS1739`) | Darker 4.1.1 `RetryableQueryAttribute.cs:11`, `Constants.cs`; run, control `Constants.CircuitBreakerPolicyName`; compiled | `QueryPipeline.md` (4 lines, and the parameter list at line 239), `CQRSWithBrighterAndDarker.md` (2), `DarkerAndBrighterPipelines.md`, `ImplementAQueryHandler.md`, `QueryPatterns.md` | `grep -rnE 'RetryableQuery\(.*(DefaultCircuitBreaker\|circuitBreakerName)' contents/` | **9** lines, 5 pages | **open — phase 5**, maintainer's ruling | 3.5, reading Darker's source for the tranche's policy defaults |
+| `.ConfigureServices(hostContext, services) =>` — the lambda's parameter list never opened, and its body never closed (`CS1519`, `CS1001`) | compiled, old form `CS1519` | `MSSQLInbox.md`, `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md`, `DynamoInbox.md`, `AzureBlobArchiveProvider.md`, `BrighterBasicConfiguration.md` ×2, `DispatcherConfigurationReference.md` ×5 | `grep -rn 'ConfigureServices(hostContext, services) =>' contents/` | **13** lines, 8 pages | **0** | 4.1, `--classify` |
+| `opt.InboxConfiguration` inside `AddConsumers(options => …)` — `CS0103` | compiled | `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md` | `grep -rn '^\s*opt\.InboxConfiguration' contents/` — **4** before, **1** after, `DynamoInbox.md`'s, whose parameter is `opt` | **3** | **0** | 4.1, a scan of every lambda |
+| `[UseInboxAsync]` on a handler class — `CS0592`; `RequestHandlerAttribute` is valid on methods only | `RequestHandlerAttribute.cs`, `AttributeUsage(AttributeTargets.Method)` | `InMemoryInbox.md` #2 | `grep -rn -A1 '^\s*\[UseInbox' contents/ \| grep -c class` | **1** | **0** | 4.1, `--explain` |
+| `await _commandProcessor.Post(…, cancellationToken: …)` — `Post` returns `void` and takes no `cancellationToken`; the async form is `PostAsync` | `IAmACommandProcessor.cs:205`, `:241` | `InMemoryOutbox.md` #2 | `grep -rnE 'await [_a-zA-Z.]*\.(Post\|Send\|Publish\|DepositPost\|ClearOutbox)\(' contents/` | **1** | **0** | 4.2, `--explain` after the block's `using`s |
+| `new AmazonDynamoDBConfig { ServiceURL = "…"; }` — a `;` inside an object initialiser | compiled | `DynamoInbox.md` #1 | `grep -rnP 'new [A-Za-z_.<>]+(\([^()]*\))? *\{[^{}]*;[^{}]*\}' contents/`, one line only; control: the old page → **1** | **1** | **0** | 4.1, `--classify` |
+| The InMemory Inbox said to keep every entry until restart (*"No cleanup"*, *"All seen message IDs held in memory"*). An entry expires `EntryTimeToLive` (5 min) after it is written, removed by a scan at most every `ExpirationScanInterval` (10 min); past `EntryLimit` (2048) adding compacts the oldest to half | `InMemoryBox.cs:64–100`, `InMemoryInbox.cs:316`; run, controls both ways | `InMemoryInbox.md` | `grep -rnE 'No cleanup\|All seen message IDs held in memory' contents/` | **2** | **0** | 4.2, reading the page against the source, then running |
+| A global `actionOnExists: Warn` shown beside a `[UseInboxAsync]` that sets no `onceOnlyAction` — the attribute's default `Throw` wins, so a duplicate throws `OnceOnlyException` | `PipelineBuilder.cs:371`, `HasExistingUseInboxAttributesInPipeline`; run, control the attribute with `Warn` | `InMemoryInbox.md` #1, #2 | pages with `actionOnExists: OnceOnlyAction.Warn\|Replay` and a `[UseInbox…]` without `onceOnlyAction` on its line: 2, read — `TurningOnReplayOnSeen.md`'s attributes set it on the next line and the page states the precedence | **1** | **0** | 4.2, running #1 with #2 |
+| A global `InboxConfiguration` in `AddConsumers` reaches the pipeline only through `ExternalBus(…)`, so an application that never calls `AddProducers` gets no global Inbox, and duplicates run again | `ServiceCollectionExtensions.cs:640–660`; run, control with `AddProducers` — **upstream, BrighterCommand/Brighter#4335**, fixed by #4396 on `master`, unreleased | `BrighterInboxSupport.md` states it with the workaround; linked from `MSSQLInbox.md`, `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md`, `DynamoInbox.md`, `MongoDBInbox.md`, `FirestoreInbox.md`, `SpannerInbox.md`, `InMemoryInbox.md`. Not linked: the seven other pages that configure one | `git grep -l 'InboxConfiguration' d8633b1 -- contents` | **16** pages | **stated** on 1, linked from 9 — maintainer's ruling | 4.2, running `InMemoryInbox.md` #1 without #2's attribute |
 
 ## Friction ledger
 
