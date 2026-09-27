@@ -81,6 +81,12 @@ There are two versions of the attribute: sync and async. Ensure that you choose 
 
 Your inbox is configured as part of the Brighter extensions to `IServiceCollection`. See [Inbox Configuration](/contents/DispatcherConfigurationReference.md#inbox) for more.
 
+### Global Inbox Configuration in a Consumer-Only Application
+
+In Brighter 10.7.0, the `InboxConfiguration` you set in `AddConsumers` reaches your handlers' pipelines only when the application also calls `AddProducers`. In an application that only consumes, Brighter adds no Inbox to any handler, so a duplicate is handled again, with no error. This is [BrighterCommand/Brighter#4335](https://github.com/BrighterCommand/Brighter/issues/4335); the fix is on Brighter's development branch and in no release yet.
+
+Until a release carries it, put the attribute on each handler that must not see a duplicate, as in [Adding an Inbox to a Handler](#adding-an-inbox-to-a-handler). The attribute takes effect whether or not the application registers producers. Its own `onceOnlyAction` decides what a duplicate does, whatever `actionOnExists` the configuration sets, so give it the action you want. An application that calls `AddProducers` gets the global Inbox as configured.
+
 ### Provisioning the Inbox Table
 
 If your Inbox runs on a relational database (MSSQL, PostgreSQL, MySQL, SQLite, or Spanner), Brighter can create and migrate the table for you at application startup — see [Database Provisioning](/contents/BoxProvisioning.md). The **Inbox Builder** section below describes the alternative: managing the DDL yourself.

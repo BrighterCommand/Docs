@@ -43,7 +43,7 @@ The type also declares `Credentials` and `Region`. **Neither does anything**: th
 only `TableName`, and in the AWS SDK v3 package the two are get-only and never assigned, so
 they are always null. The v4 package declares them settable and still reads neither.
 
-``` csharp
+```csharp
 using Amazon.DynamoDBv2;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -53,21 +53,23 @@ using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
-        .ConfigureServices(hostContext, services) =>
+        .ConfigureServices((hostContext, services) =>
         {
             ConfigureBrighter(hostContext, services);
-        }
+        });
 
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
-	var dynamoDb = new AmazonDynamoDBClient(credentials, new AmazonDynamoDBConfig { ServiceURL = "http://dynamodb.us-east-1.amazonaws.com"; });
+	var dynamoDb = new AmazonDynamoDBClient(credentials, new AmazonDynamoDBConfig { ServiceURL = "http://dynamodb.us-east-1.amazonaws.com" });
 
 	services.AddConsumers(opt => 
 	{
 		opt.InboxConfiguration = new InboxConfiguration(new DynamoDbInbox(dynamoDb, new DynamoDbInboxConfiguration()));
-		...
+		// ...
 	});
 }
-...
 
+// ...
 ```
+
+In Brighter 10.7.0 this configuration takes effect only in an application that also calls `AddProducers`; see [Global Inbox Configuration in a Consumer-Only Application](/contents/BrighterInboxSupport.md#global-inbox-configuration-in-a-consumer-only-application).

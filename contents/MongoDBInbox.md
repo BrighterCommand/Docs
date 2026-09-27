@@ -58,6 +58,8 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 }
 ```
 
+In Brighter 10.7.0 this configuration takes effect only in an application that also calls `AddProducers`; see [Global Inbox Configuration in a Consumer-Only Application](/contents/BrighterInboxSupport.md#global-inbox-configuration-in-a-consumer-only-application).
+
 ### Advanced Configuration
 
 For more advanced scenarios, you can provide custom MongoDB client settings and collection configurations:

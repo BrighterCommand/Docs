@@ -50,6 +50,8 @@ The MySQL Outbox requires a specific table in your database to store messages be
 The `MySqlOutboxBuilder.GetDDL()` method creates the SQL script for you. You can execute this script against your database to create the outbox table.
 
 ```csharp
+using Paramore.Brighter.Outbox.MySql;
+
 // The table name can be whatever you choose.
 string tableName = "Outbox"; 
 
@@ -103,6 +105,9 @@ To configure the MySQL Outbox, you need to provide an outbox implementation in t
 First, define the configuration for your MySQL database connection. We recommend retrieving the connection string from your application's configuration (e.g., `appsettings.json`) rather than hardcoding it.
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+
 // Get connection string from configuration
 var connectionString = "server=localhost;port=3306;database=brighter;user=root;password=password;SslMode=None";
 
@@ -131,6 +136,15 @@ For more detailed information on integrating with Entity Framework Core, please 
 Here is a complete example of configuring the MySQL Outbox with EF Core.
 
 ```csharp
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MySql;
+using Paramore.Brighter.MySql.EntityFrameworkCore;
+using Paramore.Brighter.Outbox.MySql;
+using Paramore.Brighter.Outbox.Hosting;
+
 // In your DbContext, you would have your entities
 public class MyDbContext : DbContext
 {
@@ -138,36 +152,39 @@ public class MyDbContext : DbContext
     public MyDbContext(DbContextOptions<MyDbContext> options) : base(options) {}
 }
 
-// In ConfigureServices or Program.cs
-public void ConfigureServices(IServiceCollection services)
+// In your Startup class; in Program.cs, the same calls go on builder.Services
+public class Startup
 {
-    var connectionString = "server=localhost;port=3306;database=brighter;user=root;password=password;SslMode=None";
+    public void ConfigureServices(IServiceCollection services)
+    {
+        var connectionString = "server=localhost;port=3306;database=brighter;user=root;password=password;SslMode=None";
     
-    // 1. Add your DbContext
-    services.AddDbContext<MyDbContext>(options => 
-        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
-    );
+        // 1. Add your DbContext
+        services.AddDbContext<MyDbContext>(options => 
+            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+        );
 
-    // 2. Configure the Outbox
-    var outboxConfiguration = new RelationalDatabaseConfiguration(connectionString, outBoxTableName: "Outbox");
-    services.AddSingleton<IAmARelationalDatabaseConfiguration>(outboxConfiguration);
+        // 2. Configure the Outbox
+        var outboxConfiguration = new RelationalDatabaseConfiguration(connectionString, outBoxTableName: "Outbox");
+        services.AddSingleton<IAmARelationalDatabaseConfiguration>(outboxConfiguration);
 
-    // 3. Configure Brighter
-    services.AddBrighter(options =>
-    {
-        ....
-    })
-    .AddProducers(producers =>
-    {
-        producers.Outbox = new MySqlOutbox(outboxConfiguration);
-        producers.ConnectionProvider = typeof(MySqlConnectionProvider);
-        // Use the EF Core transaction provider with your DbContext
-        producers.TransactionProvider = typeof(MySqlEntityFrameworkTransactionProvider<MyDbContext>);
+        // 3. Configure Brighter
+        services.AddBrighter(options =>
+        {
+            // ... other Brighter options
+        })
+        .AddProducers(producers =>
+        {
+            producers.Outbox = new MySqlOutbox(outboxConfiguration);
+            producers.ConnectionProvider = typeof(MySqlConnectionProvider);
+            // Use the EF Core transaction provider with your DbContext
+            producers.TransactionProvider = typeof(MySqlEntityFrameworkTransactionProvider<MyDbContext>);
         
-        // ... configure your producers (e.g., for RabbitMQ, Kafka)
-    })
-    .UseOutboxSweeper() // Optionally add the background sweeper service
-    .AutoFromAssemblies(); // Scan for handlers and mappers
+            // ... configure your producers (e.g., for RabbitMQ, Kafka)
+        })
+        .UseOutboxSweeper() // Optionally add the background sweeper service
+        .AutoFromAssemblies(); // Scan for handlers and mappers
+    }
 }
 ```
 

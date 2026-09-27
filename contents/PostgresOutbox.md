@@ -109,6 +109,9 @@ To configure the PostgreSQL Outbox, you need to provide an outbox implementation
 First, define the configuration for your PostgreSQL database connection. We recommend retrieving the connection string from your application's configuration (e.g., `appsettings.json`) rather than hardcoding it.
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+
 // Get connection string from configuration
 var connectionString = "Host=localhost;Port=5432;Database=brighter;Username=postgres;Password=password";
 
@@ -137,6 +140,15 @@ For more detailed information on integrating with Entity Framework Core, please 
 Here is a complete example of configuring the PostgreSQL Outbox with EF Core.
 
 ```csharp
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.PostgreSql;
+using Paramore.Brighter.PostgreSql.EntityFrameworkCore;
+using Paramore.Brighter.Outbox.PostgreSql;
+using Paramore.Brighter.Outbox.Hosting;
+
 // In your DbContext, you would have your entities
 public class MyDbContext : DbContext
 {
@@ -144,36 +156,39 @@ public class MyDbContext : DbContext
     public MyDbContext(DbContextOptions<MyDbContext> options) : base(options) {}
 }
 
-// In ConfigureServices or Program.cs
-public void ConfigureServices(IServiceCollection services)
+// In your Startup class; in Program.cs, the same calls go on builder.Services
+public class Startup
 {
-    var connectionString = "Host=localhost;Port=5432;Database=brighter;Username=postgres;Password=password";
+    public void ConfigureServices(IServiceCollection services)
+    {
+        var connectionString = "Host=localhost;Port=5432;Database=brighter;Username=postgres;Password=password";
     
-    // 1. Add your DbContext
-    services.AddDbContext<MyDbContext>(options => 
-        options.UseNpgsql(connectionString)
-    );
+        // 1. Add your DbContext
+        services.AddDbContext<MyDbContext>(options => 
+            options.UseNpgsql(connectionString)
+        );
 
-    // 2. Configure the Outbox
-    var outboxConfiguration = new RelationalDatabaseConfiguration(connectionString, outBoxTableName: "Outbox");
-    services.AddSingleton<IAmARelationalDatabaseConfiguration>(outboxConfiguration);
+        // 2. Configure the Outbox
+        var outboxConfiguration = new RelationalDatabaseConfiguration(connectionString, outBoxTableName: "Outbox");
+        services.AddSingleton<IAmARelationalDatabaseConfiguration>(outboxConfiguration);
 
-    // 3. Configure Brighter
-    services.AddBrighter(options =>
-    {
-        // ... other Brighter options
-    })
-    .AddProducers(producers =>
-    {
-        producers.Outbox = new PostgreSqlOutbox(outboxConfiguration);
-        producers.ConnectionProvider = typeof(PostgreSqlConnectionProvider);
-        // Use the EF Core transaction provider with your DbContext
-        producers.TransactionProvider = typeof(PostgreSqlEntityFrameworkTransactionProvider<MyDbContext>);
+        // 3. Configure Brighter
+        services.AddBrighter(options =>
+        {
+            // ... other Brighter options
+        })
+        .AddProducers(producers =>
+        {
+            producers.Outbox = new PostgreSqlOutbox(outboxConfiguration);
+            producers.ConnectionProvider = typeof(PostgreSqlConnectionProvider);
+            // Use the EF Core transaction provider with your DbContext
+            producers.TransactionProvider = typeof(PostgreSqlEntityFrameworkTransactionProvider<MyDbContext>);
         
-        // ... configure your producers (e.g., for RabbitMQ, Kafka)
-    })
-    .UseOutboxSweeper() // Optionally add the background sweeper service
-    .AutoFromAssemblies(); // Scan for handlers and mappers
+            // ... configure your producers (e.g., for RabbitMQ, Kafka)
+        })
+        .UseOutboxSweeper() // Optionally add the background sweeper service
+        .AutoFromAssemblies(); // Scan for handlers and mappers
+    }
 }
 ```
 

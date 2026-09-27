@@ -63,6 +63,8 @@ public void ConfigureServices(IServiceCollection services)
 
 ```
 
+The handler below is `AddGreetingHandlerAsync` from the Brighter sample at `Brighter/samples/WebAPI/WebAPI_Dynamo/`, which also declares the `AddGreeting` request, the `Person` entity and the `GreetingMade` event it uses.
+
 In our handler we take a dependency on Brighter's **IAmADynamoDbTransactionProvider** interface, which **DynamoDbUnitOfWork** implements. We explicitly start a transaction within the handler on the Database within that provider.  
 
 We call **DepositPostAsync** within that transaction to write the message to the Outbox. Once the transaction has closed we can call **ClearOutboxAsync** to immediately clear, or we can rely on the Outbox Sweeper, if we have configured one to clear for us. (There are equivalent synchronous versions of these APIs).
@@ -78,50 +80,67 @@ using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
 using Microsoft.Extensions.Logging;
 using Paramore.Brighter;
+using Paramore.Brighter.DynamoDb;
 
-public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default)
+public class AddGreetingHandlerAsync : RequestHandlerAsync<AddGreeting>
 {
-    var posts = new List<Id>();
+    private readonly IAmADynamoDbTransactionProvider _transactionProvider;
+    private readonly IAmACommandProcessor _postBox;
+    private readonly ILogger<AddGreetingHandlerAsync> _logger;
 
-    //We use the transaction provider to grab connection and transaction, because Outbox needs
-    //to share them 'behind the scenes'
-    var context = new DynamoDBContext(_transactionProvider.DynamoDb);
-    var transaction = await _transactionProvider.GetTransactionAsync(cancellationToken);
-    try
+    public AddGreetingHandlerAsync(IAmADynamoDbTransactionProvider transactionProvider,
+        IAmACommandProcessor postBox,
+        ILogger<AddGreetingHandlerAsync> logger)
     {
-        var person = await context.LoadAsync<Person>(addGreeting.Name, cancellationToken);
-
-        person.Greetings.Add(addGreeting.Greeting);
-
-        var document = context.ToDocument(person);
-        var attributeValues = document.ToAttributeMap();
-
-        //write the added child entity to the Db - just replace the whole entity as we grabbed the original
-        //in production code, an update expression would be faster
-        transaction.TransactItems.Add(new TransactWriteItem{Put = new Put{TableName = "People", Item = attributeValues}});
-
-        //Now write the message we want to send to the Db in the same transaction.
-        posts.Add(await _postBox.DepositPostAsync(
-            new GreetingMade(addGreeting.Greeting),
-            _transactionProvider,
-            cancellationToken: cancellationToken));
-
-        //commit both new greeting and outgoing message
-        await _transactionProvider.CommitAsync(cancellationToken);
+        _transactionProvider = transactionProvider;
+        _postBox = postBox;
+        _logger = logger;
     }
-    catch (Exception e)
+
+    public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default)
     {
-        _logger.LogError(e, "Exception thrown handling Add Greeting request");
-        //it went wrong, rollback the entity change and the downstream message
-        _transactionProvider.Rollback();
+        var posts = new List<Id>();
+
+        //We use the transaction provider to grab connection and transaction, because Outbox needs
+        //to share them 'behind the scenes'
+        var context = new DynamoDBContext(_transactionProvider.DynamoDb);
+        var transaction = await _transactionProvider.GetTransactionAsync(cancellationToken);
+        try
+        {
+            var person = await context.LoadAsync<Person>(addGreeting.Name, cancellationToken);
+
+            person.Greetings.Add(addGreeting.Greeting);
+
+            var document = context.ToDocument(person);
+            var attributeValues = document.ToAttributeMap();
+
+            //write the added child entity to the Db - just replace the whole entity as we grabbed the original
+            //in production code, an update expression would be faster
+            transaction.TransactItems.Add(new TransactWriteItem{Put = new Put{TableName = "People", Item = attributeValues}});
+
+            //Now write the message we want to send to the Db in the same transaction.
+            posts.Add(await _postBox.DepositPostAsync(
+                new GreetingMade(addGreeting.Greeting),
+                _transactionProvider,
+                cancellationToken: cancellationToken));
+
+            //commit both new greeting and outgoing message
+            await _transactionProvider.CommitAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown handling Add Greeting request");
+            //it went wrong, rollback the entity change and the downstream message
+            _transactionProvider.Rollback();
+            return await base.HandleAsync(addGreeting, cancellationToken);
+        }
+
+        //Send this message via a transport. We need the ids to send just the messages here, not all outstanding ones.
+        //Alternatively, you can let the Sweeper do this, but at the cost of increased latency
+        await _postBox.ClearOutboxAsync(posts, cancellationToken: cancellationToken);
+
         return await base.HandleAsync(addGreeting, cancellationToken);
     }
-
-    //Send this message via a transport. We need the ids to send just the messages here, not all outstanding ones.
-    //Alternatively, you can let the Sweeper do this, but at the cost of increased latency
-    await _postBox.ClearOutboxAsync(posts, cancellationToken: cancellationToken);
-
-    return await base.HandleAsync(addGreeting, cancellationToken);
 }
 ```
 
@@ -169,6 +188,12 @@ This applies to both `Paramore.Brighter.Outbox.DynamoDB` and `.V4`. The DynamoDB
 `MessageItem.CausationId` is decorated with `[DynamoDBGlobalSecondaryIndexHashKey(indexName: "Causation")]`, and `DynamoDbTableFactory` reflects over those attributes when it builds the request. So a table you create through the factory already has the index — you only add a throughput entry for it:
 
 ```csharp
+using System.Collections.Generic;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Paramore.Brighter.DynamoDb;
+using Paramore.Brighter.Outbox.DynamoDB;
+
 var createTableRequest = new DynamoDbTableFactory().GenerateCreateTableRequest<MessageItem>(
     new DynamoDbCreateProvisionedThroughput(
         new ProvisionedThroughput { ReadCapacityUnits = 10, WriteCapacityUnits = 10 },
