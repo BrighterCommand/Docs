@@ -42,6 +42,12 @@ and blocks the repairs gave `using` directives, not one block's fix. It is the o
 committed file** rather than by the corpus alone: `tools/blockcheck/baseline.tsv` lists the blocks
 required to build, and the figure moves when that file does.
 
+**Row 9's scope widened at `23aa74f`, spec 017 phase 1, and its figure did not move.** The pin in
+`tools/blockcheck/refs/refs.csproj` grew from 71 packages to **95** — **538 reference assemblies** —
+so that the scheduler, Entity Framework, validation and test pages can be judged at all, and
+`--report` began enforcing the scaffold's unit rule. Neither changed a verdict: the same 101 blocks
+build. What a wider pin changes is *why* a block fails, which `--classify` reads (below).
+
 | # | Gate | Command | Expected at `412fd34` |
 |---:|---|---|---|
 | 1 | `linkcheck` | `python3 tools/linkcheck.py` | **165 files, 0 broken** |
@@ -52,7 +58,7 @@ required to build, and the figure moves when that file does.
 | 6 | `optioncheck` | `dotnet run --project tools/optioncheck` | **0 mismatches across 59 tables, 519 rows** |
 | 7 | `--verify` | `python3 tools/urlmap.py --verify` | **161 predicted = 161 published** |
 | 8 | `symbolcheck` | `python3 tools/symbolcheck.py` | **0 findings — 22 entries, 161 pages, 3 silenced** — at `3be2a78`; it read **5 entries, 1 silenced** at `412fd34` |
-| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 16 skipped** — at `b941837`; it read **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
+| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 16 skipped** — at `b941837`, and unmoved at `23aa74f` against **538 reference assemblies** with **14 scaffold units checked, 0 violations**; it read **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
 
 **Four of the nine are not in the `check` job of `.github/workflows/docs.yml`, and each absence
 is a decision rather than an oversight:**
@@ -82,6 +88,22 @@ Five of these gates print their **scope** before their verdict, and that line is
 claim as `0 findings, 1 silenced`, and `blockcheck`'s `0 findings` is only as wide as its
 baseline — it prints the count of blocks it requires to build beside it. A gate that has silently degraded to checking nothing passes
 every corpus ever written.
+
+**`blockcheck` prints three scope lines, and each can shrink without failing anything:**
+`538 reference assemblies` (the pin it compiled against), `baseline: 101 blocks required to build`,
+and `scaffold rule: 14 units checked, 0 violations`. A smaller first figure is a pin that did not
+restore; a smaller third is a unit the rule never looked at.
+
+**Two commands that read a `blockcheck` number are easy to write wrongly, and both were**, in spec
+016's acceptance criteria. Each ran, printed a plausible figure, and measured less than it said:
+
+| To count | Old form — wrong | Corrected form | Why the old form fails |
+|---|---|---|---|
+| the gate's projects | `ls tools/blockcheck/*.csproj \| wc -l` → **1** | `find tools/blockcheck -name '*.csproj' -not -path '*/obj/*' \| wc -l` → **2** | the glob is one level deep, so it misses `refs/refs.csproj` — the project that carries every pin |
+| a figure's copies outside `spec/` | `grep -vc '^./spec/'` | `grep -vcE '^(\./)?spec/'` | macOS's BSD `grep -rn … .` prints `spec/…` with no leading `./`, so the old pattern excludes **nothing**: over the nine lines naming the BUILT figure at `23aa74f` it counts **9**, the corrected one **1** |
+
+The second is the check that a number lives only here: run over `grep -rn '<figure>' --include='*.md'
+--include='*.yml' --include='*.py' .`, the corrected pattern should count **1**, this file's row.
 
 **`pagelint`'s second figure is a warning count, not an error count** — the using-directive debt,
 visible on purpose so it is not forgotten and not blocking so it does not tax unrelated work. The
@@ -128,7 +150,29 @@ python3 tools/blockcheck.py --list                   # every C# block, page, ord
 python3 tools/blockcheck.py --show <page> <n>        # one block, verbatim
 python3 tools/blockcheck.py --list-scaffold          # every identifier supplied from outside a page
 python3 tools/blockcheck.py --verify-extraction      # is every block staged byte-identical?
+python3 tools/blockcheck.py --classify [page...]     # what stands between each FAILED block and BUILT
+python3 tools/blockcheck.py --list-skips [page...]   # every opt-out, with its reason
+python3 tools/blockcheck.py --explain <id>...        # every diagnostic of those blocks, in full
 ```
+
+**The last three are how a repair is planned rather than guessed.** Each is read-only, and each
+exits **2** when there is nothing to report — a page with no C# block, or none in the state asked
+about — so an empty listing is never mistaken for a clean one:
+
+- **`--classify`** prints `page<TAB>ordinal<TAB>class<TAB>names` for every FAILED block, and a
+  per-class count on stderr. The class is the first of these that matches: *parse* (the block
+  does not parse on its own), *import* (a missing name is a pinned type or extension method),
+  *other* (an error that is not a missing name), *same-page* (another block on the page declares
+  it), *values* (every missing name is a lower-case value), *page-type* (a type the page names and
+  never shows). It reads the compiler's first errors, so a class is what stops the block today, not
+  everything that will; and it reads its type table from the pin, so the counts move when
+  `refs.csproj` does
+- **`--list-skips`** prints `page<TAB>ordinal<TAB>reason`, one row per
+  `<!-- blockcheck: skip <reason> -->`. It reads the scanner `--report` uses, so its line count is
+  always `--report`'s SKIPPED
+- **`--explain`** takes the ids in `--report`'s fourth column as separate arguments, and prints
+  every diagnostic of those blocks, sorted, so two runs diff clean. An id matching no block is
+  exit 2
 
 Two of them need the sibling repositories checked out beside this one:
 `--census` and `--verify-list` read `../Brighter` and `../Darker`, and **refuse rather than
@@ -189,9 +233,12 @@ that file is a diff someone reads, not a command someone reruns until the build 
   is not listed, and a listed block now compiled with a different scaffold are each a finding. A
   failing block with no row is debt, not a finding. A block opts out with
   `<!-- blockcheck: skip <reason> -->` on the line above it; **the reason is mandatory**, every skip
-  prints with its reason, and a skip cannot excuse a baselined block. The scaffold's own rule —
-  it supplies values typed from a pinned package, never a type the page tells the reader to write —
-  is stated in `tools/blockcheck/scaffold/pages.tsv`.
+  prints with its reason, and a skip cannot excuse a baselined block. The scaffold's own rule is
+  stated in `tools/blockcheck/scaffold/pages.tsv`, and `--report` enforces it: a unit that
+  declares what no BUILT block on its page names, stands in for a type the page declares, or
+  supplies a namespace prints `SCAFFOLD RULE: <unit>: <what>`, and each is a finding. The one
+  clause it cannot decide — never a type the page tells the reader to write — is checked by
+  reading `--list-scaffold`.
 
 > **A green `blockcheck` means the listed blocks compile. It does not mean they are right.** A
 > block that compiles can still assert behaviour that is false; `CLAUDE.md` § *Compiling an

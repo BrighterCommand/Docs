@@ -205,7 +205,7 @@ Predicted*).
   - Notes: a verdict that moves here moved for a reason nobody repaired. Stop and explain it before
     going on.
 
-- [ ] **Task 1.9:** Update `tools/README.md` — row 9, § *The other modes*, the AC3 and AC10 commands
+- [x] **Task 1.9:** Update `tools/README.md` — row 9, § *The other modes*, the AC3 and AC10 commands
   - Input: `tools/README.md` row 9 and § *Reading a number before you trust it*; `design.md`
     § *The List Skips Mode* (last paragraph); the outputs of 1.3–1.8
   - Output: row 9's scope names the grown pin and the unit rule; § *The other modes* documents
@@ -420,6 +420,29 @@ what remains** — a top-level-statements artefact, not a type any stub should s
 `PostgresOutbox.md`, and lives in `Npgsql.EntityFrameworkCore.PostgreSQL`, which E2 did not
 include. Not added here: the pin is the design's measured set. 1.10 records whether either page is
 in a tranche; if one is, adding the package is put to the maintainer in that phase's PR.
+
+**Task 1.9 — `tools/README.md`.** Four changes, each read against the tool as built at `23aa74f`:
+row 9 and the paragraph above the table name the grown pin (71 → **95** packages, `grep -c
+'<PackageReference'` on `master` and the branch; **538** reference assemblies) and the unit rule
+(*"14 units checked, 0 violations"*), with the figure unmoved; § *Reading a number before you trust
+it* names `blockcheck`'s three scope lines and carries the two corrected commands in a table, old
+form beside new, with the reason each old form fails; § *The other modes* lists `--classify`,
+`--list-skips`, `--explain` with their output shapes and exit-2 rule; § *What each gate actually
+checks* says `--report` enforces the unit rule, in place of *"is stated in `pages.tsv`"* alone.
+
+Said, by the `blockcheck` bullet: the scaffold *"supplies values typed from a pinned package, never
+a type the page tells the reader to write"*; measured against `pages.tsv` since 1.7: a stub may
+supply a type a page names and never shows (P0-3). Rewritten to cite `pages.tsv` and say what
+`--report` enforces. The tool's usage line reads `--classify [page...]`, not the design's
+`[file]`; the README documents the tool.
+
+| Check | Old | New |
+|---|---:|---:|
+| `ls tools/blockcheck/*.csproj \| wc -l` / `find tools/blockcheck -name '*.csproj' -not -path '*/obj/*' \| wc -l` | **1** | **2** |
+| `grep -rn '101 BUILT' --include='*.md' --include='*.yml' --include='*.py' . > f` (9 lines, all `spec/…` or `tools/…`, none with `./`), then `grep -vc '^./spec/' f` / `grep -vcE '^(\./)?spec/' f` | **9** — excludes nothing | **1** — `tools/README.md` row 9 |
+| `grep -cF '^(\./)?spec/' tools/README.md` | **0** on `master` | **1** |
+| The same AC13 count after the edit — the new table must not add a copy of the figure | — | **1** (the table says *"the BUILT figure"*, not the figure) |
+| `python3 tools/linkcheck.py` | — | exit **0**, 165 files |
 
 ## Phase 2 — Tranche 1a *(6 tasks, one PR, CHANGES THE SITE)*
 
