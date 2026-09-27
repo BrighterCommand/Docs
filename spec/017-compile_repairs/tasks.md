@@ -517,7 +517,7 @@ recorded in `tools/README.md` row 9.
   - Input: that section's rows; `--classify` on each
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
 
-- [ ] **Task 2.6:** Close phase 2 — checks, figures, PR
+- [x] **Task 2.6:** Close phase 2 — checks, figures, PR
   - Input: 2.1's prediction; the PR's diff
   - Output: § *Phase 2 as executed* records — `attr_mismatch.py` before any baseline row (obligation
     15); every behavioural block run with its control (P0-10); `pagelint --changed origin/master`
@@ -747,6 +747,63 @@ nine defects; two are upstream bugs, filed on the maintainer's ruling. All are i
 - `linkcheck` 165 files, 0 broken; `symbolcheck` 0 findings; `versioncheck` 0 stale of 18 across 5;
   `optioncheck` 0 mismatches across 59 tables, 519 rows (the twelve `requeueCount` rows changed
   description only); `pagelint --changed origin/master` 0 errors
+
+**Task 2.6 — phase 2 closed, 2026-09-27, branch at `5407298`.** Every gate run bare, exit code
+read before its output:
+
+| # | Gate | Exit | Read | Predicted (2.1) | Agrees? |
+|---:|---|---:|---|---|---|
+| 1 | `linkcheck` | 0 | 165 files, 0 broken | none | **yes** |
+| 2 | `pagelint` | 0 | 0 errors, **706** warnings across 107 pages, 162 pages | 0 errors; 743 → 723 or 722 | **no — 17 lower**, explained below |
+| 3 | shape | 0 | 161 pages, 12 sections, widest 12 of 20, deepest 4 of 4 | none | **yes** |
+| 4 | redirects | 0 | 77 entries, 7858 bytes | none | **yes** |
+| 5 | `versioncheck` | 0 | 0 stale of 18, across 5 pages | none, scope held at 18 across 5 | **yes** |
+| 6 | `optioncheck` | 0 | 0 mismatches, 59 tables, 519 rows | none | **yes** |
+| 7 | `--verify` | 0 | 161 predicted = 161 published | none | **yes** |
+| 8 | `symbolcheck` | 0 | 0 findings, 22 entries, 161 pages, 3 silenced | none | **yes** |
+| 9 | `blockcheck` | 0 | 982: **129** BUILT, 837 FAILED, 16 SKIPPED; 0 findings; 538 reference assemblies; baseline 129; **22** units, 0 violations; 23 pages mapped | BUILT 117–138; SKIPPED 16; exit 0; 0 violations | **yes** — within the range, with −2 from the removal below |
+| — | `attr_mismatch.py` | 1 | **7** | held at 7 | **yes** |
+
+`pagelint --changed origin/master` → exit **0**, 0 errors.
+
+**Gate 9, reconciled against 2.1's 36 reachable.** 29 of them built; 5 were `AnalyzerSupport.md`
+blocks that built and then left the page with the unshipped BRT006–008 (§ *Blocks removed*);
+`ReturningResultsFromAHandler.md` #1 stays FAILED under unit rule 1; and `RequestValidation.md` #10
+stays FAILED as same-page. **Said, by the probe at `9549ab4`: #10 is HIDDEN** (`PlaceOrder`,
+`builder`), so 2.1 counted it reachable. **Measured:** with the unit supplying both, its one
+remaining diagnostic is `CS0103` `OrderSpecification`, which block 9 declares. 29 + 5 + 1 + 1 = 36.
+Add `InMemoryScheduler.md` #4 from P1-3 and BUILT is 101 + 29 + 1 = **131**, less the two
+`AnalyzerSupport.md` blocks that were BUILT at `c7329bb` and were removed: **129**.
+
+**Every FAILED block on the 17 tranche pages is listed**: `after.tsv`'s FAILED keys on those pages
+and § *Blocks that stay FAILED*'s rows are the same 20 (`diff` silent). **Pages with nothing BUILT:
+97 → 88**, which is 2.1's floor, both counted from the report by an `awk` and a Python join.
+
+**Gate 2, reconciled.** Per-page warnings at `9549ab4` against the branch: the 17 tranche pages fell
+by **20**, which is 2.1's prediction (`ReturningResultsFromAHandler.md` #1 was not touched, so 723,
+not 722). The further **−17** are on 11 pages outside the tranche — `Routing.md` −3, `KafkaConfiguration.md`,
+`NullableReferenceTypes.md`, `ReactorAndProactor.md` and `V10MigrationGuide.md` −2 each, six more
+−1 each. They are blocks that 2.4's `UseEndpoints` repair and 2.5's mapper and `requeueCount`
+repairs touched, which `--changed` rule 6 then required to carry `using`s. 2.1 predicted only the
+tranche because it did not foresee repairs off it. 743 − 20 − 17 = **706**.
+
+**AC2, against a `before.tsv` regenerated from `c7329bb` in a worktree** (exit 0, *"989 blocks: 101
+BUILT, 872 FAILED, 16 SKIPPED"*, 989 rows): the diff prints **30** lines, every one `FAILED ->
+BUILT`. § *Splits* is empty, so no ordinal moved; the seven removed blocks are in § *Blocks
+removed*, because the diff reads only the after-report's keys. **Control, both ways:** a copy of
+the branch's report with `HealthChecks.md` #1 set FAILED prints 29 lines and loses that one; a copy
+with `AWSSQSConfiguration.md` #1 set FAILED prints exactly one line that is not `FAILED -> BUILT`,
+`BUILT -> FAILED contents/AWSSQSConfiguration.md 1`.
+
+**Every behavioural block was run with its control** (P0-10): the tables under 2.3, 2.4 and 2.5.
+`InMemoryScheduler.md` #4 asserts no behaviour (2.1).
+
+**The PR changes 39 pages** (`git diff --name-only origin/master..HEAD -- contents | wc -l`): **10**
+of the 17 tranche pages, and **29** outside the tranche, changed by repairing recurrences, 2.5's
+defects among them. The other seven tranche pages were made whole by a unit or the wrapper alone
+(the four *Get Started* pages, `ClaimCheck.md`, `RelationalDatabaseConfigurationReference.md`), or
+left as they were (`ReturningResultsFromAHandler.md`). Beside them are 12 files under `tools/` and
+this one.
 
 ---
 

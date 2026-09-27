@@ -48,17 +48,25 @@ so that the scheduler, Entity Framework, validation and test pages can be judged
 `--report` began enforcing the scaffold's unit rule. Neither changed a verdict: the same 101 blocks
 build. What a wider pin changes is *why* a block fails, which `--classify` reads (below).
 
+**Rows 2 and 9 moved at `5407298`, spec 017 phase 2, the first tranche of page repairs.**
+Twenty-nine blocks were brought into the baseline by `using` directives, scaffold units and
+repairs, and so was one more when the `statements` wrapper began supplying `args`. Removing
+documentation of analyzers no release ships took seven blocks off one page, two of them BUILT. So
+the corpus is **982 blocks** and the baseline **129**, compiled with **22 scaffold units**.
+`pagelint` fell 743 → **706**: 20 on the repaired pages, and 17 on pages whose blocks were touched
+by the same defects' recurrences, which `--changed` then required to carry `using` directives.
+
 | # | Gate | Command | Expected at `412fd34` |
 |---:|---|---|---|
 | 1 | `linkcheck` | `python3 tools/linkcheck.py` | **165 files, 0 broken** |
-| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 743 warnings, 162 pages** — at `b941837`; it read **744** at `3be2a78` and **757** at `412fd34` |
+| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 706 warnings, 162 pages** — at `5407298`; it read **743** at `b941837`, **744** at `3be2a78` and **757** at `412fd34` |
 | 3 | shape | `python3 tools/urlmap.py --check-shape` | **161 pages, 12 sections, widest 12 of 20, deepest 4 of 4** |
 | 4 | redirects | `python3 tools/urlmap.py --check-redirects` | **77 entries, 7858 bytes** |
 | 5 | `versioncheck` | `python3 tools/versioncheck.py` | **0 stale pins of 18, across 5 pages** |
 | 6 | `optioncheck` | `dotnet run --project tools/optioncheck` | **0 mismatches across 59 tables, 519 rows** |
 | 7 | `--verify` | `python3 tools/urlmap.py --verify` | **161 predicted = 161 published** |
 | 8 | `symbolcheck` | `python3 tools/symbolcheck.py` | **0 findings — 22 entries, 161 pages, 3 silenced** — at `3be2a78`; it read **5 entries, 1 silenced** at `412fd34` |
-| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 16 skipped** — at `b941837`, and unmoved at `23aa74f` against **538 reference assemblies** with **14 scaffold units checked, 0 violations**; it read **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
+| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **982 blocks: 129 BUILT, 837 FAILED, 16 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 16 skipped**, against **538 reference assemblies** with **22 scaffold units checked, 0 violations** — at `5407298`; it read **989 blocks, 101 BUILT, 872 FAILED** at `b941837`, unmoved at `23aa74f` with 14 units, and **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
 
 **Four of the nine are not in the `check` job of `.github/workflows/docs.yml`, and each absence
 is a decision rather than an oversight:**
@@ -90,8 +98,8 @@ baseline — it prints the count of blocks it requires to build beside it. A gat
 every corpus ever written.
 
 **`blockcheck` prints three scope lines, and each can shrink without failing anything:**
-`538 reference assemblies` (the pin it compiled against), `baseline: 101 blocks required to build`,
-and `scaffold rule: 14 units checked, 0 violations`. A smaller first figure is a pin that did not
+`N reference assemblies` (the pin it compiled against), `baseline: N blocks required to build`,
+and `scaffold rule: N units checked, 0 violations` — row 9 above carries each figure. A smaller first figure is a pin that did not
 restore; a smaller third is a unit the rule never looked at.
 
 **Two commands that read a `blockcheck` number are easy to write wrongly, and both were**, in spec
