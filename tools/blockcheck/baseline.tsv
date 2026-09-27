@@ -25,10 +25,11 @@
 #
 # Spec 017 adds rows per tranche phase, each at the commit that made the block build:
 # the repair (a `using`, a stub, a wrapper change) and its row land in the same PR.
-contents/AWSSQSConfiguration.md	1	-	280d1b7
-contents/AWSSQSConfiguration.md	3	-	280d1b7
-contents/AWSSQSConfiguration.md	4	-	280d1b7
-contents/AWSSQSConfiguration.md	5	-	280d1b7
+contents/AWSSQSConfiguration.md	1	TransportConfigurationContext.cs	7edaada
+contents/AWSSQSConfiguration.md	3	TransportConfigurationContext.cs	7edaada
+contents/AWSSQSConfiguration.md	4	TransportConfigurationContext.cs	7edaada
+contents/AWSSQSConfiguration.md	5	TransportConfigurationContext.cs	7edaada
+contents/AWSSQSConfiguration.md	6	TransportConfigurationContext.cs	7edaada
 contents/AWSSQSMigrateToV10.md	1	-	280d1b7
 contents/AWSSQSMigrateToV10.md	7	-	280d1b7
 contents/AnalyzerSupport.md	1	-	ec38400
@@ -63,6 +64,7 @@ contents/FAQ.md	18	FAQContext.cs	9c57ae2
 contents/FAQ.md	19	FAQContext.cs	9c57ae2
 contents/FirestoreInbox.md	1	-	280d1b7
 contents/FirestoreOutbox.md	1	-	280d1b7
+contents/GcpPubSubConfiguration.md	1	TransportConfigurationContext.cs	7edaada
 contents/HandlingLargeMessages.md	1	HandlingLargeMessagesContext.cs	71d0c60
 contents/HandlingLargeMessages.md	2	HandlingLargeMessagesContext.cs	71d0c60
 contents/HandlingLargeMessages.md	4	HandlingLargeMessagesContext.cs	71d0c60
@@ -81,14 +83,24 @@ contents/ImplementAQueryHandler.md	2	-	280d1b7
 contents/ImplementingAHandler.md	1	-	0363fae
 contents/ImplementingAsyncHandler.md	1	-	0363fae
 contents/InMemoryScheduler.md	4	-	8090477
+contents/InMemoryTransport.md	1	InMemoryTransportContext.cs	7edaada
+contents/InMemoryTransport.md	2	InMemoryTransportContext.cs	7edaada
+contents/InMemoryTransport.md	3	InMemoryTransportContext.cs	7edaada
+contents/InMemoryTransport.md	4	InMemoryTransportContext.cs	7edaada
 contents/Logging.md	1	-	280d1b7
 contents/Logging.md	2	-	280d1b7
+contents/MQTTConfiguration.md	1	TransportConfigurationContext.cs	7edaada
+contents/MSSQLMessageBroker.md	1	TransportConfigurationContext.cs	7edaada
 contents/MSSQLOutbox.md	1	-	280d1b7
 contents/MSSQLTransportInboxAndOutbox.md	1	RelationalTransportContext.cs	280d1b7
 contents/MSSQLTransportInboxAndOutbox.md	2	RelationalTransportContext.cs	280d1b7
 contents/MSSQLTransportInboxAndOutbox.md	3	RelationalTransportContext.cs	280d1b7
 contents/MSSQLTransportInboxAndOutbox.md	4	RelationalTransportContext.cs	280d1b7
+contents/MSSQLTransportInboxAndOutbox.md	5	RelationalTransportContext.cs	7edaada
+contents/MSSQLTransportInboxAndOutbox.md	6	RelationalTransportContext.cs	7edaada
 contents/MSSQLTransportInboxAndOutbox.md	7	RelationalTransportContext.cs	280d1b7
+contents/MSSQLTransportInboxAndOutbox.md	8	RelationalTransportContext.cs	7edaada
+contents/MSSQLTransportInboxAndOutbox.md	9	RelationalTransportContext.cs	7edaada
 contents/MSSQLTransportInboxAndOutbox.md	10	RelationalTransportContext.cs	280d1b7
 contents/MessageMappers.md	3	MessageMappersContext.cs	280d1b7
 contents/MigratingToNullableReferenceTypes.md	1	MigratingToNullableReferenceTypesContext.cs	280d1b7
@@ -119,6 +131,9 @@ contents/PostgreSQLMessageBroker.md	11	-	280d1b7
 contents/PostgreSQLTransportAndOutbox.md	1	RelationalTransportContext.cs	280d1b7
 contents/PostgreSQLTransportAndOutbox.md	2	RelationalTransportContext.cs	280d1b7
 contents/PostgreSQLTransportAndOutbox.md	3	RelationalTransportContext.cs	280d1b7
+contents/PostgreSQLTransportAndOutbox.md	4	RelationalTransportContext.cs	7edaada
+contents/PostgreSQLTransportAndOutbox.md	5	RelationalTransportContext.cs	7edaada
+contents/PostgreSQLTransportAndOutbox.md	6	RelationalTransportContext.cs	7edaada
 contents/PostgreSQLTransportAndOutbox.md	7	RelationalTransportContext.cs	280d1b7
 contents/PostgresOutbox.md	1	-	280d1b7
 contents/ProjectionQueryPatterns.md	4	-	280d1b7
@@ -126,6 +141,8 @@ contents/QueriesAndQueryObjects.md	1	-	280d1b7
 contents/QueriesAndQueryObjects.md	2	-	280d1b7
 contents/QueriesAndQueryObjects.md	3	-	280d1b7
 contents/QueryPipelinePolicies.md	3	-	280d1b7
+contents/RabbitMQMigrateToQuorumQueues.md	1	-	7edaada
+contents/RedisConfiguration.md	1	TransportConfigurationContext.cs	7edaada
 contents/RelationalDatabaseConfigurationReference.md	1	RelationalDatabaseConfigurationReferenceContext.cs	51b5fef
 contents/RequestValidation.md	1	RequestValidationContext.cs	0363fae
 contents/RequestValidation.md	2	RequestValidationContext.cs	0363fae
@@ -136,6 +153,7 @@ contents/RequestValidation.md	9	RequestValidationContext.cs	0363fae
 contents/RequestValidation.md	11	RequestValidationContext.cs	0363fae
 contents/RequestValidation.md	12	RequestValidationContext.cs	0363fae
 contents/RequestValidation.md	15	RequestValidationContext.cs	0363fae
+contents/RocketMQConfiguration.md	1	TransportConfigurationContext.cs	7edaada
 contents/SpannerInbox.md	1	-	280d1b7
 contents/SpannerInbox.md	2	-	280d1b7
 contents/SpannerOutbox.md	1	-	280d1b7
