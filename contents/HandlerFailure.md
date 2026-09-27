@@ -69,7 +69,7 @@ Throwing `DeferMessageAction` tells the message pump to reject the current messa
 You control requeue behavior through two `Subscription` properties:
 
 - **`RequeueDelay`** — how long the message waits before becoming visible again (default: `TimeSpan.Zero`).
-- **`RequeueCount`** — the maximum number of times a message can be requeued before it is treated as a poison message (default: `-1`, which means infinite). When the count is exceeded, the message is rejected and routed to the Dead Letter Queue if one is configured, or acknowledged and discarded otherwise.
+- **`RequeueCount`** — the number of times a message is handled before it is treated as a poison message, counting the first attempt, so `3` is two requeues (default: `-1`, which means infinite). When the count is reached, the message is rejected and routed to the Dead Letter Queue if one is configured, or acknowledged and discarded otherwise.
 
 How the delay is implemented depends on the transport. Some transports support native delay; others rely on a configured `IAmARequestScheduler`. See [Error Handling Options](/contents/ErrorHandlingOptions.md) for configuration details.
 
@@ -369,6 +369,8 @@ Throw `InvalidMessageAction` from a message mapper when deserialization fails du
 ```csharp
 public class OrderMessageMapper : IAmAMessageMapper<PlaceOrder>
 {
+    public IRequestContext? Context { get; set; }
+
     public PlaceOrder MapToRequest(Message message)
     {
         try

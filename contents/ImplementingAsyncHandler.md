@@ -15,6 +15,9 @@ class **RequestHandlerAsync\<T\>.HandleAsync()** method to implement your handli
 For example, assume that you want to handle the **Command** GreetingCommand
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+
 public class GreetingCommand : Command
 {
     public GreetingCommand(string name)
@@ -23,31 +26,35 @@ public class GreetingCommand : Command
         Name = name;
     }
 
-    public Guid Id { get; set; }
     public string Name { get; private set; }
 }
 ```
 
-Then derive your handler from **RequestHandlerAsync\<GreetingCommand\>** and accept a parameter of that type on the overriden **HandleAsync()** method, along with a nullable cancellation token - which you should
-default to null.
+Then derive your handler from **RequestHandlerAsync\<GreetingCommand\>** and accept a parameter of that type on the overriden **HandleAsync()** method, along with a **CancellationToken**, which you should default to
+`default`.
 
 To ensure that the pipeline runs, you should return the result of the next handler in the chain, by awaiting the base class **HandleAsync()**.
 
 (Because the next element in the pipeline should also be async, you should always await the result of this call.)
 
 ``` csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public class GreetingCommandRequestHandlerAsync : RequestHandlerAsync<GreetingCommand>
 {
-    public override async Task HandleAsync(GreetingCommand command, CancellationToken? ct = null)
+    public override async Task<GreetingCommand> HandleAsync(GreetingCommand command, CancellationToken cancellationToken = default)
     {
         var api = new IpFyApi(new Uri("https://api.ipify.org"));
 
-        var result = await api.GetAsync(ct);
+        var result = await api.GetAsync(cancellationToken);
 
         Console.WriteLine("Hello {0}", command.Name);
         Console.WriteLine(result.Success ? "Your public IP addres is {0}" : "Call to IpFy API failed : {0}",
         result.Message);
-        return await base.HandleAsync(command, ct).ConfigureAwait(base.ContinueOnCapturedContext);
+        return await base.HandleAsync(command, cancellationToken).ConfigureAwait(base.ContinueOnCapturedContext);
     }
 }
 ```

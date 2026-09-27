@@ -370,7 +370,11 @@ WRAPPERS = {
         '{',
         'public class Holder',
         '{',
-        'public async System.Threading.Tasks.Task Run()',
+        # `args` because a statements block is most often a Program.cs body, and
+        # C# gives a top-level program `string[] args` without declaring it
+        # (spec 017 P1-3). Simulated over the corpus before it was added: it
+        # moved one block FAILED -> BUILT and none the other way.
+        'public async System.Threading.Tasks.Task Run(string[] args)',
         '{',
     ],
 }

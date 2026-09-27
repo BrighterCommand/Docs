@@ -18,8 +18,8 @@ threshold is measured, and how to tell whether the payload really left.
 
 **Registering the store is the step people miss.** `AddBrighter` finishes by registering a
 `NullLuggageStore`, so a mapper carrying `[ClaimCheck]` with no store configured compiles,
-starts, and throws `NotImplementedException` the first time it maps a message. Step 3 is that
-registration.
+starts, and throws the first time it maps a message. Step 3 is that registration, and the
+tracer every store needs.
 
 ## Step 1: Find Your Transport's Message Size Limit
 
@@ -88,6 +88,7 @@ the store be provisioned by your infrastructure and Brighter merely check that i
 `AddBrighter`. Three overloads, differing only in who constructs the store:
 
 ```csharp
+using System.Net.Http;
 using Amazon;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
@@ -114,6 +115,16 @@ services.AddBrighter()
         }));
 ```
 
+**Every store also needs a tracer registered.** The registration sets the store's `Tracer` from
+the container with `GetRequiredService<IAmABrighterTracer>()`, and nothing in `AddBrighter`,
+`AddProducers` or `AddConsumers` registers one. If you trace with OpenTelemetry,
+`AddBrighterInstrumentation()` registers it for you; otherwise register one yourself with
+`services.AddSingleton<IAmABrighterTracer>(new BrighterTracer());`, from
+`Paramore.Brighter.Observability`. Without it, the first `Post` through a `[ClaimCheck]` mapper
+throws a `ConfigurationException` whose inner exception is *"No service for type
+'Paramore.Brighter.Observability.IAmABrighterTracer' has been registered"* — with a real store
+registered or not. This is [BrighterCommand/Brighter#4433](https://github.com/BrighterCommand/Brighter/issues/4433).
+
 **Register after `AddBrighter`, and yours wins.** `AddBrighter` ends with
 `UseExternalLuggageStore<NullLuggageStore>()` (`ServiceCollectionExtensions.cs:222-223`), so a
 store is always registered. The overloads use `AddSingleton` rather than `TryAdd`, and
@@ -122,9 +133,9 @@ store is always registered. The overloads use `AddSingleton` rather than `TryAdd
 `AddBrighterDefault`'s "register yours first" rule — the two use different registration methods
 and the order that works for one is the order that fails for the other.
 
-**Skip this step and every method of the null store throws.** Resolving
-`IAmAStorageProvider` from a container configured with `AddBrighter()` and nothing else gives
-you:
+**Skip the store and every method of the null store throws.** Resolving
+`IAmAStorageProvider` from a container configured with `AddBrighter()` and a tracer, and no
+store, gives you:
 
 ```text
 System.NotImplementedException: This is a null store, you must register a real store after Brighter
@@ -235,6 +246,7 @@ using System.Threading.Tasks;
 using Paramore.Brighter;
 using Paramore.Brighter.Transforms.Storage;
 using Paramore.Brighter.Transforms.Transformers;
+using Xunit;
 
 var store = new InMemoryStorageProvider();
 var transformer = new ClaimCheckTransformer(store, store);
@@ -264,6 +276,9 @@ whose name is the claim. For S3 that object sits under the `LuggagePrefix`, whic
 ## Claim Check Failures
 
 **`NotImplementedException: This is a null store…`** — no store registered. Step 3.
+
+**`No service for type 'Paramore.Brighter.Observability.IAmABrighterTracer'`** — no tracer
+registered. Step 3; it masks the null store's exception too, so fix it first.
 
 **`NotImplementedException` on the consumer only** — the store was registered in the producer's
 service collection and not the consumer's. Both ends need it: one to check the luggage in, the

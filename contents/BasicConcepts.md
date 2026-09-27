@@ -19,7 +19,7 @@ An [event](#event) may be used to indicate the outcome of a command.
 
 ## Dead Letter Queue (DLQ)
 
-A queue where messages that cannot be processed are sent for later investigation. When Brighter rejects a message (via `RejectMessageAction` or after exceeding the requeue count), and a DLQ is configured on the subscription, the message is routed there instead of being discarded. Some transports (RabbitMQ, Azure Service Bus) provide native DLQ support; for others, Brighter manages the DLQ by producing the rejected message to a separate channel.
+A queue where messages that cannot be processed are sent for later investigation. When Brighter rejects a message (via `RejectMessageAction` or when the requeue count is reached), and a DLQ is configured on the subscription, the message is routed there instead of being discarded. Some transports (RabbitMQ, Azure Service Bus) provide native DLQ support; for others, Brighter manages the DLQ by producing the rejected message to a separate channel.
 
 *Glossary: [Dead Letter Queue (DLQ)](/contents/Glossary.md#dead-letter-queue-dlq)*
 
@@ -115,7 +115,7 @@ Brighter and Darker's pipelines use a "Russian Doll Model" that is, each handler
 
 ## Poison Message
 
-A message that repeatedly fails processing. Without safeguards, a poison message blocks the message pump in an infinite failure-requeue-failure loop. Brighter prevents this with `RequeueCount`, which limits the number of requeue attempts before the message is rejected. The default behavior — acknowledging on failure — also prevents poison messages by ensuring the pump always moves on.
+A message that repeatedly fails processing. Without safeguards, a poison message blocks the message pump in an infinite failure-requeue-failure loop. Brighter prevents this with `RequeueCount`, which limits the number of times the message is handled before it is rejected. The default behavior — acknowledging on failure — also prevents poison messages by ensuring the pump always moves on.
 
 *Glossary: [Poison Message](/contents/Glossary.md#poison-message)*
 

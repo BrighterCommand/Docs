@@ -16,13 +16,12 @@ The Brighter Control API allows direct management of a Dispatcher node.
 Brighter's Package:
 - `Paramore.Brighter.ServiceActivator.Control.Api`
 
-provides an extension for ASPNet.Core's `IEndpointRouteBuilder`
+provides an extension for ASP.NET Core's `IEndpointRouteBuilder`, which `WebApplication` implements, so you map the endpoints directly on your app:
 
-``` c#
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapBrighterControlEndpoints();
-}
+```csharp
+using Paramore.Brighter.ServiceActivator.Control.Api;
+
+app.MapBrighterControlEndpoints();
 ```
 
 When mapping the Brighter Control API you can pass a string to change the base route of these calls, by default it is set to `/control`

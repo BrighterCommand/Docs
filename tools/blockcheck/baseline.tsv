@@ -22,15 +22,16 @@
 #
 # Phase 4 added the rows at `9c57ae2`: blocks that build because the phase repaired
 # the page, each one a defect of claim, and each row landing in the PR that made it build.
+#
+# Spec 017 adds rows per tranche phase, each at the commit that made the block build:
+# the repair (a `using`, a stub, a wrapper change) and its row land in the same PR.
 contents/AWSSQSConfiguration.md	1	-	280d1b7
 contents/AWSSQSConfiguration.md	3	-	280d1b7
 contents/AWSSQSConfiguration.md	4	-	280d1b7
 contents/AWSSQSConfiguration.md	5	-	280d1b7
 contents/AWSSQSMigrateToV10.md	1	-	280d1b7
 contents/AWSSQSMigrateToV10.md	7	-	280d1b7
-contents/AnalyzerSupport.md	1	-	280d1b7
-contents/AnalyzerSupport.md	2	-	280d1b7
-contents/AnalyzerSupport.md	7	-	280d1b7
+contents/AnalyzerSupport.md	1	-	ec38400
 contents/AsyncAPISupport.md	5	-	280d1b7
 contents/AwsScheduler.md	19	-	280d1b7
 contents/AzureScheduler.md	1	AzureSchedulerContext.cs	280d1b7
@@ -41,25 +42,45 @@ contents/AzureScheduler.md	21	AzureSchedulerContext.cs	280d1b7
 contents/BoxProvisioning.md	1	-	280d1b7
 contents/BuildingAnAsyncPipeline.md	1	-	280d1b7
 contents/CQRSWithBrighterAndDarker.md	6	-	9c57ae2
-contents/ClaimCheck.md	3	-	280d1b7
+contents/ClaimCheck.md	1	ClaimCheckContext.cs	71d0c60
+contents/ClaimCheck.md	2	ClaimCheckContext.cs	71d0c60
+contents/ClaimCheck.md	3	ClaimCheckContext.cs	71d0c60
 contents/CloudEventsSupport.md	8	-	9c57ae2
 contents/CloudEventsSupport.md	10	-	9c57ae2
 contents/CommandProcessorConfigurationReference.md	4	-	280d1b7
+contents/Compression.md	1	CompressionContext.cs	71d0c60
+contents/Compression.md	2	CompressionContext.cs	71d0c60
 contents/DapperOutbox.md	1	PageContext.cs	280d1b7
 contents/DynamoOutbox.md	1	DynamoOutboxContext.cs	280d1b7
 contents/DynamoOutbox.md	4	DynamoOutboxContext.cs	280d1b7
+contents/ErrorHandlingOptions.md	1	ErrorHandlingOptionsContext.cs	71d0c60
+contents/ErrorHandlingOptions.md	2	ErrorHandlingOptionsContext.cs	71d0c60
+contents/ErrorHandlingOptions.md	3	ErrorHandlingOptionsContext.cs	71d0c60
+contents/ErrorHandlingOptions.md	4	ErrorHandlingOptionsContext.cs	71d0c60
+contents/ErrorHandlingOptions.md	5	ErrorHandlingOptionsContext.cs	71d0c60
+contents/ErrorHandlingOptions.md	6	ErrorHandlingOptionsContext.cs	71d0c60
 contents/FAQ.md	18	FAQContext.cs	9c57ae2
 contents/FAQ.md	19	FAQContext.cs	9c57ae2
 contents/FirestoreInbox.md	1	-	280d1b7
 contents/FirestoreOutbox.md	1	-	280d1b7
+contents/HandlingLargeMessages.md	1	HandlingLargeMessagesContext.cs	71d0c60
+contents/HandlingLargeMessages.md	2	HandlingLargeMessagesContext.cs	71d0c60
+contents/HandlingLargeMessages.md	4	HandlingLargeMessagesContext.cs	71d0c60
+contents/HandlingPoisonMessages.md	1	HandlingPoisonMessagesContext.cs	71d0c60
+contents/HandlingPoisonMessages.md	2	HandlingPoisonMessagesContext.cs	71d0c60
+contents/HandlingPoisonMessages.md	3	HandlingPoisonMessagesContext.cs	71d0c60
 contents/HandlingPoisonMessages.md	4	HandlingPoisonMessagesContext.cs	280d1b7
 contents/HandlingPoisonMessages.md	5	HandlingPoisonMessagesContext.cs	280d1b7
 contents/HandlingPoisonMessages.md	6	HandlingPoisonMessagesContext.cs	280d1b7
 contents/HangfireScheduler.md	24	-	280d1b7
 contents/HangfireScheduler.md	28	-	280d1b7
+contents/HealthChecks.md	1	HealthChecksContext.cs	51b5fef
 contents/HowConfiguringTheCommandProcessorWorks.md	10	HowConfiguringTheCommandProcessorWorksContext.cs	280d1b7
 contents/ImplementAQueryHandler.md	1	-	280d1b7
 contents/ImplementAQueryHandler.md	2	-	280d1b7
+contents/ImplementingAHandler.md	1	-	0363fae
+contents/ImplementingAsyncHandler.md	1	-	0363fae
+contents/InMemoryScheduler.md	4	-	8090477
 contents/Logging.md	1	-	280d1b7
 contents/Logging.md	2	-	280d1b7
 contents/MSSQLOutbox.md	1	-	280d1b7
@@ -105,8 +126,16 @@ contents/QueriesAndQueryObjects.md	1	-	280d1b7
 contents/QueriesAndQueryObjects.md	2	-	280d1b7
 contents/QueriesAndQueryObjects.md	3	-	280d1b7
 contents/QueryPipelinePolicies.md	3	-	280d1b7
-contents/RequestValidation.md	2	-	280d1b7
-contents/RequestValidation.md	11	-	280d1b7
+contents/RelationalDatabaseConfigurationReference.md	1	RelationalDatabaseConfigurationReferenceContext.cs	51b5fef
+contents/RequestValidation.md	1	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	2	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	4	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	6	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	8	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	9	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	11	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	12	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	15	RequestValidationContext.cs	0363fae
 contents/SpannerInbox.md	1	-	280d1b7
 contents/SpannerInbox.md	2	-	280d1b7
 contents/SpannerOutbox.md	1	-	280d1b7
@@ -121,5 +150,7 @@ contents/TickerQScheduler.md	6	TickerQSchedulerContext.cs	280d1b7
 contents/TutorialDurableOutbox.md	2	-	280d1b7
 contents/TutorialFirstCommand.md	1	-	280d1b7
 contents/TutorialFirstMessage.md	1	-	280d1b7
+contents/TutorialStreamingWithKafka.md	1	TutorialStreamingWithKafkaContext.cs	8090477
+contents/TutorialStreamingWithKafka.md	2	TutorialStreamingWithKafkaContext.cs	8090477
 contents/UsingSweeperCircuitBreaking.md	1	UsingSweeperCircuitBreakingContext.cs	280d1b7
 contents/UsingTheContextBag.md	12	-	280d1b7

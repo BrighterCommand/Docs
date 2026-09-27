@@ -198,7 +198,9 @@ A Kafka **topic** is split into **partitions**, and the producer decides which *
 How the partitioner behaves depends on whether the message has a **partition key**. You set the partition key on the message header in your message mapper:
 
 ``` csharp
-public Message MapToMessage(GreetingEvent request)
+using Paramore.Brighter;
+
+public Message MapToMessage(GreetingEvent request, Publication publication)
 {
 	var header = new MessageHeader(request.Id, "greeting.event", MessageType.MT_EVENT)
 	{
@@ -329,7 +331,7 @@ table in the documentation.
 | `bufferSize` | `int` | `1` | Messages read from the topic at once and held in the channel. |
 | `noOfPerformers` | `int` | `1` | Threads reading this topic, each with its own message pump. |
 | `timeOut` | `TimeSpan?` | `300 ms` | How long a read waits before treating the topic as empty. |
-| `requeueCount` | `int` | `-1` | Times a message is requeued before it is treated as a poison pill; -1 is unlimited. |
+| `requeueCount` | `int` | `-1` | Times a message is handled before it is rejected as a poison pill, so `3` is two requeues; -1 is unlimited. |
 | `requeueDelay` | `TimeSpan?` | `0 ms` | How long delivery of a requeued message is delayed. |
 | `unacceptableMessageLimit` | `int` | `0` | Unacceptable messages before the channel stops; 0 disables the limit. |
 | `unacceptableMessageLimitWindow` | `TimeSpan?` | `null` | The window the unacceptable-message count resets at the end of. |
@@ -675,8 +677,17 @@ It is worth noting the following aspects of the code sample below:
     * **ConfluentJsonSerializationConfig.NJsonSchemaGeneratorSettings()** offers default settings for JSON Schema generation (such as using camelCase).
 
 ``` csharp
+using Confluent.Kafka;
+using Confluent.Kafka.SyncOverAsync;
+using Confluent.SchemaRegistry;
+using Confluent.SchemaRegistry.Serdes;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 public class GreetingEventMessageMapper : IAmAMessageMapper<GreetingEvent>
 {
+	public IRequestContext? Context { get; set; }
+
 	private readonly ISchemaRegistryClient _schemaRegistryClient;
 	private readonly string _partitionKey = "KafkaTestQueueExample_Partition_One";
 	private SerializationContext _serializationContext;
@@ -689,7 +700,7 @@ public class GreetingEventMessageMapper : IAmAMessageMapper<GreetingEvent>
 		_serializationContext = new SerializationContext(MessageComponentType.Value, Topic);
 	}
 
-	public Message MapToMessage(GreetingEvent request)
+	public Message MapToMessage(GreetingEvent request, Publication publication)
 	{
 		var header = new MessageHeader(messageId: request.Id, topic: Topic, messageType: MessageType.MT_EVENT);
 		//This uses the Confluent JSON serializer, which wraps Newtonsoft but also performs schema registration and validation

@@ -106,7 +106,7 @@ added, it appears as a row this page does not have.
 | `bufferSize` | `int` | `1` | Messages held in the channel at once, and read from the bus at once. |
 | `noOfPerformers` | `int` | `1` | Threads reading this channel, each with its own message pump. |
 | `timeOut` | `TimeSpan?` | `300 ms` | How long a read waits before treating the channel as empty. |
-| `requeueCount` | `int` | `-1` | Times a message is requeued before it is treated as a poison pill; -1 is unlimited. |
+| `requeueCount` | `int` | `-1` | Times a message is handled before it is rejected as a poison pill, so `3` is two requeues; -1 is unlimited. |
 | `requeueDelay` | `TimeSpan?` | `0 ms` | How long delivery of a requeued message is delayed. |
 | `unacceptableMessageLimit` | `int` | `0` | Unacceptable messages before the channel stops; 0 disables the limit. |
 | `unacceptableMessageLimitWindow` | `TimeSpan?` | `null` | The window the unacceptable-message count resets at the end of. |

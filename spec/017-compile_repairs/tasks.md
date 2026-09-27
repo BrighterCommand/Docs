@@ -487,13 +487,13 @@ recorded in `tools/README.md` row 9.
 **Goal:** every 0-hard-block page in the first five `SUMMARY.md` sections leaves whole. Page lists:
 § *The tranches*, phase 2 table (1.10). Tasks 2.2–2.5 are independent of each other.
 
-- [ ] **Task 2.1:** Predict phase 2's movement
+- [x] **Task 2.1:** Predict phase 2's movement
   - Input: § *The tranches*, phase 2 table; `design.md` § *Gate Movement Predicted*
   - Output: § *Phase 2 as executed* opens with a prediction per gate — BUILT +N (the table's
     reachable sum as ceiling), `pagelint` warnings −M, `versioncheck` scope held at **18 across 5**,
     `attr_mismatch` count held or falling
 
-- [ ] **Task 2.2:** Repair the *Get Started* tranche pages
+- [x] **Task 2.2:** Repair the *Get Started* tranche pages
   - Input: the phase 2 table's *Get Started* rows; `--classify` on each; `samples/CommandProcessor/HelloWorld`
     for `TutorialFirstCommand.md`
   - Output: each page whole — `--classify <page>` lists only blocks named in § *Blocks that stay
@@ -502,28 +502,308 @@ recorded in `tools/README.md` row 9.
     sentence design § *Page Repair Rules* asks for **only if the page does not already say it**.
     Obligation 17 applies to every code change here.
 
-- [ ] **Task 2.3:** Repair the *Commands, Handlers and Pipelines* tranche pages
+- [x] **Task 2.3:** Repair the *Commands, Handlers and Pipelines* tranche pages
   - Input: that section's rows; `--classify` on each
   - Output: each page whole; baseline rows; stubs in `tools/blockcheck/scaffold/units/<Page>Context.cs`
     with their `pages.tsv` rows, `--report` exit 0 under the unit rule
   - Notes: `RequestValidation.md` sits in this section in `SUMMARY.md`; if 1.10 places it in
     tranche 1 it is this task's largest page.
 
-- [ ] **Task 2.4:** Repair the *Brighter Configuration* and *Health Checks and Observability* tranche pages
+- [x] **Task 2.4:** Repair the *Brighter Configuration* and *Health Checks and Observability* tranche pages
   - Input: those sections' rows; `--classify` on each
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
 
-- [ ] **Task 2.5:** Repair the *Using an External Bus* tranche pages
+- [x] **Task 2.5:** Repair the *Using an External Bus* tranche pages
   - Input: that section's rows; `--classify` on each
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
 
-- [ ] **Task 2.6:** Close phase 2 — checks, figures, PR
+- [x] **Task 2.6:** Close phase 2 — checks, figures, PR
   - Input: 2.1's prediction; the PR's diff
   - Output: § *Phase 2 as executed* records — `attr_mismatch.py` before any baseline row (obligation
     15); every behavioural block run with its control (P0-10); `pagelint --changed origin/master`
     exit 0; the AC2 diff against `before.tsv` printing only `FAILED -> BUILT` or accepted skips,
     read against § *Splits*; the nine gates against 2.1; `tools/README.md` rows 2 and 9 moved.
     The PR opens with the maintainer's sign-off asked for, and the head-ref deletion by name
+
+### Phase 2 as executed
+
+**Prediction, 2026-09-27, from `master` `9549ab4`.** The *Now* column is 1.11's run at `fba508c`, all
+nine exit 0; `git diff fba508c 9549ab4` is empty, so the merge's tree is the tree 1.11 measured. Each prediction names its
+mechanism:
+
+| # | Gate | Now | Predicted after phase 2, and why |
+|---:|---|---|---|
+| 1 | `linkcheck` | 165 files, 0 broken | **none**. No file is added; a same-page sentence that links an earlier page adds a link, not a file |
+| 2 | `pagelint` | 0 errors, 743 warnings | **errors 0; warnings 743 → 723, or 722.** On the 17 pages, rule 6 warns on **23** blocks: **20** are *import* blocks that a repair gives `using`s (−20); `ReturningResultsFromAHandler.md` #1 is *page-type* (`CreateTaskCommand`, `commandProcessor`), −1 only if its stub needs the block to import something; `RequestValidation.md` #11 (BUILT) and #14 (same-page) are not touched. A split that makes a block without `using`s would raise it, and is explained if so |
+| 3, 4, 7 | shape, redirects, `--verify` | 161 / 77 / 161 | **none**. No `SUMMARY.md` change |
+| 5 | `versioncheck` | 0 stale of **18, across 5 pages** | **none, scope held at 18 across 5.** Phase 2 edits four of its five pages (all of *Get Started* except the overview); a fall means a repair deleted a pinned version |
+| 6 | `optioncheck` | 0 mismatches, 59 tables, 519 rows | **none**. One phase 2 page carries a table (`RelationalDatabaseConfigurationReference.md`); its one FAILED block gets `using`s, not rows |
+| 8 | `symbolcheck` | 0 findings, 22 entries, 3 silenced | **none**. No repair here names a watchlisted symbol |
+| 9 | `blockcheck` | 101 BUILT, 872 FAILED, 16 SKIPPED | **BUILT 101 → at most 138, at least 117; SKIPPED 16 plus accepted reasons only; exit 0; units 14 plus the new ones, 0 violations.** Mechanism below |
+| — | `attr_mismatch.py` | **7**, exit 1 | **held at 7.** None of its hits is on a phase 2 page, nor on `InMemoryScheduler.md` #4 |
+
+**Gate 9, by source.** Phase 2's table (§ *The tranches*): **36 reachable** — 10 build with a
+`using` alone, 5 with an empty stub, 15 need a stub with members, 6 need a typed value; **18
+same-page** stay FAILED by rule. **Plus one block outside the tranche, from P1-3.** Simulated
+in a worktree at `9549ab4`, with the `statements` wrapper's `Run()` changed to
+`Run(string[] args)`: `--report` → exit **1**, *"989 blocks: 102 BUILT, 871 FAILED, 16 SKIPPED"*,
+and the AC2 diff against `master` prints exactly one line, `FAILED -> BUILT
+contents/InMemoryScheduler.md 4`. Its only diagnostic was `'args'`, so it builds and is unlisted,
+which is a finding. **P1-3 therefore adds that baseline row in the same PR.** It moved **no** block
+BUILT → FAILED, so no BUILT block declares a local `args` that the parameter would shadow.
+
+- **Ceiling 138** = 101 + 36 + 1: every stub works
+- **Floor 117** = 101 + 10 + 5 + 1: only the `using` and empty-stub blocks, and P1-3's one. The
+  21 blocks that need members or typed values are where a stub may surface a defect; each that
+  does stays FAILED and is listed in § *Blocks that stay FAILED*
+- **Pages with nothing BUILT: 97 → as low as 88.** Nine phase 2 pages have no BUILT block and at
+  least one reachable block. **Five** reach one by a `using` or an empty stub alone —
+  `ImplementingAHandler.md`, `ImplementingAsyncHandler.md`, `Compression.md`,
+  `ErrorHandlingOptions.md`, `HandlingLargeMessages.md`; the other four depend on stubs with
+  members or typed values
+
+`InMemoryScheduler.md` #4 is a DI configuration block (`UseScheduler`, `AutoFromAssemblies`), and
+it asserts no behaviour a run could falsify. BrighterCommand/Brighter#4414 is about *running*
+`AutoFromAssemblies` with a scheduler, not about compiling it. The page's own P0-7 falsehood,
+`ITimerProvider`, is in other blocks and stays in phase 5.
+
+**Task 2.2 — *Get Started*.** Four pages; **no page under `contents/` changed**.
+
+- **P1-3 landed here**, as 1.10 assigned it: the `statements` wrapper's method is
+  `Run(string[] args)`. `TutorialFirstMessage.md` #2 and #4 no longer report `'args'`, and
+  `InMemoryScheduler.md` #4 builds. Nothing moved BUILT → FAILED, as 2.1's simulation said
+- **`TutorialStreamingWithKafka.md` #1 and #2 build** with a new unit,
+  `TutorialStreamingWithKafkaContext.cs`: `Greetings.GreetingEvent : Event` and the one
+  constructor block 1 calls. It is the first unit to supply a type. Rule 1 admits it, because
+  the page names rung 2's `GreetingEvent` (*"`Greetings` | unchanged"*) and never tells the reader
+  to write it. It has no `Greeting` property, because no block on the page names one (rule 3).
+  `--identifiers` → `class GreetingEvent` and a parameter; `--report` → *"15 units checked, 0
+  violations"*. **Control, both ways:** with `: Event` and the base call removed, both blocks
+  fail on `CS0311` (*"cannot be used as type parameter 'T'"*, `KafkaPublication<T>`,
+  `KafkaSubscription<T>`); restored, both have **0** diagnostics
+- **The three other tutorials' seven FAILED blocks are all same-page**, and each page already
+  says the step builds on an earlier one (§ *Blocks that stay FAILED* quotes the line), so
+  **no sentence was added**. `--classify` calls five of them *page-type*, because each also
+  names rung 1's or 2's types from another page, and its *same-page* class needs every missing
+  name to be declared on this page. The probe's SAME-PAGE is the reading the rules act on
+- **`attr_mismatch.py` → 7**, exit 1, run before the baseline rows (obligation 15)
+- **`versioncheck`** untouched: none of its five pages changed
+- **Baseline:** three rows at `8090477`, the commit that made them build. `--report` → exit **0**,
+  *"989 blocks: 104 BUILT, 869 FAILED, 16 SKIPPED"*, baseline 104, 0 findings; the AC2 diff against
+  `before.tsv` prints exactly the three `FAILED -> BUILT` lines, and nothing else
+
+**Task 2.3 — *Commands, Handlers and Pipelines*.** Five pages. **BUILT 104 → 113** (+9), each block
+listed in the baseline commit; 12 blocks stay FAILED and are listed. `pagelint` **743 → 737**.
+
+- **`using`s:** `ImplementingAHandler.md` #1, #2; `ImplementingAsyncHandler.md` #1, #2;
+  `BuildingAnAsyncPipeline.md` #2, #3; `RequestValidation.md` #1, #3, #5, #7, #8, #10, #12, #13, #15
+- **Two defects, repaired at every recurrence** (§ *Defect ledger*): the V9 `HandleAsync`
+  signature on two pages, and the `Guid Id` that hid `Command.Id` on one. `Command(Guid)` is a
+  live 10.7.0 constructor (`Command.cs:77`), so `base(Guid.NewGuid())` is not one and stays.
+  **Control, both ways:** `ImplementingAsyncHandler.md`'s two blocks compiled together with
+  `IpFyApi` stubbed → **0** diagnostics; with the old signature restored → `CS0115` *"no suitable
+  method found to override"* and `CS1503`. `BuildingAnAsyncPipeline.md`'s three blocks together,
+  with `GreetingCommand` and `IpFyApi` stubbed → **0**
+- **A unit, `RequestValidationContext.cs`:** `GreetingCommand` (`Name`, `Email`) and `PlaceOrder`
+  (`Quantity`, `Sku`), which the page validates and never shows, and `builder`,
+  `commandProcessor`, `command`. `--report` → *"16 units checked, 0 violations"*. Blocks 2 and 11
+  were BUILT before and are now compiled with the unit, so their rows change scaffold
+- **Behaviour, run with controls** against released 10.7.0 packages (a scratch console app, the
+  page's types verbatim; `GreetingCommand`, `PlaceOrder` and a `PlaceOrderHandler` are the
+  harness's):
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | Quick Start: an invalid request prints both failures and never reaches the handler | `Name = "", Email = "not-an-email"` → `RequestValidationException`, 2 errors, the page's two lines verbatim; no *"Registered"* | valid → *"Registered Ada <ada@example.com>"*, no exception |
+  | Specification: `And` reports both errors | both rules broken → 2 errors | one broken → 1 error; none → handler runs |
+  | A missing validator is a `ConfigurationException` | FluentValidation, none registered → `ConfigurationException`; Specification, none → `ConfigurationException` | validator registered → `RequestValidationException`, 2 errors |
+
+  The page's lifetime claim — `Specification<T>` keeps per-evaluation state — holds:
+  `Specification.cs:76`, `private IReadOnlyList<ValidationResult> _lastResults`. **Upstream, not
+  ours:** Brighter's own missing-specification message suggests `services.AddSingleton<ISpecification<PlaceOrder>>(...)`,
+  which that state makes unsafe
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 9 rows added and 2 re-admitted with the unit (`RequestValidation.md` #2, #11), all at
+  `0363fae`. `--report` → exit **0**, *"989 blocks: 113 BUILT, 860 FAILED, 16 SKIPPED"*, baseline 113,
+  0 findings. The AC2 diff against `before.tsv` prints 12 lines, every one `FAILED -> BUILT`: 2.2's
+  three and these nine
+
+**Task 2.4 — *Brighter Configuration* and *Health Checks and Observability*.** Three pages.
+**BUILT 113 → 120 → 113**: +7 by repair, then −7 when the maintainer ruled BRT006–008 out of
+`AnalyzerSupport.md`. **None stays FAILED**. `pagelint` **737 → 730**.
+
+- **`using`s:** `AnalyzerSupport.md` #3, #4, #5, #6, #8 — `Paramore.Brighter` and
+  `Paramore.Brighter.MessagingGateway.Kafka`, the two blocks 1 and 2 already carry
+- **Two units.** `RelationalDatabaseConfigurationReferenceContext.cs` supplies
+  `DbConnectionString()`, which block 1 calls and the page leaves to the reader's configuration.
+  `HealthChecksContext.cs` supplies the `WebApplicationBuilder` block 1 elides as *"Web
+  Application Builder code goes here"*. `--report` → *"18 units checked, 0 violations"*
+- **A defect found by running, not compiling** (§ *Defect ledger*): `HealthChecks.md` #1 called
+  `app.UseEndpoints(...)` on a `WebApplication` with no `app.UseRouting()`, and **throws at
+  startup** — `InvalidOperationException`, *"EndpointRoutingMiddleware … must be added to the
+  request execution pipeline before EndpointMiddleware"*. It compiled clean with its `using`s;
+  only the run found it. Repaired to `app.MapHealthChecks(...)` on the app. The one recurrence,
+  `BrighterControlAPI.md` #1 (a phase 5 page), is repaired the same way, to
+  `app.MapBrighterControlEndpoints()`, with its `using`; it stays FAILED on `app` alone
+  (*values*), for phase 5
+- **Behaviour, run with controls** against released 10.7.0 packages: a scratch web app, the
+  page's block verbatim after a harness `builder` and a `Dispatcher` with one
+  `InMemorySubscription<Ping>` of two performers
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `/health` returns 200 with the status as its body | dispatcher started → `Healthy` [200] | dispatcher not started → `Unhealthy` [503] |
+  | `/health/detail` returns the page's JSON shape | `{"status":"Healthy","results":{"Brighter":{"status":"Healthy","description":"2 healthy consumers.",…}},"totalDuration":…}` — the page's keys and casing | not started → `"Unhealthy"`, *"ping has 0 of 2 expected consumers"* |
+  | the block runs at all | repaired form → serves both endpoints | the page's old `UseEndpoints` form → throws before serving |
+
+  The *Health Status* table's third row is the control's result; its *Degraded* row is read from
+  `BrighterServiceActivatorHealthCheck.cs` at 10.7.0 (`activeConsumers > 0 ? Degraded :
+  Unhealthy`), not run
+- **Unshipped features removed, on the maintainer's ruling (option a).** `AnalyzerSupport.md`
+  documented **BRT006–BRT008**, the Kafka partitioner analyzers and their code fixes. **No release
+  carries them**: 10.7.0's `src/Paramore.Brighter.Analyzer/Analyzers/` has three analyzers
+  (BRT001–005, `AnalyzerReleases.Shipped.md`), there is **no** code-fix project at 10.7.0, and
+  Brighter `master` has none of the files; they exist only on BrighterCommand/Brighter#4255, open.
+  Offered (a) remove, (b) mark as coming, (c) hold the PR for #4255; the maintainer ruled **(a)**.
+  The page now describes BRT001–005, drops the code-fix claim from its introduction and the
+  *Code fix* column, and keeps its suppression guidance, generalised to BRT001. **Run, with
+  controls,** against `Paramore.Brighter.Analyzer.Package` 10.7.0:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | BRT001: a `Publication` without `RequestType` warns | `warning BRT001: RequestType assignment is Missing from Publication` | `RequestType = typeof(Ping)` → no warning |
+  | BRT003: a `Subscription` without `MessagePumpType` warns | `warning BRT003: MessagePump assignment is Missing from InMemorySubscription` | `messagePumpType: MessagePumpType.Reactor` → no warning |
+  | the page's pragma block suppresses BRT001 | the block verbatim → builds, no warning | pragmas removed → BRT001 |
+  | `.editorconfig` `severity = none` suppresses | `dotnet_diagnostic.BRT001.severity = none` → no BRT001 | without it → BRT001 |
+
+  BRT002, BRT004 and BRT005 are read from the 10.7.0 analyzers, not run. **Seven blocks left the
+  page** (§ *Blocks removed*); its one C# block is the new pragma block, BUILT
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline, in two steps.** The repair (`51b5fef`) added 7 rows → *"989 blocks: 120 BUILT"*.
+  The removal (`ec38400`) then took `AnalyzerSupport.md` from 8 C# blocks to 1: the gate reported
+  *"baselined block no longer exists (7)"* and exited 1, as it should; rows 2–8 are deleted and
+  row 1 re-points at `ec38400`, since it now names a different block. `--report` → exit **0**,
+  *"982 blocks: 113 BUILT, 853 FAILED, 16 SKIPPED"*, baseline 113, 0 findings. `before.tsv`
+  regenerated from `c7329bb` (989 rows, *"101 BUILT, 872 FAILED, 16 SKIPPED"*); the AC2 diff prints
+  **14** lines, every one `FAILED -> BUILT`: 2.2–2.3's twelve, `HealthChecks.md` #1 and
+  `RelationalDatabaseConfigurationReference.md` #1. **The diff cannot see a removed block** — it
+  reads the after-report's keys — so the seven are listed in § *Blocks removed*, and two of them
+  (`AnalyzerSupport.md` #2 and #7) were BUILT at `c7329bb`: against 2.1's prediction, phase 2's
+  BUILT count carries **−2** from deleting false content, not from a regression
+- `linkcheck` 165 files, 0 broken; `symbolcheck` 0 findings; `versioncheck` 0 stale of 18 across 5;
+  `pagelint --changed origin/master` 0 errors
+
+**Task 2.5 — *Using an External Bus*.** Five pages. **BUILT 113 → 129** (+16, the table's 16
+reachable), **1 stays FAILED** (same-page). `pagelint` **730 → 706**. Running the blocks found
+nine defects; two are upstream bugs, filed on the maintainer's ruling. All are in § *Defect ledger*.
+
+- **`using`s:** `Compression.md` #1, #2; `ErrorHandlingOptions.md` #1–#6; `HandlingLargeMessages.md`
+  #1 (`System.Net.Http`), #4 (`Xunit`)
+- **Four units and one grown.** `ClaimCheckContext.cs` and `CompressionContext.cs` supply
+  `GreetingEvent : Event`; `ErrorHandlingOptionsContext.cs` supplies `PlaceOrder : Command`;
+  `HandlingLargeMessagesContext.cs` supplies `services`, `awsCredentials` and `LargeOrderPlaced : Event`.
+  `HandlingPoisonMessagesContext.cs` gains `PlaceOrder` (`OrderId`, `Quantity`) and
+  `commandProcessor`. No page tells the reader to write any of them (rule 1, by reading).
+  `--report` → *"22 units checked, 0 violations"*. `ClaimCheck.md` #3 was BUILT before and is
+  re-admitted with the page's new unit
+- **The V9 mapper shape, repaired at every unlabelled occurrence.** `Compression.md` #1 declared
+  `MapToMessage(GreetingEvent request)`; V10's `IAmAMessageMapper<T>` is `MapToMessage(TRequest,
+  Publication)` plus `IRequestContext? Context { get; set; }` (`IAmAMessageMapper.cs:31`, `:33`).
+  Signature: 14 lines on 10 pages → 2, and both of those are skipped V9 forms. Found by a second
+  method: `NullableReferenceTypes.md`'s `MapToMessage(CreateOrderCommand request, string? topic =
+  null)`. `Context`: 17 mapper blocks without it → 1, the skipped V9 form. The touched blocks on
+  other tranches' pages fell under `pagelint --changed`'s rule 6 and got their `using`s; `--explain`
+  confirms that every namespace resolves. They stay FAILED on their pages' own types, for their
+  phases
+- **Behaviour, run with controls** against released 10.7.0 packages, in scratch console apps:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `ClaimCheck`: a body at the threshold is checked in | 1024 bytes, 1 KB → `Claim Check {id}`, bag and `DataRef` set | 1023 bytes → inline, no claim |
+  | `retain: false` deletes the luggage | unwrap → `HasClaimAsync` false | `retain: true` → still true |
+  | unwrap falls back to `DataRef` | bag entry removed → body restored | — |
+  | `HandlingLargeMessages.md` #4's three assertions | verbatim → pass | body under threshold → `StartsWithException` |
+  | a missing store throws `NotImplementedException` | tracer registered, no store → *"This is a null store…"* | no tracer → the tracer's `InvalidOperationException` masks it; store + tracer → posts |
+  | Decompress restores a Compress body | `PostAsync` → `application/gzip; charset=utf-8` on the bus, **not** decompressed (all three methods) | `Post` → `application/gzip`, round-trips; charset stripped → round-trips |
+  | Compress honours its threshold | — | body under 150 KB → uncompressed; Decompress on a plain body → unchanged |
+  | `ErrorHandlingOptions.md` #4's commented values | verbatim → `orders.dlq`, `orders.invalid`, `dead-letter-orders` | — |
+  | `requeueCount: 3` → DLQ | handler runs **3** times, then DLQ | `0` and `1` → 1 run; `2` → 2; `-1` → 80,269 runs in 1.5 s, no DLQ |
+  | `unacceptableMessageLimit` stops the pump | limit 3, 6 throwing messages → 3 runs, `DS_STOPPED` | limit 0 → 6 runs, still running |
+  | `[RejectMessageOnErrorAsync]` sends escapes to the DLQ | Proactor → DLQ 1 | no attribute → DLQ 0; **the page's Reactor** → `ConfigurationException`, pump stops, handler never runs |
+
+  Read, not run: `DepositPostAsync` taking the `WrapAsync` path, the window's reset rule, and the
+  per-transport DLQ keys (10.7.0 consumers; the subagent's reading, spot-checked at
+  `HeaderNames.cs`, `MsSqlMessageConsumer.cs:382` and `MessageHeader.cs:162`)
+- **Upstream, filed on the maintainer's ruling:** BrighterCommand/Brighter#4432 (Decompress vs
+  `WrapAsync`'s charset) and #4433 (`UseExternalLuggageStore` requires a tracer). Each gives a
+  minimal repro with its control, run as written. Both pages now state the limitation and link
+  the issue
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 16 rows added and `ClaimCheck.md` #3 re-admitted with its unit, all at `71d0c60`.
+  `--report` → exit **0**, *"982 blocks: 129 BUILT, 837 FAILED, 16 SKIPPED"*, baseline 129,
+  0 findings. `before.tsv` regenerated from `c7329bb` (989 rows, *"101 BUILT, 872 FAILED,
+  16 SKIPPED"*); the AC2 diff prints **30** lines, every one `FAILED -> BUILT`. No block was added
+  or removed, so no ordinal moved
+- `linkcheck` 165 files, 0 broken; `symbolcheck` 0 findings; `versioncheck` 0 stale of 18 across 5;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows (the twelve `requeueCount` rows changed
+  description only); `pagelint --changed origin/master` 0 errors
+
+**Task 2.6 — phase 2 closed, 2026-09-27, branch at `5407298`.** Every gate run bare, exit code
+read before its output:
+
+| # | Gate | Exit | Read | Predicted (2.1) | Agrees? |
+|---:|---|---:|---|---|---|
+| 1 | `linkcheck` | 0 | 165 files, 0 broken | none | **yes** |
+| 2 | `pagelint` | 0 | 0 errors, **706** warnings across 107 pages, 162 pages | 0 errors; 743 → 723 or 722 | **no — 17 lower**, explained below |
+| 3 | shape | 0 | 161 pages, 12 sections, widest 12 of 20, deepest 4 of 4 | none | **yes** |
+| 4 | redirects | 0 | 77 entries, 7858 bytes | none | **yes** |
+| 5 | `versioncheck` | 0 | 0 stale of 18, across 5 pages | none, scope held at 18 across 5 | **yes** |
+| 6 | `optioncheck` | 0 | 0 mismatches, 59 tables, 519 rows | none | **yes** |
+| 7 | `--verify` | 0 | 161 predicted = 161 published | none | **yes** |
+| 8 | `symbolcheck` | 0 | 0 findings, 22 entries, 161 pages, 3 silenced | none | **yes** |
+| 9 | `blockcheck` | 0 | 982: **129** BUILT, 837 FAILED, 16 SKIPPED; 0 findings; 538 reference assemblies; baseline 129; **22** units, 0 violations; 23 pages mapped | BUILT 117–138; SKIPPED 16; exit 0; 0 violations | **yes** — within the range, with −2 from the removal below |
+| — | `attr_mismatch.py` | 1 | **7** | held at 7 | **yes** |
+
+`pagelint --changed origin/master` → exit **0**, 0 errors.
+
+**Gate 9, reconciled against 2.1's 36 reachable.** 29 of them built; 5 were `AnalyzerSupport.md`
+blocks that built and then left the page with the unshipped BRT006–008 (§ *Blocks removed*);
+`ReturningResultsFromAHandler.md` #1 stays FAILED under unit rule 1; and `RequestValidation.md` #10
+stays FAILED as same-page. **Said, by the probe at `9549ab4`: #10 is HIDDEN** (`PlaceOrder`,
+`builder`), so 2.1 counted it reachable. **Measured:** with the unit supplying both, its one
+remaining diagnostic is `CS0103` `OrderSpecification`, which block 9 declares. 29 + 5 + 1 + 1 = 36.
+Add `InMemoryScheduler.md` #4 from P1-3 and BUILT is 101 + 29 + 1 = **131**, less the two
+`AnalyzerSupport.md` blocks that were BUILT at `c7329bb` and were removed: **129**.
+
+**Every FAILED block on the 17 tranche pages is listed**: `after.tsv`'s FAILED keys on those pages
+and § *Blocks that stay FAILED*'s rows are the same 20 (`diff` silent). **Pages with nothing BUILT:
+97 → 88**, which is 2.1's floor, both counted from the report by an `awk` and a Python join.
+
+**Gate 2, reconciled.** Per-page warnings at `9549ab4` against the branch: the 17 tranche pages fell
+by **20**, which is 2.1's prediction (`ReturningResultsFromAHandler.md` #1 was not touched, so 723,
+not 722). The further **−17** are on 11 pages outside the tranche — `Routing.md` −3, `KafkaConfiguration.md`,
+`NullableReferenceTypes.md`, `ReactorAndProactor.md` and `V10MigrationGuide.md` −2 each, six more
+−1 each. They are blocks that 2.4's `UseEndpoints` repair and 2.5's mapper and `requeueCount`
+repairs touched, which `--changed` rule 6 then required to carry `using`s. 2.1 predicted only the
+tranche because it did not foresee repairs off it. 743 − 20 − 17 = **706**.
+
+**AC2, against a `before.tsv` regenerated from `c7329bb` in a worktree** (exit 0, *"989 blocks: 101
+BUILT, 872 FAILED, 16 SKIPPED"*, 989 rows): the diff prints **30** lines, every one `FAILED ->
+BUILT`. § *Splits* is empty, so no ordinal moved; the seven removed blocks are in § *Blocks
+removed*, because the diff reads only the after-report's keys. **Control, both ways:** a copy of
+the branch's report with `HealthChecks.md` #1 set FAILED prints 29 lines and loses that one; a copy
+with `AWSSQSConfiguration.md` #1 set FAILED prints exactly one line that is not `FAILED -> BUILT`,
+`BUILT -> FAILED contents/AWSSQSConfiguration.md 1`.
+
+**Every behavioural block was run with its control** (P0-10): the tables under 2.3, 2.4 and 2.5.
+`InMemoryScheduler.md` #4 asserts no behaviour (2.1).
+
+**The PR changes 39 pages** (`git diff --name-only origin/master..HEAD -- contents | wc -l`): **10**
+of the 17 tranche pages, and **29** outside the tranche, changed by repairing recurrences, 2.5's
+defects among them. The other seven tranche pages were made whole by a unit or the wrapper alone
+(the four *Get Started* pages, `ClaimCheck.md`, `RelationalDatabaseConfigurationReference.md`), or
+left as they were (`ReturningResultsFromAHandler.md`). Beside them are 12 files under `tools/` and
+this one.
 
 ---
 
@@ -924,13 +1204,73 @@ is rewritten against the tables below.
 
 *One row per block a tranche page leaves FAILED: page, ordinal, diagnostic, why it is not 017's.*
 
+| Page | # | Diagnostic | Why it stays | Phase |
+|---|---:|---|---|---:|
+| `TutorialDurableOutbox.md` | 1 | `CS0246` `AddGreeting`, `GreetingsSender`; `GreetingEvent`, `Greetings` | same-page: block 2 declares `AddGreeting` in `namespace GreetingsSender`. The page says so at line 289 (*"`AddGreeting` and its handler arrive in step 5"*) | 2 |
+| `TutorialDurableOutbox.md` | 3 | `CS0246` `AddGreeting`; `GreetingEvent`, `Greetings` | same-page: block 2's `AddGreeting`; line 478, *"all three projects build again"* | 2 |
+| `TutorialFirstCommand.md` | 2 | `CS0246` `GreetingCommand` | same-page: block 1 declares it; step 3 opens *"Deriving from `RequestHandler<GreetingCommand>`"*, in the same project | 2 |
+| `TutorialFirstCommand.md` | 3 | `CS0246` `GreetingCommand`, `HelloWorld` | same-page: block 1 declares both; step 4 names the handler step 3 wrote | 2 |
+| `TutorialFirstMessage.md` | 2 | `CS0246` `GreetingEvent`, `Greetings` | same-page: block 1 declares both; line 132, `dotnet add GreetingsSender reference Greetings` | 2 |
+| `TutorialFirstMessage.md` | 3 | `CS0246` `GreetingEvent`, `Greetings` | same-page; line 221, `dotnet add GreetingsReceiver reference Greetings` | 2 |
+| `TutorialFirstMessage.md` | 4 | `CS0246` `GreetingEvent`, `Greetings` | same-page; line 221 | 2 |
+| `BuildingAnAsyncPipeline.md` | 2 | `CS0246` `UseCommandSourcingAsync`, `GreetingCommand`, `IpFyApi` | same-page: block 3 declares the attribute. The three blocks compile together, with the two never-shown types stubbed, at **0** diagnostics | 2 |
+| `BuildingAnAsyncPipeline.md` | 3 | `CS0246` `CommandSourcingHandlerAsync<>` | same-page: block 1 declares it | 2 |
+| `ImplementingAHandler.md` | 2 | `CS0246` `GreetingCommand` | same-page: block 1; *"Then derive your handler from `RequestHandler<GreetingCommand>`"* | 2 |
+| `ImplementingAsyncHandler.md` | 2 | `CS0246` `GreetingCommand`, `IpFyApi` | same-page: block 1; *"Then derive your handler from `RequestHandlerAsync<GreetingCommand>`"*. With `IpFyApi` stubbed, both blocks compile together at **0** diagnostics | 2 |
+| `RequestValidation.md` | 3 | `CS0246` `RegisterUser` | same-page: block 2, *"2. Mark the handler"* after *"1. Declare the rules on the request"* | 2 |
+| `RequestValidation.md` | 5 | `CS0246` `RegisterUser` | same-page: block 2, step 4 of the numbered Quick Start | 2 |
+| `RequestValidation.md` | 7 | `CS0246` `GreetingCommandValidator` | same-page: block 6, *"Register the validator"* | 2 |
+| `RequestValidation.md` | 10 | `CS0103` `OrderSpecification` | same-page: block 9, *"Register the specification"* | 2 |
+| `RequestValidation.md` | 13 | `CS0246` `RegisterUser` | same-page: block 2; the section reuses the Quick Start's request | 2 |
+| `RequestValidation.md` | 14 | `CS0246` `RegisterUser` | same-page: block 2 | 2 |
+| `RequestValidation.md` | 16 | `CS0246` `MyRequestHandler<>` | same-page: block 15, *"2. Map the provider-agnostic handler to your implementation"* | 2 |
+| `ReturningResultsFromAHandler.md` | 1 | `CS0246` `CreateTaskCommand`; `CS0103` `commandProcessor` | **unit rule 1**: the page tells the reader to write this type (*"add a property to the **Command** that you can initialize from the Handler"*), so it may not be stubbed | 2 |
+| `HandlingLargeMessages.md` | 3 | `CS0246` `LargeOrderMessageMapper` | same-page: block 2 declares it; block 3 follows *"**Register the mapper**, or none of this runs"* | 2 |
+
 ## Splits
 
 *One row per split fence: page, old ordinal, new ordinals.*
 
+## Blocks removed
+
+*One row per block a phase deletes with the content it illustrated. The AC2 diff reads the
+after-report's keys and cannot show these, so they are listed here.*
+
+| Page | Old # | At `c7329bb` | Why | Task |
+|---|---:|---|---|---:|
+| `AnalyzerSupport.md` | 2 | BUILT | BRT006's fixed form; BRT006–008 ship in no release | 2.4 |
+| `AnalyzerSupport.md` | 3 | FAILED | BRT007's warning case | 2.4 |
+| `AnalyzerSupport.md` | 4 | FAILED | BRT007's fixed form | 2.4 |
+| `AnalyzerSupport.md` | 5 | FAILED | BRT008's warning case | 2.4 |
+| `AnalyzerSupport.md` | 6 | FAILED | BRT008's fixed form | 2.4 |
+| `AnalyzerSupport.md` | 7 | BUILT | the `using` for the code fix's `Partitioner` | 2.4 |
+| `AnalyzerSupport.md` | 8 | FAILED | the BRT007 pragma, rewritten as BRT001 in the new block 1 | 2.4 |
+
+Old block 1 (BRT006's warning case, BUILT) also went; its address now holds the new pragma block,
+BUILT, re-admitted at `ec38400`.
+
 ## Defect ledger
 
 *One row per defect: defect, page, recurrence grep, before, after, found by.*
+
+| Defect | Verified against 10.7.0 | Page | Recurrence grep | Before | After | Found by |
+|---|---|---|---|---:|---:|---|
+| `HandleAsync(T, CancellationToken? ct = null)` — V9's signature; V10 overrides `Task<TRequest> HandleAsync(TRequest command, CancellationToken cancellationToken = default)` | `RequestHandlerAsync.cs:119` | `ImplementingAsyncHandler.md` (also returned `Task`, not `Task<GreetingCommand>`; its prose said to *"default to null"*), `BuildingAnAsyncPipeline.md` | `grep -rn 'CancellationToken?' contents/` | **2** | **0** | 2.3, `--explain` after the page's `using`s |
+| `public Guid Id { get; set; }` on a request — hides `IRequest.Id`, which is an `Id` | `IRequest.cs:47` | `ImplementingAsyncHandler.md` | `grep -rn 'public Guid Id\b' contents/` | **2** | **1** — the other is not this defect (next row) | 2.3, reading |
+| `app.UseEndpoints(...)` on a `WebApplication` with no `app.UseRouting()` — throws `InvalidOperationException` at startup | run against 10.7.0 packages, net10.0; the control is the page's old block | `HealthChecks.md`, `BrighterControlAPI.md` | `grep -rn 'UseEndpoints' contents/` | **2** | **0** | 2.4, running the block |
+| BRT006–BRT008 (Kafka partitioner analyzers, code fixes) documented as shipped — in no release; only on BrighterCommand/Brighter#4255, open. Also *"includes code fixes"*: 10.7.0 has no code-fix project | `git ls-tree 10.7.0 src/Paramore.Brighter.Analyzer/Analyzers/` → 3 analyzers, BRT001–005 | `AnalyzerSupport.md` | `grep -rln 'BRT00[678]\|code fix' contents/` | **1** | **0** — removed, maintainer's ruling (a) | 2.4, verifying the page's reference code |
+| `IRequestContext` implemented with `Guid Id`, `ISpan Span`, `Dictionary<string, object> Bag`, `CustomHeaders` — at 10.7.0 the interface has no `Id` and no `CustomHeaders`, `Span` is an `Activity`, `Bag` a `ConcurrentDictionary` | `IRequestContext.cs` | `V10MigrationGuide.md:320` | — | **1** | **open — phase 5**, which holds that page for its E4 repair | 2.3, the row above's grep |
+| `MapToMessage(TRequest request)` — V9's mapper signature; V10's takes a `Publication` | `IAmAMessageMapper.cs:33` | `Compression.md`, `Routing.md`, `KafkaConfiguration.md`, `MessageTransforms.md`, `ImplementingExternalBus.md`, `V10MigrationGuide.md`, `MessageMappers.md`, `OutboxArchiver.md`, `NullableReferenceTypes.md` (`string? topic = null`, found by the second method) | `grep -rnE 'MapToMessage\([A-Za-z<>]+ [a-z][A-Za-z]*(, string\? topic = null)?\)' contents/` | **14** lines, 10 pages | **2** — both skipped V9 forms | 2.5, `--explain` |
+| A mapper class without `IRequestContext? Context { get; set; }` — `CS0535` | `IAmAMessageMapper.cs:31` | 11 pages | mapper blocks declaring `: IAmAMessageMapper<` with no `IRequestContext? Context` | **17** | **1** — the skipped V9 form | 2.5, `--explain` after the signature fix |
+| `requeueCount: N` described as N requeues (*"Times a message is requeued"*, *"On the 4th failure"*) — it is N handlings, N−1 requeues; `0` behaves as `1` | `Message.cs:161`, `HandledCount >= requeueCount`; run, table in § *Phase 2 as executed* | 17 pages, including all 12 option tables | `grep -rnE 'requeued before it is treated\|exceed(s\|ed\|ing)? the requeue count\|Requeue up to 3\|Retry up to 3\|4th failure\|RequeueCount. is exceeded\|retries (remain\|exhausted)\|retry a message before\|number of requeue attempts\|requeue count exceeded\)\|When the count is exceeded' contents/` | **25** | **0** | 2.5, running |
+| `requeueDelayInMilliseconds` — V9; V10's `Subscription` takes `TimeSpan? requeueDelay` | `Subscription.cs:115` | `BrighterSchedulerSupport.md`, `DispatcherConfigurationReference.md`, `HowServiceActivatorWorks.md`, `SchedulingAMessage.md` | `grep -rnE 'requeueDelayInMilliseconds\|RequeueDelayInMilliseconds' contents/` | **5** | **0** | 2.5, reading the requeue lines |
+| DLQ enrichment keys given as one PascalCase set for every transport — Kafka writes `OriginalTopic`, `OriginalType`, …; six transports write camelCase; RMQ, ASB, GCP and InMemory write none but the pump's free-text `RejectionReason`; the bag is case-sensitive. Also RMQ and ASB listed as routing invalid messages, and both keys as on *"all"* subscriptions | `KafkaMessageConsumer.cs:1080`, `MsSqlMessageConsumer.cs:382` and five twins, `MessageHeader.cs:162`, `Reactor.cs:426`; `IUseBrighterInvalidMessageSupport` implementors | `ErrorHandlingOptions.md` | `grep -rnE '\| .OriginalMessageType. \|\|Both are constructor parameters available on all' contents/` | **2** | **0** | 2.5, verifying the table |
+| Decompress does not recognise `WrapAsync`'s output — `IsCompressed` compares `ContentType.ToString()` with `application/gzip`, and `WrapAsync` adds `; charset=utf-8` | run; `CompressPayloadTransformer.cs:125`, `:301` — **upstream, BrighterCommand/Brighter#4432** | `Compression.md` states it and links the issue | — | **1** | **stated** — maintainer's ruling | 2.5, running |
+| `UseExternalLuggageStore` resolves `IAmABrighterTracer` with `GetRequiredService` and only `AddBrighterInstrumentation()` registers one, so a claim check without tracing throws on first `Post`; the page's null-store exception appears only with a tracer | run; `ServiceCollectionExtensions.cs:1008` — **upstream, BrighterCommand/Brighter#4433** | `HandlingLargeMessages.md` step 3 and its failures list | — | **1** | **documented** — maintainer's ruling | 2.5, running the null-store claim's control |
+| A Reactor subscription paired with an async handler — the pump stops with `ConfigurationException` (`InvalidCastException` inside), and the handler never runs; the page's own step 4 says so | run, control Proactor | `HandlingPoisonMessages.md` step 3 → `Proactor` | reading: the other four tranche pages have no handler beside their subscriptions | **1** | **0** | 2.5, running block 2's claim |
+| A log excerpt quoting messages Brighter does not emit (*"Failed to process message … requeueing"*, *"Requeue count exceeded"*) | `Reactor.cs:601–670`, the templates; replaced with a captured run | `HandlingPoisonMessages.md` step 1 | `grep -rnE 'Requeue count exceeded for message\|Failed to process message' contents/` | **3** | **0** | 2.5, reading step 1 against the run's log |
+| `new MessageBody(bytes, "JSON")` / `(s, MediaTypeNames.Application.Octet, …)` — a string where 10.7.0 takes a `ContentType?` | `CS1503` from `--explain` | `KafkaConfiguration.md` #20, `MessageMappers.md` #5 | — | **2** | **open — phases 3 and 5** | 2.5, `--explain` on the touched blocks |
+| Mapper excerpts that omit a required member with no `// ...` (`CS0535` `MapToRequest` / `MapToMessage`) | `CS0535` | `Routing.md` #1, `V10MigrationGuide.md` #3, #18, `NullableReferenceTypes.md` #7, `FAQ.md` #7 | — | **5** | **open — their phases** | 2.5, `--explain` on the touched blocks |
 
 ## Friction ledger
 

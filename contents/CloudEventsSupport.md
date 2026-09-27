@@ -226,8 +226,15 @@ public override MyCommand Handle(MyCommand command)
 CloudEvents supports the [DataRef extension](https://github.com/cloudevents/spec/blob/main/cloudevents/extensions/dataref.md) for the Claim Check pattern, where large payloads are stored externally and only a reference is included in the message.
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+
 public class LargeOrderMapper : IAmAMessageMapper<LargeOrder>
 {
+    public IRequestContext? Context { get; set; }
+
     [ClaimCheck(step: 0, thresholdInKb: 256)]
     public Message MapToMessage(LargeOrder request, Publication publication)
     {

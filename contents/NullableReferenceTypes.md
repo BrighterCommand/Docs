@@ -115,13 +115,19 @@ public class CreateOrderCommandHandler : RequestHandler<CreateOrderCommand>
 Message mappers should handle nullable message properties:
 
 ```csharp
+using System;
+using System.Text.Json;
+using Paramore.Brighter;
+
 public class CreateOrderCommandMessageMapper : IAmAMessageMapper<CreateOrderCommand>
 {
-    public Message MapToMessage(CreateOrderCommand request, string? topic = null)
+    public IRequestContext? Context { get; set; }
+
+    public Message MapToMessage(CreateOrderCommand request, Publication publication)
     {
         var header = new MessageHeader(
             messageId: request.Id,
-            topic: topic ?? "orders.create",
+            topic: publication.Topic ?? new RoutingKey("orders.create"),
             messageType: MessageType.MT_COMMAND);
 
         var body = new MessageBody(JsonSerializer.Serialize(request));
@@ -204,8 +210,14 @@ public class CreateUserCommand : Command
 Validate nullability at system boundaries (message mappers, API controllers):
 
 ```csharp
+using System;
+using System.Text.Json;
+using Paramore.Brighter;
+
 public class CreateUserCommandMapper : IAmAMessageMapper<CreateUserCommand>
 {
+    public IRequestContext? Context { get; set; }
+
     public CreateUserCommand MapToRequest(Message message)
     {
         var dto = JsonSerializer.Deserialize<CreateUserDto>(message.Body.Value);

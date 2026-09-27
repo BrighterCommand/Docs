@@ -65,18 +65,23 @@ It is worth remembering that handlers may be called after the target handler (in
 We now need to tell our pipeline to call this orthogonal handler before our target handler. To do this we use attributes. The code we want to write looks like this:
 
 ``` csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 internal class GreetingCommandRequestHandlerAsync : RequestHandlerAsync<GreetingCommand>
 {
     [UseCommandSourcingAsync(step: 1, timing: HandlerTiming.Before)]
-    public override async Task<GreetingCommand> HandleAsync(GreetingCommand command, CancellationToken? ct = null)
+    public override async Task<GreetingCommand> HandleAsync(GreetingCommand command, CancellationToken cancellationToken = default)
     {
         var api = new IpFyApi(new Uri("https://api.ipify.org"));
 
-        var result = await api.GetAsync(ct);
+        var result = await api.GetAsync(cancellationToken);
 
         Console.WriteLine("Hello {0}", command.Name);
         Console.WriteLine(result.Success ? "Your public IP addres is {0}" : "Call to IpFy API failed : {0}", result.Message);
-        return await base.HandleAsync(command, ct).ConfigureAwait(base.ContinueOnCapturedContext);
+        return await base.HandleAsync(command, cancellationToken).ConfigureAwait(base.ContinueOnCapturedContext);
     }
 }
 ```
@@ -87,6 +92,9 @@ Command Processor that we want it to be the first handler to run if we have mult
 We implement the **UseCommandSourcingAsyncAttribute** by creating our own Attribute class, derived from **RequestHandlerAttribute**.
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+
 public class UseCommandSourcingAsyncAttribute : RequestHandlerAttribute
 {
 

@@ -96,8 +96,13 @@ public class MyCommandHandler : RequestHandler<MyCommand>
 Use synchronous `MapToMessage` and `MapToRequest` methods:
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+
 public class MyCommandMessageMapper : IAmAMessageMapper<MyCommand>
 {
+    public IRequestContext? Context { get; set; }
+
     public Message MapToMessage(MyCommand request, Publication publication)
     {
         var header = new MessageHeader(
@@ -158,8 +163,13 @@ public class MyCommandHandlerAsync : RequestHandlerAsync<MyCommand>
 Message mappers remain synchronous (they don't perform I/O), but the mapper is called from an async context:
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+
 public class MyCommandMessageMapper : IAmAMessageMapper<MyCommand>
 {
+    public IRequestContext? Context { get; set; }
+
     // Same synchronous implementation as Reactor
     public Message MapToMessage(MyCommand request, Publication publication)
     {
