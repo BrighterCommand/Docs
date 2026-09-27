@@ -491,6 +491,97 @@ def load_scaffold():
 
 
 # --------------------------------------------------------------------------
+# The unit rule
+# --------------------------------------------------------------------------
+# A UNIT MAY SUPPLY ONLY WHAT ITS PAGES' BUILDING BLOCKS USE. Spec 016 wrote
+# that in pages.tsv's comment and nothing checked it, so PageContext.cs went
+# on declaring nine types and seventeen members that no block on its page
+# names. Spec 017 made stubs legal for types a page names and never shows,
+# which widens what a unit may hold -- so the rule is enforced here, on every
+# `--report`, and a violation is a finding. For a unit mapped to pages P:
+#
+#   1. every type it declares is named by a BUILT block on P
+#   2. no block on P declares a type of that name -- the stub would leak the
+#      page's own type into a block that is meant to stand alone
+#   3. every member it declares (field, property, method) is named by a BUILT
+#      block on P
+#   4. it declares no `global using`: a unit's plain `using`s are file-scoped
+#      and cannot reach a block, and a global one would supply a namespace the
+#      page never gave its reader
+#
+# "Named" is a token match over the block's text. The holder class a unit's
+# own `// blockcheck: using static X;` line brings into scope is exempt from 1
+# -- no block names it, by design -- and its members are not exempt from 3.
+UNIT_MEMBER_KINDS = ('field', 'property', 'method')
+UNIT_IGNORED_KINDS = ('parameter', 'local')
+HOLDER_RE = re.compile(r'^using static ([A-Za-z_][\w.]*);$')
+GLOBAL_USING_RE = re.compile(r'^\s*global\s+using\b', re.M)
+TOKEN_RE = re.compile(r'[A-Za-z_]\w*')
+
+
+def unit_rule_violations(blocks, verdicts, scaffolds):
+    """`(violations, units checked)`, or None when the units cannot be read.
+
+    `verdicts` maps (page, ordinal) to the block's verdict.
+    """
+    pages_of = {}
+    for rel, scaffold in scaffolds.items():
+        if scaffold.unit:
+            pages_of.setdefault(scaffold.unit, []).append(rel)
+    if not pages_of:
+        return [], 0
+    run = subprocess.run(['dotnet', TOOL_DLL, '--identifiers', *sorted(pages_of)],
+                         capture_output=True, text=True)
+    if run.returncode != 0:
+        sys.stderr.write(run.stderr)
+        return None
+    declared = {}
+    for line in run.stdout.split('\n'):
+        if line:
+            path, kind, name = line.split('\t')
+            declared.setdefault(path, []).append((kind, name))
+
+    violations = []
+    for unit, pages in sorted(pages_of.items()):
+        label = os.path.basename(unit)
+        with open(unit, encoding='utf-8') as fh:
+            text = fh.read()
+        holders = {match.group(1).split('.')[-1]
+                   for scaffold in scaffolds.values() if scaffold.unit == unit
+                   for using in scaffold.usings
+                   for match in [HOLDER_RE.match(using)] if match}
+        on_pages = [block for block in blocks if block.rel in pages]
+        named = {token for block in on_pages
+                 if verdicts.get((block.rel, block.ordinal)) == 'BUILT'
+                 for token in TOKEN_RE.findall(block.text)}
+        page_types = {}
+        for block in on_pages:
+            for name in TYPE_DECL_RE.findall(block.text):
+                page_types.setdefault(name, f'{block.rel} block {block.ordinal}')
+        where = ', '.join(sorted(pages))
+
+        if GLOBAL_USING_RE.search(text):
+            violations.append(f'{label}: declares a global using, which would '
+                              'supply a namespace to every block it reaches')
+        for kind, name in declared.get(unit, []):
+            if kind in UNIT_IGNORED_KINDS:
+                continue
+            if kind in UNIT_MEMBER_KINDS:
+                if name not in named:
+                    violations.append(f'{label}: {kind} {name} is named by no '
+                                      f'BUILT block on {where}')
+                continue
+            if name in page_types:
+                violations.append(f'{label}: {kind} {name} is declared by '
+                                  f'{page_types[name]}, and a stub must not '
+                                  'supply it')
+            if name not in holders and name not in named:
+                violations.append(f'{label}: {kind} {name} is named by no BUILT '
+                                  f'block on {where}')
+    return violations, len(pages_of)
+
+
+# --------------------------------------------------------------------------
 # Modes
 # --------------------------------------------------------------------------
 def mode_list(blocks):
@@ -905,6 +996,19 @@ def mode_report(blocks, args):
     finally:
         shutil.rmtree(staged, ignore_errors=True)
 
+    # THE UNIT RULE, before the verdict counts: a unit that supplies more than
+    # its page's building blocks use is a finding, whatever the blocks did.
+    ruled = unit_rule_violations(
+        blocks, {key: verdict for key, (_, verdict, _) in judged.items()},
+        scaffolds)
+    if ruled is None:
+        print('a scaffold unit could not be read: nothing was checked',
+              file=sys.stderr)
+        return 2
+    rule_violations, units_ruled = ruled
+    for violation in rule_violations:
+        print(f'SCAFFOLD RULE: {violation}', file=sys.stderr)
+
     # Scope first, verdict second. `0 findings` out of 0 blocks and `0 findings`
     # out of 985 are different claims, and only one of them is worth having.
     skipped = counts.get('SKIPPED', 0)
@@ -994,8 +1098,10 @@ def mode_report(blocks, args):
     # is not a claim about whether a block compiles -- it is a claim about the
     # corpus that is wrong on its own terms.
     findings = (len(malformed) + len(regressed) + len(vanished)
-                + len(unlisted) + len(rescaffolded))
+                + len(unlisted) + len(rescaffolded) + len(rule_violations))
     print(f'baseline: {len(baseline)} blocks required to build', file=sys.stderr)
+    print(f'scaffold rule: {units_ruled} units checked, '
+          f'{len(rule_violations)} violations', file=sys.stderr)
     print(f'{findings} findings' + (f', {skipped} skipped' if skipped else ''),
           file=sys.stderr)
     return 1 if findings else 0

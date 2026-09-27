@@ -252,8 +252,13 @@ internal static class Program
                         kind = "method"; name = m.Identifier.ValueText; break;
                     case Microsoft.CodeAnalysis.CSharp.Syntax.PropertyDeclarationSyntax p:
                         kind = "property"; name = p.Identifier.ValueText; break;
+                    // A declarator is a member only under a field declaration;
+                    // anywhere else it is a local, and the unit rule (spec 017)
+                    // holds members to account, not the locals of a stub body.
                     case Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax v:
-                        kind = "field"; name = v.Identifier.ValueText; break;
+                        kind = v.Parent?.Parent is Microsoft.CodeAnalysis.CSharp.Syntax.FieldDeclarationSyntax
+                            ? "field" : "local";
+                        name = v.Identifier.ValueText; break;
                     case Microsoft.CodeAnalysis.CSharp.Syntax.ParameterSyntax a:
                         kind = "parameter"; name = a.Identifier.ValueText; break;
                 }

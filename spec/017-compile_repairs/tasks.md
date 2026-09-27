@@ -179,7 +179,7 @@ Predicted*).
   - Notes: ids go as separate arguments — the zsh `$ids` trap from session 84 does not apply to a
     Python front end, which is part of the reason to have one.
 
-- [ ] **Task 1.6:** Enforce the unit rule in `--report`, with four plants
+- [x] **Task 1.6:** Enforce the unit rule in `--report`, with four plants
   - Input: `design.md` § *The Unit Rule, Enforced* (rules 1–4, output form, exit 1)
   - Output: `--report` prints `SCAFFOLD RULE: <unit>: <what>` and exits **1** on a violation.
     Recorded here: the four plants — a type no block names, a type a block on its page declares, an
@@ -332,6 +332,39 @@ Three defects in the Roslyn half's `--explain`, each measured on the old binary:
 | `AWSSQSConfiguration_1` (BUILT) | exit 0, **0** rows, *"1 blocks explained, 0 diagnostics"* |
 | `NoSuch_9` / no argument | exit **2** / usage, exit **2** |
 | `--classify` and `--report` after the change | exit 0, **byte-identical** to before |
+
+**Task 1.6 — the unit rule in `--report`.** `unit_rule_violations()` runs on every `--report`, after
+the compile, and prints `SCAFFOLD RULE: <unit>: <what>` before the verdict counts; each violation
+is a finding, so it exits **1**. The scope line gains *"scaffold rule: N units checked, M
+violations"*. Two readings of design § *The Unit Rule, Enforced*, made here:
+
+- **The holder class is exempt from rule 1.** Every unit declares the static class its own
+  `// blockcheck: using static X;` line brings into scope, and no block names it. Its members are
+  not exempt from rule 3
+- **Rule 3 counts fields, properties and methods, not locals.** `--identifiers` called every
+  variable declarator a `field`; it now says `local` for one outside a field declaration.
+  `--list-scaffold` is byte-identical before and after (99 rows)
+
+**Positive control, the real tree** — `python3 tools/blockcheck.py --report r.tsv 2> err; echo $?`
+→ **1**, *"scaffold rule: 14 units checked, 26 violations"*, **all 26 in `PageContext.cs`**: 9 types
+(8 classes, 1 interface) and 17 members (14 properties, 3 methods) — the design's dry-run figures.
+The one member that passes is `connectionString`. **The other 13 units: 0** — the negative control.
+The verdict rows are byte-identical to before.
+
+**Plants, both ways** — each added to `AzureSchedulerContext.cs` alone, `--report` run, the unit
+restored (`git diff --quiet`). The real tree exits 1 on `PageContext.cs` until 1.7, so the evidence
+is the violation count moving by exactly the planted lines:
+
+| Plant | Exit | Violations | The planted line |
+|---|---:|---:|---|
+| none | 1 | 26 | — |
+| a type no block names (`PlantedStub`) | 1 | **27** | `class PlantedStub is named by no BUILT block on contents/AzureScheduler.md` |
+| a type a block on its page declares (`OrderService`, block 9) | 1 | **28** | `class OrderService is declared by contents/AzureScheduler.md block 9, and a stub must not supply it`, and rule 1's line |
+| a member no block names (`plantedValue`) | 1 | **27** | `property plantedValue is named by no BUILT block on contents/AzureScheduler.md` |
+| `global using System.Text;` | 1 | **27** | `declares a global using, which would supply a namespace to every block it reaches` |
+
+The real scaffold exiting **0** is 1.7's output, in the same PR: this branch is not pushed between
+the two, since CI's `blocks` job would fail on 1.6 alone.
 
 ## Phase 2 — Tranche 1a *(6 tasks, one PR, CHANGES THE SITE)*
 
