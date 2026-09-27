@@ -1526,15 +1526,18 @@ and five of its six hard-only pages.
   `pagelint --changed origin/master` 0 errors. **Pages changed: 6** (`git diff --name-only
   7d04918..HEAD -- contents`), all on the tranche
 
-**Task 4.4 — the remaining outbox pages.** Three pages. **BUILT 226 → 231** (+5):
-`AzureBlobArchiveProvider.md` #1 and `UsingSweeperCircuitBreaking.md` #2–#5. **One stays FAILED**,
-`ReplayOnSeenReference.md` #1, by P2-2 (§ *Blocks that stay FAILED*). `pagelint` **624 → 620**, the
-four `UsingSweeperCircuitBreaking.md` blocks that opened with `// ...`. Pages with nothing BUILT
+**Task 4.4 — the remaining outbox pages.** Three pages, and one off the tranche by ruling. **BUILT
+226 → 233** (+7): `AzureBlobArchiveProvider.md` #1, `UsingSweeperCircuitBreaking.md` #2–#5 and
+`SweeperCircuitBreaking.md` #2, #7. **One stays FAILED**,
+`ReplayOnSeenReference.md` #1, by P2-2 (§ *Blocks that stay FAILED*). `pagelint` **624 → 618**, the
+four `UsingSweeperCircuitBreaking.md` blocks that opened with `// ...` and the two
+`SweeperCircuitBreaking.md` blocks. Pages with nothing BUILT
 **58 → 57**, `AzureBlobArchiveProvider.md`; `ReplayOnSeenReference.md` stays among them.
 
-- **Said at 4.1:** a ceiling of **230** BUILT. **Measured: 231.** The ceiling left out 4.2's two
-  off-tranche recurrence blocks (`BrighterBasicConfiguration.md` #3, #4) and counted
-  `TickerQScheduler.md` #2, which stays FAILED on `Program`: 230 + 2 − 1 = 231
+- **Said at 4.1:** a ceiling of **230** BUILT. **Measured: 233.** The ceiling left out 4.2's two
+  off-tranche recurrence blocks (`BrighterBasicConfiguration.md` #3, #4) and the two
+  `SweeperCircuitBreaking.md` blocks repaired by ruling, and counted `TickerQScheduler.md` #2, which
+  stays FAILED on `Program`: 230 + 2 + 2 − 1 = 233
 - **`UsingSweeperCircuitBreaking.md`.** #2, #3 take their `using`s, and the page's unit gains
   `services`, which block 1 takes as a parameter. #4, read with its `using`s, named a
   `CircuitBreakerState` no package or block declares, and shared a `Dictionary` between `TripTopic`
@@ -1570,25 +1573,42 @@ four `UsingSweeperCircuitBreaking.md` blocks that opened with `// ...`. Pages wi
   `null` with none registered, `OutboxProducerMediator.cs:735`); the Azure provider's writes — one
   blob per message named by its Id, the body only, an existing blob not rewritten, the container
   never created (`AzureBlobArchiveProvider.cs`), which need Azurite and a token credential it accepts
-- **Found off the tranche:** `SweeperCircuitBreaking.md` #2 and #5 configure the sweeper through
-  `options.OutboxSweeper = new OutboxSweeperOptions { SweepInterval = … }` — no such property or
-  type at 10.7.0; `UseOutboxSweeper` takes a `TimedOutboxSweeperOptions`, whose interval is
-  `TimerInterval`, an `int` of seconds. Line 94's formula names `SweepInterval` too
-  (`grep -rn 'SweepInterval' contents/` → **3**, that page only). The page is in no tranche;
-  recorded for the maintainer, not repaired
+- **Off the tranche, repaired — maintainer's ruling, 2026-09-27: *"fix it in this PR"*.**
+  `SweeperCircuitBreaking.md` #2 and #7 configured the sweeper through `options.OutboxSweeper = new
+  OutboxSweeperOptions { SweepInterval = … }` — no such property or type at 10.7.0 (`git grep` → 0);
+  `UseOutboxSweeper` takes a `TimedOutboxSweeperOptions`, whose interval is `TimerInterval`, an `int`
+  of seconds (`TimedOutboxSweeper.cs`, a `Timer` of that period). Both blocks now configure it there,
+  with their `using`s, and **build** (`FAILED -> BUILT`, baselined at `28b2d5f`). **Said in the first
+  draft of this entry:** #2 and #5. **Measured:** #2 and #7; #5 is the MongoDB block
+- **The same repair found the formula one sweep short.** The page said `Cooldown Time = CooldownCount ×
+  SweepInterval` and, in its steps, that a topic recovers *"when the cooldown reaches zero"*.
+  `CoolDown` runs first in each sweep (the sweeper is its only caller, `OutboxSweeper.cs:79`) and
+  removes a topic when its count goes **below** zero, so a topic sits out `CooldownCount` sweeps and is
+  retried on the next: `(CooldownCount + 1) × TimerInterval`. Rewritten there, in the page's steps,
+  and in `UsingSweeperCircuitBreaking.md` #2's two comments (*"Recover after 3 sweeps"*). **Run**
+  end to end, released 10.7.0, net10.0: a real `UseOutboxSweeper` host, `TimerInterval = 1`, an
+  InMemory Outbox and a producer that always throws. `CooldownCount = 2` → sends every **3 s**; `3` →
+  every **4 s**. Controls: no breaker → every **1 s**; `CooldownCount = 0` → every **1 s**. Each sweep
+  made 4 send attempts, Brighter's own send retry
+- **Found and not repaired, put to the maintainer:** the same page's #5 calls
+  `.UseMongoDbOutbox(…)` (`git grep UseMongoDbOutbox 10.7.0 -- src` → 0; `grep -rn` over `contents/`
+  → that line only), under *"Circuit breaking is fully integrated with MongoDB Outbox"*; and its
+  § 6 says immediate clearing is *"NOT subject to circuit breaking"* while § *Bulk Dispatch Support*
+  says `ClearOutboxAsync` *"respects circuit breaker state"*. Unverified which is right
 - **Recurrence greps, all 0 beyond the repaired lines:** `AzCliCredential`, `BlobContainerUri *= *"`,
   `new AzureBlobArchiveProviderOptions()`, `MinimumAge *= *[0-9]`, `BatchSize` within eight lines of
   `UseOutboxArchiver`, an unshown `CircuitBreakerState`, `IDistributedCache` in code; the page's two
   breakers are the only `: IAmAnOutboxCircuitBreaker` in `contents/`
 - **`attr_mismatch.py` → 7**, before the baseline rows
-- **Baseline:** 5 rows at `2defac6`. `--report` → exit **0**, *"983 blocks: 231 BUILT, 736 FAILED,
-  16 SKIPPED"*, baseline 231, 35 units, 0 violations, 0 findings. Joined on page and ordinal
-  against the report at `05fdeaf`, the 5 blocks that moved went `FAILED -> BUILT`, 983 keys both
-  sides
+- **Baseline:** 5 rows at `2defac6`, 2 at `28b2d5f`. `--report` → exit **0**, *"983 blocks: 233
+  BUILT, 734 FAILED, 16 SKIPPED"*, baseline 233, 35 units, 0 violations, 0 findings. Joined on page
+  and ordinal against the report at `05fdeaf`, the 7 blocks that moved went `FAILED -> BUILT`, 983
+  keys both sides
 - `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
   `optioncheck` 0 mismatches across 59 tables, 519 rows; no `SUMMARY.md` change, so shape, redirects
-  and `--verify` unmoved; `pagelint --changed origin/master` 0 errors. **Pages changed: 2**
-  (`git diff --name-only 05fdeaf..HEAD -- contents`), both on the tranche
+  and `--verify` unmoved; `pagelint --changed origin/master` 0 errors. **Pages changed: 3**
+  (`git diff --name-only 05fdeaf..HEAD -- contents`): the two tranche pages and
+  `SweeperCircuitBreaking.md`
 
 ---
 
@@ -2023,6 +2043,8 @@ BUILT, re-admitted at `ec38400`.
 | A custom breaker's `Dictionary` enumerated by `CoolDown` while `TripTopic` writes it — `InvalidOperationException` | run, control the concurrent form; 10.7.0's own breaker is concurrent for this (`InMemoryOutboxCircuitBreaker.cs`) | `UsingSweeperCircuitBreaking.md` #4 | `grep -rn ': IAmAnOutboxCircuitBreaker' contents/` → the page's two, both concurrent | **1** | **0** | 4.4, reading #4 once it built |
 | A distributed breaker on `IDistributedCache`, with `CoolDown` and `TrippedTopics` left unwritten — the cache cannot enumerate keys, so `TrippedTopics` cannot be written on it | `IDistributedCache` has `Get`, `Set`, `Refresh`, `Remove` and their async forms only; the Redis form run across two connections | `UsingSweeperCircuitBreaking.md` #5 | `grep -rn 'IDistributedCache' contents/` → 1, the prose saying why | **1** | **0** | 4.4, making the fragment whole |
 | The Azure archive block, against 10.7.0: `New AzCliCredential();` in an initialiser — no such type (`AzureCliCredential`); `AzureBlobArchiveProviderOptions` built parameterless, its `init` properties assigned, `BlobContainerUri` a string (`CS7036`, `CS0029`); `UseOutboxArchiver` without `TTransaction`; `BatchSize` for `ArchiveBatchSize`; `MinimumAge = 744` for a `TimeSpan`; option assignments with no `options.` (`CS0103`) | `AzureBlobArchiveProviderOptions.cs`, `HostedServiceCollectionExtensions.cs:52`, `TimedOutboxArchiverOptions.cs`; compiled, control the old block | `AzureBlobArchiveProvider.md` #1 | the seven greps in § *Phase 4 as executed*, 4.4's entry | **1** block, 8 defects | **0** | 4.1 (six), 4.4 (two, compiling the control) |
+| The sweep interval set through `options.OutboxSweeper = new OutboxSweeperOptions { SweepInterval = … }` — no such type or property; it is `UseOutboxSweeper(o => o.TimerInterval = …)`, an `int` of seconds | `TimedOutboxSweeperOptions.cs`, `HostedServiceCollectionExtensions.cs:41`; compiled | `SweeperCircuitBreaking.md` #2, #7 and its formula | `grep -rnE 'SweepInterval\|OutboxSweeperOptions\b' contents/` (`Timed` excluded) | **3** lines | **0** | 4.4, reading `UsingSweeperCircuitBreaking.md`'s sibling; maintainer's ruling |
+| Cooldown time given as `CooldownCount × interval`, recovery *"when the cooldown reaches zero"* — a topic sits out `CooldownCount` sweeps and is retried on the next, `(CooldownCount + 1) × TimerInterval` | `InMemoryOutboxCircuitBreaker.cs` (removes below zero), `OutboxProducerMediator.cs:721`; run end to end, controls no breaker and `0` | `SweeperCircuitBreaking.md` (formula, example, #2, #7 comments, steps), `UsingSweeperCircuitBreaking.md` #2 | `grep -rnE '(^\|[^+] )[0-9]+ (sweeps )?× [0-9]+s\|total cooldown\|[Rr]ecover after [0-9]\|When the cooldown reaches zero' contents/`, at `05fdeaf` and after | **8** | **0** | 4.4, running the sweeper for the row above |
 
 ## Friction ledger
 
