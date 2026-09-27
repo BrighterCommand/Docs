@@ -502,7 +502,7 @@ recorded in `tools/README.md` row 9.
     sentence design § *Page Repair Rules* asks for **only if the page does not already say it**.
     Obligation 17 applies to every code change here.
 
-- [ ] **Task 2.3:** Repair the *Commands, Handlers and Pipelines* tranche pages
+- [x] **Task 2.3:** Repair the *Commands, Handlers and Pipelines* tranche pages
   - Input: that section's rows; `--classify` on each
   - Output: each page whole; baseline rows; stubs in `tools/blockcheck/scaffold/units/<Page>Context.cs`
     with their `pages.tsv` rows, `--report` exit 0 under the unit rule
@@ -623,6 +623,10 @@ listed in the baseline commit; 12 blocks stay FAILED and are listed. `pagelint` 
   ours:** Brighter's own missing-specification message suggests `services.AddSingleton<ISpecification<PlaceOrder>>(...)`,
   which that state makes unsafe
 - **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 9 rows added and 2 re-admitted with the unit (`RequestValidation.md` #2, #11), all at
+  `0363fae`. `--report` → exit **0**, *"989 blocks: 113 BUILT, 860 FAILED, 16 SKIPPED"*, baseline 113,
+  0 findings. The AC2 diff against `before.tsv` prints 12 lines, every one `FAILED -> BUILT`: 2.2's
+  three and these nine
 
 ---
 

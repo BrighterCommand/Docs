@@ -63,6 +63,8 @@ contents/HangfireScheduler.md	28	-	280d1b7
 contents/HowConfiguringTheCommandProcessorWorks.md	10	HowConfiguringTheCommandProcessorWorksContext.cs	280d1b7
 contents/ImplementAQueryHandler.md	1	-	280d1b7
 contents/ImplementAQueryHandler.md	2	-	280d1b7
+contents/ImplementingAHandler.md	1	-	0363fae
+contents/ImplementingAsyncHandler.md	1	-	0363fae
 contents/InMemoryScheduler.md	4	-	8090477
 contents/Logging.md	1	-	280d1b7
 contents/Logging.md	2	-	280d1b7
@@ -109,8 +111,15 @@ contents/QueriesAndQueryObjects.md	1	-	280d1b7
 contents/QueriesAndQueryObjects.md	2	-	280d1b7
 contents/QueriesAndQueryObjects.md	3	-	280d1b7
 contents/QueryPipelinePolicies.md	3	-	280d1b7
-contents/RequestValidation.md	2	-	280d1b7
-contents/RequestValidation.md	11	-	280d1b7
+contents/RequestValidation.md	1	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	2	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	4	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	6	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	8	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	9	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	11	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	12	RequestValidationContext.cs	0363fae
+contents/RequestValidation.md	15	RequestValidationContext.cs	0363fae
 contents/SpannerInbox.md	1	-	280d1b7
 contents/SpannerInbox.md	2	-	280d1b7
 contents/SpannerOutbox.md	1	-	280d1b7
