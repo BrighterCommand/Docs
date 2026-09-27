@@ -812,7 +812,7 @@ this one.
 **Goal:** every 0-hard-block page in the remaining four sections leaves whole. Page lists:
 § *The tranches*, phase 3 table. Tasks 3.2–3.5 are independent of each other.
 
-- [ ] **Task 3.1:** Predict phase 3's movement
+- [x] **Task 3.1:** Predict phase 3's movement
   - Input: § *The tranches*, phase 3 table; § *Phase 2 as executed*
   - Output: § *Phase 3 as executed* opens with a prediction per gate, from `master` after phase 2
 
@@ -841,6 +841,59 @@ this one.
   - Input: 3.1's prediction; the PR's diff
   - Output: as 2.6, for phase 3; plus **the ≤ 60 target read at tranche 1's close** — pages with
     nothing BUILT, by requirements' `awk`, against the 37 that must land
+
+### Phase 3 as executed
+
+**Prediction, 2026-09-27, from `master` `e256e2b`**, the merge of phase 2 (PR #191). The *Now*
+column is this task's own run at `e256e2b`, every gate bare, exit code read before its output; all
+nine exit 0 and read at `tools/README.md`'s figures. Each prediction names its mechanism:
+
+| # | Gate | Now | Predicted after phase 3, and why |
+|---:|---|---|---|
+| 1 | `linkcheck` | 165 files, 0 broken | **none**. No file is added |
+| 2 | `pagelint` | 0 errors, 706 warnings, 162 pages | **errors 0; warnings 706 → 664, or 663.** On the 20 pages, rule 6 warns on **43** blocks. **42** are FAILED reachable blocks, and a repair gives each its `using`s whether or not it then builds (−42): 9 build with a `using` alone, 10 with an empty stub, 10 need a stub with members, 13 a typed value. The 43rd, `QueryPipelinePolicies.md` #3, is BUILT and marks its omission `// ...`; −1 only if a repair touches it. The other **25** FAILED blocks on these pages, the three same-page ones among them, already carry `using`s; nine of the 20 pages have no rule 6 warning at all. Repairs of recurrences off the tranche lower it further, as 2.6 found (−17), and are explained if so |
+| 3, 4, 7 | shape, redirects, `--verify` | 161 / 77 / 161 | **none**. No `SUMMARY.md` change |
+| 5 | `versioncheck` | 0 stale of **18, across 5 pages** | **none, scope held at 18 across 5.** None of its five pages (`tools/versioncheck.py:81`) is in phase 3 |
+| 6 | `optioncheck` | 0 mismatches, 59 tables, 519 rows | **none.** Seven phase 3 pages carry tables it reads — the six transport pages with one FAILED block each, and `DynamoDbDistributedLock.md`. Their repairs give blocks `using`s and stubs, not rows; a row changes only if a repair finds a documented default wrong, and is then a defect in § *Defect ledger* |
+| 8 | `symbolcheck` | 0 findings, 22 entries, 161 pages, 3 silenced | **none**. No repair here names a watchlisted symbol |
+| 9 | `blockcheck` | 982: 129 BUILT, 837 FAILED, 16 SKIPPED; 22 units | **BUILT 129 → at most 193, at least 153; SKIPPED 16 plus accepted reasons only; exit 0; units 22 plus the new ones, 0 violations.** Mechanism below |
+| — | `attr_mismatch.py` | **7**, exit 1 | **held at 7.** Its hits are on five pages (`HowServiceActivatorWorks.md`, `PipelineValidation.md` ×3, `PolicyRetryAndCircuitBreaker.md`, `ReactorAndProactor.md`, `V10MigrationGuide.md`), none of them in phase 3 |
+
+**Gate 9, by source.** The probe re-run at `e256e2b` (§ *The tranches*' recipe, `Order` excluded)
+reads the phase 3 table unchanged: **67 FAILED, 64 reachable, 3 same-page, 0 hard, 14 BUILT**.
+Phase 2 touched seven of these pages (`GcpPubSubConfiguration.md`, `InMemoryTransport.md`,
+`MQTTConfiguration.md`, `MSSQLMessageBroker.md`, `RedisConfiguration.md`, `RocketMQConfiguration.md`,
+`SchedulingAMessage.md`), one line each, in the `requeueCount` and `requeueDelay` repairs; no verdict
+moved. The 64 reachable are **11** with a `using` alone, **13** with an empty stub, **23** needing a
+stub with members, **17** needing a typed value. The three same-page blocks are
+`PaginationQueryPatterns.md` #2, #3, #4.
+
+- **Ceiling 193** = 129 + 64: every stub works
+- **Floor 153** = 129 + 11 + 13: only the `using` and empty-stub blocks. The 40 blocks that need
+  members or typed values are where a stub may surface a defect; each that does stays FAILED and is
+  listed in § *Blocks that stay FAILED*
+- **P1-3 is spent.** 1.10 put seven of the `args` blocks in phase 3; `--explain` over all 837 FAILED
+  blocks at `e256e2b` finds **0** `'args'` diagnostics, so no block here is waiting on the wrapper
+- **Pages with nothing BUILT: 88 → as low as 73, at least 81.** 15 phase 3 pages have no BUILT block,
+  and every one has a reachable block. **Seven** reach one by a `using` or an empty stub alone —
+  `InMemoryTransport.md`, `RabbitMQMigrateToQuorumQueues.md`, `BoxProvisioningConfiguration.md`,
+  `DistributedLock.md`, `DynamoDbDistributedLock.md`, `QueryObjectValidation.md`,
+  `QueryResultTypes.md`; the other eight depend on stubs with members or typed values. 88 counted
+  by requirements' `awk` against `--report` at `e256e2b`
+- **The ≤ 60 target, read ahead.** Tranche 1 was to land 24 of the 37 pages; phase 2 landed 9, so
+  phase 3 must land all 15 for tranche 1 to meet its share. At the ceiling, 73 − 60 = **13** of
+  tranche 2's 19 must follow in phases 4 and 5; each page phase 3 misses adds one to that
+
+**Carried into the repair tasks, not the prediction:**
+
+- **`Order`.** `SchedulingAMessage.md` #1 and `TestingQueryHandlers.md` #1 are both *members* here,
+  and both name an `Order` their page never shows. By 1.10's ruling each is read as a type the page
+  never shows, never with `using StackExchange.Redis;`
+- **BrighterCommand/Brighter#4414** binds 3.4: a scheduler block asserting that a scheduled request
+  runs through DI is run, and if it throws for #4414 it stays FAILED or the claim is reworded
+- **The open `MessageBody` defect** (§ *Defect ledger*) has no recurrence on a phase 3 page:
+  `grep -rnE 'new MessageBody\([^)]*"' contents/` → one line, `KafkaConfiguration.md:709`, which is in
+  no tranche. It stays with phase 5
 
 ---
 
