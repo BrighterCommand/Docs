@@ -27,6 +27,8 @@ Configure the provider with `PostgresLockingProvider`, passing a
 `PostgresLockingProviderOptions` that carries the connection string:
 
 ```csharp
+using Paramore.Brighter.Locking.PostgresSql;
+
 new PostgresLockingProvider(
     new PostgresLockingProviderOptions(
         connectionString: "Host=localhost;Database=orders;Username=app;Password=secret"));
@@ -46,13 +48,20 @@ even though the Postgres Outbox beside it does.
 ## Postgres Distributed Lock Example
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Locking.PostgresSql;
+using Paramore.Brighter.Outbox.Hosting;
+using Paramore.Brighter.PostgreSql;
+
 const string connectionString = "Host=localhost;Database=orders;Username=app;Password=secret";
 
 services
     .AddBrighter()
     .AddProducers(opt =>
     {
-        opt.Outbox = /* your Postgres Outbox */;
+        opt.Outbox = outbox; // your Postgres Outbox
         opt.ConnectionProvider = typeof(PostgreSqlConnectionProvider);
         opt.TransactionProvider = typeof(PostgreSqlTransactionProvider);
 

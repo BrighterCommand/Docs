@@ -28,6 +28,10 @@ Configure the provider with `AzureBlobLockingProvider`, passing an
 `TokenCredential`:
 
 ```csharp
+using System;
+using Azure.Identity;
+using Paramore.Brighter.Locking.Azure;
+
 new AzureBlobLockingProvider(
     new AzureBlobLockingProviderOptions(
         blobContainerUri: new Uri("https://myaccount.blob.core.windows.net/brighter-locks"),
@@ -56,11 +60,19 @@ initialiser like any other member.
 ## Azure Blob Distributed Lock Example
 
 ```csharp
+using System;
+using Azure.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Locking.Azure;
+using Paramore.Brighter.Outbox.Hosting;
+
 services
     .AddBrighter()
     .AddProducers(opt =>
     {
-        opt.Outbox = /* your external Outbox */;
+        opt.Outbox = outbox; // your external Outbox
         // ... connection/transaction providers for your Outbox ...
 
         opt.DistributedLock = new AzureBlobLockingProvider(

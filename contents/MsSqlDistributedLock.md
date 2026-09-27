@@ -33,6 +33,10 @@ documented once in the [Relational Database Configuration
 Reference](/contents/RelationalDatabaseConfigurationReference.md):
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Locking.MsSql;
+using Paramore.Brighter.MsSql;
+
 var configuration = new RelationalDatabaseConfiguration(
     connectionString: "Server=localhost;Database=orders;Trusted_Connection=True;");
 
@@ -45,6 +49,13 @@ session.
 ## MS SQL Distributed Lock Example
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Locking.MsSql;
+using Paramore.Brighter.MsSql;
+using Paramore.Brighter.Outbox.Hosting;
+
 var configuration = new RelationalDatabaseConfiguration(
     "Server=localhost;Database=orders;Trusted_Connection=True;");
 
@@ -52,7 +63,7 @@ services
     .AddBrighter()
     .AddProducers(opt =>
     {
-        opt.Outbox = /* your MS SQL Outbox */;
+        opt.Outbox = outbox; // your MS SQL Outbox
         opt.ConnectionProvider = typeof(MsSqlConnectionProvider);
         opt.TransactionProvider = typeof(MsSqlTransactionProvider);
 
