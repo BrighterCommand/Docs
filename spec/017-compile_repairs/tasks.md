@@ -452,9 +452,10 @@ page is in a tranche**, so phase 5 keeps them all; and **`--classify` reads `Ord
 That last one is an instrument defect, found here and not repaired. 1.8's pin added
 `StackExchange.Redis`, whose `enum Order` now satisfies *import* for **27 FAILED blocks on 16 pages** (none declares it) that name a
 domain `Order` their page never shows. `--classify`'s rule has no way to tell a pinned name
-from a page's own type that happens to share it. **Put to the maintainer with the PR:** repair
-`--classify` in phase 1, or leave it and have each phase read `Order` as a page type, as
-§ *The tranches* does.
+from a page's own type that happens to share it. **Ruled by the maintainer, 2026-09-27:
+`--classify` is not repaired.** Every repair phase reads `Order` as a type the page never shows, as
+§ *The tranches* does. On those 27 blocks an *import* row naming `Order` is a page-type name, and it
+is never answered with `using StackExchange.Redis;`.
 
 ## Phase 2 — Tranche 1a *(6 tasks, one PR, CHANGES THE SITE)*
 
@@ -720,9 +721,9 @@ reads **35 / 40**; with it, **37 / 38**. The two pages that move are `Scheduling
 (*"'Order' does not contain a definition for 'ProcessSchedulerId'"*) and `TestingQueryHandlers.md`
 #1 (*"'Order' does not contain a definition for 'Id'"*), each the page's one hard block. With
 `Order` excluded, both are 0-hard. **`--classify` has the same blind spot**: it puts both blocks
-in *import* on `Order`, so a phase that follows it would add the Redis `using`. That goes to the
-maintainer with the PR (§ *Phase 1 as executed*, 1.10). A repair phase reads `Order` as a
-page-type name wherever its page does not import `StackExchange.Redis` for a reason.
+in *import* on `Order`, so a phase that followed it would add the Redis `using`. **Ruled
+2026-09-27: `--classify` stays as it is, and every repair phase reads `Order` as a type the page
+never shows** (§ *Phase 1 as executed*, 1.10).
 
 | Figure | Design (E2 pin) | § 2 (pin at `c7329bb`) | Now, `Order` excluded |
 |---|---:|---:|---:|
