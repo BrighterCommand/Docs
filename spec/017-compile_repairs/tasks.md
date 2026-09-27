@@ -833,7 +833,7 @@ this one.
     request runs through DI is run, and if it throws for #4414 the block stays FAILED or the claim
     is reworded — never shown working.
 
-- [ ] **Task 3.5:** Repair the *Darker* tranche pages
+- [x] **Task 3.5:** Repair the *Darker* tranche pages
   - Input: that section's rows; `--classify` on each; `../Darker` at `4.1.1`
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
 
@@ -1109,6 +1109,70 @@ requirements' `awk` and `comm -23` of the FAILED and BUILT page sets.
   and **2** outside it for #4437, `FAQ.md` and `InMemoryScheduler.md`. Their rule 6 counts are
   unchanged, and `--explain` on the two touched `InMemoryScheduler.md` blocks (#8, #9) finds only
   types the page never shows
+
+**Task 3.5 — *Darker*.** Five pages. **BUILT 173 → 189** (+16): `QueryObjectValidation.md` #1–#3,
+`QueryPipelinePolicies.md` #2, #4, #5, #6, `QueryResultTypes.md` #1–#6 and `TestingQueryHandlers.md`
+#1–#3. **Four stay FAILED**: `PaginationQueryPatterns.md` #2, #3, #4 (same-page) and
+`QueryPipelinePolicies.md` #1 (`Program`). `pagelint` **668 → 658**, all −10 on the tranche
+(`QueryResultTypes.md` 6, `QueryPipelinePolicies.md` 3, `QueryObjectValidation.md` 1; per page,
+against a worktree at `842b757`). Pages with nothing BUILT **77 → 74**: `QueryObjectValidation.md`,
+`QueryResultTypes.md`, `TestingQueryHandlers.md`. Two methods, one figure: requirements' `awk` and
+`comm -23` of the FAILED and BUILT page sets.
+
+- **`using`s:** every FAILED block on the four pages that change. On `QueryResultTypes.md` #1–#6,
+  `QueryObjectValidation.md` #3 and `QueryPipelinePolicies.md` #4–#6 they replace the leading
+  `// ...`. `QueryPipelinePolicies.md` #1 and #2 gain `Microsoft.AspNetCore.Builder` for
+  `WebApplication`. `QueryPipelinePolicies.md` #3 stays BUILT and keeps its `// ...`
+- **Three units.** `QueryResultTypesContext.cs` supplies five empty stubs, `Customer`,
+  `OrderSummary`, `DataRow`, `Product` and `Order`: the page is about result types and names no
+  member of any. `QueryObjectValidationContext.cs` supplies `PagedResult<T>`, `Order`, `Product`,
+  `User`, `IUserRepository` and `UserNotFoundException`. `TestingQueryHandlersContext.cs` supplies
+  the domain, the `ApplicationDbContext`, the two queries and handlers under test, and the xunit
+  fixture types. Each carries only the members a block names. `Order` is read as 1.10 rules, and
+  `DataRow` as a type the page never shows, not `System.Data.DataRow`. None of these is a type the
+  page tells the reader to write (rule 1, by reading). `--report` → *"30 units checked, 0
+  violations"*
+- **`QueryPipelinePolicies.md` #1 stays FAILED on `Program`.** It is a `Program.cs`, but it has no
+  declaration after its statements, so it takes the `statements` wrapper and `typeof(Program)` finds
+  nothing. Q2's re-read (1.8) ruled `Program` a top-level artefact no stub should supply. Built in
+  scratch as a `Program.cs` against the released Darker 4.1.1 packages, net10.0 Web SDK, implicit
+  usings off: **0** errors. Control, without `using Microsoft.AspNetCore.Builder;`: `CS0103`
+  `WebApplication`
+- **Two defects on the tranche, both found by running** (§ *Defect ledger*). `QueryPipelinePolicies.md`
+  called the default retry *"exponential backoff"* and said the breaker *"opens after consecutive
+  failures"*. It now gives the values, and says a policy applies only to a handler that carries
+  `[RetryableQuery]`. `QueryObjectValidation.md` said *"The ASP.NET model binder will validate these
+  attributes before the query reaches your handler."* It now names the two cases where ASP.NET Core
+  rejects an invalid query, and what happens everywhere else
+- **One defect off the tranche, recorded rather than repaired.** Five Darker pages treat
+  `[RetryableQuery]`'s second argument as a circuit-breaker name that adds a breaker to the retry.
+  At Darker 4.1.1 it is a policy name, and the decorator runs that one policy. `"DefaultCircuitBreaker"`
+  throws `ConfigurationException`, and `circuitBreakerName:` is `CS1739`. **Maintainer's ruling,
+  2026-09-27: record it for phase 5.** No page off the tranche changed
+- **Behaviour, run with controls** against the released Darker 4.1.1 packages in scratch apps,
+  net10.0, one process per case:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `QueryPipelinePolicies.md`: the default retry policy | `AddDefaultPolicies()`, handler with `[RetryableQuery(1)]` that always throws → **4** attempts, at 0, +56, +158, +308 ms | the same handler without the attribute, with or without `AddDefaultPolicies()` → **1** attempt |
+  | The default circuit breaker | `[RetryableQuery(1, Constants.CircuitBreakerPolicyName)]`: call 1 → the handler's exception, **1** attempt; call 2 at once → `BrokenCircuitException`, **0** attempts | call 3 after 600 ms → the handler runs again, **1** attempt |
+  | A policy name `AddDefaultPolicies()` does not register (off the tranche) | `[RetryableQuery(1, "DefaultCircuitBreaker")]` → `ConfigurationException` *"Policy does not exist in policy registry: DefaultCircuitBreaker"*, **0** attempts | `Constants.CircuitBreakerPolicyName`, above → the handler runs |
+  | `QueryObjectValidation.md` #2: data annotations stop an invalid query before the handler | `[ApiController]` controller, `MaxResults=5000` → **400** | a controller without `[ApiController]` → **200**, action runs, `ModelState.IsValid` `False` |
+  | The same, on a minimal API | `[AsParameters]` endpoint after `AddValidation()` → **400** | without `AddValidation()` → **200**, handler runs with `5000` |
+
+  Every case with a valid query (`SearchTerm=shoes&MaxResults=10`) returned 200. Darker needs an
+  `ILoggerFactory` in the container: without `AddLogging()` the first query throws
+  `TypeInitializationException` from `PipelineBuilder<T>` (`ApplicationLogging`, `factory` null).
+  An ASP.NET Core host registers logging itself, so no page here meets it
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 16 rows at `3462412`. `--report` → exit **0**, *"983 blocks: 189 BUILT, 778 FAILED,
+  16 SKIPPED"*, baseline 189, 0 findings. Joined on page and ordinal against the report at
+  `842b757`, all 16 blocks that moved went `FAILED -> BUILT`, and there are no new keys
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; `pagelint --changed origin/master` 0 errors.
+  **Pages changed: 4** (`git diff --name-only 842b757..HEAD -- contents`), all on the tranche.
+  `PaginationQueryPatterns.md` did not change: its three FAILED blocks are same-page, and each
+  follows the block that declares its types
 
 ---
 
@@ -1499,6 +1563,10 @@ is rewritten against the tables below.
 | `DynamoDbDistributedLock.md` | 2 | `CS0234` `Paramore.Brighter.DynamoDb.V4`, `Locking.DynamoDB.V4`, `Outbox.DynamoDB.V4` | V4 package, not in the pin (D3, 018); builds against the released V4 packages in scratch, **0** errors | 3 |
 | `TickerQScheduler.md` | 2 | `CS0234` `TickerQ.EntityFrameworkCore`; `CS1061` `AddOperationalStore`; `CS0246` `TickerQDbContext` | `TickerQ.EntityFrameworkCore` is not in the pin; phase 4 asks for it at 9.0.2. Builds against the released packages in scratch, net9.0 and net10.0, **0** errors | 3 |
 | `TickerQScheduler.md` | 3 | `CS0234` `TickerQ.Dashboard`; `CS1061` `AddDashboard` | `TickerQ.Dashboard` is not in the pin; phase 4 asks for it at 9.0.2. Builds against the released packages in scratch, net9.0 and net10.0, **0** errors | 3 |
+| `PaginationQueryPatterns.md` | 2 | `CS0246` `GetOrdersPageQuery`, `PagedResult<>`, `OrderDto`; `ApplicationDbContext` | same-page: block 1 declares the first three; block 2 is *"Handler with pagination:"*, straight after it | 3 |
+| `PaginationQueryPatterns.md` | 3 | `CS0246` `OrderDto` | same-page: block 1 declares it | 3 |
+| `PaginationQueryPatterns.md` | 4 | `CS0246` `GetOrdersCursorQuery`, `CursorPagedResult<>`, `OrderDto`; `ApplicationDbContext` | same-page: block 3 declares the first two, block 1 `OrderDto`; block 4 is *"Handler with cursor pagination:"*, straight after block 3 | 3 |
+| `QueryPipelinePolicies.md` | 1 | `CS0246` `Program` | instrument: a `Program.cs` with no declaration after its statements takes the `statements` wrapper, which declares no `Program`; Q2 (1.8) rules out a stub. Builds as a `Program.cs` in scratch against Darker 4.1.1, **0** errors | 3 |
 
 ## Splits
 
@@ -1559,6 +1627,9 @@ BUILT, re-admitted at `ec38400`.
 | `command with { … }` on a request — needs a record, and a Brighter `Command` is a class, which a record cannot derive from | `Command.cs:42` | `SchedulingAMessage.md` #5 | `grep -rnE '\bwith \{' contents/` | **1** | **0** | 3.4, stubbing the block's `OperationCommand` |
 | `AutoFromAssemblies()` or `AsyncHandlersFromAssemblies` with a scheduler — the scheduler's handlers registered twice, so a scheduled request throws when it falls due, and ends the process with InMemory | run; registry read, control `HandlersFromAssemblies` — **upstream, BrighterCommand/Brighter#4414**, fixed by #4419 on `master`, unreleased | `SchedulingAMessage.md` states it with the workaround. Recorded, not repaired: `AwsScheduler.md`, `AzureScheduler.md`, `BrighterSchedulerSupport.md`, `HangfireScheduler.md`, `InMemoryOptions.md`, `InMemoryScheduler.md`, `QuartzScheduler.md`, `SwitchingSchedulers.md`, `V10MigrationGuide.md` | `grep -rl 'UseScheduler' contents/ \| xargs grep -lE 'AutoFromAssemblies\(\|AsyncHandlersFromAssemblies'` | **10** pages | **stated** on 1 — maintainer's ruling; 9 recorded | 3.4, running |
 | InMemory cancel and reschedule said to work on a request scheduled through the command processor — each scheduled call gets a new `InMemoryScheduler`, so `CancelAsync` finds nothing and the request runs; `ReSchedulerAsync` returns `False` | run, control same instance; `CommandProcessor.cs:427`, `InMemoryScheduler.cs:57` — **upstream, BrighterCommand/Brighter#4437**, filed 3.4 | `SchedulingAMessage.md`, `FAQ.md`, `InMemoryScheduler.md` (cancel example, `Should_Cancel_Scheduled_Command`) | `grep -rl 'issues/4437' contents/` | **3** pages | **stated** on all 3 — maintainer's ruling | 3.4, running block 4's claim |
+| Darker's default policies described as *"exponential backoff"* and a breaker that *"opens after consecutive failures"*, and as applying once registered. They retry 3 times after 50, 100 and 150 ms, the breaker opens on 1 failure for 500 ms, and neither runs without `[RetryableQuery]` | Darker 4.1.1 `QueryProcessorBuilderExtensions.cs:51`, `RetryableQueryDecorator.cs`; run, control without the attribute | `QueryPipelinePolicies.md` (the list and block 2's comment) | `grep -rnE 'Retries with exponential backoff\|Opens after consecutive failures\|Retry policy with exponential backoff' contents/` | **3** | **0** | 3.5, reading the page against Darker's source, then running |
+| *"The ASP.NET model binder will validate these attributes before the query reaches your handler"*. Only a controller marked `[ApiController]`, or a minimal API after `AddValidation()` (.NET 10), rejects the query; elsewhere it reaches the code | run on net10.0, controls both ways | `QueryObjectValidation.md` | `grep -rn 'model binder will validate' contents/` | **1** | **0** | 3.5, running block 2's claim |
+| `[RetryableQuery]`'s second argument described and used as a circuit-breaker name that adds a breaker to the retry. It is a policy name, and the decorator runs that one policy. `"DefaultCircuitBreaker"` is not registered by `AddDefaultPolicies()`, so it throws `ConfigurationException`; `circuitBreakerName:` is not a parameter (`CS1739`) | Darker 4.1.1 `RetryableQueryAttribute.cs:11`, `Constants.cs`; run, control `Constants.CircuitBreakerPolicyName`; compiled | `QueryPipeline.md` (4 lines, and the parameter list at line 239), `CQRSWithBrighterAndDarker.md` (2), `DarkerAndBrighterPipelines.md`, `ImplementAQueryHandler.md`, `QueryPatterns.md` | `grep -rnE 'RetryableQuery\(.*(DefaultCircuitBreaker\|circuitBreakerName)' contents/` | **9** lines, 5 pages | **open — phase 5**, maintainer's ruling | 3.5, reading Darker's source for the tranche's policy defaults |
 
 ## Friction ledger
 
