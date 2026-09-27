@@ -487,7 +487,7 @@ recorded in `tools/README.md` row 9.
 **Goal:** every 0-hard-block page in the first five `SUMMARY.md` sections leaves whole. Page lists:
 § *The tranches*, phase 2 table (1.10). Tasks 2.2–2.5 are independent of each other.
 
-- [ ] **Task 2.1:** Predict phase 2's movement
+- [x] **Task 2.1:** Predict phase 2's movement
   - Input: § *The tranches*, phase 2 table; `design.md` § *Gate Movement Predicted*
   - Output: § *Phase 2 as executed* opens with a prediction per gate — BUILT +N (the table's
     reachable sum as ceiling), `pagelint` warnings −M, `versioncheck` scope held at **18 across 5**,
@@ -524,6 +524,48 @@ recorded in `tools/README.md` row 9.
     exit 0; the AC2 diff against `before.tsv` printing only `FAILED -> BUILT` or accepted skips,
     read against § *Splits*; the nine gates against 2.1; `tools/README.md` rows 2 and 9 moved.
     The PR opens with the maintainer's sign-off asked for, and the head-ref deletion by name
+
+### Phase 2 as executed
+
+**Prediction, 2026-09-27, from `master` `9549ab4`.** The *Now* column is 1.11's run at `fba508c`, all
+nine exit 0; `git diff fba508c 9549ab4` is empty, so the merge's tree is the tree 1.11 measured. Each prediction names its
+mechanism:
+
+| # | Gate | Now | Predicted after phase 2, and why |
+|---:|---|---|---|
+| 1 | `linkcheck` | 165 files, 0 broken | **none**. No file is added; a same-page sentence that links an earlier page adds a link, not a file |
+| 2 | `pagelint` | 0 errors, 743 warnings | **errors 0; warnings 743 → 723, or 722.** On the 17 pages, rule 6 warns on **23** blocks: **20** are *import* blocks that a repair gives `using`s (−20); `ReturningResultsFromAHandler.md` #1 is *page-type* (`CreateTaskCommand`, `commandProcessor`), −1 only if its stub needs the block to import something; `RequestValidation.md` #11 (BUILT) and #14 (same-page) are not touched. A split that makes a block without `using`s would raise it, and is explained if so |
+| 3, 4, 7 | shape, redirects, `--verify` | 161 / 77 / 161 | **none**. No `SUMMARY.md` change |
+| 5 | `versioncheck` | 0 stale of **18, across 5 pages** | **none, scope held at 18 across 5.** Phase 2 edits four of its five pages (all of *Get Started* except the overview); a fall means a repair deleted a pinned version |
+| 6 | `optioncheck` | 0 mismatches, 59 tables, 519 rows | **none**. One phase 2 page carries a table (`RelationalDatabaseConfigurationReference.md`); its one FAILED block gets `using`s, not rows |
+| 8 | `symbolcheck` | 0 findings, 22 entries, 3 silenced | **none**. No repair here names a watchlisted symbol |
+| 9 | `blockcheck` | 101 BUILT, 872 FAILED, 16 SKIPPED | **BUILT 101 → at most 138, at least 117; SKIPPED 16 plus accepted reasons only; exit 0; units 14 plus the new ones, 0 violations.** Mechanism below |
+| — | `attr_mismatch.py` | **7**, exit 1 | **held at 7.** None of its hits is on a phase 2 page, nor on `InMemoryScheduler.md` #4 |
+
+**Gate 9, by source.** Phase 2's table (§ *The tranches*): **36 reachable** — 10 build with a
+`using` alone, 5 with an empty stub, 15 need a stub with members, 6 need a typed value; **18
+same-page** stay FAILED by rule. **Plus one block outside the tranche, from P1-3.** Simulated
+in a worktree at `9549ab4`, with the `statements` wrapper's `Run()` changed to
+`Run(string[] args)`: `--report` → exit **1**, *"989 blocks: 102 BUILT, 871 FAILED, 16 SKIPPED"*,
+and the AC2 diff against `master` prints exactly one line, `FAILED -> BUILT
+contents/InMemoryScheduler.md 4`. Its only diagnostic was `'args'`, so it builds and is unlisted,
+which is a finding. **P1-3 therefore adds that baseline row in the same PR.** It moved **no** block
+BUILT → FAILED, so no BUILT block declares a local `args` that the parameter would shadow.
+
+- **Ceiling 138** = 101 + 36 + 1: every stub works
+- **Floor 117** = 101 + 10 + 5 + 1: only the `using` and empty-stub blocks, and P1-3's one. The
+  21 blocks that need members or typed values are where a stub may surface a defect; each that
+  does stays FAILED and is listed in § *Blocks that stay FAILED*
+- **Pages with nothing BUILT: 97 → as low as 88.** Nine phase 2 pages have no BUILT block and at
+  least one reachable block. **Five** reach one by a `using` or an empty stub alone —
+  `ImplementingAHandler.md`, `ImplementingAsyncHandler.md`, `Compression.md`,
+  `ErrorHandlingOptions.md`, `HandlingLargeMessages.md`; the other four depend on stubs with
+  members or typed values
+
+`InMemoryScheduler.md` #4 is a DI configuration block (`UseScheduler`, `AutoFromAssemblies`), and
+it asserts no behaviour a run could falsify. BrighterCommand/Brighter#4414 is about *running*
+`AutoFromAssemblies` with a scheduler, not about compiling it. The page's own P0-7 falsehood,
+`ITimerProvider`, is in other blocks and stays in phase 5.
 
 ---
 
