@@ -26,6 +26,8 @@ For this we will need the *Outbox* package for DynamoDb:
 
 * **Paramore.Brighter.DynamoDb** (or **Paramore.Brighter.DynamoDb.V4**)
 
+The examples on this page use the v3 packages' namespaces. The v4 packages append `.V4` to theirs: `Paramore.Brighter.Outbox.DynamoDB.V4` and `Paramore.Brighter.DynamoDb.V4`, which also holds `DynamoDbTableFactory`.
+
 See [AWS SQS Migration](/contents/AWSSQSMigrateToV10.md#migrating-from-aws-sdk-v3-to-v4) for migration guidance between v3 and v4.
 
 As described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support), we configure Brighter to use an outbox by setting **Outbox** on the options passed to **AddProducers()**.

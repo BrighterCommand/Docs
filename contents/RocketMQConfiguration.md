@@ -121,6 +121,7 @@ RocketMQ ships a message producer factory rather than a producer registry factor
 registry is built from the factory's dictionary.
 
 ```csharp
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Org.Apache.Rocketmq;

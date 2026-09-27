@@ -72,7 +72,7 @@ services.AddBrighter(options =>
 .AddProducers(options =>
 {
     options.ProducerRegistry = /* your producer registry */;
-    options.Outbox = new InMemoryOutbox();
+    options.Outbox = new InMemoryOutbox(TimeProvider.System);
 })
 .UseOutboxSweeper();  // Enable sweeper for reliability
 ```

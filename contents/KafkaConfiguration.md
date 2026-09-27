@@ -172,6 +172,10 @@ headers and Kafka's.
 The following example shows how a *Publication* might be configured:
 
 ``` csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 	services.AddBrighter(...)
 	.AddProducers((configure) =>
         {
@@ -180,6 +184,7 @@ The following example shows how a *Publication* might be configured:
 		new KafkaPublication[] {new KafkaPublication()
                 {
                     Topic = new RoutingKey("MyTopicName"),
+                    RequestType = typeof(GreetingEvent),
                     NumPartitions = 3,
                     ReplicationFactor = 3,
                     MessageTimeoutMs = 1000,
@@ -235,11 +240,15 @@ We recommend setting **Partitioner** to **Partitioner.Murmur2Random** because of
 2. **No single partition for unkeyed messages**: where **Murmur2** (and **Consistent**) send every message without a partition key to the same partition—concentrating all of that load on one partition, and therefore on one consumer—**Murmur2Random** spreads unkeyed messages randomly across all partitions.
 
 ``` csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 	new KafkaPublication[]
 	{
 		new KafkaPublication()
 		{
 			Topic = new RoutingKey("MyTopicName"),
+			RequestType = typeof(GreetingEvent),
 			NumPartitions = 3,
 			Partitioner = Partitioner.Murmur2Random,
 			MakeChannels = OnMissingChannel.Create
@@ -256,26 +265,31 @@ The Confluent .NET client has a range of configuration options. Some of those ca
 You can use it as follows:
 
 ``` csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.Kafka;
 
 	var publication = new KafkaPublication()
 	{
 		Topic = new RoutingKey("MyTopicName"),
+		RequestType = typeof(GreetingEvent),
 		NumPartitions = 3,
 		ReplicationFactor = 3,
 		MessageTimeoutMs = 1000,
 		RequestTimeoutMs = 1000,
 		MakeChannels = OnMissingChannel.Create 
 	};
-	publication.SetConfigHook(config => config.EnableGaplessGuarantee = true)
+
+	var producerRegistryFactory = new KafkaProducerRegistryFactory(
+		...,//connection see above
+		new[] { publication });
+	producerRegistryFactory.SetConfigHook(config => config.EnableGaplessGuarantee = true);
 
 	services.AddBrighter(...)
 	.AddProducers((configure) =>
         {
-            configure.ProducerRegistry = new KafkaProducerRegistryFactory(
-		...,//connection see above
-		new KafkaPublication() {publication}
-	    ).Create();
-	}) 
+            configure.ProducerRegistry = producerRegistryFactory.Create();
+	});
 
 ```
 	

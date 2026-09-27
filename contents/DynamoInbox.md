@@ -20,6 +20,8 @@ For this we will need the *Inbox* packages for the DynamoDb *Inbox*.
 **AWS SDK v4** (recommended for new projects):
 * **Paramore.Brighter.Inbox.DynamoDb.V4**
 
+The example on this page uses the v3 package's namespace, `Paramore.Brighter.Inbox.DynamoDB`; the v4 package's is `Paramore.Brighter.Inbox.DynamoDB.V4`.
+
 See [AWS SQS Migration](/contents/AWSSQSMigrateToV10.md#migrating-from-aws-sdk-v3-to-v4) for migration guidance between v3 and v4.
 
 ## Dynamo Inbox Options

@@ -61,6 +61,9 @@ Quorum queues require durable definitions, so most migrations enable message
 persistence at the same time. To enable message persistence, set `PersistMessages = true` in your `RmqMessagingGatewayConnection`:
 
 ```csharp
+using System;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 // ...
 var rmqConnection = new RmqMessagingGatewayConnection
 {

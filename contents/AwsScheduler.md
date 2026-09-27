@@ -224,7 +224,7 @@ Configure AWS Scheduler with minimal settings:
 using Microsoft.Extensions.Hosting;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessageScheduler.AWS.V4;
-using Paramore.Brighter.MessagingGateway.AWSSQS;
+using Paramore.Brighter.MessagingGateway.AWSSQS.V4;
 
 var builder = WebApplication.CreateBuilder(args);
 

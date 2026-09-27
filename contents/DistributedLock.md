@@ -45,6 +45,9 @@ holds the lock is the single active worker.
 A lock provider implements `IDistributedLock`:
 
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+
 public interface IDistributedLock
 {
     /// <summary>Attempt to obtain a lock on a resource</summary>
@@ -104,6 +107,15 @@ You set the lock on the producer registration through the `DistributedLock` prop
 provider, then registers the Sweeper:
 
 ```csharp
+using Amazon.DynamoDBv2;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.DynamoDb.V4;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Locking.DynamoDB.V4;
+using Paramore.Brighter.Outbox.DynamoDB.V4;
+using Paramore.Brighter.Outbox.Hosting;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 var dynamoDb = new AmazonDynamoDBClient();
 
 services

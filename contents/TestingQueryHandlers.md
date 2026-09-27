@@ -72,6 +72,7 @@ For integration tests, replace real dependencies with in-memory alternatives:
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.Sqlite;
 using Xunit;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -129,6 +130,7 @@ For acceptance tests, use a real database to verify the entire query flow:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
+using Paramore.Darker;
 using Xunit;
 using System.Threading;
 using System.Threading.Tasks;

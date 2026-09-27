@@ -49,6 +49,7 @@ public sealed class GetOrdersPageQuery : IQuery<PagedResult<Order>>
 For ASP.NET scenarios, you can use data annotations that are validated by the framework:
 
 ```csharp
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Paramore.Darker;
 
@@ -63,7 +64,12 @@ public sealed class SearchProductsQuery : IQuery<IReadOnlyList<Product>>
 }
 ```
 
-The ASP.NET model binder will validate these attributes before the query reaches your handler.
+ASP.NET Core checks these attributes when it binds the query from a request, but it rejects an invalid query for you in only two cases:
+
+- A controller marked `[ApiController]` returns 400 before the action runs
+- A minimal API endpoint returns 400 once you call `builder.Services.AddValidation()`, which needs .NET 10 or later
+
+Anywhere else the invalid query reaches your code. A controller without `[ApiController]` runs the action with `ModelState.IsValid` set to `false`, so check it before you send the query; a minimal API without `AddValidation()` does not check the attributes at all.
 
 ## Where to Validate a Query Object
 
@@ -88,7 +94,11 @@ The ASP.NET model binder will validate these attributes before the query reaches
 - Request validation
 
 ```csharp
-// ...
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker;
+
 // Simple validation in constructor
 public sealed class GetUserQuery : IQuery<User>
 {

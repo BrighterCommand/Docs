@@ -16,7 +16,8 @@ The result type specified in `IQuery<TResult>` can be any C# type. Choose the ap
 Use primitive types for simple single-value queries:
 
 ```csharp
-// ...
+using Paramore.Darker;
+
 public sealed class GetOrderCountQuery : IQuery<int>
 {
 }
@@ -47,7 +48,10 @@ public sealed class IsProductAvailableQuery : IQuery<bool>
 For complex data, return Data Transfer Objects (DTOs) or projections:
 
 ```csharp
-// ...
+using System;
+using System.Collections.Generic;
+using Paramore.Darker;
+
 public sealed class GetOrderDetailsQuery : IQuery<OrderDetailsDto>
 {
     public GetOrderDetailsQuery(int orderId)
@@ -82,7 +86,9 @@ DTOs are useful for projecting only the data needed by the UI or API, avoiding o
 Use collection types for queries that return multiple items:
 
 ```csharp
-// ...
+using System.Collections.Generic;
+using Paramore.Darker;
+
 // List
 public sealed class GetCustomersQuery : IQuery<List<Customer>>
 {
@@ -117,7 +123,9 @@ Prefer `IReadOnlyList<T>` or `IReadOnlyCollection<T>` for query results to make 
 Use dictionaries when returning key-value pairs:
 
 ```csharp
-// ...
+using System.Collections.Generic;
+using Paramore.Darker;
+
 public sealed class GetPeopleQuery : IQuery<IReadOnlyDictionary<int, string>>
 {
 }
@@ -134,7 +142,9 @@ Dictionaries are useful for lookup scenarios where you need fast access by key.
 Use nullable types when a query might not return a result:
 
 ```csharp
-// ...
+using System;
+using Paramore.Darker;
+
 public sealed class FindCustomerByEmailQuery : IQuery<Customer?>
 {
     public FindCustomerByEmailQuery(string email)
@@ -163,7 +173,10 @@ Nullable types make it explicit that a query may return no result, forcing calle
 For advanced scenarios, you can return tuples, custom result wrappers, or domain objects:
 
 ```csharp
-// ...
+using System;
+using System.Collections.Generic;
+using Paramore.Darker;
+
 // Tuple
 public sealed class GetOrderSummaryQuery : IQuery<(int TotalOrders, decimal TotalRevenue, decimal AverageOrderValue)>
 {

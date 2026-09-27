@@ -812,35 +812,431 @@ this one.
 **Goal:** every 0-hard-block page in the remaining four sections leaves whole. Page lists:
 § *The tranches*, phase 3 table. Tasks 3.2–3.5 are independent of each other.
 
-- [ ] **Task 3.1:** Predict phase 3's movement
+- [x] **Task 3.1:** Predict phase 3's movement
   - Input: § *The tranches*, phase 3 table; § *Phase 2 as executed*
   - Output: § *Phase 3 as executed* opens with a prediction per gate, from `master` after phase 2
 
-- [ ] **Task 3.2:** Repair the *Transports* tranche pages
+- [x] **Task 3.2:** Repair the *Transports* tranche pages
   - Input: that section's rows; `--classify` on each; `RelationalTransportContext.cs`, which already
     serves two pages
   - Output: each page whole; baseline rows; stubs share an existing unit where the pages share a
     world (design § *Scaffold Stub Rules*)
 
-- [ ] **Task 3.3:** Repair the *Outbox and Inbox* tranche pages
+- [x] **Task 3.3:** Repair the *Outbox and Inbox* tranche pages
   - Input: that section's rows; `--classify` on each
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
 
-- [ ] **Task 3.4:** Repair the *Scheduler* tranche pages
+- [x] **Task 3.4:** Repair the *Scheduler* tranche pages
   - Input: that section's rows; `--classify` on each; the Hangfire and Quartz packages 1.8 pinned
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
   - Notes: BrighterCommand/Brighter#4414 is upstream's. A scheduler block that asserts a scheduled
     request runs through DI is run, and if it throws for #4414 the block stays FAILED or the claim
     is reworded — never shown working.
 
-- [ ] **Task 3.5:** Repair the *Darker* tranche pages
+- [x] **Task 3.5:** Repair the *Darker* tranche pages
   - Input: that section's rows; `--classify` on each; `../Darker` at `4.1.1`
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
 
-- [ ] **Task 3.6:** Close phase 3 — checks, figures, PR
+- [x] **Task 3.6:** Close phase 3 — checks, figures, PR
   - Input: 3.1's prediction; the PR's diff
   - Output: as 2.6, for phase 3; plus **the ≤ 60 target read at tranche 1's close** — pages with
     nothing BUILT, by requirements' `awk`, against the 37 that must land
+
+### Phase 3 as executed
+
+**Prediction, 2026-09-27, from `master` `e256e2b`**, the merge of phase 2 (PR #191). The *Now*
+column is this task's own run at `e256e2b`, every gate bare, exit code read before its output; all
+nine exit 0 and read at `tools/README.md`'s figures. Each prediction names its mechanism:
+
+| # | Gate | Now | Predicted after phase 3, and why |
+|---:|---|---|---|
+| 1 | `linkcheck` | 165 files, 0 broken | **none**. No file is added |
+| 2 | `pagelint` | 0 errors, 706 warnings, 162 pages | **errors 0; warnings 706 → 664, or 663.** On the 20 pages, rule 6 warns on **43** blocks. **42** are FAILED reachable blocks, and a repair gives each its `using`s whether or not it then builds (−42): 9 build with a `using` alone, 10 with an empty stub, 10 need a stub with members, 13 a typed value. The 43rd, `QueryPipelinePolicies.md` #3, is BUILT and marks its omission `// ...`; −1 only if a repair touches it. The other **25** FAILED blocks on these pages, the three same-page ones among them, already carry `using`s; nine of the 20 pages have no rule 6 warning at all. Repairs of recurrences off the tranche lower it further, as 2.6 found (−17), and are explained if so |
+| 3, 4, 7 | shape, redirects, `--verify` | 161 / 77 / 161 | **none**. No `SUMMARY.md` change |
+| 5 | `versioncheck` | 0 stale of **18, across 5 pages** | **none, scope held at 18 across 5.** None of its five pages (`tools/versioncheck.py:81`) is in phase 3 |
+| 6 | `optioncheck` | 0 mismatches, 59 tables, 519 rows | **none.** Seven phase 3 pages carry tables it reads — the six transport pages with one FAILED block each, and `DynamoDbDistributedLock.md`. Their repairs give blocks `using`s and stubs, not rows; a row changes only if a repair finds a documented default wrong, and is then a defect in § *Defect ledger* |
+| 8 | `symbolcheck` | 0 findings, 22 entries, 161 pages, 3 silenced | **none**. No repair here names a watchlisted symbol |
+| 9 | `blockcheck` | 982: 129 BUILT, 837 FAILED, 16 SKIPPED; 22 units | **BUILT 129 → at most 193, at least 153; SKIPPED 16 plus accepted reasons only; exit 0; units 22 plus the new ones, 0 violations.** Mechanism below |
+| — | `attr_mismatch.py` | **7**, exit 1 | **held at 7.** Its hits are on five pages (`HowServiceActivatorWorks.md`, `PipelineValidation.md` ×3, `PolicyRetryAndCircuitBreaker.md`, `ReactorAndProactor.md`, `V10MigrationGuide.md`), none of them in phase 3 |
+
+**Gate 9, by source.** The probe re-run at `e256e2b` (§ *The tranches*' recipe, `Order` excluded)
+reads the phase 3 table unchanged: **67 FAILED, 64 reachable, 3 same-page, 0 hard, 14 BUILT**.
+Phase 2 touched seven of these pages (`GcpPubSubConfiguration.md`, `InMemoryTransport.md`,
+`MQTTConfiguration.md`, `MSSQLMessageBroker.md`, `RedisConfiguration.md`, `RocketMQConfiguration.md`,
+`SchedulingAMessage.md`), one line each, in the `requeueCount` and `requeueDelay` repairs; no verdict
+moved. The 64 reachable are **11** with a `using` alone, **13** with an empty stub, **23** needing a
+stub with members, **17** needing a typed value. The three same-page blocks are
+`PaginationQueryPatterns.md` #2, #3, #4.
+
+- **Ceiling 193** = 129 + 64: every stub works
+- **Floor 153** = 129 + 11 + 13: only the `using` and empty-stub blocks. The 40 blocks that need
+  members or typed values are where a stub may surface a defect; each that does stays FAILED and is
+  listed in § *Blocks that stay FAILED*
+- **P1-3 is spent.** 1.10 put seven of the `args` blocks in phase 3; `--explain` over all 837 FAILED
+  blocks at `e256e2b` finds **0** `'args'` diagnostics, so no block here is waiting on the wrapper
+- **Pages with nothing BUILT: 88 → as low as 73, at least 81.** 15 phase 3 pages have no BUILT block,
+  and every one has a reachable block. **Seven** reach one by a `using` or an empty stub alone —
+  `InMemoryTransport.md`, `RabbitMQMigrateToQuorumQueues.md`, `BoxProvisioningConfiguration.md`,
+  `DistributedLock.md`, `DynamoDbDistributedLock.md`, `QueryObjectValidation.md`,
+  `QueryResultTypes.md`; the other eight depend on stubs with members or typed values. 88 counted
+  by requirements' `awk` against `--report` at `e256e2b`
+- **The ≤ 60 target, read ahead.** Tranche 1 was to land 24 of the 37 pages; phase 2 landed 9, so
+  phase 3 must land all 15 for tranche 1 to meet its share. At the ceiling, 73 − 60 = **13** of
+  tranche 2's 19 must follow in phases 4 and 5; each page phase 3 misses adds one to that
+
+**Carried into the repair tasks, not the prediction:**
+
+- **`Order`.** `SchedulingAMessage.md` #1 and `TestingQueryHandlers.md` #1 are both *members* here,
+  and both name an `Order` their page never shows. By 1.10's ruling each is read as a type the page
+  never shows, never with `using StackExchange.Redis;`
+- **BrighterCommand/Brighter#4414** binds 3.4: a scheduler block asserting that a scheduled request
+  runs through DI is run, and if it throws for #4414 it stays FAILED or the claim is reworded
+- **The open `MessageBody` defect** (§ *Defect ledger*) has no recurrence on a phase 3 page:
+  `grep -rnE 'new MessageBody\([^)]*"' contents/` → one line, `KafkaConfiguration.md:709`, which is in
+  no tranche. It stays with phase 5
+
+**Task 3.2 — *Transports*.** Nine pages. **BUILT 129 → 147** (+18): all **17** reachable blocks,
+and `AWSSQSConfiguration.md` #6 from a recurrence repair. **None stays FAILED**. `pagelint`
+**706 → 696**. Pages with nothing BUILT **88 → 81**: the seven transport pages that had none.
+
+- **`using`s:** `RabbitMQMigrateToQuorumQueues.md` #1 (`System`, the RMQ `Async` gateway — ten
+  `using`s in `contents/` name `Async`, one `Sync`); `InMemoryTransport.md` #1–#4;
+  `RedisConfiguration.md` #1, `RocketMQConfiguration.md` #1, `PostgreSQLTransportAndOutbox.md` #5
+  (`System`, for `TimeSpan`)
+- **Two units and one grown.** `InMemoryTransportContext.cs` supplies `services`, `subscriptions` and
+  `GreetingMade : Event`. `TransportConfigurationContext.cs` supplies `GreetingEvent : Event` to six
+  pages that share a world — `GcpPubSubConfiguration.md`, `MQTTConfiguration.md`,
+  `MSSQLMessageBroker.md`, `RedisConfiguration.md`, `RocketMQConfiguration.md`, each configuring a
+  publication and a subscription for the reader's event, and `AWSSQSConfiguration.md` (below).
+  `RelationalTransportContext.cs` gains `connection` (step 3's `PostgresMessagingGatewayConnection`),
+  `GreetingEvent(string)` and `AddGreeting` (`Greeting`). Both pages take those two from the samples
+  they link to, and neither tells the reader to write them (rule 1, by reading). The linked Postgres
+  sample, `GreetingsSenderWithOutbox`, is on Brighter `master` and not in 10.7.0's tree; a repository
+  link, not a package, so it stands. `--report` → *"24 units checked, 0 violations"*
+- **`AWSSQSConfiguration.md` joined the shared unit** because the `RequestType` repair (next bullet)
+  made its BUILT blocks #1, #3, #4, #5 name `GreetingEvent`. `--report` read them `BUILT -> FAILED`
+  until it did; they are re-admitted with the unit. #6 builds for the first time, once its
+  `SqsAttributes` defect was repaired
+- **A `Publication` without `RequestType` cannot be posted to.** `InMemoryTransport.md`'s complete
+  example, run verbatim against 10.7.0, throws `ConfigurationException: No producer found for request
+  type. Have you set the request type on the Publication?` at `Post`.
+  `FindPublicationByPublicationTopicOrRequestType.cs:81` finds a publication by a `Destination` on the
+  context, then a `[PublicationTopic]` attribute on the request, then `RequestType` — and a
+  configuration page sets none of them. It is transport-agnostic, so the in-memory run stands for
+  every transport. Brighter's own analyzer says the same (BRT001). Repaired at every publication a
+  reader posts through: **20 on 8 pages** (`spec/017-compile_repairs/probe/pubscan.py`, **23 → 2**;
+  the other repair is `KafkaConfiguration.md`'s `new KafkaPublication() {publication}`, rewritten
+  below). The two left are right as they are: `AnalyzerSupport.md` shows how to suppress BRT001 for
+  exactly this, and `HandlingLargeMessages.md` passes a `Publication` to `WrapAsync`, not a registry
+- **Five more defects, found by the `using`s the recurrence repair required** (`pagelint --changed`
+  rule 6), each verified at 10.7.0 and repaired at every recurrence (§ *Defect ledger*):
+  `SqsPublication.SqsAttributes` is `QueueAttributes`; `Publication.CloudEventsType` is `Type`;
+  `InMemoryOutbox()` takes a `TimeProvider`; `KafkaConfiguration.md` called `SetConfigHook` on the
+  publication, where 10.7.0 has it on `KafkaProducerRegistryFactory`, as the page's own prose says —
+  the old form fails `CS1061` against the Kafka package, the new one builds; and
+  `InMemoryTransport.md`'s *Limitations* said there is no backpressure and no dead letter queue
+- **Behaviour, run with controls** against released 10.7.0 packages, in scratch console apps:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `InMemoryTransport.md` #4, the complete example, delivers a posted event | verbatim → `ConfigurationException`, handler never runs | `RequestType = typeof(GreetingMade)` → handler runs once |
+  | *"No dead letter queues: Failed messages are discarded"* | `InMemorySubscription` with `DeadLetterRoutingKey`, handler throws `RejectMessageAction` → **1** message on the DLQ topic | no `DeadLetterRoutingKey` → 0 anywhere, discarded |
+  | *"No backpressure: Unlimited queue growth"* | `new InternalBus(1)` → send 1 returns, send 2 **blocks** (still waiting at 2 s) | `new InternalBus()` → three sends return, bus holds 3 |
+  | `MSSQLTransportInboxAndOutbox.md` #8: *"Runs once per message id"* | block 8 verbatim, one event published 3 times → handler runs **1** | `onceOnly: false` → **3**. Run on `InMemoryInbox`: `[UseInbox]` is store-independent (`UseInboxHandler.cs:95`, `Warn` returns without calling on) |
+  | `RabbitMQMigrateToQuorumQueues.md` #1: `PersistMessages = true` persists | block 1 verbatim against RabbitMQ 3 in Docker → `delivery_mode` **2** | `PersistMessages = false` → `delivery_mode` **1** |
+
+  Read, not run: the limitation bullets left standing — no persistence, one process, no message TTL
+  (`InternalBus.cs` has no expiry). The configuration pages' other blocks register a transport and
+  assert no behaviour a run without their brokers could falsify
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 18 rows added and `AWSSQSConfiguration.md` #1, #3, #4, #5 re-admitted with
+  `TransportConfigurationContext.cs`, all at `7edaada`. `--report` → exit **0**, *"982 blocks: 147
+  BUILT, 819 FAILED, 16 SKIPPED"*, baseline 147, 0 findings. Against `master`'s report, 18 blocks
+  moved, every one `FAILED -> BUILT`
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; `pagelint --changed origin/master` 0 errors.
+  **Pages changed: 13** (`git diff --name-only e256e2b..HEAD -- contents`) — **5** of the nine
+  tranche pages (the other four were made whole by a unit alone: `GcpPubSubConfiguration.md`,
+  `MQTTConfiguration.md`, `MSSQLMessageBroker.md`, `MSSQLTransportInboxAndOutbox.md`), and **8**
+  outside it by recurrence: `AWSSQSConfiguration.md`, `BrighterBasicConfiguration.md`,
+  `CommandProcessorConfigurationReference.md`, `InMemoryOptions.md`, `InMemoryOutbox.md`,
+  `KafkaConfiguration.md`, `RabbitMQConfiguration.md`, `V10MigrationGuide.md`. Of `pagelint`'s −10,
+  4 are on the tranche (`InMemoryTransport.md` 3, `RabbitMQMigrateToQuorumQueues.md` 1) and 6 on the
+  recurrence pages
+
+**Task 3.3 — *Outbox and Inbox*.** Four pages. **BUILT 147 → 159** (+12): `BoxProvisioningConfiguration.md`
+#1–#9, `DistributedLock.md` #1, `TransactionalMessagingWithTheOutbox.md` #1, #2. **Three stay FAILED**:
+the DynamoDB lock blocks, for the V4 pin. `pagelint` **696 → 682**, all −14 on the tranche
+(`BoxProvisioningConfiguration.md` 8, the other three 2 each; per page, against a worktree at
+`7163fb0`). Pages with nothing BUILT **81 → 78**: the first three of those pages. Two methods, one
+figure: requirements' `awk` and `comm -23` of the FAILED and BUILT page sets.
+
+- **Said at 3.1:** `DynamoDbDistributedLock.md` reaches a BUILT block with an empty stub, and
+  `DistributedLock.md` #2 with a `using`. **Measured:** both pages tell the reader to install
+  `Paramore.Brighter.Locking.DynamoDB.V4`. Every Brighter V4 package at 10.7.0 declares its types in a
+  `.V4` namespace, and the V4 family is not in the pin (D3). **Maintainer's ruling, 2026-09-27:** the
+  blocks take the V4 `using`s their reader needs, and stay FAILED until 018's V4 pin. Compiled in
+  scratch against the released V4 packages (`Paramore.Brighter.Locking.DynamoDB.V4`,
+  `Outbox.DynamoDB.V4`, `Outbox.Hosting`, both DI packages, 10.7.0): **0 errors**. The control, the
+  same blocks with the V3 namespaces, fails `CS0234`. With V3 `using`s against the pin, all three
+  also build, so nothing else is hidden behind the namespace
+- **`using`s:** `BoxProvisioningConfiguration.md` #1 (`Microsoft.Extensions.Configuration`, for
+  `GetConnectionString`), #2–#4, and each backend's namespace on the per-backend fragments #5–#9.
+  `DistributedLock.md` #1 (`System.Threading`, `System.Threading.Tasks`). On
+  `TransactionalMessagingWithTheOutbox.md` #1 and #2 the `// ...` gives way to the `using`s the
+  sample's handlers carry, less the sample's own namespaces
+- **Two units.** `BoxProvisioningConfigurationContext.cs` supplies `builder`, `services`,
+  `connectionString`, `outboxConfig`, `inboxConfig`, `opts` and `rdbmsConfiguration`: the composition
+  root's values, earlier blocks' locals, and the delegate parameter the fragments sit in.
+  `TransactionalMessagingWithTheOutboxContext.cs` supplies `Retry`, `AddGreeting`, `Person`,
+  `Greeting`, `GreetingMade`, `Salutation` and `SalutationReceived`, each carrying only the members
+  a block names, typed as `samples/WebAPI/WebAPI_Dapper/` types them at 10.7.0. The page named no
+  sample; it now cites that one, and tells the reader nowhere to write these types (rule 1, by
+  reading). `--report` → *"26 units checked, 0 violations"*
+- **The V4 namespaces, repaired where V4 is recommended** (§ *Defect ledger*):
+  `AWSSQSMigrateToV10.md` step 3 said *"The namespace structure remains the same in most cases"*
+  and showed only AWS SDK namespaces. It now maps all seven V3 → V4 namespaces and names the two that
+  do not map by suffix: `Locking.DynamoDb` → `Locking.DynamoDB.V4`, and `DynamoDbTableFactory`,
+  which V3 declares in `Outbox.DynamoDB` and V4 in `DynamoDb.V4`. Its step 2 table gains the three
+  V4 packages it lacked, each on NuGet at 10.7.0. The rewrite keeps block 1 BUILT (the SDK
+  namespaces alone; the duplicate pair went). `DynamoOutbox.md` and `DynamoInbox.md` show V3
+  `using`s under a V4 recommendation, and each now names its V4 namespaces in one sentence.
+  `AwsScheduler.md`'s *Basic Configuration* block imported `MessageScheduler.AWS.V4` beside the V3
+  `MessagingGateway.AWSSQS`, which the V4 scheduler's dependency (`AWSSQS.V4`) does not declare,
+  so it now takes `.V4`; the block stays FAILED and its other gaps stay with its phase
+- **Behaviour, run with controls** against released 10.7.0 packages in scratch console apps, one
+  process per case: Brighter's static `ApplicationLogging` keeps the first container's
+  `LoggerFactory`, so a second container in the same process throws `ObjectDisposedException`, which
+  is a harness artefact, not a defect:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `TransactionalMessagingWithTheOutbox.md` #1: *"Both entity writes and message writes succeed or fail together"* | block 1 verbatim, SQLite outbox and `SqliteTransactionProvider`, in-memory producer → Greeting **1**, Outbox **1**, dispatched **1**, on the bus **1** | the block with a `throw` between `DepositPostAsync` and `CommitAsync` → Greeting **0**, Outbox **0**, bus **0**; `SendAsync` returns, as the block's `catch` hands on |
+  | #2: *"UseInboxAsync … ensures the message is only processed once"*; the duplicate is dropped and `SalutationReceived` not sent again | block 2 verbatim, the same `GreetingMade` published twice → publish 2 throws `OnceOnlyException`; Salutation **1**, Outbox **1**, bus **1** | `onceOnly: false` → both return; Salutation **2**, Outbox **2**, bus **2** |
+  | `BoxProvisioningConfiguration.md` #4: the timeout *"is read late … placement inside the delegate does not matter"* | block 4 verbatim (set before the `Add` calls) → both MSSQL runners' `_lockTimeout` **00:02:00**; set after them → **00:02:00** | not set → **00:00:30** |
+  | #2: *"the hosted service always provisions every Outbox before any Inbox"*, whatever the registration order | SQLite, Inbox registered before Outbox → *"Provisioning Outbox 'Outbox'"* then *"Provisioning Inbox 'Inbox'"* | two Outboxes registered B then A → B then A: within a phase, registration order holds |
+
+  Read, not run: a duplicate reaching the pump arrives as `OnceOnlyException`, which `Proactor.cs`'s
+  catch-all logs, counts as unacceptable and then acknowledges, so the message is dropped as the
+  page says. `UseBoxProvisioning` twice throws, and the `connectionName` overloads throw
+  `InvalidOperationException` with the page's message (`MsSqlBoxProvisioningExtensions.cs:62`)
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 12 rows at `24e6e53`. `--report` → exit **0**, *"982 blocks: 159 BUILT, 807 FAILED,
+  16 SKIPPED"*, baseline 159, 0 findings. The gate is enforced both ways, so 147 BUILT before was
+  exactly the 147 baseline rows, and the 12 new rows are the only blocks that moved, every one
+  `FAILED -> BUILT`
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; `pagelint --changed origin/master` 0 errors.
+  **Pages changed: 8** (`git diff --name-only 7163fb0..HEAD -- contents`): the **4** tranche pages,
+  and **4** outside the tranche by recurrence: `AWSSQSMigrateToV10.md`, `AwsScheduler.md`,
+  `DynamoInbox.md`, `DynamoOutbox.md`. Their rule 6 counts are unchanged
+
+**Task 3.4 — *Scheduler*.** Two pages. **BUILT 159 → 173** (+14): `SchedulingAMessage.md` #1–#10,
+one of them a block this task added, and `TickerQScheduler.md` #1, #4, #7, #8. **Two stay FAILED**,
+`TickerQScheduler.md` #2 and #3, for packages not in the pin. `pagelint` **682 → 668**, all −14 on the
+tranche (`SchedulingAMessage.md` 9, `TickerQScheduler.md` 5; per page, against a worktree at
+`423e215`). Pages with nothing BUILT **78 → 77**: `SchedulingAMessage.md`. Two methods, one figure:
+requirements' `awk` and `comm -23` of the FAILED and BUILT page sets.
+
+- **`using`s:** every block on both pages. On `SchedulingAMessage.md` #1–#9 they replace the leading
+  `// ...`. `TickerQScheduler.md` #1's `using TickerQ;` resolves but supplies nothing the block uses;
+  it gives way to the namespaces the linked sample imports (`TickerQ.DependencyInjection`,
+  `TickerQ.Utilities.Entities`, `.Interfaces`, `.Interfaces.Managers`)
+- **Fields the classes used and never declared:** `_repository` on `SchedulingAMessage.md` #1, #2, #4,
+  and `_paymentGateway` and `_logger` on #6. Each is now a `private readonly` field beside
+  `_commandProcessor`, typed `IOrderRepository`, `IUserRepository`, `IPaymentGateway` and
+  `ILogger<ProcessPaymentHandlerAsync>`. A unit cannot supply a value whose type no pinned package
+  declares, and the reader sees what the service depends on
+- **One unit and one grown.** `SchedulingAMessageContext.cs` supplies `services` and the domain the
+  page never shows: `Order` (1.10's ruling), `OrderStatus`, `User`, the two repositories, six
+  requests, `NotificationRequest`, `IPaymentGateway`, the two payment exceptions and
+  `ProcessOrderHandlerAsync`, each carrying only the members a block names. `TickerQSchedulerContext.cs`
+  gains `builder`, `app` and `SendReminderCommand`. Neither page tells the reader to write any of
+  these (rule 1, by reading). `--report` → *"27 units checked, 0 violations"*
+- **Two defects on the page** (§ *Defect ledger*): #3 returned `schedulerId` from `async Task`
+  (`CS1997`), now `Task<string>`; #5 scheduled `command with { AttemptNumber = … }`, which needs a
+  record, and a Brighter `Command` is a class a record cannot derive from. It now sets
+  `AttemptNumber` and schedules the command
+- **BrighterCommand/Brighter#4414, run.** It is closed by #4419, which is on `master` and in no
+  release. At 10.7.0, `AutoFromAssemblies()` and `AsyncHandlersFromAssemblies` register
+  `FireSchedulerRequestHandler` and `FireSchedulerMessageHandler` twice. `HandlersFromAssemblies`
+  registers each once, because the scheduler's handlers are async. **Maintainer's ruling,
+  2026-09-27: state it, with the workaround.** `SchedulingAMessage.md` gains *Registering Handlers
+  When You Schedule Requests* before its configuration examples. It states the failure, links
+  #4414, and shows explicit `AsyncHandlers` registration as a new block 7, so the page's old #7–#9
+  are now #8–#10 (§ *Splits*). Its recurrences on other pages are recorded, not repaired (§ *Defect
+  ledger*)
+- **BrighterCommand/Brighter#4437, filed this task.** The InMemory scheduler cannot cancel or
+  reschedule a request scheduled through the command processor. `CommandProcessor` calls
+  `_schedulerFactory.CreateAsync(this)` for each scheduled call, and `InMemoryScheduler` keeps its
+  timers in an instance field. It is the same on `master`. **Maintainer's ruling, 2026-09-27: file
+  it and state it.** The ruling covers every page that makes the claim: `SchedulingAMessage.md`'s
+  cancellation note, and `FAQ.md`'s *Can I cancel or reschedule*. On `InMemoryScheduler.md`, the
+  cancel example and the `Should_Cancel_Scheduled_Command` test now schedule through
+  `IAmARequestSchedulerAsync`. The issue's repro was run verbatim, and the reschedule result was
+  added as a comment
+- **The `TickerQScheduler.md` blocks against the released packages.** A reader on net10.0 gets TickerQ
+  10.4.0, not the pin's 9.0.2 (the Brighter package's net10.0 dependency group). Blocks 1, 2, 3 and 8
+  were compiled in scratch against `Paramore.Brighter.MessageScheduler.TickerQ` 10.7.0 with
+  `TickerQ`, `TickerQ.EntityFrameworkCore` and `TickerQ.Dashboard` at 9.0.2 on net9.0, and at 10.4.0
+  on net10.0: **0 errors, all eight builds**. **Phase 4 asks** for `TickerQ.EntityFrameworkCore` and
+  `TickerQ.Dashboard` 9.0.2 alongside `Npgsql.EntityFrameworkCore.PostgreSQL`; until then #2 and #3
+  stay FAILED
+- **Behaviour, run with controls** against released 10.7.0 packages in scratch console apps, net10.0,
+  one process per case:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `SchedulingAMessage.md` #8–#10 with #1–#3: a request scheduled after `AutoFromAssemblies()` runs | `UseScheduler(new InMemorySchedulerFactory())`, `AutoFromAssemblies()`, `SendAsync(1 s, …)` → `ArgumentException` *"More than one handler was found … FireSchedulerRequest"*, unhandled on the timer thread; **the process ends** | explicit `AsyncHandlers` → handler runs **1** |
+  | #7, the workaround: explicit registration makes scheduled requests run | block 7 verbatim, `SendAsync(TimeSpan)` and `SendAsync(DateTimeOffset)`, 1 s each → handler runs **2** | the same with `AutoFromAssemblies()` → the process ends |
+  | A narrower scan avoids it | `AutoFromAssemblies([own])`, `AsyncHandlersFromAssemblies([own])` → the process ends | registry read: `HandlersFromAssemblies([own])` → **1** of each handler; `AutoFromAssemblies()` → **2** of each |
+  | #4, *"Every scheduler supports cancellation"*, for InMemory | `SendAsync(1 s)`, then `CancelAsync(id)` on the registered `IAmAMessageSchedulerAsync` or `IAmARequestSchedulerAsync` → handler runs **1** | schedule and cancel on one `IAmARequestSchedulerAsync` → **0** |
+  | Rescheduling, for InMemory (`FAQ.md`) | `ReSchedulerAsync(id, 10 s)` for an id from `SendAsync(1 s)` → returns **`False`**; the request runs at 1 s | scheduled through the same instance → returns **`True`**; not run 3 s later |
+
+  Read, not run: #6's bare `DeferMessageAction` requeues after the subscription's delay
+  (`Proactor.cs:522`, `Channel.RequeueAsync(message, delay ?? RequeueDelay)`). The configuration
+  blocks for Hangfire, Quartz and TickerQ register a scheduler, and a scheduled request through
+  either external scheduler reaches the same `processor.SendAsync(FireSchedulerRequest)`
+  (`BrighterHangfireSchedulerJob.cs:32`)
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 14 rows at `3509d3e`. `--report` → exit **0**, *"983 blocks: 173 BUILT, 794 FAILED,
+  16 SKIPPED"*, baseline 173, 0 findings. Joined on page and ordinal against the report at
+  `423e215`, every block that moved went `FAILED -> BUILT`. The one new key is
+  `SchedulingAMessage.md` #10, the added block's renumbering
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; `pagelint --changed origin/master` 0 errors.
+  **Pages changed: 4** (`git diff --name-only 423e215..HEAD -- contents`): the **2** tranche pages,
+  and **2** outside it for #4437, `FAQ.md` and `InMemoryScheduler.md`. Their rule 6 counts are
+  unchanged, and `--explain` on the two touched `InMemoryScheduler.md` blocks (#8, #9) finds only
+  types the page never shows
+
+**Task 3.5 — *Darker*.** Five pages. **BUILT 173 → 189** (+16): `QueryObjectValidation.md` #1–#3,
+`QueryPipelinePolicies.md` #2, #4, #5, #6, `QueryResultTypes.md` #1–#6 and `TestingQueryHandlers.md`
+#1–#3. **Four stay FAILED**: `PaginationQueryPatterns.md` #2, #3, #4 (same-page) and
+`QueryPipelinePolicies.md` #1 (`Program`). `pagelint` **668 → 658**, all −10 on the tranche
+(`QueryResultTypes.md` 6, `QueryPipelinePolicies.md` 3, `QueryObjectValidation.md` 1; per page,
+against a worktree at `842b757`). Pages with nothing BUILT **77 → 74**: `QueryObjectValidation.md`,
+`QueryResultTypes.md`, `TestingQueryHandlers.md`. Two methods, one figure: requirements' `awk` and
+`comm -23` of the FAILED and BUILT page sets.
+
+- **`using`s:** every FAILED block on the four pages that change. On `QueryResultTypes.md` #1–#6,
+  `QueryObjectValidation.md` #3 and `QueryPipelinePolicies.md` #4–#6 they replace the leading
+  `// ...`. `QueryPipelinePolicies.md` #1 and #2 gain `Microsoft.AspNetCore.Builder` for
+  `WebApplication`. `QueryPipelinePolicies.md` #3 stays BUILT and keeps its `// ...`
+- **Three units.** `QueryResultTypesContext.cs` supplies five empty stubs, `Customer`,
+  `OrderSummary`, `DataRow`, `Product` and `Order`: the page is about result types and names no
+  member of any. `QueryObjectValidationContext.cs` supplies `PagedResult<T>`, `Order`, `Product`,
+  `User`, `IUserRepository` and `UserNotFoundException`. `TestingQueryHandlersContext.cs` supplies
+  the domain, the `ApplicationDbContext`, the two queries and handlers under test, and the xunit
+  fixture types. Each carries only the members a block names. `Order` is read as 1.10 rules, and
+  `DataRow` as a type the page never shows, not `System.Data.DataRow`. None of these is a type the
+  page tells the reader to write (rule 1, by reading). `--report` → *"30 units checked, 0
+  violations"*
+- **`QueryPipelinePolicies.md` #1 stays FAILED on `Program`.** It is a `Program.cs`, but it has no
+  declaration after its statements, so it takes the `statements` wrapper and `typeof(Program)` finds
+  nothing. Q2's re-read (1.8) ruled `Program` a top-level artefact no stub should supply. Built in
+  scratch as a `Program.cs` against the released Darker 4.1.1 packages, net10.0 Web SDK, implicit
+  usings off: **0** errors. Control, without `using Microsoft.AspNetCore.Builder;`: `CS0103`
+  `WebApplication`
+- **Two defects on the tranche, both found by running** (§ *Defect ledger*). `QueryPipelinePolicies.md`
+  called the default retry *"exponential backoff"* and said the breaker *"opens after consecutive
+  failures"*. It now gives the values, and says a policy applies only to a handler that carries
+  `[RetryableQuery]`. `QueryObjectValidation.md` said *"The ASP.NET model binder will validate these
+  attributes before the query reaches your handler."* It now names the two cases where ASP.NET Core
+  rejects an invalid query, and what happens everywhere else
+- **One defect off the tranche, recorded rather than repaired.** Five Darker pages treat
+  `[RetryableQuery]`'s second argument as a circuit-breaker name that adds a breaker to the retry.
+  At Darker 4.1.1 it is a policy name, and the decorator runs that one policy. `"DefaultCircuitBreaker"`
+  throws `ConfigurationException`, and `circuitBreakerName:` is `CS1739`. **Maintainer's ruling,
+  2026-09-27: record it for phase 5.** No page off the tranche changed
+- **Behaviour, run with controls** against the released Darker 4.1.1 packages in scratch apps,
+  net10.0, one process per case:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `QueryPipelinePolicies.md`: the default retry policy | `AddDefaultPolicies()`, handler with `[RetryableQuery(1)]` that always throws → **4** attempts, at 0, +56, +158, +308 ms | the same handler without the attribute, with or without `AddDefaultPolicies()` → **1** attempt |
+  | The default circuit breaker | `[RetryableQuery(1, Constants.CircuitBreakerPolicyName)]`: call 1 → the handler's exception, **1** attempt; call 2 at once → `BrokenCircuitException`, **0** attempts | call 3 after 600 ms → the handler runs again, **1** attempt |
+  | A policy name `AddDefaultPolicies()` does not register (off the tranche) | `[RetryableQuery(1, "DefaultCircuitBreaker")]` → `ConfigurationException` *"Policy does not exist in policy registry: DefaultCircuitBreaker"*, **0** attempts | `Constants.CircuitBreakerPolicyName`, above → the handler runs |
+  | `QueryObjectValidation.md` #2: data annotations stop an invalid query before the handler | `[ApiController]` controller, `MaxResults=5000` → **400** | a controller without `[ApiController]` → **200**, action runs, `ModelState.IsValid` `False` |
+  | The same, on a minimal API | `[AsParameters]` endpoint after `AddValidation()` → **400** | without `AddValidation()` → **200**, handler runs with `5000` |
+
+  Every case with a valid query (`SearchTerm=shoes&MaxResults=10`) returned 200. Darker needs an
+  `ILoggerFactory` in the container: without `AddLogging()` the first query throws
+  `TypeInitializationException` from `PipelineBuilder<T>` (`ApplicationLogging`, `factory` null).
+  An ASP.NET Core host registers logging itself, so no page here meets it
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 16 rows at `3462412`. `--report` → exit **0**, *"983 blocks: 189 BUILT, 778 FAILED,
+  16 SKIPPED"*, baseline 189, 0 findings. Joined on page and ordinal against the report at
+  `842b757`, all 16 blocks that moved went `FAILED -> BUILT`, and there are no new keys
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; `pagelint --changed origin/master` 0 errors.
+  **Pages changed: 4** (`git diff --name-only 842b757..HEAD -- contents`), all on the tranche.
+  `PaginationQueryPatterns.md` did not change: its three FAILED blocks are same-page, and each
+  follows the block that declares its types
+
+**Task 3.6 — phase 3 closed, 2026-09-27, branch at `2223fcb`.** Every gate run bare, exit code
+read before its output:
+
+| # | Gate | Exit | Read | Predicted (3.1) | Agrees? |
+|---:|---|---:|---|---|---|
+| 1 | `linkcheck` | 0 | 165 files, 0 broken | none | **yes** |
+| 2 | `pagelint` | 0 | 0 errors, **658** warnings across 96 pages, 162 pages | 0 errors; 706 → 664 or 663 | **no — 6 lower**, explained below |
+| 3 | shape | 0 | 161 pages, 12 sections, widest 12 of 20, deepest 4 of 4 | none | **yes** |
+| 4 | redirects | 0 | 77 entries, 7858 bytes | none | **yes** |
+| 5 | `versioncheck` | 0 | 0 stale of 18, across 5 pages | none, scope held at 18 across 5 | **yes** |
+| 6 | `optioncheck` | 0 | 0 mismatches, 59 tables, 519 rows | none | **yes** |
+| 7 | `--verify` | 0 | 161 predicted = 161 published | none | **yes** |
+| 8 | `symbolcheck` | 0 | 0 findings, 22 entries, 161 pages, 3 silenced | none | **yes** |
+| 9 | `blockcheck` | 0 | 983: **189** BUILT, 778 FAILED, 16 SKIPPED; 0 findings; 538 reference assemblies; baseline 189; **30** units, 0 violations; 36 pages mapped | BUILT 153–193; SKIPPED 16; exit 0; 0 violations | **yes** — within the range |
+| — | `attr_mismatch.py` | 1 | **7** | held at 7 | **yes** |
+
+`pagelint --changed origin/master` → exit **0**, 0 errors.
+
+**Gate 9, reconciled against 3.1's 64 reachable.** **58** of them built. The six that did not are
+in § *Blocks that stay FAILED*: `DistributedLock.md` #2 and `DynamoDbDistributedLock.md` #1, #2 for
+the V4 pin, `TickerQScheduler.md` #2, #3 for packages phase 4 asks for, and `QueryPipelinePolicies.md`
+#1 for `Program`. Beside them, one block the tranche added (`SchedulingAMessage.md` #7, the #4414
+workaround) and one off the tranche (`AWSSQSConfiguration.md` #6, after its `SqsAttributes` repair).
+129 + 58 + 1 + 1 = **189**, 4 below the ceiling.
+
+**Every FAILED block on the 20 tranche pages is listed**: `after.tsv`'s FAILED keys on those pages
+and § *Blocks that stay FAILED*'s phase 3 rows are the same 9 — the six above and
+`PaginationQueryPatterns.md` #2–#4, same-page.
+
+**Gate 2, reconciled.** Per-page warnings at `e256e2b` (a worktree) against the branch: the 20
+tranche pages fell by **42**, which is 3.1's 664 — `QueryPipelinePolicies.md` #3 was not touched, so
+not 663. The further **−6** are on four pages outside the tranche, all changed in 3.2 by
+recurrence: `KafkaConfiguration.md` −3 (the `SetConfigHook` and `RequestType` repairs),
+`AWSSQSConfiguration.md`, `InMemoryOptions.md` and `V10MigrationGuide.md` −1 each. 3.1 said
+recurrences would lower it further and would be explained; 3.3's and 3.4's recurrence pages moved
+nothing. 706 − 42 − 6 = **658**, across 96 pages, down from 107.
+
+**AC2, against a `before.tsv` regenerated from `c7329bb` in a worktree** (exit 0, *"989 blocks: 101
+BUILT, 872 FAILED, 16 SKIPPED"*, 989 rows): the diff prints **90** lines. **89** are `FAILED ->
+BUILT` — 30 phase 2's, 58 on this tranche's pages and `AWSSQSConfiguration.md` #6. The 90th is
+` -> BUILT contents/SchedulingAMessage.md 10`, a key `before.tsv` does not hold, read against
+§ *Splits*: the block inserted at #7 moved old #7–#9 to #8–#10. No `-> SKIPPED`. **Control, both
+ways:** a copy of the branch's report with `QueryResultTypes.md` #1 set FAILED prints 89 lines and
+loses that one; a copy with `AWSSQSConfiguration.md` #1 set FAILED prints exactly one line beside the
+new key that is not `FAILED -> BUILT`, `BUILT -> FAILED contents/AWSSQSConfiguration.md 1`.
+
+**The ≤ 60 target, read at tranche 1's close.** Pages with nothing BUILT: **74** — requirements'
+`awk` (FAILED pages absent from the BUILT set, `comm -23`) and a Python join over the same report
+agree. 97 at `c7329bb`, so **23** of the 37 have landed: 9 in phase 2 and **14** in phase 3, one short
+of the 15 3.1 predicted. The one is `DynamoDbDistributedLock.md`, whose two blocks wait on the V4
+pin (3.3). Tranche 1 was to land 24 and landed 23. **74 − 60 = 14 of tranche 2's 19** must now land in
+phases 4 and 5, one more than 3.1's 13; 5 may miss.
+
+**Every behavioural block was run with its control** (P0-10): the tables under 3.2, 3.3, 3.4 and
+3.5, against released 10.7.0 and Darker 4.1.1 packages.
+
+**The PR changes 29 pages** (`git diff --name-only origin/master..HEAD -- contents | wc -l`): **15**
+of the 20 tranche pages, and **14** outside the tranche by recurrence — 8 in 3.2, 4 in 3.3, 2 in
+3.4. The other five tranche pages were made whole by a unit alone (`GcpPubSubConfiguration.md`,
+`MQTTConfiguration.md`, `MSSQLMessageBroker.md`, `MSSQLTransportInboxAndOutbox.md`) or left as they
+were (`PaginationQueryPatterns.md`). Beside them are 13 files under `tools/` — `README.md`, the
+baseline, `pages.tsv` (23 → 36 pages mapped), 8 new units and 2 grown — two probe scripts, and this
+one.
 
 ---
 
@@ -1226,10 +1622,23 @@ is rewritten against the tables below.
 | `RequestValidation.md` | 16 | `CS0246` `MyRequestHandler<>` | same-page: block 15, *"2. Map the provider-agnostic handler to your implementation"* | 2 |
 | `ReturningResultsFromAHandler.md` | 1 | `CS0246` `CreateTaskCommand`; `CS0103` `commandProcessor` | **unit rule 1**: the page tells the reader to write this type (*"add a property to the **Command** that you can initialize from the Handler"*), so it may not be stubbed | 2 |
 | `HandlingLargeMessages.md` | 3 | `CS0246` `LargeOrderMessageMapper` | same-page: block 2 declares it; block 3 follows *"**Register the mapper**, or none of this runs"* | 2 |
+| `DistributedLock.md` | 2 | `CS0234` `Paramore.Brighter.DynamoDb.V4`, `Locking.DynamoDB.V4`, `Outbox.DynamoDB.V4` | V4 package, not in the pin (D3, 018). The page recommends the V4 package, so the block carries its namespaces; it builds against the released V4 packages in scratch, **0** errors | 3 |
+| `DynamoDbDistributedLock.md` | 1 | `CS0234` `Locking.DynamoDB.V4`; `CS0103` `dynamoDb` | V4 package, not in the pin (D3, 018). `dynamoDb` wants a value stub once V4 is pinned | 3 |
+| `DynamoDbDistributedLock.md` | 2 | `CS0234` `Paramore.Brighter.DynamoDb.V4`, `Locking.DynamoDB.V4`, `Outbox.DynamoDB.V4` | V4 package, not in the pin (D3, 018); builds against the released V4 packages in scratch, **0** errors | 3 |
+| `TickerQScheduler.md` | 2 | `CS0234` `TickerQ.EntityFrameworkCore`; `CS1061` `AddOperationalStore`; `CS0246` `TickerQDbContext` | `TickerQ.EntityFrameworkCore` is not in the pin; phase 4 asks for it at 9.0.2. Builds against the released packages in scratch, net9.0 and net10.0, **0** errors | 3 |
+| `TickerQScheduler.md` | 3 | `CS0234` `TickerQ.Dashboard`; `CS1061` `AddDashboard` | `TickerQ.Dashboard` is not in the pin; phase 4 asks for it at 9.0.2. Builds against the released packages in scratch, net9.0 and net10.0, **0** errors | 3 |
+| `PaginationQueryPatterns.md` | 2 | `CS0246` `GetOrdersPageQuery`, `PagedResult<>`, `OrderDto`; `ApplicationDbContext` | same-page: block 1 declares the first three; block 2 is *"Handler with pagination:"*, straight after it | 3 |
+| `PaginationQueryPatterns.md` | 3 | `CS0246` `OrderDto` | same-page: block 1 declares it | 3 |
+| `PaginationQueryPatterns.md` | 4 | `CS0246` `GetOrdersCursorQuery`, `CursorPagedResult<>`, `OrderDto`; `ApplicationDbContext` | same-page: block 3 declares the first two, block 1 `OrderDto`; block 4 is *"Handler with cursor pagination:"*, straight after block 3 | 3 |
+| `QueryPipelinePolicies.md` | 1 | `CS0246` `Program` | instrument: a `Program.cs` with no declaration after its statements takes the `statements` wrapper, which declares no `Program`; Q2 (1.8) rules out a stub. Builds as a `Program.cs` in scratch against Darker 4.1.1, **0** errors | 3 |
 
 ## Splits
 
 *One row per split fence: page, old ordinal, new ordinals.*
+
+| Page | Old # | New # | Why | Task |
+|---|---:|---:|---|---:|
+| `SchedulingAMessage.md` | 7, 8, 9 | 8, 9, 10 | not a split: a block inserted at #7, the #4414 workaround. All three were FAILED at `c7329bb` and are BUILT now, so the AC2 diff reads #7–#9 as `FAILED -> BUILT` and #10 as a new key | 3.4 |
 
 ## Blocks removed
 
@@ -1271,6 +1680,20 @@ BUILT, re-admitted at `ec38400`.
 | A log excerpt quoting messages Brighter does not emit (*"Failed to process message … requeueing"*, *"Requeue count exceeded"*) | `Reactor.cs:601–670`, the templates; replaced with a captured run | `HandlingPoisonMessages.md` step 1 | `grep -rnE 'Requeue count exceeded for message\|Failed to process message' contents/` | **3** | **0** | 2.5, reading step 1 against the run's log |
 | `new MessageBody(bytes, "JSON")` / `(s, MediaTypeNames.Application.Octet, …)` — a string where 10.7.0 takes a `ContentType?` | `CS1503` from `--explain` | `KafkaConfiguration.md` #20, `MessageMappers.md` #5 | — | **2** | **open — phases 3 and 5** | 2.5, `--explain` on the touched blocks |
 | Mapper excerpts that omit a required member with no `// ...` (`CS0535` `MapToRequest` / `MapToMessage`) | `CS0535` | `Routing.md` #1, `V10MigrationGuide.md` #3, #18, `NullableReferenceTypes.md` #7, `FAQ.md` #7 | — | **5** | **open — their phases** | 2.5, `--explain` on the touched blocks |
+| A `Publication` a reader posts through with no `RequestType` — `Post` throws `ConfigurationException` (*"No producer found for request type"*); BRT001 warns on it | `FindPublicationByPublicationTopicOrRequestType.cs:81`; run, control both ways | `InMemoryTransport.md`, `AWSSQSConfiguration.md`, `BrighterBasicConfiguration.md`, `CommandProcessorConfigurationReference.md`, `InMemoryOptions.md`, `KafkaConfiguration.md`, `RabbitMQConfiguration.md`, `V10MigrationGuide.md` | `python3 spec/017-compile_repairs/probe/pubscan.py` | **23** | **2** — `AnalyzerSupport.md`'s BRT001 suppression and `HandlingLargeMessages.md`'s `WrapAsync`, both right | 3.2, running the complete example |
+| `InternalBus` said to have no backpressure and the in-memory transport no dead letter queue — `InternalBus(boundedCapacity)` blocks a sender when full; `DeadLetterRoutingKey` moves a rejected message to that topic | `InternalBus.cs:39`, `InMemoryMessageConsumer.cs:218`; run, control both ways | `InMemoryTransport.md` | `grep -rnE 'No backpressure\|No dead letter queues' contents/` | **2** | **0** | 3.2, reading the page against the source |
+| `SqsPublication { SqsAttributes = … }` — the property is `QueueAttributes` (`CS0117`) | `SqsPublication.cs:73` | `AWSSQSConfiguration.md` | `grep -rnE '\bSqsAttributes\s*=' contents/` | **1** | **0** | 3.2, `--explain` after the block's `using`s |
+| `CloudEventsType` as a `Publication` property — it is `Type` (`CS0117`) | `Publication.cs:96` | `V10MigrationGuide.md` (initializer and `publication.CloudEventsType`) | `grep -rnE '\bCloudEventsType\s*=\|\.CloudEventsType\b' contents/` | **2** | **0** | 3.2, `--explain` after the block's `using`s |
+| `new InMemoryOutbox()` — V10's constructor takes a `TimeProvider` (`CS7036`) | `InMemoryOutbox.cs:91` | `InMemoryOptions.md`, `InMemoryOutbox.md` | `grep -rnE 'new InMemoryOutbox\(\)' contents/` | **2** | **0** | 3.2, `--explain` after the block's `using`s |
+| `publication.SetConfigHook(…)` — the hook is on `KafkaProducerRegistryFactory`; the block also wrapped its publication as `new KafkaPublication() {publication}` and dropped a `;` | `KafkaProducerRegistryFactory.cs:87`; compiled, old form `CS1061` | `KafkaConfiguration.md` | `grep -rn 'publication\.SetConfigHook' contents/` | **1** | **0** | 3.2, reading the block beside its prose |
+| A V4 package recommended with the V3 namespace, or the namespaces said to stay the same: every Brighter `.V4` package at 10.7.0 declares its types in `<V3 namespace>.V4` (`Locking.DynamoDb` → `Locking.DynamoDB.V4`), so a reader who installs the V4 package and copies a V3 `using` gets `CS0234` | `git ls-tree 10.7.0 src/*.V4`, each project's `namespace` lines; the lock blocks compiled against the V4 packages, control V3 `CS0234` | `AWSSQSMigrateToV10.md`, `AwsScheduler.md`, `DynamoInbox.md`; by reading `DynamoOutbox.md`, `DistributedLock.md`, `DynamoDbDistributedLock.md` | `python3 spec/017-compile_repairs/probe/v4scan.py` — blind to a page whose V4 package ID is also its namespace, which is why `DynamoOutbox.md` was read | **4** | **0** | 3.3, adding the lock blocks' `using`s |
+| A value returned from `async Task` — `ScheduleNotification` returned `schedulerId` (`CS1997`) | `CS1997` from `--explain`; `PostAsync(TimeSpan, …)` returns `Task<string>`, `IAmACommandProcessor.cs:282` | `SchedulingAMessage.md` #3 | — | **1** | **0** | 3.4, `--explain` after the block's `using`s |
+| `command with { … }` on a request — needs a record, and a Brighter `Command` is a class, which a record cannot derive from | `Command.cs:42` | `SchedulingAMessage.md` #5 | `grep -rnE '\bwith \{' contents/` | **1** | **0** | 3.4, stubbing the block's `OperationCommand` |
+| `AutoFromAssemblies()` or `AsyncHandlersFromAssemblies` with a scheduler — the scheduler's handlers registered twice, so a scheduled request throws when it falls due, and ends the process with InMemory | run; registry read, control `HandlersFromAssemblies` — **upstream, BrighterCommand/Brighter#4414**, fixed by #4419 on `master`, unreleased | `SchedulingAMessage.md` states it with the workaround. Recorded, not repaired: `AwsScheduler.md`, `AzureScheduler.md`, `BrighterSchedulerSupport.md`, `HangfireScheduler.md`, `InMemoryOptions.md`, `InMemoryScheduler.md`, `QuartzScheduler.md`, `SwitchingSchedulers.md`, `V10MigrationGuide.md` | `grep -rl 'UseScheduler' contents/ \| xargs grep -lE 'AutoFromAssemblies\(\|AsyncHandlersFromAssemblies'` | **10** pages | **stated** on 1 — maintainer's ruling; 9 recorded | 3.4, running |
+| InMemory cancel and reschedule said to work on a request scheduled through the command processor — each scheduled call gets a new `InMemoryScheduler`, so `CancelAsync` finds nothing and the request runs; `ReSchedulerAsync` returns `False` | run, control same instance; `CommandProcessor.cs:427`, `InMemoryScheduler.cs:57` — **upstream, BrighterCommand/Brighter#4437**, filed 3.4 | `SchedulingAMessage.md`, `FAQ.md`, `InMemoryScheduler.md` (cancel example, `Should_Cancel_Scheduled_Command`) | `grep -rl 'issues/4437' contents/` | **3** pages | **stated** on all 3 — maintainer's ruling | 3.4, running block 4's claim |
+| Darker's default policies described as *"exponential backoff"* and a breaker that *"opens after consecutive failures"*, and as applying once registered. They retry 3 times after 50, 100 and 150 ms, the breaker opens on 1 failure for 500 ms, and neither runs without `[RetryableQuery]` | Darker 4.1.1 `QueryProcessorBuilderExtensions.cs:51`, `RetryableQueryDecorator.cs`; run, control without the attribute | `QueryPipelinePolicies.md` (the list and block 2's comment) | `grep -rnE 'Retries with exponential backoff\|Opens after consecutive failures\|Retry policy with exponential backoff' contents/` | **3** | **0** | 3.5, reading the page against Darker's source, then running |
+| *"The ASP.NET model binder will validate these attributes before the query reaches your handler"*. Only a controller marked `[ApiController]`, or a minimal API after `AddValidation()` (.NET 10), rejects the query; elsewhere it reaches the code | run on net10.0, controls both ways | `QueryObjectValidation.md` | `grep -rn 'model binder will validate' contents/` | **1** | **0** | 3.5, running block 2's claim |
+| `[RetryableQuery]`'s second argument described and used as a circuit-breaker name that adds a breaker to the retry. It is a policy name, and the decorator runs that one policy. `"DefaultCircuitBreaker"` is not registered by `AddDefaultPolicies()`, so it throws `ConfigurationException`; `circuitBreakerName:` is not a parameter (`CS1739`) | Darker 4.1.1 `RetryableQueryAttribute.cs:11`, `Constants.cs`; run, control `Constants.CircuitBreakerPolicyName`; compiled | `QueryPipeline.md` (4 lines, and the parameter list at line 239), `CQRSWithBrighterAndDarker.md` (2), `DarkerAndBrighterPipelines.md`, `ImplementAQueryHandler.md`, `QueryPatterns.md` | `grep -rnE 'RetryableQuery\(.*(DefaultCircuitBreaker\|circuitBreakerName)' contents/` | **9** lines, 5 pages | **open — phase 5**, maintainer's ruling | 3.5, reading Darker's source for the tranche's policy defaults |
 
 ## Friction ledger
 

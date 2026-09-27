@@ -38,6 +38,8 @@ The InMemory Transport provides lightweight message publishing and consumption w
 **Internal Bus**:
 
 ```csharp
+using Paramore.Brighter;
+
 // ...
 var internalBus = new InternalBus();
 ```
@@ -45,8 +47,10 @@ var internalBus = new InternalBus();
 **Producer Configuration**:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Observability;
 
 var internalBus = new InternalBus();
 
@@ -56,7 +60,7 @@ services.AddBrighter(options =>
 })
 .AddProducers(options =>
 {
-    var publication = new Publication() { Topic = new RoutingKey("Topic") };
+    var publication = new Publication() { Topic = new RoutingKey("GreetingMade"), RequestType = typeof(GreetingMade) };
 
     options.ProducerRegistry = new InMemoryProducerRegistryFactory(internalBus , new[] { publication }, InstrumentationOptions.All)
         .Create();
@@ -67,6 +71,12 @@ services.AddBrighter(options =>
 **Consumer Configuration**:
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+using Paramore.Brighter.ServiceActivator.Extensions.Hosting;
+
 // ...
 
 var internalBus = new InternalBus();
@@ -126,6 +136,14 @@ a subscription name, a channel name and a routing key.
 ## InMemory Transport Complete Example
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Observability;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+using Paramore.Brighter.ServiceActivator.Extensions.Hosting;
+
 // ...
 public class Startup
 {
@@ -148,7 +166,7 @@ public class Startup
         })
         .AddProducers(options =>
         {
-            var publication = new Publication() { Topic = new RoutingKey("GreetingMade") };
+            var publication = new Publication() { Topic = new RoutingKey("GreetingMade"), RequestType = typeof(GreetingMade) };
 
             options.ProducerRegistry = new InMemoryProducerRegistryFactory(internalBus, new[] { publication }, InstrumentationOptions.All)
                 .Create();
@@ -164,8 +182,8 @@ public class Startup
 
 - **No persistence**: Messages are lost if the process crashes
 - **Single process**: Cannot distribute across multiple instances
-- **No backpressure**: Unlimited queue growth (memory bound)
-- **No dead letter queues**: Failed messages are discarded
+- **Unbounded by default**: each topic on the `InternalBus` grows until memory runs out. Construct it with a capacity, `new InternalBus(boundedCapacity: 100)`, and a send to a full topic blocks the sender until a consumer takes a message
+- **Dead letters stay in the process**: set `DeadLetterRoutingKey` on an `InMemorySubscription` and a rejected message moves to that topic on the same `InternalBus`; without it, a rejected message is discarded. A plain `Subscription<T>` has no `DeadLetterRoutingKey`
 - **No message TTL**: Messages never expire
 
 ## Further Reading

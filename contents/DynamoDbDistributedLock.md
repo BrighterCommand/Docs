@@ -34,6 +34,8 @@ Configure the provider with `DynamoDbLockingProvider`, passing your `IAmazonDyna
 client and a `DynamoDbLockingProviderOptions`:
 
 ```csharp
+using Paramore.Brighter.Locking.DynamoDB.V4;
+
 new DynamoDbLockingProvider(
     dynamoDb,
     new DynamoDbLockingProviderOptions(
@@ -63,6 +65,15 @@ longer than a Sweeper or Archiver cycle.
 ## DynamoDB Distributed Lock Example
 
 ```csharp
+using System;
+using Amazon.DynamoDBv2;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.DynamoDb.V4;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Locking.DynamoDB.V4;
+using Paramore.Brighter.Outbox.DynamoDB.V4;
+using Paramore.Brighter.Outbox.Hosting;
+
 var dynamoDb = new AmazonDynamoDBClient();
 
 services

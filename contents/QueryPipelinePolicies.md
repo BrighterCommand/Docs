@@ -16,6 +16,7 @@ Darker's policy decorators are powered by [Polly](https://github.com/App-vNext/P
 The simplest way to add policies is to use `AddDefaultPolicies()`:
 
 ```csharp
+using Microsoft.AspNetCore.Builder;
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Policies;
@@ -32,16 +33,19 @@ app.Run();
 
 The default policies provide:
 
-- **Default retry policy**: Retries with exponential backoff
-- **Default circuit breaker**: Opens after consecutive failures, closes after a timeout period
+- **Default retry policy** (`Constants.RetryPolicyName`): retries three times, waiting 50, 100 and 150 milliseconds
+- **Default circuit breaker** (`Constants.CircuitBreakerPolicyName`): opens after a single failure and stays open for 500 milliseconds
 
-These policies are sufficient for many applications and provide a good starting point for resilience.
+Registering a policy does not apply it. A policy runs only for a handler whose `ExecuteAsync` carries `[RetryableQuery]`, and the attribute runs the one policy it names: `Constants.RetryPolicyName` unless you pass another name. See [Query Pipeline and Decorators](/contents/QueryPipeline.md) for the attribute.
+
+The defaults are a starting point. Their waits are short, and their circuit breaker opens on the first failure, so consider registering your own.
 
 ## Custom Query Policy Registry
 
 For more control over resilience policies, you can create a custom policy registry with specific retry strategies, circuit breakers, and timeout policies:
 
 ```csharp
+using Microsoft.AspNetCore.Builder;
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Policies;
@@ -60,7 +64,7 @@ app.Run();
 
 static IPolicyRegistry<string> ConfigurePolicies()
 {
-    // Retry policy with exponential backoff
+    // Retry three times, waiting longer before each attempt
     var defaultRetryPolicy = Policy
         .Handle<Exception>()
         .WaitAndRetryAsync(new[]
@@ -126,7 +130,10 @@ Polly supports many advanced resilience patterns:
 
 **Handle specific exceptions:**
 ```csharp
-// ...
+using System;
+using System.Net.Http;
+using Polly;
+
 var retryPolicy = Policy
     .Handle<HttpRequestException>()
     .Or<TimeoutException>()
@@ -136,7 +143,9 @@ var retryPolicy = Policy
 
 **Retry with callback:**
 ```csharp
-// ...
+using System;
+using Polly;
+
 var retryPolicy = Policy
     .Handle<Exception>()
     .WaitAndRetryAsync(
@@ -150,7 +159,9 @@ var retryPolicy = Policy
 
 **Circuit breaker with callbacks:**
 ```csharp
-// ...
+using System;
+using Polly;
+
 var circuitBreaker = Policy
     .Handle<Exception>()
     .CircuitBreakerAsync(
