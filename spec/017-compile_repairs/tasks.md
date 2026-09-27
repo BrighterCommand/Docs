@@ -1527,17 +1527,17 @@ and five of its six hard-only pages.
   7d04918..HEAD -- contents`), all on the tranche
 
 **Task 4.4 — the remaining outbox pages.** Three pages, and one off the tranche by ruling. **BUILT
-226 → 233** (+7): `AzureBlobArchiveProvider.md` #1, `UsingSweeperCircuitBreaking.md` #2–#5 and
-`SweeperCircuitBreaking.md` #2, #7. **One stays FAILED**,
-`ReplayOnSeenReference.md` #1, by P2-2 (§ *Blocks that stay FAILED*). `pagelint` **624 → 618**, the
-four `UsingSweeperCircuitBreaking.md` blocks that opened with `// ...` and the two
-`SweeperCircuitBreaking.md` blocks. Pages with nothing BUILT
+226 → 234** (+8): `AzureBlobArchiveProvider.md` #1, `UsingSweeperCircuitBreaking.md` #2–#5 and
+`SweeperCircuitBreaking.md` #2, #5, #7. **One stays FAILED**,
+`ReplayOnSeenReference.md` #1, by P2-2 (§ *Blocks that stay FAILED*). `pagelint` **624 → 616**, the
+four `UsingSweeperCircuitBreaking.md` blocks that opened with `// ...` and four
+`SweeperCircuitBreaking.md` blocks (#2, #5, #6, #7). Pages with nothing BUILT
 **58 → 57**, `AzureBlobArchiveProvider.md`; `ReplayOnSeenReference.md` stays among them.
 
-- **Said at 4.1:** a ceiling of **230** BUILT. **Measured: 233.** The ceiling left out 4.2's two
-  off-tranche recurrence blocks (`BrighterBasicConfiguration.md` #3, #4) and the two
+- **Said at 4.1:** a ceiling of **230** BUILT. **Measured: 234.** The ceiling left out 4.2's two
+  off-tranche recurrence blocks (`BrighterBasicConfiguration.md` #3, #4) and the three
   `SweeperCircuitBreaking.md` blocks repaired by ruling, and counted `TickerQScheduler.md` #2, which
-  stays FAILED on `Program`: 230 + 2 + 2 − 1 = 233
+  stays FAILED on `Program`: 230 + 2 + 3 − 1 = 234
 - **`UsingSweeperCircuitBreaking.md`.** #2, #3 take their `using`s, and the page's unit gains
   `services`, which block 1 takes as a parameter. #4, read with its `using`s, named a
   `CircuitBreakerState` no package or block declares, and shared a `Dictionary` between `TripTopic`
@@ -1590,19 +1590,48 @@ four `UsingSweeperCircuitBreaking.md` blocks that opened with `// ...` and the t
   InMemory Outbox and a producer that always throws. `CooldownCount = 2` → sends every **3 s**; `3` →
   every **4 s**. Controls: no breaker → every **1 s**; `CooldownCount = 0` → every **1 s**. Each sweep
   made 4 send attempts, Brighter's own send retry
-- **Found and not repaired, put to the maintainer:** the same page's #5 calls
-  `.UseMongoDbOutbox(…)` (`git grep UseMongoDbOutbox 10.7.0 -- src` → 0; `grep -rn` over `contents/`
-  → that line only), under *"Circuit breaking is fully integrated with MongoDB Outbox"*; and its
-  § 6 says immediate clearing is *"NOT subject to circuit breaking"* while § *Bulk Dispatch Support*
-  says `ClearOutboxAsync` *"respects circuit breaker state"*. Unverified which is right
+- **Then the page's two other falsehoods — maintainer's ruling, 2026-09-27: *"put them in this
+  PR"*.** Read against 10.7.0 and run:
+  - **Which Outboxes honour a trip.** #5 called `.UseMongoDbOutbox(…)` (`git grep` → 0) under
+    *"fully integrated with MongoDB Outbox"*, and the page said breaking *"works with all Brighter
+    Outbox implementations"*. The sweeper passes `TrippedTopics` to `OutstandingMessagesAsync`
+    (`OutboxProducerMediator.cs:735`) and each Outbox filters, or does not. **Run** against released
+    10.7.0 packages, net10.0, two messages (`orders`, `payments`), `OutstandingMessagesAsync` with
+    `orders` tripped and, as each store's own control, with none: **SQLite** → `[payments]`;
+    **MongoDB** (`mongo:7`) → `[payments]`; **DynamoDB** (`amazon/dynamodb-local`) → `[orders,payments]`;
+    **Spanner** (the emulator) → `[orders,payments]`; every control → both. Read: DynamoDB V3 and V4
+    take the parameter and never use it (`DynamoDbOutbox.cs:582`); Spanner's `PagedOutstandingCommand`
+    has no `{1}` for the `NOT IN` clause `RelationDatabaseOutbox` formats into it
+    (`SpannerQueries.cs:12`); MSSQL, MySQL and PostgreSQL carry the `{1}` and share SQLite's code;
+    Firestore and InMemory filter (`FirestoreOutbox.cs:901`, `InMemoryOutbox.cs:566`, and the
+    InMemory sweeper runs above). The section is now *Sweeper Circuit Breaking Outbox Support*, a
+    table of that, and #5 registers a MongoDB Outbox as `MongoDBOutbox.md` does — **it builds**.
+    **Upstream, not yet filed:** DynamoDB and Spanner ignoring `trippedTopics` is a Brighter defect
+  - **Explicit clearing.** § 6 said explicit clearing is *"NOT subject to circuit breaking"*; § *Bulk
+    Dispatch Support* said `ClearOutboxAsync` *"respects circuit breaker state"*, and that *"failed
+    batches can be retried individually per topic"*. **Run**, an InMemory Outbox, a producer that
+    always throws: a topic tripped beforehand → `ClearOutbox` and `ClearOutboxAsync` each still make
+    **4** send attempts; a fresh breaker → `ClearOutboxAsync` leaves `orders` **tripped**,
+    `ClearOutbox` leaves **none** (`DispatchAsync` trips on `!sent`, `Dispatch` only through a
+    publish-confirmation callback, `:984`). Neither section was right. § 6 now says both halves; §
+    *Bulk Dispatch Support* shows the sweeper's `UseBulk`, and says what it does — **run**: a bulk
+    sweeper, `TimerInterval = 1`, a batch producer that throws, `CooldownCount = 2` → batches every
+    **3 s**, 20 of 20 attempts through `SendAsync(IAmAMessageBatch)`; control, no breaker → every
+    **1 s**. The *"retried individually"* claim has nothing behind it in the source and is gone
+  - The page's step list said messages are *"grouped by topic"* on every sweep; only bulk groups.
+    Step 2 now says the tripped topics are passed to the Outbox. A troubleshooting item names the
+    two Outboxes that ignore them
+  - #6 no longer names `cancellationToken`, so the unit loses it (the unit rule's violation, read
+    from `--report`), and the page's five baselined rows are re-admitted at `a61893b` with #5
 - **Recurrence greps, all 0 beyond the repaired lines:** `AzCliCredential`, `BlobContainerUri *= *"`,
   `new AzureBlobArchiveProviderOptions()`, `MinimumAge *= *[0-9]`, `BatchSize` within eight lines of
   `UseOutboxArchiver`, an unshown `CircuitBreakerState`, `IDistributedCache` in code; the page's two
   breakers are the only `: IAmAnOutboxCircuitBreaker` in `contents/`
 - **`attr_mismatch.py` → 7**, before the baseline rows
-- **Baseline:** 5 rows at `2defac6`, 2 at `28b2d5f`. `--report` → exit **0**, *"983 blocks: 233
-  BUILT, 734 FAILED, 16 SKIPPED"*, baseline 233, 35 units, 0 violations, 0 findings. Joined on page
-  and ordinal against the report at `05fdeaf`, the 7 blocks that moved went `FAILED -> BUILT`, 983
+- **Baseline:** 5 rows at `2defac6`; `SweeperCircuitBreaking.md` #2, #7 at `28b2d5f`, then #5 and
+  the page's other four rows re-admitted at `a61893b`. `--report` → exit **0**, *"983 blocks: 234
+  BUILT, 733 FAILED, 16 SKIPPED"*, baseline 234, 35 units, 0 violations, 0 findings. Joined on page
+  and ordinal against the report at `05fdeaf`, the 8 blocks that moved went `FAILED -> BUILT`, 983
   keys both sides
 - `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
   `optioncheck` 0 mismatches across 59 tables, 519 rows; no `SUMMARY.md` change, so shape, redirects
@@ -2045,6 +2074,8 @@ BUILT, re-admitted at `ec38400`.
 | The Azure archive block, against 10.7.0: `New AzCliCredential();` in an initialiser — no such type (`AzureCliCredential`); `AzureBlobArchiveProviderOptions` built parameterless, its `init` properties assigned, `BlobContainerUri` a string (`CS7036`, `CS0029`); `UseOutboxArchiver` without `TTransaction`; `BatchSize` for `ArchiveBatchSize`; `MinimumAge = 744` for a `TimeSpan`; option assignments with no `options.` (`CS0103`) | `AzureBlobArchiveProviderOptions.cs`, `HostedServiceCollectionExtensions.cs:52`, `TimedOutboxArchiverOptions.cs`; compiled, control the old block | `AzureBlobArchiveProvider.md` #1 | the seven greps in § *Phase 4 as executed*, 4.4's entry | **1** block, 8 defects | **0** | 4.1 (six), 4.4 (two, compiling the control) |
 | The sweep interval set through `options.OutboxSweeper = new OutboxSweeperOptions { SweepInterval = … }` — no such type or property; it is `UseOutboxSweeper(o => o.TimerInterval = …)`, an `int` of seconds | `TimedOutboxSweeperOptions.cs`, `HostedServiceCollectionExtensions.cs:41`; compiled | `SweeperCircuitBreaking.md` #2, #7 and its formula | `grep -rnE 'SweepInterval\|OutboxSweeperOptions\b' contents/` (`Timed` excluded) | **3** lines | **0** | 4.4, reading `UsingSweeperCircuitBreaking.md`'s sibling; maintainer's ruling |
 | Cooldown time given as `CooldownCount × interval`, recovery *"when the cooldown reaches zero"* — a topic sits out `CooldownCount` sweeps and is retried on the next, `(CooldownCount + 1) × TimerInterval` | `InMemoryOutboxCircuitBreaker.cs` (removes below zero), `OutboxProducerMediator.cs:721`; run end to end, controls no breaker and `0` | `SweeperCircuitBreaking.md` (formula, example, #2, #7 comments, steps), `UsingSweeperCircuitBreaking.md` #2 | `grep -rnE '(^\|[^+] )[0-9]+ (sweeps )?× [0-9]+s\|total cooldown\|[Rr]ecover after [0-9]\|When the cooldown reaches zero' contents/`, at `05fdeaf` and after | **8** | **0** | 4.4, running the sweeper for the row above |
+| Circuit breaking said to work with every Outbox, and `.UseMongoDbOutbox(…)` — no such method. The DynamoDB (V3, V4) and Spanner Outboxes ignore `trippedTopics`, so a tripped topic is swept as normal | `DynamoDbOutbox.cs:582`, `SpannerQueries.cs:12`; run against DynamoDB Local and the Spanner emulator, controls SQLite and MongoDB — **upstream, not yet filed** | `SweeperCircuitBreaking.md` (section, #5, troubleshooting) | the next row's grep | **3** | **0** — the table states it | 4.4, maintainer's ruling |
+| Explicit clearing said both to ignore the breaker and to respect it, and failed batches to be *"retried individually per topic"*. An explicit clear sends a tripped topic's messages; a failed `ClearOutboxAsync` trips the topic, a failed `ClearOutbox` does not unless the producer confirms publication | `OutboxProducerMediator.cs:425`, `:1220`, `:984`; run, sync and async, pre-tripped and fresh | `SweeperCircuitBreaking.md` § 6, § *Bulk Dispatch Support* | `grep -rnE 'UseMongoDbOutbox\|fully integrated with MongoDB\|works automatically with MongoDB\|works with all Brighter Outbox\|NOT subject to circuit breaking\|respects circuit breaker state\|retried individually per topic' contents/`, at `05fdeaf` and after — this row and the one above | **4** | **0** | 4.4, maintainer's ruling |
 
 ## Friction ledger
 
