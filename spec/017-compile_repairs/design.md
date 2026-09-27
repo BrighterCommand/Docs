@@ -318,10 +318,12 @@ python3 spec/017-compile_repairs/probe/tranches.py <work-dir>
 ```
 
 **Tranche 1 — the 35 pages with no hard block.** 88 blocks reachable by `using`s and stubs; 21
-tutorial blocks stay FAILED as same-page. Largest first: `RequestValidation.md` (14 reachable),
-`BoxProvisioningConfiguration.md` (9), `TickerQScheduler.md` (6), `ErrorHandlingOptions.md`,
-`QueryResultTypes.md`, `AnalyzerSupport.md` (6 each); the full list is
-`awk -F'\t' '$6+$7==0' $TMPDIR/probe/pages.tsv` over E1's output.
+tutorial blocks stay FAILED as same-page. Largest by FAILED blocks: `RequestValidation.md` (14, of
+which 8 reachable), `BoxProvisioningConfiguration.md` (9), `TickerQScheduler.md`,
+`ErrorHandlingOptions.md`, `QueryResultTypes.md` (6 each), `AnalyzerSupport.md` (5); the full list
+is `awk -F'\t' '$6+$7==0' $TMPDIR/probe/pages.tsv` over E1's output. **The page lists the phases
+work from are `tasks.md` § *The tranches***, fixed against the committed pin, where `Order` from
+`StackExchange.Redis` is read as the page type it is and the tranches are 37 / 38.
 
 **Tranche 2 — the 40 pages with exactly one hard block.** 72 more reachable blocks and 40 judgements.
 

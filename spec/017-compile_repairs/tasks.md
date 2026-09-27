@@ -84,7 +84,7 @@ same probe. The second method for the total is `--report`: the five classes sum 
 FAILED count. The tranche lists get their second method at task 1.10, from `--classify`.
 
 **The tranche membership differs with the pin**, and not only at the edges: **`RequestValidation.md`
-— design tranche 1's largest page, 14 reachable blocks — is absent at the committed pin**, because
+— design tranche 1's largest page, 14 FAILED blocks — is absent at the committed pin**, because
 its blocks wait on the three Validation packages phase 1 adds. So the page lists for phases 2–5 are
 **fixed by task 1.10, against the pin phase 1 commits**, and not quoted here as final. The split
 *by `SUMMARY.md` section* is what this file commits to; which pages fall in each section is 1.10's
@@ -109,7 +109,7 @@ pages: `--classify` and the grown pin are what fix the tranche lists (§ 2), and
 be enforced before a tranche writes the first stub it would check. So phase 1 carries every
 instrument and no page; phases 2–5 are one tranche-half each, split by `SUMMARY.md` section so that
 a reviewer reads related pages together (design § *Phases*). **Tranche 2 is split by where its pages
-are, not in half**: at the committed pin 22 of its 34 pages are in *Outbox and Inbox*, and they
+are, not in half**: at the committed pin 22 of its 38 pages are in *Outbox and Inbox*, and they
 share one scaffold world.
 
 **No phase depends on an unmerged one.** Phase 1's unit rule must be on `master` before phase 2
@@ -216,7 +216,7 @@ Predicted*).
     first excluding nothing; `grep -cF '^(\./)?spec/' tools/README.md` → ≥ 1
   - Notes: `--list-skips`'s own instrument is 1.4's.
 
-- [ ] **Task 1.10:** Fix the tranche page lists against the committed pin
+- [x] **Task 1.10:** Fix the tranche page lists against the committed pin
   - Input: 1.8's pin; `probe/pages.py`, `stubs.py`, `tranches.py` with `REFS` at the new
     `refs.txt`; `--classify`; `SUMMARY.md`'s `##` sections; § 2 above
   - Output: § *The tranches* in this file — one table per phase 2–5, one row per page: section,
@@ -443,6 +443,18 @@ supply a type a page names and never shows (P0-3). Rewritten to cite `pages.tsv`
 | `grep -cF '^(\./)?spec/' tools/README.md` | **0** on `master` | **1** |
 | The same AC13 count after the edit — the new table must not add a copy of the figure | — | **1** (the table says *"the BUILT figure"*, not the figure) |
 | `python3 tools/linkcheck.py` | — | exit **0**, 165 files |
+
+**Task 1.10 — the tranches.** § *The tranches* holds the lists, the reconciliation and the two
+methods. Four facts from it bind later phases: **phase 2 carries P1-3** (`args`, 4 of its blocks);
+**phase 4 asks for `Npgsql.EntityFrameworkCore.PostgreSQL`** (`PostgresOutbox.md` #3); **no P0-7
+page is in a tranche**, so phase 5 keeps them all; and **`--classify` reads `Order` as an import**.
+
+That last one is an instrument defect, found here and not repaired. 1.8's pin added
+`StackExchange.Redis`, whose `enum Order` now satisfies *import* for **27 FAILED blocks on 16 pages** (none declares it) that name a
+domain `Order` their page never shows. `--classify`'s rule has no way to tell a pinned name
+from a page's own type that happens to share it. **Put to the maintainer with the PR:** repair
+`--classify` in phase 1, or leave it and have each phase read `Order` as a page type, as
+§ *The tranches* does.
 
 ## Phase 2 — Tranche 1a *(6 tasks, one PR, CHANGES THE SITE)*
 
@@ -684,7 +696,203 @@ against itself prints **0** lines; against a copy with `Telemetry.md#1` flipped 
 
 ## The tranches
 
-*Written by task 1.10.*
+**Fixed by task 1.10, 2026-09-27, against the pin 1.8 committed (`23aa74f`).** Regenerate with:
+
+```bash
+bash spec/017-compile_repairs/probe/run.sh $W
+awk -F'\t' '!($1=="type" && $2=="Order" && $3=="StackExchange.Redis")' $W/types.tsv > t && mv t $W/types.tsv
+python3 spec/017-compile_repairs/probe/pages.py $W $W/r.tsv
+python3 spec/017-compile_repairs/probe/stubs.py $W
+python3 spec/017-compile_repairs/probe/tranches.py $W
+python3 tools/blockcheck.py --classify > $W/c.tsv; echo $?                  # 0
+```
+
+and a join of `$W/verdicts.tsv`, `$W/stubs.tsv` and `$W/r.tsv` per page, each page's section being
+the `SUMMARY.md` `##` it is listed under. **Hard** is PARSE + DEFECT. **Reachable** is BUILT by a
+`using` or an empty stub, plus MEMBERS and HIDDEN: the blocks a `using` and a stub can reach.
+**Same-page** stays FAILED by rule. *BUILT now* is the page's rows in `--report` today.
+
+**The `awk` line removes one row, and the tables depend on it.** 1.8's pin brought in
+`StackExchange.Redis`, which ships `enum Order`. **27 FAILED blocks** name an `Order` their page
+never declares — a domain type, P0-3's kind. The probe resolves it to the Redis enum, adds `using
+StackExchange.Redis;`, and reports the error that follows as a DEFECT. Without the line the probe
+reads **35 / 40**; with it, **37 / 38**. The two pages that move are `SchedulingAMessage.md` #1
+(*"'Order' does not contain a definition for 'ProcessSchedulerId'"*) and `TestingQueryHandlers.md`
+#1 (*"'Order' does not contain a definition for 'Id'"*), each the page's one hard block. With
+`Order` excluded, both are 0-hard. **`--classify` has the same blind spot**: it puts both blocks
+in *import* on `Order`, so a phase that follows it would add the Redis `using`. That goes to the
+maintainer with the PR (§ *Phase 1 as executed*, 1.10). A repair phase reads `Order` as a
+page-type name wherever its page does not import `StackExchange.Redis` for a reason.
+
+| Figure | Design (E2 pin) | § 2 (pin at `c7329bb`) | Now, `Order` excluded |
+|---|---:|---:|---:|
+| Tranche 1 pages (0 hard) / tranche 2 pages (exactly 1) | 35 / 40 | 34 / 34 | **37 / 38** |
+| Tranche 1 reachable / same-page | 88 / 21 | — | **100 / 21** |
+| Tranche 2 reachable / hard | 72 / 40 | — | **62 / 38** |
+| Pages with nothing BUILT; of those, in a tranche with ≥ 1 reachable block; of those, reachable by a `using` or empty stub alone | 97; 43; 25 | — | **97; 43; 25** |
+
+**Reconciled against § 2**, by running the probe again in a worktree at `master` `0e1eae9`, whose
+pin predates 1.8. It reads **34 / 68**, § 2's figures. By page, the grown pin:
+
+| Page | § 2 | Now | Why |
+|---|---|---|---|
+| `RequestValidation.md` | — | tranche 1 | #4, #7, #8, #10 DEFECT → STUB: `DataAnnotations` and the Validation packages resolve |
+| `PaginationQueryPatterns.md` | — | tranche 1 | #2, #4 DEFECT → STUB: EF Core (`DbContext`, `ToListAsync`, `CountAsync`) |
+| `TestingQueryHandlers.md` | — | tranche 1 | #2, #3 DEFECT → STUB: xunit (`[Fact]`, `Assert`) and EF Core |
+| `AggregationQueryPatterns.md`, `ParameterizedQueryPatterns.md`, `ProjectionQueryPatterns.md`, `QueryHandlerDependencies.md` | — | tranche 2 | DEFECT → STUB on EF Core blocks, one hard block left each |
+| `SchedulingAMessage.md` | tranche 1 | tranche 1 | unmoved once `Order` is excluded; tranche 2 if it is not |
+
+34 + 3 = **37**; 34 + 4 = **38**. The design's 35 / 40 is what the committed pin reads when `Order`
+is counted as a defect. E2 carried `Hangfire.Redis.StackExchange` (design § *E2*) and so the same
+enum, which means the design's figures carry the same misreading.
+
+**The ≤ 60 target stands:** 97 − 60 = 37 of the 43 reachable pages must gain a BUILT block — 24 in
+tranche 1, 19 in tranche 2. Pages with nothing BUILT: the FAILED pages in `r.tsv`
+(`awk -F'\t' '$1=="FAILED"{print $2}' | sort -u`, **140**) less those with a BUILT row → **97**.
+
+**Two methods agree.** Block by block over all 872 FAILED blocks, `--classify`'s class against the
+probe's verdict, keys identical:
+
+| `--classify` | probe | Blocks |
+|---|---|---:|
+| parse | PARSE | **175**, every block of both |
+| other | DEFECT | **15**, every *other* is a DEFECT |
+| import | DEFECT | **162**: a missing `using` stops the compiler before the defect, and the probe supplies the `using` and sees it |
+| import / page-type / values / same-page | STUB or BUILT | 520 |
+
+So `--classify`'s hard count (`parse` + `other`) is never above the probe's, on any of the 140
+pages. On the 75 tranche pages it agrees with the probe on all **37** of tranche 1, and on **22** of
+tranche 2. The other **16** read 0 in `--classify` and 1 in the probe, each through one
+*import* → DEFECT block. The tranche lists are therefore the probe's, with `--classify` as their
+lower bound: **a phase that repairs an *import* block should expect a defect behind it.**
+
+**The § 3 split stands.** No section is empty. *Outbox and Inbox* holds 22 of tranche 2's 38
+pages, which is what phase 4 was designed for.
+
+**The P0-7 pages fall in no tranche.** Over the 75 pages, `grep -c` for `HowServiceActivatorWorks`,
+`PipelineValidation`, `PolicyRetryAndCircuitBreaker`, `ReactorAndProactor`, `V10MigrationGuide`
+(E4; `attr_mismatch.py` → **7**, exit 1, unchanged), `InMemoryScheduler` and
+`CQRSWithBrighterAndDarker` → **0** each. Their repairs stay in phase 5.
+
+**P1-3's trigger, `args`.** `python3 tools/blockcheck.py --explain` over the 223 FAILED blocks on
+tranche pages (exit 0, *"223 blocks explained, 1197 diagnostics"*), then `grep -F "'args'"` →
+**11 blocks on 8 pages**, each `CS0103 The name 'args' does not exist`. The same grep over all 872
+FAILED blocks → **36**, 1.3's figure. **Phase 2 holds the first, so phase 2 carries P1-3:**
+
+| Phase | Blocks naming `args` |
+|---:|---|
+| 2 | `TutorialFirstMessage.md` #2, #4; `TutorialStreamingWithKafka.md` #1, #2 |
+| 3 | `GcpPubSubConfiguration.md` #1, `MQTTConfiguration.md` #1, `MSSQLMessageBroker.md` #1, `RedisConfiguration.md` #1, `RocketMQConfiguration.md` #1, `QueryPipelinePolicies.md` #1, `TickerQScheduler.md` #1 |
+
+**`UseNpgsql` reaches phase 4.** `PostgresOutbox.md` is in tranche 2. Its one hard block, #3, reads
+`CS1061 'DbContextOptionsBuilder' does not contain a definition for 'UseNpgsql'` once the probe's
+`using`s are supplied, beside a `CS0116` shape error. Adding `Npgsql.EntityFrameworkCore.PostgreSQL`
+to the pin goes to the maintainer in phase 4's PR (1.8). `HangfireScheduler.md` is in no tranche.
+
+**Said, by design § *Target And Tranches*:** *"`RequestValidation.md` (14 reachable) …
+`AnalyzerSupport.md` (6 each)"*. **Measured:** those are FAILED counts, not reachable ones.
+`RequestValidation.md` is 14 FAILED: 8 reachable and 6 same-page. `AnalyzerSupport.md` has **5**
+FAILED blocks, unchanged since `c7329bb`, since no verdict moved in phase 1. The design's sentence
+is rewritten against the tables below.
+
+### Phase 2 — tranche 1a — 17 pages
+
+| Section | Page | FAILED now | Reachable | Same-page | Hard | BUILT now |
+|---|---|---:|---:|---:|---:|---:|
+| Get Started | `TutorialDurableOutbox.md` | 2 | 0 | 2 | 0 | 1 |
+| Get Started | `TutorialFirstCommand.md` | 2 | 0 | 2 | 0 | 1 |
+| Get Started | `TutorialFirstMessage.md` | 3 | 0 | 3 | 0 | 1 |
+| Get Started | `TutorialStreamingWithKafka.md` | 2 | 2 | 0 | 0 | 0 |
+| Commands, Handlers and Pipelines | `BuildingAnAsyncPipeline.md` | 2 | 0 | 2 | 0 | 1 |
+| Commands, Handlers and Pipelines | `ImplementingAHandler.md` | 2 | 1 | 1 | 0 | 0 |
+| Commands, Handlers and Pipelines | `ImplementingAsyncHandler.md` | 2 | 1 | 1 | 0 | 0 |
+| Commands, Handlers and Pipelines | `RequestValidation.md` | 14 | 8 | 6 | 0 | 2 |
+| Commands, Handlers and Pipelines | `ReturningResultsFromAHandler.md` | 1 | 1 | 0 | 0 | 0 |
+| Brighter Configuration | `AnalyzerSupport.md` | 5 | 5 | 0 | 0 | 3 |
+| Brighter Configuration | `RelationalDatabaseConfigurationReference.md` | 1 | 1 | 0 | 0 | 0 |
+| Using an External Bus | `ClaimCheck.md` | 2 | 2 | 0 | 0 | 1 |
+| Using an External Bus | `Compression.md` | 2 | 2 | 0 | 0 | 0 |
+| Using an External Bus | `ErrorHandlingOptions.md` | 6 | 6 | 0 | 0 | 0 |
+| Using an External Bus | `HandlingLargeMessages.md` | 4 | 3 | 1 | 0 | 0 |
+| Using an External Bus | `HandlingPoisonMessages.md` | 3 | 3 | 0 | 0 | 3 |
+| Health Checks and Observability | `HealthChecks.md` | 1 | 1 | 0 | 0 | 0 |
+| **Total** | **17 pages** | **54** | **36** | **18** | **0** | **13** |
+
+### Phase 3 — tranche 1b — 20 pages
+
+| Section | Page | FAILED now | Reachable | Same-page | Hard | BUILT now |
+|---|---|---:|---:|---:|---:|---:|
+| Transports | `GcpPubSubConfiguration.md` | 1 | 1 | 0 | 0 | 0 |
+| Transports | `InMemoryTransport.md` | 4 | 4 | 0 | 0 | 0 |
+| Transports | `MQTTConfiguration.md` | 1 | 1 | 0 | 0 | 0 |
+| Transports | `MSSQLMessageBroker.md` | 1 | 1 | 0 | 0 | 0 |
+| Transports | `MSSQLTransportInboxAndOutbox.md` | 4 | 4 | 0 | 0 | 6 |
+| Transports | `PostgreSQLTransportAndOutbox.md` | 3 | 3 | 0 | 0 | 4 |
+| Transports | `RabbitMQMigrateToQuorumQueues.md` | 1 | 1 | 0 | 0 | 0 |
+| Transports | `RedisConfiguration.md` | 1 | 1 | 0 | 0 | 0 |
+| Transports | `RocketMQConfiguration.md` | 1 | 1 | 0 | 0 | 0 |
+| Outbox and Inbox | `BoxProvisioningConfiguration.md` | 9 | 9 | 0 | 0 | 0 |
+| Outbox and Inbox | `DistributedLock.md` | 2 | 2 | 0 | 0 | 0 |
+| Outbox and Inbox | `DynamoDbDistributedLock.md` | 2 | 2 | 0 | 0 | 0 |
+| Outbox and Inbox | `TransactionalMessagingWithTheOutbox.md` | 2 | 2 | 0 | 0 | 0 |
+| Scheduler | `SchedulingAMessage.md` | 9 | 9 | 0 | 0 | 0 |
+| Scheduler | `TickerQScheduler.md` | 6 | 6 | 0 | 0 | 2 |
+| Darker | `PaginationQueryPatterns.md` | 3 | 0 | 3 | 0 | 1 |
+| Darker | `QueryObjectValidation.md` | 3 | 3 | 0 | 0 | 0 |
+| Darker | `QueryPipelinePolicies.md` | 5 | 5 | 0 | 0 | 1 |
+| Darker | `QueryResultTypes.md` | 6 | 6 | 0 | 0 | 0 |
+| Darker | `TestingQueryHandlers.md` | 3 | 3 | 0 | 0 | 0 |
+| **Total** | **20 pages** | **67** | **64** | **3** | **0** | **14** |
+
+### Phase 4 — tranche 2a — 22 pages
+
+| Section | Page | FAILED now | Reachable | Same-page | Hard | BUILT now |
+|---|---|---:|---:|---:|---:|---:|
+| Outbox and Inbox | `AzureBlobArchiveProvider.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `AzureBlobDistributedLock.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `DapperOutbox.md` | 1 | 0 | 0 | 1 | 1 |
+| Outbox and Inbox | `DynamoInbox.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `DynamoOutbox.md` | 2 | 1 | 0 | 1 | 2 |
+| Outbox and Inbox | `FirestoreDistributedLock.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `InMemoryInbox.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `InMemoryOutbox.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `MSSQLInbox.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `MSSQLOutbox.md` | 2 | 1 | 0 | 1 | 1 |
+| Outbox and Inbox | `MongoDbDistributedLock.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `MsSqlDistributedLock.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `MySQLInbox.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `MySQLOutbox.md` | 3 | 2 | 0 | 1 | 0 |
+| Outbox and Inbox | `MySqlDistributedLock.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `PostgresDistributedLock.md` | 2 | 1 | 0 | 1 | 0 |
+| Outbox and Inbox | `PostgresInbox.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `PostgresOutbox.md` | 2 | 1 | 0 | 1 | 1 |
+| Outbox and Inbox | `ReplayOnSeenReference.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `SqliteInbox.md` | 1 | 0 | 0 | 1 | 0 |
+| Outbox and Inbox | `SqliteOutbox.md` | 3 | 2 | 0 | 1 | 0 |
+| Outbox and Inbox | `UsingSweeperCircuitBreaking.md` | 4 | 3 | 0 | 1 | 1 |
+| **Total** | **22 pages** | **40** | **18** | **0** | **22** | **6** |
+
+### Phase 5 — tranche 2b — 16 pages
+
+| Section | Page | FAILED now | Reachable | Same-page | Hard | BUILT now |
+|---|---|---:|---:|---:|---:|---:|
+| Commands, Handlers and Pipelines | `AgreementDispatcherRouting.md` | 11 | 10 | 0 | 1 | 0 |
+| Commands, Handlers and Pipelines | `BuildingAPipeline.md` | 4 | 3 | 0 | 1 | 0 |
+| Using an External Bus | `CloudEventsReference.md` | 4 | 3 | 0 | 1 | 0 |
+| Using an External Bus | `S3LuggageStore.md` | 2 | 1 | 0 | 1 | 0 |
+| Transports | `BrighterControlAPI.md` | 1 | 0 | 0 | 1 | 0 |
+| Transports | `PostgreSQLBrokerTradeOffs.md` | 1 | 0 | 0 | 1 | 0 |
+| Transports | `PostgreSQLMessageBroker.md` | 12 | 11 | 0 | 1 | 1 |
+| Darker | `AggregationQueryPatterns.md` | 3 | 2 | 0 | 1 | 0 |
+| Darker | `DarkerAndBrighterPipelines.md` | 1 | 0 | 0 | 1 | 0 |
+| Darker | `DarkerConfigurationReference.md` | 4 | 3 | 0 | 1 | 0 |
+| Darker | `ParameterizedQueryPatterns.md` | 4 | 1 | 2 | 1 | 2 |
+| Darker | `ProjectionQueryPatterns.md` | 3 | 2 | 0 | 1 | 1 |
+| Darker | `QueryHandlerDependencies.md` | 4 | 3 | 0 | 1 | 0 |
+| Health Checks and Observability | `Telemetry.md` | 3 | 2 | 0 | 1 | 2 |
+| Understanding Brighter | `CQRSUseCasesAndPatterns.md` | 2 | 1 | 0 | 1 | 0 |
+| Understanding Brighter | `HowConfiguringTheDispatcherWorks.md` | 3 | 2 | 0 | 1 | 0 |
+| **Total** | **16 pages** | **62** | **44** | **2** | **16** | **6** |
 
 ## Blocks that stay FAILED
 
