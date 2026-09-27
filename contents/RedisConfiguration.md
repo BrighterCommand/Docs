@@ -110,6 +110,7 @@ defaults `messagePumpType` to `Proactor`, where the non-generic form requires it
 ## Redis Configuration Example
 
 ```csharp
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Paramore.Brighter;

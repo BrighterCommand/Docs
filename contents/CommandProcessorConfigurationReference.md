@@ -219,6 +219,7 @@ public void ConfigureServices(IServiceCollection services)
                     new RmqPublication
                     {
                         Topic = new RoutingKey("GreetingMade"),
+                        RequestType = typeof(GreetingMade),
                         MakeChannels = OnMissingChannel.Create
                     }
                 }
@@ -541,6 +542,7 @@ var producerRegistry = new RmqProducerRegistryFactory(
         new RmqPublication
         {
             Topic = new RoutingKey("GreetingMade"),
+            RequestType = typeof(GreetingMade),
             WaitForConfirmsTimeOutInMilliseconds = 1000,
             MakeChannels = OnMissingChannel.Create
         }
@@ -570,6 +572,7 @@ public void ConfigureServices(IServiceCollection services)
                     new RmqPublication
                 {
                     Topic = new RoutingKey("GreetingMade"),
+                    RequestType = typeof(GreetingMade),
                     WaitForConfirmsTimeOutInMilliseconds = 1000,
                     MakeChannels = OnMissingChannel.Create
                 }}

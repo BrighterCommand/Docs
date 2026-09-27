@@ -43,6 +43,12 @@ When writing tests, you can use Brighter's `Func<IServiceProvider, T>` overloads
 **Using PostConfigure for Test Overrides**
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Observability;
+
 public class MyTests
 {
     private ServiceProvider BuildTestServiceProvider()
@@ -58,10 +64,10 @@ public class MyTests
         {
             options.ProducerRegistry = new InMemoryProducerRegistryFactory(
                 internalBus,
-                new[] { new Publication { Topic = new RoutingKey("TestTopic") } },
+                new[] { new Publication { Topic = new RoutingKey("PersonCreated"), RequestType = typeof(PersonCreated) } },
                 InstrumentationOptions.All
             ).Create();
-            options.Outbox = new InMemoryOutbox();
+            options.Outbox = new InMemoryOutbox(TimeProvider.System);
         })
         .AutoFromAssemblies();
 

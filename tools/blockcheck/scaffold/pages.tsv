@@ -59,3 +59,10 @@ contents/ClaimCheck.md	ClaimCheckContext	-
 contents/Compression.md	CompressionContext	-
 contents/ErrorHandlingOptions.md	ErrorHandlingOptionsContext	-
 contents/HandlingLargeMessages.md	HandlingLargeMessagesContext	-
+contents/InMemoryTransport.md	InMemoryTransportContext	-
+contents/GcpPubSubConfiguration.md	TransportConfigurationContext	-
+contents/MQTTConfiguration.md	TransportConfigurationContext	-
+contents/MSSQLMessageBroker.md	TransportConfigurationContext	-
+contents/RedisConfiguration.md	TransportConfigurationContext	-
+contents/RocketMQConfiguration.md	TransportConfigurationContext	-
+contents/AWSSQSConfiguration.md	TransportConfigurationContext	-

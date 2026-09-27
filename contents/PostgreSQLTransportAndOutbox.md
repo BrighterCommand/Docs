@@ -151,6 +151,7 @@ builder.Services
 The consumer reads from the same queue store table. Note the order: `AddConsumers` extends `IServiceCollection`, while `AddProducers` extends the builder it returns, so a consumer registration comes first and everything else chains off it.
 
 ```csharp
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
 using Paramore.Brighter.MessagingGateway.Postgres;

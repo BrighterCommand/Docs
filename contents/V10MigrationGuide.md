@@ -438,10 +438,15 @@ V10 adds full Cloud Events specification support.
 1. **Update Publication** to include Cloud Events properties:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 new RmqPublication
 {
     Topic = new RoutingKey("PersonCreated"),
-    CloudEventsType = new CloudEventsType("io.paramore.person.created"),
+    RequestType = typeof(PersonCreated),
+    Type = new CloudEventsType("io.paramore.person.created"),
     Source = new Uri("https://api.example.com/persons"),
     Subject = "person/created",
     MakeChannels = OnMissingChannel.Create
@@ -464,7 +469,7 @@ public class PersonCreatedMapper : IAmAMessageMapper<PersonCreated>
             messageId: request.Id,
             topic: publication.Topic,
             messageType: MessageType.MT_EVENT,
-            type: publication.CloudEventsType,  // Use Cloud Events type
+            type: publication.Type,  // Use Cloud Events type
             source: publication.Source,
             subject: publication.Subject
         );
@@ -648,7 +653,7 @@ services.AddConsumers(options =>
 })
 .AddProducers(options =>
 {
-    var publication = new Publication { Topic = new RoutingKey("TestTopic") };
+    var publication = new Publication { Topic = new RoutingKey("GreetingEvent"), RequestType = typeof(GreetingEvent) };
     options.ProducerRegistry = new InMemoryProducerRegistryFactory(
         internalBus,
         new[] { publication },

@@ -66,7 +66,7 @@ public void ConfigureServices(IServiceCollection services)
                 new AWSMessagingGatewayConnection(credentials, region),
                 new SnsPublication[]
                 {
-                    new SnsPublication { Topic = new RoutingKey("greeting.event") }
+                    new SnsPublication { Topic = new RoutingKey("greeting.event"), RequestType = typeof(GreetingEvent) }
                 }
             ).Create();
         });
@@ -195,6 +195,7 @@ public void ConfigureServices(IServiceCollection services)
                     new SnsPublication
                     {
                         Topic = new RoutingKey("my-fifo-topic.fifo"),
+                        RequestType = typeof(GreetingEvent),
                         FindTopicBy = TopicFindBy.Convention,
                         MakeChannels = OnMissingChannel.Create,
                         TopicAttributes = new SnsAttributes(type: SqsType.Fifo, contentBasedDeduplication: true)
@@ -247,6 +248,8 @@ public void ConfigureServices(IServiceCollection services)
                 {
                     // The queue name is used as the routing key
                     Topic = new RoutingKey("my-greeting-queue"),
+                    // How Brighter finds this publication when you post a GreetingEvent
+                    RequestType = typeof(GreetingEvent),
                     // Explicitly set to find by name (this is the default)
                     FindQueueBy = QueueFindBy.Name,
                     // Whether to create the queue if it doesn't exist
@@ -294,6 +297,8 @@ public void ConfigureServices(IServiceCollection services)
                 {
                     // The routing key is used for producer registry lookup
                     Topic = new RoutingKey("greeting-events"),
+                    // How Brighter finds this publication when you post a GreetingEvent
+                    RequestType = typeof(GreetingEvent),
                     
                     // Set to find by URL
                     FindQueueBy = QueueFindBy.Url,
@@ -314,7 +319,7 @@ When using this configuration, Brighter will use the URL provided in the `Channe
 
 ### SQS attributes
 
-This property allows you to pass an instance of `SqsAttributes` which contains properties representing the attributes used when creating an SQS Queue. These are only used if you are creating a queue.
+The `QueueAttributes` property takes an instance of `SqsAttributes`, which contains properties representing the attributes used when creating an SQS Queue. These are only used if you are creating a queue.
 
 *   **DelaySeconds**: The length of time for which the delivery of all messages in the queue is delayed. The default is 0 seconds, with a maximum of 15 minutes.
 *   **MessageRetentionPeriod**: The length of time for which Amazon SQS retains a message. The default is 4 days, with a range from 60 seconds to 14 days.
@@ -330,12 +335,18 @@ This property allows you to pass an instance of `SqsAttributes` which contains p
 *   **TimeOut**: The long-polling duration for receiving messages. This is the `ReceiveMessageWaitTimeSeconds`. The default is 0 seconds (short polling), with a maximum of 20 seconds.
 
 ``` csharp
+using System;
+using System.Collections.Generic;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 var sqsPublication = new SqsPublication
 {
     Topic = new RoutingKey("my-fifo-queue.fifo"),
+    RequestType = typeof(GreetingEvent),
     FindQueueBy = QueueFindBy.Name,
     MakeChannels = OnMissingChannel.Create,
-    SqsAttributes = new SqsAttributes( 
+    QueueAttributes = new SqsAttributes( 
         lockTimeout: TimeSpan.FromMinutes(2),
         messageRetentionPeriod: TimeSpan.FromDays(1),
         tags: new Dictionary<string, string>

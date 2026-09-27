@@ -92,6 +92,7 @@ public void ConfigureServices(IServiceCollection services)
                     new RmqPublication
                 {
                     Topic = new RoutingKey("GreetingMade"),
+                    RequestType = typeof(GreetingMade),
                     WaitForConfirmsTimeOutInMilliseconds = 1000,
                     MakeChannels = OnMissingChannel.Create
                 }}
