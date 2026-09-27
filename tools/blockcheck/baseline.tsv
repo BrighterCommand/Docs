@@ -239,3 +239,15 @@ contents/SqliteInbox.md	1	RelationalInboxContext.cs	a8ede7c
 contents/SqliteOutbox.md	1	RelationalOutboxContext.cs	a8ede7c
 contents/SqliteOutbox.md	2	RelationalOutboxContext.cs	a8ede7c
 contents/SqliteOutbox.md	3	RelationalOutboxContext.cs	a8ede7c
+contents/AzureBlobDistributedLock.md	1	DistributedLockProviderContext.cs	b8f21ac
+contents/AzureBlobDistributedLock.md	2	DistributedLockProviderContext.cs	b8f21ac
+contents/FirestoreDistributedLock.md	1	DistributedLockProviderContext.cs	b8f21ac
+contents/FirestoreDistributedLock.md	2	DistributedLockProviderContext.cs	b8f21ac
+contents/MongoDbDistributedLock.md	1	DistributedLockProviderContext.cs	b8f21ac
+contents/MongoDbDistributedLock.md	2	DistributedLockProviderContext.cs	b8f21ac
+contents/MsSqlDistributedLock.md	1	DistributedLockProviderContext.cs	b8f21ac
+contents/MsSqlDistributedLock.md	2	DistributedLockProviderContext.cs	b8f21ac
+contents/MySqlDistributedLock.md	1	DistributedLockProviderContext.cs	b8f21ac
+contents/MySqlDistributedLock.md	2	DistributedLockProviderContext.cs	b8f21ac
+contents/PostgresDistributedLock.md	1	DistributedLockProviderContext.cs	b8f21ac
+contents/PostgresDistributedLock.md	2	DistributedLockProviderContext.cs	b8f21ac
