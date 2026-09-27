@@ -232,7 +232,7 @@ Predicted*).
     unless a section is empty or holds most of a tranche; either is recorded and the split redrawn
     here, not in a later phase.
 
-- [ ] **Task 1.11:** Run the nine gates, reconcile phase 1, open the PR
+- [x] **Task 1.11:** Run the nine gates, reconcile phase 1, open the PR
   - Input: 1.1's prediction; `tools/README.md` rows 1–9
   - Output: § *Phase 1 as executed* closes with each gate's exit code and figure against its
     prediction; the PR open, green, no page under `contents/` in `git diff --name-only master`
@@ -456,6 +456,31 @@ from a page's own type that happens to share it. **Ruled by the maintainer, 2026
 `--classify` is not repaired.** Every repair phase reads `Order` as a type the page never shows, as
 § *The tranches* does. On those 27 blocks an *import* row naming `Order` is a page-type name, and it
 is never answered with `using StackExchange.Redis;`.
+
+**Task 1.11 — phase 1 closed, 2026-09-27, branch at `bfb1009`.** Every gate run bare, exit code
+read before its output:
+
+| # | Gate | Exit | Read | Predicted (1.1) | Agrees? |
+|---:|---|---:|---|---|---|
+| 1 | `linkcheck` | 0 | 165 files, 0 broken | none | **yes** |
+| 2 | `pagelint` | 0 | 0 errors, 743 warnings, 162 pages | none | **yes** |
+| 3 | shape | 0 | 161 pages, 12 sections, widest 12 of 20, deepest 4 of 4 | none | **yes** |
+| 4 | redirects | 0 | 77 entries, 7858 bytes | none | **yes** |
+| 5 | `versioncheck` | 0 | 0 stale of 18, across 5 pages | none | **yes** |
+| 6 | `optioncheck` | 0 | 0 mismatches, 59 tables, 519 rows | none | **yes** |
+| 7 | `--verify` | 0 | 161 predicted = 161 published | none | **yes** |
+| 8 | `symbolcheck` | 0 | 0 findings, 22 entries, 161 pages, 3 silenced | none | **yes** |
+| 9 | `blockcheck` | 0 | 989: 101 BUILT, 872 FAILED, 16 SKIPPED; 0 findings; **538** reference assemblies; 14 units, **0 violations**; 15 pages mapped | counts unchanged; 501 → 538; 14 units, exit 0 | **yes** |
+
+**AC2, against a `before.tsv` regenerated from `c7329bb` in a worktree** (exit 0, *"501 reference
+assemblies"*, *"989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED"*, 989 rows): the `awk` diff against
+the branch's report prints **0** lines. **Control:** the same diff over a copy with
+`AWSSQSConfiguration.md` #1 flipped prints exactly `BUILT -> FAILED contents/AWSSQSConfiguration.md 1`.
+
+**No page changed:** `git diff --name-only master | grep -c '^contents/'` → **0**. The diff is eight
+files, all under `tools/` and `spec/017-compile_repairs/`. Phase 1 moved no gate figure, as
+predicted. What it changed is the scope of gate 9 (the pin and the unit rule), and that is
+recorded in `tools/README.md` row 9.
 
 ## Phase 2 — Tranche 1a *(6 tasks, one PR, CHANGES THE SITE)*
 
