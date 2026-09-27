@@ -195,7 +195,7 @@ Predicted*).
     states rules 1–4 in place of "no domain type"; `--report` → exit **0** with the unit rule on
   - Notes: same PR as 1.6 — otherwise 1.6 turns `master` red (`tools/README.md` rule 3).
 
-- [ ] **Task 1.8:** Grow the pin, measured alone
+- [x] **Task 1.8:** Grow the pin, measured alone
   - Input: `design.md` § *E2* and § *Phases* (the package list, less Jaeger by D2, less the AWS V4
     family by D3, plus the five Brighter packages); `tools/blockcheck/refs/refs.csproj`
   - Output: `refs.csproj` carries the packages, each at the version the design states (Quartz
@@ -381,6 +381,45 @@ cannot decide it.
 | AC2 diff against `before.tsv` | **0** lines — no verdict moved |
 | `--list-scaffold` | 53 identifiers from 14 units, down from 84; `PageContext.cs` lists `class PageContext` and `property connectionString` only |
 | The one row that changed | `DapperOutbox.md` #2, **FAILED before and after**: 12 errors → 16, because it now misses `AddGreeting`, `Person`, `GreetingMade`, `Greeting`, which the old unit supplied to a block that never built. That is the leak the rule exists to stop. Those four are `DapperOutbox.md`'s page-type names for its tranche |
+
+**Task 1.8 — the pin grown, measured alone.** `refs.csproj` gains **24 packages**, each named on a
+page — the design's E2 set less Jaeger (D2), plus the five Brighter packages, and not the AWS V4
+family (D3). The design names some by family; resolved from Brighter's `src/` at `10.7.0` and the
+NuGet `nuspec` of each, all twelve Brighter packages exist at 10.7.0:
+
+| Group | Packages | Version, and why |
+|---|---|---|
+| Brighter, five | `AsyncAPI.NJsonSchema`, `ServiceActivator.Control`, `ServiceActivator.Control.Api`, `ServiceActivator.Extensions.Diagnostics`, `Testing` | 10.7.0 |
+| Brighter EF, four | `MsSql`, `MySql`, `PostgreSql`, `Sqlite` `.EntityFrameworkCore` | 10.7.0. `MongoDb.EntityFramework` also exists and no page names it |
+| Brighter Validation, three | `DataAnnotations`, `FluentValidation`, `Specification` | 10.7.0 |
+| Hangfire | `Core`, `AspNetCore`, `SqlServer` | **1.8.24** — what `MessageScheduler.Hangfire` 10.7.0 depends on (Brighter's `Directory.Packages.props` at the tag) |
+| Hangfire storage, third party | `MemoryStorage` 1.8.1.2, `MySqlStorage` 2.0.3, `PostgreSql` 1.21.1, `Redis.StackExchange` 1.12.0 | latest stable; the design gave none |
+| Quartz | `Extensions.DependencyInjection`, `Extensions.Hosting` | **3.18.1** — what `MessageScheduler.Quartz` 10.7.0 depends on |
+| EF Core | `Microsoft.EntityFrameworkCore` | **9.0.15**, the net9.0 floor the Brighter EF packages set |
+| Tests | `xunit` 2.9.3 (Brighter's own), `Moq` 4.21.0 (latest stable) | |
+
+| Check | Predicted | Result |
+|---|---|---|
+| Restore and build | clean | exit **0**, no `NU1xxx` |
+| Reference assemblies, `grep -vc '^#' refs.txt` | **538** | **538**; the run's own line reads *"538 reference assemblies"* |
+| `--report` | exit 0, 101 BUILT | exit **0**, *"989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED"*, 0 findings, 0 scaffold-rule violations |
+| AC2 diff against `before.tsv` | **0** lines | **0** |
+| Control: the same diff with `DapperOutbox.md` #1 flipped | that row | exactly `BUILT -> FAILED contents/DapperOutbox.md 1` |
+
+**What did move** is below the verdict. 36 FAILED rows changed their error codes, and `--classify`
+now reads *"175 parse (66 pages), 500 import (109 pages), 15 other (10 pages), 7 same-page (6 pages),
+54 values (19 pages), 121 page-type (54 pages)"*. Block by block against 1.3's run, **19 blocks
+changed class, all out of a more expensive class**: other → page-type 10, other → values 4,
+other → import 3, page-type → import 2. None moved into *other* or *parse*.
+
+**Q2, re-read.** With xunit pinned, `Assert`, `Xunit` and `Fact` leave *page-type* (e.g.
+`InMemoryScheduler.md` #9, `InMemoryOptions.md` #2 now name them as *import*). **`Program` ×8 is
+what remains** — a top-level-statements artefact, not a type any stub should supply.
+
+**A gap the design's set leaves.** `UseNpgsql` is called on `HangfireScheduler.md` and
+`PostgresOutbox.md`, and lives in `Npgsql.EntityFrameworkCore.PostgreSQL`, which E2 did not
+include. Not added here: the pin is the design's measured set. 1.10 records whether either page is
+in a tranche; if one is, adding the package is put to the maintainer in that phase's PR.
 
 ## Phase 2 — Tranche 1a *(6 tasks, one PR, CHANGES THE SITE)*
 
