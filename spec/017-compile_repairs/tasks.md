@@ -826,7 +826,7 @@ this one.
   - Input: that section's rows; `--classify` on each
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
 
-- [ ] **Task 3.4:** Repair the *Scheduler* tranche pages
+- [x] **Task 3.4:** Repair the *Scheduler* tranche pages
   - Input: that section's rows; `--classify` on each; the Hangfire and Quartz packages 1.8 pinned
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
   - Notes: BrighterCommand/Brighter#4414 is upstream's. A scheduler block that asserts a scheduled
@@ -1030,6 +1030,85 @@ figure: requirements' `awk` and `comm -23` of the FAILED and BUILT page sets.
   **Pages changed: 8** (`git diff --name-only 7163fb0..HEAD -- contents`): the **4** tranche pages,
   and **4** outside the tranche by recurrence: `AWSSQSMigrateToV10.md`, `AwsScheduler.md`,
   `DynamoInbox.md`, `DynamoOutbox.md`. Their rule 6 counts are unchanged
+
+**Task 3.4 — *Scheduler*.** Two pages. **BUILT 159 → 173** (+14): `SchedulingAMessage.md` #1–#10,
+one of them a block this task added, and `TickerQScheduler.md` #1, #4, #7, #8. **Two stay FAILED**,
+`TickerQScheduler.md` #2 and #3, for packages not in the pin. `pagelint` **682 → 668**, all −14 on the
+tranche (`SchedulingAMessage.md` 9, `TickerQScheduler.md` 5; per page, against a worktree at
+`423e215`). Pages with nothing BUILT **78 → 77**: `SchedulingAMessage.md`. Two methods, one figure:
+requirements' `awk` and `comm -23` of the FAILED and BUILT page sets.
+
+- **`using`s:** every block on both pages. On `SchedulingAMessage.md` #1–#9 they replace the leading
+  `// ...`. `TickerQScheduler.md` #1's `using TickerQ;` resolves but supplies nothing the block uses;
+  it gives way to the namespaces the linked sample imports (`TickerQ.DependencyInjection`,
+  `TickerQ.Utilities.Entities`, `.Interfaces`, `.Interfaces.Managers`)
+- **Fields the classes used and never declared:** `_repository` on `SchedulingAMessage.md` #1, #2, #4,
+  and `_paymentGateway` and `_logger` on #6. Each is now a `private readonly` field beside
+  `_commandProcessor`, typed `IOrderRepository`, `IUserRepository`, `IPaymentGateway` and
+  `ILogger<ProcessPaymentHandlerAsync>`. A unit cannot supply a value whose type no pinned package
+  declares, and the reader sees what the service depends on
+- **One unit and one grown.** `SchedulingAMessageContext.cs` supplies `services` and the domain the
+  page never shows: `Order` (1.10's ruling), `OrderStatus`, `User`, the two repositories, six
+  requests, `NotificationRequest`, `IPaymentGateway`, the two payment exceptions and
+  `ProcessOrderHandlerAsync`, each carrying only the members a block names. `TickerQSchedulerContext.cs`
+  gains `builder`, `app` and `SendReminderCommand`. Neither page tells the reader to write any of
+  these (rule 1, by reading). `--report` → *"27 units checked, 0 violations"*
+- **Two defects on the page** (§ *Defect ledger*): #3 returned `schedulerId` from `async Task`
+  (`CS1997`), now `Task<string>`; #5 scheduled `command with { AttemptNumber = … }`, which needs a
+  record, and a Brighter `Command` is a class a record cannot derive from. It now sets
+  `AttemptNumber` and schedules the command
+- **BrighterCommand/Brighter#4414, run.** It is closed by #4419, which is on `master` and in no
+  release. At 10.7.0, `AutoFromAssemblies()` and `AsyncHandlersFromAssemblies` register
+  `FireSchedulerRequestHandler` and `FireSchedulerMessageHandler` twice. `HandlersFromAssemblies`
+  registers each once, because the scheduler's handlers are async. **Maintainer's ruling,
+  2026-09-27: state it, with the workaround.** `SchedulingAMessage.md` gains *Registering Handlers
+  When You Schedule Requests* before its configuration examples. It states the failure, links
+  #4414, and shows explicit `AsyncHandlers` registration as a new block 7, so the page's old #7–#9
+  are now #8–#10 (§ *Splits*). Its recurrences on other pages are recorded, not repaired (§ *Defect
+  ledger*)
+- **BrighterCommand/Brighter#4437, filed this task.** The InMemory scheduler cannot cancel or
+  reschedule a request scheduled through the command processor. `CommandProcessor` calls
+  `_schedulerFactory.CreateAsync(this)` for each scheduled call, and `InMemoryScheduler` keeps its
+  timers in an instance field. It is the same on `master`. **Maintainer's ruling, 2026-09-27: file
+  it and state it.** The ruling covers every page that makes the claim: `SchedulingAMessage.md`'s
+  cancellation note, and `FAQ.md`'s *Can I cancel or reschedule*. On `InMemoryScheduler.md`, the
+  cancel example and the `Should_Cancel_Scheduled_Command` test now schedule through
+  `IAmARequestSchedulerAsync`. The issue's repro was run verbatim, and the reschedule result was
+  added as a comment
+- **The `TickerQScheduler.md` blocks against the released packages.** A reader on net10.0 gets TickerQ
+  10.4.0, not the pin's 9.0.2 (the Brighter package's net10.0 dependency group). Blocks 1, 2, 3 and 8
+  were compiled in scratch against `Paramore.Brighter.MessageScheduler.TickerQ` 10.7.0 with
+  `TickerQ`, `TickerQ.EntityFrameworkCore` and `TickerQ.Dashboard` at 9.0.2 on net9.0, and at 10.4.0
+  on net10.0: **0 errors, all eight builds**. **Phase 4 asks** for `TickerQ.EntityFrameworkCore` and
+  `TickerQ.Dashboard` 9.0.2 alongside `Npgsql.EntityFrameworkCore.PostgreSQL`; until then #2 and #3
+  stay FAILED
+- **Behaviour, run with controls** against released 10.7.0 packages in scratch console apps, net10.0,
+  one process per case:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `SchedulingAMessage.md` #8–#10 with #1–#3: a request scheduled after `AutoFromAssemblies()` runs | `UseScheduler(new InMemorySchedulerFactory())`, `AutoFromAssemblies()`, `SendAsync(1 s, …)` → `ArgumentException` *"More than one handler was found … FireSchedulerRequest"*, unhandled on the timer thread; **the process ends** | explicit `AsyncHandlers` → handler runs **1** |
+  | #7, the workaround: explicit registration makes scheduled requests run | block 7 verbatim, `SendAsync(TimeSpan)` and `SendAsync(DateTimeOffset)`, 1 s each → handler runs **2** | the same with `AutoFromAssemblies()` → the process ends |
+  | A narrower scan avoids it | `AutoFromAssemblies([own])`, `AsyncHandlersFromAssemblies([own])` → the process ends | registry read: `HandlersFromAssemblies([own])` → **1** of each handler; `AutoFromAssemblies()` → **2** of each |
+  | #4, *"Every scheduler supports cancellation"*, for InMemory | `SendAsync(1 s)`, then `CancelAsync(id)` on the registered `IAmAMessageSchedulerAsync` or `IAmARequestSchedulerAsync` → handler runs **1** | schedule and cancel on one `IAmARequestSchedulerAsync` → **0** |
+  | Rescheduling, for InMemory (`FAQ.md`) | `ReSchedulerAsync(id, 10 s)` for an id from `SendAsync(1 s)` → returns **`False`**; the request runs at 1 s | scheduled through the same instance → returns **`True`**; not run 3 s later |
+
+  Read, not run: #6's bare `DeferMessageAction` requeues after the subscription's delay
+  (`Proactor.cs:522`, `Channel.RequeueAsync(message, delay ?? RequeueDelay)`). The configuration
+  blocks for Hangfire, Quartz and TickerQ register a scheduler, and a scheduled request through
+  either external scheduler reaches the same `processor.SendAsync(FireSchedulerRequest)`
+  (`BrighterHangfireSchedulerJob.cs:32`)
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 14 rows at `3509d3e`. `--report` → exit **0**, *"983 blocks: 173 BUILT, 794 FAILED,
+  16 SKIPPED"*, baseline 173, 0 findings. Joined on page and ordinal against the report at
+  `423e215`, every block that moved went `FAILED -> BUILT`. The one new key is
+  `SchedulingAMessage.md` #10, the added block's renumbering
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; `pagelint --changed origin/master` 0 errors.
+  **Pages changed: 4** (`git diff --name-only 423e215..HEAD -- contents`): the **2** tranche pages,
+  and **2** outside it for #4437, `FAQ.md` and `InMemoryScheduler.md`. Their rule 6 counts are
+  unchanged, and `--explain` on the two touched `InMemoryScheduler.md` blocks (#8, #9) finds only
+  types the page never shows
 
 ---
 
@@ -1418,10 +1497,16 @@ is rewritten against the tables below.
 | `DistributedLock.md` | 2 | `CS0234` `Paramore.Brighter.DynamoDb.V4`, `Locking.DynamoDB.V4`, `Outbox.DynamoDB.V4` | V4 package, not in the pin (D3, 018). The page recommends the V4 package, so the block carries its namespaces; it builds against the released V4 packages in scratch, **0** errors | 3 |
 | `DynamoDbDistributedLock.md` | 1 | `CS0234` `Locking.DynamoDB.V4`; `CS0103` `dynamoDb` | V4 package, not in the pin (D3, 018). `dynamoDb` wants a value stub once V4 is pinned | 3 |
 | `DynamoDbDistributedLock.md` | 2 | `CS0234` `Paramore.Brighter.DynamoDb.V4`, `Locking.DynamoDB.V4`, `Outbox.DynamoDB.V4` | V4 package, not in the pin (D3, 018); builds against the released V4 packages in scratch, **0** errors | 3 |
+| `TickerQScheduler.md` | 2 | `CS0234` `TickerQ.EntityFrameworkCore`; `CS1061` `AddOperationalStore`; `CS0246` `TickerQDbContext` | `TickerQ.EntityFrameworkCore` is not in the pin; phase 4 asks for it at 9.0.2. Builds against the released packages in scratch, net9.0 and net10.0, **0** errors | 3 |
+| `TickerQScheduler.md` | 3 | `CS0234` `TickerQ.Dashboard`; `CS1061` `AddDashboard` | `TickerQ.Dashboard` is not in the pin; phase 4 asks for it at 9.0.2. Builds against the released packages in scratch, net9.0 and net10.0, **0** errors | 3 |
 
 ## Splits
 
 *One row per split fence: page, old ordinal, new ordinals.*
+
+| Page | Old # | New # | Why | Task |
+|---|---:|---:|---|---:|
+| `SchedulingAMessage.md` | 7, 8, 9 | 8, 9, 10 | not a split: a block inserted at #7, the #4414 workaround. All three were FAILED at `c7329bb` and are BUILT now, so the AC2 diff reads #7–#9 as `FAILED -> BUILT` and #10 as a new key | 3.4 |
 
 ## Blocks removed
 
@@ -1470,6 +1555,10 @@ BUILT, re-admitted at `ec38400`.
 | `new InMemoryOutbox()` — V10's constructor takes a `TimeProvider` (`CS7036`) | `InMemoryOutbox.cs:91` | `InMemoryOptions.md`, `InMemoryOutbox.md` | `grep -rnE 'new InMemoryOutbox\(\)' contents/` | **2** | **0** | 3.2, `--explain` after the block's `using`s |
 | `publication.SetConfigHook(…)` — the hook is on `KafkaProducerRegistryFactory`; the block also wrapped its publication as `new KafkaPublication() {publication}` and dropped a `;` | `KafkaProducerRegistryFactory.cs:87`; compiled, old form `CS1061` | `KafkaConfiguration.md` | `grep -rn 'publication\.SetConfigHook' contents/` | **1** | **0** | 3.2, reading the block beside its prose |
 | A V4 package recommended with the V3 namespace, or the namespaces said to stay the same: every Brighter `.V4` package at 10.7.0 declares its types in `<V3 namespace>.V4` (`Locking.DynamoDb` → `Locking.DynamoDB.V4`), so a reader who installs the V4 package and copies a V3 `using` gets `CS0234` | `git ls-tree 10.7.0 src/*.V4`, each project's `namespace` lines; the lock blocks compiled against the V4 packages, control V3 `CS0234` | `AWSSQSMigrateToV10.md`, `AwsScheduler.md`, `DynamoInbox.md`; by reading `DynamoOutbox.md`, `DistributedLock.md`, `DynamoDbDistributedLock.md` | `python3 spec/017-compile_repairs/probe/v4scan.py` — blind to a page whose V4 package ID is also its namespace, which is why `DynamoOutbox.md` was read | **4** | **0** | 3.3, adding the lock blocks' `using`s |
+| A value returned from `async Task` — `ScheduleNotification` returned `schedulerId` (`CS1997`) | `CS1997` from `--explain`; `PostAsync(TimeSpan, …)` returns `Task<string>`, `IAmACommandProcessor.cs:282` | `SchedulingAMessage.md` #3 | — | **1** | **0** | 3.4, `--explain` after the block's `using`s |
+| `command with { … }` on a request — needs a record, and a Brighter `Command` is a class, which a record cannot derive from | `Command.cs:42` | `SchedulingAMessage.md` #5 | `grep -rnE '\bwith \{' contents/` | **1** | **0** | 3.4, stubbing the block's `OperationCommand` |
+| `AutoFromAssemblies()` or `AsyncHandlersFromAssemblies` with a scheduler — the scheduler's handlers registered twice, so a scheduled request throws when it falls due, and ends the process with InMemory | run; registry read, control `HandlersFromAssemblies` — **upstream, BrighterCommand/Brighter#4414**, fixed by #4419 on `master`, unreleased | `SchedulingAMessage.md` states it with the workaround. Recorded, not repaired: `AwsScheduler.md`, `AzureScheduler.md`, `BrighterSchedulerSupport.md`, `HangfireScheduler.md`, `InMemoryOptions.md`, `InMemoryScheduler.md`, `QuartzScheduler.md`, `SwitchingSchedulers.md`, `V10MigrationGuide.md` | `grep -rl 'UseScheduler' contents/ \| xargs grep -lE 'AutoFromAssemblies\(\|AsyncHandlersFromAssemblies'` | **10** pages | **stated** on 1 — maintainer's ruling; 9 recorded | 3.4, running |
+| InMemory cancel and reschedule said to work on a request scheduled through the command processor — each scheduled call gets a new `InMemoryScheduler`, so `CancelAsync` finds nothing and the request runs; `ReSchedulerAsync` returns `False` | run, control same instance; `CommandProcessor.cs:427`, `InMemoryScheduler.cs:57` — **upstream, BrighterCommand/Brighter#4437**, filed 3.4 | `SchedulingAMessage.md`, `FAQ.md`, `InMemoryScheduler.md` (cancel example, `Should_Cancel_Scheduled_Command`) | `grep -rl 'issues/4437' contents/` | **3** pages | **stated** on all 3 — maintainer's ruling | 3.4, running block 4's claim |
 
 ## Friction ledger
 
