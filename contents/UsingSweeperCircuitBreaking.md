@@ -61,7 +61,7 @@ using Paramore.Brighter.CircuitBreaker;
 services.AddSingleton<IAmAnOutboxCircuitBreaker>(
     new InMemoryOutboxCircuitBreaker(new OutboxCircuitBreakerOptions
     {
-        CooldownCount = 3  // Recover after 3 sweeps
+        CooldownCount = 3  // Sit out 3 sweeps, retry on the 4th
     })
 );
 
@@ -69,7 +69,7 @@ services.AddSingleton<IAmAnOutboxCircuitBreaker>(
 services.AddSingleton<IAmAnOutboxCircuitBreaker>(
     new InMemoryOutboxCircuitBreaker(new OutboxCircuitBreakerOptions
     {
-        CooldownCount = 30  // Recover after 30 sweeps
+        CooldownCount = 30  // Sit out 30 sweeps, retry on the 31st
     })
 );
 ```

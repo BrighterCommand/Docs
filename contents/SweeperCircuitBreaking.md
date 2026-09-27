@@ -38,9 +38,9 @@ When a topic fails to publish:
 1. **Failure detected**: An exception occurs during message publication to a specific topic
 2. **Circuit trips**: The circuit breaker marks that topic as "tripped"
 3. **Cooldown begins**: A cooldown counter is set for the tripped topic (default: 10 sweeps)
-4. **Subsequent sweeps**: On each sweep, the cooldown counter decrements for all tripped topics
-5. **Recovery**: When the cooldown reaches zero, the topic is removed from the tripped list
-6. **Retry**: The topic becomes available for publishing attempts again
+4. **Subsequent sweeps**: Each sweep decrements the counter for every tripped topic before it reads the Outbox, and skips the tripped topics' messages
+5. **Recovery**: The sweep after the counter reaches zero removes the topic from the tripped list, so a topic sits out `CooldownCount` sweeps
+6. **Retry**: That same sweep publishes the topic's messages again
 
 ### Benefits
 
@@ -89,32 +89,37 @@ The `OutboxCircuitBreakerOptions` class provides the following configuration:
 
 ### Calculating Cooldown Time
 
-The actual cooldown time depends on your Outbox Sweeper configuration:
+The actual cooldown time depends on how often the Outbox Sweeper runs, which you set with `TimerInterval`, in seconds, on the options you pass to `UseOutboxSweeper`. A topic trips during one sweep, sits out the next `CooldownCount` sweeps, and is retried on the one after:
 
-**Formula**: `Cooldown Time = CooldownCount × SweepInterval`
+**Formula**: `Time until retry = (CooldownCount + 1) × TimerInterval`
 
 **Example**:
 
 - `CooldownCount = 10`
-- Sweeper runs every 60 seconds
-- **Cooldown Time = 10 × 60s = 10 minutes**
+- `TimerInterval = 60`, so the Sweeper runs every 60 seconds
+- **Time until retry = (10 + 1) × 60s = 11 minutes**
 
 ```csharp
-services.AddBrighter(options =>
-{
-    // Sweeper configuration
-    options.OutboxSweeper = new OutboxSweeperOptions
-    {
-        SweepInterval = TimeSpan.FromSeconds(60)  // Sweep every 60 seconds
-    };
-})
-.UseOutboxSweeper();
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.CircuitBreaker;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.Hosting;
 
-// Circuit breaker with 10 cooldown sweeps = 10 minutes total cooldown
+services.AddBrighter()
+    .AddProducers(configure =>
+    {
+        // ... your producer registry and Outbox
+    })
+    .UseOutboxSweeper(options =>
+    {
+        options.TimerInterval = 60;  // Sweep every 60 seconds
+    });
+
+// A tripped topic sits out 10 sweeps and is retried on the 11th: (10 + 1) × 60s = 11 minutes
 services.AddSingleton<IAmAnOutboxCircuitBreaker>(
     new InMemoryOutboxCircuitBreaker(new OutboxCircuitBreakerOptions
     {
-        CooldownCount = 10  // 10 sweeps × 60s = 10 minutes
+        CooldownCount = 10
     })
 );
 ```
@@ -264,19 +269,29 @@ Balance between quick recovery and avoiding repeated failures:
 
 ### 2. Align Cooldown with Sweep Interval
 
-Consider the total cooldown time:
+Consider the time until a tripped topic is retried, `(CooldownCount + 1) × TimerInterval`:
 
 ```csharp
-// Fast sweeping with short cooldown = quick recovery
-options.OutboxSweeper = new OutboxSweeperOptions
-{
-    SweepInterval = TimeSpan.FromSeconds(30)  // 30s sweep
-};
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.CircuitBreaker;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.Hosting;
+
+// Fast sweeping with a short cooldown = quick recovery
+services.AddBrighter()
+    .AddProducers(configure =>
+    {
+        // ... your producer registry and Outbox
+    })
+    .UseOutboxSweeper(options =>
+    {
+        options.TimerInterval = 30;  // Sweep every 30 seconds
+    });
 
 services.AddSingleton<IAmAnOutboxCircuitBreaker>(
     new InMemoryOutboxCircuitBreaker(new OutboxCircuitBreakerOptions
     {
-        CooldownCount = 5  // 5 × 30s = 2.5 minutes total cooldown
+        CooldownCount = 5  // (5 + 1) × 30s = 3 minutes until retry
     })
 );
 ```
@@ -354,7 +369,7 @@ Regularly test circuit breaker behavior:
 
 1. Verify Outbox Sweeper is running
 2. Check cooldown count is not excessively high
-3. Ensure sweeper interval is appropriate
+3. Ensure the Sweeper's `TimerInterval` is appropriate
 4. Confirm circuit breaker is properly registered
 
 ### All Topics Tripping
