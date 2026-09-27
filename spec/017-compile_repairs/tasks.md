@@ -822,7 +822,7 @@ this one.
   - Output: each page whole; baseline rows; stubs share an existing unit where the pages share a
     world (design § *Scaffold Stub Rules*)
 
-- [ ] **Task 3.3:** Repair the *Outbox and Inbox* tranche pages
+- [x] **Task 3.3:** Repair the *Outbox and Inbox* tranche pages
   - Input: that section's rows; `--classify` on each
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
 
@@ -963,6 +963,73 @@ and `AWSSQSConfiguration.md` #6 from a recurrence repair. **None stays FAILED**.
   `KafkaConfiguration.md`, `RabbitMQConfiguration.md`, `V10MigrationGuide.md`. Of `pagelint`'s −10,
   4 are on the tranche (`InMemoryTransport.md` 3, `RabbitMQMigrateToQuorumQueues.md` 1) and 6 on the
   recurrence pages
+
+**Task 3.3 — *Outbox and Inbox*.** Four pages. **BUILT 147 → 159** (+12): `BoxProvisioningConfiguration.md`
+#1–#9, `DistributedLock.md` #1, `TransactionalMessagingWithTheOutbox.md` #1, #2. **Three stay FAILED**:
+the DynamoDB lock blocks, for the V4 pin. `pagelint` **696 → 682**, all −14 on the tranche
+(`BoxProvisioningConfiguration.md` 8, the other three 2 each; per page, against a worktree at
+`7163fb0`). Pages with nothing BUILT **81 → 78**: the first three of those pages. Two methods, one
+figure: requirements' `awk` and `comm -23` of the FAILED and BUILT page sets.
+
+- **Said at 3.1:** `DynamoDbDistributedLock.md` reaches a BUILT block with an empty stub, and
+  `DistributedLock.md` #2 with a `using`. **Measured:** both pages tell the reader to install
+  `Paramore.Brighter.Locking.DynamoDB.V4`. Every Brighter V4 package at 10.7.0 declares its types in a
+  `.V4` namespace, and the V4 family is not in the pin (D3). **Maintainer's ruling, 2026-09-27:** the
+  blocks take the V4 `using`s their reader needs, and stay FAILED until 018's V4 pin. Compiled in
+  scratch against the released V4 packages (`Paramore.Brighter.Locking.DynamoDB.V4`,
+  `Outbox.DynamoDB.V4`, `Outbox.Hosting`, both DI packages, 10.7.0): **0 errors**. The control, the
+  same blocks with the V3 namespaces, fails `CS0234`. With V3 `using`s against the pin, all three
+  also build, so nothing else is hidden behind the namespace
+- **`using`s:** `BoxProvisioningConfiguration.md` #1 (`Microsoft.Extensions.Configuration`, for
+  `GetConnectionString`), #2–#4, and each backend's namespace on the per-backend fragments #5–#9.
+  `DistributedLock.md` #1 (`System.Threading`, `System.Threading.Tasks`). On
+  `TransactionalMessagingWithTheOutbox.md` #1 and #2 the `// ...` gives way to the `using`s the
+  sample's handlers carry, less the sample's own namespaces
+- **Two units.** `BoxProvisioningConfigurationContext.cs` supplies `builder`, `services`,
+  `connectionString`, `outboxConfig`, `inboxConfig`, `opts` and `rdbmsConfiguration`: the composition
+  root's values, earlier blocks' locals, and the delegate parameter the fragments sit in.
+  `TransactionalMessagingWithTheOutboxContext.cs` supplies `Retry`, `AddGreeting`, `Person`,
+  `Greeting`, `GreetingMade`, `Salutation` and `SalutationReceived`, each carrying only the members
+  a block names, typed as `samples/WebAPI/WebAPI_Dapper/` types them at 10.7.0. The page named no
+  sample; it now cites that one, and tells the reader nowhere to write these types (rule 1, by
+  reading). `--report` → *"26 units checked, 0 violations"*
+- **The V4 namespaces, repaired where V4 is recommended** (§ *Defect ledger*):
+  `AWSSQSMigrateToV10.md` step 3 said *"The namespace structure remains the same in most cases"*
+  and showed only AWS SDK namespaces. It now maps all seven V3 → V4 namespaces and names the two that
+  do not map by suffix: `Locking.DynamoDb` → `Locking.DynamoDB.V4`, and `DynamoDbTableFactory`,
+  which V3 declares in `Outbox.DynamoDB` and V4 in `DynamoDb.V4`. Its step 2 table gains the three
+  V4 packages it lacked, each on NuGet at 10.7.0. The rewrite keeps block 1 BUILT (the SDK
+  namespaces alone; the duplicate pair went). `DynamoOutbox.md` and `DynamoInbox.md` show V3
+  `using`s under a V4 recommendation, and each now names its V4 namespaces in one sentence.
+  `AwsScheduler.md`'s *Basic Configuration* block imported `MessageScheduler.AWS.V4` beside the V3
+  `MessagingGateway.AWSSQS`, which the V4 scheduler's dependency (`AWSSQS.V4`) does not declare,
+  so it now takes `.V4`; the block stays FAILED and its other gaps stay with its phase
+- **Behaviour, run with controls** against released 10.7.0 packages in scratch console apps, one
+  process per case: Brighter's static `ApplicationLogging` keeps the first container's
+  `LoggerFactory`, so a second container in the same process throws `ObjectDisposedException`, which
+  is a harness artefact, not a defect:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `TransactionalMessagingWithTheOutbox.md` #1: *"Both entity writes and message writes succeed or fail together"* | block 1 verbatim, SQLite outbox and `SqliteTransactionProvider`, in-memory producer → Greeting **1**, Outbox **1**, dispatched **1**, on the bus **1** | the block with a `throw` between `DepositPostAsync` and `CommitAsync` → Greeting **0**, Outbox **0**, bus **0**; `SendAsync` returns, as the block's `catch` hands on |
+  | #2: *"UseInboxAsync … ensures the message is only processed once"*; the duplicate is dropped and `SalutationReceived` not sent again | block 2 verbatim, the same `GreetingMade` published twice → publish 2 throws `OnceOnlyException`; Salutation **1**, Outbox **1**, bus **1** | `onceOnly: false` → both return; Salutation **2**, Outbox **2**, bus **2** |
+  | `BoxProvisioningConfiguration.md` #4: the timeout *"is read late … placement inside the delegate does not matter"* | block 4 verbatim (set before the `Add` calls) → both MSSQL runners' `_lockTimeout` **00:02:00**; set after them → **00:02:00** | not set → **00:00:30** |
+  | #2: *"the hosted service always provisions every Outbox before any Inbox"*, whatever the registration order | SQLite, Inbox registered before Outbox → *"Provisioning Outbox 'Outbox'"* then *"Provisioning Inbox 'Inbox'"* | two Outboxes registered B then A → B then A: within a phase, registration order holds |
+
+  Read, not run: a duplicate reaching the pump arrives as `OnceOnlyException`, which `Proactor.cs`'s
+  catch-all logs, counts as unacceptable and then acknowledges, so the message is dropped as the
+  page says. `UseBoxProvisioning` twice throws, and the `connectionName` overloads throw
+  `InvalidOperationException` with the page's message (`MsSqlBoxProvisioningExtensions.cs:62`)
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 12 rows at `24e6e53`. `--report` → exit **0**, *"982 blocks: 159 BUILT, 807 FAILED,
+  16 SKIPPED"*, baseline 159, 0 findings. The gate is enforced both ways, so 147 BUILT before was
+  exactly the 147 baseline rows, and the 12 new rows are the only blocks that moved, every one
+  `FAILED -> BUILT`
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; `pagelint --changed origin/master` 0 errors.
+  **Pages changed: 8** (`git diff --name-only 7163fb0..HEAD -- contents`): the **4** tranche pages,
+  and **4** outside the tranche by recurrence: `AWSSQSMigrateToV10.md`, `AwsScheduler.md`,
+  `DynamoInbox.md`, `DynamoOutbox.md`. Their rule 6 counts are unchanged
 
 ---
 
@@ -1348,6 +1415,9 @@ is rewritten against the tables below.
 | `RequestValidation.md` | 16 | `CS0246` `MyRequestHandler<>` | same-page: block 15, *"2. Map the provider-agnostic handler to your implementation"* | 2 |
 | `ReturningResultsFromAHandler.md` | 1 | `CS0246` `CreateTaskCommand`; `CS0103` `commandProcessor` | **unit rule 1**: the page tells the reader to write this type (*"add a property to the **Command** that you can initialize from the Handler"*), so it may not be stubbed | 2 |
 | `HandlingLargeMessages.md` | 3 | `CS0246` `LargeOrderMessageMapper` | same-page: block 2 declares it; block 3 follows *"**Register the mapper**, or none of this runs"* | 2 |
+| `DistributedLock.md` | 2 | `CS0234` `Paramore.Brighter.DynamoDb.V4`, `Locking.DynamoDB.V4`, `Outbox.DynamoDB.V4` | V4 package, not in the pin (D3, 018). The page recommends the V4 package, so the block carries its namespaces; it builds against the released V4 packages in scratch, **0** errors | 3 |
+| `DynamoDbDistributedLock.md` | 1 | `CS0234` `Locking.DynamoDB.V4`; `CS0103` `dynamoDb` | V4 package, not in the pin (D3, 018). `dynamoDb` wants a value stub once V4 is pinned | 3 |
+| `DynamoDbDistributedLock.md` | 2 | `CS0234` `Paramore.Brighter.DynamoDb.V4`, `Locking.DynamoDB.V4`, `Outbox.DynamoDB.V4` | V4 package, not in the pin (D3, 018); builds against the released V4 packages in scratch, **0** errors | 3 |
 
 ## Splits
 
@@ -1399,6 +1469,7 @@ BUILT, re-admitted at `ec38400`.
 | `CloudEventsType` as a `Publication` property — it is `Type` (`CS0117`) | `Publication.cs:96` | `V10MigrationGuide.md` (initializer and `publication.CloudEventsType`) | `grep -rnE '\bCloudEventsType\s*=\|\.CloudEventsType\b' contents/` | **2** | **0** | 3.2, `--explain` after the block's `using`s |
 | `new InMemoryOutbox()` — V10's constructor takes a `TimeProvider` (`CS7036`) | `InMemoryOutbox.cs:91` | `InMemoryOptions.md`, `InMemoryOutbox.md` | `grep -rnE 'new InMemoryOutbox\(\)' contents/` | **2** | **0** | 3.2, `--explain` after the block's `using`s |
 | `publication.SetConfigHook(…)` — the hook is on `KafkaProducerRegistryFactory`; the block also wrapped its publication as `new KafkaPublication() {publication}` and dropped a `;` | `KafkaProducerRegistryFactory.cs:87`; compiled, old form `CS1061` | `KafkaConfiguration.md` | `grep -rn 'publication\.SetConfigHook' contents/` | **1** | **0** | 3.2, reading the block beside its prose |
+| A V4 package recommended with the V3 namespace, or the namespaces said to stay the same: every Brighter `.V4` package at 10.7.0 declares its types in `<V3 namespace>.V4` (`Locking.DynamoDb` → `Locking.DynamoDB.V4`), so a reader who installs the V4 package and copies a V3 `using` gets `CS0234` | `git ls-tree 10.7.0 src/*.V4`, each project's `namespace` lines; the lock blocks compiled against the V4 packages, control V3 `CS0234` | `AWSSQSMigrateToV10.md`, `AwsScheduler.md`, `DynamoInbox.md`; by reading `DynamoOutbox.md`, `DistributedLock.md`, `DynamoDbDistributedLock.md` | `python3 spec/017-compile_repairs/probe/v4scan.py` — blind to a page whose V4 package ID is also its namespace, which is why `DynamoOutbox.md` was read | **4** | **0** | 3.3, adding the lock blocks' `using`s |
 
 ## Friction ledger
 
