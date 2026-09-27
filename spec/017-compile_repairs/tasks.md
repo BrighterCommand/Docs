@@ -1245,7 +1245,7 @@ one.
 **Goal:** every 1-hard-block page in *Outbox and Inbox* leaves whole, its one hard block repaired,
 skipped with an accepted reason, or listed. Page list: § *The tranches*, phase 4 table.
 
-- [ ] **Task 4.1:** Predict phase 4's movement
+- [x] **Task 4.1:** Predict phase 4's movement
   - Input: § *The tranches*, phase 4 table; § *Phase 3 as executed*
   - Output: § *Phase 4 as executed* opens with a prediction per gate, **and a verdict per hard block
     before it is touched**: parse (placeholder / fragment / not code) or other (defect / wrapper
@@ -1272,6 +1272,130 @@ skipped with an accepted reason, or listed. Page list: § *The tranches*, phase 
 - [ ] **Task 4.5:** Close phase 4 — checks, figures, PR
   - Input: 4.1's prediction; the PR's diff
   - Output: as 2.6, for phase 4
+
+### Phase 4 as executed
+
+**Prediction, 2026-09-27, from `master` `d8633b1`**, the merge of phase 3 (PR #192). The *Now*
+column is this task's own run at `d8633b1`, every gate bare, exit code read before its output; all
+nine exit 0 and read at `tools/README.md`'s figures. Each prediction names its mechanism:
+
+| # | Gate | Now | Predicted after phase 4, and why |
+|---:|---|---|---|
+| 1 | `linkcheck` | 165 files, 0 broken | **none**. No file is added |
+| 2 | `pagelint` | 0 errors, 658 warnings, 162 pages | **errors 0; warnings 658 → between 640 and 622.** On the 22 pages, rule 6 warns on **36** blocks, every one FAILED: the **18** reachable blocks and **18** of the 22 hard ones. The four hard blocks that do not warn already carry `using`s (`DapperOutbox.md` #2, `DynamoInbox.md` #1, `DynamoOutbox.md` #2, `ReplayOnSeenReference.md` #1). A reachable repair gives its block `using`s whether or not it then builds (−18, to 640); each hard block repaired rather than listed takes one more, to 622 if all 18 are. Recurrence repairs off the tranche lower it further, and are explained if so |
+| 3, 4, 7 | shape, redirects, `--verify` | 161 / 77 / 161 | **none**. No `SUMMARY.md` change |
+| 5 | `versioncheck` | 0 stale of **18, across 5 pages** | **none, scope held at 18 across 5.** Its five pages (`tools/versioncheck.py:80`) are the tutorials and `GetStarted.md`, none in phase 4 |
+| 6 | `optioncheck` | 0 mismatches, 59 tables, 519 rows | **none.** Five phase 4 pages carry a table it reads — `AzureBlobDistributedLock.md`, `DynamoInbox.md`, `DynamoOutbox.md`, `InMemoryOutbox.md`, `PostgresDistributedLock.md`, 5 tables, 16 rows (`dotnet run --project tools/optioncheck -- <page>`, per page). A row changes only if a repair finds a documented default wrong, and is then a defect in § *Defect ledger* |
+| 8 | `symbolcheck` | 0 findings, 22 entries, 161 pages, 3 silenced | **none**. No repair here names a watchlisted symbol |
+| 9 | `blockcheck` | 983: 189 BUILT, 778 FAILED, 16 SKIPPED; 538 reference assemblies; 30 units | **BUILT 189 → at least 204, at most 230; SKIPPED 16 plus accepted reasons only; reference assemblies up with the pin; exit 0; units 30 plus the new ones, 0 violations.** Mechanism below |
+| — | `attr_mismatch.py` | **7**, exit 1 | **held at 7.** Its hits are on five pages, none in phase 4. `InMemoryInbox.md` #2's defect is an attribute on a class, not on a handler of the other kind, so the script does not read it |
+
+**Gate 9, by source.** The probe re-run at `d8633b1` (§ *The tranches*' recipe, `Order` excluded)
+reads the phase 4 table unchanged: **40 FAILED, 18 reachable, 0 same-page, 22 hard, 6 BUILT**.
+The 18 reachable are **9** with a `using` alone (`AzureBlobDistributedLock.md` #1,
+`DynamoOutbox.md` #3, `FirestoreDistributedLock.md` #1, `MongoDbDistributedLock.md` #1,
+`MsSqlDistributedLock.md` #1, `MySQLOutbox.md` #1, `MySqlDistributedLock.md` #1,
+`PostgresDistributedLock.md` #1, `SqliteOutbox.md` #1), **6** with an empty stub (`services`:
+`MSSQLOutbox.md` #2, `MySQLOutbox.md` #2, `PostgresOutbox.md` #2, `SqliteOutbox.md` #2,
+`UsingSweeperCircuitBreaking.md` #2, #3), **2** needing a stub with members (`InMemoryOutbox.md` #2,
+`UsingSweeperCircuitBreaking.md` #4) and **1** a typed value (`InMemoryInbox.md` #1, `services`).
+
+- **Floor 204** = 189 + 9 + 6: only the `using` and empty-stub blocks
+- **Ceiling 230** = 189 + 18 + 21 + 2: every reachable block; every hard block but
+  `ReplayOnSeenReference.md` #1, which stays FAILED by P2-2; and `TickerQScheduler.md` #2, #3, off
+  the tranche, once the pin carries the two TickerQ packages. Each hard block that is listed rather
+  than repaired, and each defect a stub surfaces, lowers it by one
+- **The pin grows by three, and is measured alone first**, as 1.8 was:
+  `Npgsql.EntityFrameworkCore.PostgreSQL` for `PostgresOutbox.md` #3, and `TickerQ.EntityFrameworkCore`
+  and `TickerQ.Dashboard` at 9.0.2 for `TickerQScheduler.md` #2, #3 (§ *Blocks that stay FAILED*,
+  where both built in scratch against the released packages). The pin carries **95**
+  `PackageReference`s (`grep -c`). Predicted alone: **+2 BUILT** (the TickerQ blocks), no other
+  verdict moves, because `UseNpgsql` sits behind `PostgresOutbox.md` #3's shape error. The other
+  three EF Core providers are already in the reference set, transitively
+  (`Microsoft.EntityFrameworkCore.SqlServer.dll`, `.Sqlite.dll`, `Pomelo.EntityFrameworkCore.MySql.dll`
+  in `refs.txt`), so `MSSQLOutbox.md`, `MySQLOutbox.md` and `SqliteOutbox.md` #3 need no ask
+- **Pages with nothing BUILT: 74 → at most 66, as low as 58.** 17 phase 4 pages have no BUILT
+  block. **8** reach one by a `using` or an empty stub alone (`AzureBlobDistributedLock.md`,
+  `FirestoreDistributedLock.md`, `MongoDbDistributedLock.md`, `MsSqlDistributedLock.md`,
+  `MySQLOutbox.md`, `MySqlDistributedLock.md`, `PostgresDistributedLock.md`, `SqliteOutbox.md`);
+  **2** by a stub with members or a typed value (`InMemoryInbox.md`, `InMemoryOutbox.md`); **6**
+  only by repairing their one hard block (`AzureBlobArchiveProvider.md`, `DynamoInbox.md`,
+  `MSSQLInbox.md`, `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md`); and
+  `ReplayOnSeenReference.md` by none. 74 − 16 = **58**
+- **The ≤ 60 target, read ahead.** Phases 4 and 5 must land 14 of tranche 2's 19 (§ *Phase 3 as
+  executed*). Phase 4 holds **10** of the 19 — its pages with nothing BUILT and ≥ 1 reachable block,
+  the first ten above — and phase 5 the other 9. So phase 4 must land **at least 5** of the 10 if
+  phase 5 lands all nine. The six hard-only pages are not among the 19 but count toward ≤ 60 all the
+  same: every one landed is one phase 5 need not
+
+**A verdict per hard block, before it is touched.** From `--classify` (on the page's own text) and
+`--explain` (on the probe's `stageP`, `using`s supplied). *Parse* is placeholder, fragment or not
+code; *other* is defect or wrapper artefact. **Seven parse blocks carry a defect in the text
+beside the placeholder**; a placeholder repair that does not repair it leaves the block FAILED.
+
+| Page | # | `--classify` / probe | Verdict | What the diagnostics and the text show |
+|---|---:|---|---|---|
+| `AzureBlobArchiveProvider.md` | 1 | parse / PARSE | **parse — placeholder, and defects** | `{ ...  }` and a trailing `...` (`CS8635`); `.ConfigureServices(hostContext, services) =>` opens no lambda (`CS1519`, `CS1001`). Behind them, read at 10.7.0: `New AzCliCredential();` inside an initialiser; `AzureBlobArchiveProviderOptions` has no parameterless constructor (a primary constructor taking `blobContainerUri`, `tokenCredential`, `accessTier`, `tagBlobs`) and its properties are `init`; `UseOutboxArchiver<TTransaction>` cannot infer `TTransaction`; `BatchSize` is `ArchiveBatchSize`; `MinimumAge` is a `TimeSpan`, not `744`; the option assignments name no `options.` |
+| `AzureBlobDistributedLock.md` | 2 | parse / PARSE | **parse — placeholder** | `opt.Outbox = /* your external Outbox */;` (`CS1525`), alone |
+| `DapperOutbox.md` | 2 | other / DEFECT | **other — wrapper artefact** | A `public override` `HandleAsync` outside its handler class: the `members` wrapper derives from `object` (`CS0117` on `base.HandleAsync`), and `_transactionProvider`, `_postBox`, `_logger` are the unshown class's fields |
+| `DynamoInbox.md` | 1 | parse / PARSE | **parse — placeholder, and defects** | `...` twice and the same unopened `ConfigureServices` lambda; `{ ServiceURL = "…"; }`, a `;` inside an object initialiser; `credentials` is never shown |
+| `DynamoOutbox.md` | 2 | other / DEFECT | **other — wrapper artefact** | As `DapperOutbox.md` #2: an `override` outside its class, `CS0117`, the same three fields |
+| `FirestoreDistributedLock.md` | 2 | parse / PARSE | **parse — placeholder** | `/* your external Outbox */;`, alone |
+| `InMemoryInbox.md` | 2 | import / DEFECT | **other — defect** | `[UseInboxAsync(...)]` on the class: `CS0592`, *"only valid on 'method' declarations"* (`RequestHandlerAttribute`'s usage at 10.7.0). The same attribute is repeated, correctly, on `HandleAsync`. `grep -rn -A1 '^\s*\[UseInbox' contents/ \| grep class` → **1**, this page |
+| `InMemoryOutbox.md` | 1 | parse / PARSE | **parse — placeholder** | `/* your producer registry */;`, alone |
+| `MSSQLInbox.md` | 1 | parse / PARSE | **parse — placeholder, and a defect** | `...` twice and the unopened `ConfigureServices` lambda |
+| `MSSQLOutbox.md` | 3 | import / DEFECT | **other — wrapper artefact** | `CS0116`: a free `public void ConfigureServices` beside a class; no wrapper hosts both. `UseSqlServer` resolves |
+| `MongoDbDistributedLock.md` | 2 | parse / PARSE | **parse — placeholder** | `/* your MongoDB Outbox */;`, alone |
+| `MsSqlDistributedLock.md` | 2 | parse / PARSE | **parse — placeholder** | `/* your MS SQL Outbox */;`, alone |
+| `MySQLInbox.md` | 1 | parse / PARSE | **parse — placeholder, and defects** | As `MSSQLInbox.md` #1, and `opt.InboxConfiguration` inside a lambda whose parameter is `options` |
+| `MySQLOutbox.md` | 3 | parse / PARSE | **parse — placeholder** | `....` (`CS8635`, then `CS0029` reading it as a range), inside the same free-method shape as `MSSQLOutbox.md` #3 |
+| `MySqlDistributedLock.md` | 2 | parse / PARSE | **parse — placeholder** | `/* your MySQL Outbox */;`, alone |
+| `PostgresDistributedLock.md` | 2 | parse / PARSE | **parse — placeholder** | `/* your Postgres Outbox */;`, alone |
+| `PostgresInbox.md` | 1 | parse / PARSE | **parse — placeholder, and defects** | As `MySQLInbox.md` #1 |
+| `PostgresOutbox.md` | 3 | import / DEFECT | **other — wrapper artefact, and the pin** | `CS0116` as `MSSQLOutbox.md` #3, and `CS1061` `UseNpgsql`: `Npgsql.EntityFrameworkCore.PostgreSQL` is not in the pin |
+| `ReplayOnSeenReference.md` | 1 | other / DEFECT | **other — API not in 10.7.0** | `CS0117`: `RequestContextBagNames` at 10.7.0 has `CloudEventsAdditionalProperties`, `JobId`, `PartitionKey`, `Headers`, `WorkflowId` — no `CausationId`. Stays FAILED by P2-2 (task 4.4) |
+| `SqliteInbox.md` | 1 | parse / PARSE | **parse — placeholder, and defects** | As `MySQLInbox.md` #1 |
+| `SqliteOutbox.md` | 3 | import / DEFECT | **other — wrapper artefact** | `CS0116` as `MSSQLOutbox.md` #3. `UseSqlite` resolves |
+| `UsingSweeperCircuitBreaking.md` | 5 | import / DEFECT | **parse — fragment** | `CS0535` for `CoolDown()` and `TrippedTopics`, under the block's own `// Implement other methods using distributed cache`. `TripTopic(RoutingKey)` matches the 10.7.0 interface. The probe calls it DEFECT; read, it is a partial implementation that says so |
+
+**By this reading, 15 parse and 7 other.** `--classify` reads 14 *parse*, 3 *other* and 5 *import*;
+the probe, 14 PARSE and 8 DEFECT. The one block whose kind differs is `UsingSweeperCircuitBreaking.md`
+#5, a fragment the probe calls a DEFECT. The 7 *other*:
+
+- **Four wrapper artefacts, two shapes.** An `override` outside its class (`DapperOutbox.md`,
+  `DynamoOutbox.md` #2) and a free method beside a class (`MSSQLOutbox.md`, `SqliteOutbox.md` #3).
+  `PostgresOutbox.md` #3 is the second shape **and** waits on the pin, and `MySQLOutbox.md` #3, a
+  *parse* block for its `....`, is the second shape behind it
+- **One defect**, `InMemoryInbox.md` #2, and **one API not in 10.7.0**, `ReplayOnSeenReference.md` #1
+
+**Six parse blocks carry a defect beside the placeholder**, so a repair that removes only the
+placeholder leaves them FAILED: `AzureBlobArchiveProvider.md` #1 and the five inbox pages'
+`#1`s. Their recurrences, run now so that 4.2 opens with them:
+
+| Defect | Grep | Hits | Pages |
+|---|---|---:|---|
+| `.ConfigureServices(hostContext, services) =>` opens no lambda | `grep -rn 'ConfigureServices(hostContext, services) =>' contents/` | **13** | **8**: the six tranche pages once each, `BrighterBasicConfiguration.md` ×2, `DispatcherConfigurationReference.md` ×5. Both off-tranche pages have **nothing BUILT** (5 FAILED blocks each), so a recurrence repair there can move the ≤ 60 count too |
+| `opt.` inside a lambda whose parameter is `options` | a Python scan of every `(p => { … })` for an assignment through another common builder name: **10** hits, read one by one | **3** | `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md`. The other 7 are nested lambdas (`AddProducers(configure =>` inside `AddBrighter(options =>`, `AddOtlpExporter(o =>`, `UseMisfireHandler(options =>`), which is correct code |
+| `[UseInbox…]` on a class | `grep -rn -A1 '^\s*\[UseInbox' contents/ \| grep class` | **1** | `InMemoryInbox.md` |
+| `New AzCliCredential();` | `grep -rn 'New Az' contents/` | **1** | `AzureBlobArchiveProvider.md` |
+| `UseOutboxArchiver` without its type argument | `grep -rn 'UseOutboxArchiver' contents/` → 7 lines on 2 pages | **1** | `AzureBlobArchiveProvider.md`; `OutboxArchiver.md`'s three calls all name `<TTransaction>` |
+
+**Carried into the repair tasks, not the prediction:**
+
+- **`Order`**: no phase 4 block names it (`grep -cw Order` over each of the 40 FAILED blocks'
+  `--show` output → 0). The 1.10 ruling has nothing to act on here
+- **Shared worlds.** The four EF Core outbox pages (`MSSQLOutbox.md`, `MySQLOutbox.md`,
+  `PostgresOutbox.md`, `SqliteOutbox.md`) repeat one block shape, and the five `*DistributedLock.md`
+  pages another; a unit or a repair on one is tried on its siblings before the next page is opened.
+  `InMemoryInbox.md` #1 wants `services` and `subscriptions`, which `InMemoryTransportContext.cs`
+  already supplies
+- **Found off the tranche:** `QuartzScheduler.md:359` carries a U+200B zero-width space between
+  `UseMisfire` and `Handler` (`od -c`; `grep -rlP '\x{200B}' contents/` → that page only, 1 line).
+  **It compiles**: C# removes formatting characters before comparing identifiers. Run in a scratch
+  net10.0 console app, a call spelled with the U+200B (written by `printf '\u200b'`) resolved to
+  `UseMisfireHandler` and printed `called`; the control, `C.UseMisfireHandlr()`, is `CS0117`. So it is not a compile defect but a
+  text one — a search of the page for `UseMisfireHandler` misses the line. The page is in no
+  tranche; recorded for phase 5 to remove
 
 ---
 
