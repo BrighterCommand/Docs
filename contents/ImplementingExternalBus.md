@@ -61,9 +61,14 @@ var reminderCommand = new TaskReminderCommand(
 You add a message mapper to tell Brighter how to serialize the message for sending to your consumers.
 
 ``` csharp
+using Newtonsoft.Json;
+using Paramore.Brighter;
+
 public class TaskReminderCommandMessageMapper : IAmAMessageMapper<TaskReminderCommand>
 {
-    public Message MapToMessage(TaskReminderCommand request)
+    public IRequestContext? Context { get; set; }
+
+    public Message MapToMessage(TaskReminderCommand request, Publication publication)
     {
         var header = new MessageHeader(messageId: request.Id, topic: "Task.Reminder", messageType: MessageType.MT_COMMAND);
         var body = new MessageBody(JsonConvert.SerializeObject(request));

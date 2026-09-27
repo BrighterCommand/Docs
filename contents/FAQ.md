@@ -282,8 +282,13 @@ Use the **Claim Check** pattern:
 **With transforms:**
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Transforms.Attributes;
+
 public class MyMessageMapper : IAmAMessageMapper<MyEvent>
 {
+    public IRequestContext? Context { get; set; }
+
     [ClaimCheck(0, thresholdInKb: 256)]
     public Message MapToMessage(MyEvent request, Publication publication)
     {

@@ -126,9 +126,15 @@ public class CreatePersonCommand : Command
 3. **Update Message Mappers** to handle nullable warnings:
 
 ```csharp
+using System;
+using System.Text.Json;
+using Paramore.Brighter;
+
 public class PersonCreatedMapper : IAmAMessageMapper<PersonCreated>
 {
-    public Message MapToMessage(PersonCreated request)
+    public IRequestContext? Context { get; set; }
+
+    public Message MapToMessage(PersonCreated request, Publication publication)
     {
         // Validate non-null properties
         ArgumentNullException.ThrowIfNull(request.Name);
@@ -445,8 +451,13 @@ new RmqPublication
 2. **Use Cloud Events headers** in your mapper (optional):
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+
 public class PersonCreatedMapper : IAmAMessageMapper<PersonCreated>
 {
+    public IRequestContext? Context { get; set; }
+
     public Message MapToMessage(PersonCreated request, Publication publication)
     {
         var header = new MessageHeader(

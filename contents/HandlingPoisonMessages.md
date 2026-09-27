@@ -22,18 +22,25 @@ A poison message fails *deterministically*. A message that fails once and succee
 transient failure, and requeue already handles it — sending it to a dead letter queue would lose
 work that would have completed.
 
-Look for the same message id failing repeatedly:
+Look for the same message id deferred repeatedly and then dropped. With the
+`Paramore.Brighter.ServiceActivator` category logging at `Debug`, a handler that defers every
+time under `requeueCount: 3` logs:
 
 ```text
-warn: Paramore.Brighter.ServiceActivator.Reactor[0]
-      MessagePump: Failed to process message 019308f1-... from order.queue, requeueing
-warn: Paramore.Brighter.ServiceActivator.Reactor[0]
-      MessagePump: Failed to process message 019308f1-... from order.queue, requeueing
-warn: Paramore.Brighter.ServiceActivator.Reactor[0]
-      MessagePump: Requeue count exceeded for message 019308f1-...
+dbug: Paramore.Brighter.ServiceActivator.MessagePump[86061754]
+      MessagePump: Deferring message 019308f1-... from order-consumer with order.place on thread # 9
+dbug: Paramore.Brighter.ServiceActivator.MessagePump[86061754]
+      MessagePump: Deferring message 019308f1-... from order-consumer with order.place on thread # 9
+dbug: Paramore.Brighter.ServiceActivator.MessagePump[86061754]
+      MessagePump: Deferring message 019308f1-... from order-consumer with order.place on thread # 9
+fail: Paramore.Brighter.ServiceActivator.MessagePump[782649309]
+      MessagePump: Have tried 3 times to handle this message 019308f1-... from order-consumer with order.place on thread # 9, dropping message.
+warn: Paramore.Brighter.ServiceActivator.MessagePump[633373743]
+      MessagePump: Rejecting message 019308f1-... from order-consumer with order.place on thread # 9
 ```
 
-The same id, the same failure, and a requeue count that runs out. If the ids differ each time you
+At the default level only the last two lines appear, and the `Have tried 3 times` error is the
+one to search for. The same id, the same failure, and a requeue count that runs out. If the ids differ each time you
 have a failing *handler*, not a poison *message*, and the rest of this guide will hide the problem
 rather than solve it.
 
@@ -90,7 +97,7 @@ var subscription = new KafkaSubscription<PlaceOrder>(
     requeueDelay: TimeSpan.FromSeconds(5),
     deadLetterRoutingKey: new RoutingKey("order.place.dlq"),
     invalidMessageRoutingKey: new RoutingKey("order.place.invalid"),
-    messagePumpType: MessagePumpType.Reactor,
+    messagePumpType: MessagePumpType.Proactor,                  // step 4's handler is async
     makeChannels: OnMissingChannel.Create
 );
 ```
@@ -192,8 +199,8 @@ using Paramore.Brighter;
 await commandProcessor.PostAsync(new PlaceOrder { OrderId = "poison", Quantity = -1 });
 ```
 
-Then wait for `requeueCount × requeueDelay` to elapse — with the values in step 3 that is fifteen
-seconds — before looking. Reading sooner tells you nothing, because the message is still in its
+Then wait for `(requeueCount − 1) × requeueDelay` to elapse — with the values in step 3 that is
+ten seconds, because the third attempt is the one that rejects — before looking. Reading sooner tells you nothing, because the message is still in its
 retry cycle.
 
 **Stop the consumer before you read the broker's counters, and wait for its connection to be

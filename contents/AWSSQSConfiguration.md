@@ -457,7 +457,7 @@ the same way here; the other seven are AWS's own.
 | `bufferSize` | `int` | `1` | Messages read from the queue at once and held in the channel. |
 | `noOfPerformers` | `int` | `1` | Threads reading this queue, each with its own message pump. |
 | `timeOut` | `TimeSpan?` | `300 ms` | How long a read waits before treating the queue as empty. |
-| `requeueCount` | `int` | `-1` | Times a message is requeued before it is treated as a poison pill; -1 is unlimited. |
+| `requeueCount` | `int` | `-1` | Times a message is handled before it is rejected as a poison pill, so `3` is two requeues; -1 is unlimited. |
 | `requeueDelay` | `TimeSpan?` | `0 ms` | How long delivery of a requeued message is delayed. |
 | `unacceptableMessageLimit` | `int` | `0` | Unacceptable messages before the channel stops; 0 disables the limit. |
 | `unacceptableMessageLimitWindow` | `TimeSpan?` | `null` | The window the unacceptable-message count resets at the end of. |
@@ -491,7 +491,7 @@ An Ack will delete the message from the SQS queue using the SDK's **DeleteMessag
 
 In response to a DeferMessageAction we will requeue, using the SDK's **ChangeMessageVisibilityAsync** to make the message available again to other consumers.
 
-On a Nack, we will move the message to a DLQ, if there is one. We Nack when we exceed the requeue count for a message, or we raise a ConfigurationException.
+On a Nack, we will move the message to a DLQ, if there is one. We Nack when a message reaches its requeue count, or we raise a ConfigurationException.
 
 ### Direct SQS Publishing
 

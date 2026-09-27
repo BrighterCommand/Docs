@@ -171,7 +171,7 @@ public class ProcessPaymentHandlerAsync : RequestHandlerAsync<ProcessPaymentComm
         catch (PaymentGatewayUnavailableException)
         {
             // Throw DeferMessageAction to requeue with configured delay
-            // Subscription must have requeueCount and requeueDelayInMilliseconds configured
+            // Subscription must have requeueCount and requeueDelay configured
             throw new DeferMessageAction();
         }
         catch (PaymentDeclinedException ex)

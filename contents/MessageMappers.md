@@ -129,8 +129,15 @@ public MessageBody(in ReadOnlyMemory<byte> body, ContentType? contentType = null
 For example, when writing a Kafka payload with leading bytes indicating the schema id, you would want to use a binary payload because conversion to and from a UTF8 string is lossy. Here we serialize the payload with the Kafka header (Magic Byte (0) + Schema Id Bytes) and a JSON payload using the Confluent Serdes serializer. Even though we serialize to JSON, because of the header bytes we treat the payload as binary:
 
 ```csharp
+using System.Net.Mime;
+using Confluent.Kafka;
+using Confluent.Kafka.SyncOverAsync;
+using Confluent.SchemaRegistry;
+using Confluent.SchemaRegistry.Serdes;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
 
-public Message MapToMessage(GreetingEvent request)
+public Message MapToMessage(GreetingEvent request, Publication publication)
 {
     var header = new MessageHeader(messageId: request.Id, topic: Topic, messageType: MessageType.MT_EVENT);
     //This uses the Confluent JSON serializer, which wraps Newtonsoft but also performs schema registration and validation

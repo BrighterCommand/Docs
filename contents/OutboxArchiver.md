@@ -140,10 +140,12 @@ services.AddBrighter(options =>
 // ...
 public class LargeMessageMapper : IAmAMessageMapper<LargeDataCommand>
 {
+    public IRequestContext? Context { get; set; }
+
     private readonly IAmAStorageProviderAsync _storageProvider;
 
     [ClaimCheck(0, thresholdInKb: 5)]  // Store payloads > 5KB
-    public Message MapToMessage(LargeDataCommand request)
+    public Message MapToMessage(LargeDataCommand request, Publication publication)
     {
         var header = new MessageHeader(
             messageId: request.Id,

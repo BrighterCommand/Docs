@@ -153,7 +153,7 @@ You can use a [FallbackPolicy] to catch an exception that bubbles out of your ha
 
 ## Dispatcher Configuration
 
-You configure the Dispatcher with `AddConsumers`, and it is the *Subscription* that carries the options the mechanics above depend on: **NoOfPerformers** sets how many Performers compete for a channel, **MessagePumpType** chooses between the Reactor and Proactor patterns, **TimeOut** governs how long a read waits, and **RequeueCount** with **RequeueDelayInMilliseconds** control what happens after a handler fails.
+You configure the Dispatcher with `AddConsumers`, and it is the *Subscription* that carries the options the mechanics above depend on: **NoOfPerformers** sets how many Performers compete for a channel, **MessagePumpType** chooses between the Reactor and Proactor patterns, **TimeOut** governs how long a read waits, and **RequeueCount** with **RequeueDelay** control what happens after a handler fails.
 
 Every option, with its defaults and a worked RabbitMQ example, is in [Subscriptions](/contents/DispatcherConfigurationReference.md#subscriptions).
 
@@ -191,8 +191,8 @@ When a handler throws a `DeferMessageAction` exception:
 
 1. **Requeue Decision** → Dispatcher checks `requeueCount`
 
-   - If retries remain → Message requeued (with any configured delay)
-   - If retries exhausted → Message sent to DLQ (if configured) or rejected
+   - If the message has been handled fewer than `requeueCount` times → Message requeued (with any configured delay)
+   - If it has been handled `requeueCount` times → Message sent to DLQ (if configured) or rejected
 
 ### Dead Letter Queues (DLQ)
 

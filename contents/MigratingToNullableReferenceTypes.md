@@ -274,6 +274,8 @@ Ensure message mappers handle deserialization nullability:
 // ...
 public class OrderEventMessageMapper : IAmAMessageMapper<OrderCreatedEvent>
 {
+    public IRequestContext? Context { get; set; }
+
     public OrderCreatedEvent MapToRequest(Message message)
     {
         // Deserialization can return null

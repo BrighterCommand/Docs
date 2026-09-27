@@ -219,13 +219,16 @@ public class ProcessOrderHandlerAsync : RequestHandlerAsync<ProcessOrderCommand>
 Configure requeue delay in your subscription:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 var subscription = new Subscription<ProcessOrderCommand>(
     new SubscriptionName("order.processor"),
     channelName: new ChannelName("orders"),
     routingKey: new RoutingKey("order.process"),
     messagePumpType: MessagePumpType.Proactor,
-    requeueCount: 3,                        // Retry up to 3 times
-    requeueDelayInMilliseconds: 5000,       // Wait 5 seconds between retries
+    requeueCount: 3,                        // Handle at most 3 times: 2 requeues
+    requeueDelay: TimeSpan.FromSeconds(5),  // Wait 5 seconds between attempts
     timeOut: TimeSpan.FromMilliseconds(200)
 );
 ```

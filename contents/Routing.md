@@ -17,9 +17,14 @@ typename of the event for the Producer.
 When implementing an **IAmAMessageMapper\<T\>** you set the **Topic** in the **MessageHeader** when serializing your **Command** or **Event** to disk. In the following example we set the **Topic** to *Task.Completed*.
 
 ``` csharp
+using Newtonsoft.Json;
+using Paramore.Brighter;
+
 public class TaskCompletedEventMapper : IAmAMessageMapper<TaskCompletedEvent>
 {
-    public Message MapToMessage(TaskCompletedEvent request)
+    public IRequestContext? Context { get; set; }
+
+    public Message MapToMessage(TaskCompletedEvent request, Publication publication)
     {
         var header = new MessageHeader(messageId: request.Id, topic: "Task.Completed", messageType: MessageType.MT_EVENT);
         var body = new MessageBody(JsonConvert.SerializeObject(request));
@@ -82,9 +87,15 @@ When we convert this request into a **Message** via an **IAmAMessageMapper** we 
 In the following code we also serialize the message back to a **Command** which is then routed by Brighter to a handler. When we serialize back to a **Command** we set the **ReplyAddress** with the Topic and Correlation Id.
 
 ``` csharp
+using System;
+using Newtonsoft.Json.Linq;
+using Paramore.Brighter;
+
 public class MyRequestMessageMapper : IAmAMessageMapper<MyRequest>
 {
-    public Message MapToMessage(MyRequest request)
+    public IRequestContext? Context { get; set; }
+
+    public Message MapToMessage(MyRequest request, Publication publication)
     {
         var header = new MessageHeader(
         messageId: request.Id,
@@ -113,9 +124,14 @@ public class MyRequestMessageMapper : IAmAMessageMapper<MyRequest>
 When we reply, we again use the message mapper to ensure that we route correctly. Again the key to responding is the **IAmAMessageMapper** implementation which uses the **ReplyAddress** to route the **Message** via its **MessageHeader** back to the caller. Note that whilst the response could be considered an event - a fact raised in response to a command - because it only has one Consumer, the sender, we route it as a command. If you want to broadcast the outcome, treat it as an event, but add **ReplyAddress** to your class derived from **Event** to correlate with the command.
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+
 internal class MyReplyMessageMapper : IAmAMessageMapper<MyReply>
 {
-    public Message MapToMessage(MyReply request)
+    public IRequestContext? Context { get; set; }
+
+    public Message MapToMessage(MyReply request, Publication publication)
     {
         var header = new MessageHeader(
             messageId:request.Id,

@@ -55,3 +55,7 @@ contents/TutorialStreamingWithKafka.md	TutorialStreamingWithKafkaContext	-
 contents/RequestValidation.md	RequestValidationContext	-
 contents/RelationalDatabaseConfigurationReference.md	RelationalDatabaseConfigurationReferenceContext	-
 contents/HealthChecks.md	HealthChecksContext	-
+contents/ClaimCheck.md	ClaimCheckContext	-
+contents/Compression.md	CompressionContext	-
+contents/ErrorHandlingOptions.md	ErrorHandlingOptionsContext	-
+contents/HandlingLargeMessages.md	HandlingLargeMessagesContext	-
