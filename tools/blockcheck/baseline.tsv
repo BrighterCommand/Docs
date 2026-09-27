@@ -251,3 +251,8 @@ contents/MySqlDistributedLock.md	1	DistributedLockProviderContext.cs	b8f21ac
 contents/MySqlDistributedLock.md	2	DistributedLockProviderContext.cs	b8f21ac
 contents/PostgresDistributedLock.md	1	DistributedLockProviderContext.cs	b8f21ac
 contents/PostgresDistributedLock.md	2	DistributedLockProviderContext.cs	b8f21ac
+contents/AzureBlobArchiveProvider.md	1	-	2defac6
+contents/UsingSweeperCircuitBreaking.md	2	UsingSweeperCircuitBreakingContext.cs	2defac6
+contents/UsingSweeperCircuitBreaking.md	3	UsingSweeperCircuitBreakingContext.cs	2defac6
+contents/UsingSweeperCircuitBreaking.md	4	UsingSweeperCircuitBreakingContext.cs	2defac6
+contents/UsingSweeperCircuitBreaking.md	5	UsingSweeperCircuitBreakingContext.cs	2defac6
