@@ -509,7 +509,7 @@ recorded in `tools/README.md` row 9.
   - Notes: `RequestValidation.md` sits in this section in `SUMMARY.md`; if 1.10 places it in
     tranche 1 it is this task's largest page.
 
-- [ ] **Task 2.4:** Repair the *Brighter Configuration* and *Health Checks and Observability* tranche pages
+- [x] **Task 2.4:** Repair the *Brighter Configuration* and *Health Checks and Observability* tranche pages
   - Input: those sections' rows; `--classify` on each
   - Output: each page whole; baseline rows; any stubs with their `pages.tsv` rows
 
@@ -627,6 +627,52 @@ listed in the baseline commit; 12 blocks stay FAILED and are listed. `pagelint` 
   `0363fae`. `--report` → exit **0**, *"989 blocks: 113 BUILT, 860 FAILED, 16 SKIPPED"*, baseline 113,
   0 findings. The AC2 diff against `before.tsv` prints 12 lines, every one `FAILED -> BUILT`: 2.2's
   three and these nine
+
+**Task 2.4 — *Brighter Configuration* and *Health Checks and Observability*.** Three pages.
+**BUILT 113 → 120** (+7), every reachable block; **none stays FAILED**. `pagelint` **737 → 730**.
+
+- **`using`s:** `AnalyzerSupport.md` #3, #4, #5, #6, #8 — `Paramore.Brighter` and
+  `Paramore.Brighter.MessagingGateway.Kafka`, the two blocks 1 and 2 already carry
+- **Two units.** `RelationalDatabaseConfigurationReferenceContext.cs` supplies
+  `DbConnectionString()`, which block 1 calls and the page leaves to the reader's configuration.
+  `HealthChecksContext.cs` supplies the `WebApplicationBuilder` block 1 elides as *"Web
+  Application Builder code goes here"*. `--report` → *"18 units checked, 0 violations"*
+- **A defect found by running, not compiling** (§ *Defect ledger*): `HealthChecks.md` #1 called
+  `app.UseEndpoints(...)` on a `WebApplication` with no `app.UseRouting()`, and **throws at
+  startup** — `InvalidOperationException`, *"EndpointRoutingMiddleware … must be added to the
+  request execution pipeline before EndpointMiddleware"*. It compiled clean with its `using`s;
+  only the run found it. Repaired to `app.MapHealthChecks(...)` on the app. The one recurrence,
+  `BrighterControlAPI.md` #1 (a phase 5 page), is repaired the same way, to
+  `app.MapBrighterControlEndpoints()`, with its `using`; it stays FAILED on `app` alone
+  (*values*), for phase 5
+- **Behaviour, run with controls** against released 10.7.0 packages: a scratch web app, the
+  page's block verbatim after a harness `builder` and a `Dispatcher` with one
+  `InMemorySubscription<Ping>` of two performers
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `/health` returns 200 with the status as its body | dispatcher started → `Healthy` [200] | dispatcher not started → `Unhealthy` [503] |
+  | `/health/detail` returns the page's JSON shape | `{"status":"Healthy","results":{"Brighter":{"status":"Healthy","description":"2 healthy consumers.",…}},"totalDuration":…}` — the page's keys and casing | not started → `"Unhealthy"`, *"ping has 0 of 2 expected consumers"* |
+  | the block runs at all | repaired form → serves both endpoints | the page's old `UseEndpoints` form → throws before serving |
+
+  The *Health Status* table's third row is the control's result; its *Degraded* row is read from
+  `BrighterServiceActivatorHealthCheck.cs` at 10.7.0 (`activeConsumers > 0 ? Degraded :
+  Unhealthy`), not run
+- **Found, not repaired — a maintainer decision.** `AnalyzerSupport.md` documents **BRT006–BRT008**,
+  the Kafka partitioner analyzers and their code fixes, and names
+  `KafkaPublicationPartitionerAnalyzer.cs` as reference code. **No release carries them**: 10.7.0's
+  `src/Paramore.Brighter.Analyzer/Analyzers/` has three analyzers (BRT001–005), Brighter `master`
+  has none of the three files, and they exist only on `add.kafka.analyzer`, BrighterCommand/Brighter#4255,
+  **open**. The page's blocks compile regardless — they are plain `KafkaPublication` initializers —
+  so the baseline rows are sound; what is false is the claim that the package warns. Recorded in
+  § *Defect ledger*
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 7 rows at `51b5fef`. `--report` → exit **0**, *"989 blocks: 120 BUILT, 853 FAILED,
+  16 SKIPPED"*, baseline 120, 0 findings. `before.tsv` regenerated from `c7329bb` (989 rows, *"101
+  BUILT, 872 FAILED, 16 SKIPPED"*); the AC2 diff prints **19** lines, every one `FAILED -> BUILT`:
+  2.2–2.3's twelve and these seven
+- `linkcheck` 165 files, 0 broken; `symbolcheck` 0 findings; `versioncheck` 0 stale of 18 across 5;
+  `pagelint --changed origin/master` 0 errors
 
 ---
 
@@ -1061,6 +1107,8 @@ is rewritten against the tables below.
 |---|---|---|---|---:|---:|---|
 | `HandleAsync(T, CancellationToken? ct = null)` — V9's signature; V10 overrides `Task<TRequest> HandleAsync(TRequest command, CancellationToken cancellationToken = default)` | `RequestHandlerAsync.cs:119` | `ImplementingAsyncHandler.md` (also returned `Task`, not `Task<GreetingCommand>`; its prose said to *"default to null"*), `BuildingAnAsyncPipeline.md` | `grep -rn 'CancellationToken?' contents/` | **2** | **0** | 2.3, `--explain` after the page's `using`s |
 | `public Guid Id { get; set; }` on a request — hides `IRequest.Id`, which is an `Id` | `IRequest.cs:47` | `ImplementingAsyncHandler.md` | `grep -rn 'public Guid Id\b' contents/` | **2** | **1** — the other is not this defect (next row) | 2.3, reading |
+| `app.UseEndpoints(...)` on a `WebApplication` with no `app.UseRouting()` — throws `InvalidOperationException` at startup | run against 10.7.0 packages, net10.0; the control is the page's old block | `HealthChecks.md`, `BrighterControlAPI.md` | `grep -rn 'UseEndpoints' contents/` | **2** | **0** | 2.4, running the block |
+| BRT006–BRT008 (Kafka partitioner analyzers, code fixes) documented as shipped — in no release; only on BrighterCommand/Brighter#4255, open | `git ls-tree 10.7.0 src/Paramore.Brighter.Analyzer/Analyzers/` → 3 analyzers, BRT001–005 | `AnalyzerSupport.md` | `grep -rln 'BRT00[678]' contents/` | **1** | **open — maintainer's decision** | 2.4, verifying the page's reference code |
 | `IRequestContext` implemented with `Guid Id`, `ISpan Span`, `Dictionary<string, object> Bag`, `CustomHeaders` — at 10.7.0 the interface has no `Id` and no `CustomHeaders`, `Span` is an `Activity`, `Bag` a `ConcurrentDictionary` | `IRequestContext.cs` | `V10MigrationGuide.md:320` | — | **1** | **open — phase 5**, which holds that page for its E4 repair | 2.3, the row above's grep |
 
 ## Friction ledger
