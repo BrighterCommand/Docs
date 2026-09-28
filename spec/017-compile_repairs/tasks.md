@@ -2329,11 +2329,55 @@ Repair `f4cfd88`; baseline `5c68181`.
   3 silenced, `--verify-list` clean; `optioncheck` 0, 59 tables, 519 rows; shape, redirects,
   `--verify` 161 / 77 / 161. **Pages changed: 5** (`git diff --name-only 608615a..HEAD --
   contents`), the five E4 pages
-- **Not repaired, found on the way, for the maintainer:** `PipelineValidation.md`'s Replay rule row
-  and its two Replay example messages describe a forthcoming feature without the *Not in a released
-  package yet* marker; `MessageMappers.md`, the mapper's home page, never mentions
-  `IAmAMessageMapperAsync<T>`; and `UsingTheContextBag.md`'s handler examples set `Context.Bag`
-  keys without posting, which is the claim #13 above replaced rather than a run of it
+- **Found on the way and put to the maintainer:** `PipelineValidation.md`'s Replay rule row and its
+  two Replay example messages describe a forthcoming feature without the *Not in a released package
+  yet* marker; `MessageMappers.md`, the mapper's home page, never mentions `IAmAMessageMapperAsync<T>`;
+  and `UsingTheContextBag.md`'s handler examples set `Context.Bag` keys without posting. **Ruled
+  2026-09-28: into phase 5**, the second pass below
+
+**Task 5.5, second pass — the three items, by ruling.** Pages changed: **5**, `PipelineValidation.md`,
+`MessageMappers.md`, `UsingTheContextBag.md`, and `DispatcherConfigurationReference.md` and
+`BrighterOutboxSupport.md`, found by the Replay recurrence grep. **BUILT 295 → 295**; **989 → 990 blocks**, one inserted:
+`MessageMappers.md` #2, the async mapper, FAILED on its page type `GreetingMade`. The AC2 diff against
+the first pass's report reads `MessageMappers.md` #3 `BUILT -> FAILED`, #4 `FAILED -> BUILT` and #7
+as a new key: the insert renumbered old #2–#6 to #3–#7, and old #3's baseline row moved to #4
+(§ *Splits*). `pagelint` **543 → 537**, all on `UsingTheContextBag.md` (#2–#6 and #18, per page
+against a worktree at `ac44085`); the new block carries its `using`s. Pages with nothing BUILT **41**,
+unmoved. `attr_mismatch.py` **1**, exit 1, still **`PipelineValidation.md:250`**: the Replay note first
+went in as a line after the example messages and moved the hit to `:252`; it now sits in the existing
+**Example error messages** line, so nothing above `:250` changed length. `--plant` OK. Repair
+`6ddcf7b`, `dc3e5bd`; baseline `4fc4040`. `--report` → exit **0**, *"990 blocks: 295 BUILT, 678 FAILED,
+17 SKIPPED"*, baseline 295, 0 findings; `dc3e5bd` moved no verdict.
+
+- **`PipelineValidation.md`, Replay.** `git grep -il causation 10.7.0 -- src` → **0** files; on
+  `master`, `Validation/HandlerPipelineValidationRules.cs` and `PipelineValidator.cs`. The rule's row,
+  the line introducing the example messages and § *Replay Without Causation Tracking* now say it
+  ships after 10.7.0; the section carries the callout as the Replay On Seen pages word it. The other
+  rules on the page are in the tag (5.5's run reported two of them); `UseBoxProvisioning` and
+  `AddMsSqlOutbox`, in the section's blocks, are too
+- **`MessageMappers.md`** gains *Synchronous and Asynchronous Message Mappers*: an
+  `IAmAMessageMapperAsync<GreetingMade>` beside the page's sync one, and which path uses which, linking
+  `DefaultMessageMappers.md` and `ReactorAndProactor.md`'s section. Written from the run below, all
+  four producer calls, with the two pumps from the first pass
+- **`UsingTheContextBag.md`.** #3 (partition key), #5 (headers) and #6 (CloudEvents extensions) set
+  keys on the handler's own `Context` and posted nothing; #2 and #18 filled a context and passed it to
+  `SendAsync`, which makes no message. Each now fills a `RequestContext` and passes it to the `Post`
+  or `PostAsync` that makes the message, and a paragraph under *Setting Request Context Explicitly*
+  says why, from the run. The Bag-key snippets under *Well-Known Context Bag Keys* and the practices
+  are left: they show the key's name, not where it takes effect. *"Headers set here take precedence
+  over static header configurations"* stays, now run (`DictionaryExtensions.Merge`, the context's
+  entry overwrites the publication's)
+- **`--explain` on the seven touched blocks** (#4 as well, `context` a value): page types and values only (`CreateOrderRequest`,
+  `OrderCreated`, `MyCommand`, `TenantWorkDone`, `IOrderService`, `ProcessOrderCommand`,
+  `OrderProcessed`, `PublishEventCommand`, `BusinessEventRaised`, `GreetingMade`; `tenantId`,
+  `criticalHeaders`, `commandProcessor`, `orderCreated`). `pagelint --changed origin/master` → **0** errors
+- **Behaviour, run with controls** (`bagrun`, `bagrun2`, `maprun`), 10.7.0, net10.0, `InternalBus`:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | Keys act only on the context passed to the post | handler fills its own `Context.Bag`, `PostAsync(…, requestContext: Context as RequestContext)` → partition key and header on the message | same handler, `PostAsync` with no context → neither. A caller's context passed to `SendAsync` reaches the handler (its key is present) and still → neither, when the handler posts without one |
+  | #3's shape, sync | `Post(…, requestContext: context)` inside `Handle` → partition key `tenant-7`, `x-order-priority` `high` over the publication's `DefaultHeaders` value | `Post` with no context → no partition key, the publication's `publication-default` |
+  | Each call uses only its own kind of mapper | `Post`, `DepositPost` + `ClearOutbox` on a sync-only type → the custom sync mapper; `PostAsync`, `DepositPostAsync` + `ClearOutboxAsync` on an async-only type → the custom async mapper | the crossed four → **the default mapper (JSON)**, all four |
 
 ---
 
@@ -2685,6 +2729,7 @@ is rewritten against the tables below.
 | `CloudEventsReference.md` | 3, 4 | 4, 5 | not a split: a block inserted at #3, the Kafka partition key set per message. Old #3 (SNS) and #4 (Azure Service Bus) are now #4 and #5; all five build, so the AC2 diff reads #3, #4 `FAILED -> BUILT` and #5 as a new key | 5.3 |
 | `Telemetry.md` | 1–5 | 2–6 | not a split: a block inserted at #1, *Enabling Brighter's Spans*, FAILED on the pin. Old #1 and #4, BUILT, are now #2 and #5, their rows moved; so the AC2 diff reads #1 `BUILT -> FAILED` and #6 as a new key | 5.3 |
 | `CQRSWithBrighterAndDarker.md` | — | 7 | not a split: the write model inserted above the handler, so old #7–#12 are #8–#13, FAILED both sides. A new key, BUILT | 5.4 |
+| `MessageMappers.md` | 2–6 | 3–7 | not a split: the async mapper inserted at #2. Old #3, BUILT, is now #4, its row moved (old row removed, new row at `6ddcf7b`); so the AC2 diff reads #3 `BUILT -> FAILED`, #4 `FAILED -> BUILT` and #7 as a new key. The rest FAILED both sides | 5.5 |
 | `DefaultMessageMappers.md` | 4 | 4, 5, 6 | the Avro mapper rewritten as three fences: the mapper (#4, BUILT), the avrogen partial (#5, BUILT) and its registration (#6, same-page). Old #5–#13 are #7–#15, FAILED both sides | 5.4 |
 
 ## Blocks removed
@@ -2815,6 +2860,9 @@ BUILT, re-admitted at `ec38400`.
 | A resilience registry assigned to `PolicyRegistry`, the obsolete Polly v7 `IPolicyRegistry<string>`; and built with `TryAddBuilder<ResiliencePropertyKey<RequestContext>>`, a typed builder Brighter never looks up | `BrighterOptions.cs:56`, `:59` | `V10MigrationGuide.md` #9, #11 | `grep -rnE 'PolicyRegistry *= *\w*[Rr]esilience' contents/`; `grep -rn 'TryAddBuilder<' contents/` | **2** | **0** | 5.5, `--explain` of § 4 |
 | `IRequestContext.InstrumentationOptions` *"added in 10.7.0"*: it is after 10.7.0, forthcoming, and was unmarked | `IRequestContext.cs` at 10.7.0 (0 hits); `release_notes.md` *Master*; NuGet's latest is 10.7.0 | `V10MigrationGuide.md` | `grep -rn 'added in 10\.7\.0' contents/`; `grep -rnE '(added\|new\|introduced\|since) (in )?(Brighter )?(V?10\.7(\.0)?)' contents/` → 0 more | **1** | **0**, marked *Not in a released package yet* | 5.5, reading § 5 |
 | Mappers said to have no async variants, with `Task.Run()` wrappers advised; a Proactor maps with `IAmAMessageMapperAsync<T>` and skips a sync-only mapper for the default, silently | `Proactor.cs:63`, `Reactor.cs:63`; run both ways | `ReactorAndProactor.md` #5 and its note | `grep -rniE "mappers? (don't\|do not\|never) have async\|mappers? remain synchronous\|mappers? (are\|stay) synchronous" contents/` | **2** lines | **0** | 5.5, reading around `:200` |
+| Forthcoming Replay validation shown unmarked: the rule's row, two example messages and a section, with no *Not in a released package yet* | `git grep -il causation 10.7.0 -- src` → 0; on `master`, the validation rules | `PipelineValidation.md` | `grep -rln 'OnceOnlyAction.Replay' contents/` → **8** pages, each read beside `grep -c 'Not in a released package yet'`: five marked already; `DispatcherConfigurationReference.md` (`ActionOnExists`) and `BrighterOutboxSupport.md` (the Sweeper) named Replay as an option with no marker, and now say it ships after 10.7.0 | **3** pages | **0** | 5.5, ruled into phase 5 |
+| The mapper's home page names only `IAmAMessageMapper<T>`; nothing there says `PostAsync`, `DepositPostAsync` and a Proactor use `IAmAMessageMapperAsync<T>` and fall back to the default mapper silently | run, all four calls and both pumps | `MessageMappers.md` | `grep -c 'IAmAMessageMapperAsync' contents/MessageMappers.md` | **0** | **3** | 5.5, ruled into phase 5 |
+| Partition key, headers or CloudEvents extensions set on a handler's own `Context` with nothing posted, or on a context passed to `SendAsync`; they act only on the context passed to the call that makes the message | `CommandProcessor.cs:1533` (`requestContext ?? _requestContextFactory.Create()`); run | `UsingTheContextBag.md` #2, #3, #5, #6, #18 | `grep -rnE 'Context\.Bag\[RequestContextBagNames\.(PartitionKey\|Headers\|CloudEvents)' contents/` → 3 lines, the page's key snippets, each read; `:117`, *"Or using a PartitionKey object"*, wrote to `Context` under an example that now fills `context`, and follows it; `grep -rnE 'SendAsync\([^)]*requestContext' contents/` | **5** | **0** | 5.5, ruled into phase 5 |
 
 ## Friction ledger
 
