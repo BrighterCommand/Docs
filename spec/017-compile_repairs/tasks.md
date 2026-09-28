@@ -2549,6 +2549,33 @@ widening, both ledgers written, and the residual sentence 018 starts from.
     lines updated; § *What 017 shipped* ending in **one sentence naming the residual**, its figure
     re-derived by `--classify` (P2-1) — the line 018 starts from; `PROMPT.md` updated
 
+### Phase 6 as executed
+
+#### The acceptance walk: the three criteria with no instrument *(task 6.1)*
+
+Walked first, at `960ce6d`. The walker prepares each reading; the verdict is the named reader's.
+
+| # | Who reads it | What they read | Walker's finding | Verdict |
+|---|---|---|---|---|
+| **AC6** | **the maintainer** | `--list-scaffold`: *"427 identifiers from 45 unit(s) … 67 page(s) scaffolded"*; the 45 unit files (1,391 lines), each stub under a comment naming the block that uses it; **143 stubbed types** in 16 units, the other 29 units supplying values only | Rules 2–4 and rule 1's first half are enforced: `--report` → *"scaffold rule: 45 units checked, 0 violations"*. For rule 1's second half, every page line naming a stubbed type was read — **12** prose lines, **7** in-block comments — and **none** tells the reader to write the type: each says the type is the sample's or another page's. Worth the reader's eye: `TestingQueryHandlersContext.cs` stubs the two handlers under test, with bodies that throw (the page says they are written elsewhere); `TutorialStreamingWithKafkaContext.cs` stubs `GreetingEvent`, which the reader wrote in `TutorialFirstMessage.md` #1 | *not yet ruled* |
+| **AC8**, second half | **the reviewer** | the **44** `// ...` lines the diff `c7329bb..HEAD -- contents/` adds, each mapped to its block; and `pagelint`'s *"is marked `// ...`"* warnings at `c7329bb` and at `HEAD`, per page — **227 → 171** | **38** of the 44 sit in blocks that carry their `using`s. Of the six that do not, five are `AgreementDispatcherRouting.md` blocks that need none — #4, #5, #6, #10, #11 are BUILT with no `using`, #12 fails on `_database` alone. The marked set **grew on three pages**, by six blocks. `QueryPipeline.md` #12, #16, #17 are attribute lists with nothing to decorate (`CS7014`, `CS1002`): no `using` completes them. **Three were marked where the `using` could have been written:** `QueryPipeline.md` #8 (`RetryableQuery`, `Task<>`, `CancellationToken` unresolved), `PolicyFallback.md` #3 (`FallbackPolicy`, `UseResiliencePipeline`), `HowConfiguringTheCommandProcessorWorks.md` #6 (`UseResiliencePipeline`) — each by `--explain`. `PolicyFallback.md` #1 got its `using`s in the same commit (`f2ce226`) | *not yet ruled* — **the walker reads it unmet on three blocks** |
+| **AC11** | **the reviewer** | the **101** rows of the phases' *Claim / Case / Control* tables and their *"Read, not run"* paragraphs, against the **207** repaired blocks whose change is more than a `using` or a fence (`git diff -U0 c7329bb HEAD -- contents/`, hunks against fence ranges), each read with its prose | **119** of the 207 assert behaviour. **89** are covered by a run with its control — about 20 of them by a run of the same claim on a sibling block or page, and two (`DarkerConfigurationReference.md` #4, `ImplementAQueryHandler.md` #16) with a compile failure as the control. **Three table rows have no control**, all 2.5's: unwrap falling back to `DataRef`, `ErrorHandlingOptions.md` #4's commented values, and Compress's threshold (no case). The **30** below are not run with a control | *not yet ruled* — **the walker reads it unmet** |
+
+**AC11's thirty**, by what is missing — each block once, under the first thing it lacks:
+
+| Missing | Blocks |
+|---|---|
+| **no run, a claim 017 wrote** | `KafkaConfiguration.md` #20 — *"a round-trip through a UTF-8 string would corrupt the header"*, added at `:692`; the Avro run (5.3) never takes that path |
+| **no run, a claim 017 kept** | `QueryPipeline.md` #12, #16, #17 — Darker decorator order and what logging sees of retries; `FeatureSwitches.md` #1–#4 — a switched-off handler skipped, `dontAck` leaving the message (compiled only, § *Defect ledger*); `MessageMappers.md` #6 — the same UTF-8 claim as Kafka's; `InMemoryOutbox.md` #2's comment that `PostAsync` deposits; `AgreementDispatcherRouting.md` #9 — `.Handlers()` mixing agreement and fixed routes; `Telemetry.md` #6 — `TraceIdRatioBasedSampler(0.1)`, OpenTelemetry's claim |
+| **half run** | `PolicyFallback.md` #3 and `HandlerFailure.md` #10, #11 — the breaker-around-retry half run, the backstop outside them not; `QueryPipeline.md` #1, #10 — the default retry run, step order and retry-before-fallback not; `BuildingAnAsyncPipeline.md` #2 — the public-handler half run, the async pipeline's order not; `PostgreSQLMessageBroker.md` #5 — the 60 s invisibility; `SchedulingAMessage.md` #5 — `SendAsync(delay)` run, the block's backoff not |
+| **run, no control** | `Telemetry.md` #2, #3, #4 — span names and attributes captured from real spans |
+| **read, not run** | `SchedulingAMessage.md` #6 (`Proactor.cs:522`), `V10MigrationGuide.md` #12 (`CreateCopy`), `DapperOutbox.md` #2 and `DynamoOutbox.md` #2 (the first is the handler 3.3 ran), `CloudEventsReference.md` #4, #5 (SNS, ASB), `BrighterSchedulerSupport.md` #7's delay |
+
+1 + 11 + 8 + 3 + 7. **Every claim in the last row was read against 10.7.0 source and none has been
+found false**; AC11 asks for a run, and these are recorded as read. Phase 6 touches no page, so
+what happens to the 30 and the three `// ...` blocks is the maintainer's to rule: repaired here
+under a ruling, or carried to 018 as named residue.
+
 ---
 
 ## The AC2 before-report
