@@ -363,11 +363,19 @@ deadLetterChannelName: new ChannelName("my.channel.dlq")
 Messages may be delivered more than once. Use the Inbox pattern:
 
 ```csharp
-[UseInbox(step: 0, contextKey: typeof(MyCommand), onceOnly: true)]
-public override async Task<MyCommand> HandleAsync(MyCommand command, CancellationToken ct)
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox.Attributes;
+
+public class MyCommandHandler : RequestHandlerAsync<MyCommand>
 {
-    // Your idempotent logic here
-    return await base.HandleAsync(command, ct);
+    [UseInboxAsync(step: 0, contextKey: typeof(MyCommand), onceOnly: true)]
+    public override async Task<MyCommand> HandleAsync(MyCommand command, CancellationToken ct = default)
+    {
+        // Your idempotent logic here
+        return await base.HandleAsync(command, ct);
+    }
 }
 ```
 

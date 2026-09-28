@@ -66,7 +66,7 @@ resiliencePipelineRegistry.TryAddBuilder("MyRetryPipeline",
 <!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled V9) -->
 ```csharp
 // ...
-internal class MyHandler : RequestHandler<MyCommand>
+public class MyHandler : RequestHandler<MyCommand>
 {
     [UsePolicy("MyRetryPolicy", step: 1)]
     [TimeoutPolicy(milliseconds: 5000, step: 2)]
@@ -77,17 +77,27 @@ internal class MyHandler : RequestHandler<MyCommand>
 }
 ```
 
-**V10**:
+**V10**: a handler method takes one `[UseResiliencePipeline]`, so the retry and the timeout become one pipeline. Add the retry first, so that it wraps the timeout and each attempt is timed on its own, as the two V9 attributes did:
 
 ```csharp
-// ...
-internal class MyHandler : RequestHandler<MyCommand>
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+using Polly;
+using Polly.Retry;
+
+resiliencePipelineRegistry.TryAddBuilder("MyRetryWithTimeoutPipeline",
+    (builder, context) => builder
+        .AddRetry(new RetryStrategyOptions())        // Outer: retries a timed-out attempt
+        .AddTimeout(TimeSpan.FromSeconds(5)));       // Inner: times each attempt
+
+public class MyHandler : RequestHandler<MyCommand>
 {
-    [UseResiliencePipeline("MyRetryPipeline", step: 1)]
-    [UseResiliencePipeline("MyTimeoutPipeline", step: 2)]
+    [UseResiliencePipeline("MyRetryWithTimeoutPipeline", step: 1)]
     public override MyCommand Handle(MyCommand command)
     {
         // Handler logic
+        return base.Handle(command);
     }
 }
 ```
@@ -152,12 +162,13 @@ By adding the **UsePolicy** attribute, you instruct the Command Processor to ins
 
 ```csharp
 // ...
-internal class MyQoSProtectedHandler : RequestHandler<MyCommand>
+public class MyQoSProtectedHandler : RequestHandler<MyCommand>
 {
     [UsePolicy(policy: "MyExceptionPolicy", step: 1)]
     public override MyCommand Handle(MyCommand command)
     {
         /*Do work that could throw error because of distributed computing reliability*/
+        return base.Handle(command);
     }
 }
 ```
@@ -199,12 +210,13 @@ then you can add them both to your handler as follows:
 
 ```csharp
 // ...
-internal class MyQoSProtectedHandler : RequestHandler<MyCommand>
+public class MyQoSProtectedHandler : RequestHandler<MyCommand>
 {
     [UsePolicy(new [] {"MyCircuitBreakerPolicy", "MyExceptionPolicy"} , step: 1)]
     public override MyCommand Handle(MyCommand command)
     {
         /*Do work that could throw error because of distributed computing reliability*/
+        return base.Handle(command);
     }
 }
 ```

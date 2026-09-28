@@ -427,9 +427,8 @@ Backstop attributes should be at the **outermost** position in the pipeline (low
 ```csharp
 public class OrderHandler : RequestHandler<PlaceOrder>
 {
-    [RejectMessageOnError(step: 0)]                       // Outermost: backstop
-    [UseResiliencePipeline("OrderCircuitBreaker", step: 1)] // Middle: circuit breaker
-    [UseResiliencePipeline("OrderRetryPolicy", step: 2)]    // Innermost: retry
+    [RejectMessageOnError(step: 0)]                                // Outermost: backstop
+    [UseResiliencePipeline("OrderCircuitBreakerAndRetry", step: 1)] // Inside: circuit breaker, then retry
     public override PlaceOrder Handle(PlaceOrder command)
     {
         // 1. Retry wraps the handler (retries transient failures)
@@ -443,14 +442,15 @@ public class OrderHandler : RequestHandler<PlaceOrder>
 }
 ```
 
+A handler method takes one `[UseResiliencePipeline]`, so the circuit breaker and the retry are one pipeline, `OrderCircuitBreakerAndRetry`, which adds its circuit breaker before its retry so that the breaker wraps the retry; see [Combining Multiple Strategies](/contents/PolicyRetryAndCircuitBreaker.md#combining-multiple-strategies). A second `[UseResiliencePipeline]` on the method would not compile.
+
 The async equivalent uses the async variants of each attribute:
 
 ```csharp
 public class OrderHandler : RequestHandlerAsync<PlaceOrder>
 {
     [RejectMessageOnErrorAsync(step: 0)]
-    [UseResiliencePipelineAsync("OrderCircuitBreaker", step: 1)]
-    [UseResiliencePipelineAsync("OrderRetryPolicy", step: 2)]
+    [UseResiliencePipelineAsync("OrderCircuitBreakerAndRetry", step: 1)]
     public override async Task<PlaceOrder> HandleAsync(
         PlaceOrder command, CancellationToken cancellationToken = default)
     {

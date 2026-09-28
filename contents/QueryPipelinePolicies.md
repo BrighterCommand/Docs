@@ -179,6 +179,41 @@ var circuitBreaker = Policy
         });
 ```
 
+**Retry and circuit breaker in one policy:**
+
+`[RetryableQuery]` runs the one policy it names, so a handler that names a circuit breaker gets no retry. To retry *and* break, wrap the two and register the wrap under its own name:
+
+```csharp
+using System;
+using Paramore.Darker.Policies;
+using Polly;
+using Polly.Registry;
+
+var retry = Policy
+    .Handle<Exception>()
+    .WaitAndRetryAsync(new[]
+    {
+        TimeSpan.FromMilliseconds(50),
+        TimeSpan.FromMilliseconds(100),
+        TimeSpan.FromMilliseconds(150)
+    });
+
+var breaker = Policy
+    .Handle<Exception>()
+    .CircuitBreakerAsync(
+        exceptionsAllowedBeforeBreaking: 2,
+        durationOfBreak: TimeSpan.FromSeconds(30));
+
+var policyRegistry = new PolicyRegistry
+{
+    { Constants.RetryPolicyName, retry },
+    { Constants.CircuitBreakerPolicyName, breaker },
+    { "ExternalApiRetryAndBreak", Policy.WrapAsync(retry, breaker) }
+};
+```
+
+A handler then names the wrap, `[RetryableQuery(2, "ExternalApiRetryAndBreak")]`. The retry is on the outside, so every attempt passes through the breaker: after two failures the breaker opens, and the retries left fail at once with `BrokenCircuitException`, without reaching your handler. `AddPolicies()` requires both `Constants` names in the registry, whatever else you register, and throws a `ConfigurationException` if either is missing.
+
 For more information on Polly policies, see the [Polly documentation](https://github.com/App-vNext/Polly) and the Brighter documentation on [Supporting Retry and Circuit Breaker](/contents/PolicyRetryAndCircuitBreaker.md).
 
 ## Further Reading

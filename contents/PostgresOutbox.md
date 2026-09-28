@@ -133,6 +133,8 @@ The `TransactionProvider` depends on how you manage your database transactions.
 - Use `PostgreSqlTransactionProvider` for ADO.NET-based transaction management.
 - Use `PostgreSqlEntityFrameworkTransactionProvider<T>` if you are using Entity Framework Core, where `T` is your `DbContext`.
 
+`Paramore.Brighter.PostgreSql.EntityFrameworkCore` brings the EF Core of your target framework — EF Core 10 on `net10.0` — so reference the matching major version of `Npgsql.EntityFrameworkCore.PostgreSQL`. On `net10.0`, its 9.x provider fails at runtime with a `MissingMethodException`.
+
 ### **Example with Entity Framework Core**
 
 For more detailed information on integrating with Entity Framework Core, please see the [EF Core Outbox documentation](/contents/EFCoreOutbox.md).

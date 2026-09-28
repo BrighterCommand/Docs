@@ -29,9 +29,9 @@ The **InMemory Scheduler** is a lightweight, timer-based scheduling implementati
 
 ## What is the InMemory Scheduler?
 
-The InMemory Scheduler uses .NET's `ITimerProvider` internally to schedule delayed execution of messages. When you schedule a message:
+The InMemory Scheduler creates its timers from a .NET `TimeProvider` — `TimeProvider.System` unless you set `InMemorySchedulerFactory.TimeProvider`. When you schedule a message:
 
-1. Brighter creates an in-memory timer for the specified delay
+1. Brighter creates an in-memory timer for the specified delay, with `TimeProvider.CreateTimer`
 2. The timer fires at the scheduled time
 3. Brighter dispatches your message to the appropriate handler
 4. The timer is removed from memory
@@ -47,7 +47,7 @@ CommandProcessor.SendAsync(delay, command)
     ↓
 InMemoryScheduler
     ↓
-ITimerProvider.CreateTimer(delay)
+TimeProvider.CreateTimer(delay)
     ↓
 [Timer stored in memory]
     ↓
@@ -197,35 +197,56 @@ else
 brighter.AutoFromAssemblies();
 ```
 
-### Configuration with Custom Timer Provider
+### Controlling Time in Tests
 
-The InMemory Scheduler uses `ITimerProvider` internally. You can provide a custom implementation for testing:
+The scheduler measures every delay against its `TimeProvider`, so a test can replace the clock rather than wait for it. `FakeTimeProvider`, from the `Microsoft.Extensions.TimeProvider.Testing` package, only moves when you call `Advance`:
 
 ```csharp
-public class FakeTimerProvider : ITimerProvider
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
+var timeProvider = new FakeTimeProvider();
+
+var services = new ServiceCollection();
+services.AddBrighter()
+    .UseScheduler(new InMemorySchedulerFactory { TimeProvider = timeProvider })
+    .AsyncHandlers(registry => registry.RegisterAsync<SendReminder, SendReminderHandler>());
+
+var commandProcessor = services.BuildServiceProvider()
+    .GetRequiredService<IAmACommandProcessor>();
+
+await commandProcessor.SendAsync(TimeSpan.FromMinutes(5), new SendReminder());
+
+timeProvider.Advance(TimeSpan.FromMinutes(5));  // SendReminderHandler has run when this returns
+
+public class SendReminder() : Command(Id.Random());
+
+public class SendReminderHandler : RequestHandlerAsync<SendReminder>
 {
-    public ITimer CreateTimer(TimerCallback callback, object state, TimeSpan dueTime, TimeSpan period)
+    public override Task<SendReminder> HandleAsync(SendReminder command, CancellationToken cancellationToken = default)
     {
-        // Custom timer implementation for testing
-        return new FakeTimer(callback, state, dueTime, period);
+        // Your reminder logic here
+        return base.HandleAsync(command, cancellationToken);
     }
 }
-
-// Use in tests
-services.AddBrighter(options => { ... })
-    .UseScheduler(new InMemorySchedulerFactory(new FakeTimerProvider()))
-    .AutoFromAssemblies();
 ```
+
+`Advance` runs any timer that falls due on the calling thread, so the handler has run by the time the call returns, and the test needs no `Task.Delay`. Until you advance the clock, nothing fires: advancing it by four minutes and fifty-nine seconds leaves the command unhandled, and real time passing does not move a `FakeTimeProvider` at all.
+
+The handler is registered with `AsyncHandlers` rather than `AutoFromAssemblies()` because of a 10.7.0 defect in registering the scheduler's own handlers — see [Registering Handlers When You Schedule Requests](/contents/SchedulingAMessage.md#registering-handlers-when-you-schedule-requests).
 
 ## InMemory Scheduler NuGet Package
 
-To use the InMemory Scheduler, install the NuGet package:
+The InMemory Scheduler has no package of its own: `InMemoryScheduler` and `InMemorySchedulerFactory` are in `Paramore.Brighter`, and `UseScheduler` comes with the dependency-injection package you already use to configure Brighter:
 
 ```bash
-dotnet add package Paramore.Brighter.InMemoryScheduler
+dotnet add package Paramore.Brighter.Extensions.DependencyInjection
 ```
-
-**Package**: `Paramore.Brighter.InMemoryScheduler`
 
 ## InMemory Scheduler Code Examples
 

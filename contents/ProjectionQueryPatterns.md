@@ -19,6 +19,7 @@ How to return only the fields a caller needs: simple projections, projections ac
 using Microsoft.EntityFrameworkCore;
 using Paramore.Darker;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -71,6 +72,8 @@ public sealed class GetCustomerSummariesQueryHandler :
 ```csharp
 using Microsoft.EntityFrameworkCore;
 using Paramore.Darker;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;

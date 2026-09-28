@@ -38,14 +38,22 @@ Common scenarios for message scheduling include:
 The `IAmACommandProcessor` interface provides methods for scheduling delayed messages:
 
 ```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public interface IAmACommandProcessor
 {
-    Task<string> SendAsync<T>(T command, DateTimeOffset at, CancellationToken cancellationToken = default) where T : class, IRequest;
-    Task<string> SendAsync<T>(T command, TimeSpan delay, CancellationToken cancellationToken = default) where T : class, IRequest;
-    Task<string> PublishAsync<T>(T @event, DateTimeOffset at, CancellationToken cancellationToken = default) where T : class, IRequest;
-    Task<string> PublishAsync<T>(T @event, TimeSpan delay, CancellationToken cancellationToken = default) where T : class, IRequest;
-    Task<string> PostAsync<T>(T request, DateTimeOffset at, CancellationToken cancellationToken = default) where T : class, IRequest;
-    Task<string> PostAsync<T>(T request, TimeSpan delay, CancellationToken cancellationToken = default) where T : class, IRequest;
+    // ... the immediate overloads, and the synchronous Send, Publish and Post
+
+    Task<string> SendAsync<TRequest>(DateTimeOffset at, TRequest command, RequestContext? requestContext = null, bool continueOnCapturedContext = true, CancellationToken cancellationToken = default) where TRequest : class, IRequest;
+    Task<string> SendAsync<TRequest>(TimeSpan delay, TRequest command, RequestContext? requestContext = null, bool continueOnCapturedContext = true, CancellationToken cancellationToken = default) where TRequest : class, IRequest;
+    Task<string> PublishAsync<TRequest>(DateTimeOffset at, TRequest @event, RequestContext? requestContext = null, bool continueOnCapturedContext = true, CancellationToken cancellationToken = default) where TRequest : class, IRequest;
+    Task<string> PublishAsync<TRequest>(TimeSpan delay, TRequest @event, RequestContext? requestContext = null, bool continueOnCapturedContext = true, CancellationToken cancellationToken = default) where TRequest : class, IRequest;
+    Task<string> PostAsync<TRequest>(DateTimeOffset at, TRequest request, RequestContext? requestContext = null, Dictionary<string, object>? args = null, bool continueOnCapturedContext = true, CancellationToken cancellationToken = default) where TRequest : class, IRequest;
+    Task<string> PostAsync<TRequest>(TimeSpan delay, TRequest request, RequestContext? requestContext = null, Dictionary<string, object>? args = null, bool continueOnCapturedContext = true, CancellationToken cancellationToken = default) where TRequest : class, IRequest;
 }
 ```
 

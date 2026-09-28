@@ -30,11 +30,16 @@ The following example shows a Handler with **Request Handler Attributes** for [R
 ### Example with Resilience Pipelines (V10)
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+using Paramore.Brighter.Policies.Handlers;
+using Polly.CircuitBreaker;
+
 public class MyFallbackProtectedHandler: RequestHandler<MyCommand>
 {
     [FallbackPolicy(backstop: false, circuitBreaker: true, step: 1)]
-    [UseResiliencePipeline("MyCircuitBreakerPipeline", step: 2)]
-    [UseResiliencePipeline("MyRetryPipeline", step: 3)]
+    [UseResiliencePipeline("MyCircuitBreakerAndRetryPipeline", step: 2)]
     public override MyCommand Handle(MyCommand command)
     {
         // Do some work that can fail
@@ -99,21 +104,24 @@ Where you put any **FallbackPolicy** attribute determines what exceptions it wil
 ### Pipeline Order
 
 ```csharp
-[FallbackPolicy(backstop: true, step: 1)]         // Outermost: Catches ALL exceptions
-[UseResiliencePipeline("CircuitBreaker", step: 2)] // Middle: Circuit breaker
-[UseResiliencePipeline("Retry", step: 3)]          // Innermost: Retry
+// ...
+[FallbackPolicy(backstop: true, step: 1)]                  // Outermost: Catches ALL exceptions
+[UseResiliencePipeline("CircuitBreakerAndRetry", step: 2)] // Inside: circuit breaker, then retry
 public override MyCommand Handle(MyCommand command)
 {
     // Handler logic
+    return base.Handle(command);
 }
 ```
 
 **Execution flow**:
 
-1. Fallback wraps everything (catches all exceptions from steps 2, 3, and handler)
-2. Circuit breaker wraps retry and handler (fails fast if open)
-3. Retry wraps handler (retries on failures)
+1. Fallback wraps everything (catches all exceptions from step 2 and the handler)
+2. The pipeline's circuit breaker wraps its retry and the handler (fails fast if open)
+3. The pipeline's retry wraps the handler (retries on failures)
 4. Handler executes
+
+`CircuitBreakerAndRetry` is one pipeline that adds its circuit breaker before its retry: a handler method takes one `[UseResiliencePipeline]`, and the first strategy added to a pipeline is its outermost. See [Combining Multiple Strategies](/contents/PolicyRetryAndCircuitBreaker.md#combining-multiple-strategies).
 
 If the handler throws an exception:
 

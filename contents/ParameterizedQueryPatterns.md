@@ -18,6 +18,7 @@ Query recipes that take parameters: looking up a single entity, filtering a list
 This is the most common query pattern - retrieving one entity when you have its ID or another unique key.
 
 ```csharp
+using System;
 using Paramore.Darker;
 
 // Query by primary key
@@ -63,6 +64,7 @@ public sealed class GetOrderLineQuery : IQuery<OrderLineDto?>
 ```csharp
 using Microsoft.EntityFrameworkCore;
 using Paramore.Darker;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -133,7 +135,7 @@ using Paramore.Darker;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Task;
+using System.Threading.Tasks;
 
 public sealed class GetOrdersByCustomerQueryHandler :
     QueryHandlerAsync<GetOrdersByCustomerQuery, IReadOnlyList<OrderSummaryDto>>

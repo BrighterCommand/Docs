@@ -70,7 +70,7 @@ With a Proactor your handlers, mappers and middleware should be async.
 
 ## Handler and Mapper Requirements
 
-**Critical:** Your choice of Reactor or Proactor determines which handler and mapper types you must use. Mixing sync and async implementations will cause runtime errors.
+**Critical:** Your choice of Reactor or Proactor determines which handler and mapper types you must use. Mixing sync and async handlers or middleware will cause runtime errors; a mapper of the wrong kind is skipped without an error, as [Proactor Message Mappers](#proactor-message-mappers) shows.
 
 ### Reactor Pattern Requirements
 
@@ -160,18 +160,22 @@ public class MyCommandHandlerAsync : RequestHandlerAsync<MyCommand>
 ```
 
 #### Proactor Message Mappers
-Message mappers remain synchronous (they don't perform I/O), but the mapper is called from an async context:
+Implement `IAmAMessageMapperAsync<T>` (not `IAmAMessageMapper<T>`), with asynchronous `MapToMessageAsync` and `MapToRequestAsync` methods:
 
 ```csharp
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Paramore.Brighter;
 
-public class MyCommandMessageMapper : IAmAMessageMapper<MyCommand>
+public class MyCommandMessageMapperAsync : IAmAMessageMapperAsync<MyCommand>
 {
     public IRequestContext? Context { get; set; }
 
-    // Same synchronous implementation as Reactor
-    public Message MapToMessage(MyCommand request, Publication publication)
+    public Task<Message> MapToMessageAsync(
+        MyCommand request,
+        Publication publication,
+        CancellationToken cancellationToken = default)
     {
         var header = new MessageHeader(
             messageId: request.Id,
@@ -179,25 +183,33 @@ public class MyCommandMessageMapper : IAmAMessageMapper<MyCommand>
             messageType: MessageType.MT_COMMAND
         );
         var body = new MessageBody(JsonSerializer.Serialize(request));
-        return new Message(header, body);
+        return Task.FromResult(new Message(header, body));
     }
 
-    public MyCommand MapToRequest(Message message)
+    public Task<MyCommand> MapToRequestAsync(
+        Message message,
+        CancellationToken cancellationToken = default)
     {
-        return JsonSerializer.Deserialize<MyCommand>(message.Body.Value);
+        return Task.FromResult(JsonSerializer.Deserialize<MyCommand>(message.Body.Value)!);
     }
 }
 ```
 
-**Note:** Message mappers don't have async variants because they typically don't perform I/O operations—they just transform data structures. If your mapper needs to perform async I/O (e.g., reading from a claim check store), use a custom mapper with synchronous wrapper methods that call `Task.Run()` or similar.
+**A Proactor does not fall back to your synchronous mapper.** If a request type has only an `IAmAMessageMapper<T>`, a Proactor maps it with the default asynchronous mapper instead, and nothing reports the substitution: your mapper never runs. The reverse holds too: a Reactor maps a type that has only an `IAmAMessageMapperAsync<T>` with the default synchronous mapper. If a request type is consumed by both kinds of pump, give it both mappers.
 
 #### Proactor Middleware/Attributes
 Use asynchronous handler attributes and middleware:
 
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 public class MyCommandHandlerAsync : RequestHandlerAsync<MyCommand>
 {
-    [UseResiliencePipeline("RetryPipeline", step: 1)]  // Async resilience pipeline
+    [UseResiliencePipelineAsync("RetryPipeline", step: 1)]  // Async resilience pipeline
     [RequestLoggingAsync(step: 0, timing: HandlerTiming.Before)]  // Async logging
     public override async Task<MyCommand> HandleAsync(
         MyCommand command,

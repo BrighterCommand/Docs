@@ -45,79 +45,122 @@ CloudEvents supports extension attributes for additional metadata:
 
 ## CloudEvents Across Transports
 
-Brighter maps CloudEvents to transport-specific formats automatically. The transport layer handles the conversion based on the protocol's capabilities.
+Your message mapper chooses the content mode, not the transport. The default
+`JsonMessageMapper<T>` writes **binary mode**: the attributes travel beside the body, and the body
+is your request. `CloudEventJsonMessageMapper<T>` writes **structured mode**: the body is the whole
+CloudEvents envelope, with your request as its `data` — see
+[Default Message Mappers](/contents/DefaultMessageMappers.md). Either way, each transport writes the
+attributes where its protocol has room for them, as below.
 
 ### RabbitMQ (AMQP 0-9-1)
 
-RabbitMQ uses **binary mode** with CloudEvents mapped to message headers:
+RabbitMQ carries the attributes as message headers, prefixed `cloudEvents_`:
 
 ```csharp
-// ...
-var publication = new Publication
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
+var publication = new RmqPublication<OrderCreated>
 {
     Topic = new RoutingKey("orders"),
-    RequestType = typeof(OrderCreated),
     Source = new Uri("https://example.com/orders"),
     Type = new CloudEventsType("com.example.order.created")
 };
 
 // Headers will include:
-// ce_id, ce_source, ce_type, ce_specversion, ce_datacontenttype
+// cloudEvents_id, cloudEvents_source, cloudEvents_type, cloudEvents_specversion, cloudEvents_time
 ```
+
+The content type travels in the AMQP `content-type` property rather than a header. The
+`Paramore.Brighter.MessagingGateway.RMQ.Sync` package writes the same headers with the prefix
+`cloudEvents:`.
 
 See: [AMQP Protocol Binding for CloudEvents](https://github.com/cloudevents/spec/blob/main/cloudevents/bindings/amqp-protocol-binding.md)
 
 ### Kafka
 
-Kafka uses **binary mode** with CloudEvents in message headers:
+Kafka carries the attributes as record headers, prefixed `ce_`:
 
 ```csharp
-// ...
-var publication = new Publication
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
+var publication = new KafkaPublication<OrderCreated>
 {
     Topic = new RoutingKey("orders"),
-    RequestType = typeof(OrderCreated),
     Source = new Uri("https://example.com/orders"),
-    Type = new CloudEventsType("com.example.order.created"),
-    PartitionKey = "customer-12345"  // Kafka partition key
+    Type = new CloudEventsType("com.example.order.created")
 };
+
+// Headers will include:
+// ce_id, ce_source, ce_type, ce_specversion, ce_time, content-type
+```
+
+The partition key belongs to each message rather than to the publication. The default mapper takes
+it from the request context, and Kafka writes it as the record's key:
+
+```csharp
+using Paramore.Brighter;
+
+var context = new RequestContext();
+context.Bag[RequestContextBagNames.PartitionKey] = "customer-12345";  // the Kafka record key
+
+await commandProcessor.PostAsync(new OrderCreated(), context);
 ```
 
 See: [Kafka Protocol Binding for CloudEvents](https://github.com/cloudevents/spec/blob/main/cloudevents/bindings/kafka-protocol-binding.md)
+and [Using the Context Bag](/contents/UsingTheContextBag.md)
 
 ### AWS SNS/SQS
 
-AWS SNS/SQS has limited header support, so Brighter uses **structured mode**:
+Brighter writes the CloudEvents attributes together, as a JSON object in one message attribute
+named `cloudeventheaders`, and the body is your request:
 
 ```csharp
-// ...
-var publication = new Publication
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
+var publication = new SnsPublication<OrderCreated>
 {
     Topic = new RoutingKey("orders"),
-    RequestType = typeof(OrderCreated),
     Source = new Uri("https://example.com/orders"),
     Type = new CloudEventsType("com.example.order.created")
 };
 
-// The entire CloudEvents envelope (including data) is in the message body
+// The cloudeventheaders attribute holds:
+// specversion, type, souce, time, datacontenttype, dataschema, baggage,
+// and subject, dataref, traceparent and tracestate when they are set
 ```
+
+The source is written under the key `souce`, as shown: a Brighter consumer reads it back, and a
+consumer of your own has to look for that spelling. This is [BrighterCommand/Brighter#4458](https://github.com/BrighterCommand/Brighter/issues/4458). To put the whole envelope in the body, use
+`CloudEventJsonMessageMapper<T>`.
 
 ### Azure Service Bus
 
-Azure Service Bus supports **binary mode** with headers:
+Azure Service Bus carries the attributes as application properties, prefixed `cloudEvents:`:
 
 ```csharp
-// ...
-var publication = new Publication
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.AzureServiceBus;
+
+var publication = new AzureServiceBusPublication<OrderCreated>
 {
     Topic = new RoutingKey("orders"),
-    RequestType = typeof(OrderCreated),
     Source = new Uri("https://example.com/orders"),
     Type = new CloudEventsType("com.example.order.created")
 };
+
+// Application properties will include:
+// cloudEvents:id, cloudEvents:source, cloudEvents:type, cloudEvents:specversion,
+// cloudEvents:time, cloudEvents:contenttype
 ```
 
-See: [HTTP Protocol Binding for CloudEvents](https://github.com/cloudevents/spec/blob/main/cloudevents/bindings/http-protocol-binding.md) (Azure Service Bus follows HTTP binding)
+See: [AMQP Protocol Binding for CloudEvents](https://github.com/cloudevents/spec/blob/main/cloudevents/bindings/amqp-protocol-binding.md) (Azure Service Bus speaks AMQP 1.0)
 
 ## Further Reading
 

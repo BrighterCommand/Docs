@@ -21,7 +21,14 @@ is the page that explains the pattern itself.
 This is the simplest CQRS pattern, suitable for most applications. Both commands and queries use the same database, but with different models and optimizations.
 
 ```csharp
-// ...
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Paramore.Darker;
+
 // Write Model (Domain Entity) - normalized, enforces business rules
 public class Order
 {
@@ -29,6 +36,8 @@ public class Order
 
     public int Id { get; private set; }
     public int CustomerId { get; private set; }
+    public Customer Customer { get; private set; } = null!;
+    public DateTime CreatedAt { get; private set; }
     public OrderStatus Status { get; private set; }
     public IReadOnlyList<OrderItem> Items => _items.AsReadOnly();
 
@@ -53,20 +62,37 @@ public class Order
 public class OrderSummaryDto
 {
     public int OrderId { get; set; }
-    public string CustomerName { get; set; }  // Joined from Customer table
+    public string CustomerName { get; set; } = "";  // Joined from Customer table
     public int ItemCount { get; set; }
     public decimal TotalAmount { get; set; }
-    public string Status { get; set; }
+    public string Status { get; set; } = "";
     public DateTime OrderDate { get; set; }
+}
+
+// Query - asks for one order's summary
+public class GetOrderSummaryQuery(int orderId) : IQuery<OrderSummaryDto?>
+{
+    public int OrderId { get; } = orderId;
+}
+
+// The EF Core context both sides share: one database, two models
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+{
+    public DbSet<Order> Orders => Set<Order>();
 }
 
 // Query Handler - optimized for read performance
 public class GetOrderSummaryQueryHandler :
-    QueryHandlerAsync<GetOrderSummaryQuery, OrderSummaryDto>
+    QueryHandlerAsync<GetOrderSummaryQuery, OrderSummaryDto?>
 {
     private readonly ApplicationDbContext _dbContext;
 
-    public override async Task<OrderSummaryDto> ExecuteAsync(
+    public GetOrderSummaryQueryHandler(ApplicationDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public override async Task<OrderSummaryDto?> ExecuteAsync(
         GetOrderSummaryQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -190,29 +216,53 @@ This advanced pattern stores all state changes as a sequence of events. The quer
 In a task-based UI, instead of generic CRUD operations, the UI presents specific business tasks as commands:
 
 ```csharp
-// ...
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Paramore.Brighter;
+using Paramore.Darker;
+
 // Task-based commands (specific business operations)
-public class ApproveOrderCommand : IRequest { /* ... */ }
-public class RejectOrderCommand : IRequest { /* ... */ }
-public class ShipOrderCommand : IRequest { /* ... */ }
-
-// Generic queries for display
-public class GetOrderForApprovalQuery : IQuery<OrderApprovalDto> { /* ... */ }
-
-// Controller
-[HttpPost("orders/{orderId}/approve")]
-public async Task<IActionResult> ApproveOrder(int orderId)
+public class ApproveOrderCommand(int orderId) : Command(Id.Random())
 {
-    await _commandProcessor.SendAsync(new ApproveOrderCommand(orderId));
-    return Ok();
+    public int OrderId { get; } = orderId;
 }
 
-[HttpGet("orders/{orderId}/approval")]
-public async Task<IActionResult> GetOrderForApproval(int orderId)
+public class RejectOrderCommand(int orderId) : Command(Id.Random())
 {
-    var result = await _queryProcessor.ExecuteAsync(
-        new GetOrderForApprovalQuery(orderId));
-    return Ok(result);
+    public int OrderId { get; } = orderId;
+}
+
+public class ShipOrderCommand(int orderId) : Command(Id.Random())
+{
+    public int OrderId { get; } = orderId;
+}
+
+// Generic queries for display
+public class GetOrderForApprovalQuery(int orderId) : IQuery<OrderApprovalDto>
+{
+    public int OrderId { get; } = orderId;
+}
+
+// Controller
+[ApiController]
+public class OrderApprovalController(
+    IAmACommandProcessor commandProcessor,
+    IQueryProcessor queryProcessor) : ControllerBase
+{
+    [HttpPost("orders/{orderId}/approve")]
+    public async Task<IActionResult> ApproveOrder(int orderId)
+    {
+        await commandProcessor.SendAsync(new ApproveOrderCommand(orderId));
+        return Ok();
+    }
+
+    [HttpGet("orders/{orderId}/approval")]
+    public async Task<IActionResult> GetOrderForApproval(int orderId)
+    {
+        var result = await queryProcessor.ExecuteAsync(
+            new GetOrderForApprovalQuery(orderId));
+        return Ok(result);
+    }
 }
 ```
 

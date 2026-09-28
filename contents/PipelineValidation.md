@@ -47,9 +47,9 @@ These checks apply to all Brighter applications, including those that only use t
 | Handler type visibility | Error | Handler class must be `public`. Brighter only discovers public handler types — a non-public handler will silently not be found by the pipeline builder. |
 | Sync/async attribute consistency | Error | Async handlers (`IHandleRequestsAsync<T>`) must use async attributes (e.g. `RejectMessageOnErrorAsyncAttribute`). Sync handlers must use sync attributes. A mismatch will throw a `ConfigurationException` at pipeline build time. |
 | Backstop attribute ordering | Warning | Backstop error-handling attributes (`RejectMessageOnError`, `DeferMessageOnError`, `DontAckOnError`) should be at the outermost position (lowest step number). If a backstop has a higher step number than a resilience pipeline attribute, it will never execute on failure. |
-| Replay requires causation tracking | Error and Warning | A pipeline using `OnceOnlyAction.Replay` needs an Inbox and an Outbox that both implement the causation-tracking role interfaces *and* whose live schemas support it. A store that does not implement the interface is an Error; an un-migrated schema, a missing Outbox, or a probe that could not reach the store is a Warning. Only pipelines configured for `Replay` are checked. See [Replay On Seen](/contents/ReplayOnSeen.md). |
+| Replay requires causation tracking | Error and Warning | **Not in a released package yet**: Replay On Seen, and this rule, ship after Brighter 10.7.0. A pipeline using `OnceOnlyAction.Replay` needs an Inbox and an Outbox that both implement the causation-tracking role interfaces *and* whose live schemas support it. A store that does not implement the interface is an Error; an un-migrated schema, a missing Outbox, or a probe that could not reach the store is a Warning. Only pipelines configured for `Replay` are checked. See [Replay On Seen](/contents/ReplayOnSeen.md). |
 
-**Example error messages:**
+**Example error messages** (the last two come from the Replay rule, which ships after Brighter 10.7.0; 10.7.0 does not report them):
 
 ```text
 Handler type 'MyNamespace.OrderHandler' is not public — Brighter only supports
@@ -58,7 +58,7 @@ public handler types. Make the class public so the pipeline builder can find it
 Async handler uses sync attribute 'RejectMessageOnErrorAttribute' at step 0 —
 this will throw a ConfigurationException at pipeline build time
 
-'RejectMessageOnError' at step 5 is after 'UseResiliencePipeline' at step 3 —
+'RejectMessageOnErrorAttribute' at step 5 is after 'UseResiliencePipelineAttribute' at step 3 —
 in Brighter, lower step values are outer wrappers, so the backstop will never
 execute on failure
 
@@ -240,7 +240,7 @@ When `AddConsumers()` is used, validation is deferred to the `ServiceActivatorHo
 
 ### Async Handler with Sync Attributes
 
-An async handler must use async versions of pipeline attributes.
+An async handler must use async versions of pipeline attributes. The example below is wrong: `RejectMessageOnError` is the sync attribute, and the compiler accepts it on `HandleAsync` all the same. `ValidatePipelines()` reports it as an error at startup; without validation, the pipeline throws `ConfigurationException` the first time a request reaches the handler.
 
 **Before** (error):
 
@@ -277,17 +277,45 @@ The backstop attribute should have a lower step number than the resilience pipel
 **Before** (warning):
 
 ```csharp
-[UseResiliencePipeline(step: 0, "RetryPipeline")]  // runs first (inner)
-[RejectMessageOnErrorAsync(step: 1)]                // runs second (outer) — too late!
-public override async Task<OrderCreated> HandleAsync(OrderCreated command, ...)
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+using Paramore.Brighter.Reject.Attributes;
+
+public class OrderHandler : RequestHandlerAsync<OrderCreated>
+{
+    [UseResiliencePipelineAsync("RetryPipeline", step: 0)]  // runs first (outer)
+    [RejectMessageOnErrorAsync(step: 1)]                    // runs second (inner) — too late!
+    public override async Task<OrderCreated> HandleAsync(OrderCreated command,
+        CancellationToken cancellationToken = default)
+    {
+        // ...
+        return await base.HandleAsync(command, cancellationToken);
+    }
+}
 ```
 
 **After** (fixed):
 
 ```csharp
-[RejectMessageOnErrorAsync(step: 0)]                // runs first (outermost)
-[UseResiliencePipeline(step: 1, "RetryPipeline")]    // runs second (inner)
-public override async Task<OrderCreated> HandleAsync(OrderCreated command, ...)
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+using Paramore.Brighter.Reject.Attributes;
+
+public class OrderHandler : RequestHandlerAsync<OrderCreated>
+{
+    [RejectMessageOnErrorAsync(step: 0)]                    // runs first (outermost)
+    [UseResiliencePipelineAsync("RetryPipeline", step: 1)]  // runs second (inner)
+    public override async Task<OrderCreated> HandleAsync(OrderCreated command,
+        CancellationToken cancellationToken = default)
+    {
+        // ...
+        return await base.HandleAsync(command, cancellationToken);
+    }
+}
 ```
 
 In Brighter, lower step numbers are outer wrappers. The backstop needs to be outermost so it catches exceptions from the resilience pipeline and any handlers inside it.
@@ -340,6 +368,10 @@ new RmqSubscription<OrderCreated>(...)
 ```
 
 ### Replay Without Causation Tracking
+
+> **Not in a released package yet.** Replay On Seen ships **after Brighter 10.7.0**, which is
+> the current release. `OnceOnlyAction.Replay` and the validation rule this section describes are
+> on Brighter's development branch and are in no version you can install today.
 
 A handler configured with `OnceOnlyAction.Replay` needs an Inbox and an Outbox that both track Causation Ids, *and* live schemas that can store them. Validation checks each store in turn. Only a store that does not implement the role interface is an Error — an un-migrated schema is a Warning, so the host starts cleanly and replay silently does nothing.
 

@@ -90,6 +90,7 @@ the store be provisioned by your infrastructure and Brighter merely check that i
 ```csharp
 using System.Net.Http;
 using Amazon;
+using Amazon.S3;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.Transformers.AWS;
@@ -111,7 +112,8 @@ services.AddBrighter()
             new AWSS3Connection(awsCredentials, RegionEndpoint.EUWest1),
             bucketName: "my-brighter-luggage")
         {
-            HttpClientFactory = provider.GetRequiredService<IHttpClientFactory>()
+            HttpClientFactory = provider.GetRequiredService<IHttpClientFactory>(),
+            ACLs = S3CannedACL.Private
         }));
 ```
 
@@ -150,6 +152,11 @@ message happens to be, a small one buys you no reprieve.
 
 The same eager `EnsureStoreExists()` is what provisions a *real* store, so a missing bucket or
 container surfaces at the same moment, under whatever `StorageOptions.Strategy` you chose.
+
+**The S3 store needs `ACLs` to create a bucket.** It has no default, so under
+`StorageStrategy.CreateIfMissing` a missing bucket with no `ACLs` set is not created — the store
+throws a `ConfigurationException`, *"No ACL setup on S3Luggage Store"*. That is why the third
+overload above sets `ACLs = S3CannedACL.Private`. See [S3 Luggage Store](/contents/S3LuggageStore.md).
 
 ## Step 4: Attach the Claim Check to Your Mapper
 

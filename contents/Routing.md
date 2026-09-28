@@ -31,6 +31,11 @@ public class TaskCompletedEventMapper : IAmAMessageMapper<TaskCompletedEvent>
         var message = new Message(header, body);
         return message;
     }
+
+    public TaskCompletedEvent MapToRequest(Message message)
+    {
+        return JsonConvert.DeserializeObject<TaskCompletedEvent>(message.Body.Value)!;
+    }
 }
 ```
 

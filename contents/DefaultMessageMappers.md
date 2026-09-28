@@ -82,10 +82,13 @@ services.AddBrighter(options =>
 // Brighter will use JsonMessageMapper<OrderCreated> automatically
 ```
 
-When you publish an `OrderCreated` event:
+When you post an `OrderCreated` event to the external bus:
 
 ```csharp
-await _commandProcessor.PublishAsync(new OrderCreated
+using System;
+using Paramore.Brighter;
+
+await _commandProcessor.PostAsync(new OrderCreated
 {
     Id = Guid.NewGuid().ToString(),
     CustomerId = "12345",
@@ -122,55 +125,106 @@ While default mappers handle most scenarios, you still need custom `IAmAMessageM
 
 ### 1. Non-JSON Serialization Formats
 
-If you need a format other than JSON (Avro, ProtoBuf, XML, etc.) You can register your own default message mapper for these:
+If you need a format other than JSON (Avro, ProtoBuf, XML, etc.), write a mapper for it. This one uses Confluent's schema registry serializers for Avro, from the `Confluent.SchemaRegistry.Serdes.Avro` package. Confluent's `AvroSerializer<T>` serializes classes that implement `ISpecificRecord` — the ones `avrogen` generates from a schema — so the mapper is constrained to them:
 
 ```csharp
-public class AvroMessageMapper<T> : IAmAMessageMapper<T> where T : class, IRequest
+using System.Net.Mime;
+using System.Threading;
+using System.Threading.Tasks;
+using Avro.Specific;
+using Confluent.Kafka;
+using Confluent.SchemaRegistry;
+using Confluent.SchemaRegistry.Serdes;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions;
+
+public class AvroMessageMapperAsync<T>(ISchemaRegistryClient schemaRegistry) : IAmAMessageMapperAsync<T>
+    where T : class, IRequest, ISpecificRecord
 {
-
-    private ISchemaRegistryClient _schemaRegistry;
-    private IEnumerable<KeyValuePair<string, string>> _config; 
-
     public IRequestContext? Context { get; set; }
 
-    public AvroMessageMapper<T>(ISchemaRegistryClient schemaRegistry, IEnumerable<KeyValuePair<string, string>> config) 
-    {
-        _schemaRegistry = schemaRegistry;
-        _config = config;        
-    }
-
-    public Message MapToMessage(T request, Publication publication)
+    public async Task<Message> MapToMessageAsync(T request, Publication publication, CancellationToken cancellationToken = default)
     {
         var header = new MessageHeader(
             messageId: request.Id,
-            topic: publication.Topic,
-            messageType: MessageType.MT_EVENT
-        );
+            topic: publication.Topic!,
+            messageType: request.RequestToMessageType());
 
-        // Serialize using Avro
-        var avroSerializer = new AvroSerializer<T>(_schemaRegistry, _config);
-        var body = new MessageBody(
-            avroSerializer.SerializeAsync(request).AsSyncOverAsync(),
-            CharacterEncoding.Raw
-        );
+        // Registers the schema on first use, and writes Confluent's wire format:
+        // a magic byte and the schema id, then the Avro-encoded record
+        var bytes = await new AvroSerializer<T>(schemaRegistry).SerializeAsync(
+            request,
+            new SerializationContext(MessageComponentType.Value, publication.Topic!.Value));
 
+        var body = new MessageBody(bytes, new ContentType(MediaTypeNames.Application.Octet), CharacterEncoding.Raw);
         return new Message(header, body);
     }
 
-    public T MapToRequest(Message message)
+    public async Task<T> MapToRequestAsync(Message message, CancellationToken cancellationToken = default)
     {
-        var avroDeserializer = new AvroDeserializer<T>();
-        return avroDeserializer.DeserializeAsync(message.Body.Bytes).AsSyncOverAsync();
+        var request = await new AvroDeserializer<T>(schemaRegistry).DeserializeAsync(
+            message.Body.Bytes,
+            isNull: false,
+            new SerializationContext(MessageComponentType.Value, message.Header.Topic.Value));
+
+        // The Id travels in the message header, not in the Avro record
+        request.Id = message.Id;
+        return request;
     }
 }
-
-// Register as your default mapper
-services.AddBrighter(options => { })
-    .AutoFromAssemblies(
-        [typeof(OrderCreated).Assembly],
-        defaultMessageMapper: typeof(AvroMessageMapper<>)
-    );
 ```
+
+`avrogen` generates `OrderShipped` from a schema as a partial class, in the namespace the schema declares:
+
+```json
+{
+  "type": "record",
+  "name": "OrderShipped",
+  "namespace": "Orders",
+  "fields": [
+    { "name": "OrderId", "type": "string" },
+    { "name": "Carrier", "type": "string" }
+  ]
+}
+```
+
+Add the other half, in the same namespace, to make it a Brighter event. `RequestToMessageType` accepts only a command or an event, so implement `IEvent` or `ICommand`, not bare `IRequest`:
+
+```csharp
+using Paramore.Brighter;
+
+namespace Orders;
+
+// avrogen generates the half of this class that implements ISpecificRecord
+public partial class OrderShipped : IEvent
+{
+    public Id Id { get; set; } = Id.Random();
+    public Id? CorrelationId { get; set; }
+}
+```
+
+Brighter resolves mappers from the service container, which supplies the mapper's `ISchemaRegistryClient`. Register the mapper for each type you serialize with Avro:
+
+```csharp
+using Confluent.SchemaRegistry;
+using Microsoft.Extensions.DependencyInjection;
+using Orders;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
+services.AddSingleton<ISchemaRegistryClient>(
+    new CachedSchemaRegistryClient(new SchemaRegistryConfig { Url = "http://localhost:8081" }));
+
+services.AddBrighter(options => { })
+    .AutoFromAssemblies([typeof(OrderShipped).Assembly])
+    .MapperRegistry(mappers =>
+    {
+        mappers.RegisterAsync<OrderShipped, AvroMessageMapperAsync<OrderShipped>>();
+    });
+```
+
+`PostAsync` uses this mapper, and your other requests keep the default JSON mapper. `Post` does not use it: it maps with a synchronous `IAmAMessageMapper<T>`, so a type that has only this asynchronous mapper is sent as JSON by the synchronous default.
+
+You can make it the default instead, with `asyncDefaultMessageMapper: typeof(AvroMessageMapperAsync<>)` in `AutoFromAssemblies`, but only if every request you post is generated from an Avro schema. The default mapper is closed over each request type Brighter maps, and for a type that is not an `ISpecificRecord`, `PostAsync` throws `ArgumentException` because the type violates the mapper's constraint.
 
 ### 2. Transform Pipelines
 
@@ -226,19 +280,23 @@ services.AddBrighter(options => { })
 ### Custom Default Mapper (e.g., Avro)
 
 ```csharp
+using Orders;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter(options => { })
     .AddProducers(configure => { })
     .AutoFromAssemblies(
-        [typeof(OrderCreated).Assembly],
-        defaultMessageMapper: typeof(AvroMessageMapper<>),
-        asyncDefaultMessageMapper: typeof(AvroMessageMapper<>)
+        [typeof(OrderShipped).Assembly],
+        asyncDefaultMessageMapper: typeof(AvroMessageMapperAsync<>)
     );
-// All messages use Avro serialization by default
+// PostAsync maps every request with Avro, so every request must be an ISpecificRecord
 ```
 
 ### Mixed: Default + Custom Mappers
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter(options => { })
     .AddProducers(configure => { })
     .AutoFromAssemblies(
@@ -248,7 +306,7 @@ services.AddBrighter(options => { })
      .MapperRegistry(mappers =>
     {
         // Specific messages with transforms
-        mappers.Regiter<LargeOrder, CompressedOrderMapper>();
+        mappers.Register<LargeOrder, CompressedOrderMapper>();
         mappers.Register<SensitiveData, EncryptedMapper>();
     });
 ```

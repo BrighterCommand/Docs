@@ -374,7 +374,7 @@ var app = builder.Build();
 app.Run();
 ```
 
-Without the scoped configuration, you'll encounter exceptions about disposed DbContext instances.
+Without the scoped configuration, the query processor is a singleton that resolves handlers from the root provider: in Development, where scope validation is on, the first query throws an `InvalidOperationException` (*"Cannot resolve … from root provider because it requires scoped service"*), and elsewhere every query shares one `DbContext` for the life of the application.
 
 ### Pattern: Multiple Handler Assemblies
 
@@ -405,7 +405,7 @@ This pattern is useful in modular monoliths or when organizing queries by domain
 
 **Handler not found errors**
 
-If you receive an exception that a handler cannot be found for a query:
+If a query throws `MissingHandlerException`, *"No handler registered for query"*:
 - Verify that the handler class implements `QueryHandler<TQuery, TResult>` or `QueryHandlerAsync<TQuery, TResult>`
 - Ensure the handler's assembly is registered with `AddHandlersFromAssemblies`
 - Check that the query and handler types match exactly (including generic type parameters)
@@ -413,7 +413,7 @@ If you receive an exception that a handler cannot be found for a query:
 
 **Lifetime scope issues with EF Core**
 
-If you see exceptions about a disposed DbContext:
+If you see an `InvalidOperationException` saying a handler cannot be resolved from the root provider because it requires a scoped service, or queries see each other's changes through one shared `DbContext`:
 - Ensure you've configured `QueryProcessorLifetime = ServiceLifetime.Scoped` in the Darker options
 - Verify your DbContext is registered with scoped lifetime (default for EF Core)
 - Check that you're not trying to use the query result after the scope has been disposed
@@ -423,8 +423,7 @@ If you see exceptions about a disposed DbContext:
 If handlers aren't being registered automatically:
 - Verify you're passing the correct assembly to `AddHandlersFromAssemblies`
 - Ensure handlers are in the same assembly or you've registered all relevant assemblies
-- Check that handler classes are public and not nested within other classes
-- Verify handlers follow the naming conventions (end with "Handler" or "QueryHandler")
+- Check that each handler class is visible outside its assembly: `public`, and, if it is nested, nested in a `public` class. The scan reads only an assembly's exported types. A handler's name does not matter, and neither does nesting in a public class
 
 **Policy not found errors**
 

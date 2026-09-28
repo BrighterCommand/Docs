@@ -16,7 +16,7 @@ Query handlers typically need dependencies like repositories, database contexts,
 Inject dependencies through the handler's constructor:
 
 ```csharp
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Paramore.Darker;
 using System.Threading;
 using System.Threading.Tasks;
@@ -93,7 +93,9 @@ public sealed class GetCustomerWithOrdersQueryHandler : QueryHandlerAsync<GetCus
 **Important:** Ensure you've configured Darker with scoped lifetime in your `Program.cs`:
 
 ```csharp
-// ...
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Darker.AspNetCore;
+
 builder.Services.AddDarker(options =>
 {
     options.QueryProcessorLifetime = ServiceLifetime.Scoped;
@@ -106,7 +108,10 @@ builder.Services.AddDarker(options =>
 Handlers can have multiple dependencies injected:
 
 ```csharp
-// ...
+using Paramore.Darker;
+using System.Threading;
+using System.Threading.Tasks;
+
 public sealed class GetOrderSummaryQueryHandler : QueryHandlerAsync<GetOrderSummaryQuery, OrderSummary>
 {
     private readonly IOrderRepository _orderRepository;

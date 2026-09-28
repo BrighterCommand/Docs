@@ -99,7 +99,8 @@ Registration requires a string as a key, that you will use in your `[UseResilien
 
 In this example, we set up resilience pipelines. To make it easy to reference the string, instead of adding it everywhere, we use a global readonly reference, not shown here.
 
-``` csharp
+```csharp
+using System;
 using Polly;
 using Polly.Registry;
 using Polly.Retry;
@@ -122,6 +123,12 @@ resiliencePipelineRegistry.TryAddBuilder(Globals.MYCIRCUITBREAKER,
         MinimumThroughput = 10,
         BreakDuration = TimeSpan.FromSeconds(30)
     }));
+
+// Both, in one pipeline: the circuit breaker, added first, wraps the retry
+resiliencePipelineRegistry.TryAddBuilder(Globals.MYCIRCUITBREAKERANDRETRY,
+    (builder, context) => builder
+        .AddCircuitBreaker(new CircuitBreakerStrategyOptions())
+        .AddRetry(new RetryStrategyOptions()));
 ```
 
 When you attribute your code, you then use the key to attach a specific resilience pipeline:
@@ -142,14 +149,15 @@ public override TaskReminderCommand Handle(TaskReminderCommand command)
 }
 ```
 
-If you need multiple resilience pipelines then you can use multiple attributes. We evaluate them based on their step order.
+A handler method takes only one `[UseResiliencePipeline]`; a second on the same method does not compile. If you need several strategies, such as a circuit breaker around a retry, compose them in one pipeline and attach that. The first strategy you add is the outermost; see [Combining Multiple Strategies](/contents/PolicyRetryAndCircuitBreaker.md#combining-multiple-strategies).
 
-``` csharp
-[UseResiliencePipeline(Globals.MYCIRCUITBREAKER, step: 1)]
-[UseResiliencePipeline(Globals.MYRETRYPIPELINE, step: 2)]
+```csharp
+// ...
+[UseResiliencePipeline(Globals.MYCIRCUITBREAKERANDRETRY, step: 1)]
 public override TaskReminderCommand Handle(TaskReminderCommand command)
 {
     // Circuit breaker wraps retry, which wraps this handler
+    return base.Handle(command);
 }
 ```
 

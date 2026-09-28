@@ -89,3 +89,17 @@ contents/MongoDbDistributedLock.md	DistributedLockProviderContext	-
 contents/MsSqlDistributedLock.md	DistributedLockProviderContext	-
 contents/MySqlDistributedLock.md	DistributedLockProviderContext	-
 contents/PostgresDistributedLock.md	DistributedLockProviderContext	-
+contents/AgreementDispatcherRouting.md	AgreementDispatcherRoutingContext	-
+contents/AggregationQueryPatterns.md	DarkerQueryPatternsContext	-
+contents/ProjectionQueryPatterns.md	DarkerQueryPatternsContext	-
+contents/ParameterizedQueryPatterns.md	DarkerQueryPatternsContext	-
+contents/QueryHandlerDependencies.md	DarkerQueryPatternsContext	-
+contents/DarkerConfigurationReference.md	DarkerConfigurationReferenceContext	-
+contents/HowConfiguringTheDispatcherWorks.md	HowConfiguringTheDispatcherWorksContext	-
+contents/CQRSUseCasesAndPatterns.md	CQRSUseCasesAndPatternsContext	-
+contents/BrighterControlAPI.md	BrighterControlAPIContext	-
+contents/PostgreSQLMessageBroker.md	PostgreSQLMessageBrokerContext	-
+contents/PostgreSQLBrokerTradeOffs.md	PostgreSQLMessageBrokerContext	-
+contents/CloudEventsReference.md	CloudEventsReferenceContext	-
+contents/Telemetry.md	TelemetryContext	-
+contents/S3LuggageStore.md	S3LuggageStoreContext	-

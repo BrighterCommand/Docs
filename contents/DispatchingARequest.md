@@ -114,7 +114,13 @@ public class OrderController : ControllerBase
 
 ### Example: Publishing Events with CloudEvents Extensions
 
+CloudEvents extension properties reach the wire only in a structured-mode envelope, so this example assumes `OrderCreatedEvent` is mapped by `CloudEventJsonMessageMapper<>`; the default `JsonMessageMapper<>` ignores them. `PostAsync` sends the event to the external bus. `PublishAsync` would dispatch it to handlers in this process, and no message would be mapped at all.
+
 ```csharp
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public class EventPublisher
 {
     private readonly IAmACommandProcessor _commandProcessor;
@@ -131,8 +137,8 @@ public class EventPublisher
             ["region"] = order.ShippingAddress.Region
         };
 
-        // Publish event with context
-        await _commandProcessor.PublishAsync(
+        // Post the event to the external bus, with the context
+        await _commandProcessor.PostAsync(
             new OrderCreatedEvent
             {
                 OrderId = order.Id,

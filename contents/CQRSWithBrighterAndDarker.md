@@ -107,7 +107,7 @@ The level of separation you choose depends on your application's complexity and 
 
 ### Command Handler Example
 
-Here's a brief example of a Brighter command handler. For complete details, see [Dispatching Requests](/contents/DispatchingARequest.md):
+Here's a brief example of a Brighter command handler. `Order`, `OrderItem`, `OrderStatus`, `OrderPlacedEvent` and `IOrderRepository` are the write model, shown in full in [Example: E-Commerce Order System](#example-e-commerce-order-system). For complete details, see [Dispatching Requests](/contents/DispatchingARequest.md):
 
 ```csharp
 using Paramore.Brighter;
@@ -115,6 +115,7 @@ using Paramore.Brighter.Logging.Attributes;
 using Paramore.Brighter.Policies.Attributes;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -158,18 +159,23 @@ public class PlaceOrderCommandHandler : RequestHandlerAsync<PlaceOrderCommand>
         // Create order
         var order = new Order
         {
+            Id = Guid.Parse(command.Id),
             CustomerId = command.CustomerId,
             Items = command.Items,
-            Status = OrderStatus.Placed,
-            PlacedAt = DateTime.UtcNow
+            Status = OrderStatus.Pending,
+            OrderDate = DateTime.UtcNow
         };
 
         await _orderRepository.AddAsync(order, cancellationToken);
 
         // Publish event (for eventual consistency with read model)
         await _commandProcessor.PublishAsync(
-            new OrderPlacedEvent(order.Id, order.CustomerId),
-            cancellationToken);
+            new OrderPlacedEvent(
+                order.Id,
+                order.CustomerId,
+                order.OrderDate,
+                order.Items.Sum(i => i.Quantity * i.UnitPrice)),
+            cancellationToken: cancellationToken);
 
         return await base.HandleAsync(command, cancellationToken);
     }
@@ -229,6 +235,8 @@ Here's a brief example of a Darker query handler. For complete details, see [Imp
 using Paramore.Darker;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -267,7 +275,7 @@ public sealed class GetOrderDetailsQueryHandler :
     }
 
     [QueryLogging(step: 1)]
-    [RetryableQuery(step: 2, circuitBreakerName: "DatabaseCircuitBreaker")]
+    [RetryableQuery(step: 2)]
     public override async Task<OrderDetailsDto> ExecuteAsync(
         GetOrderDetailsQuery query,
         CancellationToken cancellationToken = default)
@@ -644,6 +652,79 @@ public class OrderItemDto
 }
 ```
 
+**Write Model:**
+
+The handler writes these entities, and in this example the read side queries the same tables:
+
+```csharp
+using Paramore.Brighter;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class Order
+{
+    public Guid Id { get; set; }
+    public int CustomerId { get; set; }
+    public Customer Customer { get; set; }
+    public DateTime OrderDate { get; set; }
+    public OrderStatus Status { get; set; }
+    public List<OrderItem> Items { get; set; } = new();
+}
+
+public class OrderItem
+{
+    public int ProductId { get; set; }
+    public Product Product { get; set; }
+    public int Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+}
+
+public enum OrderStatus { Pending, Shipped, Delivered, Cancelled }
+
+public class Customer
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+}
+
+public class Product
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public int StockQuantity { get; set; }
+}
+
+public interface IOrderRepository
+{
+    Task AddAsync(Order order, CancellationToken cancellationToken = default);
+}
+
+public interface IProductRepository
+{
+    Task<Product> GetByIdAsync(int productId, CancellationToken cancellationToken = default);
+}
+
+// Raised once the order is saved, so the read model can catch up
+public class OrderPlacedEvent : Event
+{
+    public OrderPlacedEvent(Guid orderId, int customerId, DateTime orderDate, decimal totalAmount)
+        : base(Id.Random())
+    {
+        OrderId = orderId;
+        CustomerId = customerId;
+        OrderDate = orderDate;
+        TotalAmount = totalAmount;
+    }
+
+    public Guid OrderId { get; }
+    public int CustomerId { get; }
+    public DateTime OrderDate { get; }
+    public decimal TotalAmount { get; }
+}
+```
+
 **Command Handler:**
 ```csharp
 using Paramore.Brighter;
@@ -697,9 +778,10 @@ public class PlaceOrderCommandHandler : RequestHandlerAsync<PlaceOrderCommand>
         }
 
         // Create order (write model)
+        // A Brighter Id is a string; Id.Random() makes it a UUID, which the order keeps as its key
         var order = new Order
         {
-            Id = command.Id,
+            Id = Guid.Parse(command.Id),
             CustomerId = command.CustomerId,
             OrderDate = DateTime.UtcNow,
             Status = OrderStatus.Pending,
@@ -787,7 +869,7 @@ public sealed class GetOrderDetailsQueryHandler :
     }
 
     [QueryLogging(step: 1)]
-    [RetryableQuery(step: 2, circuitBreakerName: "DatabaseCircuitBreaker")]
+    [RetryableQuery(step: 2)]
     public override async Task<OrderDetailsDto> ExecuteAsync(
         GetOrderDetailsQuery query,
         CancellationToken cancellationToken = default)

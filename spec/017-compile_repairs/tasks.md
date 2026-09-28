@@ -1712,21 +1712,21 @@ units and 4 changed, and this file.
 **Goal:** every 1-hard-block page outside *Outbox and Inbox* leaves whole, and P0-7 is done
 everywhere. Page list: § *The tranches*, phase 5 table.
 
-- [ ] **Task 5.1:** Predict phase 5's movement
+- [x] **Task 5.1:** Predict phase 5's movement
   - Input: § *The tranches*, phase 5 table; § *Phase 4 as executed*; `attr_mismatch.py`'s count now
   - Output: § *Phase 5 as executed* opens with a prediction per gate and a verdict per hard block,
     as 4.1; and the P0-7 predictions — `ITimerProvider` 4 → 0, `attr_mismatch` to exactly the
     deliberate `PipelineValidation.md:250`
 
-- [ ] **Task 5.2:** Repair the tranche pages in *Commands, Handlers and Pipelines*, *Darker* and *Understanding Brighter*
+- [x] **Task 5.2:** Repair the tranche pages in *Commands, Handlers and Pipelines*, *Darker* and *Understanding Brighter*
   - Input: those sections' phase 5 rows; 5.1's verdicts
   - Output: each page whole; baseline rows; ledger rows as 4.2
 
-- [ ] **Task 5.3:** Repair the tranche pages in *Transports*, *Using an External Bus* and *Health Checks and Observability*
+- [x] **Task 5.3:** Repair the tranche pages in *Transports*, *Using an External Bus* and *Health Checks and Observability*
   - Input: those sections' phase 5 rows; 5.1's verdicts
   - Output: each page whole; baseline rows; ledger rows as 4.2
 
-- [ ] **Task 5.4:** Repair `ITimerProvider` and the unshown `Order`
+- [x] **Task 5.4:** Repair `ITimerProvider` and the unshown `Order`
   - Input: `grep -rn ITimerProvider contents/` (4 lines at `c7329bb`, all `InMemoryScheduler.md`);
     `design.md` § *API Resolved* (`InMemorySchedulerFactory.TimeProvider`);
     `CQRSWithBrighterAndDarker.md`'s `Id = command.Id` block
@@ -1734,7 +1734,7 @@ everywhere. Page list: § *The tranches*, phase 5 table.
     block BUILT or showing `Order`; both in § *Defect ledger*
   - Notes: a sentence claiming how the scheduler uses time is run, with a control (P0-10).
 
-- [ ] **Task 5.5:** Repair the E4 attribute mismatches not already repaired
+- [x] **Task 5.5:** Repair the E4 attribute mismatches not already repaired
   - Input: `probe/attr_mismatch.py` output now; `design.md` § *E4* (verdict per hit) and
     § *API Resolved*
   - Output: `attr_mismatch.py > out; echo $?` → **1** with exactly `PipelineValidation.md:250` in
@@ -1744,10 +1744,761 @@ everywhere. Page list: § *The tranches*, phase 5 table.
     names an argument before a positional one. A page that shows a mismatch deliberately says it is
     wrong in prose, not only in a `// wrong` comment.
 
-- [ ] **Task 5.6:** Close phase 5 — checks, figures, PR
+- [x] **Task 5.6:** Close phase 5 — checks, figures, PR
   - Input: 5.1's prediction; the PR's diff
   - Output: as 2.6, for phase 5; plus BUILT against **≥ 250** and pages with nothing BUILT against
     **≤ 60**, both read before phase 6 walks them
+
+### Phase 5 as executed
+
+**Prediction, 2026-09-28, from `master` `976e0e0`**, the merge of phase 4 (PR #193). The *Now*
+column is this task's own run at `976e0e0`, every gate bare, exit code read before its output; all
+nine exit 0 and read at `tools/README.md`'s figures. Each prediction names its mechanism:
+
+| # | Gate | Now | Predicted after phase 5, and why |
+|---:|---|---|---|
+| 1 | `linkcheck` | 165 files, 0 broken | **none**. No file is added |
+| 2 | `pagelint` | 0 errors, 616 warnings, 162 pages | **errors 0; warnings 616 → between 582 and 573, then lower by P0-7 and recurrences, each explained.** On the 16 pages, rule 6 warns on **45** blocks: **43** FAILED (**34** reachable, **9** hard) and **2** BUILT (`PostgreSQLMessageBroker.md` #11, `ProjectionQueryPatterns.md` #4), which no repair touches. Every reachable block given its `using`s: −34, to 582; each warning hard block repaired: −1 more, to 573 if all 9 are. The P0-7 blocks warn too, all but `CQRSWithBrighterAndDarker.md` #7: `InMemoryScheduler.md` #5, `HowServiceActivatorWorks.md` #16, `PipelineValidation.md` #9, #10, `PolicyRetryAndCircuitBreaker.md` #14, `ReactorAndProactor.md` #6, `V10MigrationGuide.md` #10, #12 — **up to −8** more, and none from a block that marks its omission `// ...` instead |
+| 3, 4, 7 | shape, redirects, `--verify` | 161 / 77 / 161 | **none**. No `SUMMARY.md` change |
+| 5 | `versioncheck` | 0 stale of **18, across 5 pages** | **none, scope held.** Its five pages (`tools/versioncheck.py:81`–`85`) are the tutorials and `GetStarted.md`, none in phase 5 |
+| 6 | `optioncheck` | 0 mismatches, 59 tables, 519 rows | **none.** Of the tranche, the P0-7 pages and the recurrence pages (27 files), three carry a table it reads: `PostgreSQLMessageBroker.md` (3 tables, 28 rows), `InMemoryScheduler.md` (1, 4) and `QuartzScheduler.md` (1, 4) — 5 tables, 36 rows. `InMemoryScheduler.md`'s table already documents `InMemorySchedulerFactory.TimeProvider`, which is what the `ITimerProvider` repair points at. A row changes only if a repair finds a default wrong, and is then a defect in § *Defect ledger* |
+| 8 | `symbolcheck` | 0 findings, 22 entries, 161 pages, 3 silenced | **none.** The 27 files read 0 findings with **2** of the 3 silenced sites, both `S3LuggageStore.md` (`AddS3LuggageStore`, `S3LuggageStoreCreation`); its repair keeps both opt-outs where they are |
+| 9 | `blockcheck` | 983: 234 BUILT, 733 FAILED, 16 SKIPPED; 542 reference assemblies; 35 units; 53 pages mapped | **BUILT 234 → at least 246, at most 294; SKIPPED 16 plus accepted reasons only; reference assemblies 542, no pin change; exit 0; units 35 plus the new ones, 0 violations.** Mechanism below |
+| — | `attr_mismatch.py` | **7**, exit 1 | **7 → 1, exit 1, the one hit `PipelineValidation.md:250`** — the deliberate *Before (error)* example. The other six are 5.5's repairs. `:250` holds its line only if nothing above it on that page changes length; 5.5's repairs at `:280` and `:289` are below it |
+| — | `grep -rn ITimerProvider contents/` | **4** lines, all `InMemoryScheduler.md` (`:32`, `:50`, `:202`, `:205`) | **4 → 0.** Two sentences, the pipeline diagram and block #5 (`FakeTimerProvider : ITimerProvider`) |
+
+**Gate 9, by source.** The probe re-run at `976e0e0` (§ *The tranches*' recipe, `Order` excluded)
+reads the phase 5 table with **one page moved**: **62 FAILED, 45 reachable, 2 same-page, 15 hard, 6
+BUILT**. **Said at 1.10:** `BrighterControlAPI.md` #1 hard, 0 reachable, 16 hard. **Measured:**
+#1 reachable by an empty stub (`app`), 15 hard — task 2.4 repaired its `UseEndpoints` defect off
+the tranche (`51b5fef`, § *Defect ledger*), which was the block's hard part. **Second method:**
+`--classify` puts the same **62** FAILED blocks on the 16 pages. The 45 reachable are:
+
+- **1** with a `using` alone — `BuildingAPipeline.md` #3
+- **11** with an empty stub — `BrighterControlAPI.md` #1 (`app`), `CloudEventsReference.md` #1, #3,
+  #4, `DarkerConfigurationReference.md` #1, #3, `HowConfiguringTheDispatcherWorks.md` #3,
+  `ParameterizedQueryPatterns.md` #1, `PostgreSQLMessageBroker.md` #9, `S3LuggageStore.md` #2,
+  `Telemetry.md` #3
+- **18** needing a stub with members — `AggregationQueryPatterns.md` #2, #3,
+  `BuildingAPipeline.md` #2, #4, `CQRSUseCasesAndPatterns.md` #1,
+  `HowConfiguringTheDispatcherWorks.md` #2, `PostgreSQLMessageBroker.md` #2, #4, #5, #6, #7, #10,
+  #13, `ProjectionQueryPatterns.md` #1, #2, `QueryHandlerDependencies.md` #1, #4, `Telemetry.md` #2
+- **15** needing a typed value — `AgreementDispatcherRouting.md` #1–#7, #9–#11,
+  `DarkerConfigurationReference.md` #2, `PostgreSQLMessageBroker.md` #1, #3, #8,
+  `QueryHandlerDependencies.md` #3
+
+The 2 same-page stay FAILED by rule: `ParameterizedQueryPatterns.md` #2, #6.
+
+- **Floor 246** = 234 + 1 + 11: only the `using` and empty-stub blocks
+- **Ceiling 294** = 234 + 45 + 14 + 1: every reachable block; every hard block but
+  `S3LuggageStore.md` #1 (below); and `InMemoryScheduler.md` #5, the `ITimerProvider` block, once
+  rewritten. **`CQRSWithBrighterAndDarker.md` #7, the `Order` block, is not in it**: the probe reads
+  it SAME-PAGE on `PlaceOrderCommand`, so 5.4's output there is *"showing `Order`"*, not BUILT.
+  Each hard block listed rather than repaired, and each defect a stub surfaces, lowers it by one
+- **The ≥ 250 target is not met by the floor.** 246 is 4 short, so phase 5 must land **at least 4**
+  of the 33 member, typed-value and hard blocks. The E4 blocks are no help: each is FAILED for
+  reasons besides its attribute, and 5.5 changes only the attribute
+- **The pin: no change predicted.** Every name the hard blocks need past the page's own types
+  resolves at 542 (`--explain` on the probe's `stageP`), except `Paramore.Brighter.Transformers.AWS.V4`
+- **Pages with nothing BUILT: 57 → at most 51, as low as 45** (requirements' `awk` and a Python join
+  over the same report: **57** both). 12 phase 5 pages have no BUILT block. **6** reach one by a
+  `using` or an empty stub (`BrighterControlAPI.md`, `BuildingAPipeline.md`,
+  `CloudEventsReference.md`, `DarkerConfigurationReference.md`,
+  `HowConfiguringTheDispatcherWorks.md`, `S3LuggageStore.md` by #2); **4** by a stub with members or
+  a typed value (`AgreementDispatcherRouting.md`, `AggregationQueryPatterns.md`,
+  `CQRSUseCasesAndPatterns.md`, `QueryHandlerDependencies.md`); **2** only by repairing their one
+  hard block (`DarkerAndBrighterPipelines.md`, `PostgreSQLBrokerTradeOffs.md`). Seven pages P0-7 or a
+  recurrence touches also have nothing BUILT — `HowServiceActivatorWorks.md`, `PipelineValidation.md`,
+  `ReactorAndProactor.md`, `V10MigrationGuide.md`, `QueryPipeline.md`, `QueryPatterns.md`,
+  `QuartzScheduler.md` — and are not counted: none of their touched blocks is predicted to build
+
+**A verdict per hard block, before it is touched.** From `--classify` (on the page's own text) and
+`--explain` (on the probe's `stageP`, `using`s supplied). *Parse* is placeholder, fragment or not
+code; *other* is defect, wrapper or probe artefact, or the pin.
+
+| Page | # | `--classify` / probe | Verdict | What the diagnostics and the text show |
+|---|---:|---|---|---|
+| `AgreementDispatcherRouting.md` | 8 | parse / PARSE | **parse — fragment** | The chain ends in a commented-out `// .AutoFromAssemblies()` and never takes its `;` (`CS1002`); `services` is a value. Its comment, *"Cannot use AutoFromAssemblies with Agreement Dispatcher"*, is a claim about behaviour: **run, with a control** (P0-10) |
+| `BuildingAPipeline.md` | 1 | import / DEFECT | **other — defect** | A pre-V10 handler: `using Brighter.commandprocessor.Logging;`, `namespace Brighter.commandprocessor`, `logger.InfoFormat` (`CS0234`, `CS0103`). 10.7.0's is `Paramore.Brighter.Logging.Handlers.RequestLoggingHandler` (`src/Paramore.Brighter/Logging/Handlers/RequestLoggingHandler.cs`) |
+| `CloudEventsReference.md` | 2 | import / DEFECT | **other — defect** | `PartitionKey = …` in a `Publication` initialiser, `CS0117`. At 10.7.0 `PartitionKey` is on `MessageHeader` (`MessageHeader.cs:263`), and the default mapper reads it from the request context (`JsonMessageMapper.cs:50`, `Context.GetPartitionKey()`). `OrderCreated` is a type the page never shows |
+| `S3LuggageStore.md` | 1 | import / DEFECT | **other — the pin** | `CS0234`: `Paramore.Brighter.Transformers.AWS.V4` is not in the pin (D3, 018). The page lists both packages (`:17`, `:20`); under the V3 namespace the types resolve and only `serviceCollection` and `credentials`, values, remain. **Listed, as `DistributedLock.md` #2 was**, once it is built against the released V4 package in scratch |
+| `PostgreSQLBrokerTradeOffs.md` | 1 | import / DEFECT | **other — not one program** | `var configuration` declared twice (`CS0128`): a JSONB form and a JSON form in one fence. A split (§ *Splits*) or two names; `connectionString` is a value |
+| `PostgreSQLMessageBroker.md` | 12 | import / DEFECT | **other — two defects** | `[ClaimCheck(threshold: 102400, dataStore: typeof(S3LuggageStore))]`: `CS1739` — 10.7.0's constructor is `ClaimCheckAttribute(int step, int thresholdInKb = 0)` (`Transforms/Attributes/ClaimCheckAttribute.cs:43`), and the store is registered by `UseExternalLuggageStore`, not named on the attribute. `ProcessLargeOrderCommand : Command` with no constructor: `CS1729` — `Command` has `Command(Id)` and `Command(Guid)` only (`Command.cs:68`, `:77`) |
+| `AggregationQueryPatterns.md` | 1 | import / DEFECT | **other — probe artefact** | `ApplicationDbContext`, never shown, is a page type; the `CS1061` on `TEntity.Name` is the `ToDictionaryAsync` inference failing behind it. A stub with members (`Categories`) reaches it. `--classify` reads *import* on `Id`, a member access |
+| `DarkerAndBrighterPipelines.md` | 1 | parse / PARSE | **parse — placeholder, and a defect** | `...` as the last parameter of both signatures, and neither has a body (`CS8635`, `CS0501`). Beside them, `[RetryableQuery(2, "DefaultCircuitBreaker")]` — the open § *Defect ledger* row |
+| `DarkerConfigurationReference.md` | 4 | import / DEFECT | **other — defect** | `.Handlers(registry, Activator.CreateInstance, t => {}, Activator.CreateInstance)`: `CS1503`. Darker 4.1.1's overload takes `Func<Type, IQueryHandler>` and `Func<Type, IQueryHandlerDecorator>` (`Builder/INeedHandlers.cs:9`), and `Activator.CreateInstance` returns `object`. Darker's own README carries the same line at 4.1.1 (`README.md:110`); that text is upstream's. The four query types are the page's |
+| `ParameterizedQueryPatterns.md` | 4 | import / DEFECT | **other — defect** | `using System.Threading.Task;` (`CS0234`), then `Task<>` unresolved behind it. The rest are page and same-page types |
+| `ProjectionQueryPatterns.md` | 3 | parse / PARSE | **parse — fragment** | A `.Select(o => new OrderDto { … })` with no receiver (`CS1513`, `CS1955`) |
+| `QueryHandlerDependencies.md` | 2 | import / DEFECT | **other — probe artefact** | As `AggregationQueryPatterns.md` #1: `ApplicationDbContext`, `CustomerDto`, `GetCustomerWithOrdersQuery` are page types; the `CS1061`s on `TEntity` are the inference behind them |
+| `Telemetry.md` | 5 | parse / PARSE | **parse — fragment** | `.SetSampler(new TraceIdRatioBasedSampler(0.1))`, one line with no receiver. `TraceIdRatioBasedSampler` resolves |
+| `CQRSUseCasesAndPatterns.md` | 2 | import / DEFECT | **parse — placeholder and fragment** | `: IRequest { /* ... */ }` three times (`CS0535` is the omission), and two controller actions outside any class (`CS0116`, `Ok` non-invocable, `_commandProcessor` and `_queryProcessor` unshown). The probe calls it DEFECT; read, it is an excerpt that says so |
+| `HowConfiguringTheDispatcherWorks.md` | 1 | import / DEFECT | **other — defect** | V9's registry: `new MessageMapperRegistry(messageMapperFactory) { { typeof(…), typeof(…) } }`. At 10.7.0 the constructor takes `(IAmAMessageMapperFactory?, IAmAMessageMapperFactoryAsync?)` and the class is not `IEnumerable` (`CS7036`, `CS1922`); registration is `Register<TRequest, TMapper>()` (`MessageMapperRegistry.cs:64`, `:296`). The page's own `:62` has the V10 constructor |
+
+**By this reading, 5 parse and 10 other.** `--classify` reads 4 *parse* and 11 *import*; the probe,
+4 PARSE and 11 DEFECT. The one block whose kind differs is `CQRSUseCasesAndPatterns.md` #2, an
+excerpt the probe calls a DEFECT. The 10 *other*: **six defects** (`BuildingAPipeline.md` #1,
+`CloudEventsReference.md` #2, `DarkerConfigurationReference.md` #4, `HowConfiguringTheDispatcherWorks.md`
+#1, `ParameterizedQueryPatterns.md` #4, `PostgreSQLMessageBroker.md` #12), **two probe artefacts**
+behind a page type, **one** two-programs-in-one-fence and **one** the pin. **One parse block carries
+a defect beside its placeholder**: `DarkerAndBrighterPipelines.md` #1.
+
+**Their recurrences, run now so that 5.2 and 5.3 open with them:**
+
+| Defect | Grep | Hits | Pages |
+|---|---|---:|---|
+| The pre-V10 namespace | `grep -rnE 'Brighter\.commandprocessor' contents/` | **4** lines, 3 pages | `BuildingAPipeline.md` ×2; `FAQ.md:377` quotes an old exception message and `Monitoring.md:25` an old `app.config` section — both read in 5.2, neither is a `using` |
+| `logger.InfoFormat` | `grep -rnE '\.InfoFormat\(' contents/` | **1** | `BuildingAPipeline.md` |
+| `PartitionKey` on a `Publication` | `grep -rnE '\bPartitionKey *=' contents/` → **6** lines, 5 pages, read | **1** | `CloudEventsReference.md`. Of the other five: `KafkaConfiguration.md:213` is read in 5.3; `:724` and `MessageMappers.md:147` set `header.PartitionKey`, right; `UsingTheContextBag.md:350` is a constant; `V10MigrationGuide.md:350` sets `Context.PartitionKey`, and `IRequestContext` has no such property at 10.7.0 — part of the open `IRequestContext` row, 5.5's |
+| `[ClaimCheck]` given a threshold in bytes and a store | `grep -rnE 'ClaimCheck\([^)]*(threshold:\|dataStore)' contents/` | **1** | `PostgreSQLMessageBroker.md` |
+| A `Command` or `Event` with no constructor | the compiler: `CS1729 … 'Command'\|'Event' does not contain a constructor that takes 0 arguments` over the whole corpus under `stageP` → **4** blocks; a text scan of every fence → **4** classes | **5** on **4** pages, the union | `PostgreSQLMessageBroker.md` #12, `NullableReferenceTypes.md` #9, `MigratingToNullableReferenceTypes.md` #4, `V10MigrationGuide.md` #20 (both methods but the last), and `V10MigrationGuide.md` #1, a skipped V9 form (text scan only). The text scan missed `MigratingToNullableReferenceTypes.md` #4, whose `new CreateOrderCommand()` it read as a constructor |
+| `Activator.CreateInstance` as a Darker factory | `grep -rn 'Activator\.CreateInstance' contents/` | **2** | `DarkerConfigurationReference.md:82`, `ImplementAQueryHandler.md:451` |
+| `using System.Threading.Task;` | `grep -rn 'using System\.Threading\.Task;' contents/` | **1** | `ParameterizedQueryPatterns.md` |
+| V9's `MessageMapperRegistry` initialiser | `grep -rn 'new MessageMapperRegistry(' contents/` → 2 lines, read | **1** | `HowConfiguringTheDispatcherWorks.md:40`; its `:62` is the V10 form |
+
+**Carried into the repair tasks, not the prediction.** Each is on `master` now, measured at
+`976e0e0`, and given the task whose section holds its page:
+
+- **`[RetryableQuery]`'s second argument (5.2).** § *Defect ledger* recorded **9** lines on **5**
+  pages. **Said: 9; measured: 20 lines on 6 pages** with any second argument (`grep -rnE
+  'RetryableQuery\([^)]*,' contents/` and a Python scan of every `RetryableQuery(…)`, agreeing). The
+  ledger's grep matched only `DefaultCircuitBreaker` and `circuitBreakerName`, and the defect is
+  any breaker-shaped name used as though it added a breaker. `ShowMeTheCode.md:70` names a retry
+  policy, the argument's right kind. The other **19**, on `QueryPipeline.md` (14),
+  `CQRSWithBrighterAndDarker.md` (2), `DarkerAndBrighterPipelines.md`, `ImplementAQueryHandler.md`
+  and `QueryPatterns.md`, are read one by one; `QueryPipeline.md:649` is the troubleshooting case,
+  *"Policy name doesn't exist"*
+- **`MessageBody` given a string content type (5.3).** `KafkaConfiguration.md:723` and
+  `MessageMappers.md:146`, both still there (`grep -rnE 'new MessageBody\([^)]*, *("|MediaTypeNames)'
+  contents/` → **2**)
+- **Mapper excerpts omitting a required member with no `// ...` (5.3)**, the recurrence of the mapper
+  world 5.3 opens: `Routing.md` #1, `V10MigrationGuide.md` #3, #18, `NullableReferenceTypes.md` #7,
+  `FAQ.md` #7. Three of the four pages sit in no tranche, and fixing the issue, not the instance, is
+  why they go with 5.3 rather than to the residual
+- **The unshown `Order` (5.4)** is `CQRSWithBrighterAndDarker.md` #7, `:702`: FAILED `CS0103`,
+  `CS0246`; `IOrderRepository`, `IProductRepository`, `OrderItem`, `OrderStatus` and
+  `OrderPlacedEvent` are unshown beside it
+- **`InMemoryScheduler.md` (5.4) says to install `Paramore.Brighter.InMemoryScheduler`** (`:225`,
+  `:228`). No project of that name is in `src/` at 10.7.0, and `InMemorySchedulerFactory` is in
+  `Paramore.Brighter` (`src/Paramore.Brighter/InMemorySchedulerFactory.cs:37`, `TimeProvider`).
+  Checked against NuGet in 5.4 before it is called a defect. A sentence claiming how the scheduler
+  uses time is run, with a control (P0-10)
+- **`QuartzScheduler.md:359`'s U+200B (5.4)**, still the corpus's one (`grep -rlP '\x{200B}'
+  contents/` → 1 page, 1 line). Removed with a tool that writes bytes, not the Edit tool
+- **`IRequestContext` in `V10MigrationGuide.md` (5.5).** **Said at 2.3: `:320`. Measured: the class
+  is at `:326`**, block #12, and the section around it also lists `PartitionKey` and `CustomHeaders`
+  as new `IRequestContext` properties (`:316`, `:317`) and sets `Context.PartitionKey` and
+  `Context.CustomHeaders` (`:350`, `:353`, block #13). At 10.7.0 the interface has neither
+  (`git show 10.7.0:src/Paramore.Brighter/IRequestContext.cs | grep -c 'PartitionKey\|CustomHeaders'`
+  → 0). A second implementation
+  at `:381` is read beside it
+- **E4's line numbers have drifted since the design.** **Said:** `ReactorAndProactor.md:190`,
+  `V10MigrationGuide.md:282`. **Measured:** `:200` and `:288` (`attr_mismatch.py`, above). The
+  seven hits sit in `HowServiceActivatorWorks.md` #16, `PipelineValidation.md` #7, #9, #10,
+  `PolicyRetryAndCircuitBreaker.md` #14, `ReactorAndProactor.md` #6 and `V10MigrationGuide.md` #10,
+  all FAILED, as the design found them
+- **`Order` (the 1.10 ruling) acts on two reachable blocks.** `grep -cw Order` over the `--show` of
+  the 62 FAILED blocks → **4**, none hard; `--classify` lists `Order` as a missing name on **2** of
+  them, `PostgreSQLMessageBroker.md` #7 and `QueryHandlerDependencies.md` #1, and the other two use
+  the word only (`CQRSUseCasesAndPatterns.md` #1, `PostgreSQLMessageBroker.md` #4). Both are read as
+  a type the page never shows, and get a stub, never `using StackExchange.Redis`
+
+**Task 5.2 — the *Commands, Handlers and Pipelines*, *Darker* and *Understanding Brighter* pages.**
+Ten pages. **BUILT 234 → 262** (+28): **27** `FAILED -> BUILT` on nine of the ten, and one new key,
+`QueryPipelinePolicies.md` #7, appended. The rest of the AC2 diff, joined on page and ordinal
+against the report at `d69a554`: `DarkerAndBrighterPipelines.md` #1 `FAILED -> SKIPPED` and
+`AgreementDispatcherRouting.md` #12 `- -> FAILED`, a split (§ *Splits*). `pagelint` **616 → 599**,
+every one of the 17 on a page whose blocks gained `using`s: `AgreementDispatcherRouting.md` −5,
+`BuildingAPipeline.md` −3, `CQRSUseCasesAndPatterns.md`, `DarkerConfigurationReference.md`,
+`HowConfiguringTheDispatcherWorks.md`, `QueryHandlerDependencies.md` −2 each, `AgreementDispatcher.md`
+−1 (per page, against a worktree at `origin/master`). Pages with nothing BUILT **57 → 49**, by
+requirements' `awk` and a Python join over the same report: seven gained a BUILT block
+(`AggregationQueryPatterns.md`, `AgreementDispatcherRouting.md`, `BuildingAPipeline.md`,
+`CQRSUseCasesAndPatterns.md`, `DarkerConfigurationReference.md`, `HowConfiguringTheDispatcherWorks.md`,
+`QueryHandlerDependencies.md`), and `DarkerAndBrighterPipelines.md` left because its one block is now
+SKIPPED, not because it built.
+
+- **Against 5.1's reading, block by block.** The floor was 246: 234 + 1 `using` + 11 empty stubs.
+  **Said:** `BuildingAPipeline.md` #3 BUILT by a `using` alone. **Measured:** same-page — the `using`
+  that builds it, `Paramore.Brighter.Logging.Handlers`, names Brighter's own `RequestLoggingHandler<>`,
+  not the one block 1 writes; #2 likewise resolves `[RequestLogging]` to Brighter's attribute, not
+  block 3's. **Said:** `DarkerConfigurationReference.md` #1 empty stub, #2 and
+  `QueryHandlerDependencies.md` #3 typed value. **Measured:** each also names `Program`, which Q2
+  rules out. **Said:** `HowConfiguringTheDispatcherWorks.md` #3 empty stub. **Measured:**
+  `ServiceControl` and `HostControl` are Topshelf's, a package the pin does not carry; the block
+  builds only since Topshelf was retired (second pass, below). **Said:** `BuildingAPipeline.md` #4 members. **Measured:** unit rule
+  1 — the section tells the reader to write the handlers it chains. So **7** of the **27** reachable
+  blocks on these pages stayed FAILED in the first pass (**6** after the second), and **7** of their **10** hard blocks built; one is SKIPPED and
+  two stay FAILED (`ParameterizedQueryPatterns.md` #4, same-page once its `using` is right, and
+  `ProjectionQueryPatterns.md` #3, a fragment). 20 + 7 + the appended block = **28**
+- **Five units.** `AgreementDispatcherRoutingContext.cs` (the scenarios' requests and handlers,
+  `services`, `registry`), `DarkerQueryPatternsContext.cs` (one EF Core model for four pages:
+  `AggregationQueryPatterns.md`, `ProjectionQueryPatterns.md`, `ParameterizedQueryPatterns.md`,
+  `QueryHandlerDependencies.md`), `DarkerConfigurationReferenceContext.cs`,
+  `HowConfiguringTheDispatcherWorksContext.cs`, `CQRSUseCasesAndPatternsContext.cs`. None is a type a
+  page tells the reader to write (rule 1, by reading). **Three shapes the rule forced, each recorded
+  in its unit:** a type no block names but whose members a block reads (an order's items, its
+  address) is a tuple, not a stub; a Darker handler stub is `abstract`, so it need not declare the
+  `Execute` no block names — its first form did, and put **8** errors against the scaffold tree,
+  which `--report` prints as a warning and does not fail on; a mapper stub derives from Brighter's
+  `JsonMessageMapper<T>` and so declares no member. `CQRSUseCasesAndPatterns.md` #1 now declares its
+  query and `DbContext` itself, because a unit that named the block's `Order` would not compile
+  beside block 2. `ParameterizedQueryPatterns.md` #3, #5 and `ProjectionQueryPatterns.md` #4, BUILT
+  before, are re-admitted with the new unit. `--report` → *"40 units checked, 0 violations"*
+- **Made whole:** `AgreementDispatcherRouting.md` #8 (it ended in a commented-out call with no `;`,
+  and now shows the scan working, below) and the three `{ /* ... */ }` routing lambdas that returned
+  nothing; `CQRSUseCasesAndPatterns.md` #2, whose commands were `: IRequest { /* ... */ }` and whose
+  actions sat outside any class, now a controller over `Command`s; `BuildingAPipeline.md` #1
+- **Skipped, with an accepted reason:** `DarkerAndBrighterPipelines.md` #1, two attribute stacks on
+  signatures shown side by side for comparison. Its `...` parameters are now the real
+  `CancellationToken`, and its `[RetryableQuery]` the corrected form
+- **Nine defects, and the carried `[RetryableQuery]` row closed** (§ *Defect ledger*). The pre-V10
+  logging handler, and the recurrence of its namespace in `FAQ.md`'s quoted exception, which a run
+  gives as `Paramore.Brighter.ICommand`; `.Successor =` for `SetSuccessor()`, and the manual chain
+  said to work from the registry alone; *"Cannot use AutoFromAssemblies"* with an Agreement
+  Dispatcher, on three pages; Darker's query processor said to default to Transient, and the
+  unscoped failure said to be a disposed `DbContext`, on two; `Activator.CreateInstance` as a Darker
+  factory, on two; `using System.Threading.Task;`; V9's `MessageMapperRegistry` initialiser;
+  `RmqSubscription<T>`'s pump type given the wrong reason; `CQRSUseCasesAndPatterns.md` #1's handler
+  reading members its own write model lacks. **`[RetryableQuery]`: 20 lines → 8**, every one left a
+  policy name that is registered, or a deliberate *"doesn't exist"*, and described as the one policy
+  the decorator runs; `QueryPipelinePolicies.md` gains the retry-and-breaker wrap it links to
+- **`--explain` on all 46 blocks the diff touches**, after `pagelint --changed` asked for `using`s on
+  four `QueryPipeline.md` fragments (now marked `// ...`): `[FallbackPolicy]` used with no `using
+  Paramore.Darker.Attributes` on three `QueryPipeline.md` blocks, a placeholder handler body that
+  returned nothing, and `System.Linq`, `System` and `System.Collections.Generic` missing from
+  `ProjectionQueryPatterns.md` #1, `ParameterizedQueryPatterns.md` #2 and
+  `CQRSWithBrighterAndDarker.md` #3. All repaired; what remains on those blocks is names their pages
+  never show
+- **The blocks that stay FAILED compile where their world exists** (§ *Blocks that stay FAILED*):
+  `DarkerConfigurationReference.md` #1, #2 and `QueryHandlerDependencies.md` #3 as a `Program.cs`
+  against Darker 4.1.1;
+  `ParameterizedQueryPatterns.md`'s six blocks together, with the never-shown entity stubbed;
+  `BuildingAPipeline.md` #1–#3 together in the pipeline run below — each **0** errors
+- **Behaviour, run with controls** against released packages (Brighter 10.7.0, Darker 4.1.1,
+  EF Core 9.0.15) in scratch console apps, net10.0, one process per case:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `BuildingAPipeline.md` #1–#3: the attribute puts the logging handler before the target | `AutoFromAssemblies()` → the handler logs, then *"Hello Ian"* | no attribute → *"Hello Ian"* only |
+  | The new sentence: a custom open generic handler must be registered | `.Handlers(r => r.Register<…>())` plus `AddTransient(typeof(RequestLoggingHandler<>))` → logs | without it → `ConfigurationException`, *"Could not create handler RequestLoggingHandler`1[GreetingCommand]"*; the async form the same, both ways |
+  | `AutoFromAssemblies` skips a non-public handler (why `BuildingAPipeline.md` says *public*) | public handler → found | `internal` → `ArgumentException`, *"No command handler was found"* |
+  | #4: the manual chain | a handler factory returning the wired `MyLoggingHandler` → both handlers run | a factory returning a new one → the logging handler only |
+  | `FAQ.md`: sending through `ICommand` | `ArgumentException`, *"… typeof command Paramore.Brighter.ICommand …"* | the concrete type → handled |
+  | `AgreementDispatcherRouting.md` #8: scan beside an agreement | `AutoFromAssemblies(excludeDynamicHandlerTypes: […])`, either order → High → `HighPriorityHandler`, Low → `StandardHandler`, a scanned `OtherCommand` handled | no exclusion, either order → every `Send` of `MyCommand` throws *"More than one handler was found"* |
+  | `DarkerConfigurationReference.md`: the default lifetime and the unscoped failure | `AddDarker()` → `IQueryProcessor` **Singleton**; scope validation on → *"Cannot resolve 'GetContextQueryHandler' from root provider because it requires scoped service"*; off → both scopes' queries see `DbContext` **#1**, never disposed | `QueryProcessorLifetime = Scoped` → **#1**, then **#2** |
+  | #4 and `ImplementAQueryHandler.md`: manual registration with the casts | the query returns `Ada,Bob` | the old form → `CS1503`, compiled |
+  | `QueryPipelinePolicies.md` #7: a retry wrapped round a breaker | `[RetryableQuery(1, "RetryAndBreak")]`, breaker of 2 → **2** attempts, then `BrokenCircuitException`; call 2 → **0** attempts | default → **4** attempts; the default breaker alone → **1**, then **0**; `"DefaultCircuitBreaker"` → `ConfigurationException`, 0 |
+  | *"`AddPolicies()` requires both `Constants` names"* | a registry without the breaker → `ConfigurationException`, *"… missing the Darker.CircuitBreakerPolicy policy"* | both → accepted |
+  | `HowConfiguringTheDispatcherWorks.md` #2 and its two warnings, against RabbitMQ | the block verbatim → a sent `GreetingCommand` handled **1** time | `Subscription<T>` → `ConfigurationException`, *"We expect an RmqSubscription"*; `Proactor` → *"You must provide a message mapper registry"*; `messagePumpType` omitted → handled, which is why the page now says `Reactor` is `RmqSubscription<T>`'s default |
+  | The Darker query-pattern handlers against SQL Server 2022 | `AggregationQueryPatterns.md` #1–#3, `ProjectionQueryPatterns.md` #1, #2, `QueryHandlerDependencies.md` #2 → correct results; #3's statistics 155 / 51.67 / 25 / 100 | #3 on an empty range → zeros, its `?? new SalesStatisticsDto()`; `ProjectionQueryPatterns.md` #1's comment, *"SELECT Id, Name, Email only"*, against the whole entity → four columns |
+
+  On SQLite, `AggregationQueryPatterns.md` #3 throws *"SQLite cannot apply aggregate operator 'Min'
+  on expressions of type 'decimal'"* — the provider's limit, and the page names none. Read, not run:
+  `CQRSUseCasesAndPatterns.md` #1 joins and aggregates as `ProjectionQueryPatterns.md` #2 does, run
+  above; its #2 is a controller over the command and query processors
+- **Four findings off the tranche were put to the maintainer** — `Monitoring.md`'s V9 `app.config`
+  section, Topshelf, handlers declared without `public`, and `DarkerBasicConfiguration.md`'s naming
+  and nesting rules — and each was ruled on and repaired in the second pass, below. Darker's own README
+  carries the uncast `Activator.CreateInstance` line (`README.md:110`)
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 28 rows and 3 re-admissions at `1cafef9` (`09f5848`). `--report` → exit **0**,
+  *"985 blocks: 262 BUILT, 706 FAILED, 17 SKIPPED"*, baseline 262, 0 findings
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings,
+  22 entries, 3 silenced; `optioncheck` 0 mismatches across 59 tables, 519 rows; shape, redirects and
+  `--verify` unmoved; `pagelint --changed origin/master` 0 errors. **Pages changed: 18**
+  (`git diff --name-only d69a554..HEAD -- contents`): **9** of the 10 tranche pages —
+  `AggregationQueryPatterns.md` built by its unit alone — and **9** by recurrence: `AgreementDispatcher.md`, `BuildingAnAsyncPipeline.md`, `CQRSWithBrighterAndDarker.md`,
+  `DarkerBasicConfiguration.md`, `FAQ.md`, `ImplementAQueryHandler.md`, `QueryPatterns.md`,
+  `QueryPipeline.md`, `QueryPipelinePolicies.md`
+
+**Task 5.2, second pass — the four findings, ruled 2026-09-28.** The maintainer: rewrite
+`Monitoring.md`; retire Topshelf; make the non-public handlers public; fix
+`DarkerBasicConfiguration.md`'s troubleshooting. **BUILT 262 → 265**: `Monitoring.md` #1, #2 and
+`HowConfiguringTheDispatcherWorks.md` #3, all `FAILED -> BUILT`, no other key moved. `pagelint`
+**599 → 585**: `PolicyRetryAndCircuitBreaker.md` −6, `FeatureSwitches.md` −4, `Monitoring.md` −2,
+`MigratingToPollyV8.md` and `PolicyFallback.md` −1 each (per page, against a worktree at `623c786`).
+Pages with nothing BUILT **49 → 48**, `Monitoring.md`. `attr_mismatch.py` **7**, one hit's line moved
+by the `using`s above it: `PolicyRetryAndCircuitBreaker.md:326` → `:359`. Repair `f2ce226`, baseline
+`a347ba6`, `--report` exit 0, *"985 blocks: 265 BUILT, 703 FAILED, 17 SKIPPED"*.
+
+- **`Monitoring.md`, rewritten for V10.** The page registered a V9 `app.config` section and a
+  container call for `MonitorHandler<T>`, and linked the retired site's Control Bus page. At 10.7.0
+  the handler takes an `IAmAControlBusSender` and a `MonitorConfiguration` (a plain class) from the
+  container, and `AddBrighter()` makes `MonitorHandler<T>` available with either registration style.
+  The page now builds a sender with `ControlBusSenderFactory`, shows `[Monitor]`, and prints the
+  message format captured from a run. **Two upstream defects, found running it and stated on the
+  page** (§ *Defect ledger*), and filed on the maintainer's word: BrighterCommand/Brighter#4453, #4454
+- **Topshelf retired.** `HowConfiguringTheDispatcherWorks.md` now recommends `AddConsumers()`'s hosted
+  service and, without HostBuilder, runs the Dispatcher from a console app until Ctrl+C. #3 builds
+- **Handlers declared without `public`: 18 → 0** on 6 pages (a grep and a Python scan of every C#
+  fence agreeing), and `CommandProcessorConfigurationReference.md` says the scan registers only public
+  handlers. The mapper scan has no such filter, so the sentence names handlers alone
+- **`DarkerBasicConfiguration.md`**: a handler must be exported — public, and nested only in a public
+  class; its name does not matter
+- **`--explain` on the 20 blocks the rulings touched found three more**, each repaired at every
+  recurrence: `[UseResiliencePipeline]` stacked on one method, `CS0579` — the attribute is not
+  repeatable, by design since BrighterCommand/Brighter#2580 — on **7** blocks across **5** pages, each
+  now one pipeline composed in the order the stack meant; `PolicyRetryAndCircuitBreaker.md` saying a
+  pipeline's strategies wrap *"inner to outer"* in the order added, and building its comprehensive
+  pipeline timeout-first — Polly v8 makes the first strategy added the outermost, so that timeout
+  wrapped every retry; and a `FeatureSwitches.md` handler that awaited without `async`. With them,
+  `using`s on the touched blocks and two placeholder bodies that returned nothing
+- **Behaviour, run with controls**, released 10.7.0 packages, net10.0:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `Monitoring.md` #1, #2 verbatim | `Send` → *"Hello Ada"*, **2** `MT_EVENT`s on `brighter.monitoring`, `EnterHandler` then `ExitHandler` | `IsMonitoringEnabled = false` → **0**; `.Handlers(…)` in place of `AutoFromAssemblies()` → **2** |
+  | Turning it off at runtime | request 1 → **2** events; flag set `false`; request 2 → none | — the first request is its control |
+  | A monitored handler that throws | `InvalidOperationException` in the handler → the caller gets **`NotSupportedException`**, *"… 'System.Reflection.MethodBase' instances is not supported"*; **1** event | the handler not throwing → **2** events |
+  | `[MonitorAsync]` through the factory's sender | *"No message mapper defined for request"*; **0** events | `[Monitor]`, sync → **2** |
+  | `HowConfiguringTheDispatcherWorks.md` #2 + #3 against RabbitMQ | Ctrl+C a second into a 4 s handler → *stopping*, the handler finishes, *ended*, exit **0** | without `e.Cancel = true` → exit **−2**, the handler never finishes |
+  | Darker's scan | a handler named `FetchSomething`, and one nested in a public class → found | `internal` → `MissingHandlerException`; public nested in an `internal` class → the same |
+  | Polly v8 order | `AddRetry().AddTimeout(100 ms)`, 300 ms work → **4** attempts | `AddTimeout().AddRetry()` → **1** attempt |
+  | One composed pipeline in place of two attributes | `AddCircuitBreaker().AddRetry(3)`, always failing → sends 1, 2 **4** attempts each, send 3 `BrokenCircuitException`, **0** | two `[UseResiliencePipeline]` on the method → `CS0579` |
+
+
+**Task 5.3 — the *Transports*, *Using an External Bus* and *Health Checks and Observability* pages.**
+Six pages, all changed. **BUILT 265 → 288** (+23): **22** `FAILED -> BUILT` and two new keys BUILT,
+less `Telemetry.md` #1's `BUILT -> FAILED`, which is the old #1 renumbered by a block inserted above
+it (§ *Splits*). The rest of the AC2 diff, joined on page and ordinal against the report at
+`5129c20`: `Telemetry.md` #6 `- -> FAILED` (the same insertion), `CloudEventsReference.md` #5 (a block inserted above it) and
+`PostgreSQLBrokerTradeOffs.md` #2 (a split) `- -> BUILT`, `ConfiguringOpenTelemetry.md` #7 `FAILED ->
+-`: its Jaeger block, old #2, was removed and the five after it moved up (§ *Blocks removed*). **985 → 987 blocks.** `pagelint` **585 → 562** (−23, per page against a
+worktree at `5129c20`): `PostgreSQLMessageBroker.md` −10, `CloudEventsReference.md` −4,
+`Telemetry.md` −3, and −1 each on `ConfiguringOpenTelemetry.md`, `MigratingToNullableReferenceTypes.md`,
+`NullableReferenceTypes.md`, `PostgreSQLBrokerTradeOffs.md`, `S3LuggageStore.md`,
+`V10MigrationGuide.md`. Pages with nothing BUILT **48 → 44**, by requirements' `awk` and a Python
+join agreeing: `BrighterControlAPI.md`, `CloudEventsReference.md`, `PostgreSQLBrokerTradeOffs.md`,
+`S3LuggageStore.md`. Repair `2d938c8` (WIP, session 101), `154f78c` and `8d2fb8b`; baseline `af77ae4`.
+
+- **Five units.** `BrighterControlAPIContext.cs` (`app`), `CloudEventsReferenceContext.cs`,
+  `PostgreSQLMessageBrokerContext.cs` (mapped to both PostgreSQL pages), `TelemetryContext.cs`, and
+  `S3LuggageStoreContext.cs` (`serviceCollection`). None is a type a page tells the reader to write
+  (rule 1, by reading). `PostgreSQLMessageBroker.md` #11 and `Telemetry.md` #4, BUILT before, are
+  re-admitted with their units. `--report` → *"45 units checked, 0 violations"*
+- **The maintainer's five rulings, 2026-09-28.** (1) Tracing: rewrite `Telemetry.md`,
+  `PostgreSQLMessageBroker.md` #8 and, off the tranche, `ConfiguringOpenTelemetry.md`. (2) No pin
+  change: the tracing blocks that need `OpenTelemetry.Extensions.Hosting` and
+  `Paramore.Brighter.Extensions.Diagnostics` stay FAILED as a pin limit, each compiled in scratch
+  against the released packages at **0** errors. (3) Fix `CloudEventsSupport.md`, off the tranche;
+  the **11** non-generic subscriptions without `messagePumpType` are recorded, not repaired
+  (§ *Defect ledger*). (4) File the `souce` bug: BrighterCommand/Brighter#4458, linked from
+  `CloudEventsReference.md`. (5) `PostgreSQLBrokerTradeOffs.md`'s size: tested to 50 MB, larger may
+  fit, 150 MB rejected; AWS SQS is 1 MiB in its comparison table, with Brighter's support for SQS
+  messages over 256 KB said to ship in the release after 10.7.0
+- **Twenty-three defects** (§ *Defect ledger*), twelve on the two PostgreSQL pages. Five recur off
+  the tranche and were repaired there: `PostgresOutbox.md`, where the EF Core
+  provider's package is installed, now states the Npgsql version it needs; `HandlingLargeMessages.md`'s S3 store,
+  created with no `ACLs`; a `string` content type given to `MessageBody` on `KafkaConfiguration.md` and
+  `MessageMappers.md`; mappers missing a member of `IAmAMessageMapper<T>` on `Routing.md`,
+  `V10MigrationGuide.md` (#3, #18), `NullableReferenceTypes.md` (#7) and `FAQ.md` (#7, whose
+  `MapToMessage` also returned nothing); `Command`/`Event`
+  subclasses with no base-constructor call on `NullableReferenceTypes.md` (#9, now BUILT),
+  `MigratingToNullableReferenceTypes.md` (#4) and `V10MigrationGuide.md` (#20), whose example also
+  published where it meant to post
+- **`--explain` on every block the diff touches** (`git diff -U0 5129c20` hunks against fence
+  ranges): **39** blocks, **23** BUILT. It found the three constructor blocks without `using`s, now
+  given them. The **16** FAILED are the six pin-limited blocks below, `S3LuggageStore.md` #1, and on
+  the off-tranche pages names their pages never show and two blocks that put a type before a
+  statement (`MigratingToNullableReferenceTypes.md` #4, `V10MigrationGuide.md` #20), not repaired
+- **Behaviour, run with controls**, released 10.7.0 packages, net10.0, one process per case:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `PostgreSQLMessageBroker.md`: consumer and publication names | `channelName` equal to the publication's `Topic` → **1** handled | the page's names → **0**: the consumer reads `queue = ChannelName`, the producer writes `queue = Topic` |
+  | Sending to the broker | `PostAsync` → a row in the table | `PublishAsync` → no row; it runs local handlers |
+  | *Scheduled Messages* | `PostAsync(delay)` → the scheduler fires; the row appears at t≈6 s, visible at once | `PublishAsync(delay)` → a local handler, no row |
+  | What `visible_timeout` delays | a deferred message with `requeueDelay` 20 s → visible again at 19.5 s | `requeueDelay` 0 → handled 3×, the row deleted on reject |
+  | The outbox in an EF Core transaction | with the transaction provider, rollback → **0** outbox rows | without it → **1** |
+  | Message size, `PostgreSQLBrokerTradeOffs.md` | 1 KB, 5 MB, 50 MB round-trip | 150 MB → Npgsql `54000`, *"total size of jsonb object elements exceeds the maximum of 268435455 bytes"*; 200 MB → *"JSON value of length 209715200 is too large"*. 100 MB posted and not received within 6 s, unresolved, so the page claims 50 |
+  | `CloudEventsReference.md`: headers on the wire | RMQ.Async → `cloudEvents_id/source/specversion/time/type`, the content type in the AMQP property; Kafka → `ce_*` and `content-type` | a structured-mode mapper → the envelope in the body. SNS and ASB by reading |
+  | The Kafka partition key | `RequestContextBagNames.PartitionKey` in the context bag → the record key | no bag entry → empty key |
+  | `Telemetry.md`: spans need a registered tracer | `AddBrighterInstrumentation()` → **34** spans; a manual `BrighterTracer` with `AddSource("paramore.brighter")` → **34**, the name case-insensitive | `AddSource` alone → **0**; a wrong source → **0**; `Sdk.CreateTracerProviderBuilder().AddBrighterInstrumentation()` → **0** Brighter spans |
+  | Trace propagation | the OTel SDK initialised → RMQ `cloudEvents_traceparent`, `cloudevents_tracestate`; Kafka `ce_traceparent`, `ce_tracestate` | a bare `ActivityListener` → Brighter writes neither: it injects through `Propagators.DefaultTextMapPropagator` |
+  | `S3LuggageStore.md`: `ACLs`, on LocalStack | `ACLs` unset, bucket missing → `ConfigurationException`, *"No ACL setup on S3Luggage Store"*, no bucket | `ACLs = S3CannedACL.Private` → bucket created; `ACLs` unset, bucket present → accepted |
+  | `BrighterControlAPI.md` against a V10 Dispatcher | `GET /control/status` → the page's JSON, captured; `PATCH …/orders-subscription/performers/3` → 200, 3 performers | by routing key → 400 *"No such subscription"*; wrong case → **500**, `InvalidOperationException` from `Dispatcher.SetActivePerformers`; `baseRoute` `/ops/brighter` → served there, `/control/status` 404 |
+  | `V10MigrationGuide.md` #20: the default mapper | `PostAsync` → **1** message, `application/json` | `PublishAsync` → **0** |
+
+  Every table in `Telemetry.md` was rewritten from captured spans. Every SQL block in
+  `PostgreSQLMessageBroker.md` was run against the table
+- **The blocks that stay FAILED compile where their world exists** (§ *Blocks that stay FAILED*):
+  the six pin-limited tracing blocks — `Telemetry.md` #1, #6, `ConfiguringOpenTelemetry.md` #1, #5,
+  #6 and `PostgreSQLMessageBroker.md` #8 — in scratch against
+  `OpenTelemetry.Extensions.Hosting` and `Paramore.Brighter.Extensions.Diagnostics`; `S3LuggageStore.md`
+  #1 against `Paramore.Brighter.Transformers.AWS.V4` 10.7.0 — each **0** errors.
+  `ConfiguringOpenTelemetry.md` #2–#4 are exporter fragments marked `// ...`
+- **Put to the maintainer, not repaired:** `DefaultMessageMappers.md` #4, an Avro mapper that also
+  passes `CharacterEncoding.Raw` as `MessageBody`'s content type, but whose constructor
+  (`AvroMessageMapper<T>(…)`) does not parse and whose Confluent calls do not match that API;
+  whether `PublishAsync` shown as sending to a transport is swept across the corpus; and whether the
+  Control API's wrong-case 500 is filed
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 24 rows and 2 re-admissions; `Telemetry.md` #1 and #4's rows removed. `--report` →
+  exit **0**, *"987 blocks: 288 BUILT, 682 FAILED, 17 SKIPPED"*, baseline 288, 0 findings
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings,
+  22 entries, 3 silenced, `--verify-list` clean; `optioncheck` 0 mismatches across 59 tables, 519 rows;
+  shape, redirects and `--verify` 161 / 77 / 161; `pagelint --changed origin/master` 0 errors.
+  **Pages changed: 17** (`git diff --name-only 5129c20..HEAD -- contents`): the **6** tranche pages
+  and **11** by ruling or recurrence — `CloudEventsSupport.md`, `ConfiguringOpenTelemetry.md`,
+  `FAQ.md`, `HandlingLargeMessages.md`, `KafkaConfiguration.md`, `MessageMappers.md`,
+  `MigratingToNullableReferenceTypes.md`, `NullableReferenceTypes.md`, `PostgresOutbox.md`,
+  `Routing.md`, `V10MigrationGuide.md`
+
+**Task 5.4 — `ITimerProvider`, the unshown `Order`, and the three rulings on 5.3's questions.**
+**`grep -rn ITimerProvider contents/ | wc -l` → 0**, read from a file (4 at `aec11c1`).
+`CQRSWithBrighterAndDarker.md` now shows `Order`: the write model is a new block, #7, BUILT; the
+handler that assigns `Id = command.Id` is #8 and stays FAILED, same-page. **BUILT 288 → 293** (+5),
+every move `FAILED -> BUILT` or a new key: `InMemoryScheduler.md` #5, `BrighterSchedulerSupport.md`
+#1, `DefaultMessageMappers.md` #4 and #5, and `CQRSWithBrighterAndDarker.md` #7 (inserted). The rest of the
+AC2 diff, aligned by each fence's first non-`using` line against `aec11c1` rather than by ordinal:
+`CQRSWithBrighterAndDarker.md` #8–#13 are old #7–#12 renumbered by the insertion;
+`DefaultMessageMappers.md` #4–#6 are old #4 split, and #7–#15 are old #5–#13; and
+`DynamicMessageDeserialization.md` old #7 is removed, with #7 and #8 being old #8 and #9. All of them
+were FAILED on both sides (§ *Splits*, § *Blocks removed*). **987 → 989 blocks.** `pagelint`
+**562 → 553** (−9): `DefaultMessageMappers.md` −4 (#2, #10, #11, and old #4 split into three blocks that
+carry `using`s), and −1 each on `InMemoryScheduler.md` #5, `BrighterSchedulerSupport.md` #1,
+`DispatchingARequest.md` #3, `V10MigrationGuide.md` #26, and the removed block. Pages with nothing
+BUILT **44 → 42**, by the requirements' `awk` and a Python join agreeing: `BrighterSchedulerSupport.md`,
+`DefaultMessageMappers.md`. Pin `07d878b`, `aeb65f4`; repair `b4c3ae0`, `e742502`; baseline `cfd964e`.
+
+- **The maintainer's three rulings, 2026-09-28**, on 5.3's questions. (1) Rewrite
+  `DefaultMessageMappers.md`'s Avro block against Confluent's API, in 5.4. (2) Sweep `PublishAsync`
+  across the corpus and repair every instance that means the bus, keeping those that are in-process
+  events. (3) File the Control API's wrong-case 500. It is BrighterCommand/Brighter#4465, `Bug`,
+  `0 - Backlog`, linked from `BrighterControlAPI.md`
+- **The pin grew twice, against 5.1's "no pin change"**, each change in its own commit and measured
+  alone with no page changed: no verdict moved either time. `Microsoft.Extensions.TimeProvider.Testing`
+  10.10.0 (`FakeTimeProvider`, latest stable, with a net9.0 build) went in at `07d878b`, and
+  `Confluent.SchemaRegistry.Serdes.Avro` 2.15.0 (the Confluent release that
+  `Paramore.Brighter.MessagingGateway.Kafka` 10.7.0 depends on) at `aeb65f4`. That makes **100**
+  PackageReferences and **545** reference assemblies, against 542
+- **`InMemoryScheduler.md`.** Two sentences, the pipeline diagram and block #5 now name
+  `TimeProvider`, and block #5 is a `FakeTimeProvider` test. The old block also passed a
+  `FakeTimerProvider` to a constructor that `InMemorySchedulerFactory` does not have. The page said to
+  install `Paramore.Brighter.InMemoryScheduler`, which returns 404 on NuGet; the scheduler is in
+  `Paramore.Brighter`, and `UseScheduler` is in the DI package. The test registers its handler
+  with `AsyncHandlers`, because `AutoFromAssemblies()` hit #4414 on the first run and the page links
+  `SchedulingAMessage.md`'s workaround
+- **`CQRSWithBrighterAndDarker.md`.** Showing `Order` surfaced two hidden defects. `Id = command.Id`
+  is `CS0029` against the read side's `Guid` key: `Id` converts implicitly only to `string`
+  (`Id.cs:95`). And #2 passed a `CancellationToken` in `PublishAsync`'s `RequestContext?` slot,
+  which is `CS1503`. #2 was also written against a different, unshown `Order` (`PlacedAt`,
+  `OrderStatus.Placed`, a two-argument event); it now uses the model #7 shows, and its prose links there.
+  Both `PublishAsync` calls on the page stay: they raise an in-process event to update the read model
+- **`BrighterSchedulerSupport.md` #1** listed the six scheduled overloads with the request before the
+  time, and without `RequestContext` or Post's `args`. It is now as 10.7.0 declares them
+  (`IAmACommandProcessor.cs:98`, `:111`, `:171`, `:190`, `:261`, `:282`). No call site in the corpus
+  followed the wrong order. The scan read every `Send`/`Publish`/`Post`/`DepositPost` call's arguments
+- **`DefaultMessageMappers.md`, the Avro block, by ruling.** It is now an `IAmAMessageMapperAsync<T>`
+  constrained to `ISpecificRecord`, calling `AvroSerializer<T>.SerializeAsync(T, SerializationContext)`
+  and `AvroDeserializer<T>(registry).DeserializeAsync`. The `Id` travels in the header, and the content
+  type is `application/octet-stream` (Confluent's wire format, as in `samples/TaskQueue/KafkaSchemaRegistry`).
+  The page now shows the `.avsc`, and the avrogen partial's other half implements `IEvent`, because
+  `RequestToMessageType` throws for a bare `IRequest`. The partial is in the schema's namespace, since
+  avrogen refuses a schema without one. The example type is `OrderShipped`, because the page's
+  `OrderCreated` is a different shape. Registration is per type with `RegisterAsync`, and the default
+  form, #10, carries the consequence in a comment. #11's `mappers.Regiter<` (`CS1061`) is fixed
+- **The `PublishAsync` sweep, by ruling.** `calls.py` read every `Publish`/`PublishAsync` call in a C#
+  fence (**13** at `aec11c1`, **7** now), and a prose grep read every line tying either to a bus,
+  broker, queue, topic, transport or the wire. Four places relied on `PublishAsync` reaching a mapper or
+  the bus. `DefaultMessageMappers.md` #2 said the default mapper serialises a published event.
+  `DispatchingARequest.md` #3 set CloudEvents extensions for a publish. `V10MigrationGuide.md` #26
+  asserted that a published event lands on the `InternalBus`. Those three now post.
+  `DynamicMessageDeserialization.md`'s practice *"Cache Performance-Critical Paths"* published three
+  dummy events to warm the mapper cache, and it is removed: `PublishAsync` maps nothing, and
+  `TransformPipelineBuilder`'s cache is keyed per mapper type and per direction, so posting warms only
+  the producer's side and puts junk on a topic. The 7 calls left are 2 declarations, 2 in-process
+  read-model events, a scheduled local event (`AwsScheduler.md`) and 2 test-double verifications. The
+  sweep also found that **CloudEvents extension properties are written only by
+  `CloudEventJsonMessageMapper<>`**. Measured: the default `JsonMessageMapper<>` drops them from both
+  the request context and `Publication`. `DispatchingARequest.md`, `UsingTheContextBag.md` and
+  `CommandProcessorConfigurationReference.md`'s `CloudEventsAdditionalProperties` row now say so.
+  `FAQ.md`'s heading, which had a stray `c` and an unclosed code span, is fixed
+- **`--explain` on every block the diff touches** (`git diff -U0 aec11c1` hunks against fence
+  ranges): **13** blocks, **5** BUILT. The **8** FAILED are `CQRSWithBrighterAndDarker.md` #2 and
+  #8, and `DefaultMessageMappers.md` #6 and #10, all same-page and each compiled with its page's blocks (below).
+  The other four fail only on names their pages never show: `DefaultMessageMappers.md` #2 and #11,
+  `DispatchingARequest.md` #3, and `V10MigrationGuide.md` #26, none of them tranche pages. Each got
+  its `using`s, so `pagelint --changed origin/master` reports **0** errors
+- **Behaviour, run with controls**, against the released 10.7.0 packages on net10.0:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `InMemoryScheduler.md`: the scheduler's clock is its `TimeProvider` | `FakeTimeProvider`, `SendAsync(5 min)`, `Advance(5 min)` → handled **1**, before `Advance` returns | no advance → **0**; advance 4:59 → **0**, then +1 s → **1**; 2.5 s of wall clock → **0**. Both TimeProvider.Testing 10.7.0 and 10.10.0 |
+  | `CQRSWithBrighterAndDarker.md` #8: `Guid.Parse(command.Id)` | 10,000 `Id.Random()` → all parse | `new Id("order-1")` → `FormatException` |
+  | `DefaultMessageMappers.md` #4–#6, the page's own blocks and `.avsc`, avrogen 1.12.2, cp-schema-registry 7.9.0, `InternalBus` | `RegisterAsync` + `PostAsync` → 16 bytes, magic byte 0, octet-stream, `MT_EVENT`; round trip → the record and its `Id`; subject `<topic>-value` registered | `Post` → **JSON** (the sync default; the async mapper is not used); another request type → JSON through the default. The earlier sync mapper under `PostAsync` → JSON too |
+  | #10, the Avro default | `PostAsync` of an `ISpecificRecord` → Avro | a type that is not one → `ArgumentException`, *"violates the constraint of type 'T'"* |
+  | The `Id` in the header | `MapToRequestAsync` → the `Id` restored | the record alone → a different `Id` |
+  | `RequestToMessageType` | the partial as `IEvent` → maps | as bare `IRequest` → `ArgumentException`, *"can only map Commands and Events"* |
+  | CloudEvents extensions (`DispatchingARequest.md`, `UsingTheContextBag.md`) | `PostAsync` + `CloudEventJsonMessageMapper<>` → in the envelope, from the context bag and from `Publication` | `JsonMessageMapper<>` → absent from body and header, both ways; `PublishAsync` → **0** messages, the local handler runs |
+
+- **The blocks that stay FAILED compile where their world exists** (§ *Blocks that stay FAILED*):
+  `CQRSWithBrighterAndDarker.md` #6, #7 and #8 together → **0** errors, and #2 with #7 → **0**. The
+  control, #8 with the old `Id = command.Id`, gives `CS0029`, and #2 with the positional token gives
+  `CS1503`. `DefaultMessageMappers.md` #4, #5 and #6 with avrogen's half → **0**; without it,
+  `CS0311`
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 5 rows. `--report` → exit **0**, *"989 blocks: 293 BUILT, 679 FAILED, 17 SKIPPED"*,
+  baseline 293, 45 units, 0 findings
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings,
+  22 entries, 3 silenced, `--verify-list` clean; `optioncheck` 0 mismatches across 59 tables, 519 rows;
+  shape, redirects and `--verify` 161 / 77 / 161. **Pages changed: 11**
+  (`git diff --name-only aec11c1..HEAD -- contents`): `InMemoryScheduler.md` and
+  `CQRSWithBrighterAndDarker.md` for P0-7, plus `BrighterControlAPI.md`, `BrighterSchedulerSupport.md`,
+  `CommandProcessorConfigurationReference.md`, `DefaultMessageMappers.md`, `DispatchingARequest.md`,
+  `DynamicMessageDeserialization.md`, `FAQ.md`, `UsingTheContextBag.md` and `V10MigrationGuide.md`,
+  by ruling or recurrence
+
+**Task 5.5 — the E4 attribute mismatches, and what stood beside them.** **`attr_mismatch.py` 7 → 1,
+exit 1**, the one hit `PipelineValidation.md:250`, the deliberate *Before (error)* example, on its
+line; `--plant` → **OK**, exit 0. Six sync attributes on `HandleAsync` became the async form:
+`HowServiceActivatorWorks.md` #16 (`UseInboxAsync`), `PipelineValidation.md` #9 and #10,
+`PolicyRetryAndCircuitBreaker.md` #14, `ReactorAndProactor.md` #6 and `V10MigrationGuide.md` #10
+(`UseResiliencePipelineAsync`). **Second method:** a Python scan for any of the paired names without
+`Async` whose next non-attribute line is `HandleAsync` reads **8 → 2**. The two left are `:250` and
+`V10MigrationGuide.md` #8's `[TimeoutPolicy]`, the skipped *Before (V9)* form, whose attribute has
+no pair at 10.7.0 and which `attr_mismatch.py` does not read. **BUILT 293 → 295** (+2), both
+`FAILED -> BUILT` and nothing else moved in the AC2 diff against `608615a`'s report:
+`V10MigrationGuide.md` #9 (the registry) and #12 (an `IRequestContext` implementation). **989 blocks**
+on both sides, no fence added or removed. `pagelint` **553 → 543** (−10), per page against a worktree
+at `608615a`: `V10MigrationGuide.md` −6 (#9–#14), `PipelineValidation.md` −2 (#9, #10),
+`HowServiceActivatorWorks.md` −1 (#16), `ReactorAndProactor.md` −1 (#6; #5 already carried its
+`using`s). Pages with nothing BUILT **42 → 41**, `V10MigrationGuide.md` leaving: pages with a FAILED block and
+no BUILT one, by `comm` over the two `awk` lists and by a Python join, agreeing. A count of every page
+without a BUILT block reads 43 → 42, because it also takes in a page whose blocks are all SKIPPED.
+Repair `f4cfd88`; baseline `5c68181`.
+
+- **`:250` says it is wrong in prose.** The sentence under *Async Handler with Sync Attributes* now
+  says the example is wrong, that the compiler accepts it, that `ValidatePipelines()` reports it as an
+  error, and that without validation the pipeline throws `ConfigurationException` on the first request
+- **`PipelineValidation.md` #9, #10 kept what they demonstrate.** The attribute's kind changed, and
+  `(step: 0, "RetryPipeline")` — a named argument ahead of a positional one, out of position — became
+  `("RetryPipeline", step: 0)`. #9's comments called step 0 *inner* and step 1 *outer*, against the
+  page's own *"lower step numbers are outer wrappers"* and the validator's text; now *outer* and
+  *inner*. Both fragments are now whole handlers with `using`s, as #7 and #8 are, so `pagelint
+  --changed` can read them. The example warning message spelt the attribute names without the
+  `Attribute` suffix the validator prints (`AttributeType.Name`, captured below)
+- **`V10MigrationGuide.md` § 4 had two defects beside its attribute.** #9 built the pipeline with
+  `TryAddBuilder<ResiliencePropertyKey<RequestContext>>`, a generic builder whose pipeline Brighter
+  never looks up, and #11 assigned the registry to `PolicyRegistry`, the obsolete Polly v7
+  `IPolicyRegistry<string>` (a type mismatch). Now `AddBrighterDefault()` then `TryAddBuilder(name,
+  …)`, as `PolicyRetryAndCircuitBreaker.md` shows, into `ResiliencePipelineRegistry`. The sentence
+  under #9 names what happens without `AddBrighterDefault`, run below
+- **`V10MigrationGuide.md` § 5, the open `IRequestContext` row, closed.** The section listed
+  `PartitionKey` and `CustomHeaders` as new properties and #12 implemented `Guid Id`, `ISpan Span`
+  and a `Dictionary` `Bag`; 10.7.0 has none of those shapes (`git show 10.7.0:src/Paramore.Brighter/IRequestContext.cs`)
+  and has five members the section omitted: `Destination`, `ResiliencePipeline`, `Span` as an
+  `Activity`, `FeatureSwitches`, `CreateCopy()`. The section now lists what changed against V9
+  (`9.9.13`'s interface: `Bag`, `Policies`, `FeatureSwitches`) and links each new member to
+  `UsingTheContextBag.md`. #12 implements 10.7.0's interface and is BUILT; its `CreateCopy` copies
+  what the shipped `RequestContext.CreateCopy` copies. #13 was a handler setting properties that do
+  not exist; it is now a service that puts the partition key and a header in the `Bag` under
+  `RequestContextBagNames` and passes the context to `PostAsync`, run below
+- **`IRequestContext.InstrumentationOptions` said *"added in 10.7.0"*.** It is not in the tag
+  (`grep -c Instrumentation` → 0) and not on NuGet past 10.7.0; it is in `release_notes.md`'s
+  *Master* section, added by `0950f2864`. **Forthcoming, not dead**, so by the 2026-09-05 ruling it
+  stays, marked: the heading reads *(after 10.7.0)* and the section carries `> **Not in a released
+  package yet.**`, worded as the Replay On Seen pages word theirs. #14 gained its two `using`s;
+  `--explain` found `InstrumentationOptions` needs `Paramore.Brighter.Observability`
+- **`ReactorAndProactor.md` said mappers have no async variants.** *"Message mappers remain
+  synchronous"* under *Proactor Message Mappers*, and a note advising `Task.Run()` wrappers for async
+  I/O. At 10.7.0 the Proactor takes `IAmAMessageMapperRegistryAsync` (`Proactor.cs:63`) and the
+  Reactor `IAmAMessageMapperRegistry` (`Reactor.cs:63`). #5 is now an `IAmAMessageMapperAsync<T>`,
+  and the section says what the run showed: a pump given only the other kind of mapper uses the
+  default one, silently. The page's own `:43` already said mappers should be async under a
+  Proactor; `:73`, *"Mixing sync and async implementations will cause runtime errors"*, now
+  excepts mappers and links the section. Found reading around the E4 hit at `:200`
+- **`--explain` on every block the diff touches:** **13**, 2 BUILT. The 11 FAILED name only page
+  types and values: `MyCommand`, `OrderCreated`, `OrderPlaced`, `SomeAsyncOperation`, `services`,
+  `resiliencePipelineRegistry`; #14 adds the `CS0535`s its `// ... other members` declares. `pagelint
+  --changed origin/master` → **0** errors
+- **Behaviour, run with controls**, against the released 10.7.0 packages on net10.0 (`valrun`,
+  `pumprun`, `regrun`, `ctxrun` under the session scratchpad):
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `PipelineValidation.md` #7 is an error | `Validate()` → 1 error, *"Async handler uses sync attribute 'RejectMessageOnErrorAttribute' at step 0"*; without validation, `PublishAsync` → `ConfigurationException`, *"All handlers in an async pipeline must derive from IHandleRequestsAsync"* | #8 → 0 errors, 0 warnings; publishes |
+  | #9 is a warning, #10 is clean | repaired #9 → 0 errors, **1** warning, *"'RejectMessageOnErrorAsyncAttribute' at step 1 is after 'UseResiliencePipelineAsyncAttribute' at step 0"*; repaired #10 → 0, 0 | as published, #9 → 1 error **and** the warning; #10, the *After (fixed)*, → **1 error** |
+  | A pump uses only its own kind of mapper | Proactor, sync mapper only → **the default mapper** mapped it; Reactor, async mapper only → **the default mapper** | Proactor, async mapper → the custom async mapper; Reactor, sync mapper → the custom sync mapper. `AddConsumers` + `AutoFromAssemblies` + `InMemoryChannelFactory`, as `InMemoryTransport.md` configures it |
+  | `V10MigrationGuide.md` #9: start from `AddBrighterDefault` | own registry without it → `ConfigurationException`, *"missing the CommandProcessor.OutboxProducer resilience pipeline"* | with it → the `[UseResiliencePipelineAsync]` handler runs |
+  | #13: the `Bag` keys reach the message | #13 verbatim through `PostAsync` → `PartitionKey` `tenant-42`, header `x-tenant-id` `tenant-42` | `PostAsync` with no context → `PartitionKey` empty, header absent |
+
+- **`--report`** before the baseline rows → exit 1, 2 findings, both *"BUILT, not in the baseline"*;
+  after → exit **0**, *"989 blocks: 295 BUILT, 677 FAILED, 17 SKIPPED"*, baseline 295, 45 units,
+  0 findings. `linkcheck` 165, 0 broken; `versioncheck` 0 of 18; `symbolcheck` 0, 22 entries,
+  3 silenced, `--verify-list` clean; `optioncheck` 0, 59 tables, 519 rows; shape, redirects,
+  `--verify` 161 / 77 / 161. **Pages changed: 5** (`git diff --name-only 608615a..HEAD --
+  contents`), the five E4 pages
+- **Found on the way and put to the maintainer:** `PipelineValidation.md`'s Replay rule row and its
+  two Replay example messages describe a forthcoming feature without the *Not in a released package
+  yet* marker; `MessageMappers.md`, the mapper's home page, never mentions `IAmAMessageMapperAsync<T>`;
+  and `UsingTheContextBag.md`'s handler examples set `Context.Bag` keys without posting. **Ruled
+  2026-09-28: into phase 5**, the second pass below
+
+**Task 5.5, second pass — the three items, by ruling.** Pages changed: **5**, `PipelineValidation.md`,
+`MessageMappers.md`, `UsingTheContextBag.md`, and `DispatcherConfigurationReference.md` and
+`BrighterOutboxSupport.md`, found by the Replay recurrence grep. **BUILT 295 → 295**; **989 → 990 blocks**, one inserted:
+`MessageMappers.md` #2, the async mapper, FAILED on its page type `GreetingMade`. The AC2 diff against
+the first pass's report reads `MessageMappers.md` #3 `BUILT -> FAILED`, #4 `FAILED -> BUILT` and #7
+as a new key: the insert renumbered old #2–#6 to #3–#7, and old #3's baseline row moved to #4
+(§ *Splits*). `pagelint` **543 → 537**, all on `UsingTheContextBag.md` (#2–#6 and #18, per page
+against a worktree at `ac44085`); the new block carries its `using`s. Pages with nothing BUILT **41**,
+unmoved. `attr_mismatch.py` **1**, exit 1, still **`PipelineValidation.md:250`**: the Replay note first
+went in as a line after the example messages and moved the hit to `:252`; it now sits in the existing
+**Example error messages** line, so nothing above `:250` changed length. `--plant` OK. Repair
+`6ddcf7b`, `dc3e5bd`; baseline `4fc4040`. `--report` → exit **0**, *"990 blocks: 295 BUILT, 678 FAILED,
+17 SKIPPED"*, baseline 295, 0 findings; `dc3e5bd` moved no verdict.
+
+- **`PipelineValidation.md`, Replay.** `git grep -il causation 10.7.0 -- src` → **0** files; on
+  `master`, `Validation/HandlerPipelineValidationRules.cs` and `PipelineValidator.cs`. The rule's row,
+  the line introducing the example messages and § *Replay Without Causation Tracking* now say it
+  ships after 10.7.0; the section carries the callout as the Replay On Seen pages word it. The other
+  rules on the page are in the tag (5.5's run reported two of them); `UseBoxProvisioning` and
+  `AddMsSqlOutbox`, in the section's blocks, are too
+- **`MessageMappers.md`** gains *Synchronous and Asynchronous Message Mappers*: an
+  `IAmAMessageMapperAsync<GreetingMade>` beside the page's sync one, and which path uses which, linking
+  `DefaultMessageMappers.md` and `ReactorAndProactor.md`'s section. Written from the run below, all
+  four producer calls, with the two pumps from the first pass
+- **`UsingTheContextBag.md`.** #3 (partition key), #5 (headers) and #6 (CloudEvents extensions) set
+  keys on the handler's own `Context` and posted nothing; #2 and #18 filled a context and passed it to
+  `SendAsync`, which makes no message. Each now fills a `RequestContext` and passes it to the `Post`
+  or `PostAsync` that makes the message, and a paragraph under *Setting Request Context Explicitly*
+  says why, from the run. The Bag-key snippets under *Well-Known Context Bag Keys* and the practices
+  are left: they show the key's name, not where it takes effect. *"Headers set here take precedence
+  over static header configurations"* stays, now run (`DictionaryExtensions.Merge`, the context's
+  entry overwrites the publication's)
+- **`--explain` on the seven touched blocks** (#4 as well, `context` a value): page types and values only (`CreateOrderRequest`,
+  `OrderCreated`, `MyCommand`, `TenantWorkDone`, `IOrderService`, `ProcessOrderCommand`,
+  `OrderProcessed`, `PublishEventCommand`, `BusinessEventRaised`, `GreetingMade`; `tenantId`,
+  `criticalHeaders`, `commandProcessor`, `orderCreated`). `pagelint --changed origin/master` → **0** errors
+- **Behaviour, run with controls** (`bagrun`, `bagrun2`, `maprun`), 10.7.0, net10.0, `InternalBus`:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | Keys act only on the context passed to the post | handler fills its own `Context.Bag`, `PostAsync(…, requestContext: Context as RequestContext)` → partition key and header on the message | same handler, `PostAsync` with no context → neither. A caller's context passed to `SendAsync` reaches the handler (its key is present) and still → neither, when the handler posts without one |
+  | #3's shape, sync | `Post(…, requestContext: context)` inside `Handle` → partition key `tenant-7`, `x-order-priority` `high` over the publication's `DefaultHeaders` value | `Post` with no context → no partition key, the publication's `publication-default` |
+  | Each call uses only its own kind of mapper | `Post`, `DepositPost` + `ClearOutbox` on a sync-only type → the custom sync mapper; `PostAsync`, `DepositPostAsync` + `ClearOutboxAsync` on an async-only type → the custom async mapper | the crossed four → **the default mapper (JSON)**, all four |
+
+**Task 5.6 — phase 5 closed, 2026-09-28, branch at `5981b12`.** Every gate run bare, exit code
+read before its output:
+
+| # | Gate | Exit | Read | Predicted (5.1) | Agrees? |
+|---:|---|---:|---|---|---|
+| 1 | `linkcheck` | 0 | 165 files, 0 broken | none | **yes** |
+| 2 | `pagelint` | 0 | 0 errors, **537** warnings across 66 pages, 162 pages | 0 errors; 616 → between 582 and 573, then up to −8 from P0-7, recurrences explained | **yes** — 35 in the band, 8 from P0-7, 36 more explained below |
+| 3 | shape | 0 | 161 pages, 12 sections, widest 12 of 20, deepest 4 of 4 | none | **yes** |
+| 4 | redirects | 0 | 77 entries, 7858 bytes | none | **yes** |
+| 5 | `versioncheck` | 0 | 0 stale of 18, across 5 pages | none, scope held at 18 across 5 | **yes** |
+| 6 | `optioncheck` | 0 | 0 mismatches, 59 tables, 519 rows | none | **yes** |
+| 7 | `--verify` | 0 | 161 predicted = 161 published | none | **yes** |
+| 8 | `symbolcheck` | 0 | 0 findings, 22 entries, 161 pages, 3 silenced; `--verify-list` exit 0 | none; `S3LuggageStore.md`'s two opt-outs kept | **yes** |
+| 9 | `blockcheck` | 0 | 990: **295** BUILT, 678 FAILED, 17 SKIPPED; 0 findings; **545** reference assemblies; baseline 295; **45** units, 0 violations; 67 pages mapped | BUILT 246–294; SKIPPED 16 plus accepted reasons; 542, no pin change; exit 0; 0 violations | **no — 1 above the ceiling, and the pin grew**, explained below |
+| — | `attr_mismatch.py` | 1 | **1**, `PipelineValidation.md:250`; `--plant` exit 0, OK | 7 → 1, exit 1, `:250` | **yes** |
+| — | `grep -rn ITimerProvider contents/` | — | **0** lines, read from a file | 4 → 0 | **yes** |
+
+`pagelint --changed origin/master` → exit **0**, 0 errors. `origin/master` is `976e0e0`, the merge of
+phase 4.
+
+**Gate 9, reconciled.** Phase 5 moved **61** blocks into the baseline: 28 in 5.2, 3 in its second
+pass, 23 in 5.3, 5 in 5.4, 2 in 5.5. Against the report regenerated at `976e0e0` in a worktree
+(*"983 blocks: 234 BUILT"*), **50** are on the tranche's 16 pages and **11** off it. Of the 62 blocks
+FAILED on the tranche at `976e0e0`, **48** built, **13** stay FAILED and **1** is SKIPPED; the other
+two tranche gains are new fences, `CloudEventsReference.md`'s inserted block and
+`PostgreSQLBrokerTradeOffs.md` #2, the split. Against 5.1's ceiling of 294, which counted every
+reachable block, every hard block but `S3LuggageStore.md` #1, and `InMemoryScheduler.md` #5:
+
+- **−11**, ceiling blocks that did not build: `BuildingAPipeline.md` #2, #3, #4,
+  `DarkerConfigurationReference.md` #1, #2, `ParameterizedQueryPatterns.md` #4,
+  `ProjectionQueryPatterns.md` #3, `QueryHandlerDependencies.md` #3, `Telemetry.md` #6 (old #5),
+  `PostgreSQLMessageBroker.md` #8, each in § *Blocks that stay FAILED*; and
+  `DarkerAndBrighterPipelines.md` #1, SKIPPED with an accepted reason
+- **+2**, the tranche's two new fences, BUILT
+- **+10**, off the tranche and beside `InMemoryScheduler.md` #5, which the ceiling held:
+  `Monitoring.md` #1, #2 (ruling), `QueryPipelinePolicies.md` #7 (appended), `NullableReferenceTypes.md`
+  #9 (recurrence), `CQRSWithBrighterAndDarker.md` #7 (the `Order` write model, which 5.1 left out),
+  `BrighterSchedulerSupport.md` #1, `DefaultMessageMappers.md` #4, #5 (ruling), `V10MigrationGuide.md`
+  #9, #12 (beside the attributes)
+
+294 − 11 + 2 + 10 = **295**. **The pin: said, no change; measured, 98 → 100 `PackageReference`s**
+(`grep -c`), 542 → 545 reference assemblies — `Microsoft.Extensions.TimeProvider.Testing` and
+`Confluent.SchemaRegistry.Serdes.Avro`, for 5.4's two repairs, each its own commit measured alone,
+no verdict moved (`07d878b`, `aeb65f4`). **Units 35 → 45**: five in 5.2, five in 5.3 (`git diff
+--name-status 976e0e0..HEAD -- tools/blockcheck/scaffold/units`, ten `A`); pages mapped 53 → 67.
+
+**Every FAILED block on the 16 tranche pages is listed**: `after.tsv`'s FAILED keys on those pages
+are **15** — the 13 above and two new fences, `AgreementDispatcherRouting.md` #12 (split) and
+`Telemetry.md` #1 (inserted, FAILED on the pin) — and `comm` of them against § *Blocks that stay
+FAILED* is silent. Corpus-wide, too: every listed row is FAILED in the report.
+
+**Gate 2, reconciled.** Per-page warnings at `976e0e0` (a worktree) against the branch, **−79** in
+three groups, and the six task entries above sum to it (17 + 14 + 23 + 9 + 10 + 6):
+
+- **−35 on 11 tranche pages**, which is inside 5.1's band (616 − 35 = 581). Six
+  `AgreementDispatcherRouting.md` blocks, #12 among them, open with `// ...`: they declare their
+  omission, so they still warn, which is the proviso 5.1 wrote. The one warning left on
+  `PostgreSQLMessageBroker.md` is #11, BUILT and untouched, as predicted
+- **−19 on 6 P0-7 pages.** **8** are the P0-7 blocks 5.1 named, all of them: `InMemoryScheduler.md`
+  #5, `HowServiceActivatorWorks.md` #16, `PipelineValidation.md` #9, #10,
+  `PolicyRetryAndCircuitBreaker.md` #14, `ReactorAndProactor.md` #6, `V10MigrationGuide.md` #10, #12.
+  The other **11**: `PolicyRetryAndCircuitBreaker.md` −5 (the public-handlers ruling),
+  `V10MigrationGuide.md` −6 (#9, #11, #13, #14 beside the attributes, in 5.5; one block each by
+  5.3's and 5.4's recurrences, #26 the latter)
+- **−25 on 13 pages outside both**, each in its task's entry: `UsingTheContextBag.md` −6 (ruling),
+  `DefaultMessageMappers.md` −4 (ruling), `FeatureSwitches.md` −4 (ruling), `Monitoring.md` −2
+  (ruling), and −1 each on `AgreementDispatcher.md`, `BrighterSchedulerSupport.md`,
+  `ConfiguringOpenTelemetry.md`, `DispatchingARequest.md`, `DynamicMessageDeserialization.md` (the
+  removed block), `MigratingToNullableReferenceTypes.md`, `MigratingToPollyV8.md`,
+  `NullableReferenceTypes.md`, `PolicyFallback.md`
+
+616 − 79 = **537**, across 66 pages, down from 76.
+
+**AC2, against a `before.tsv` regenerated from `c7329bb` in a worktree** (exit 0, *"989 blocks: 101
+BUILT, 872 FAILED, 16 SKIPPED"*, 989 rows): the diff prints **207** lines. **194** are `FAILED ->
+BUILT`. The other **13**, each read against § *Splits* or accepted:
+
+- `FAILED -> SKIPPED` `DarkerAndBrighterPipelines.md` #1 — the accepted skip, *"a method signature
+  shown for comparison, with no body or class to compile in"*
+- `BUILT -> FAILED` `Telemetry.md` #1 and `MessageMappers.md` #3 — each a BUILT block renumbered by
+  an insertion above it; both rows moved (§ *Splits*)
+- ` -> BUILT` `CloudEventsReference.md` #5, `PostgreSQLBrokerTradeOffs.md` #2,
+  `QueryPipelinePolicies.md` #7, `SchedulingAMessage.md` #10 — new keys (§ *Splits*)
+- ` -> FAILED` `AgreementDispatcherRouting.md` #12, `CQRSWithBrighterAndDarker.md` #13,
+  `DefaultMessageMappers.md` #14, #15, `MessageMappers.md` #7, `Telemetry.md` #6 — new keys, each
+  the tail of an insertion or a split (§ *Splits*)
+
+Nine `c7329bb` keys are absent from the report: `AnalyzerSupport.md` #2–#8,
+`ConfiguringOpenTelemetry.md` #7 and `DynamicMessageDeserialization.md` #9, the shifts § *Blocks
+removed* explains. **Two § *Splits* rows said less than the diff reads, and are now whole:**
+`CQRSWithBrighterAndDarker.md`'s called its inserted #7 *"a new key"*, where the ordinal diff reads
+#7 `FAILED -> BUILT` and #13 as the new key; `DefaultMessageMappers.md`'s did not say what the diff
+reads. So 194 counts some inserted fences as `FAILED -> BUILT` on an old key, which is why phase 5's
+own moves were each counted by aligning fences rather than by this diff. **Control, both ways:** the
+report against itself prints **0** lines; a copy with `AgreementDispatcherRouting.md` #5 set FAILED
+prints **206**, having lost that one; a copy with `AWSSQSConfiguration.md` #1 set FAILED prints
+exactly one line beside the known 13 that is not `FAILED -> BUILT`, `BUILT -> FAILED
+contents/AWSSQSConfiguration.md 1`.
+
+**The targets, both read before phase 6 walks them.** **BUILT ≥ 250: met, at 295.** **Pages with
+nothing BUILT ≤ 60: met, at 41** — requirements' `awk` (`comm -23` of the FAILED and BUILT page
+lists) and a Python join over the same report, **41** both. **Said, by 5.1: at most 51, as low as
+45. Measured: 41**, four below. All 12 tranche pages with nothing BUILT left the list —
+`DarkerAndBrighterPipelines.md` by its skip, not by building — which is 5.1's 45; the other four are
+off the tranche: `BrighterSchedulerSupport.md`, `DefaultMessageMappers.md`, `Monitoring.md` and
+`V10MigrationGuide.md`. 5.1 set `V10MigrationGuide.md` aside because none of its touched blocks was
+predicted to build; #9 and #12 did, in 5.5. No page joined the list.
+
+**Every behavioural block was run with its control** (P0-10): the tables under 5.2, 5.3, 5.4 and
+5.5, against released 10.7.0 packages (Darker 4.1.1) on net10.0, with a real broker or registry
+where a claim needed one.
+
+**Upstream, filed in phase 5 on the maintainer's word:** BrighterCommand/Brighter#4453, #4454 (5.2's
+second pass), #4458 (5.3), #4465 (5.4). Each is stated on its page.
+
+**The PR changes 53 pages** (`git diff --name-only origin/master..HEAD -- contents | wc -l`): **15**
+of the 16 tranche pages (`AggregationQueryPatterns.md` was made whole by its unit alone) and **38**
+outside it, by P0-7, recurrence and ruling. Beside them: `tools/README.md` (rows 2 and 9, and a
+phase 5 paragraph), the baseline, `refs.csproj`, `pages.tsv` (53 → 67 pages mapped), 10 new units,
+and this file.
 
 ---
 
@@ -2063,6 +2814,28 @@ is rewritten against the tables below.
 | `PaginationQueryPatterns.md` | 4 | `CS0246` `GetOrdersCursorQuery`, `CursorPagedResult<>`, `OrderDto`; `ApplicationDbContext` | same-page: block 3 declares the first two, block 1 `OrderDto`; block 4 is *"Handler with cursor pagination:"*, straight after block 3 | 3 |
 | `QueryPipelinePolicies.md` | 1 | `CS0246` `Program` | instrument: a `Program.cs` with no declaration after its statements takes the `statements` wrapper, which declares no `Program`; Q2 (1.8) rules out a stub. Builds as a `Program.cs` in scratch against Darker 4.1.1, **0** errors | 3 |
 | `ReplayOnSeenReference.md` | 1 | `CS0117` `RequestContextBagNames.CausationId`; `CS0246` `ProcessPayment`; `CS0103` `_commandProcessor`, `batchId`, `orderId` | P2-2: `CausationId` is on Brighter `master` (`RequestContextBagNames.cs:143`), in no release. The pin bump brings it in through the ratchet; the other names are the handler's, and want a unit then | 4 |
+| `AgreementDispatcherRouting.md` | 12 | `CS0103` `_database` | the ❌ example calls a database the page never shows, through a type no block names, so unit rule 1 admits no stub. Split from #11 (§ *Splits*) | 5 |
+| `BuildingAPipeline.md` | 2 | `CS0246` `GreetingCommand`, `RequestLogging` | same-page: block 3 declares `RequestLoggingAttribute`, and the next sentence says so (*"We implement the **RequestLoggingAttribute** by creating our own Attribute class"*). A `using` of Brighter's `Logging.Attributes` builds it against Brighter's attribute instead | 5 |
+| `BuildingAPipeline.md` | 3 | `CS0246` `RequestLoggingHandler<>` | same-page: block 1 declares it. A `using` of Brighter's `Logging.Handlers` builds it against Brighter's handler instead. Blocks 1–3 compile together and run (§ *Phase 5 as executed*, 5.2) | 5 |
+| `BuildingAPipeline.md` | 4 | `CS0246` `MyCommand`, `MyCommandHandler`, `MyLoggingHandler`; `CS0103` `log` | **unit rule 1**: the section tells the reader to write the handlers it chains (*"You can derive from **RequestHandler\<T\>** and call **base.Handle()**"*). Run in scratch with them written | 5 |
+| `DarkerConfigurationReference.md` | 1 | `CS0246` `Program` | instrument: `typeof(Program).Assembly` takes the `statements` wrapper; Q2 (1.8) rules out a stub. Builds as a `Program.cs` against Darker 4.1.1 in scratch, **0** errors | 5 |
+| `DarkerConfigurationReference.md` | 2 | `CS0246` `Program` | as #1 | 5 |
+| `ParameterizedQueryPatterns.md` | 2 | `CS0246` `GetCustomerByEmailQuery` | same-page: block 1 declares it; block 2 is *"**Handler Example:**"* after it. The six blocks compile together, with the never-shown entity stubbed, at **0** errors | 5 |
+| `ParameterizedQueryPatterns.md` | 4 | `CS0246` `GetOrdersByCustomerQuery`, `OrderSummaryDto` | same-page, once its `using System.Threading.Tasks` is right: block 3 declares both; *"**Handler with optional filters:**"* | 5 |
+| `ParameterizedQueryPatterns.md` | 6 | `CS0246` `SearchProductsQuery`, `ProductDto` | same-page: block 5 declares both; *"**Handler with multiple optional criteria:**"* | 5 |
+| `ProjectionQueryPatterns.md` | 3 | `CS1513`, `CS0103` `Select` | parse — a fragment: the `.Select(…)` of block 2's handler with no receiver, under *"Database-computed fields"*. The reader has the whole in block 2 | 5 |
+| `QueryHandlerDependencies.md` | 3 | `CS0246` `Program`; `CS0103` `builder` | instrument, as `DarkerConfigurationReference.md` #1; `builder` is not stubbed, since no BUILT block would name it. Builds as a `Program.cs` against Darker 4.1.1, **0** errors | 5 |
+| `Telemetry.md` | 1 | `CS0234` `Paramore.Brighter.Extensions.Diagnostics`; `CS1061` `AddOpenTelemetry` | pin: needs `OpenTelemetry.Extensions.Hosting` and `Paramore.Brighter.Extensions.Diagnostics`, which `refs.csproj` does not carry; ruled no pin change (5.3, ruling 2). Compiles in scratch against the released packages, **0** errors | 5 |
+| `Telemetry.md` | 6 | as #1 | pin: needs `OpenTelemetry.Extensions.Hosting` and `Paramore.Brighter.Extensions.Diagnostics`, which `refs.csproj` does not carry; ruled no pin change (5.3, ruling 2). Compiles in scratch against the released packages, **0** errors | 5 |
+| `PostgreSQLMessageBroker.md` | 8 | as `Telemetry.md` #1 | pin: needs `OpenTelemetry.Extensions.Hosting` and `Paramore.Brighter.Extensions.Diagnostics`, which `refs.csproj` does not carry; ruled no pin change (5.3, ruling 2). Compiles in scratch against the released packages, **0** errors | 5 |
+| `ConfiguringOpenTelemetry.md` | 1 | as `Telemetry.md` #1 | off the tranche, rewritten by ruling 1. pin: needs `OpenTelemetry.Extensions.Hosting` and `Paramore.Brighter.Extensions.Diagnostics`, which `refs.csproj` does not carry; ruled no pin change (5.3, ruling 2). Compiles in scratch against the released packages, **0** errors | 5 |
+| `ConfiguringOpenTelemetry.md` | 5 | as `Telemetry.md` #1 | as #1 | 5 |
+| `ConfiguringOpenTelemetry.md` | 6 | as `Telemetry.md` #1 | as #1 | 5 |
+| `S3LuggageStore.md` | 1 | `CS0234` `Paramore.Brighter.Transformers.AWS.V4`; `CS0246` `S3LuggageStore`, `S3LuggageOptions`, `AWSS3Connection` | pin (D3): the pin carries the V3 AWS transformer package, not `.V4`. Compiles in scratch against `Paramore.Brighter.Transformers.AWS.V4` 10.7.0, **0** errors, with `credentials` a parameter | 5 |
+| `CQRSWithBrighterAndDarker.md` | 2 | `CS0246` `Order`, `OrderItem`, `IOrderRepository`, `OrderPlacedEvent`; `CS0103` `OrderStatus` | same-page: #7 shows the write model, and the prose above #2 links there. #2 with #7 → **0** errors | 5 |
+| `CQRSWithBrighterAndDarker.md` | 8 | `CS0246` `PlaceOrderCommand`, `IOrderRepository`, `IProductRepository`, `Order`, `OrderItem`, `OrderPlacedEvent`; `CS0103` `OrderStatus` | same-page: #6 declares the command, #7 the write model. #6–#8 together → **0** errors; the task's *"showing `Order`"* | 5 |
+| `DefaultMessageMappers.md` | 6 | `CS0246` `Orders`, `OrderShipped`, `AvroMessageMapperAsync<>`; `CS0103` `services` | same-page: #4 declares the mapper, #5 half of `OrderShipped`; avrogen generates the other half from the page's `.avsc`. #4–#6 with it → **0**; without it `CS0311` | 5 |
+| `DefaultMessageMappers.md` | 10 | `CS0246` `Orders`, `OrderShipped`, `AvroMessageMapperAsync<>`; `CS0103` `services` | same-page, as #6; run as the Avro default (5.4's table) | 5 |
 
 ## Splits
 
@@ -2071,6 +2844,14 @@ is rewritten against the tables below.
 | Page | Old # | New # | Why | Task |
 |---|---:|---:|---|---:|
 | `SchedulingAMessage.md` | 7, 8, 9 | 8, 9, 10 | not a split: a block inserted at #7, the #4414 workaround. All three were FAILED at `c7329bb` and are BUILT now, so the AC2 diff reads #7–#9 as `FAILED -> BUILT` and #10 as a new key | 3.4 |
+| `AgreementDispatcherRouting.md` | 11 | 11, 12 | the ✅ and ❌ routing lambdas were one fence. #12's database is a type no block names, so no unit may supply it; apart, #11 builds and #12 is listed. #12 is a new key in the AC2 diff | 5.2 |
+| `QueryPipelinePolicies.md` | — | 7 | not a split: a block appended after the page's last, the retry-and-breaker wrap. A new key, BUILT | 5.2 |
+| `PostgreSQLBrokerTradeOffs.md` | 1 | 1, 2 | the JSONB and JSON schemas were one fence; each now builds. #2 is a new key, BUILT | 5.3 |
+| `CloudEventsReference.md` | 3, 4 | 4, 5 | not a split: a block inserted at #3, the Kafka partition key set per message. Old #3 (SNS) and #4 (Azure Service Bus) are now #4 and #5; all five build, so the AC2 diff reads #3, #4 `FAILED -> BUILT` and #5 as a new key | 5.3 |
+| `Telemetry.md` | 1–5 | 2–6 | not a split: a block inserted at #1, *Enabling Brighter's Spans*, FAILED on the pin. Old #1 and #4, BUILT, are now #2 and #5, their rows moved; so the AC2 diff reads #1 `BUILT -> FAILED` and #6 as a new key | 5.3 |
+| `CQRSWithBrighterAndDarker.md` | — | 7 | not a split: the write model inserted above the handler, BUILT, so old #7–#12 are #8–#13, FAILED both sides. The AC2 diff reads #7 `FAILED -> BUILT`, the new block on old #7's key, and #13 as a new key, FAILED | 5.4 |
+| `MessageMappers.md` | 2–6 | 3–7 | not a split: the async mapper inserted at #2. Old #3, BUILT, is now #4, its row moved (old row removed, new row at `6ddcf7b`); so the AC2 diff reads #3 `BUILT -> FAILED`, #4 `FAILED -> BUILT` and #7 as a new key. The rest FAILED both sides | 5.5 |
+| `DefaultMessageMappers.md` | 4 | 4, 5, 6 | the Avro mapper rewritten as three fences: the mapper (#4, BUILT), the avrogen partial (#5, BUILT) and its registration (#6, same-page). Old #5–#13 are #7–#15, FAILED both sides. So the AC2 diff reads #4, #5 `FAILED -> BUILT` and #14, #15 as new keys, FAILED | 5.4 |
 
 ## Blocks removed
 
@@ -2086,6 +2867,8 @@ after-report's keys and cannot show these, so they are listed here.*
 | `AnalyzerSupport.md` | 6 | FAILED | BRT008's fixed form | 2.4 |
 | `AnalyzerSupport.md` | 7 | BUILT | the `using` for the code fix's `Partitioner` | 2.4 |
 | `AnalyzerSupport.md` | 8 | FAILED | the BRT007 pragma, rewritten as BRT001 in the new block 1 | 2.4 |
+| `ConfiguringOpenTelemetry.md` | 2 | FAILED | the Jaeger exporter block — OpenTelemetry deprecated the exporter for OTLP, and the page now points the OTLP exporter at Jaeger (ruling 1). Old #3–#7 are now #2–#6, FAILED before and after, so the AC2 diff shows only #7 `FAILED -> -` | 5.3 |
+| `DynamicMessageDeserialization.md` | 7 | FAILED | *"Cache Performance-Critical Paths"*: three `PublishAsync` calls of dummy events to warm the mapper cache. `PublishAsync` maps nothing, and posting warms only the producer's transform cache while putting junk on a topic. The page is unchanged from `c7329bb` to `aec11c1`, so this is #7 there too; old #8 and #9 are #7 and #8 | 5.4 |
 
 Old block 1 (BRT006's warning case, BUILT) also went; its address now holds the new pragma block,
 BUILT, re-admitted at `ec38400`.
@@ -2100,7 +2883,7 @@ BUILT, re-admitted at `ec38400`.
 | `public Guid Id { get; set; }` on a request — hides `IRequest.Id`, which is an `Id` | `IRequest.cs:47` | `ImplementingAsyncHandler.md` | `grep -rn 'public Guid Id\b' contents/` | **2** | **1** — the other is not this defect (next row) | 2.3, reading |
 | `app.UseEndpoints(...)` on a `WebApplication` with no `app.UseRouting()` — throws `InvalidOperationException` at startup | run against 10.7.0 packages, net10.0; the control is the page's old block | `HealthChecks.md`, `BrighterControlAPI.md` | `grep -rn 'UseEndpoints' contents/` | **2** | **0** | 2.4, running the block |
 | BRT006–BRT008 (Kafka partitioner analyzers, code fixes) documented as shipped — in no release; only on BrighterCommand/Brighter#4255, open. Also *"includes code fixes"*: 10.7.0 has no code-fix project | `git ls-tree 10.7.0 src/Paramore.Brighter.Analyzer/Analyzers/` → 3 analyzers, BRT001–005 | `AnalyzerSupport.md` | `grep -rln 'BRT00[678]\|code fix' contents/` | **1** | **0** — removed, maintainer's ruling (a) | 2.4, verifying the page's reference code |
-| `IRequestContext` implemented with `Guid Id`, `ISpan Span`, `Dictionary<string, object> Bag`, `CustomHeaders` — at 10.7.0 the interface has no `Id` and no `CustomHeaders`, `Span` is an `Activity`, `Bag` a `ConcurrentDictionary` | `IRequestContext.cs` | `V10MigrationGuide.md:320` | — | **1** | **open — phase 5**, which holds that page for its E4 repair | 2.3, the row above's grep |
+| `IRequestContext` implemented with `Guid Id`, `ISpan Span`, `Dictionary<string, object> Bag`, `CustomHeaders` — at 10.7.0 the interface has no `Id` and no `CustomHeaders`, `Span` is an `Activity`, `Bag` a `ConcurrentDictionary`; the section also listed `PartitionKey` and `CustomHeaders` as new properties and set both on `Context` | `IRequestContext.cs` | `V10MigrationGuide.md` § 5, #12, #13 | `grep -rnE 'Context\??\.(PartitionKey\|CustomHeaders)\b\|`CustomHeaders`\|ISpan Span\|Guid Id \{ get; set; \}' contents/` → 6 at `608615a`, 2 now, both read and right (the corrective sentence; an entity's key) | **5** | **0** | 2.3, the row above's grep; closed in 5.5 |
 | `MapToMessage(TRequest request)` — V9's mapper signature; V10's takes a `Publication` | `IAmAMessageMapper.cs:33` | `Compression.md`, `Routing.md`, `KafkaConfiguration.md`, `MessageTransforms.md`, `ImplementingExternalBus.md`, `V10MigrationGuide.md`, `MessageMappers.md`, `OutboxArchiver.md`, `NullableReferenceTypes.md` (`string? topic = null`, found by the second method) | `grep -rnE 'MapToMessage\([A-Za-z<>]+ [a-z][A-Za-z]*(, string\? topic = null)?\)' contents/` | **14** lines, 10 pages | **2** — both skipped V9 forms | 2.5, `--explain` |
 | A mapper class without `IRequestContext? Context { get; set; }` — `CS0535` | `IAmAMessageMapper.cs:31` | 11 pages | mapper blocks declaring `: IAmAMessageMapper<` with no `IRequestContext? Context` | **17** | **1** — the skipped V9 form | 2.5, `--explain` after the signature fix |
 | `requeueCount: N` described as N requeues (*"Times a message is requeued"*, *"On the 4th failure"*) — it is N handlings, N−1 requeues; `0` behaves as `1` | `Message.cs:161`, `HandledCount >= requeueCount`; run, table in § *Phase 2 as executed* | 17 pages, including all 12 option tables | `grep -rnE 'requeued before it is treated\|exceed(s\|ed\|ing)? the requeue count\|Requeue up to 3\|Retry up to 3\|4th failure\|RequeueCount. is exceeded\|retries (remain\|exhausted)\|retry a message before\|number of requeue attempts\|requeue count exceeded\)\|When the count is exceeded' contents/` | **25** | **0** | 2.5, running |
@@ -2125,7 +2908,7 @@ BUILT, re-admitted at `ec38400`.
 | InMemory cancel and reschedule said to work on a request scheduled through the command processor — each scheduled call gets a new `InMemoryScheduler`, so `CancelAsync` finds nothing and the request runs; `ReSchedulerAsync` returns `False` | run, control same instance; `CommandProcessor.cs:427`, `InMemoryScheduler.cs:57` — **upstream, BrighterCommand/Brighter#4437**, filed 3.4 | `SchedulingAMessage.md`, `FAQ.md`, `InMemoryScheduler.md` (cancel example, `Should_Cancel_Scheduled_Command`) | `grep -rl 'issues/4437' contents/` | **3** pages | **stated** on all 3 — maintainer's ruling | 3.4, running block 4's claim |
 | Darker's default policies described as *"exponential backoff"* and a breaker that *"opens after consecutive failures"*, and as applying once registered. They retry 3 times after 50, 100 and 150 ms, the breaker opens on 1 failure for 500 ms, and neither runs without `[RetryableQuery]` | Darker 4.1.1 `QueryProcessorBuilderExtensions.cs:51`, `RetryableQueryDecorator.cs`; run, control without the attribute | `QueryPipelinePolicies.md` (the list and block 2's comment) | `grep -rnE 'Retries with exponential backoff\|Opens after consecutive failures\|Retry policy with exponential backoff' contents/` | **3** | **0** | 3.5, reading the page against Darker's source, then running |
 | *"The ASP.NET model binder will validate these attributes before the query reaches your handler"*. Only a controller marked `[ApiController]`, or a minimal API after `AddValidation()` (.NET 10), rejects the query; elsewhere it reaches the code | run on net10.0, controls both ways | `QueryObjectValidation.md` | `grep -rn 'model binder will validate' contents/` | **1** | **0** | 3.5, running block 2's claim |
-| `[RetryableQuery]`'s second argument described and used as a circuit-breaker name that adds a breaker to the retry. It is a policy name, and the decorator runs that one policy. `"DefaultCircuitBreaker"` is not registered by `AddDefaultPolicies()`, so it throws `ConfigurationException`; `circuitBreakerName:` is not a parameter (`CS1739`) | Darker 4.1.1 `RetryableQueryAttribute.cs:11`, `Constants.cs`; run, control `Constants.CircuitBreakerPolicyName`; compiled | `QueryPipeline.md` (4 lines, and the parameter list at line 239), `CQRSWithBrighterAndDarker.md` (2), `DarkerAndBrighterPipelines.md`, `ImplementAQueryHandler.md`, `QueryPatterns.md` | `grep -rnE 'RetryableQuery\(.*(DefaultCircuitBreaker\|circuitBreakerName)' contents/` | **9** lines, 5 pages | **open — phase 5**, maintainer's ruling | 3.5, reading Darker's source for the tranche's policy defaults |
+| `[RetryableQuery]`'s second argument described and used as a circuit-breaker name that adds a breaker to the retry. It is a policy name, and the decorator runs that one policy. `"DefaultCircuitBreaker"` is not registered by `AddDefaultPolicies()`, so it throws `ConfigurationException`; `circuitBreakerName:` is not a parameter (`CS1739`) | Darker 4.1.1 `RetryableQueryAttribute.cs:11`, `Constants.cs`; run, control `Constants.CircuitBreakerPolicyName`; compiled | `QueryPipeline.md` (4 lines, and the parameter list at line 239), `CQRSWithBrighterAndDarker.md` (2), `DarkerAndBrighterPipelines.md`, `ImplementAQueryHandler.md`, `QueryPatterns.md` | `grep -rnE 'RetryableQuery\(.*(DefaultCircuitBreaker\|circuitBreakerName)' contents/` | **9** lines, 5 pages; **20** lines, 6 pages, with any second argument (`grep -rnE 'RetryableQuery\([^)]*,' contents/`) | **0**; **8** with any second argument, each a registered policy or the deliberate *"doesn't exist"*, described as the one policy the decorator runs — maintainer's ruling, repaired in 5.2 | 3.5, reading Darker's source for the tranche's policy defaults |
 | `.ConfigureServices(hostContext, services) =>` — the lambda's parameter list never opened, and its body never closed (`CS1519`, `CS1001`) | compiled, old form `CS1519` | `MSSQLInbox.md`, `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md`, `DynamoInbox.md`, `AzureBlobArchiveProvider.md`, `BrighterBasicConfiguration.md` ×2, `DispatcherConfigurationReference.md` ×5 | `grep -rn 'ConfigureServices(hostContext, services) =>' contents/` | **13** lines, 8 pages | **0** | 4.1, `--classify` |
 | `opt.InboxConfiguration` inside `AddConsumers(options => …)` — `CS0103` | compiled | `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md` | `grep -rn '^\s*opt\.InboxConfiguration' contents/` — **4** before, **1** after, `DynamoInbox.md`'s, whose parameter is `opt` | **3** | **0** | 4.1, a scan of every lambda |
 | `[UseInboxAsync]` on a handler class — `CS0592`; `RequestHandlerAttribute` is valid on methods only | `RequestHandlerAttribute.cs`, `AttributeUsage(AttributeTargets.Method)` | `InMemoryInbox.md` #2 | `grep -rn -A1 '^\s*\[UseInbox' contents/ \| grep -c class` | **1** | **0** | 4.1, `--explain` |
@@ -2142,6 +2925,65 @@ BUILT, re-admitted at `ec38400`.
 | Cooldown time given as `CooldownCount × interval`, recovery *"when the cooldown reaches zero"* — a topic sits out `CooldownCount` sweeps and is retried on the next, `(CooldownCount + 1) × TimerInterval` | `InMemoryOutboxCircuitBreaker.cs` (removes below zero), `OutboxProducerMediator.cs:721`; run end to end, controls no breaker and `0` | `SweeperCircuitBreaking.md` (formula, example, #2, #7 comments, steps), `UsingSweeperCircuitBreaking.md` #2 | `grep -rnE '(^\|[^+] )[0-9]+ (sweeps )?× [0-9]+s\|total cooldown\|[Rr]ecover after [0-9]\|When the cooldown reaches zero' contents/`, at `05fdeaf` and after | **8** | **0** | 4.4, running the sweeper for the row above |
 | Circuit breaking said to work with every Outbox, and `.UseMongoDbOutbox(…)` — no such method. The DynamoDB (V3, V4) and Spanner Outboxes ignore `trippedTopics`, so a tripped topic is swept as normal | `DynamoDbOutbox.cs:582`, `SpannerQueries.cs:12`; run against DynamoDB Local and the Spanner emulator, controls SQLite and MongoDB — **upstream, BrighterCommand/Brighter#4443, #4444**, filed 4.4 | `SweeperCircuitBreaking.md` (section, #5, troubleshooting) | the next row's grep, its first four alternatives | **4** | **0** — the table states it | 4.4, maintainer's ruling |
 | Explicit clearing said both to ignore the breaker and to respect it, and failed batches to be *"retried individually per topic"*. An explicit clear sends a tripped topic's messages; a failed `ClearOutboxAsync` trips the topic, a failed `ClearOutbox` does not unless the producer confirms publication | `OutboxProducerMediator.cs:425`, `:1220`, `:984`; run, sync and async, pre-tripped and fresh | `SweeperCircuitBreaking.md` § 6, § *Bulk Dispatch Support* | `grep -rnE 'UseMongoDbOutbox\|fully integrated with MongoDB\|works automatically with MongoDB\|works with all Brighter Outbox\|NOT subject to circuit breaking\|respects circuit breaker state\|retried individually per topic' contents/`, at `05fdeaf` and after; its last three alternatives are this row's | **3** | **0** | 4.4, maintainer's ruling |
+| A pre-V10 logging handler: `using Brighter.commandprocessor.Logging`, `namespace Brighter.commandprocessor`, `logger.InfoFormat`; prose placing it in *"the Brighter.CommandProcessor packages"* and passing *"an ILog reference"* — and on the async page, prose about logging beside a block that writes to an Inbox; `FAQ.md` quoting `Brighter.commandprocessor.ICommand` in an exception | `Logging/Handlers/RequestLoggingHandler.cs`; run, the FAQ's message `Paramore.Brighter.ICommand` | `BuildingAPipeline.md`, `BuildingAnAsyncPipeline.md`, `FAQ.md` | `grep -rnE 'Brighter\.commandprocessor\|Brighter\.CommandProcessor packages\|ILog reference' contents/` | **8** | **0** — `Monitoring.md:25`'s `app.config` section went with the page's rewrite, by ruling | 5.1, `--explain` |
+| `.Successor = …` and a method *"IHandleRequests\<TRequest\> Successor"* — the method is `SetSuccessor()`; and the manual chain said to run from the registry alone, which holds the handler's type, so a factory must return the wired instance | `RequestHandler.cs:74`; run, control a new instance | `BuildingAPipeline.md` | `grep -rnE '\.Successor *=\|TRequest\\> Successor\*\*\|Successor\.Handle\(\)' contents/` | **3** | **0** | 5.2, `--explain` |
+| *"Cannot use AutoFromAssemblies"* with an Agreement Dispatcher, *"creates fixed mappings"*. `AutoFromAssemblies(excludeDynamicHandlerTypes: …)` scans beside an agreement; without the exclusion every `Send` throws *"More than one handler was found"* | `IBrighterBuilder.cs:46`, `ServiceCollectionBrighterBuilder.cs:238`; run, both orders, controls both ways | `AgreementDispatcherRouting.md`, `AgreementDispatcher.md`, `FAQ.md` | `grep -rnEi "cannot use .?AutoFromAssemblies\|AutoFromAssemblies.? (won't\|will not) work\|creates fixed (1-to-1 )?mappings\|Instead of AutoFromAssemblies" contents/` | **7** | **0** | 5.1, P0-10 — running #8's claim |
+| Darker's query processor said to default to **Transient**, and an unscoped EF Core handler to fail on a *disposed DbContext*. It defaults to **Singleton** and resolves handlers from the root provider: with scope validation, *"Cannot resolve … from root provider"*; without, one `DbContext` for every query | Darker 4.1.1 `DarkerOptions.cs:9`; run, control `Scoped` | `DarkerConfigurationReference.md`, `DarkerBasicConfiguration.md` | `grep -rnEi 'disposed DbContext\|IQueryProcessor.{0,40}Transient\|Default Configuration \(Transient\)' contents/` | **5** | **0** | 5.2, reading the page against `DarkerOptions` |
+| `.Handlers(registry, Activator.CreateInstance, t => {}, Activator.CreateInstance)` — Darker's factories are `Func<Type, IQueryHandler>` and `Func<Type, IQueryHandlerDecorator>`, and `Activator.CreateInstance` returns `object` (`CS1503`). Darker's README carries the same line | `Builder/INeedHandlers.cs:9`; compiled, and run with the casts | `DarkerConfigurationReference.md`, `ImplementAQueryHandler.md` | `grep -rnE 'Handlers\(registry, Activator\.CreateInstance' contents/` | **2** | **0** | 5.1, `--explain` |
+| `using System.Threading.Task;` (`CS0234`) | compiled | `ParameterizedQueryPatterns.md` | `grep -rn 'using System\.Threading\.Task;' contents/` | **1** | **0** | 5.1, `--explain` |
+| V9's `new MessageMapperRegistry(messageMapperFactory) { { typeof(…), typeof(…) } }` (`CS7036`, `CS1922`) | `MessageMapperRegistry.cs:64`, `:296` | `HowConfiguringTheDispatcherWorks.md` | `grep -rnE 'new MessageMapperRegistry\([a-zA-Z]+\)$' contents/` | **1** | **0** | 5.1, `--explain` |
+| `messagePumpType` said to be set to `Reactor` because *"`Subscription<T>` defaults to `Proactor`"* — the block's `RmqSubscription<T>` (RMQ.Sync) defaults to `Reactor`; switching to `Proactor` is what fails | `RmqSubscription.cs:107`, `Subscription.cs:291`; run against RabbitMQ, controls omitted and `Proactor` | `HowConfiguringTheDispatcherWorks.md` | `grep -rn 'messagePumpType. is set explicitly' contents/` | **1** | **0** | 5.2, running #2's warnings |
+| A query handler reading `o.Customer` and `o.CreatedAt` from a write model that declares neither (`CS1061` once its names resolve); commands written `: IRequest { /* ... */ }` and controller actions outside a class | compiled | `CQRSUseCasesAndPatterns.md` #1, #2 | — | **2** blocks | **0** | 5.2, stubbing #1 |
+| `Monitoring.md` written for V9: an `app.config` section typed `MonitoringConfigurationSection, Brighter.commandprocessor`, `container.Register<TRequest, MonitorHandler<TRequest>>`, and the Control Bus on the retired site. At 10.7.0 the handler takes an `IAmAControlBusSender` and a `MonitorConfiguration` from the container | `Monitoring/Handlers/MonitorHandler.cs`, `Configuration/MonitoringConfigurationSection.cs`; run end to end | `Monitoring.md` | `grep -rnE 'configSections\|MonitoringConfigurationSection\|brightercommand\.github\.io/Brighter/ControlBus' contents/` | **5** | **0** | 5.1, the pre-V10 namespace recurrence; maintainer's ruling |
+| A handler declared without `public` — `AutoFromAssemblies()` scans only public handler types, so its request throws *"No command handler was found"* | `ServiceCollectionBrighterBuilder.cs:238`; run, control public | `BuildingAPipeline.md`, `BuildingAnAsyncPipeline.md`, `CommandProcessorConfigurationReference.md`, `FeatureSwitches.md`, `MigratingToPollyV8.md`, `PolicyRetryAndCircuitBreaker.md` | `grep -rnE '^\s*(internal\s+)?class\s+\w+\s*:\s*(RequestHandler\|RequestHandlerAsync)<' contents/`, and a scan of every C# fence | **18** | **0** | 5.2, running `BuildingAPipeline.md`; maintainer's ruling |
+| Darker's scan said to need handlers named *"…Handler"* and not nested. It registers every exported non-abstract `IQueryHandler<,>`: the name and nesting in a public class do not matter; `internal` does | Darker 4.1.1 `QueryHandlerRegistry.cs:48`; run, four cases | `DarkerBasicConfiguration.md` | `grep -rnEi 'end with .?"?Handler\|not nested within' contents/` | **2** | **0** | 5.2, reading the lifetime row's page; maintainer's ruling |
+| `[UseResiliencePipeline]` stacked on one method (`CS0579`) — not repeatable, by design since BrighterCommand/Brighter#2580; strategies are layered in one pipeline. `HowConfiguringTheCommandProcessorWorks.md` said *"you can use multiple attributes"* | `UseResiliencePipelineAttribute.cs:52`; compiled, and the composed form run | `PolicyRetryAndCircuitBreaker.md`, `HandlerFailure.md` ×2, `HowConfiguringTheCommandProcessorWorks.md`, `MigratingToPollyV8.md`, `PolicyFallback.md` ×2 | a scan of every C# fence for one attribute twice in one run of attribute lines | **7** blocks, 5 pages | **0**, `QueryPipeline.md`'s two `[RetryableQuery]` alternatives, commented as two handlers', aside | 5.2, `--explain` on the touched blocks |
+| A Polly v8 pipeline's strategies said to wrap *"inner to outer"* in the order added, and `MyComprehensivePipeline` added timeout, retry, breaker. The first added is the outermost, so its 10 s timeout covered every retry together | run, both orders | `PolicyRetryAndCircuitBreaker.md` | `grep -rnE "order they.re added\|inner to outer" contents/`, and a scan of every `TryAddBuilder` chain | **1** sentence, 1 chain | **0** — `PolicyFallback.md`'s chain was right | 5.2, rewriting the stacked attributes |
+| `await` in a handler not marked `async` (`CS4032`) | compiled | `FeatureSwitches.md` #2 | — | **1** | **0** | 5.2, `--explain` |
+| A monitored handler that throws: the monitor's `ExceptionThrown` event carries the `Exception`, which `System.Text.Json` cannot serialize, so the caller gets `NotSupportedException` in place of the handler's exception. And `[MonitorAsync]` cannot send through `ControlBusSenderFactory`'s sender, which registers no async mapper. Both on Brighter `master` too | `MonitorEvent.cs:74`, `ControlBusSenderFactory.cs:56`; run, controls non-throwing and sync — **upstream, BrighterCommand/Brighter#4453, #4454**, filed 5.2 by the maintainer's word | `Monitoring.md` states both and links them | `grep -rn 'issues/445[34]' contents/` | **2** | **stated** | 5.2, running the rewritten page |
+| A PostgreSQL consumer's `channelName` different from the publication's `Topic`: the consumer reads `queue = ChannelName`, the producer writes `queue = Topic`, so nothing is received | run: **0** handled → **1** | `PostgreSQLMessageBroker.md` | reading every `PostgresSubscription` on the two PostgreSQL pages | **1** | **0** | 5.3, running the page |
+| `PublishAsync` said to send to the PostgreSQL broker; it runs local handlers and writes no row | run: `PostAsync` → a row; `PublishAsync` → none | `PostgreSQLMessageBroker.md` | `grep -n PublishAsync` on the two PostgreSQL pages | **2** lines, both sending with it | **2** lines, both saying it does not reach the table; the corpus-wide sweep is put to the maintainer | 5.3, running the page |
+| *Scheduled Messages* said a delay sets `visible_timeout`; `PostAsync(delay)` goes through the scheduler and the row appears when it fires, visible at once. `visible_timeout` delays only a requeue | run: row at t≈6 s; `requeueDelay` 20 s → visible at 19.5 s, control 0 → handled 3× | `PostgreSQLMessageBroker.md` | `grep -n 'CURRENT_TIMESTAMP + delay'` | **1** | **0** | 5.3, running the page |
+| *"(timeout not updated)"* during processing: retrieval moves `visible_timeout` on by the subscription's `visibleTimeout` | read, `PostgreSqlMessageConsumer` at 10.7.0; run | `PostgreSQLMessageBroker.md` | `grep -rn 'timeout not updated' contents/` | **1** | **0** | 5.3, running the page |
+| The outbox write said to join an EF Core transaction without the transaction provider | run: rollback with the provider → **0** outbox rows; without → **1** | `PostgreSQLMessageBroker.md` | reading the page's outbox sections | **1** | **0** | 5.3, running the page |
+| `[ClaimCheck(threshold:, dataStore:)]` — no such parameters; the attribute is `ClaimCheck(int step, int thresholdInKb)` on a mapper | `ClaimCheckAttribute.cs:43` | `PostgreSQLMessageBroker.md` | `grep -rnE 'ClaimCheck\([^)]*dataStore:' contents/` | **1** | **0** | 5.3, `--explain` |
+| `PostgresSubscription<T>` without `messagePumpType` → `ConfigurationException`, *"You must set a message pump type"* | run, with the generic `Subscription<T>` and `KafkaSubscription<T>` as controls, which build | `PostgreSQLMessageBroker.md` | a Python scan of every `new PostgresSubscription<` call on the page | **4** of 5 | **0** of 5 | 5.3, running the page |
+| The same, on **non-generic** subscriptions (`Subscription`, `KafkaSubscription`, `RmqSubscription` on RMQ.Async, `AzureServiceBusSubscription`, `SqsSubscription`) | run, as above | `AgreementDispatcher.md:122`, `CloudEventsSupport.md:185`, `DynamicMessageDeserialization.md:71`, `:210`, `:237`, `FAQ.md:254`, `:637`, `RoutingMultipleMessageTypes.md:104`, `:132`, `:195`, `:309` (lines at `5129c20`) | reading | **11** | **recorded, not repaired** — ruled 2026-09-28. The RMQ ones are to be checked as RMQ.Async: RMQ.Sync defaults to Reactor | 5.3, ruling 3 |
+| SQL naming a `created_at` column the broker's table does not have | every SQL block run against the table | `PostgreSQLMessageBroker.md` | `grep -rn created_at contents/` | **4** | **0** | 5.3, running the SQL |
+| *"Increase `timeOut` to reduce polling frequency"*; the empty-queue poll interval is `emptyChannelDelay` | read, `Subscription.cs` at 10.7.0 | `PostgreSQLMessageBroker.md` | ``grep -rn 'Increase `timeOut`' contents/`` | **1** | **0** | 5.3, reading |
+| `Paramore.Brighter.PostgreSql.EntityFrameworkCore` 10.7.0 resolves EF Core 10, so Npgsql's EF provider must be 10.x | run: 9.0.4 → `MissingMethodException` | `PostgreSQLMessageBroker.md` | `grep -rn 'Npgsql.EntityFrameworkCore' contents/` | **0** | **2**, stated on the page and on `PostgresOutbox.md`, where the package is installed | 5.3, running the page |
+| Message size: the page gave no measured limit, and AWS SQS as 256 KB | run: 50 MB round-trips, 150 MB rejected by Npgsql `54000`; SQS by the maintainer (ruling 5) | `PostgreSQLBrokerTradeOffs.md` | reading its comparison table | **1** | **0** | 5.3, running the page |
+| Tracing configured with `AddSource("Paramore.Brighter…")` alone. `AddBrighter()` registers no `IAmABrighterTracer`, so no Brighter span is ever recorded; `AddBrighterInstrumentation()` registers one | run: `AddSource` alone → **0** spans; `AddBrighterInstrumentation()` → **34** | `Telemetry.md`, `ConfiguringOpenTelemetry.md`, `PostgreSQLMessageBroker.md` #8 | `grep -rnE 'AddSource\("[Pp]aramore\.[Bb]righter' contents/` | **5** | **2**, both sentences saying `AddSource` alone records nothing | 5.3, running the page |
+| Span names, attributes and propagation headers in `Telemetry.md`'s tables | captured from spans, RMQ and Kafka, the SDK initialised | `Telemetry.md` | reading every table | every table | rewritten from the capture | 5.3, running the page |
+| The Jaeger exporter, deprecated by OpenTelemetry and not in the pin | read | `ConfiguringOpenTelemetry.md` | `grep -rn Jaeger contents/` | **4** | **3**, all saying to point OTLP at Jaeger | 5.3, ruling 1 |
+| CloudEvents header names and the content mode on the wire | captured from RMQ.Async and Kafka; SNS and ASB read | `CloudEventsReference.md`, `CloudEventsSupport.md` | reading every header list on both pages | both pages | rewritten from the capture | 5.3, running the page |
+| AWS writes the CloudEvents source as `souce` | read; **upstream, BrighterCommand/Brighter#4458**, filed on the maintainer's word | `CloudEventsReference.md` states it and links it | `grep -rn souce contents/` | **0** | **2**, the statement | 5.3, reading |
+| *"We default the **ACLs** … to **S3CannedACL.Private**"*: `ACLs` is `null`, and `CreateIfMissing` on a missing bucket throws | `S3LuggageOptions.cs:70`, `S3LuggageStore.cs:130` in both AWS packages; run on LocalStack, controls above | `S3LuggageStore.md`, `HandlingLargeMessages.md` (its store set no `ACLs`) | `grep -rn 'S3LuggageOptions' contents/` → 2 pages, every constructor read | **2** | **0** | 5.3, reading |
+| The Control API's status JSON was V9's, its list indented into one paragraph, its route written `{{subscriptionName}}`, and `availableTopics`/`topicName` described as topics — they are subscription names | `ApiExtensions.cs`, `DispatcherExtensions.cs` at 10.7.0; run against a V10 Dispatcher | `BrighterControlAPI.md` | `grep -rn 'control/status' contents/` → the one page | **1** page | **0** | 5.3, running the page |
+| A `string` passed as `MessageBody`'s content type, which is a `System.Net.Mime.ContentType` with no conversion from `string` | `MessageBody.cs:124` | `KafkaConfiguration.md:723`, `MessageMappers.md:146` | `grep -rnE 'new MessageBody\([^)]*, *("\|MediaTypeNames)' contents/`, and a scan of every `new MessageBody(` call's arguments | **2** | **0** — the scan found a third, `DefaultMessageMappers.md` #4, put to the maintainer with the rest of that block | 5.1, carried |
+| A mapper missing a member of `IAmAMessageMapper<T>`, with no `// ...` to say so | `IAmAMessageMapper.cs` | `Routing.md` #1, `V10MigrationGuide.md` #3, #18, `NullableReferenceTypes.md` #7, `FAQ.md` #7 (whose `MapToMessage` also returned nothing; it gains `[RetrieveClaim]` on the way back) | reading, from 5.1's list | **5** | **0** | 5.1, carried |
+| A `Command` or `Event` subclass that never calls a base constructor; neither has a parameterless one | `Command.cs:68`, `Event.cs:68` | `NullableReferenceTypes.md` #9, `MigratingToNullableReferenceTypes.md` #4, `V10MigrationGuide.md` #20 | `grep -rnE 'class \w+ *: *(Command\|Event) *$\|…\{'` → 16 lines, each read; a Python scan of every C# fence for a base call | **3** | **0**; `V10MigrationGuide.md` #1 is the skipped V9 form | 5.1, carried |
+| `V10MigrationGuide.md` #20: the default mapper shown by `PublishAsync` | run: `PostAsync` → **1** message, `application/json`; `PublishAsync` → **0** | `V10MigrationGuide.md` | the corpus sweep is put to the maintainer | **1** | **0** | 5.3, rewriting the block |
+| `ITimerProvider` named as the InMemory scheduler's timer seam, with a `FakeTimerProvider : ITimerProvider` passed to `new InMemorySchedulerFactory(…)`. There is no such interface, and the factory has no constructor parameters: the seam is `InMemorySchedulerFactory.TimeProvider`, a `System.TimeProvider` | `InMemorySchedulerFactory.cs:37`, `InMemoryScheduler.cs:244`; run, `FakeTimeProvider` with controls | `InMemoryScheduler.md` | `grep -rn ITimerProvider contents/` | **4** | **0** | 5.4, P0-7 |
+| `dotnet add package Paramore.Brighter.InMemoryScheduler`, a package that does not exist: the scheduler and its factory are in `Paramore.Brighter`, and `UseScheduler` is in the DI package | NuGet flat container → **404**; `git ls-tree 10.7.0 src/` has no such project | `InMemoryScheduler.md` | `grep -rnE 'Paramore\.Brighter\.InMemoryScheduler\b' contents/` | **2** | **0** | 5.4, P0-7 |
+| `Order` never shown, and behind it `Id = command.Id` assigns a Brighter `Id` to the read side's `Guid` key, `CS0029`. The handler now uses `Guid.Parse(command.Id)`, run on 10,000 `Id.Random()` with a control | `Id.cs:95` (the implicit conversion is to `string` only) | `CQRSWithBrighterAndDarker.md` (#8; #2 was written against a different unshown `Order`) | `grep -rn 'Id = command\.Id' contents/` | **3** | **2**: `PolicyFallback.md`'s two are other properties on types that page never shows | 5.4, P0-7 |
+| A `CancellationToken` passed positionally as `PublishAsync`'s second argument, which is `RequestContext?`: `CS1503`, hidden behind `CS0246` | `IAmACommandProcessor.cs:154` | `CQRSWithBrighterAndDarker.md` #2 | `calls.py`, every `Send`/`Publish`/`Post`/`DepositPost` call whose non-first positional argument names a token | **1** call | **0** | 5.4, compiling #2 with the write model |
+| The six scheduled overloads listed request-first, `(T command, DateTimeOffset at, CancellationToken)`, without `RequestContext` or Post's `args`. At 10.7.0 the time comes first | `IAmACommandProcessor.cs:98`, `:111`, `:171`, `:190`, `:261`, `:282` | `BrighterSchedulerSupport.md` #1 | `grep -rnE '\(T(Request)? (command\|@event\|request), (DateTimeOffset\|TimeSpan)' contents/`; `calls.py`, any call whose second argument is a time | **6** lines; **0** calls | **0** | 5.4, the positional-token scan |
+| The Avro mapper: `CharacterEncoding.Raw` as `MessageBody`'s content type; a constructor written `AvroMessageMapper<T>(…)`, which does not parse; `SerializeAsync(request).AsSyncOverAsync()`, which is not Confluent's API; and `new AvroDeserializer<T>()` with no registry. Rewriting it exposed three more. A sync mapper is bypassed by `PostAsync`, which maps with the async default. As the default mapper, any type that is not an `ISpecificRecord` throws. And `RequestToMessageType` rejects a bare `IRequest` | Confluent.SchemaRegistry.Serdes.Avro 2.15.0; `MessageType.cs:48`; `MessageMapperRegistry.cs` `ResolveClosedDefault`; run end to end against a schema registry | `DefaultMessageMappers.md` (#4, and #10, which named `AvroMessageMapper<>` as both defaults) | `grep -rn 'AvroMessageMapper<' contents/` | **5** | **0** | 5.3 (put to the maintainer); rewritten 5.4, by ruling |
+| `mappers.Regiter<…>`, `CS1061` | — | `DefaultMessageMappers.md` #11 | `grep -rn 'Regiter\b' contents/` | **1** | **0** | 5.4, reading #10's neighbour |
+| `PublishAsync` relied on to reach a mapper or the bus: the default mapper said to serialise a published event, CloudEvents extensions set for a publish, a test asserting that a published event lands on the `InternalBus`, and dummy events published to warm a mapper cache. `PublishAsync` dispatches to handlers in this process | run: `PublishAsync` → **0** messages, the local handler runs; `PostAsync` → **1** (sessions 101, 102 and 5.4) | `DefaultMessageMappers.md` #2, `DispatchingARequest.md` #3, `V10MigrationGuide.md` #26, `DynamicMessageDeserialization.md` (old #7, removed) | `calls.py` over every `Publish`/`PublishAsync` call; a prose grep tying either to a bus, broker, queue, topic, transport or the wire | **13** calls, **6** of them this defect | **7** calls, **0** of them: 2 declarations, 2 in-process read-model events, a scheduled local event, 2 test-double verifications | 5.3 (put to the maintainer); swept 5.4, by ruling |
+| CloudEvents extension properties said to reach the message whatever the mapper. Only `CloudEventJsonMessageMapper<>` (and the CloudEvents transform's JSON form, by reading) writes them. The default `JsonMessageMapper<>` drops both the context-bag and the `Publication` properties | `CloudEventJsonMessageMapper.cs:71`, `:80`; `CloudEventsTransformer.cs:293`; run, both sources, both mappers | `DispatchingARequest.md`, `UsingTheContextBag.md`, `CommandProcessorConfigurationReference.md` | `grep -rn -i 'CloudEventsAdditionalProperties\|extension propert' contents/` | **3** claims | **0**: each names the mapper that writes them | 5.4, running the `PublishAsync` repair's context |
+| A heading with a stray `c` and an unclosed code span, `**c` + backtick + `SendAsync…` | — | `FAQ.md` | read, beside a `PublishAsync` hit | **1** | **0** | 5.4, the sweep |
+| A sync handler attribute on `HandleAsync` (E4). The compiler accepts it; the pipeline throws `ConfigurationException` when built, and `ValidatePipelines()` reports it | `PipelineBuilder.cs:431`; `HandlerPipelineValidationRules.cs:110`; run | `HowServiceActivatorWorks.md` #16, `PipelineValidation.md` #9, #10, `PolicyRetryAndCircuitBreaker.md` #14, `ReactorAndProactor.md` #6, `V10MigrationGuide.md` #10 | `attr_mismatch.py`; a Python scan, paired name without `Async` then `HandleAsync` → 8, 2 now (below) | **6** | **0**; `PipelineValidation.md:250` deliberate, now wrong in prose; `V10MigrationGuide.md` #8, the skipped V9 form | design E4; 5.5 |
+| A named argument ahead of a positional one, out of position: `[UseResiliencePipeline(step: 0, "RetryPipeline")]` | `UseResiliencePipelineAttribute(string policy, int step)` | `PipelineValidation.md` #9, #10 | `grep -rnE '\[\w+\(\w+: *[^,()]+, *"' contents/` | **2** | **0** | 5.1, carried |
+| *Before (warning)*'s comments called step 0 *inner* and step 1 *outer*; lower steps are outer | `HandlerPipelineValidationRules.cs:76`, `:57` | `PipelineValidation.md` #9 | `grep -rnE 'step: 0.*\(inner\)' contents/` | **1** | **0** | 5.5, reading `:280` |
+| The example backstop warning named `'RejectMessageOnError'` and `'UseResiliencePipeline'`; the validator prints `AttributeType.Name` | `HandlerPipelineValidationRules.cs:74`; run | `PipelineValidation.md:61` | `grep -rnE "'(RejectMessageOnError\|UseResiliencePipeline)' at step" contents/` | **1** | **0** | 5.5, the run |
+| A resilience registry assigned to `PolicyRegistry`, the obsolete Polly v7 `IPolicyRegistry<string>`; and built with `TryAddBuilder<ResiliencePropertyKey<RequestContext>>`, a typed builder Brighter never looks up | `BrighterOptions.cs:56`, `:59` | `V10MigrationGuide.md` #9, #11 | `grep -rnE 'PolicyRegistry *= *\w*[Rr]esilience' contents/`; `grep -rn 'TryAddBuilder<' contents/` | **2** | **0** | 5.5, `--explain` of § 4 |
+| `IRequestContext.InstrumentationOptions` *"added in 10.7.0"*: it is after 10.7.0, forthcoming, and was unmarked | `IRequestContext.cs` at 10.7.0 (0 hits); `release_notes.md` *Master*; NuGet's latest is 10.7.0 | `V10MigrationGuide.md` | `grep -rn 'added in 10\.7\.0' contents/`; `grep -rnE '(added\|new\|introduced\|since) (in )?(Brighter )?(V?10\.7(\.0)?)' contents/` → 0 more | **1** | **0**, marked *Not in a released package yet* | 5.5, reading § 5 |
+| Mappers said to have no async variants, with `Task.Run()` wrappers advised; a Proactor maps with `IAmAMessageMapperAsync<T>` and skips a sync-only mapper for the default, silently | `Proactor.cs:63`, `Reactor.cs:63`; run both ways | `ReactorAndProactor.md` #5 and its note | `grep -rniE "mappers? (don't\|do not\|never) have async\|mappers? remain synchronous\|mappers? (are\|stay) synchronous" contents/` | **2** lines | **0** | 5.5, reading around `:200` |
+| Forthcoming Replay validation shown unmarked: the rule's row, two example messages and a section, with no *Not in a released package yet* | `git grep -il causation 10.7.0 -- src` → 0; on `master`, the validation rules | `PipelineValidation.md` | `grep -rln 'OnceOnlyAction.Replay' contents/` → **8** pages, each read beside `grep -c 'Not in a released package yet'`: five marked already; `DispatcherConfigurationReference.md` (`ActionOnExists`) and `BrighterOutboxSupport.md` (the Sweeper) named Replay as an option with no marker, and now say it ships after 10.7.0 | **3** pages | **0** | 5.5, ruled into phase 5 |
+| The mapper's home page names only `IAmAMessageMapper<T>`; nothing there says `PostAsync`, `DepositPostAsync` and a Proactor use `IAmAMessageMapperAsync<T>` and fall back to the default mapper silently | run, all four calls and both pumps | `MessageMappers.md` | `grep -c 'IAmAMessageMapperAsync' contents/MessageMappers.md` | **0** | **3** | 5.5, ruled into phase 5 |
+| Partition key, headers or CloudEvents extensions set on a handler's own `Context` with nothing posted, or on a context passed to `SendAsync`; they act only on the context passed to the call that makes the message | `CommandProcessor.cs:1533` (`requestContext ?? _requestContextFactory.Create()`); run | `UsingTheContextBag.md` #2, #3, #5, #6, #18 | `grep -rnE 'Context\.Bag\[RequestContextBagNames\.(PartitionKey\|Headers\|CloudEvents)' contents/` → 3 lines, the page's key snippets, each read; `:117`, *"Or using a PartitionKey object"*, wrote to `Context` under an example that now fills `context`, and follows it; `grep -rnE 'SendAsync\([^)]*requestContext' contents/` | **5** | **0** | 5.5, ruled into phase 5 |
 
 ## Friction ledger
 

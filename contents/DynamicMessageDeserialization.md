@@ -183,20 +183,7 @@ Only use dynamic when needed:
 - Message evolution scenarios
 - CloudEvents-based integration
 
-### 5. Cache Performance-Critical Paths
-
-If performance is critical, pre-warm the pipeline cache:
-
-```csharp
-// Send one message of each type at startup to warm caches
-await _commandProcessor.PublishAsync(new TaskCreated { /* ... */ });
-await _commandProcessor.PublishAsync(new TaskUpdated { /* ... */ });
-await _commandProcessor.PublishAsync(new TaskCompleted { /* ... */ });
-
-// Subsequent messages will use cached pipelines
-```
-
-### 6. Document Type Mappings
+### 5. Document Type Mappings
 
 Document which CloudEvents types map to which Request types:
 

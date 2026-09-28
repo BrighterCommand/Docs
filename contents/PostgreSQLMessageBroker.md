@@ -114,7 +114,14 @@ services.AddBrighter(options =>
 
 ### Publishing Messages
 
+`PostAsync` sends a request through its publication's producer, so here it inserts a row into the
+queue store table:
+
 ```csharp
+using System;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public class OrderService
 {
     private readonly IAmACommandProcessor _commandProcessor;
@@ -126,22 +133,23 @@ public class OrderService
 
     public async Task CreateOrderAsync(CreateOrderCommand command)
     {
-        // Process order
-        var order = ProcessOrder(command);
+        // ... process the order
 
-        // Publish event
         var orderCreatedEvent = new OrderCreatedEvent
         {
-            OrderId = order.Id,
-            CustomerId = order.CustomerId,
-            TotalAmount = order.TotalAmount,
+            OrderId = command.OrderId,
+            CustomerId = command.CustomerId,
+            TotalAmount = command.TotalAmount,
             CreatedAt = DateTime.UtcNow
         };
 
-        await _commandProcessor.PublishAsync(orderCreatedEvent);
+        // Write the event to the queue store table
+        await _commandProcessor.PostAsync(orderCreatedEvent);
     }
 }
 ```
+
+`PublishAsync` would not reach the table: it dispatches the event to handlers in this process.
 
 ---
 
@@ -149,12 +157,17 @@ public class OrderService
 
 ### Basic Consumer Setup
 
+The producer writes each message under its publication's `Topic`, and a subscription reads the
+messages written under its `channelName`. **The two must be the same string**: a subscription whose
+`channelName` differs from the `Topic` never receives a message.
+
 ```csharp
 using System;
 using System.Collections.Generic;
 using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessagingGateway.Postgres;
-using Paramore.Brighter.PostgreSql;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 
 // Database configuration
 var postgresConfiguration = new RelationalDatabaseConfiguration(
@@ -168,7 +181,7 @@ var postgresConfiguration = new RelationalDatabaseConfiguration(
 var subscriptions = new List<PostgresSubscription>
 {
     new PostgresSubscription<OrderCreatedEvent>(
-        channelName: new ChannelName("orders.created.consumer"),
+        channelName: new ChannelName("orders.created"),  // the publication's Topic
         routingKey: new RoutingKey("orders.created"),
         bufferSize: 10,                         // Number of messages to retrieve at once
         noOfPerformers: 1,                      // Number of concurrent consumers
@@ -197,6 +210,11 @@ services.AddConsumers(options =>
 ### Consuming Messages
 
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+
 public class OrderCreatedEventHandler : RequestHandlerAsync<OrderCreatedEvent>
 {
     private readonly IEmailService _emailService;
@@ -265,7 +283,7 @@ the same way here; the other seven are PostgreSQL's own.
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `subscriptionName` | `SubscriptionName` | `none` | Names the subscription for diagnostics; read back as `Name`. |
-| `channelName` | `ChannelName` | `none` | Names the queue this subscription reads. |
+| `channelName` | `ChannelName` | `none` | Names the queue this subscription reads; it must match the publication's `Topic`. |
 | `routingKey` | `RoutingKey` | `none` | The routing key messages are written under. |
 | `dataType` | `Type?` | `none` | The request type messages on this queue are translated into; read back as `RequestType`. |
 | `getRequestType` | `Func<Message, Type>?` | derives the type from `dataType` | Determines the request type from the message rather than from the queue. |
@@ -322,14 +340,19 @@ The PostgreSQL message broker uses a **visibility timeout** mechanism to prevent
 
 1. **Message Published**: `visible_timeout` set to `CURRENT_TIMESTAMP`
 2. **Message Retrieved**: Consumer reads messages where `visible_timeout <= CURRENT_TIMESTAMP`
-3. **Processing**: Message becomes invisible to other consumers (timeout not updated)
+3. **Processing**: The same statement moves the message's `visible_timeout` to `CURRENT_TIMESTAMP` plus the subscription's `visibleTimeout`, so other consumers skip it
 4. **Acknowledged**: Message deleted from table
 5. **Timeout Expires**: If not acknowledged, message becomes visible again
 
 ### Visibility Timeout Example
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Postgres;
+
 var subscription = new PostgresSubscription<OrderEvent>(
+    messagePumpType: MessagePumpType.Proactor,
     // Message invisible for 60 seconds after retrieval
     visibleTimeout: TimeSpan.FromSeconds(60)
 );
@@ -341,24 +364,34 @@ var subscription = new PostgresSubscription<OrderEvent>(
 
 ## Scheduled Messages
 
-PostgreSQL message broker supports message scheduling using the visibility timeout:
+A delayed post goes through Brighter's [scheduler](/contents/SchedulingAMessage.md), not through
+the queue store table. `PostAsync` with a delay hands the request to the configured scheduler, and
+the row is written, visible at once, when the delay has elapsed:
 
 ```csharp
-// ...
-// Schedule message for future delivery
-var delayedEvent = new OrderReminderEvent
+using System;
+using Paramore.Brighter;
+
+var reminder = new OrderReminderEvent
 {
     OrderId = orderId,
     ReminderText = "Your order ships tomorrow!"
 };
 
-await _commandProcessor.PublishAsync(
-    TimeSpan.FromHours(24),        // Deliver in 24 hours
-    delayedEvent
-);
+// The row reaches the queue store table in 24 hours
+await commandProcessor.PostAsync(TimeSpan.FromHours(24), reminder);
 ```
 
-**How it works**: The `visible_timeout` is set to `CURRENT_TIMESTAMP + delay`, making the message invisible until the scheduled time.
+Without `UseScheduler()`, the scheduler is the in-memory one, which holds the delay in the
+process — use a durable scheduler for a delay that must outlive it. `PublishAsync` with a delay also
+goes through the scheduler, and when it falls due it dispatches to handlers in this process, so the
+event never reaches the table. At 10.7.0 a scheduled request fails when it falls due if you
+registered handlers with `AutoFromAssemblies()`; see
+[Registering Handlers When You Schedule Requests](/contents/SchedulingAMessage.md#registering-handlers-when-you-schedule-requests).
+
+The table's `visible_timeout` does delay one thing: a requeue. When a handler defers a message and
+the subscription sets `requeueDelay`, Brighter moves the row's `visible_timeout` to
+`CURRENT_TIMESTAMP` plus that delay, and no consumer reads it until then.
 
 ---
 
@@ -368,15 +401,35 @@ A key advantage of PostgreSQL as a message broker is **transactional messaging**
 
 ### Using the Outbox Pattern
 
+The Outbox shares your transaction only when you pass `DepositPostAsync` a transaction provider.
+Registered as the producers' `TransactionProvider`,
+`PostgreSqlEntityFrameworkTransactionProvider<OrderDbContext>` hands the Outbox the transaction
+your `DbContext` has open — see [PostgreSQL Outbox](PostgresOutbox.md) for that registration. The provider's package brings the EF Core of your target framework, EF Core 10 on `net10.0`, so `Npgsql.EntityFrameworkCore.PostgreSQL` must be the same major version — its 9.x provider fails there with a `MissingMethodException`:
+
 ```csharp
+using System;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public class OrderService
 {
     private readonly OrderDbContext _dbContext;
+    private readonly IAmATransactionConnectionProvider _transactionProvider;
     private readonly IAmACommandProcessor _commandProcessor;
+
+    public OrderService(
+        OrderDbContext dbContext,
+        IAmATransactionConnectionProvider transactionProvider,
+        IAmACommandProcessor commandProcessor)
+    {
+        _dbContext = dbContext;
+        _transactionProvider = transactionProvider;
+        _commandProcessor = commandProcessor;
+    }
 
     public async Task CreateOrderAsync(CreateOrderCommand command)
     {
-        using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
         try
         {
@@ -385,9 +438,9 @@ public class OrderService
             _dbContext.Orders.Add(order);
             await _dbContext.SaveChangesAsync();
 
-            // 2. Deposit event to Outbox (same transaction)
+            // 2. Deposit event to Outbox, on the same transaction
             var orderCreatedEvent = new OrderCreatedEvent { /* ... */ };
-            await _commandProcessor.DepositPostAsync(orderCreatedEvent);
+            await _commandProcessor.DepositPostAsync(orderCreatedEvent, _transactionProvider);
 
             // 3. Commit transaction (atomically saves order and outbox message)
             await transaction.CommitAsync();
@@ -395,7 +448,7 @@ public class OrderService
             // 4. Clear outbox to publish message
             await _commandProcessor.ClearOutboxAsync(new[] { orderCreatedEvent.Id });
         }
-        catch
+        catch (Exception)
         {
             await transaction.RollbackAsync();
             throw;
@@ -403,6 +456,9 @@ public class OrderService
     }
 }
 ```
+
+Leave out `_transactionProvider` and the deposit takes its own connection: a rollback then removes
+the order and leaves the message in the Outbox, to be sent for an order that does not exist.
 
 See [Outbox Pattern](OutboxPattern.md) and [PostgreSQL Outbox](PostgresOutbox.md) for more details.
 
@@ -412,13 +468,15 @@ See [Outbox Pattern](OutboxPattern.md) and [PostgreSQL Outbox](PostgresOutbox.md
 
 ### Query Queue Depth
 
+The table records no creation time. `visible_timeout` is the nearest thing: for a message waiting
+to be read, it is when the message became visible.
+
 ```sql
 -- Current queue depth by queue
 SELECT
     "queue",
     COUNT(*) as message_count,
-    MIN("visible_timeout") as oldest_visible,
-    MAX("created_at") as newest_message
+    MIN("visible_timeout") as oldest_visible
 FROM "public"."brighter_messages"
 WHERE "visible_timeout" <= CURRENT_TIMESTAMP
 GROUP BY "queue"
@@ -440,28 +498,34 @@ GROUP BY "queue";
 ### Find Stuck Messages
 
 ```sql
--- Messages invisible for too long (potential failures)
+-- Messages visible for more than 5 minutes and still not read
 SELECT
     "id",
     "queue",
-    "created_at",
     "visible_timeout",
-    EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - "visible_timeout")) as seconds_overdue
+    EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - "visible_timeout")) as seconds_waiting
 FROM "public"."brighter_messages"
 WHERE "visible_timeout" < CURRENT_TIMESTAMP - INTERVAL '5 minutes'
-ORDER BY "created_at";
+ORDER BY "id";
 ```
 
 ### OpenTelemetry Integration
 
-PostgreSQL message broker operations are automatically traced when [OpenTelemetry](Telemetry.md) is configured:
+The PostgreSQL producer records its sends on Brighter's spans once Brighter's tracer is registered —
+see [Enabling Brighter's Spans](/contents/Telemetry.md#enabling-brighters-spans). Npgsql's own
+spans come from its `Npgsql.OpenTelemetry` package:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
+using OpenTelemetry.Trace;
+using Paramore.Brighter.Extensions.Diagnostics;
+
 services.AddOpenTelemetry()
     .WithTracing(tracing =>
     {
         tracing
-            .AddSource("paramore.brighter")
+            .AddBrighterInstrumentation()
             .AddNpgsql()  // PostgreSQL spans
             .AddOtlpExporter();
     });
@@ -474,6 +538,8 @@ services.AddOpenTelemetry()
 ### 1. Use JSONB for Production
 
 ```csharp
+using Paramore.Brighter;
+
 var configuration = new RelationalDatabaseConfiguration(
     connectionString: connectionString,
     binaryMessagePayload: true  // JSONB for better performance
@@ -483,7 +549,12 @@ var configuration = new RelationalDatabaseConfiguration(
 ### 2. Set Appropriate Visibility Timeout
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Postgres;
+
 var subscription = new PostgresSubscription<OrderEvent>(
+    messagePumpType: MessagePumpType.Proactor,
     // 2-3x expected processing time
     visibleTimeout: TimeSpan.FromMinutes(5)  // Handler takes ~2 minutes max
 );
@@ -516,38 +587,80 @@ CREATE INDEX IF NOT EXISTS idx_messages_queue_visible
 
 ### 6. Regular Cleanup
 
-Implement cleanup for old messages (if not using auto-vacuum):
+Brighter deletes a row when its message is acknowledged or rejected, so the table holds only
+messages not yet handled. Deleting old rows discards undelivered messages, so do it only for
+messages nothing will read:
 
 ```sql
--- Delete messages older than 7 days
+-- Discard messages visible for more than 7 days and never read
 DELETE FROM brighter_messages
-WHERE "created_at" < CURRENT_TIMESTAMP - INTERVAL '7 days';
+WHERE "visible_timeout" < CURRENT_TIMESTAMP - INTERVAL '7 days';
 ```
 
 ### 7. Use Claim Check for Large Messages
 
-For messages > 100KB, use the [Claim Check pattern](ClaimCheck.md):
+For messages > 100KB, use the [Claim Check pattern](ClaimCheck.md). The claim check attaches to
+your message mapper, and its threshold is in kilobytes:
 
 ```csharp
-[ClaimCheck(threshold: 102400, dataStore: typeof(S3LuggageStore))]
-public class ProcessLargeOrderCommand : Command
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+
+public class ProcessLargeOrderCommand() : Command(Id.Random())
 {
-    public byte[] LargePayload { get; set; }  // Stored in S3, not in database
+    public byte[] LargePayload { get; set; } = [];  // Stored in the luggage store, not in the database
+}
+
+public class ProcessLargeOrderCommandMessageMapper : IAmAMessageMapper<ProcessLargeOrderCommand>
+{
+    public IRequestContext? Context { get; set; }
+
+    [ClaimCheck(step: 0, thresholdInKb: 100)]
+    public Message MapToMessage(ProcessLargeOrderCommand request, Publication publication)
+    {
+        var header = new MessageHeader(
+            messageId: request.Id,
+            topic: publication.Topic!,
+            messageType: MessageType.MT_COMMAND);
+
+        var body = new MessageBody(
+            JsonSerializer.Serialize(request, JsonSerialisationOptions.Options));
+
+        return new Message(header, body);
+    }
+
+    [RetrieveClaim(step: 0)]
+    public ProcessLargeOrderCommand MapToRequest(Message message)
+    {
+        return JsonSerializer.Deserialize<ProcessLargeOrderCommand>(
+            message.Body.Value, JsonSerialisationOptions.Options)!;
+    }
 }
 ```
+
+The attribute does not name the store. You register one, such as the
+[S3 Luggage Store](/contents/S3LuggageStore.md), with `UseExternalLuggageStore()` — see
+[Handling Large Messages](/contents/HandlingLargeMessages.md).
 
 ### 8. Separate Queue Tables for High Volume
 
 For high-volume queues, use dedicated tables:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Postgres;
+
 // High-volume queue
 var highVolumeSubscription = new PostgresSubscription<HighVolumeEvent>(
+    messagePumpType: MessagePumpType.Proactor,
     queueStoreTable: "brighter_high_volume_messages"  // Separate table
 );
 
 // Normal queue
 var normalSubscription = new PostgresSubscription<NormalEvent>(
+    messagePumpType: MessagePumpType.Proactor,
     queueStoreTable: "brighter_messages"  // Shared table
 );
 ```
@@ -562,12 +675,12 @@ var normalSubscription = new PostgresSubscription<NormalEvent>(
 
 **Solutions**:
 
-1. Check visibility timeout hasn't expired:
+1. Check for messages in flight — read by a consumer and not yet acknowledged:
    ```sql
    SELECT * FROM brighter_messages
    WHERE queue = 'your.queue' AND visible_timeout > CURRENT_TIMESTAMP;
    ```
-2. Verify consumer is running and subscriptions match queue names
+2. Verify the consumer is running, and that each subscription's `channelName` is its publication's `Topic`
 3. Check database connection pooling isn't exhausted
 4. Review logs for consumer exceptions
 
@@ -602,7 +715,7 @@ var normalSubscription = new PostgresSubscription<NormalEvent>(
 
 1. Add index: `CREATE INDEX ON brighter_messages(queue, visible_timeout)`
 2. Use JSONB instead of JSON
-3. Increase `timeOut` to reduce polling frequency
+3. Increase `emptyChannelDelay` to poll an empty queue less often
 4. Consider using `bufferSize > 1` to retrieve multiple messages per poll
 
 ---
