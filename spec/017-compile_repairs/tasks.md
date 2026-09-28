@@ -1744,7 +1744,7 @@ everywhere. Page list: § *The tranches*, phase 5 table.
     names an argument before a positional one. A page that shows a mismatch deliberately says it is
     wrong in prose, not only in a `// wrong` comment.
 
-- [ ] **Task 5.6:** Close phase 5 — checks, figures, PR
+- [x] **Task 5.6:** Close phase 5 — checks, figures, PR
   - Input: 5.1's prediction; the PR's diff
   - Output: as 2.6, for phase 5; plus BUILT against **≥ 250** and pages with nothing BUILT against
     **≤ 60**, both read before phase 6 walks them
@@ -1930,7 +1930,7 @@ SKIPPED, not because it built.
   blocks on these pages stayed FAILED in the first pass (**6** after the second), and **7** of their **10** hard blocks built; one is SKIPPED and
   two stay FAILED (`ParameterizedQueryPatterns.md` #4, same-page once its `using` is right, and
   `ProjectionQueryPatterns.md` #3, a fragment). 20 + 7 + the appended block = **28**
-- **Six units.** `AgreementDispatcherRoutingContext.cs` (the scenarios' requests and handlers,
+- **Five units.** `AgreementDispatcherRoutingContext.cs` (the scenarios' requests and handlers,
   `services`, `registry`), `DarkerQueryPatternsContext.cs` (one EF Core model for four pages:
   `AggregationQueryPatterns.md`, `ProjectionQueryPatterns.md`, `ParameterizedQueryPatterns.md`,
   `QueryHandlerDependencies.md`), `DarkerConfigurationReferenceContext.cs`,
@@ -2379,6 +2379,127 @@ went in as a line after the example messages and moved the hit to `:252`; it now
   | #3's shape, sync | `Post(…, requestContext: context)` inside `Handle` → partition key `tenant-7`, `x-order-priority` `high` over the publication's `DefaultHeaders` value | `Post` with no context → no partition key, the publication's `publication-default` |
   | Each call uses only its own kind of mapper | `Post`, `DepositPost` + `ClearOutbox` on a sync-only type → the custom sync mapper; `PostAsync`, `DepositPostAsync` + `ClearOutboxAsync` on an async-only type → the custom async mapper | the crossed four → **the default mapper (JSON)**, all four |
 
+**Task 5.6 — phase 5 closed, 2026-09-28, branch at `5981b12`.** Every gate run bare, exit code
+read before its output:
+
+| # | Gate | Exit | Read | Predicted (5.1) | Agrees? |
+|---:|---|---:|---|---|---|
+| 1 | `linkcheck` | 0 | 165 files, 0 broken | none | **yes** |
+| 2 | `pagelint` | 0 | 0 errors, **537** warnings across 66 pages, 162 pages | 0 errors; 616 → between 582 and 573, then up to −8 from P0-7, recurrences explained | **yes** — 35 in the band, 8 from P0-7, 36 more explained below |
+| 3 | shape | 0 | 161 pages, 12 sections, widest 12 of 20, deepest 4 of 4 | none | **yes** |
+| 4 | redirects | 0 | 77 entries, 7858 bytes | none | **yes** |
+| 5 | `versioncheck` | 0 | 0 stale of 18, across 5 pages | none, scope held at 18 across 5 | **yes** |
+| 6 | `optioncheck` | 0 | 0 mismatches, 59 tables, 519 rows | none | **yes** |
+| 7 | `--verify` | 0 | 161 predicted = 161 published | none | **yes** |
+| 8 | `symbolcheck` | 0 | 0 findings, 22 entries, 161 pages, 3 silenced; `--verify-list` exit 0 | none; `S3LuggageStore.md`'s two opt-outs kept | **yes** |
+| 9 | `blockcheck` | 0 | 990: **295** BUILT, 678 FAILED, 17 SKIPPED; 0 findings; **545** reference assemblies; baseline 295; **45** units, 0 violations; 67 pages mapped | BUILT 246–294; SKIPPED 16 plus accepted reasons; 542, no pin change; exit 0; 0 violations | **no — 1 above the ceiling, and the pin grew**, explained below |
+| — | `attr_mismatch.py` | 1 | **1**, `PipelineValidation.md:250`; `--plant` exit 0, OK | 7 → 1, exit 1, `:250` | **yes** |
+| — | `grep -rn ITimerProvider contents/` | — | **0** lines, read from a file | 4 → 0 | **yes** |
+
+`pagelint --changed origin/master` → exit **0**, 0 errors. `origin/master` is `976e0e0`, the merge of
+phase 4.
+
+**Gate 9, reconciled.** Phase 5 moved **61** blocks into the baseline: 28 in 5.2, 3 in its second
+pass, 23 in 5.3, 5 in 5.4, 2 in 5.5. Against the report regenerated at `976e0e0` in a worktree
+(*"983 blocks: 234 BUILT"*), **50** are on the tranche's 16 pages and **11** off it. Of the 62 blocks
+FAILED on the tranche at `976e0e0`, **48** built, **13** stay FAILED and **1** is SKIPPED; the other
+two tranche gains are new fences, `CloudEventsReference.md`'s inserted block and
+`PostgreSQLBrokerTradeOffs.md` #2, the split. Against 5.1's ceiling of 294, which counted every
+reachable block, every hard block but `S3LuggageStore.md` #1, and `InMemoryScheduler.md` #5:
+
+- **−11**, ceiling blocks that did not build: `BuildingAPipeline.md` #2, #3, #4,
+  `DarkerConfigurationReference.md` #1, #2, `ParameterizedQueryPatterns.md` #4,
+  `ProjectionQueryPatterns.md` #3, `QueryHandlerDependencies.md` #3, `Telemetry.md` #6 (old #5),
+  `PostgreSQLMessageBroker.md` #8, each in § *Blocks that stay FAILED*; and
+  `DarkerAndBrighterPipelines.md` #1, SKIPPED with an accepted reason
+- **+2**, the tranche's two new fences, BUILT
+- **+10**, off the tranche and beside `InMemoryScheduler.md` #5, which the ceiling held:
+  `Monitoring.md` #1, #2 (ruling), `QueryPipelinePolicies.md` #7 (appended), `NullableReferenceTypes.md`
+  #9 (recurrence), `CQRSWithBrighterAndDarker.md` #7 (the `Order` write model, which 5.1 left out),
+  `BrighterSchedulerSupport.md` #1, `DefaultMessageMappers.md` #4, #5 (ruling), `V10MigrationGuide.md`
+  #9, #12 (beside the attributes)
+
+294 − 11 + 2 + 10 = **295**. **The pin: said, no change; measured, 98 → 100 `PackageReference`s**
+(`grep -c`), 542 → 545 reference assemblies — `Microsoft.Extensions.TimeProvider.Testing` and
+`Confluent.SchemaRegistry.Serdes.Avro`, for 5.4's two repairs, each its own commit measured alone,
+no verdict moved (`07d878b`, `aeb65f4`). **Units 35 → 45**: five in 5.2, five in 5.3 (`git diff
+--name-status 976e0e0..HEAD -- tools/blockcheck/scaffold/units`, ten `A`); pages mapped 53 → 67.
+
+**Every FAILED block on the 16 tranche pages is listed**: `after.tsv`'s FAILED keys on those pages
+are **15** — the 13 above and two new fences, `AgreementDispatcherRouting.md` #12 (split) and
+`Telemetry.md` #1 (inserted, FAILED on the pin) — and `comm` of them against § *Blocks that stay
+FAILED* is silent. Corpus-wide, too: every listed row is FAILED in the report.
+
+**Gate 2, reconciled.** Per-page warnings at `976e0e0` (a worktree) against the branch, **−79** in
+three groups, and the six task entries above sum to it (17 + 14 + 23 + 9 + 10 + 6):
+
+- **−35 on 11 tranche pages**, which is inside 5.1's band (616 − 35 = 581). Six
+  `AgreementDispatcherRouting.md` blocks, #12 among them, open with `// ...`: they declare their
+  omission, so they still warn, which is the proviso 5.1 wrote. The one warning left on
+  `PostgreSQLMessageBroker.md` is #11, BUILT and untouched, as predicted
+- **−19 on 6 P0-7 pages.** **8** are the P0-7 blocks 5.1 named, all of them: `InMemoryScheduler.md`
+  #5, `HowServiceActivatorWorks.md` #16, `PipelineValidation.md` #9, #10,
+  `PolicyRetryAndCircuitBreaker.md` #14, `ReactorAndProactor.md` #6, `V10MigrationGuide.md` #10, #12.
+  The other **11**: `PolicyRetryAndCircuitBreaker.md` −5 (the public-handlers ruling),
+  `V10MigrationGuide.md` −6 (#9, #11, #13, #14 beside the attributes, in 5.5; one block each by
+  5.3's and 5.4's recurrences, #26 the latter)
+- **−25 on 13 pages outside both**, each in its task's entry: `UsingTheContextBag.md` −6 (ruling),
+  `DefaultMessageMappers.md` −4 (ruling), `FeatureSwitches.md` −4 (ruling), `Monitoring.md` −2
+  (ruling), and −1 each on `AgreementDispatcher.md`, `BrighterSchedulerSupport.md`,
+  `ConfiguringOpenTelemetry.md`, `DispatchingARequest.md`, `DynamicMessageDeserialization.md` (the
+  removed block), `MigratingToNullableReferenceTypes.md`, `MigratingToPollyV8.md`,
+  `NullableReferenceTypes.md`, `PolicyFallback.md`
+
+616 − 79 = **537**, across 66 pages, down from 76.
+
+**AC2, against a `before.tsv` regenerated from `c7329bb` in a worktree** (exit 0, *"989 blocks: 101
+BUILT, 872 FAILED, 16 SKIPPED"*, 989 rows): the diff prints **207** lines. **194** are `FAILED ->
+BUILT`. The other **13**, each read against § *Splits* or accepted:
+
+- `FAILED -> SKIPPED` `DarkerAndBrighterPipelines.md` #1 — the accepted skip, *"a method signature
+  shown for comparison, with no body or class to compile in"*
+- `BUILT -> FAILED` `Telemetry.md` #1 and `MessageMappers.md` #3 — each a BUILT block renumbered by
+  an insertion above it; both rows moved (§ *Splits*)
+- ` -> BUILT` `CloudEventsReference.md` #5, `PostgreSQLBrokerTradeOffs.md` #2,
+  `QueryPipelinePolicies.md` #7, `SchedulingAMessage.md` #10 — new keys (§ *Splits*)
+- ` -> FAILED` `AgreementDispatcherRouting.md` #12, `CQRSWithBrighterAndDarker.md` #13,
+  `DefaultMessageMappers.md` #14, #15, `MessageMappers.md` #7, `Telemetry.md` #6 — new keys, each
+  the tail of an insertion or a split (§ *Splits*)
+
+Nine `c7329bb` keys are absent from the report: `AnalyzerSupport.md` #2–#8,
+`ConfiguringOpenTelemetry.md` #7 and `DynamicMessageDeserialization.md` #9, the shifts § *Blocks
+removed* explains. **Two § *Splits* rows said less than the diff reads, and are now whole:**
+`CQRSWithBrighterAndDarker.md`'s called its inserted #7 *"a new key"*, where the ordinal diff reads
+#7 `FAILED -> BUILT` and #13 as the new key; `DefaultMessageMappers.md`'s did not say what the diff
+reads. So 194 counts some inserted fences as `FAILED -> BUILT` on an old key, which is why phase 5's
+own moves were each counted by aligning fences rather than by this diff. **Control, both ways:** the
+report against itself prints **0** lines; a copy with `AgreementDispatcherRouting.md` #5 set FAILED
+prints **206**, having lost that one; a copy with `AWSSQSConfiguration.md` #1 set FAILED prints
+exactly one line beside the known 13 that is not `FAILED -> BUILT`, `BUILT -> FAILED
+contents/AWSSQSConfiguration.md 1`.
+
+**The targets, both read before phase 6 walks them.** **BUILT ≥ 250: met, at 295.** **Pages with
+nothing BUILT ≤ 60: met, at 41** — requirements' `awk` (`comm -23` of the FAILED and BUILT page
+lists) and a Python join over the same report, **41** both. **Said, by 5.1: at most 51, as low as
+45. Measured: 41**, four below. All 12 tranche pages with nothing BUILT left the list —
+`DarkerAndBrighterPipelines.md` by its skip, not by building — which is 5.1's 45; the other four are
+off the tranche: `BrighterSchedulerSupport.md`, `DefaultMessageMappers.md`, `Monitoring.md` and
+`V10MigrationGuide.md`. 5.1 set `V10MigrationGuide.md` aside because none of its touched blocks was
+predicted to build; #9 and #12 did, in 5.5. No page joined the list.
+
+**Every behavioural block was run with its control** (P0-10): the tables under 5.2, 5.3, 5.4 and
+5.5, against released 10.7.0 packages (Darker 4.1.1) on net10.0, with a real broker or registry
+where a claim needed one.
+
+**Upstream, filed in phase 5 on the maintainer's word:** BrighterCommand/Brighter#4453, #4454 (5.2's
+second pass), #4458 (5.3), #4465 (5.4). Each is stated on its page.
+
+**The PR changes 53 pages** (`git diff --name-only origin/master..HEAD -- contents | wc -l`): **15**
+of the 16 tranche pages (`AggregationQueryPatterns.md` was made whole by its unit alone) and **38**
+outside it, by P0-7, recurrence and ruling. Beside them: `tools/README.md` (rows 2 and 9, and a
+phase 5 paragraph), the baseline, `refs.csproj`, `pages.tsv` (53 → 67 pages mapped), 10 new units,
+and this file.
+
 ---
 
 ## Phase 6 — Acceptance *(8 tasks, one PR, no page touched)*
@@ -2728,9 +2849,9 @@ is rewritten against the tables below.
 | `PostgreSQLBrokerTradeOffs.md` | 1 | 1, 2 | the JSONB and JSON schemas were one fence; each now builds. #2 is a new key, BUILT | 5.3 |
 | `CloudEventsReference.md` | 3, 4 | 4, 5 | not a split: a block inserted at #3, the Kafka partition key set per message. Old #3 (SNS) and #4 (Azure Service Bus) are now #4 and #5; all five build, so the AC2 diff reads #3, #4 `FAILED -> BUILT` and #5 as a new key | 5.3 |
 | `Telemetry.md` | 1–5 | 2–6 | not a split: a block inserted at #1, *Enabling Brighter's Spans*, FAILED on the pin. Old #1 and #4, BUILT, are now #2 and #5, their rows moved; so the AC2 diff reads #1 `BUILT -> FAILED` and #6 as a new key | 5.3 |
-| `CQRSWithBrighterAndDarker.md` | — | 7 | not a split: the write model inserted above the handler, so old #7–#12 are #8–#13, FAILED both sides. A new key, BUILT | 5.4 |
+| `CQRSWithBrighterAndDarker.md` | — | 7 | not a split: the write model inserted above the handler, BUILT, so old #7–#12 are #8–#13, FAILED both sides. The AC2 diff reads #7 `FAILED -> BUILT`, the new block on old #7's key, and #13 as a new key, FAILED | 5.4 |
 | `MessageMappers.md` | 2–6 | 3–7 | not a split: the async mapper inserted at #2. Old #3, BUILT, is now #4, its row moved (old row removed, new row at `6ddcf7b`); so the AC2 diff reads #3 `BUILT -> FAILED`, #4 `FAILED -> BUILT` and #7 as a new key. The rest FAILED both sides | 5.5 |
-| `DefaultMessageMappers.md` | 4 | 4, 5, 6 | the Avro mapper rewritten as three fences: the mapper (#4, BUILT), the avrogen partial (#5, BUILT) and its registration (#6, same-page). Old #5–#13 are #7–#15, FAILED both sides | 5.4 |
+| `DefaultMessageMappers.md` | 4 | 4, 5, 6 | the Avro mapper rewritten as three fences: the mapper (#4, BUILT), the avrogen partial (#5, BUILT) and its registration (#6, same-page). Old #5–#13 are #7–#15, FAILED both sides. So the AC2 diff reads #4, #5 `FAILED -> BUILT` and #14, #15 as new keys, FAILED | 5.4 |
 
 ## Blocks removed
 
