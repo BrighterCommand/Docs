@@ -404,7 +404,7 @@ A key advantage of PostgreSQL as a message broker is **transactional messaging**
 The Outbox shares your transaction only when you pass `DepositPostAsync` a transaction provider.
 Registered as the producers' `TransactionProvider`,
 `PostgreSqlEntityFrameworkTransactionProvider<OrderDbContext>` hands the Outbox the transaction
-your `DbContext` has open — see [PostgreSQL Outbox](PostgresOutbox.md) for that registration:
+your `DbContext` has open — see [PostgreSQL Outbox](PostgresOutbox.md) for that registration. The provider's package brings the EF Core of your target framework, EF Core 10 on `net10.0`, so `Npgsql.EntityFrameworkCore.PostgreSQL` must be the same major version — its 9.x provider fails there with a `MissingMethodException`:
 
 ```csharp
 using System;

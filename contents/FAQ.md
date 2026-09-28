@@ -282,6 +282,8 @@ Use the **Claim Check** pattern:
 **With transforms:**
 
 ```csharp
+using System;
+using System.Text.Json;
 using Paramore.Brighter;
 using Paramore.Brighter.Transforms.Attributes;
 
@@ -289,10 +291,21 @@ public class MyMessageMapper : IAmAMessageMapper<MyEvent>
 {
     public IRequestContext? Context { get; set; }
 
+    // Stores a body of 256 KB or more in the luggage store and sends a claim check in its place
     [ClaimCheck(0, thresholdInKb: 256)]
     public Message MapToMessage(MyEvent request, Publication publication)
     {
-        // Automatically stores payloads > 256KB externally
+        var header = new MessageHeader(request.Id, publication.Topic, MessageType.MT_EVENT);
+        var body = new MessageBody(JsonSerializer.Serialize(request));
+        return new Message(header, body);
+    }
+
+    // Retrieves the body from the luggage store when the message carries a claim check
+    [RetrieveClaim(0)]
+    public MyEvent MapToRequest(Message message)
+    {
+        return JsonSerializer.Deserialize<MyEvent>(message.Body.Value)
+            ?? throw new InvalidOperationException("Failed to deserialize");
     }
 }
 ```
