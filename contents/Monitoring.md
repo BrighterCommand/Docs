@@ -121,8 +121,8 @@ A consumer on that topic can forward the events to your monitoring tool, for exa
 
 Two defects in Brighter 10.7.0 limit what monitoring can do:
 
-- **A monitored handler that throws loses its exception.** The monitor tries to send an `ExceptionThrown` event carrying the exception, and serializing an `Exception` fails, so the caller receives a `NotSupportedException` (*"Serialization and deserialization of 'System.Reflection.MethodBase' instances is not supported"*) instead of the exception your handler threw. Monitor only handlers whose exceptions you do not need to see, until this is fixed
-- **`[MonitorAsync]` cannot send through the sender `ControlBusSenderFactory` builds.** That sender has no async message mapper for `MonitorEvent`, so an async monitored handler fails with *"No message mapper defined for request"*
+- **A monitored handler that throws loses its exception.** The monitor tries to send an `ExceptionThrown` event carrying the exception, and serializing an `Exception` fails, so the caller receives a `NotSupportedException` (*"Serialization and deserialization of 'System.Reflection.MethodBase' instances is not supported"*) instead of the exception your handler threw. Monitor only handlers whose exceptions you do not need to see, until this is fixed ([Brighter#4453](https://github.com/BrighterCommand/Brighter/issues/4453))
+- **`[MonitorAsync]` cannot send through the sender `ControlBusSenderFactory` builds.** That sender has no async message mapper for `MonitorEvent`, so an async monitored handler fails with *"No message mapper defined for request"* ([Brighter#4454](https://github.com/BrighterCommand/Brighter/issues/4454))
 
 ## Further Reading
 
