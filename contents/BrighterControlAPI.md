@@ -80,4 +80,4 @@ You can change the number of performers a subscription runs by calling `PATCH /c
 - **200 OK** with a message such as `Active performers for orders-subscription set to 3`
 - **400 BAD REQUEST** with a message such as `No such subscription Orders.OrderPlaced`, when no subscription has that name
 
-**Match the name's case exactly.** The check for an unknown name ignores case but the update does not, so `ORDERS-SUBSCRIPTION` passes the check and then fails with a 500, an `InvalidOperationException` from the Dispatcher.
+**Match the name's case exactly.** The check for an unknown name ignores case but the update does not, so `ORDERS-SUBSCRIPTION` passes the check and then fails with a 500, an `InvalidOperationException` from the Dispatcher. This is reported as [#4465](https://github.com/BrighterCommand/Brighter/issues/4465).
