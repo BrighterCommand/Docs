@@ -2517,7 +2517,7 @@ widening, both ledgers written, and the residual sentence 018 starts from.
   - Input: the red-proofs in § *Phase 1 as executed*; `--classify`; `--list-skips`
   - Output: one walk row each, the command and its output, exit code read first
 
-- [ ] **Task 6.3:** Walk AC1, AC2, AC7, AC8's first half, AC9, AC10, AC13, AC14
+- [x] **Task 6.3:** Walk AC1, AC2, AC7, AC8's first half, AC9, AC10, AC13, AC14
   - Input: `requirements.md`'s commands; `before.tsv`; § *Splits*; § *Defect ledger*
   - Output: one walk row each; AC2's diff read against § *Splits*; AC14 is all eight other gates,
     bare, against `tools/README.md`
@@ -2661,6 +2661,28 @@ it**: the six OpenTelemetry blocks stay FAILED for the pin (§ *Blocks that stay
 5.3), and `Logging.md` is on no tranche. The `Order` reading, ruled at 1.10, now touches **22**
 *import* blocks on **10** pages (1.10: 27 on 16), none on a tranche page. Not repaired, under the
 same ruling; recorded here for 6.6.
+
+#### The acceptance walk: the eight remaining criteria *(task 6.3)*
+
+Walked at `f46221d`, which is `631f5e1` for every page, unit and tool; each exit code was read before
+its output. The tools were built first (`refs.csproj`, then `blockcheck.csproj`, both Release), and
+`before.tsv` was regenerated from `c7329bb` in a worktree, as § *The AC2 before-report* says. It read
+*"989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED, 0 NOT_COMPILABLE"*, **989** rows, exit **0**.
+
+| # | Command | Exit | Read | Verdict |
+|---|---|---:|---|---|
+| **AC1** | `python3 tools/blockcheck.py --report after.tsv > out`; the baseline's keys against the report's BUILT keys; pages with a FAILED block and no BUILT one (`comm -23` of the two `awk` page lists) | **0** | *"990 blocks: 299 BUILT, 674 FAILED, 17 SKIPPED, 0 NOT_COMPILABLE"*, *"baseline: 299 blocks required to build"*, *"0 findings, 17 skipped"*, 545 reference assemblies. The baseline's 299 (page, ordinal) keys and the report's 299 BUILT keys are **identical** (`cmp`). Against the target set at design: BUILT **299 ≥ 250**, and pages with nothing BUILT **39 ≤ 60**. That is 41 at 5.6 less `MongoDBInbox.md` and `MongoDBOutbox.md`, which have no baseline row at `5981b12` and four at `bd95ee0` | **Met** |
+| **AC2** | the `awk` diff, `before.tsv` against `after.tsv`; and the reverse join, for keys the diff cannot print | **—** | **211** lines. **198** read `FAILED -> BUILT`: 5.6's 194, plus the four MongoDB blocks 6.1 made BUILT. The other **13** are 5.6's thirteen, unchanged, and each has a § *Splits* row or is the accepted skip: two `BUILT -> FAILED` (`Telemetry.md` #1, `MessageMappers.md` #3 — insertions above a BUILT block, whose rows moved), four ` -> BUILT` and six ` -> FAILED` new keys, and `FAILED -> SKIPPED` `DarkerAndBrighterPipelines.md` #1. The reverse join finds **9** `c7329bb` keys that are absent, and § *Blocks removed* lists every one of them. **Control:** `Telemetry.md` #2 flipped in a copy of `after.tsv` → exactly `BUILT -> FAILED contents/Telemetry.md 2`; the report against itself → **0** lines | **Met** |
+| **AC7** | `grep -l '^global using' tools/blockcheck/scaffold/units/*.cs \| wc -l`; `python3 tools/pagelint.py --changed origin/master`; the same with `--changed c7329bb` | —; **0**; **0** | **0** of 45 units. `origin/master` is `960ce6d`, the merge base, so the first run covers this PR. The second covers all of 017's diff at once, which is more than *"every tranche PR"* asks for; each phase recorded its own run at its close. Both read *"0 errors"*. **Control:** a plant unit holding `global using System;` → **1**, removed (`git status` clean) | **Met** |
+| **AC8**, first half | `python3 tools/pagelint.py \| tail -1`, at `HEAD` and in a `c7329bb` worktree; each debt warning mapped to its block by fence line (`enumerate_blocks()`); the blocks 017 touched, found from `git diff -U0 c7329bb HEAD -- contents/` hunks against fence ranges | **0**, **0** | **743 → 524**, a fall of **219** against **198** blocks newly BUILT. Every one of the 524 maps to a block: 466 FAILED, 41 BUILT, 17 SKIPPED. Of the **322** blocks 017 touched, **295** are out of debt and **27** remain in it. **All 27 are marked `// ...`** (3 BUILT, 22 FAILED, 2 SKIPPED), and those are the lines 6.1 read for AC8's second half. **None** of the touched blocks is in unmarked debt | **Met** |
+| **AC9** | `grep -rn 'ITimerProvider' contents/ \| wc -l`; `attr_mismatch.py`; `attr_mismatch.py --plant`; `CQRSWithBrighterAndDarker.md` in AC1's report | —; **1**; **0** | **0**. The one hit is `contents/PipelineValidation.md:250 RejectMessageOnError on a async handler`, the deliberate example, which the page now calls wrong in prose. The plant: *"sync-on-async hit, async-on-sync hit, matched pair silent: OK"*. `CQRSWithBrighterAndDarker.md` #7, the write model declaring `class Order` (`:666`), is **BUILT**, as is #6 | **Met** |
+| **AC10** | each row of § *Defect ledger*: its recurrence grep run as written (alternation unescaped from the table), its output read against the row's *After* | — | **116** rows. **64** reproduce their *After* exactly, from a single grep. Every other row with a grep reads what the row says, once its stated qualifier is applied: the hits it names as right (#5, #17, #32, #40, #41, #80, #81), an exclusion (#43, `Timed`), or a count inverted for an omission (#104, **3**). Rows decided by a run, a scan or a reading were read, not re-run. The rulings (*stated*, *documented*, *recorded, not repaired*) read as ruled. **Three rows are not whole.** **#15** (`MessageBody` given a string for its `ContentType`) and **#16** (mapper excerpts missing a member with no `// ...`) still read *"open"*, with no grep. Both were repaired in later phases: every `new MessageBody` on the two pages now takes a `ContentType` (`grep -rnE 'new MessageBody\([^)]*, *(MediaTypeNames\.[A-Za-z.]+\|"[^"]*") *[,)]' contents/` → **0**), and #16 is #83's defect on #83's five blocks, with #83 at **0**. **#100**'s second grep, `TryAddBuilder<`, now reads **1**: `PolicyFallback.md:306`'s `TryAddBuilder<Product>`, 6.1's correct repair for #109. The row's defect is the key type, `TryAddBuilder<ResiliencePropertyKey`, which reads **0**. #24, #55 and #61 name no grep at all | **Met on the pages; unmet in the ledger on three rows.** They go to 6.5, whose output is the ledger complete, and AC10 is re-read there |
+| **AC13** | `grep -rn '299 BUILT' --include='*.md' --include='*.yml' --include='*.py' . > f; grep -vcE '^(\./)?spec/' f`; the same for `524 warnings` | —; — | **1** — `tools/README.md:91`, row 9. `524 warnings` → **1**, row 2. **Control:** `0 errors`, a figure several files quote → **7** | **Met** |
+| **AC14** | the eight other gates, bare, against `tools/README.md` rows 1–8 | all **0** | `linkcheck` *"165 files checked"*, 0 broken. `pagelint` *"0 errors, 524 warnings … across 162 pages"*. Shape *"161 pages, 12 sections, deepest 4 of 4 segments, widest 12 of 20"*. Redirects *"77 entries, 7858 bytes"*. `versioncheck` *"0 stale pins of 18 examined across 5 page(s)"*. `optioncheck` *"0 mismatches across 59 tables and 519 rows"*. `--verify` *"predicted 161, published 161, 161 agree"*. `symbolcheck` *"22 entries, 161 pages checked, 3 silenced"*, and `--verify-list` clean. Every figure is its row's | **Met** |
+
+**Seven met, and AC10 met on the pages.** Its ledger has three rows that do not say what the pages
+now say. With 6.1's three and 6.2's four, every criterion has now been walked. AC10's ledger is the
+one reading left open, and it closes with 6.5.
 
 ---
 
