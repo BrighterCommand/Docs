@@ -320,3 +320,7 @@ contents/DefaultMessageMappers.md	5	-	b4c3ae0
 contents/V10MigrationGuide.md	9	-	f4cfd88
 contents/V10MigrationGuide.md	12	-	f4cfd88
 contents/MessageMappers.md	4	MessageMappersContext.cs	6ddcf7b
+contents/MongoDBInbox.md	2	-	7c6c0a1
+contents/MongoDBOutbox.md	1	-	7c6c0a1
+contents/MongoDBOutbox.md	2	-	7c6c0a1
+contents/MongoDBOutbox.md	3	-	7c6c0a1
