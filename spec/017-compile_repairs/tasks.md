@@ -1269,7 +1269,7 @@ skipped with an accepted reason, or listed. Page list: § *The tranches*, phase 
   - Notes: `ReplayOnSeenReference.md#1` uses API not in 10.7.0 (requirements P2-2); it stays FAILED
     and is listed with that reason, not repaired toward `master`.
 
-- [ ] **Task 4.5:** Close phase 4 — checks, figures, PR
+- [x] **Task 4.5:** Close phase 4 — checks, figures, PR
   - Input: 4.1's prediction; the PR's diff
   - Output: as 2.6, for phase 4
 
@@ -1640,6 +1640,70 @@ four `UsingSweeperCircuitBreaking.md` blocks that opened with `// ...` and four
   and `--verify` unmoved; `pagelint --changed origin/master` 0 errors. **Pages changed: 3**
   (`git diff --name-only 05fdeaf..HEAD -- contents`): the two tranche pages and
   `SweeperCircuitBreaking.md`
+
+
+**Task 4.5 — phase 4 closed, 2026-09-28, branch at `ca6a0b2`.** Every gate run bare, exit code
+read before its output:
+
+| # | Gate | Exit | Read | Predicted (4.1) | Agrees? |
+|---:|---|---:|---|---|---|
+| 1 | `linkcheck` | 0 | 165 files, 0 broken | none | **yes** |
+| 2 | `pagelint` | 0 | 0 errors, **616** warnings across 76 pages, 162 pages | 0 errors; 658 → between 640 and 622, recurrences explained | **no — 6 lower**, explained below |
+| 3 | shape | 0 | 161 pages, 12 sections, widest 12 of 20, deepest 4 of 4 | none | **yes** |
+| 4 | redirects | 0 | 77 entries, 7858 bytes | none | **yes** |
+| 5 | `versioncheck` | 0 | 0 stale of 18, across 5 pages | none, scope held at 18 across 5 | **yes** |
+| 6 | `optioncheck` | 0 | 0 mismatches, 59 tables, 519 rows | none | **yes** |
+| 7 | `--verify` | 0 | 161 predicted = 161 published | none | **yes** |
+| 8 | `symbolcheck` | 0 | 0 findings, 22 entries, 161 pages, 3 silenced | none | **yes** |
+| 9 | `blockcheck` | 0 | 983: **234** BUILT, 733 FAILED, 16 SKIPPED; 0 findings; **542** reference assemblies; baseline 234; **35** units, 0 violations; 53 pages mapped | BUILT 204–230; SKIPPED 16; exit 0; 0 violations | **no — 4 above the ceiling**, explained below |
+| — | `attr_mismatch.py` | 1 | **7** | held at 7 | **yes** |
+
+`pagelint --changed origin/master` → exit **0**, 0 errors.
+
+**Gate 9, reconciled.** Phase 4 moved **45** blocks: 25 in 4.2, 12 in 4.3, 8 in 4.4. Against 4.1's
+ceiling of 230: `BrighterBasicConfiguration.md` #3, #4 (+2, the unopened-lambda recurrence) and
+`SweeperCircuitBreaking.md` #2, #5, #7 (+3, the maintainer's ruling) lie off the tranche, and
+`TickerQScheduler.md` #2, counted in the ceiling, stays FAILED on `Program` (−1): 230 + 2 + 3 − 1 =
+**234**. The pin carries **98** `PackageReference`s (`grep -c`), 95 at phase 3's close.
+
+**Every FAILED block on the 22 tranche pages is listed**: `after.tsv`'s FAILED keys on those pages
+are **1**, `ReplayOnSeenReference.md` #1, and § *Blocks that stay FAILED* holds it (P2-2).
+
+**Gate 2, reconciled.** Per-page warnings at `d8633b1` (a worktree) against the branch: the 22
+tranche pages fell by **36**, which is 4.1's floor of 622 exactly — every reachable and every hard
+block given its `using`s. The further **−6** are on two pages outside the tranche:
+`SweeperCircuitBreaking.md` −4 (the ruling) and `BrighterBasicConfiguration.md` −2 (the
+recurrence). `DispatcherConfigurationReference.md`, also touched by the recurrence, moved nothing:
+its blocks open with `// ...`. 658 − 36 − 6 = **616**, across 76 pages, down from 96.
+
+**AC2, against a `before.tsv` regenerated from `c7329bb` in a worktree** (exit 0, *"989 blocks: 101
+BUILT, 872 FAILED, 16 SKIPPED"*, 989 rows): the diff prints **135** lines. **134** are `FAILED ->
+BUILT` — 89 through phase 3 and phase 4's 45. The 135th is ` -> BUILT contents/SchedulingAMessage.md
+10`, the key § *Splits* explains. No `-> SKIPPED`. **Control, both ways:** the report against itself
+prints **0** lines; a copy with `SweeperCircuitBreaking.md` #8 set FAILED prints exactly one line
+beside the known key that is not `FAILED -> BUILT`, `BUILT -> FAILED contents/SweeperCircuitBreaking.md 8`.
+
+**The ≤ 60 target: met, at 57.** Pages with nothing BUILT, by requirements' `awk` (`comm -23`) and a
+Python join over the same report: **57** both. 4.1 said as low as 58; the 58th off the list is
+`BrighterBasicConfiguration.md`, off the tranche. Phase 4 landed all ten of its pages with nothing
+BUILT and a reachable block, and five of its six hard-only pages; `ReplayOnSeenReference.md` waits
+on the pin. Phase 5 now has headroom, not a quota.
+
+**Every behavioural block was run with its control** (P0-10): the tables under 4.2, 4.3 and 4.4,
+against released 10.7.0 packages, with real servers or emulators where a claim needed one.
+
+**Upstream:** BrighterCommand/Brighter#4335 stated on `BrighterInboxSupport.md` and linked from nine
+inbox pages (ruling); #4443 (DynamoDB) and #4444 (Spanner) filed in 4.4, `Bug`, `0 - Backlog`,
+linked from `SweeperCircuitBreaking.md`.
+
+**The PR changes 28 pages** (`git diff --name-only origin/master..HEAD -- contents | wc -l`): **21**
+of the 22 tranche pages (`ReplayOnSeenReference.md` untouched) and **7** outside it —
+`BrighterBasicConfiguration.md` and `DispatcherConfigurationReference.md` by recurrence;
+`BrighterInboxSupport.md`, `FirestoreInbox.md`, `MongoDBInbox.md` and `SpannerInbox.md` by the #4335
+ruling; `SweeperCircuitBreaking.md` by ruling. **Said in session notes: 29** (20 + 6 + 3), which
+counted `AzureBlobArchiveProvider.md` in both 4.2 and 4.4. Beside them: `tools/README.md` (rows 2 and
+9, and a phase 4 paragraph), the baseline, `refs.csproj`, `pages.tsv` (36 → 53 pages mapped), 5 new
+units and 4 changed, and this file.
 
 ---
 
