@@ -49,6 +49,10 @@ services.AddOpenTelemetry()
 appears. [Configuring OpenTelemetry](/contents/ConfiguringOpenTelemetry.md) shows the setup for a
 producer and a consumer.
 
+**The Command Processor also needs an external bus.** At 10.7.0 it is given the tracer only when
+you configure producers with `AddProducers`; with none, `Send`, `Publish` and their async forms
+record no span, even with the tracer registered.
+
 ---
 
 ## Configurable Instrumentation
@@ -57,7 +61,7 @@ V10 provides fine-grained control over which attributes are recorded to optimize
 
 ### Instrumentation Options
 
-`InstrumentationOptions` is a flags enum, so you combine the attributes you want with `|`. Set it on the Command Processor through `AddBrighter`, and on producers through `AddProducers`:
+`InstrumentationOptions` is a flags enum, so you combine the attributes you want with `|`. Set it on the Command Processor through `AddBrighter`, and on producers through `AddProducers`. Left unset, it is `None`: the spans are still created, with no Brighter attributes on them:
 
 | Flag | Records |
 |---|---|

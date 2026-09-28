@@ -60,6 +60,7 @@ using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessagingGateway.RMQ.Async;
 using Paramore.Brighter.MySql;
+using Microsoft.EntityFrameworkCore;
 using Paramore.Brighter.MySql.EntityFrameworkCore;
 using Paramore.Brighter.Outbox.Hosting;
 using Paramore.Brighter.Outbox.MySql;
@@ -69,6 +70,9 @@ public void ConfigureServices(IServiceCollection services)
 
     var outboxConfiguration = new RelationalDatabaseConfiguration(DbConnectionString());
     services.AddSingleton<IAmARelationalDatabaseConfiguration>(outboxConfiguration);
+
+    services.AddDbContext<GreetingsEntityGateway>(options =>
+        options.UseMySql(DbConnectionString(), ServerVersion.AutoDetect(DbConnectionString())));
 
     services.AddBrighter(options =>
         {
@@ -237,6 +241,8 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
     var outboxConfiguration = new RelationalDatabaseConfiguration(
         DbConnectionString(), outBoxTableName: "Outbox");
+
+    services.AddSingleton<IAmARelationalDatabaseConfiguration>(outboxConfiguration);
 
     services.AddConsumers(options =>
     {

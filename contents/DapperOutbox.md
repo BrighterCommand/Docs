@@ -47,6 +47,8 @@ public void ConfigureServices(IServiceCollection services)
         outBoxTableName: "outbox_messages",
         inboxTableName: "inbox_messages");
 
+    services.AddSingleton<IAmARelationalDatabaseConfiguration>(configuration);
+
     services.AddConsumers(options =>
         {
             options.InboxConfiguration = new InboxConfiguration(new MySqlInbox(configuration));

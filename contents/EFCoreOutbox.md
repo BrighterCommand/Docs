@@ -29,26 +29,38 @@ Obviously, {DB} should match. In the example below we use MySql, so we would nee
 
 * **Paramore.Brighter.MySql**
 
-As described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support), we configure Brighter to use an outbox with the Use{DB}Outbox method call.
+As described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support), we configure Brighter to use an outbox in the `AddProducers` method call, by setting its `Outbox`.
 
-As we want to use EF Core, we also call: Use{DB}TransactionConnectionProvider so that we can share your transaction scope when persisting messages to the outbox.
+As we want to use EF Core, we also set its `TransactionProvider` to the EF Core transaction provider for your `DbContext`, so that we can share your transaction when persisting messages to the outbox. Brighter creates both providers from your container, so register what they are built from: the database configuration and the `DbContext`.
 
+```csharp
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MySql;
+using Paramore.Brighter.MySql.EntityFrameworkCore;
+using Paramore.Brighter.Outbox.Hosting;
+using Paramore.Brighter.Outbox.MySql;
 
-``` csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
-        .AddProducers(producers =>
-		{
-			producers.Outbox = new MySqlOutbox(outboxConfiguration);
-        	producers.ConnectionProvider = typeof(MySqlConnectionProvider);
-        	// Use the EF Core transaction provider with your DbContext
-        	producers.TransactionProvider = typeof(MySqlEntityFrameworkTransactionProvider<GreetingsEntityGateway>);
-		})
-        .UseOutboxSweeper()
-        ...
-}
+    var outboxConfiguration = new RelationalDatabaseConfiguration(DbConnectionString());
+    services.AddSingleton<IAmARelationalDatabaseConfiguration>(outboxConfiguration);
+    services.AddDbContext<GreetingsEntityGateway>(options =>
+        options.UseMySql(DbConnectionString(), ServerVersion.AutoDetect(DbConnectionString())));
 
+    services.AddBrighter()
+        .AddProducers(producers =>
+        {
+            // ... your producer registry
+            producers.Outbox = new MySqlOutbox(outboxConfiguration);
+            producers.ConnectionProvider = typeof(MySqlConnectionProvider);
+            // Use the EF Core transaction provider with your DbContext
+            producers.TransactionProvider = typeof(MySqlEntityFrameworkTransactionProvider<GreetingsEntityGateway>);
+        })
+        .UseOutboxSweeper();
+}
 ```
 
 In our handler we take a dependency on our EF Core Context (derived from Db context). We explicitly start a transaction within the handler, because the Outbox is not within the Db Context we cannot rely on the DBContext's implicit transaction.

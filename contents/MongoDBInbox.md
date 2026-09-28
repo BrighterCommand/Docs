@@ -65,22 +65,30 @@ In Brighter 10.7.0 this configuration takes effect only in an application that a
 For more advanced scenarios, you can provide custom MongoDB client settings and collection configurations:
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using MongoDB.Driver;
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Inbox.MongoDb;
+using Paramore.Brighter.MongoDb;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
     // Create MongoDB client with custom settings
-    var mongoClient = new MongoClient(new MongoClientSettings
-    {
-        ConnectionString = new ConnectionString("mongodb://localhost:27017"),
-        RetryWrites = true,
-        RetryReads = true
-    });
+    var settings = MongoClientSettings.FromConnectionString("mongodb://localhost:27017");
+    settings.RetryWrites = true;
+    settings.RetryReads = true;
+    var mongoClient = new MongoClient(settings);
     
     var mongoDbConfiguration = new MongoDbConfiguration(mongoClient, "BrighterDatabase")
     {
         Inbox = new MongoDbCollectionConfiguration
         {
             Name = "Inbox",
-            MakeCollection = OnResolvingACollection.Create,
+            MakeCollection = OnResolvingACollection.CreateIfNotExists,
             TimeToLive = TimeSpan.FromHours(24),
             Settings = new MongoCollectionSettings
             {
@@ -142,7 +150,7 @@ The MongoDB Inbox supports different strategies for collection management throug
 
 - **`OnResolvingACollection.Assume`**: Assumes the collection already exists (default behavior)
 - **`OnResolvingACollection.Validate`**: Validates that the collection exists, throws an exception if it doesn't
-- **`OnResolvingACollection.Create`**: Creates the collection if it doesn't exist
+- **`OnResolvingACollection.CreateIfNotExists`**: Creates the collection if it doesn't exist
 
 ## MongoDB Inbox Time-To-Live (TTL) Support
 

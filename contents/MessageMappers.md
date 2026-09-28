@@ -146,7 +146,9 @@ var payload = System.Text.Json.JsonSerializer.Serialize(request, new JsonSeriali
 var body = new MessageBody(payload, new ContentType(MediaTypeNames.Application.Json), CharacterEncoding.UTF8);
 ```
 
-If your payload is binary, then we provide two constructors that can be used to write bytes. For backwards compatibility these constructors also default to application/json and UTF-8. However, if you have binary content we recommend setting the media type to application/octet-stream and the character encoding to either **CharacterEncoding.Base64** if it needs transmission as a string, or **CharacterEncoding.Raw** if not).
+If your payload is binary, then we provide two constructors that can be used to write bytes. For backwards compatibility these constructors also default to application/json and UTF-8; if you have binary content, set the media type to application/octet-stream. These constructors keep the bytes exactly as given, whatever **CharacterEncoding** you pass, and a transport sends those bytes: the encoding decides only how **Value** renders them as a string (below).
+
+A string round-trip is what damages binary content, and a relational Outbox makes one when it stores the body in a text column: it writes **Value** and reads it back as UTF-8 text. Under **CharacterEncoding.UTF8** that corrupts any byte that is not valid UTF-8; under **CharacterEncoding.Raw** the consumer receives the base64 text instead of your bytes. Configure the Outbox with `binaryMessagePayload: true`, which stores the bytes themselves.
 
 ```csharp
 public MessageBody(byte[]? bytes, ContentType? contentType = null, CharacterEncoding characterEncoding = CharacterEncoding.UTF8)
@@ -158,7 +160,7 @@ public MessageBody(in ReadOnlyMemory<byte> body, ContentType? contentType = null
     // ...
 ```
 
-For example, when writing a Kafka payload with leading bytes indicating the schema id, you would want to use a binary payload because conversion to and from a UTF8 string is lossy. Here we serialize the payload with the Kafka header (Magic Byte (0) + Schema Id Bytes) and a JSON payload using the Confluent Serdes serializer. Even though we serialize to JSON, because of the header bytes we treat the payload as binary:
+For example, when writing a Kafka payload with leading bytes indicating the schema id, you would want to use a binary payload because conversion to and from a UTF8 string is lossy: a schema id byte of 0x80 or above does not survive it. Here we serialize the payload with the Kafka header (Magic Byte (0) + Schema Id Bytes) and a JSON payload using the Confluent Serdes serializer. Even though we serialize to JSON, because of the header bytes we treat the payload as binary:
 
 ```csharp
 using System.Net.Mime;

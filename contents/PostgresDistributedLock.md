@@ -57,6 +57,8 @@ using Paramore.Brighter.PostgreSql;
 
 const string connectionString = "Host=localhost;Database=orders;Username=app;Password=secret";
 
+services.AddSingleton<IAmARelationalDatabaseConfiguration>(new RelationalDatabaseConfiguration(connectionString));
+
 services
     .AddBrighter()
     .AddProducers(opt =>

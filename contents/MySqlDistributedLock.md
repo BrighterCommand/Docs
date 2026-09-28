@@ -58,6 +58,8 @@ using Paramore.Brighter.Outbox.Hosting;
 var configuration = new RelationalDatabaseConfiguration(
     "Server=localhost;Database=orders;Uid=app;Pwd=secret;");
 
+services.AddSingleton<IAmARelationalDatabaseConfiguration>(configuration);
+
 services
     .AddBrighter()
     .AddProducers(opt =>

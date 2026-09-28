@@ -241,6 +241,8 @@ var mongoDbConfiguration = new MongoDbConfiguration("mongodb://localhost:27017",
 
 services.AddSingleton<IAmAnOutboxCircuitBreaker>(new InMemoryOutboxCircuitBreaker());
 
+services.AddSingleton<IAmAMongoDbConfiguration>(mongoDbConfiguration);
+
 services.AddBrighter()
     .AddProducers(configure =>
     {
@@ -336,12 +338,15 @@ Circuit breaking is designed to work with the Outbox Sweeper:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MsSql;
 using Paramore.Brighter.Outbox.Hosting;
 using Paramore.Brighter.Outbox.MsSql;
 
 // ... outboxConfiguration comes from your database configuration
+services.AddSingleton<IAmARelationalDatabaseConfiguration>(outboxConfiguration);
+
 services.AddBrighter()
     .AddProducers(configure =>
     {

@@ -22,7 +22,7 @@ By adding the **FeatureSwitch** Attribute or **FeatureSwitchAsync** Attribute, y
     Registry**, [creating of which is described
     later](/contents/FeatureSwitches.md#building-a-config-for-feature-switches-with-fluentconfigregistrybuilder).
 
-In the following example, **MyFeatureSwitchedHandler** will only be run if it has been configured in the **Feature Switch Registry** and set to **FeatureSwitchStatus.On**.
+In the following example, **MyFeatureSwitchedHandler** runs when the **Feature Switch Registry** sets it to **FeatureSwitchStatus.On**, and is skipped when it sets it to **FeatureSwitchStatus.Off**. With no registry at all, **FeatureSwitchStatus.Config** behaves as **On**. With a registry that has no entry for the handler, its **MissingConfigStrategy** decides; the **FluentConfigRegistryBuilder**'s default throws a `ConfigurationException`.
 
 ```csharp
 using Paramore.Brighter;
@@ -64,7 +64,7 @@ public class MyIncompleteHandlerAsync : RequestHandlerAsync<MyCommand>
 
 By default, when a feature switch is **Off**, the handler is skipped and the message is silently acknowledged and discarded. This is fine when you are using the Command Processor directly, but when consuming messages from an [External Bus](/contents/DispatchingARequest.md) you may want to hold messages on the channel until the feature is re-enabled, rather than losing them.
 
-The `dontAck` parameter controls this behavior. When set to `true` and the feature is off, the attribute throws a `DontAckAction` instead of silently consuming the message. The [message pump](/contents/HowServiceActivatorWorks.md) leaves the message unacknowledged on the channel, and the transport re-delivers it after its visibility timeout expires.
+The `dontAck` parameter controls this behavior. When set to `true` and the feature is off, the attribute throws a `DontAckAction` instead of silently consuming the message. The [message pump](/contents/HowServiceActivatorWorks.md) returns the message to the channel unacknowledged, and the transport delivers it again: the in-memory transport at once, a broker by its own redelivery rules.
 
 ```csharp
 using Paramore.Brighter;

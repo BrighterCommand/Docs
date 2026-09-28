@@ -251,9 +251,8 @@ var subscription = new Subscription<ProcessOrderCommand>(
 
 **Transports without Native Delay (Kafka, AWS SNS, etc.):**
 
-- Requires an external scheduler (Quartz, Hangfire, etc.)
 - Message is scheduled via the configured scheduler
-- Falls back to immediate requeue if no scheduler configured
+- If you configure none, Brighter's registration uses the in-memory scheduler, which does not survive a restart; configure a durable scheduler (Quartz, Hangfire, etc.) for production
 
 ## Choosing a Scheduler
 

@@ -37,7 +37,7 @@ The MongoDB Outbox supports different strategies for collection management throu
 
 - **`OnResolvingACollection.Assume`**: Assumes the collection already exists (default behavior)
 - **`OnResolvingACollection.Validate`**: Validates that the collection exists, throws an exception if it doesn't
-- **`OnResolvingACollection.Create`**: Creates the collection if it doesn't exist
+- **`OnResolvingACollection.CreateIfNotExists`**: Creates the collection if it doesn't exist
 
 **Note:** You are responsible for creating and maintaining the collection if you choose to manage it manually. This includes tasks such as adding indexes to optimize query performance and configuring Time-To-Live (TTL) indexes for automatic message cleanup.
 
@@ -90,6 +90,13 @@ Each of `Outbox`, `Inbox` and `Locking` takes a `MongoDbCollectionConfiguration`
 As described in [Command Processor Configuration Reference](/contents/CommandProcessorConfigurationReference.md#outbox-support), we configure Brighter to use an outbox with the `AddProducers` method call.
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MongoDb;
+using Paramore.Brighter.Outbox.Hosting;
+using Paramore.Brighter.Outbox.MongoDb;
+
 public void ConfigureServices(IServiceCollection services)
 {
     // MongoDB connection string
@@ -106,6 +113,8 @@ public void ConfigureServices(IServiceCollection services)
             TimeToLive = TimeSpan.FromDays(7) // Optional: Auto-expire messages after 7 days
         }
     };
+
+    services.AddSingleton<IAmAMongoDbConfiguration>(mongoDbConfiguration);
 
     services.AddBrighter()
         .AddProducers(producers =>
@@ -126,22 +135,28 @@ public void ConfigureServices(IServiceCollection services)
 For more advanced scenarios, you can provide custom MongoDB client settings and collection configurations:
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MongoDb;
+using Paramore.Brighter.Outbox.Hosting;
+using Paramore.Brighter.Outbox.MongoDb;
+
 public void ConfigureServices(IServiceCollection services)
 {
     // Create MongoDB client with custom settings
-    var mongoClient = new MongoClient(new MongoClientSettings
-    {
-        ConnectionString = new ConnectionString("mongodb://localhost:27017"),
-        RetryWrites = true,
-        RetryReads = true
-    });
+    var settings = MongoClientSettings.FromConnectionString("mongodb://localhost:27017");
+    settings.RetryWrites = true;
+    settings.RetryReads = true;
+    var mongoClient = new MongoClient(settings);
     
     var mongoDbConfiguration = new MongoDbConfiguration(mongoClient, "BrighterDatabase")
     {
         Outbox = new MongoDbCollectionConfiguration
         {
             Name = "Outbox",
-            MakeCollection = OnResolvingACollection.Create,
+            MakeCollection = OnResolvingACollection.CreateIfNotExists,
             TimeToLive = TimeSpan.FromHours(24),
             Settings = new MongoCollectionSettings
             {
@@ -154,6 +169,8 @@ public void ConfigureServices(IServiceCollection services)
             }
         }
     };
+
+    services.AddSingleton<IAmAMongoDbConfiguration>(mongoDbConfiguration);
 
     services.AddBrighter()
         .AddProducers(producers =>
@@ -174,6 +191,12 @@ public void ConfigureServices(IServiceCollection services)
 You can also use a custom connection provider for more control over the MongoDB connection:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MongoDb;
+using Paramore.Brighter.Outbox.Hosting;
+using Paramore.Brighter.Outbox.MongoDb;
+
 public void ConfigureServices(IServiceCollection services)
 {
     var mongoDbConfiguration = new MongoDbConfiguration("mongodb://localhost:27017", "BrighterDatabase")
@@ -186,6 +209,8 @@ public void ConfigureServices(IServiceCollection services)
     };
     
     var connectionProvider = new MongoDbConnectionProvider(mongoDbConfiguration);
+
+    services.AddSingleton<IAmAMongoDbConfiguration>(mongoDbConfiguration);
 
     services.AddBrighter()
         .AddProducers(producers =>

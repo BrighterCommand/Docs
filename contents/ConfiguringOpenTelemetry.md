@@ -26,7 +26,9 @@ Brighter writes to that source only through a tracer, an `IAmABrighterTracer`, r
 container. `AddBrighter()` does not register one, so listening to the source is not enough:
 `AddSource("paramore.brighter")` on its own records no Brighter span.
 `AddBrighterInstrumentation()`, from the `Paramore.Brighter.Extensions.Diagnostics` package, does
-both: it registers the tracer and adds the source.
+both: it registers the tracer and adds the source. The Command Processor takes that tracer only when
+it has an external bus, configured with `AddProducers`; with no producers, its requests record no
+span at 10.7.0.
 
 Use it on the tracer provider that `AddOpenTelemetry()` builds, which shares your application's
 container. A provider built with `Sdk.CreateTracerProviderBuilder()` keeps its own services, so the

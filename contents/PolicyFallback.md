@@ -104,9 +104,10 @@ Where you put any **FallbackPolicy** attribute determines what exceptions it wil
 ### Pipeline Order
 
 ```csharp
-// ...
-[FallbackPolicy(backstop: true, step: 1)]                  // Outermost: Catches ALL exceptions
-[UseResiliencePipeline("CircuitBreakerAndRetry", step: 2)] // Inside: circuit breaker, then retry
+using Paramore.Brighter.Policies.Attributes;
+
+[FallbackPolicy(backstop: true, circuitBreaker: false, step: 1)] // Outermost: Catches ALL exceptions
+[UseResiliencePipeline("CircuitBreakerAndRetry", step: 2)]        // Inside: circuit breaker, then retry
 public override MyCommand Handle(MyCommand command)
 {
     // Handler logic
@@ -126,9 +127,8 @@ public override MyCommand Handle(MyCommand command)
 If the handler throws an exception:
 
 1. Retry catches it and retries (up to max attempts)
-2. If retries are exhausted, exception bubbles to Circuit Breaker
-3. If Circuit Breaker opens or threshold is hit, BrokenCircuitException is thrown
-4. Fallback catches BrokenCircuitException and calls Fallback() method
+2. If retries are exhausted, the last exception propagates through the circuit breaker, which records the failure, to Fallback, which calls your `Fallback()` method with that exception — including on the call that trips the breaker
+3. Once the breaker is open, later calls fail fast with `BrokenCircuitException` without running the handler, and Fallback receives that instead
 
 ## Fallback Policy Options
 
@@ -137,10 +137,13 @@ If the handler throws an exception:
 When `backstop: true`, the Fallback Policy catches **all exceptions**, not just circuit breaker exceptions.
 
 ```csharp
-[FallbackPolicy(backstop: true, step: 1)]
+using Paramore.Brighter.Policies.Attributes;
+
+[FallbackPolicy(backstop: true, circuitBreaker: false, step: 1)]
 public override MyCommand Handle(MyCommand command)
 {
     // Any exception will trigger fallback
+    return base.Handle(command);
 }
 ```
 
@@ -210,11 +213,16 @@ public override MyCommand Fallback(MyCommand command)
 When a handler fails, return a default value or cached response for graceful degradation.
 
 ```csharp
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+using Paramore.Brighter.Policies.Handlers;
+
 public class GetProductHandler : RequestHandler<GetProductQuery>
 {
     private readonly IProductCache _cache;
 
-    [FallbackPolicy(backstop: true, step: 1)]
+    [FallbackPolicy(backstop: true, circuitBreaker: false, step: 1)]
     [UseResiliencePipeline("ProductServicePipeline", step: 2)]
     public override GetProductQuery Handle(GetProductQuery query)
     {
@@ -282,31 +290,46 @@ public override MyCommand Fallback(MyCommand command)
 | **Flow** | Flows through handler pipeline (Russian Doll) | Returns value directly |
 | **Access** | Full access to handler dependencies and context | Limited to callback scope |
 
-You can use both together for comprehensive error handling:
+You can use both together. A Polly fallback in a pipeline that `[UseResiliencePipeline]` attaches can only substitute the request, so it cannot hand your handler a value. To get a default `Product`, run the service call through a pipeline typed for `Product`, inside the handler, and keep Brighter's `FallbackPolicy` for the order-level recovery:
 
 ```csharp
-// Configure Polly Fallback for simple value substitution
-resiliencePipelineRegistry.TryAddBuilder("ProductServiceWithFallback",
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+using Paramore.Brighter.Policies.Handlers;
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Fallback;
+using Polly.Registry;
+using Polly.Retry;
+
+// Configure Polly Fallback for simple value substitution, in a pipeline typed for Product
+resiliencePipelineRegistry.TryAddBuilder<Product>("ProductServiceWithFallback",
     (builder, context) => builder
         .AddFallback(new FallbackStrategyOptions<Product>
         {
-            FallbackAction = args => Outcome.FromResult(Product.Default)
+            FallbackAction = args => Outcome.FromResultAsValueTask(Product.Default)
         })
-        .AddCircuitBreaker(new CircuitBreakerStrategyOptions { /* ... */ })
-        .AddRetry(new RetryStrategyOptions { /* ... */ }));
+        .AddCircuitBreaker(new CircuitBreakerStrategyOptions<Product>())
+        .AddRetry(new RetryStrategyOptions<Product>()));
+
+// Brighter does not put the registry in the container; register the same instance yourself
+services.AddSingleton(resiliencePipelineRegistry);
 
 // Use Brighter FallbackPolicy for complex recovery logic
-public class ProcessOrderHandler : RequestHandler<ProcessOrderCommand>
+public class ProcessOrderHandler(
+    ResiliencePipelineRegistry<string> pipelines,
+    IProductService productService,
+    IOrderService orderService) : RequestHandler<ProcessOrderCommand>
 {
-    [FallbackPolicy(backstop: true, step: 1)]
-    [UseResiliencePipeline("ProductServiceWithFallback", step: 2)]
+    [FallbackPolicy(backstop: true, circuitBreaker: false, step: 1)]
     public override ProcessOrderCommand Handle(ProcessOrderCommand command)
     {
-        // Polly fallback returns default product if service fails
-        var product = _productService.GetProduct(command.ProductId);
+        // Polly's fallback returns the default product if the service call fails
+        var product = pipelines.GetPipeline<Product>("ProductServiceWithFallback")
+            .Execute(() => productService.GetProduct(command.ProductId));
 
         // Process order with product
-        _orderService.CreateOrder(command, product);
+        orderService.CreateOrder(command, product);
 
         return base.Handle(command);
     }
@@ -317,7 +340,7 @@ public class ProcessOrderHandler : RequestHandler<ProcessOrderCommand>
         if (Context.Bag.ContainsKey(FallbackPolicyHandler<ProcessOrderCommand>.CAUSE_OF_FALLBACK_EXCEPTION))
         {
             // Cancel order, refund payment, notify customer, etc.
-            _orderService.CancelOrder(command.OrderId);
+            orderService.CancelOrder(command.OrderId);
         }
         return base.Fallback(command);
     }

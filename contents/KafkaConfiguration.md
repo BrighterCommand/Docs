@@ -689,7 +689,7 @@ It is worth noting the following aspects of the code sample below:
 * We provide two helpers, though you can pass your own settings if you prefer:
     * **ConfluentJsonSerializationConfig.SerdesJsonSerializerConfig()** offers default settings for JSON serialization (many of these are passed through to Json.NET).
     * **ConfluentJsonSerializationConfig.NJsonSchemaGeneratorSettings()** offers default settings for JSON Schema generation (such as using camelCase).
-* The serializer writes a magic byte and the schema id ahead of the JSON, so the body is binary: we pass the bytes with an `application/octet-stream` **ContentType** and **CharacterEncoding.Raw**, as a round-trip through a UTF-8 string would corrupt the header. See [Message Mappers](/contents/MessageMappers.md).
+* The serializer writes a magic byte and the schema id ahead of the JSON, so the body is binary: we pass the bytes with an `application/octet-stream` **ContentType**, and they reach Kafka as they are. A round-trip through a UTF-8 string would corrupt the header, and a relational Outbox with a text payload column makes one, so post through an Outbox configured with `binaryMessagePayload: true`. See [Message Mappers](/contents/MessageMappers.md).
 
 ``` csharp
 using System.Net.Mime;

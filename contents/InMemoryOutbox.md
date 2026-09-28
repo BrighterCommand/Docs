@@ -87,13 +87,11 @@ services.AddBrighter(options =>
 ```csharp
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 using Paramore.Brighter;
 
 public class CreatePersonHandler : RequestHandlerAsync<CreatePerson>
 {
     private readonly IAmACommandProcessor _commandProcessor;
-    private readonly IAmAnOutboxAsync<Message, CommittableTransaction> _outbox;
     private readonly PersonRepository _repository;
 
     public override async Task<CreatePerson> HandleAsync(
@@ -104,7 +102,8 @@ public class CreatePersonHandler : RequestHandlerAsync<CreatePerson>
         var person = new Person(command.Name, command.Email);
         await _repository.SaveAsync(person);
 
-        // Deposit message to outbox (held in memory)
+        // Writes the message to the in-memory outbox and dispatches it at once;
+        // the entry stays, marked dispatched, until its time-to-live expires
         await _commandProcessor.PostAsync(new PersonCreated { PersonId = person.Id }, cancellationToken: cancellationToken);
 
         return await base.HandleAsync(command, cancellationToken);

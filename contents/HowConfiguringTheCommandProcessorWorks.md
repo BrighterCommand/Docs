@@ -133,7 +133,11 @@ resiliencePipelineRegistry.TryAddBuilder(Globals.MYCIRCUITBREAKERANDRETRY,
 
 When you attribute your code, you then use the key to attach a specific resilience pipeline:
 
-``` csharp
+```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 [RequestLogging(step: 1, timing: HandlerTiming.Before)]
 [UseResiliencePipeline(Globals.MYRETRYPIPELINE, step: 2)]
 public override TaskReminderCommand Handle(TaskReminderCommand command)
@@ -152,7 +156,8 @@ public override TaskReminderCommand Handle(TaskReminderCommand command)
 A handler method takes only one `[UseResiliencePipeline]`; a second on the same method does not compile. If you need several strategies, such as a circuit breaker around a retry, compose them in one pipeline and attach that. The first strategy you add is the outermost; see [Combining Multiple Strategies](/contents/PolicyRetryAndCircuitBreaker.md#combining-multiple-strategies).
 
 ```csharp
-// ...
+using Paramore.Brighter.Policies.Attributes;
+
 [UseResiliencePipeline(Globals.MYCIRCUITBREAKERANDRETRY, step: 1)]
 public override TaskReminderCommand Handle(TaskReminderCommand command)
 {

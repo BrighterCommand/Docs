@@ -85,13 +85,13 @@ public sealed class GetPersonQueryHandler : QueryHandlerAsync<GetPersonNameQuery
 }
 ```
 
-**Why ordering matters:**
+**Why ordering matters:** the decorator with the lowest step is the outermost, and wraps everything with a higher step.
 
-- **Logging should typically be first (step 1)**: This ensures all operations are logged, including retries and fallbacks
-- **Fallback before retry (step 2 before 3)**: If a retry exhausts its attempts, the fallback can provide a default result
-- **Retry should be last (step 3)**: This ensures retries happen after other decorators have a chance to handle the request
+- **Logging first (step 1)** logs each call once: the query, then the total time it took across every retry, marked *(with fallback)* when the fallback supplied the result. It does not log individual retries, and a query that fails after its last retry logs only its *Executing* line
+- **Fallback outside retry (step 2 before 3)**: the retry makes all its attempts, and the fallback runs only when they are exhausted
+- **Retry innermost (step 3)**: each attempt re-runs only the handler
 
-However, you can adjust the ordering to suit your specific needs. For example, you might want retry before fallback if you only want to use the fallback when all retries are exhausted.
+You can adjust the ordering to suit your needs, as long as fallback stays outside retry. Put retry at a lower step than fallback and the fallback handles the first exception, so nothing is retried. Put logging inside retry (`[RetryableQuery(1)]`, `[QueryLogging(2)]`) when you want an *Executing* line for every attempt; only the attempt that succeeds logs its completion.
 
 ## Available Decorators
 
@@ -356,7 +356,10 @@ A Polly circuit breaker is a policy like any other: register it under a name, an
 The `RetryableQuery` attribute runs only the policy it names, so naming a circuit breaker on its own gives you a breaker with no retry. To retry and break, name a policy that wraps a retry around a breaker, as [Configuring Polly Policies](/contents/QueryPipelinePolicies.md#advanced-query-policy-configurations) shows:
 
 ```csharp
-// ...
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker.Policies;
+
 [RetryableQuery(2, "ExternalApiRetryAndBreak")]
 public override async Task<OrderData> ExecuteAsync(
     GetOrderQuery query,
@@ -390,7 +393,7 @@ For most scenarios, the combination of QueryLogging, RetryableQuery, and Fallbac
 
 ### Pattern: Logging + Retry
 
-This is the most common pattern for query handlers that interact with external dependencies. Logging provides visibility into query execution and retries, while the retry policy handles transient failures:
+This is the most common pattern for query handlers that interact with external dependencies. Logging records each query and how long it took, retries included, while the retry policy handles transient failures:
 
 ```csharp
 using Paramore.Darker;
@@ -409,7 +412,7 @@ public sealed class GetPeopleQueryHandler : QueryHandlerAsync<GetPeopleQuery, IR
         _repository = repository;
     }
 
-    [QueryLogging(1)]              // Log all executions, including retries
+    [QueryLogging(1)]              // Log each call once, timed across its retries
     [RetryableQuery(2)]            // Retry on transient failures
     public override async Task<IReadOnlyDictionary<int, string>> ExecuteAsync(
         GetPeopleQuery query,
@@ -429,7 +432,7 @@ public sealed class GetPeopleQueryHandler : QueryHandlerAsync<GetPeopleQuery, IR
 
 **Benefits:**
 
-- Complete visibility into query execution, including retries
+- Visibility into every query call and its total duration
 - Automatic recovery from transient failures
 - Circuit breaker protection as well, if you name a policy that wraps a breaker inside the retry
 
@@ -553,7 +556,7 @@ For more fine-grained control, you might create separate query handlers for each
 
 **1. Order decorators logically**
 
-Place logging first (step 1) so all operations are logged, including retries and fallbacks:
+Place logging first (step 1) so every call is logged once, timed across its retries and marked when a fallback answered it:
 ```csharp
 // ...
 [QueryLogging(1)]
@@ -614,19 +617,19 @@ Ensure your `FallbackAsync` methods are tested and return appropriate default va
 
 **1. Wrong decorator ordering**
 
-Putting retry before logging means individual retry attempts won't be logged. Putting fallback before retry means the fallback will be used before retries are exhausted.
+Putting retry at a lower step than fallback puts the retry outside the fallback: the fallback handles the first exception, and nothing is retried.
 
 ❌ Bad:
 ```csharp
 // ...
 [RetryableQuery(1)]
-[QueryLogging(2)]  // Won't log individual retries
+[FallbackPolicy(2)]  // Catches the first failure, so the retry never runs
 ```
 
 ✅ Good:
 ```csharp
 // ...
-[QueryLogging(1)]  // Logs everything including retries
+[FallbackPolicy(1)]  // Runs only once the retries are exhausted
 [RetryableQuery(2)]
 ```
 
