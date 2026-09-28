@@ -32,6 +32,10 @@ connection string, and its options are documented once in the [Relational Databa
 Configuration Reference](/contents/RelationalDatabaseConfigurationReference.md):
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Locking.MySql;
+using Paramore.Brighter.MySql;
+
 var configuration = new RelationalDatabaseConfiguration(
     connectionString: "Server=localhost;Database=orders;Uid=app;Pwd=secret;");
 
@@ -44,6 +48,13 @@ session.
 ## MySQL Distributed Lock Example
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Locking.MySql;
+using Paramore.Brighter.MySql;
+using Paramore.Brighter.Outbox.Hosting;
+
 var configuration = new RelationalDatabaseConfiguration(
     "Server=localhost;Database=orders;Uid=app;Pwd=secret;");
 
@@ -51,7 +62,7 @@ services
     .AddBrighter()
     .AddProducers(opt =>
     {
-        opt.Outbox = /* your MySQL Outbox */;
+        opt.Outbox = outbox; // your MySQL Outbox
         opt.ConnectionProvider = typeof(MySqlConnectionProvider);
         opt.TransactionProvider = typeof(MySqlTransactionProvider);
 

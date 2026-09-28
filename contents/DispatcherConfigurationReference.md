@@ -36,10 +36,10 @@ If you are using a **HostBuilder** class's **ConfigureServices** method  call th
 // ...
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
-        .ConfigureServices(hostContext, services) =>
+        .ConfigureServices((hostContext, services) =>
         {
             services.AddConsumers(...)
-        }
+        });
 
 ```
 
@@ -81,10 +81,10 @@ For RabbitMQ for example, this would look like this:
 // ...
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
-        .ConfigureServices(hostContext, services) =>
+        .ConfigureServices((hostContext, services) =>
         {
             ConfigureBrighter(hostContext, services);
-        }
+        });
 
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
@@ -122,10 +122,10 @@ For RabbitMQ, this would look like:
 // ...
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
-        .ConfigureServices(hostContext, services) =>
+        .ConfigureServices((hostContext, services) =>
         {
             ConfigureBrighter(hostContext, services);
-        }
+        });
 
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
@@ -156,10 +156,10 @@ Under the hood your Dispatcher uses a *Command Processor* and you will need to c
 // ...
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
-        .ConfigureServices(hostContext, services) =>
+        .ConfigureServices((hostContext, services) =>
         {
             ConfigureBrighter(hostContext, services);
-        }
+        });
 
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
@@ -271,10 +271,10 @@ A typical *Inbox* configuration for MySQL would be:
 // ...
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
-        .ConfigureServices(hostContext, services) =>
+        .ConfigureServices((hostContext, services) =>
         {
             ConfigureBrighter(hostContext, services);
-        }
+        });
 
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {

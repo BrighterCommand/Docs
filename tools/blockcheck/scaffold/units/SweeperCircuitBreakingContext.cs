@@ -7,7 +7,6 @@
 // blockcheck: using static SweeperCircuitBreakingContext;
 
 using System.Collections.Generic;
-using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
 
@@ -15,7 +14,6 @@ public static class SweeperCircuitBreakingContext
 {
     public static IAmACommandProcessor commandProcessor => null!;
     public static IEnumerable<Id> messageIds => null!;
-    public static CancellationToken cancellationToken => default;
     public static IServiceCollection services => null!;
     public static RelationalDatabaseConfiguration outboxConfiguration => null!;
 }

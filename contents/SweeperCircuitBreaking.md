@@ -27,7 +27,7 @@ The Sweeper Circuit Breaker operates at the topic level during Outbox clearing o
 ### Normal Operation
 
 1. **Outbox Sweeper runs**: Periodically attempts to clear outstanding messages from the Outbox
-2. **Messages grouped by topic**: Messages are organized by their routing key (topic)
+2. **Tripped topics left out**: The sweeper asks the Outbox for outstanding messages, passing it the tripped topics to leave out
 3. **Publish attempts**: The sweeper attempts to publish messages to their respective topics
 4. **Success**: Messages are published and marked as dispatched
 
@@ -38,9 +38,9 @@ When a topic fails to publish:
 1. **Failure detected**: An exception occurs during message publication to a specific topic
 2. **Circuit trips**: The circuit breaker marks that topic as "tripped"
 3. **Cooldown begins**: A cooldown counter is set for the tripped topic (default: 10 sweeps)
-4. **Subsequent sweeps**: On each sweep, the cooldown counter decrements for all tripped topics
-5. **Recovery**: When the cooldown reaches zero, the topic is removed from the tripped list
-6. **Retry**: The topic becomes available for publishing attempts again
+4. **Subsequent sweeps**: Each sweep decrements the counter for every tripped topic before it reads the Outbox, and skips the tripped topics' messages
+5. **Recovery**: The sweep after the counter reaches zero removes the topic from the tripped list, so a topic sits out `CooldownCount` sweeps
+6. **Retry**: That same sweep publishes the topic's messages again
 
 ### Benefits
 
@@ -89,32 +89,37 @@ The `OutboxCircuitBreakerOptions` class provides the following configuration:
 
 ### Calculating Cooldown Time
 
-The actual cooldown time depends on your Outbox Sweeper configuration:
+The actual cooldown time depends on how often the Outbox Sweeper runs, which you set with `TimerInterval`, in seconds, on the options you pass to `UseOutboxSweeper`. A topic trips during one sweep, sits out the next `CooldownCount` sweeps, and is retried on the one after:
 
-**Formula**: `Cooldown Time = CooldownCount × SweepInterval`
+**Formula**: `Time until retry = (CooldownCount + 1) × TimerInterval`
 
 **Example**:
 
 - `CooldownCount = 10`
-- Sweeper runs every 60 seconds
-- **Cooldown Time = 10 × 60s = 10 minutes**
+- `TimerInterval = 60`, so the Sweeper runs every 60 seconds
+- **Time until retry = (10 + 1) × 60s = 11 minutes**
 
 ```csharp
-services.AddBrighter(options =>
-{
-    // Sweeper configuration
-    options.OutboxSweeper = new OutboxSweeperOptions
-    {
-        SweepInterval = TimeSpan.FromSeconds(60)  // Sweep every 60 seconds
-    };
-})
-.UseOutboxSweeper();
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.CircuitBreaker;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.Hosting;
 
-// Circuit breaker with 10 cooldown sweeps = 10 minutes total cooldown
+services.AddBrighter()
+    .AddProducers(configure =>
+    {
+        // ... your producer registry and Outbox
+    })
+    .UseOutboxSweeper(options =>
+    {
+        options.TimerInterval = 60;  // Sweep every 60 seconds
+    });
+
+// A tripped topic sits out 10 sweeps and is retried on the 11th: (10 + 1) × 60s = 11 minutes
 services.AddSingleton<IAmAnOutboxCircuitBreaker>(
     new InMemoryOutboxCircuitBreaker(new OutboxCircuitBreakerOptions
     {
-        CooldownCount = 10  // 10 sweeps × 60s = 10 minutes
+        CooldownCount = 10
     })
 );
 ```
@@ -204,52 +209,67 @@ services.AddHealthChecks()
     .AddCheck<CircuitBreakerHealthCheck>("outbox_circuit_breaker");
 ```
 
-## Transport-Specific Integration
+## Sweeper Circuit Breaking Outbox Support
 
-Brighter V10 includes circuit breaking integration with specific transports:
+The sweeper does not filter tripped topics itself. It passes `TrippedTopics` to the Outbox when it asks for outstanding messages, and the Outbox leaves those topics out of its query — so circuit breaking works only where the Outbox honours that list. At Brighter 10.7.0:
 
-### MongoDB Transport
+| Outbox | Leaves tripped topics out |
+|---|---|
+| MS SQL Server, MySQL, PostgreSQL, SQLite | Yes |
+| MongoDB | Yes |
+| Firestore | Yes |
+| InMemory | Yes |
+| DynamoDB, both the V3 and V4 packages | **No** — it accepts the list and ignores it ([#4443](https://github.com/BrighterCommand/Brighter/issues/4443)) |
+| Spanner | **No** — its query has no place for the filter, so the filter is dropped ([#4444](https://github.com/BrighterCommand/Brighter/issues/4444)) |
 
-Circuit breaking is fully integrated with MongoDB Outbox:
+With DynamoDB or Spanner, a registered breaker still records trips, and `TrippedTopics` still reports them, so the monitoring above works. But every sweep reads and sends a tripped topic's messages as though nothing had tripped.
+
+An Outbox that honours the list needs nothing extra: register the breaker and the sweeper beside it as usual. With MongoDB, for example:
 
 ```csharp
-services.AddBrighter(/* configuration */)
-    .UseMongoDbOutbox(/* MongoDB configuration */)
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.CircuitBreaker;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MongoDb;
+using Paramore.Brighter.Outbox.Hosting;
+using Paramore.Brighter.Outbox.MongoDb;
+
+var mongoDbConfiguration = new MongoDbConfiguration("mongodb://localhost:27017", "BrighterDatabase")
+{
+    Outbox = new MongoDbCollectionConfiguration { Name = "Outbox" }
+};
+
+services.AddSingleton<IAmAnOutboxCircuitBreaker>(new InMemoryOutboxCircuitBreaker());
+
+services.AddBrighter()
+    .AddProducers(configure =>
+    {
+        // ... your producer registry
+        configure.Outbox = new MongoDbOutbox(mongoDbConfiguration);
+        configure.ConnectionProvider = typeof(MongoDbConnectionProvider);
+        configure.TransactionProvider = typeof(MongoDbUnitOfWork);
+    })
     .UseOutboxSweeper();
-
-// Circuit breaker works automatically with MongoDB transport
-services.AddSingleton<IAmAnOutboxCircuitBreaker>(
-    new InMemoryOutboxCircuitBreaker()
-);
 ```
-
-### Other Transports
-
-Circuit breaking works with all Brighter Outbox implementations. Set the one you want as `Outbox` on the options passed to `AddProducers()`:
-
-- **MS SQL Server** (`MsSqlOutbox`)
-- **PostgreSQL** (`PostgreSqlOutbox`)
-- **MySQL** (`MySqlOutbox`)
-- **SQLite** (`SqliteOutbox`)
-- **DynamoDB** (`DynamoDbOutbox`)
-- **MongoDB** (`MongoDbOutbox`)
 
 ## Bulk Dispatch Support
 
-V10 includes proper circuit breaking support for bulk dispatch operations. When dispatching multiple messages in a batch:
-
-1. **Batch grouping**: Messages are grouped by topic
-2. **Per-topic circuit breaking**: Each topic's circuit breaker status is checked before dispatching
-3. **Healthy topics proceed**: Only topics that aren't tripped are dispatched
-4. **Individual retry**: Failed batches can be retried individually per topic
+With `UseBulk` set on its options, the sweeper sends each topic's outstanding messages in batches, through a producer that implements `IAmABulkMessageProducerAsync`. Circuit breaking works as it does for single messages: tripped topics are left out when the sweeper reads the Outbox, and a batch that fails to send trips its topic.
 
 ```csharp
-// Bulk dispatch respects circuit breaker state
-await commandProcessor.ClearOutboxAsync(
-    messageIds,  // List of message IDs to dispatch
-    continueOnCapturedContext: false,
-    cancellationToken: cancellationToken
-);
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.Hosting;
+
+services.AddBrighter()
+    .AddProducers(configure =>
+    {
+        // ... your producer registry and Outbox
+    })
+    .UseOutboxSweeper(options =>
+    {
+        options.UseBulk = true;  // needs a producer that implements IAmABulkMessageProducerAsync
+    });
 ```
 
 ## Sweeper Circuit Breaking Best Practices
@@ -264,19 +284,29 @@ Balance between quick recovery and avoiding repeated failures:
 
 ### 2. Align Cooldown with Sweep Interval
 
-Consider the total cooldown time:
+Consider the time until a tripped topic is retried, `(CooldownCount + 1) × TimerInterval`:
 
 ```csharp
-// Fast sweeping with short cooldown = quick recovery
-options.OutboxSweeper = new OutboxSweeperOptions
-{
-    SweepInterval = TimeSpan.FromSeconds(30)  // 30s sweep
-};
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.CircuitBreaker;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.Hosting;
+
+// Fast sweeping with a short cooldown = quick recovery
+services.AddBrighter()
+    .AddProducers(configure =>
+    {
+        // ... your producer registry and Outbox
+    })
+    .UseOutboxSweeper(options =>
+    {
+        options.TimerInterval = 30;  // Sweep every 30 seconds
+    });
 
 services.AddSingleton<IAmAnOutboxCircuitBreaker>(
     new InMemoryOutboxCircuitBreaker(new OutboxCircuitBreakerOptions
     {
-        CooldownCount = 5  // 5 × 30s = 2.5 minutes total cooldown
+        CooldownCount = 5  // (5 + 1) × 30s = 3 minutes until retry
     })
 );
 ```
@@ -324,14 +354,16 @@ services.AddBrighter()
 
 ### 6. Consider Immediate vs. Sweeper Clearing
 
-Circuit breaking only applies to **sweeper-based clearing**:
+Only the sweeper skips tripped topics. When you clear explicitly with `ClearOutbox` or `ClearOutboxAsync`, Brighter sends every message you name, whether or not its topic is tripped.
+
+A failed send from `ClearOutboxAsync` does trip the topic, so the sweeper then skips it. A failed send from `ClearOutbox` trips it only when the producer reports failures through publish confirmation.
 
 ```csharp
 // ...
-// Immediate clearing - NOT subject to circuit breaking
+// Explicit clearing - sends every message named, tripped topic or not
 await commandProcessor.ClearOutboxAsync(messageIds);
 
-// Sweeper clearing - subject to circuit breaking
+// Sweeper clearing - skips tripped topics
 // Happens automatically via UseOutboxSweeper
 ```
 
@@ -354,7 +386,7 @@ Regularly test circuit breaker behavior:
 
 1. Verify Outbox Sweeper is running
 2. Check cooldown count is not excessively high
-3. Ensure sweeper interval is appropriate
+3. Ensure the Sweeper's `TimerInterval` is appropriate
 4. Confirm circuit breaker is properly registered
 
 ### All Topics Tripping
@@ -403,6 +435,7 @@ Regularly test circuit breaker behavior:
 2. Using the sweeper: `UseOutboxSweeper()`
 3. Exceptions are being thrown during publish (not silently failing)
 4. Circuit breaker implementation is correct
+5. Your Outbox leaves tripped topics out — DynamoDB and Spanner do not (see [Outbox Support](#sweeper-circuit-breaking-outbox-support))
 
 ## Sweeper Circuit Breaking Summary
 

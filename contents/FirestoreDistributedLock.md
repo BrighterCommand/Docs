@@ -28,6 +28,10 @@ constructor takes your project id and database. Set its `Locking` property to a
 `FirestoreCollection` that names the lock collection and, optionally, a time-to-live:
 
 ```csharp
+using System;
+using Paramore.Brighter.Firestore;
+using Paramore.Brighter.Locking.Firestore;
+
 var configuration = new FirestoreConfiguration(
     projectId: "my-gcp-project",
     database: "(default)")
@@ -55,6 +59,14 @@ matter here are `Locking.Name`, which names the collection holding the lock docu
 ## Firestore Distributed Lock Example
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Firestore;
+using Paramore.Brighter.Locking.Firestore;
+using Paramore.Brighter.Outbox.Hosting;
+
 var configuration = new FirestoreConfiguration("my-gcp-project", "(default)")
 {
     Locking = new FirestoreCollection { Name = "brighter-locks", Ttl = TimeSpan.FromMinutes(1) }
@@ -64,7 +76,7 @@ services
     .AddBrighter()
     .AddProducers(opt =>
     {
-        opt.Outbox = /* your external Outbox */;
+        opt.Outbox = outbox; // your external Outbox
         // ... connection/transaction providers for your Outbox ...
 
         opt.DistributedLock = new FirestoreDistributedLock(configuration);

@@ -30,6 +30,10 @@ configuration type used by the MongoDB Outbox. Set its `Locking` property to a
 time-to-live for lock documents:
 
 ```csharp
+using System;
+using Paramore.Brighter.Locking.MongoDb;
+using Paramore.Brighter.MongoDb;
+
 var configuration = new MongoDbConfiguration(
     connectionString: "mongodb://localhost:27017",
     databaseName: "orders")
@@ -57,6 +61,14 @@ that matter here are `Locking.Name`, which names the collection holding the lock
 ## MongoDB Distributed Lock Example
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Locking.MongoDb;
+using Paramore.Brighter.MongoDb;
+using Paramore.Brighter.Outbox.Hosting;
+
 var configuration = new MongoDbConfiguration("mongodb://localhost:27017", "orders")
 {
     Locking = new MongoDbCollectionConfiguration { Name = "brighter_locks", TimeToLive = TimeSpan.FromMinutes(1) }
@@ -66,7 +78,7 @@ services
     .AddBrighter()
     .AddProducers(opt =>
     {
-        opt.Outbox = /* your MongoDB Outbox */;
+        opt.Outbox = outbox; // your MongoDB Outbox
         // ... connection/transaction providers for your Outbox ...
 
         opt.DistributedLock = new MongoDbLockingProvider(configuration);

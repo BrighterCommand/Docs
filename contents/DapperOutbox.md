@@ -63,6 +63,8 @@ public void ConfigureServices(IServiceCollection services)
 
 ```
 
+The handler below is `AddGreetingHandlerAsync` from the Brighter sample at `Brighter/samples/WebAPI/WebAPI_Dapper/`, which also declares the `AddGreeting` request, the `Person` and `Greeting` entities and the `GreetingMade` event it uses.
+
 In our handler we take a dependency on Brighter's **IAmATransactionConnectionProvider**. We explicitly start a transaction within the handler on the Database within the provider. Dapper provides extension methods on a DbConnection for typical CRUD operations. Our provider wraps that DbConnection, and allows you to create a DB transaction associated with that DbConnection. You must use our method, and not create the transaction directly via the connection, because we cannot obtain that transaction. Sharing that transaction allows us to insert a message into the Outbox within the same transaction.
 
 We call **DepositPostAsync** within that transaction to write the message to the Outbox. Once the transaction has closed we can call **ClearOutboxAsync** to immediately clear, or we can rely on the Outbox Sweeper, if we have configured one to clear for us. (There are equivalent synchronous versions of these APIs).
@@ -78,56 +80,72 @@ using Dapper;
 using Microsoft.Extensions.Logging;
 using Paramore.Brighter;
 
-public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default)
+public class AddGreetingHandlerAsync : RequestHandlerAsync<AddGreeting>
 {
-    var posts = new List<Id>();
+    private readonly IAmATransactionConnectionProvider _transactionProvider;
+    private readonly IAmACommandProcessor _postBox;
+    private readonly ILogger<AddGreetingHandlerAsync> _logger;
 
-    //We use the transaction provider to grab connection and transaction, because Outbox needs
-    //to share them 'behind the scenes'
-    DbConnection conn = await _transactionProvider.GetConnectionAsync(cancellationToken);
-    DbTransaction tx = await _transactionProvider.GetTransactionAsync(cancellationToken);
-    try
+    public AddGreetingHandlerAsync(IAmATransactionConnectionProvider transactionProvider,
+        IAmACommandProcessor postBox,
+        ILogger<AddGreetingHandlerAsync> logger)
     {
-        var people = await conn.QueryAsync<Person>(
-            "select * from Person where name = @name",
-            new { name = addGreeting.Name },
-            tx);
-        var person = people.Single();
-
-        var greeting = new Greeting(addGreeting.Greeting, person);
-
-        //write the added child entity to the Db
-        await conn.ExecuteAsync(
-            "insert into Greeting (Message, Recipient_Id) values (@Message, @RecipientId)",
-            new { greeting.Message, greeting.RecipientId },
-            tx);
-
-        //Now write the message we want to send to the Db in the same transaction.
-        posts.Add(await _postBox.DepositPostAsync(
-            new GreetingMade(greeting.Greet()),
-            _transactionProvider,
-            cancellationToken: cancellationToken));
-
-        //commit both new greeting and outgoing message
-        await _transactionProvider.CommitAsync(cancellationToken);
+        _transactionProvider = transactionProvider;
+        _postBox = postBox;
+        _logger = logger;
     }
-    catch (Exception e)
+
+    public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default)
     {
-        _logger.LogError(e, "Exception thrown handling Add Greeting request");
-        //it went wrong, rollback the entity change and the downstream message
-        await _transactionProvider.RollbackAsync(cancellationToken);
+        var posts = new List<Id>();
+
+        //We use the transaction provider to grab connection and transaction, because Outbox needs
+        //to share them 'behind the scenes'
+        DbConnection conn = await _transactionProvider.GetConnectionAsync(cancellationToken);
+        DbTransaction tx = await _transactionProvider.GetTransactionAsync(cancellationToken);
+        try
+        {
+            var people = await conn.QueryAsync<Person>(
+                "select * from Person where name = @name",
+                new { name = addGreeting.Name },
+                tx);
+            var person = people.Single();
+
+            var greeting = new Greeting(addGreeting.Greeting, person);
+
+            //write the added child entity to the Db
+            await conn.ExecuteAsync(
+                "insert into Greeting (Message, Recipient_Id) values (@Message, @RecipientId)",
+                new { greeting.Message, greeting.RecipientId },
+                tx);
+
+            //Now write the message we want to send to the Db in the same transaction.
+            posts.Add(await _postBox.DepositPostAsync(
+                new GreetingMade(greeting.Greet()),
+                _transactionProvider,
+                cancellationToken: cancellationToken));
+
+            //commit both new greeting and outgoing message
+            await _transactionProvider.CommitAsync(cancellationToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown handling Add Greeting request");
+            //it went wrong, rollback the entity change and the downstream message
+            await _transactionProvider.RollbackAsync(cancellationToken);
+            return await base.HandleAsync(addGreeting, cancellationToken);
+        }
+        finally
+        {
+            _transactionProvider.Close();
+        }
+
+        //Send this message via a transport. We need the ids to send just the messages here, not all outstanding ones.
+        //Alternatively, you can let the Sweeper do this, but at the cost of increased latency
+        await _postBox.ClearOutboxAsync(posts, cancellationToken: cancellationToken);
+
         return await base.HandleAsync(addGreeting, cancellationToken);
     }
-    finally
-    {
-        _transactionProvider.Close();
-    }
-
-    //Send this message via a transport. We need the ids to send just the messages here, not all outstanding ones.
-    //Alternatively, you can let the Sweeper do this, but at the cost of increased latency
-    await _postBox.ClearOutboxAsync(posts, cancellationToken: cancellationToken);
-
-    return await base.HandleAsync(addGreeting, cancellationToken);
 }
 ```
 

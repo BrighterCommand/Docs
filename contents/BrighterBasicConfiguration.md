@@ -136,17 +136,21 @@ We provide the class `ServiceActivatorHostedService` for this in the NuGet packa
 
 The `ServiceActivatorHostedService` calls the **Dispatcher.Receive** method which starts message pumps for the configured *Subscriptions*.
 
-``` csharp
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter.ServiceActivator.Extensions.Hosting;
+
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
-        .ConfigureServices(hostContext, services) =>
+        .ConfigureServices((hostContext, services) =>
         {
             ConfigureBrighter(hostContext, services);
-        }
+        });
 
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
-    ...
+    // ...
     services.AddHostedService<ServiceActivatorHostedService>();
 }
 
@@ -154,21 +158,26 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
 On shutdown Brighter will allow the current *Request Handler* to complete, then end the message pump loop and exit. If you have long-running handlers it is possible that they will not complete in the default 5s for graceful shutdown of the MS Generic Host. In this case, you need to [increase the timeout](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-6.0#shutdowntimeout) of the host shutdown.
 
-``` csharp
+```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter.ServiceActivator.Extensions.Hosting;
+
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
-        .ConfigureServices(hostContext, services) =>
+        .ConfigureServices((hostContext, services) =>
         {
             services.Configure<HostOptions>(options =>
             {
                 options.ShutdownTimeout = TimeSpan.FromSeconds(20);
             });
             ConfigureBrighter(hostContext, services);
-        }
+        });
 
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
-    ...
+    // ...
 
     services.AddHostedService<ServiceActivatorHostedService>();
 }

@@ -1245,33 +1245,465 @@ one.
 **Goal:** every 1-hard-block page in *Outbox and Inbox* leaves whole, its one hard block repaired,
 skipped with an accepted reason, or listed. Page list: § *The tranches*, phase 4 table.
 
-- [ ] **Task 4.1:** Predict phase 4's movement
+- [x] **Task 4.1:** Predict phase 4's movement
   - Input: § *The tranches*, phase 4 table; § *Phase 3 as executed*
   - Output: § *Phase 4 as executed* opens with a prediction per gate, **and a verdict per hard block
     before it is touched**: parse (placeholder / fragment / not code) or other (defect / wrapper
     artefact), from `--classify` and `--explain`
 
-- [ ] **Task 4.2:** Repair the outbox and inbox pages of the tranche
+- [x] **Task 4.2:** Repair the outbox and inbox pages of the tranche
   - Input: the phase 4 rows whose page is an Outbox or Inbox; 4.1's verdicts
   - Output: each page whole; baseline rows; each defect in § *Defect ledger* with its recurrence
     grep (obligation 14)
 
-- [ ] **Task 4.3:** Repair the distributed-lock pages of the tranche
+- [x] **Task 4.3:** Repair the distributed-lock pages of the tranche
   - Input: the phase 4 rows whose page is a Distributed Lock; 4.1's verdicts
   - Output: each page whole; baseline rows; ledger rows as 4.2
   - Notes: the lock pages share a shape; a defect found on one is grepped for on all before the
     next is opened.
 
-- [ ] **Task 4.4:** Repair the remaining *Outbox and Inbox* tranche pages
+- [x] **Task 4.4:** Repair the remaining *Outbox and Inbox* tranche pages
   - Input: the phase 4 rows not covered by 4.2 or 4.3 (at § 2's pin: `UsingSweeperCircuitBreaking.md`,
     `AzureBlobArchiveProvider.md`, `ReplayOnSeenReference.md`); 4.1's verdicts
   - Output: each page whole; baseline rows; ledger rows as 4.2
   - Notes: `ReplayOnSeenReference.md#1` uses API not in 10.7.0 (requirements P2-2); it stays FAILED
     and is listed with that reason, not repaired toward `master`.
 
-- [ ] **Task 4.5:** Close phase 4 — checks, figures, PR
+- [x] **Task 4.5:** Close phase 4 — checks, figures, PR
   - Input: 4.1's prediction; the PR's diff
   - Output: as 2.6, for phase 4
+
+### Phase 4 as executed
+
+**Prediction, 2026-09-27, from `master` `d8633b1`**, the merge of phase 3 (PR #192). The *Now*
+column is this task's own run at `d8633b1`, every gate bare, exit code read before its output; all
+nine exit 0 and read at `tools/README.md`'s figures. Each prediction names its mechanism:
+
+| # | Gate | Now | Predicted after phase 4, and why |
+|---:|---|---|---|
+| 1 | `linkcheck` | 165 files, 0 broken | **none**. No file is added |
+| 2 | `pagelint` | 0 errors, 658 warnings, 162 pages | **errors 0; warnings 658 → between 640 and 622.** On the 22 pages, rule 6 warns on **36** blocks, every one FAILED: the **18** reachable blocks and **18** of the 22 hard ones. The four hard blocks that do not warn already carry `using`s (`DapperOutbox.md` #2, `DynamoInbox.md` #1, `DynamoOutbox.md` #2, `ReplayOnSeenReference.md` #1). A reachable repair gives its block `using`s whether or not it then builds (−18, to 640); each hard block repaired rather than listed takes one more, to 622 if all 18 are. Recurrence repairs off the tranche lower it further, and are explained if so |
+| 3, 4, 7 | shape, redirects, `--verify` | 161 / 77 / 161 | **none**. No `SUMMARY.md` change |
+| 5 | `versioncheck` | 0 stale of **18, across 5 pages** | **none, scope held at 18 across 5.** Its five pages (`tools/versioncheck.py:80`) are the tutorials and `GetStarted.md`, none in phase 4 |
+| 6 | `optioncheck` | 0 mismatches, 59 tables, 519 rows | **none.** Five phase 4 pages carry a table it reads — `AzureBlobDistributedLock.md`, `DynamoInbox.md`, `DynamoOutbox.md`, `InMemoryOutbox.md`, `PostgresDistributedLock.md`, 5 tables, 16 rows (`dotnet run --project tools/optioncheck -- <page>`, per page). A row changes only if a repair finds a documented default wrong, and is then a defect in § *Defect ledger* |
+| 8 | `symbolcheck` | 0 findings, 22 entries, 161 pages, 3 silenced | **none**. No repair here names a watchlisted symbol |
+| 9 | `blockcheck` | 983: 189 BUILT, 778 FAILED, 16 SKIPPED; 538 reference assemblies; 30 units | **BUILT 189 → at least 204, at most 230; SKIPPED 16 plus accepted reasons only; reference assemblies up with the pin; exit 0; units 30 plus the new ones, 0 violations.** Mechanism below |
+| — | `attr_mismatch.py` | **7**, exit 1 | **held at 7.** Its hits are on five pages, none in phase 4. `InMemoryInbox.md` #2's defect is an attribute on a class, not on a handler of the other kind, so the script does not read it |
+
+**Gate 9, by source.** The probe re-run at `d8633b1` (§ *The tranches*' recipe, `Order` excluded)
+reads the phase 4 table unchanged: **40 FAILED, 18 reachable, 0 same-page, 22 hard, 6 BUILT**.
+The 18 reachable are **9** with a `using` alone (`AzureBlobDistributedLock.md` #1,
+`DynamoOutbox.md` #3, `FirestoreDistributedLock.md` #1, `MongoDbDistributedLock.md` #1,
+`MsSqlDistributedLock.md` #1, `MySQLOutbox.md` #1, `MySqlDistributedLock.md` #1,
+`PostgresDistributedLock.md` #1, `SqliteOutbox.md` #1), **6** with an empty stub (`services`:
+`MSSQLOutbox.md` #2, `MySQLOutbox.md` #2, `PostgresOutbox.md` #2, `SqliteOutbox.md` #2,
+`UsingSweeperCircuitBreaking.md` #2, #3), **2** needing a stub with members (`InMemoryOutbox.md` #2,
+`UsingSweeperCircuitBreaking.md` #4) and **1** a typed value (`InMemoryInbox.md` #1, `services`).
+
+- **Floor 204** = 189 + 9 + 6: only the `using` and empty-stub blocks
+- **Ceiling 230** = 189 + 18 + 21 + 2: every reachable block; every hard block but
+  `ReplayOnSeenReference.md` #1, which stays FAILED by P2-2; and `TickerQScheduler.md` #2, #3, off
+  the tranche, once the pin carries the two TickerQ packages. Each hard block that is listed rather
+  than repaired, and each defect a stub surfaces, lowers it by one
+- **The pin grows by three, and is measured alone first**, as 1.8 was:
+  `Npgsql.EntityFrameworkCore.PostgreSQL` for `PostgresOutbox.md` #3, and `TickerQ.EntityFrameworkCore`
+  and `TickerQ.Dashboard` at 9.0.2 for `TickerQScheduler.md` #2, #3 (§ *Blocks that stay FAILED*,
+  where both built in scratch against the released packages). The pin carries **95**
+  `PackageReference`s (`grep -c`). Predicted alone: **+2 BUILT** (the TickerQ blocks), no other
+  verdict moves, because `UseNpgsql` sits behind `PostgresOutbox.md` #3's shape error. The other
+  three EF Core providers are already in the reference set, transitively
+  (`Microsoft.EntityFrameworkCore.SqlServer.dll`, `.Sqlite.dll`, `Pomelo.EntityFrameworkCore.MySql.dll`
+  in `refs.txt`), so `MSSQLOutbox.md`, `MySQLOutbox.md` and `SqliteOutbox.md` #3 need no ask
+- **Pages with nothing BUILT: 74 → at most 66, as low as 58.** 17 phase 4 pages have no BUILT
+  block. **8** reach one by a `using` or an empty stub alone (`AzureBlobDistributedLock.md`,
+  `FirestoreDistributedLock.md`, `MongoDbDistributedLock.md`, `MsSqlDistributedLock.md`,
+  `MySQLOutbox.md`, `MySqlDistributedLock.md`, `PostgresDistributedLock.md`, `SqliteOutbox.md`);
+  **2** by a stub with members or a typed value (`InMemoryInbox.md`, `InMemoryOutbox.md`); **6**
+  only by repairing their one hard block (`AzureBlobArchiveProvider.md`, `DynamoInbox.md`,
+  `MSSQLInbox.md`, `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md`); and
+  `ReplayOnSeenReference.md` by none. 74 − 16 = **58**
+- **The ≤ 60 target, read ahead.** Phases 4 and 5 must land 14 of tranche 2's 19 (§ *Phase 3 as
+  executed*). Phase 4 holds **10** of the 19 — its pages with nothing BUILT and ≥ 1 reachable block,
+  the first ten above — and phase 5 the other 9. So phase 4 must land **at least 5** of the 10 if
+  phase 5 lands all nine. The six hard-only pages are not among the 19 but count toward ≤ 60 all the
+  same: every one landed is one phase 5 need not
+
+**A verdict per hard block, before it is touched.** From `--classify` (on the page's own text) and
+`--explain` (on the probe's `stageP`, `using`s supplied). *Parse* is placeholder, fragment or not
+code; *other* is defect or wrapper artefact. **Seven parse blocks carry a defect in the text
+beside the placeholder**; a placeholder repair that does not repair it leaves the block FAILED.
+
+| Page | # | `--classify` / probe | Verdict | What the diagnostics and the text show |
+|---|---:|---|---|---|
+| `AzureBlobArchiveProvider.md` | 1 | parse / PARSE | **parse — placeholder, and defects** | `{ ...  }` and a trailing `...` (`CS8635`); `.ConfigureServices(hostContext, services) =>` opens no lambda (`CS1519`, `CS1001`). Behind them, read at 10.7.0: `New AzCliCredential();` inside an initialiser; `AzureBlobArchiveProviderOptions` has no parameterless constructor (a primary constructor taking `blobContainerUri`, `tokenCredential`, `accessTier`, `tagBlobs`) and its properties are `init`; `UseOutboxArchiver<TTransaction>` cannot infer `TTransaction`; `BatchSize` is `ArchiveBatchSize`; `MinimumAge` is a `TimeSpan`, not `744`; the option assignments name no `options.` |
+| `AzureBlobDistributedLock.md` | 2 | parse / PARSE | **parse — placeholder** | `opt.Outbox = /* your external Outbox */;` (`CS1525`), alone |
+| `DapperOutbox.md` | 2 | other / DEFECT | **other — wrapper artefact** | A `public override` `HandleAsync` outside its handler class: the `members` wrapper derives from `object` (`CS0117` on `base.HandleAsync`), and `_transactionProvider`, `_postBox`, `_logger` are the unshown class's fields |
+| `DynamoInbox.md` | 1 | parse / PARSE | **parse — placeholder, and defects** | `...` twice and the same unopened `ConfigureServices` lambda; `{ ServiceURL = "…"; }`, a `;` inside an object initialiser; `credentials` is never shown |
+| `DynamoOutbox.md` | 2 | other / DEFECT | **other — wrapper artefact** | As `DapperOutbox.md` #2: an `override` outside its class, `CS0117`, the same three fields |
+| `FirestoreDistributedLock.md` | 2 | parse / PARSE | **parse — placeholder** | `/* your external Outbox */;`, alone |
+| `InMemoryInbox.md` | 2 | import / DEFECT | **other — defect** | `[UseInboxAsync(...)]` on the class: `CS0592`, *"only valid on 'method' declarations"* (`RequestHandlerAttribute`'s usage at 10.7.0). The same attribute is repeated, correctly, on `HandleAsync`. `grep -rn -A1 '^\s*\[UseInbox' contents/ \| grep class` → **1**, this page |
+| `InMemoryOutbox.md` | 1 | parse / PARSE | **parse — placeholder** | `/* your producer registry */;`, alone |
+| `MSSQLInbox.md` | 1 | parse / PARSE | **parse — placeholder, and a defect** | `...` twice and the unopened `ConfigureServices` lambda |
+| `MSSQLOutbox.md` | 3 | import / DEFECT | **other — wrapper artefact** | `CS0116`: a free `public void ConfigureServices` beside a class; no wrapper hosts both. `UseSqlServer` resolves |
+| `MongoDbDistributedLock.md` | 2 | parse / PARSE | **parse — placeholder** | `/* your MongoDB Outbox */;`, alone |
+| `MsSqlDistributedLock.md` | 2 | parse / PARSE | **parse — placeholder** | `/* your MS SQL Outbox */;`, alone |
+| `MySQLInbox.md` | 1 | parse / PARSE | **parse — placeholder, and defects** | As `MSSQLInbox.md` #1, and `opt.InboxConfiguration` inside a lambda whose parameter is `options` |
+| `MySQLOutbox.md` | 3 | parse / PARSE | **parse — placeholder** | `....` (`CS8635`, then `CS0029` reading it as a range), inside the same free-method shape as `MSSQLOutbox.md` #3 |
+| `MySqlDistributedLock.md` | 2 | parse / PARSE | **parse — placeholder** | `/* your MySQL Outbox */;`, alone |
+| `PostgresDistributedLock.md` | 2 | parse / PARSE | **parse — placeholder** | `/* your Postgres Outbox */;`, alone |
+| `PostgresInbox.md` | 1 | parse / PARSE | **parse — placeholder, and defects** | As `MySQLInbox.md` #1 |
+| `PostgresOutbox.md` | 3 | import / DEFECT | **other — wrapper artefact, and the pin** | `CS0116` as `MSSQLOutbox.md` #3, and `CS1061` `UseNpgsql`: `Npgsql.EntityFrameworkCore.PostgreSQL` is not in the pin |
+| `ReplayOnSeenReference.md` | 1 | other / DEFECT | **other — API not in 10.7.0** | `CS0117`: `RequestContextBagNames` at 10.7.0 has `CloudEventsAdditionalProperties`, `JobId`, `PartitionKey`, `Headers`, `WorkflowId` — no `CausationId`. Stays FAILED by P2-2 (task 4.4) |
+| `SqliteInbox.md` | 1 | parse / PARSE | **parse — placeholder, and defects** | As `MySQLInbox.md` #1 |
+| `SqliteOutbox.md` | 3 | import / DEFECT | **other — wrapper artefact** | `CS0116` as `MSSQLOutbox.md` #3. `UseSqlite` resolves |
+| `UsingSweeperCircuitBreaking.md` | 5 | import / DEFECT | **parse — fragment** | `CS0535` for `CoolDown()` and `TrippedTopics`, under the block's own `// Implement other methods using distributed cache`. `TripTopic(RoutingKey)` matches the 10.7.0 interface. The probe calls it DEFECT; read, it is a partial implementation that says so |
+
+**By this reading, 15 parse and 7 other.** `--classify` reads 14 *parse*, 3 *other* and 5 *import*;
+the probe, 14 PARSE and 8 DEFECT. The one block whose kind differs is `UsingSweeperCircuitBreaking.md`
+#5, a fragment the probe calls a DEFECT. The 7 *other*:
+
+- **Four wrapper artefacts, two shapes.** An `override` outside its class (`DapperOutbox.md`,
+  `DynamoOutbox.md` #2) and a free method beside a class (`MSSQLOutbox.md`, `SqliteOutbox.md` #3).
+  `PostgresOutbox.md` #3 is the second shape **and** waits on the pin, and `MySQLOutbox.md` #3, a
+  *parse* block for its `....`, is the second shape behind it
+- **One defect**, `InMemoryInbox.md` #2, and **one API not in 10.7.0**, `ReplayOnSeenReference.md` #1
+
+**Six parse blocks carry a defect beside the placeholder**, so a repair that removes only the
+placeholder leaves them FAILED: `AzureBlobArchiveProvider.md` #1 and the five inbox pages'
+`#1`s. Their recurrences, run now so that 4.2 opens with them:
+
+| Defect | Grep | Hits | Pages |
+|---|---|---:|---|
+| `.ConfigureServices(hostContext, services) =>` opens no lambda | `grep -rn 'ConfigureServices(hostContext, services) =>' contents/` | **13** | **8**: the six tranche pages once each, `BrighterBasicConfiguration.md` ×2, `DispatcherConfigurationReference.md` ×5. Both off-tranche pages have **nothing BUILT** (5 FAILED blocks each), so a recurrence repair there can move the ≤ 60 count too |
+| `opt.` inside a lambda whose parameter is `options` | a Python scan of every `(p => { … })` for an assignment through another common builder name: **10** hits, read one by one | **3** | `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md`. The other 7 are nested lambdas (`AddProducers(configure =>` inside `AddBrighter(options =>`, `AddOtlpExporter(o =>`, `UseMisfireHandler(options =>`), which is correct code |
+| `[UseInbox…]` on a class | `grep -rn -A1 '^\s*\[UseInbox' contents/ \| grep class` | **1** | `InMemoryInbox.md` |
+| `New AzCliCredential();` | `grep -rn 'New Az' contents/` | **1** | `AzureBlobArchiveProvider.md` |
+| `UseOutboxArchiver` without its type argument | `grep -rn 'UseOutboxArchiver' contents/` → 7 lines on 2 pages | **1** | `AzureBlobArchiveProvider.md`; `OutboxArchiver.md`'s three calls all name `<TTransaction>` |
+
+**Carried into the repair tasks, not the prediction:**
+
+- **`Order`**: no phase 4 block names it (`grep -cw Order` over each of the 40 FAILED blocks'
+  `--show` output → 0). The 1.10 ruling has nothing to act on here
+- **Shared worlds.** The four EF Core outbox pages (`MSSQLOutbox.md`, `MySQLOutbox.md`,
+  `PostgresOutbox.md`, `SqliteOutbox.md`) repeat one block shape, and the six `*DistributedLock.md`
+  pages another; a unit or a repair on one is tried on its siblings before the next page is opened.
+  `InMemoryInbox.md` #1 wants `services` and `subscriptions`, which `InMemoryTransportContext.cs`
+  already supplies
+- **Found off the tranche:** `QuartzScheduler.md:359` carries a U+200B zero-width space between
+  `UseMisfire` and `Handler` (`od -c`; `grep -rlP '\x{200B}' contents/` → that page only, 1 line).
+  **It compiles**: C# removes formatting characters before comparing identifiers. Run in a scratch
+  net10.0 console app, a call spelled with the U+200B (written by `printf '\u200b'`) resolved to
+  `UseMisfireHandler` and printed `called`; the control, `C.UseMisfireHandlr()`, is `CS0117`. So it is not a compile defect but a
+  text one — a search of the page for `UseMisfireHandler` misses the line. The page is in no
+  tranche; recorded for phase 5 to remove
+
+**Task 4.2 — the outbox and inbox pages.** Thirteen pages. **BUILT 189 → 214** (+25): all **22**
+FAILED blocks on the thirteen, `TickerQScheduler.md` #3 from the pin, and `BrighterBasicConfiguration.md`
+#3, #4 from the lambda recurrence. **None of the thirteen keeps a FAILED block.** `pagelint`
+**658 → 636**: **19** on the tranche pages, **2** on `BrighterBasicConfiguration.md` and **1** on
+`AzureBlobArchiveProvider.md`, both touched by the recurrence (per page, against a worktree at
+`d8633b1`). Pages with nothing BUILT **74 → 64**: `DynamoInbox.md`, `InMemoryInbox.md`,
+`InMemoryOutbox.md`, `MSSQLInbox.md`, `MySQLInbox.md`, `MySQLOutbox.md`, `PostgresInbox.md`,
+`SqliteInbox.md`, `SqliteOutbox.md` and `BrighterBasicConfiguration.md`. Two methods, one figure:
+requirements' `awk` and a Python join over the same report.
+
+- **The pin, measured alone first** (`bd2b1ed`): `Npgsql.EntityFrameworkCore.PostgreSQL` 9.0.4 and
+  `TickerQ.Dashboard`, `TickerQ.EntityFrameworkCore` 9.0.2; **98** `PackageReference`s, **542**
+  reference assemblies. **Said at 4.1:** +2 BUILT. **Measured:** +1, `TickerQScheduler.md` #3.
+  #2 now fails on `Program` alone — `typeof(Program).Assembly` in a `Program.cs` with no declaration
+  after its statements, the `statements` wrapper's limitation that keeps `QueryPipelinePolicies.md`
+  #1 FAILED (Q2). Its row in § *Blocks that stay FAILED* is rewritten to that reason
+- **The ≤ 60 target.** Of phase 4's ten pages with nothing BUILT and a reachable block, **4** landed
+  (`InMemoryInbox.md`, `InMemoryOutbox.md`, `MySQLOutbox.md`, `SqliteOutbox.md`); the other six are
+  lock pages, 4.3's. Five of the six hard-only pages landed as well, and `BrighterBasicConfiguration.md`
+  off the tranche. 64 − 60 = **4** still to land
+- **`using`s:** every repaired block. On `MSSQLInbox.md`, `InMemoryInbox.md` and `InMemoryOutbox.md`
+  they replace the leading `// ...`
+- **Four units and two grown.** `RelationalOutboxContext.cs` supplies `services` to the four EF Core
+  outbox pages; `RelationalInboxContext.cs` supplies `connectionString` to the four relational inbox
+  pages — two units, because each outbox page's block 2 declares its own `connectionString`.
+  `InMemoryBoxContext.cs` supplies `services`, `subscriptions`, `producerRegistry` and the small
+  `Person` domain both InMemory pages' handlers use. `DynamoInboxContext.cs` supplies `credentials`.
+  `PageContext.cs` (`DapperOutbox.md`) and `DynamoOutboxContext.cs` gain the requests and entities of
+  the samples their handlers come from, `WebAPI_Dapper` and `WebAPI_Dynamo`, typed as 10.7.0's samples
+  type them; each page now names its sample. None is a type a page tells the reader to write (rule 1,
+  by reading). `MSSQLOutbox.md` and `PostgresOutbox.md` #1, BUILT before, are re-admitted with the
+  new unit. `--report` → *"34 units checked, 0 violations"*
+- **The wrapper artefacts, made whole** (design: a fragment the reader needs whole). The EF Core
+  outbox pages' free `public void ConfigureServices` now sits in `public class Startup`, with a
+  comment that in `Program.cs` the same calls go on `builder.Services`. `DapperOutbox.md` and
+  `DynamoOutbox.md` #2, an `override` with no class, are shown in `AddGreetingHandlerAsync` with the
+  fields and constructor the sample declares. `MySQLOutbox.md`'s `....` is `// ... other Brighter
+  options`, as its siblings write it
+- **The unopened `ConfigureServices` lambda, at every recurrence: 13 → 0 on 8 pages**, the two
+  off-tranche pages included. `pagelint --changed` then asked for `using`s on the touched
+  `BrighterBasicConfiguration.md` #3, #4 and `AzureBlobArchiveProvider.md` #1; with them,
+  `--explain` found only a bare `...` in each `BrighterBasicConfiguration.md` block, now `// ...`,
+  and both build. `AzureBlobArchiveProvider.md` #1 keeps its five defects for 4.4. The five
+  `DispatcherConfigurationReference.md` blocks each open with `// ...`, so rule 6 does not reach them;
+  they stay FAILED on placeholders and names the page never shows
+- **Six defects, and one upstream** (§ *Defect ledger*): `[UseInboxAsync]` on a class; `Post` awaited
+  with a `cancellationToken` it does not take; a `;` inside an object initialiser; `opt.` in a lambda
+  whose parameter is `options`; the InMemory Inbox said to keep entries until restart; the page's
+  `Warn` configuration beside an attribute whose default `Throw` wins. **BrighterCommand/Brighter#4335**
+  — a global `InboxConfiguration` is ignored unless the application calls `AddProducers`. Fixed by
+  #4396 on `master`, in no release. **Maintainer's ruling, 2026-09-27: state it once, link from the
+  inbox pages.** `BrighterInboxSupport.md` gains *Global Inbox Configuration in a Consumer-Only
+  Application*, with the workaround, and the nine inbox pages one sentence each after their
+  configuration block
+- **Behaviour, run with controls** against released 10.7.0 packages in scratch console apps,
+  net10.0, one process per case:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `InMemoryInbox.md`: *"No cleanup: Old entries remain until process restart"* | entry written, fake clock +11 min, another add → entry **gone**, count **1** | no advance → present, count **2**; +6 min, under the 10-min scan interval → present |
+  | *"Memory bound: All seen message IDs held in memory"* | `EntryLimit = 4`, 10 adds → **8** held (compacted once, to half, then not again within the interval) | `EntryLimit = -1` → **10** |
+  | #1 with #2: a duplicate reaching the handler | the page's `Warn` configuration and #2's attribute, the same event published twice → publish 2 throws **`OnceOnlyException`**; handler runs **1** | the attribute with `onceOnlyAction: OnceOnlyAction.Warn` → both return; runs **1** |
+  | The global Inbox, from `InboxConfiguration` alone (#4335) | no attribute, `AddConsumers` only → both return; handler runs **2** | the same with `AddProducers` → runs **1**. The attribute without producers → runs **1** |
+  | The deduplication window, end to end | publish, fake clock +11 min, publish another, publish the first again → runs **2** | — the first two rows are its controls |
+  | `SqliteOutbox.md` intro: messages *"saved within the same transaction as your business logic"* | #1's DDL, #3 verbatim in `Startup`, an insert and `DepositPostAsync` in the EF transaction, commit → Greeting **1**, Outbox **1** | rollback → Greeting **0**, Outbox **0** |
+
+  Read, not run: `DapperOutbox.md` #2 is the handler `TransactionalMessagingWithTheOutbox.md` #1 ran
+  in 3.3, unchanged but for its class. `DynamoOutbox.md` #2 and `DynamoInbox.md` #1 need DynamoDB;
+  they register and transact through types each compiled against, and assert nothing the SQLite run
+  above does not. The relational inbox blocks configure the store 3.2's MSSQL inbox run exercised
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 1 row at `bd2b1ed` (the pin), 24 rows and 2 re-admissions at `a8ede7c`. `--report` →
+  exit **0**, *"983 blocks: 214 BUILT, 753 FAILED, 16 SKIPPED"*, baseline 214, 0 findings. Joined on
+  page and ordinal against the report at `9479991`, all 25 blocks that moved went `FAILED -> BUILT`,
+  and there are no new keys
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; shape, redirects and `--verify` unmoved;
+  `pagelint --changed origin/master` 0 errors. **Pages changed: 20** (`git diff --name-only
+  9479991..HEAD -- contents`): the **13** tranche pages, `AzureBlobArchiveProvider.md` (4.4's) and
+  **6** outside the tranche — `BrighterBasicConfiguration.md` and `DispatcherConfigurationReference.md`
+  by the lambda recurrence, `BrighterInboxSupport.md`, `FirestoreInbox.md`, `MongoDBInbox.md` and
+  `SpannerInbox.md` by the #4335 ruling
+
+**Task 4.3 — the distributed-lock pages.** Six pages. **BUILT 214 → 226** (+12): #1 and #2 on each
+of `AzureBlobDistributedLock.md`, `FirestoreDistributedLock.md`, `MongoDbDistributedLock.md`,
+`MsSqlDistributedLock.md`, `MySqlDistributedLock.md` and `PostgresDistributedLock.md`. **None stays
+FAILED.** `pagelint` **636 → 624**, two on each page (per page, against a worktree at `7d04918`).
+Pages with nothing BUILT **64 → 58**, all six; requirements' `awk` and a Python join agree. **The
+≤ 60 target is met**: phase 4 landed all ten of its pages with nothing BUILT and a reachable block,
+and five of its six hard-only pages.
+
+- **Said at 4.1:** *"the five `*DistributedLock.md` pages"* share a shape. **Measured:** the phase 4
+  table holds six, and all six share it. Rewritten above
+- **One repair, tried on all six before any page was opened alone.** Block 1 takes its `using`s.
+  Block 2 takes them too, and its `opt.Outbox = /* your … Outbox */;` becomes `opt.Outbox = outbox;
+  // your … Outbox` — the design's placeholder rule, completing the statement it sat in
+- **One unit.** `DistributedLockProviderContext.cs` supplies `services` and `outbox`, typed
+  `IAmAnOutbox` as `ProducersConfiguration.Outbox` is (`ProducersConfiguration.cs:212`). Each page
+  configures its Outbox on the Outbox's own page and tells the reader to write neither (rule 1, by
+  reading). `--report` → *"35 units checked, 0 violations"*
+- **No defect.** Every page's prose was read against 10.7.0: `sp_getapplock` in `Exclusive` mode at
+  `Session` scope with a zero timeout (`MsSqlLockingQueries.cs`); `GET_LOCK` with a one-second
+  timeout and a SHA-512 name truncated to 160 bits (`MySqlLockingProvider.cs:170`);
+  `pg_try_advisory_lock`; a MongoDB insert on `_id` with the duplicate key refused and a TTL index
+  from `Locking.TimeToLive` (`BaseMongoDb.cs:111`); a Firestore create with `Exists = false`; an
+  Azure blob uploaded if absent and leased for `LeaseValidity`, the container never created.
+  `optioncheck` reads the two tables here, unchanged
+- **Behaviour, run with controls** against released 10.7.0 packages and real servers in Docker
+  (`postgres:16`, `mysql:8`, `azure-sql-edge`), net10.0, one process per case. Each provider is
+  built as its page's block 1 builds it; a "crash" is the holder's server session killed without a
+  release:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `PostgresDistributedLock.md`: released when the session closes, *"including if the holding instance crashes"* | A obtains; B refused; A's backend terminated → a new instance **obtains** | A alive → a new instance **refused** |
+  | `MySqlDistributedLock.md`: the same | A obtains; B refused; A's connection killed → **obtains** | A alive → **refused** |
+  | `MsSqlDistributedLock.md`: the same | A obtains; B refused; A's session killed → **obtains** | A alive → **refused** |
+
+  Read, not run: the MongoDB, Firestore and Azure Blob providers, whose recovery is a TTL or a
+  lease the pages already describe as bounded by it, and which need their emulators
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 12 rows at `b8f21ac`. `--report` → exit **0**, *"983 blocks: 226 BUILT, 741 FAILED,
+  16 SKIPPED"*, baseline 226, 0 findings. Joined on page and ordinal against 4.2's report, all 12
+  blocks that moved went `FAILED -> BUILT`, and there are no new keys
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; shape, redirects and `--verify` unmoved;
+  `pagelint --changed origin/master` 0 errors. **Pages changed: 6** (`git diff --name-only
+  7d04918..HEAD -- contents`), all on the tranche
+
+**Task 4.4 — the remaining outbox pages.** Three pages, and one off the tranche by ruling. **BUILT
+226 → 234** (+8): `AzureBlobArchiveProvider.md` #1, `UsingSweeperCircuitBreaking.md` #2–#5 and
+`SweeperCircuitBreaking.md` #2, #5, #7. **One stays FAILED**,
+`ReplayOnSeenReference.md` #1, by P2-2 (§ *Blocks that stay FAILED*). `pagelint` **624 → 616**, the
+four `UsingSweeperCircuitBreaking.md` blocks that opened with `// ...` and four
+`SweeperCircuitBreaking.md` blocks (#2, #5, #6, #7). Pages with nothing BUILT
+**58 → 57**, `AzureBlobArchiveProvider.md`; `ReplayOnSeenReference.md` stays among them.
+
+- **Said at 4.1:** a ceiling of **230** BUILT. **Measured: 234.** The ceiling left out 4.2's two
+  off-tranche recurrence blocks (`BrighterBasicConfiguration.md` #3, #4) and the three
+  `SweeperCircuitBreaking.md` blocks repaired by ruling, and counted `TickerQScheduler.md` #2, which
+  stays FAILED on `Program`: 230 + 2 + 3 − 1 = 234
+- **`UsingSweeperCircuitBreaking.md`.** #2, #3 take their `using`s, and the page's unit gains
+  `services`, which block 1 takes as a parameter. #4, read with its `using`s, named a
+  `CircuitBreakerState` no package or block declares, and shared a `Dictionary` between `TripTopic`
+  and `CoolDown`; it now declares the state as a nested record and uses a `ConcurrentDictionary`
+  with a conditional remove. #5 was the fragment 4.1 read, and **made whole** (design: the reader
+  needs the whole — `TrippedTopics` is the part a distributed breaker has to get right). Its
+  `IDistributedCache` cannot enumerate keys, so a whole version on it could not answer
+  `TrippedTopics`; it is now a Redis sorted set, scored by expiry. A sixth block registering it was
+  written and removed, a new *same-page* FAILED block for a registration #1 already shows; a
+  sentence links #1 instead
+- **`AzureBlobArchiveProvider.md`.** **Said at 4.1:** five defects behind the placeholders.
+  **Measured, compiled with the placeholders filled** (the control below): the six 4.1's row names,
+  and two more — `AzCliCredential` is no type in Azure.Identity (`AzureCliCredential`), and
+  `BlobContainerUri` is a `Uri`. The block is rewritten against 10.7.0. The page gains an opening
+  sentence after its banner, with the `description:` rule 7 checks against it, its Prerequisites, the two
+  packages the provider does not bring in (`dotnet list package --include-transitive` on
+  `Paramore.Brighter.Archive.Azure` 10.7.0 alone: neither `Azure.Identity` nor
+  `Paramore.Brighter.Outbox.Hosting`), and a table of `AzureBlobArchiveProviderOptions`, read from
+  `AzureBlobArchiveProviderOptions.cs`. **It is not `optioncheck`-marked:** marked, the tool reported
+  `CANNOT CONSTRUCT` (it cannot synthesise the `AccessTier` constructor argument) and `ROW NAMES
+  NOTHING` for `TagsFunc` and `StorageLocationFunc`, which are fields — a marker would check nothing
+- **Behaviour, run with controls** against released 10.7.0 packages, net10.0, one process per case;
+  Redis in Docker (`redis:7`):
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | #1: *"default cooldown of 10 sweeps"*; #2: *"Recover after 3 sweeps"*, *"30 sweeps"* — each sweep calls `CoolDown` and then reads `TrippedTopics` (`OutboxProducerMediator.cs:721`, `:735`) | `CooldownCount = 3` → skipped **3** sweeps, retried on the 4th | default → **10**; `30` → **30** |
+  | #4 needs a concurrent map | the old block (its `CircuitBreakerState` written as it uses it), `TripTopic` and `CoolDown` on two threads for 3 s → **`InvalidOperationException`**, *"Collection was modified"*, twice in two runs | the new block → **none**, twice |
+  | #5 shares trips across instances and expires them | two breakers on two connections, cooldown 2 s: A trips → A and B both list `orders`; +1 s, B cools down → both still list it | +2.5 s, B cools down → both empty, **0** members left |
+  | `AzureBlobArchiveProvider.md` #1 configures the Archiver it says | the block in a host, built → `TimerInterval 5`, `ArchiveBatchSize 500`, `MinimumAge 31.00:00:00`, provider `AzureBlobArchiveProvider` | the old block, placeholders filled → `CS1003`; with `New …;` also mended, `CS0029`, `CS0103` ×3, `CS0246`, `CS7036` |
+
+  Read, not run: #3's *"all topics always attempted"* (`_outboxCircuitBreaker?.TrippedTopics` is
+  `null` with none registered, `OutboxProducerMediator.cs:735`); the Azure provider's writes — one
+  blob per message named by its Id, the body only, an existing blob not rewritten, the container
+  never created (`AzureBlobArchiveProvider.cs`), which need Azurite and a token credential it accepts
+- **Off the tranche, repaired — maintainer's ruling, 2026-09-27: *"fix it in this PR"*.**
+  `SweeperCircuitBreaking.md` #2 and #7 configured the sweeper through `options.OutboxSweeper = new
+  OutboxSweeperOptions { SweepInterval = … }` — no such property or type at 10.7.0 (`git grep` → 0);
+  `UseOutboxSweeper` takes a `TimedOutboxSweeperOptions`, whose interval is `TimerInterval`, an `int`
+  of seconds (`TimedOutboxSweeper.cs`, a `Timer` of that period). Both blocks now configure it there,
+  with their `using`s, and **build** (`FAILED -> BUILT`, baselined at `28b2d5f`). **Said in the first
+  draft of this entry:** #2 and #5. **Measured:** #2 and #7; #5 is the MongoDB block
+- **The same repair found the formula one sweep short.** The page said `Cooldown Time = CooldownCount ×
+  SweepInterval` and, in its steps, that a topic recovers *"when the cooldown reaches zero"*.
+  `CoolDown` runs first in each sweep (the sweeper is its only caller, `OutboxSweeper.cs:79`) and
+  removes a topic when its count goes **below** zero, so a topic sits out `CooldownCount` sweeps and is
+  retried on the next: `(CooldownCount + 1) × TimerInterval`. Rewritten there, in the page's steps,
+  and in `UsingSweeperCircuitBreaking.md` #2's two comments (*"Recover after 3 sweeps"*). **Run**
+  end to end, released 10.7.0, net10.0: a real `UseOutboxSweeper` host, `TimerInterval = 1`, an
+  InMemory Outbox and a producer that always throws. `CooldownCount = 2` → sends every **3 s**; `3` →
+  every **4 s**. Controls: no breaker → every **1 s**; `CooldownCount = 0` → every **1 s**. Each sweep
+  made 4 send attempts, Brighter's own send retry
+- **Then the page's two other falsehoods — maintainer's ruling, 2026-09-27: *"put them in this
+  PR"*.** Read against 10.7.0 and run:
+  - **Which Outboxes honour a trip.** #5 called `.UseMongoDbOutbox(…)` (`git grep` → 0) under
+    *"fully integrated with MongoDB Outbox"*, and the page said breaking *"works with all Brighter
+    Outbox implementations"*. The sweeper passes `TrippedTopics` to `OutstandingMessagesAsync`
+    (`OutboxProducerMediator.cs:735`) and each Outbox filters, or does not. **Run** against released
+    10.7.0 packages, net10.0, two messages (`orders`, `payments`), `OutstandingMessagesAsync` with
+    `orders` tripped and, as each store's own control, with none: **SQLite** → `[payments]`;
+    **MongoDB** (`mongo:7`) → `[payments]`; **DynamoDB** (`amazon/dynamodb-local`) → `[orders,payments]`;
+    **Spanner** (the emulator) → `[orders,payments]`; every control → both. Read: DynamoDB V3 and V4
+    take the parameter and never use it (`DynamoDbOutbox.cs:582`); Spanner's `PagedOutstandingCommand`
+    has no `{1}` for the `NOT IN` clause `RelationDatabaseOutbox` formats into it
+    (`SpannerQueries.cs:12`); MSSQL, MySQL and PostgreSQL carry the `{1}` and share SQLite's code;
+    Firestore and InMemory filter (`FirestoreOutbox.cs:901`, `InMemoryOutbox.cs:566`, and the
+    InMemory sweeper runs above). The section is now *Sweeper Circuit Breaking Outbox Support*, a
+    table of that, and #5 registers a MongoDB Outbox as `MongoDBOutbox.md` does — **it builds**.
+    **Upstream, filed 2026-09-28 by the maintainer's ruling, `Bug` and `0 - Backlog`:**
+    BrighterCommand/Brighter#4443 (DynamoDB) and #4444 (Spanner), both still so on `master`
+    `bb10b8fae`; the page's table links each
+  - **Explicit clearing.** § 6 said explicit clearing is *"NOT subject to circuit breaking"*; § *Bulk
+    Dispatch Support* said `ClearOutboxAsync` *"respects circuit breaker state"*, and that *"failed
+    batches can be retried individually per topic"*. **Run**, an InMemory Outbox, a producer that
+    always throws: a topic tripped beforehand → `ClearOutbox` and `ClearOutboxAsync` each still make
+    **4** send attempts; a fresh breaker → `ClearOutboxAsync` leaves `orders` **tripped**,
+    `ClearOutbox` leaves **none** (`DispatchAsync` trips on `!sent`, `Dispatch` only through a
+    publish-confirmation callback, `:984`). Neither section was right. § 6 now says both halves; §
+    *Bulk Dispatch Support* shows the sweeper's `UseBulk`, and says what it does — **run**: a bulk
+    sweeper, `TimerInterval = 1`, a batch producer that throws, `CooldownCount = 2` → batches every
+    **3 s**, 20 of 20 attempts through `SendAsync(IAmAMessageBatch)`; control, no breaker → every
+    **1 s**. The *"retried individually"* claim has nothing behind it in the source and is gone
+  - The page's step list said messages are *"grouped by topic"* on every sweep; only bulk groups.
+    Step 2 now says the tripped topics are passed to the Outbox. A troubleshooting item names the
+    two Outboxes that ignore them
+  - #6 no longer names `cancellationToken`, so the unit loses it (the unit rule's violation, read
+    from `--report`), and the page's five baselined rows are re-admitted at `a61893b` with #5
+- **Recurrence greps, all 0 beyond the repaired lines:** `AzCliCredential`, `BlobContainerUri *= *"`,
+  `new AzureBlobArchiveProviderOptions()`, `MinimumAge *= *[0-9]`, `BatchSize` within eight lines of
+  `UseOutboxArchiver`, an unshown `CircuitBreakerState`, `IDistributedCache` in code; the page's two
+  breakers are the only `: IAmAnOutboxCircuitBreaker` in `contents/`
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 5 rows at `2defac6`; `SweeperCircuitBreaking.md` #2, #7 at `28b2d5f`, then #5 and
+  the page's other four rows re-admitted at `a61893b`. `--report` → exit **0**, *"983 blocks: 234
+  BUILT, 733 FAILED, 16 SKIPPED"*, baseline 234, 35 units, 0 violations, 0 findings. Joined on page
+  and ordinal against the report at `05fdeaf`, the 8 blocks that moved went `FAILED -> BUILT`, 983
+  keys both sides
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings;
+  `optioncheck` 0 mismatches across 59 tables, 519 rows; no `SUMMARY.md` change, so shape, redirects
+  and `--verify` unmoved; `pagelint --changed origin/master` 0 errors. **Pages changed: 3**
+  (`git diff --name-only 05fdeaf..HEAD -- contents`): the two tranche pages and
+  `SweeperCircuitBreaking.md`
+
+
+**Task 4.5 — phase 4 closed, 2026-09-28, branch at `ca6a0b2`.** Every gate run bare, exit code
+read before its output:
+
+| # | Gate | Exit | Read | Predicted (4.1) | Agrees? |
+|---:|---|---:|---|---|---|
+| 1 | `linkcheck` | 0 | 165 files, 0 broken | none | **yes** |
+| 2 | `pagelint` | 0 | 0 errors, **616** warnings across 76 pages, 162 pages | 0 errors; 658 → between 640 and 622, recurrences explained | **no — 6 lower**, explained below |
+| 3 | shape | 0 | 161 pages, 12 sections, widest 12 of 20, deepest 4 of 4 | none | **yes** |
+| 4 | redirects | 0 | 77 entries, 7858 bytes | none | **yes** |
+| 5 | `versioncheck` | 0 | 0 stale of 18, across 5 pages | none, scope held at 18 across 5 | **yes** |
+| 6 | `optioncheck` | 0 | 0 mismatches, 59 tables, 519 rows | none | **yes** |
+| 7 | `--verify` | 0 | 161 predicted = 161 published | none | **yes** |
+| 8 | `symbolcheck` | 0 | 0 findings, 22 entries, 161 pages, 3 silenced | none | **yes** |
+| 9 | `blockcheck` | 0 | 983: **234** BUILT, 733 FAILED, 16 SKIPPED; 0 findings; **542** reference assemblies; baseline 234; **35** units, 0 violations; 53 pages mapped | BUILT 204–230; SKIPPED 16; exit 0; 0 violations | **no — 4 above the ceiling**, explained below |
+| — | `attr_mismatch.py` | 1 | **7** | held at 7 | **yes** |
+
+`pagelint --changed origin/master` → exit **0**, 0 errors.
+
+**Gate 9, reconciled.** Phase 4 moved **45** blocks: 25 in 4.2, 12 in 4.3, 8 in 4.4. Against 4.1's
+ceiling of 230: `BrighterBasicConfiguration.md` #3, #4 (+2, the unopened-lambda recurrence) and
+`SweeperCircuitBreaking.md` #2, #5, #7 (+3, the maintainer's ruling) lie off the tranche, and
+`TickerQScheduler.md` #2, counted in the ceiling, stays FAILED on `Program` (−1): 230 + 2 + 3 − 1 =
+**234**. The pin carries **98** `PackageReference`s (`grep -c`), 95 at phase 3's close.
+
+**Every FAILED block on the 22 tranche pages is listed**: `after.tsv`'s FAILED keys on those pages
+are **1**, `ReplayOnSeenReference.md` #1, and § *Blocks that stay FAILED* holds it (P2-2).
+
+**Gate 2, reconciled.** Per-page warnings at `d8633b1` (a worktree) against the branch: the 22
+tranche pages fell by **36**, which is 4.1's floor of 622 exactly — every reachable and every hard
+block given its `using`s. The further **−6** are on two pages outside the tranche:
+`SweeperCircuitBreaking.md` −4 (the ruling) and `BrighterBasicConfiguration.md` −2 (the
+recurrence). `DispatcherConfigurationReference.md`, also touched by the recurrence, moved nothing:
+its blocks open with `// ...`. 658 − 36 − 6 = **616**, across 76 pages, down from 96.
+
+**AC2, against a `before.tsv` regenerated from `c7329bb` in a worktree** (exit 0, *"989 blocks: 101
+BUILT, 872 FAILED, 16 SKIPPED"*, 989 rows): the diff prints **135** lines. **134** are `FAILED ->
+BUILT` — 89 through phase 3 and phase 4's 45. The 135th is ` -> BUILT contents/SchedulingAMessage.md
+10`, the key § *Splits* explains. No `-> SKIPPED`. **Control, both ways:** the report against itself
+prints **0** lines; a copy with `SweeperCircuitBreaking.md` #8 set FAILED prints exactly one line
+beside the known key that is not `FAILED -> BUILT`, `BUILT -> FAILED contents/SweeperCircuitBreaking.md 8`.
+
+**The ≤ 60 target: met, at 57.** Pages with nothing BUILT, by requirements' `awk` (`comm -23`) and a
+Python join over the same report: **57** both. 4.1 said as low as 58; the 58th off the list is
+`BrighterBasicConfiguration.md`, off the tranche. Phase 4 landed all ten of its pages with nothing
+BUILT and a reachable block, and five of its six hard-only pages; `ReplayOnSeenReference.md` waits
+on the pin. Phase 5 now has headroom, not a quota.
+
+**Every behavioural block was run with its control** (P0-10): the tables under 4.2, 4.3 and 4.4,
+against released 10.7.0 packages, with real servers or emulators where a claim needed one.
+
+**Upstream:** BrighterCommand/Brighter#4335 stated on `BrighterInboxSupport.md` and linked from nine
+inbox pages (ruling); #4443 (DynamoDB) and #4444 (Spanner) filed in 4.4, `Bug`, `0 - Backlog`,
+linked from `SweeperCircuitBreaking.md`.
+
+**The PR changes 28 pages** (`git diff --name-only origin/master..HEAD -- contents | wc -l`): **21**
+of the 22 tranche pages (`ReplayOnSeenReference.md` untouched) and **7** outside it —
+`BrighterBasicConfiguration.md` and `DispatcherConfigurationReference.md` by recurrence;
+`BrighterInboxSupport.md`, `FirestoreInbox.md`, `MongoDBInbox.md` and `SpannerInbox.md` by the #4335
+ruling; `SweeperCircuitBreaking.md` by ruling. **Said in session notes: 29** (20 + 6 + 3), which
+counted `AzureBlobArchiveProvider.md` in both 4.2 and 4.4. Beside them: `tools/README.md` (rows 2 and
+9, and a phase 4 paragraph), the baseline, `refs.csproj`, `pages.tsv` (36 → 53 pages mapped), 5 new
+units and 4 changed, and this file.
 
 ---
 
@@ -1625,12 +2057,12 @@ is rewritten against the tables below.
 | `DistributedLock.md` | 2 | `CS0234` `Paramore.Brighter.DynamoDb.V4`, `Locking.DynamoDB.V4`, `Outbox.DynamoDB.V4` | V4 package, not in the pin (D3, 018). The page recommends the V4 package, so the block carries its namespaces; it builds against the released V4 packages in scratch, **0** errors | 3 |
 | `DynamoDbDistributedLock.md` | 1 | `CS0234` `Locking.DynamoDB.V4`; `CS0103` `dynamoDb` | V4 package, not in the pin (D3, 018). `dynamoDb` wants a value stub once V4 is pinned | 3 |
 | `DynamoDbDistributedLock.md` | 2 | `CS0234` `Paramore.Brighter.DynamoDb.V4`, `Locking.DynamoDB.V4`, `Outbox.DynamoDB.V4` | V4 package, not in the pin (D3, 018); builds against the released V4 packages in scratch, **0** errors | 3 |
-| `TickerQScheduler.md` | 2 | `CS0234` `TickerQ.EntityFrameworkCore`; `CS1061` `AddOperationalStore`; `CS0246` `TickerQDbContext` | `TickerQ.EntityFrameworkCore` is not in the pin; phase 4 asks for it at 9.0.2. Builds against the released packages in scratch, net9.0 and net10.0, **0** errors | 3 |
-| `TickerQScheduler.md` | 3 | `CS0234` `TickerQ.Dashboard`; `CS1061` `AddDashboard` | `TickerQ.Dashboard` is not in the pin; phase 4 asks for it at 9.0.2. Builds against the released packages in scratch, net9.0 and net10.0, **0** errors | 3 |
+| `TickerQScheduler.md` | 2 | `CS0246` `Program` | instrument: `typeof(Program).Assembly` in a `Program.cs` with no declaration after its statements takes the `statements` wrapper, which declares no `Program`; Q2 (1.8) rules out a stub. Builds against the released packages in scratch, net9.0 and net10.0, **0** errors | 3 |
 | `PaginationQueryPatterns.md` | 2 | `CS0246` `GetOrdersPageQuery`, `PagedResult<>`, `OrderDto`; `ApplicationDbContext` | same-page: block 1 declares the first three; block 2 is *"Handler with pagination:"*, straight after it | 3 |
 | `PaginationQueryPatterns.md` | 3 | `CS0246` `OrderDto` | same-page: block 1 declares it | 3 |
 | `PaginationQueryPatterns.md` | 4 | `CS0246` `GetOrdersCursorQuery`, `CursorPagedResult<>`, `OrderDto`; `ApplicationDbContext` | same-page: block 3 declares the first two, block 1 `OrderDto`; block 4 is *"Handler with cursor pagination:"*, straight after block 3 | 3 |
 | `QueryPipelinePolicies.md` | 1 | `CS0246` `Program` | instrument: a `Program.cs` with no declaration after its statements takes the `statements` wrapper, which declares no `Program`; Q2 (1.8) rules out a stub. Builds as a `Program.cs` in scratch against Darker 4.1.1, **0** errors | 3 |
+| `ReplayOnSeenReference.md` | 1 | `CS0117` `RequestContextBagNames.CausationId`; `CS0246` `ProcessPayment`; `CS0103` `_commandProcessor`, `batchId`, `orderId` | P2-2: `CausationId` is on Brighter `master` (`RequestContextBagNames.cs:143`), in no release. The pin bump brings it in through the ratchet; the other names are the handler's, and want a unit then | 4 |
 
 ## Splits
 
@@ -1694,6 +2126,22 @@ BUILT, re-admitted at `ec38400`.
 | Darker's default policies described as *"exponential backoff"* and a breaker that *"opens after consecutive failures"*, and as applying once registered. They retry 3 times after 50, 100 and 150 ms, the breaker opens on 1 failure for 500 ms, and neither runs without `[RetryableQuery]` | Darker 4.1.1 `QueryProcessorBuilderExtensions.cs:51`, `RetryableQueryDecorator.cs`; run, control without the attribute | `QueryPipelinePolicies.md` (the list and block 2's comment) | `grep -rnE 'Retries with exponential backoff\|Opens after consecutive failures\|Retry policy with exponential backoff' contents/` | **3** | **0** | 3.5, reading the page against Darker's source, then running |
 | *"The ASP.NET model binder will validate these attributes before the query reaches your handler"*. Only a controller marked `[ApiController]`, or a minimal API after `AddValidation()` (.NET 10), rejects the query; elsewhere it reaches the code | run on net10.0, controls both ways | `QueryObjectValidation.md` | `grep -rn 'model binder will validate' contents/` | **1** | **0** | 3.5, running block 2's claim |
 | `[RetryableQuery]`'s second argument described and used as a circuit-breaker name that adds a breaker to the retry. It is a policy name, and the decorator runs that one policy. `"DefaultCircuitBreaker"` is not registered by `AddDefaultPolicies()`, so it throws `ConfigurationException`; `circuitBreakerName:` is not a parameter (`CS1739`) | Darker 4.1.1 `RetryableQueryAttribute.cs:11`, `Constants.cs`; run, control `Constants.CircuitBreakerPolicyName`; compiled | `QueryPipeline.md` (4 lines, and the parameter list at line 239), `CQRSWithBrighterAndDarker.md` (2), `DarkerAndBrighterPipelines.md`, `ImplementAQueryHandler.md`, `QueryPatterns.md` | `grep -rnE 'RetryableQuery\(.*(DefaultCircuitBreaker\|circuitBreakerName)' contents/` | **9** lines, 5 pages | **open — phase 5**, maintainer's ruling | 3.5, reading Darker's source for the tranche's policy defaults |
+| `.ConfigureServices(hostContext, services) =>` — the lambda's parameter list never opened, and its body never closed (`CS1519`, `CS1001`) | compiled, old form `CS1519` | `MSSQLInbox.md`, `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md`, `DynamoInbox.md`, `AzureBlobArchiveProvider.md`, `BrighterBasicConfiguration.md` ×2, `DispatcherConfigurationReference.md` ×5 | `grep -rn 'ConfigureServices(hostContext, services) =>' contents/` | **13** lines, 8 pages | **0** | 4.1, `--classify` |
+| `opt.InboxConfiguration` inside `AddConsumers(options => …)` — `CS0103` | compiled | `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md` | `grep -rn '^\s*opt\.InboxConfiguration' contents/` — **4** before, **1** after, `DynamoInbox.md`'s, whose parameter is `opt` | **3** | **0** | 4.1, a scan of every lambda |
+| `[UseInboxAsync]` on a handler class — `CS0592`; `RequestHandlerAttribute` is valid on methods only | `RequestHandlerAttribute.cs`, `AttributeUsage(AttributeTargets.Method)` | `InMemoryInbox.md` #2 | `grep -rn -A1 '^\s*\[UseInbox' contents/ \| grep -c class` | **1** | **0** | 4.1, `--explain` |
+| `await _commandProcessor.Post(…, cancellationToken: …)` — `Post` returns `void` and takes no `cancellationToken`; the async form is `PostAsync` | `IAmACommandProcessor.cs:205`, `:241` | `InMemoryOutbox.md` #2 | `grep -rnE 'await [_a-zA-Z.]*\.(Post\|Send\|Publish\|DepositPost\|ClearOutbox)\(' contents/` | **1** | **0** | 4.2, `--explain` after the block's `using`s |
+| `new AmazonDynamoDBConfig { ServiceURL = "…"; }` — a `;` inside an object initialiser | compiled | `DynamoInbox.md` #1 | `grep -rnP 'new [A-Za-z_.<>]+(\([^()]*\))? *\{[^{}]*;[^{}]*\}' contents/`, one line only; control: the old page → **1** | **1** | **0** | 4.1, `--classify` |
+| The InMemory Inbox said to keep every entry until restart (*"No cleanup"*, *"All seen message IDs held in memory"*). An entry expires `EntryTimeToLive` (5 min) after it is written, removed by a scan at most every `ExpirationScanInterval` (10 min); past `EntryLimit` (2048) adding compacts the oldest to half | `InMemoryBox.cs:64–100`, `InMemoryInbox.cs:316`; run, controls both ways | `InMemoryInbox.md` | `grep -rnE 'No cleanup\|All seen message IDs held in memory' contents/` | **2** | **0** | 4.2, reading the page against the source, then running |
+| A global `actionOnExists: Warn` shown beside a `[UseInboxAsync]` that sets no `onceOnlyAction` — the attribute's default `Throw` wins, so a duplicate throws `OnceOnlyException` | `PipelineBuilder.cs:371`, `HasExistingUseInboxAttributesInPipeline`; run, control the attribute with `Warn` | `InMemoryInbox.md` #1, #2 | pages with `actionOnExists: OnceOnlyAction.Warn\|Replay` and a `[UseInbox…]` without `onceOnlyAction` on its line: 2, read — `TurningOnReplayOnSeen.md`'s attributes set it on the next line and the page states the precedence | **1** | **0** | 4.2, running #1 with #2 |
+| A global `InboxConfiguration` in `AddConsumers` reaches the pipeline only through `ExternalBus(…)`, so an application that never calls `AddProducers` gets no global Inbox, and duplicates run again | `ServiceCollectionExtensions.cs:640–660`; run, control with `AddProducers` — **upstream, BrighterCommand/Brighter#4335**, fixed by #4396 on `master`, unreleased | `BrighterInboxSupport.md` states it with the workaround; linked from `MSSQLInbox.md`, `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md`, `DynamoInbox.md`, `MongoDBInbox.md`, `FirestoreInbox.md`, `SpannerInbox.md`, `InMemoryInbox.md`. Not linked: the seven other pages that configure one | `git grep -l 'InboxConfiguration' d8633b1 -- contents` | **16** pages | **stated** on 1, linked from 9 — maintainer's ruling | 4.2, running `InMemoryInbox.md` #1 without #2's attribute |
+| `CircuitBreakerState` — named in a custom `IAmAnOutboxCircuitBreaker` and declared by no package or block (`CS0246`) | `git grep CircuitBreakerState 10.7.0 -- src` → 0 | `UsingSweeperCircuitBreaking.md` #4 | an unshown `CircuitBreakerState` in `contents/` | **1** | **0** | 4.4, `--classify` |
+| A custom breaker's `Dictionary` enumerated by `CoolDown` while `TripTopic` writes it — `InvalidOperationException` | run, control the concurrent form; 10.7.0's own breaker is concurrent for this (`InMemoryOutboxCircuitBreaker.cs`) | `UsingSweeperCircuitBreaking.md` #4 | `grep -rn ': IAmAnOutboxCircuitBreaker' contents/` → the page's two, both concurrent | **1** | **0** | 4.4, reading #4 once it built |
+| A distributed breaker on `IDistributedCache`, with `CoolDown` and `TrippedTopics` left unwritten — the cache cannot enumerate keys, so `TrippedTopics` cannot be written on it | `IDistributedCache` has `Get`, `Set`, `Refresh`, `Remove` and their async forms only; the Redis form run across two connections | `UsingSweeperCircuitBreaking.md` #5 | `grep -rn 'IDistributedCache' contents/` → 1, the prose saying why | **1** | **0** | 4.4, making the fragment whole |
+| The Azure archive block, against 10.7.0: `New AzCliCredential();` in an initialiser — no such type (`AzureCliCredential`); `AzureBlobArchiveProviderOptions` built parameterless, its `init` properties assigned, `BlobContainerUri` a string (`CS7036`, `CS0029`); `UseOutboxArchiver` without `TTransaction`; `BatchSize` for `ArchiveBatchSize`; `MinimumAge = 744` for a `TimeSpan`; option assignments with no `options.` (`CS0103`) | `AzureBlobArchiveProviderOptions.cs`, `HostedServiceCollectionExtensions.cs:52`, `TimedOutboxArchiverOptions.cs`; compiled, control the old block | `AzureBlobArchiveProvider.md` #1 | the seven greps in § *Phase 4 as executed*, 4.4's entry | **1** block, 8 defects | **0** | 4.1 (six), 4.4 (two, compiling the control) |
+| The sweep interval set through `options.OutboxSweeper = new OutboxSweeperOptions { SweepInterval = … }` — no such type or property; it is `UseOutboxSweeper(o => o.TimerInterval = …)`, an `int` of seconds | `TimedOutboxSweeperOptions.cs`, `HostedServiceCollectionExtensions.cs:41`; compiled | `SweeperCircuitBreaking.md` #2, #7 and its formula | `grep -rnE 'SweepInterval\|OutboxSweeperOptions\b' contents/` (`Timed` excluded) | **3** lines | **0** | 4.4, reading `UsingSweeperCircuitBreaking.md`'s sibling; maintainer's ruling |
+| Cooldown time given as `CooldownCount × interval`, recovery *"when the cooldown reaches zero"* — a topic sits out `CooldownCount` sweeps and is retried on the next, `(CooldownCount + 1) × TimerInterval` | `InMemoryOutboxCircuitBreaker.cs` (removes below zero), `OutboxProducerMediator.cs:721`; run end to end, controls no breaker and `0` | `SweeperCircuitBreaking.md` (formula, example, #2, #7 comments, steps), `UsingSweeperCircuitBreaking.md` #2 | `grep -rnE '(^\|[^+] )[0-9]+ (sweeps )?× [0-9]+s\|total cooldown\|[Rr]ecover after [0-9]\|When the cooldown reaches zero' contents/`, at `05fdeaf` and after | **8** | **0** | 4.4, running the sweeper for the row above |
+| Circuit breaking said to work with every Outbox, and `.UseMongoDbOutbox(…)` — no such method. The DynamoDB (V3, V4) and Spanner Outboxes ignore `trippedTopics`, so a tripped topic is swept as normal | `DynamoDbOutbox.cs:582`, `SpannerQueries.cs:12`; run against DynamoDB Local and the Spanner emulator, controls SQLite and MongoDB — **upstream, BrighterCommand/Brighter#4443, #4444**, filed 4.4 | `SweeperCircuitBreaking.md` (section, #5, troubleshooting) | the next row's grep, its first four alternatives | **4** | **0** — the table states it | 4.4, maintainer's ruling |
+| Explicit clearing said both to ignore the breaker and to respect it, and failed batches to be *"retried individually per topic"*. An explicit clear sends a tripped topic's messages; a failed `ClearOutboxAsync` trips the topic, a failed `ClearOutbox` does not unless the producer confirms publication | `OutboxProducerMediator.cs:425`, `:1220`, `:984`; run, sync and async, pre-tripped and fresh | `SweeperCircuitBreaking.md` § 6, § *Bulk Dispatch Support* | `grep -rnE 'UseMongoDbOutbox\|fully integrated with MongoDB\|works automatically with MongoDB\|works with all Brighter Outbox\|NOT subject to circuit breaking\|respects circuit breaker state\|retried individually per topic' contents/`, at `05fdeaf` and after; its last three alternatives are this row's | **3** | **0** | 4.4, maintainer's ruling |
 
 ## Friction ledger
 

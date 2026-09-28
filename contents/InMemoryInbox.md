@@ -30,7 +30,13 @@ The InMemory Inbox provides message deduplication without requiring a database.
 ## InMemory Inbox Configuration
 
 ```csharp
-// ...
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 var bus = new InternalBus();
 
 services.AddConsumers(options =>
@@ -46,16 +52,22 @@ services.AddConsumers(options =>
 .AutoFromAssemblies();
 ```
 
+In Brighter 10.7.0 this configuration takes effect only in an application that also calls `AddProducers`; see [Global Inbox Configuration in a Consumer-Only Application](/contents/BrighterInboxSupport.md#global-inbox-configuration-in-a-consumer-only-application).
+
 ## InMemory Inbox Example Usage
 
 ```csharp
-// ...
-[UseInboxAsync(step: 0, contextKey: typeof(PersonCreatedHandler), onceOnly: true)]
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Inbox.Attributes;
+
 public class PersonCreatedHandler : RequestHandlerAsync<PersonCreated>
 {
     private readonly PersonRepository _repository;
 
-    [UseInboxAsync(0, typeof(PersonCreatedHandler), true)]
+    [UseInboxAsync(0, typeof(PersonCreatedHandler), true, onceOnlyAction: OnceOnlyAction.Warn)]
     public override async Task<PersonCreated> HandleAsync(
         PersonCreated @event,
         CancellationToken cancellationToken = default)
@@ -70,12 +82,14 @@ public class PersonCreatedHandler : RequestHandlerAsync<PersonCreated>
 }
 ```
 
+The attribute decides what happens to a duplicate for this handler, whatever the configuration says. `onceOnlyAction` defaults to `Throw`, so without it a duplicate raises `OnceOnlyException` even though the configuration above asks for `Warn`. The configuration's `actionOnExists` applies only to handlers that carry no `[UseInboxAsync]` attribute of their own.
+
 ## InMemory Inbox Limitations
 
 - **No persistence**: Deduplication state lost on restart
 - **Single process**: Cannot deduplicate across instances
-- **Memory bound**: All seen message IDs held in memory
-- **No cleanup**: Old entries remain until process restart
+- **Memory bound**: Seen message IDs are held in memory. When adding an entry finds `EntryLimit` entries or more (2048 by default), the oldest are removed down to `CompactionPercentage` of the limit (half, by default), at most once per `ExpirationScanInterval`
+- **A short deduplication window**: An entry expires `EntryTimeToLive` after it is written (5 minutes by default), and a scan removes it at most once per `ExpirationScanInterval` (10 minutes by default), started when an entry is added or read. A duplicate that arrives after its entry has gone is handled again
 
 ## Further Reading
 

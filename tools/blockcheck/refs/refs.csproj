@@ -206,6 +206,16 @@
          net9.0. Below it the restore fails NU1605, a package downgrade. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.15" />
 
+    <!-- The EF Core provider PostgresOutbox.md's DbContext registration calls
+         (UseNpgsql); SqlServer, Sqlite and Pomelo arrive transitively, Npgsql's
+         does not. 9.0.4, the latest for EF Core 9. -->
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+
+    <!-- TickerQScheduler.md's persistence and dashboard blocks, at the version
+         Paramore.Brighter.MessageScheduler.TickerQ 10.7.0 takes for net9.0. -->
+    <PackageReference Include="TickerQ.Dashboard" Version="9.0.2" />
+    <PackageReference Include="TickerQ.EntityFrameworkCore" Version="9.0.2" />
+
     <!-- The test pages' own frameworks: xunit at the version Brighter's own
          tests use, and Moq. -->
     <PackageReference Include="Moq" Version="4.21.0" />

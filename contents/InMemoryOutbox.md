@@ -64,14 +64,19 @@ The InMemoryOutbox's capacity is constrained. You can configure the limit to the
 ## InMemory Outbox Configuration
 
 ```csharp
-// ...
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.Hosting;
+
 services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
 .AddProducers(options =>
 {
-    options.ProducerRegistry = /* your producer registry */;
+    options.ProducerRegistry = producerRegistry; // your producer registry
     options.Outbox = new InMemoryOutbox(TimeProvider.System);
 })
 .UseOutboxSweeper();  // Enable sweeper for reliability
@@ -80,7 +85,11 @@ services.AddBrighter(options =>
 ## InMemory Outbox Example of Post
 
 ```csharp
-// ...
+using System.Threading;
+using System.Threading.Tasks;
+using System.Transactions;
+using Paramore.Brighter;
+
 public class CreatePersonHandler : RequestHandlerAsync<CreatePerson>
 {
     private readonly IAmACommandProcessor _commandProcessor;
@@ -96,7 +105,7 @@ public class CreatePersonHandler : RequestHandlerAsync<CreatePerson>
         await _repository.SaveAsync(person);
 
         // Deposit message to outbox (held in memory)
-        await _commandProcessor.Post(new PersonCreated { PersonId = person.Id }, cancellationToken: cancellationToken);
+        await _commandProcessor.PostAsync(new PersonCreated { PersonId = person.Id }, cancellationToken: cancellationToken);
 
         return await base.HandleAsync(command, cancellationToken);
     }

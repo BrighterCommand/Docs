@@ -16,26 +16,34 @@ For this we will need the *Inbox* packages for the MySQL *Inbox*.
 
 * **Paramore.Brighter.Inbox.MySql**
 
-``` csharp
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox.MySql;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
-        .ConfigureServices(hostContext, services) =>
+        .ConfigureServices((hostContext, services) =>
         {
             ConfigureBrighter(hostContext, services);
-        }
+        });
 
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
     services.AddConsumers(options =>
         {
             var configuration = new RelationalDatabaseConfiguration(connectionString,  "brighter_test", inboxTableName: "inbox_messages");            
-            opt.InboxConfiguration = new InboxConfiguration(new MySqlInbox(configuration));
-            ...
+            options.InboxConfiguration = new InboxConfiguration(new MySqlInbox(configuration));
+            // ...
         });
 }
-...
 
+// ...
 ```
+
+In Brighter 10.7.0 this configuration takes effect only in an application that also calls `AddProducers`; see [Global Inbox Configuration in a Consumer-Only Application](/contents/BrighterInboxSupport.md#global-inbox-configuration-in-a-consumer-only-application).
 
 ## Provisioning the MySQL Inbox Table
 
