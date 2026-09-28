@@ -1726,7 +1726,7 @@ everywhere. Page list: § *The tranches*, phase 5 table.
   - Input: those sections' phase 5 rows; 5.1's verdicts
   - Output: each page whole; baseline rows; ledger rows as 4.2
 
-- [ ] **Task 5.4:** Repair `ITimerProvider` and the unshown `Order`
+- [x] **Task 5.4:** Repair `ITimerProvider` and the unshown `Order`
   - Input: `grep -rn ITimerProvider contents/` (4 lines at `c7329bb`, all `InMemoryScheduler.md`);
     `design.md` § *API Resolved* (`InMemorySchedulerFactory.TimeProvider`);
     `CQRSWithBrighterAndDarker.md`'s `Id = command.Id` block
@@ -2144,6 +2144,111 @@ join agreeing: `BrighterControlAPI.md`, `CloudEventsReference.md`, `PostgreSQLBr
   `MigratingToNullableReferenceTypes.md`, `NullableReferenceTypes.md`, `PostgresOutbox.md`,
   `Routing.md`, `V10MigrationGuide.md`
 
+**Task 5.4 — `ITimerProvider`, the unshown `Order`, and the three rulings on 5.3's questions.**
+**`grep -rn ITimerProvider contents/ | wc -l` → 0**, read from a file (4 at `aec11c1`).
+`CQRSWithBrighterAndDarker.md` now shows `Order`: the write model is a new block, #7, BUILT; the
+handler that assigns `Id = command.Id` is #8 and stays FAILED, same-page. **BUILT 288 → 293** (+5),
+every move `FAILED -> BUILT` or a new key: `InMemoryScheduler.md` #5, `BrighterSchedulerSupport.md`
+#1, `DefaultMessageMappers.md` #4 and #5, and `CQRSWithBrighterAndDarker.md` #7 (inserted). The rest of the
+AC2 diff, aligned by each fence's first non-`using` line against `aec11c1` rather than by ordinal:
+`CQRSWithBrighterAndDarker.md` #8–#13 are old #7–#12 renumbered by the insertion;
+`DefaultMessageMappers.md` #4–#6 are old #4 split, and #7–#15 are old #5–#13; and
+`DynamicMessageDeserialization.md` old #7 is removed, with #7 and #8 being old #8 and #9. All of them
+were FAILED on both sides (§ *Splits*, § *Blocks removed*). **987 → 989 blocks.** `pagelint`
+**562 → 553** (−9): `DefaultMessageMappers.md` −4 (#2, #10, #11, and old #4 split into three blocks that
+carry `using`s), and −1 each on `InMemoryScheduler.md` #5, `BrighterSchedulerSupport.md` #1,
+`DispatchingARequest.md` #3, `V10MigrationGuide.md` #26, and the removed block. Pages with nothing
+BUILT **44 → 42**, by the requirements' `awk` and a Python join agreeing: `BrighterSchedulerSupport.md`,
+`DefaultMessageMappers.md`. Pin `07d878b`, `aeb65f4`; repair `b4c3ae0`, `e742502`; baseline `cfd964e`.
+
+- **The maintainer's three rulings, 2026-09-28**, on 5.3's questions. (1) Rewrite
+  `DefaultMessageMappers.md`'s Avro block against Confluent's API, in 5.4. (2) Sweep `PublishAsync`
+  across the corpus and repair every instance that means the bus, keeping those that are in-process
+  events. (3) File the Control API's wrong-case 500. It is BrighterCommand/Brighter#4465, `Bug`,
+  `0 - Backlog`, linked from `BrighterControlAPI.md`
+- **The pin grew twice, against 5.1's "no pin change"**, each change in its own commit and measured
+  alone with no page changed: no verdict moved either time. `Microsoft.Extensions.TimeProvider.Testing`
+  10.10.0 (`FakeTimeProvider`, latest stable, with a net9.0 build) went in at `07d878b`, and
+  `Confluent.SchemaRegistry.Serdes.Avro` 2.15.0 (the Confluent release that
+  `Paramore.Brighter.MessagingGateway.Kafka` 10.7.0 depends on) at `aeb65f4`. That makes **100**
+  PackageReferences and **545** reference assemblies, against 542
+- **`InMemoryScheduler.md`.** Two sentences, the pipeline diagram and block #5 now name
+  `TimeProvider`, and block #5 is a `FakeTimeProvider` test. The old block also passed a
+  `FakeTimerProvider` to a constructor that `InMemorySchedulerFactory` does not have. The page said to
+  install `Paramore.Brighter.InMemoryScheduler`, which returns 404 on NuGet; the scheduler is in
+  `Paramore.Brighter`, and `UseScheduler` is in the DI package. The test registers its handler
+  with `AsyncHandlers`, because `AutoFromAssemblies()` hit #4414 on the first run and the page links
+  `SchedulingAMessage.md`'s workaround
+- **`CQRSWithBrighterAndDarker.md`.** Showing `Order` surfaced two hidden defects. `Id = command.Id`
+  is `CS0029` against the read side's `Guid` key: `Id` converts implicitly only to `string`
+  (`Id.cs:95`). And #2 passed a `CancellationToken` in `PublishAsync`'s `RequestContext?` slot,
+  which is `CS1503`. #2 was also written against a different, unshown `Order` (`PlacedAt`,
+  `OrderStatus.Placed`, a two-argument event); it now uses the model #7 shows, and its prose links there.
+  Both `PublishAsync` calls on the page stay: they raise an in-process event to update the read model
+- **`BrighterSchedulerSupport.md` #1** listed the six scheduled overloads with the request before the
+  time, and without `RequestContext` or Post's `args`. It is now as 10.7.0 declares them
+  (`IAmACommandProcessor.cs:98`, `:111`, `:171`, `:190`, `:261`, `:282`). No call site in the corpus
+  followed the wrong order. The scan read every `Send`/`Publish`/`Post`/`DepositPost` call's arguments
+- **`DefaultMessageMappers.md`, the Avro block, by ruling.** It is now an `IAmAMessageMapperAsync<T>`
+  constrained to `ISpecificRecord`, calling `AvroSerializer<T>.SerializeAsync(T, SerializationContext)`
+  and `AvroDeserializer<T>(registry).DeserializeAsync`. The `Id` travels in the header, and the content
+  type is `application/octet-stream` (Confluent's wire format, as in `samples/TaskQueue/KafkaSchemaRegistry`).
+  The page now shows the `.avsc`, and the avrogen partial's other half implements `IEvent`, because
+  `RequestToMessageType` throws for a bare `IRequest`. The partial is in the schema's namespace, since
+  avrogen refuses a schema without one. The example type is `OrderShipped`, because the page's
+  `OrderCreated` is a different shape. Registration is per type with `RegisterAsync`, and the default
+  form, #10, carries the consequence in a comment. #11's `mappers.Regiter<` (`CS1061`) is fixed
+- **The `PublishAsync` sweep, by ruling.** `calls.py` read every `Publish`/`PublishAsync` call in a C#
+  fence (**13** at `aec11c1`, **7** now), and a prose grep read every line tying either to a bus,
+  broker, queue, topic, transport or the wire. Four places relied on `PublishAsync` reaching a mapper or
+  the bus. `DefaultMessageMappers.md` #2 said the default mapper serialises a published event.
+  `DispatchingARequest.md` #3 set CloudEvents extensions for a publish. `V10MigrationGuide.md` #26
+  asserted that a published event lands on the `InternalBus`. Those three now post.
+  `DynamicMessageDeserialization.md`'s practice *"Cache Performance-Critical Paths"* published three
+  dummy events to warm the mapper cache, and it is removed: `PublishAsync` maps nothing, and
+  `TransformPipelineBuilder`'s cache is keyed per mapper type and per direction, so posting warms only
+  the producer's side and puts junk on a topic. The 7 calls left are 2 declarations, 2 in-process
+  read-model events, a scheduled local event (`AwsScheduler.md`) and 2 test-double verifications. The
+  sweep also found that **CloudEvents extension properties are written only by
+  `CloudEventJsonMessageMapper<>`**. Measured: the default `JsonMessageMapper<>` drops them from both
+  the request context and `Publication`. `DispatchingARequest.md`, `UsingTheContextBag.md` and
+  `CommandProcessorConfigurationReference.md`'s `CloudEventsAdditionalProperties` row now say so.
+  `FAQ.md`'s heading, which had a stray `c` and an unclosed code span, is fixed
+- **`--explain` on every block the diff touches** (`git diff -U0 aec11c1` hunks against fence
+  ranges): **13** blocks, **5** BUILT. The **8** FAILED are `CQRSWithBrighterAndDarker.md` #2 and
+  #8, and `DefaultMessageMappers.md` #6 and #10, all same-page and each compiled with its page's blocks (below).
+  The other four fail only on names their pages never show: `DefaultMessageMappers.md` #2 and #11,
+  `DispatchingARequest.md` #3, and `V10MigrationGuide.md` #26, none of them tranche pages. Each got
+  its `using`s, so `pagelint --changed origin/master` reports **0** errors
+- **Behaviour, run with controls**, against the released 10.7.0 packages on net10.0:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `InMemoryScheduler.md`: the scheduler's clock is its `TimeProvider` | `FakeTimeProvider`, `SendAsync(5 min)`, `Advance(5 min)` → handled **1**, before `Advance` returns | no advance → **0**; advance 4:59 → **0**, then +1 s → **1**; 2.5 s of wall clock → **0**. Both TimeProvider.Testing 10.7.0 and 10.10.0 |
+  | `CQRSWithBrighterAndDarker.md` #8: `Guid.Parse(command.Id)` | 10,000 `Id.Random()` → all parse | `new Id("order-1")` → `FormatException` |
+  | `DefaultMessageMappers.md` #4–#6, the page's own blocks and `.avsc`, avrogen 1.12.2, cp-schema-registry 7.9.0, `InternalBus` | `RegisterAsync` + `PostAsync` → 16 bytes, magic byte 0, octet-stream, `MT_EVENT`; round trip → the record and its `Id`; subject `<topic>-value` registered | `Post` → **JSON** (the sync default; the async mapper is not used); another request type → JSON through the default. The earlier sync mapper under `PostAsync` → JSON too |
+  | #10, the Avro default | `PostAsync` of an `ISpecificRecord` → Avro | a type that is not one → `ArgumentException`, *"violates the constraint of type 'T'"* |
+  | The `Id` in the header | `MapToRequestAsync` → the `Id` restored | the record alone → a different `Id` |
+  | `RequestToMessageType` | the partial as `IEvent` → maps | as bare `IRequest` → `ArgumentException`, *"can only map Commands and Events"* |
+  | CloudEvents extensions (`DispatchingARequest.md`, `UsingTheContextBag.md`) | `PostAsync` + `CloudEventJsonMessageMapper<>` → in the envelope, from the context bag and from `Publication` | `JsonMessageMapper<>` → absent from body and header, both ways; `PublishAsync` → **0** messages, the local handler runs |
+
+- **The blocks that stay FAILED compile where their world exists** (§ *Blocks that stay FAILED*):
+  `CQRSWithBrighterAndDarker.md` #6, #7 and #8 together → **0** errors, and #2 with #7 → **0**. The
+  control, #8 with the old `Id = command.Id`, gives `CS0029`, and #2 with the positional token gives
+  `CS1503`. `DefaultMessageMappers.md` #4, #5 and #6 with avrogen's half → **0**; without it,
+  `CS0311`
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 5 rows. `--report` → exit **0**, *"989 blocks: 293 BUILT, 679 FAILED, 17 SKIPPED"*,
+  baseline 293, 45 units, 0 findings
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings,
+  22 entries, 3 silenced, `--verify-list` clean; `optioncheck` 0 mismatches across 59 tables, 519 rows;
+  shape, redirects and `--verify` 161 / 77 / 161. **Pages changed: 11**
+  (`git diff --name-only aec11c1..HEAD -- contents`): `InMemoryScheduler.md` and
+  `CQRSWithBrighterAndDarker.md` for P0-7, plus `BrighterControlAPI.md`, `BrighterSchedulerSupport.md`,
+  `CommandProcessorConfigurationReference.md`, `DefaultMessageMappers.md`, `DispatchingARequest.md`,
+  `DynamicMessageDeserialization.md`, `FAQ.md`, `UsingTheContextBag.md` and `V10MigrationGuide.md`,
+  by ruling or recurrence
+
 ---
 
 ## Phase 6 — Acceptance *(8 tasks, one PR, no page touched)*
@@ -2476,6 +2581,10 @@ is rewritten against the tables below.
 | `ConfiguringOpenTelemetry.md` | 5 | as `Telemetry.md` #1 | as #1 | 5 |
 | `ConfiguringOpenTelemetry.md` | 6 | as `Telemetry.md` #1 | as #1 | 5 |
 | `S3LuggageStore.md` | 1 | `CS0234` `Paramore.Brighter.Transformers.AWS.V4`; `CS0246` `S3LuggageStore`, `S3LuggageOptions`, `AWSS3Connection` | pin (D3): the pin carries the V3 AWS transformer package, not `.V4`. Compiles in scratch against `Paramore.Brighter.Transformers.AWS.V4` 10.7.0, **0** errors, with `credentials` a parameter | 5 |
+| `CQRSWithBrighterAndDarker.md` | 2 | `CS0246` `Order`, `OrderItem`, `IOrderRepository`, `OrderPlacedEvent`; `CS0103` `OrderStatus` | same-page: #7 shows the write model, and the prose above #2 links there. #2 with #7 → **0** errors | 5 |
+| `CQRSWithBrighterAndDarker.md` | 8 | `CS0246` `PlaceOrderCommand`, `IOrderRepository`, `IProductRepository`, `Order`, `OrderItem`, `OrderPlacedEvent`; `CS0103` `OrderStatus` | same-page: #6 declares the command, #7 the write model. #6–#8 together → **0** errors; the task's *"showing `Order`"* | 5 |
+| `DefaultMessageMappers.md` | 6 | `CS0246` `Orders`, `OrderShipped`, `AvroMessageMapperAsync<>`; `CS0103` `services` | same-page: #4 declares the mapper, #5 half of `OrderShipped`; avrogen generates the other half from the page's `.avsc`. #4–#6 with it → **0**; without it `CS0311` | 5 |
+| `DefaultMessageMappers.md` | 10 | `CS0246` `Orders`, `OrderShipped`, `AvroMessageMapperAsync<>`; `CS0103` `services` | same-page, as #6; run as the Avro default (5.4's table) | 5 |
 
 ## Splits
 
@@ -2489,6 +2598,8 @@ is rewritten against the tables below.
 | `PostgreSQLBrokerTradeOffs.md` | 1 | 1, 2 | the JSONB and JSON schemas were one fence; each now builds. #2 is a new key, BUILT | 5.3 |
 | `CloudEventsReference.md` | 3, 4 | 4, 5 | not a split: a block inserted at #3, the Kafka partition key set per message. Old #3 (SNS) and #4 (Azure Service Bus) are now #4 and #5; all five build, so the AC2 diff reads #3, #4 `FAILED -> BUILT` and #5 as a new key | 5.3 |
 | `Telemetry.md` | 1–5 | 2–6 | not a split: a block inserted at #1, *Enabling Brighter's Spans*, FAILED on the pin. Old #1 and #4, BUILT, are now #2 and #5, their rows moved; so the AC2 diff reads #1 `BUILT -> FAILED` and #6 as a new key | 5.3 |
+| `CQRSWithBrighterAndDarker.md` | — | 7 | not a split: the write model inserted above the handler, so old #7–#12 are #8–#13, FAILED both sides. A new key, BUILT | 5.4 |
+| `DefaultMessageMappers.md` | 4 | 4, 5, 6 | the Avro mapper rewritten as three fences: the mapper (#4, BUILT), the avrogen partial (#5, BUILT) and its registration (#6, same-page). Old #5–#13 are #7–#15, FAILED both sides | 5.4 |
 
 ## Blocks removed
 
@@ -2505,6 +2616,7 @@ after-report's keys and cannot show these, so they are listed here.*
 | `AnalyzerSupport.md` | 7 | BUILT | the `using` for the code fix's `Partitioner` | 2.4 |
 | `AnalyzerSupport.md` | 8 | FAILED | the BRT007 pragma, rewritten as BRT001 in the new block 1 | 2.4 |
 | `ConfiguringOpenTelemetry.md` | 2 | FAILED | the Jaeger exporter block — OpenTelemetry deprecated the exporter for OTLP, and the page now points the OTLP exporter at Jaeger (ruling 1). Old #3–#7 are now #2–#6, FAILED before and after, so the AC2 diff shows only #7 `FAILED -> -` | 5.3 |
+| `DynamicMessageDeserialization.md` | 7 | FAILED | *"Cache Performance-Critical Paths"*: three `PublishAsync` calls of dummy events to warm the mapper cache. `PublishAsync` maps nothing, and posting warms only the producer's transform cache while putting junk on a topic. The page is unchanged from `c7329bb` to `aec11c1`, so this is #7 there too; old #8 and #9 are #7 and #8 | 5.4 |
 
 Old block 1 (BRT006's warning case, BUILT) also went; its address now holds the new pragma block,
 BUILT, re-admitted at `ec38400`.
@@ -2600,6 +2712,16 @@ BUILT, re-admitted at `ec38400`.
 | A mapper missing a member of `IAmAMessageMapper<T>`, with no `// ...` to say so | `IAmAMessageMapper.cs` | `Routing.md` #1, `V10MigrationGuide.md` #3, #18, `NullableReferenceTypes.md` #7, `FAQ.md` #7 (whose `MapToMessage` also returned nothing; it gains `[RetrieveClaim]` on the way back) | reading, from 5.1's list | **5** | **0** | 5.1, carried |
 | A `Command` or `Event` subclass that never calls a base constructor; neither has a parameterless one | `Command.cs:68`, `Event.cs:68` | `NullableReferenceTypes.md` #9, `MigratingToNullableReferenceTypes.md` #4, `V10MigrationGuide.md` #20 | `grep -rnE 'class \w+ *: *(Command\|Event) *$\|…\{'` → 16 lines, each read; a Python scan of every C# fence for a base call | **3** | **0**; `V10MigrationGuide.md` #1 is the skipped V9 form | 5.1, carried |
 | `V10MigrationGuide.md` #20: the default mapper shown by `PublishAsync` | run: `PostAsync` → **1** message, `application/json`; `PublishAsync` → **0** | `V10MigrationGuide.md` | the corpus sweep is put to the maintainer | **1** | **0** | 5.3, rewriting the block |
+| `ITimerProvider` named as the InMemory scheduler's timer seam, with a `FakeTimerProvider : ITimerProvider` passed to `new InMemorySchedulerFactory(…)`. There is no such interface, and the factory has no constructor parameters: the seam is `InMemorySchedulerFactory.TimeProvider`, a `System.TimeProvider` | `InMemorySchedulerFactory.cs:37`, `InMemoryScheduler.cs:244`; run, `FakeTimeProvider` with controls | `InMemoryScheduler.md` | `grep -rn ITimerProvider contents/` | **4** | **0** | 5.4, P0-7 |
+| `dotnet add package Paramore.Brighter.InMemoryScheduler`, a package that does not exist: the scheduler and its factory are in `Paramore.Brighter`, and `UseScheduler` is in the DI package | NuGet flat container → **404**; `git ls-tree 10.7.0 src/` has no such project | `InMemoryScheduler.md` | `grep -rnE 'Paramore\.Brighter\.InMemoryScheduler\b' contents/` | **2** | **0** | 5.4, P0-7 |
+| `Order` never shown, and behind it `Id = command.Id` assigns a Brighter `Id` to the read side's `Guid` key, `CS0029`. The handler now uses `Guid.Parse(command.Id)`, run on 10,000 `Id.Random()` with a control | `Id.cs:95` (the implicit conversion is to `string` only) | `CQRSWithBrighterAndDarker.md` (#8; #2 was written against a different unshown `Order`) | `grep -rn 'Id = command\.Id' contents/` | **3** | **2**: `PolicyFallback.md`'s two are other properties on types that page never shows | 5.4, P0-7 |
+| A `CancellationToken` passed positionally as `PublishAsync`'s second argument, which is `RequestContext?`: `CS1503`, hidden behind `CS0246` | `IAmACommandProcessor.cs:154` | `CQRSWithBrighterAndDarker.md` #2 | `calls.py`, every `Send`/`Publish`/`Post`/`DepositPost` call whose non-first positional argument names a token | **1** call | **0** | 5.4, compiling #2 with the write model |
+| The six scheduled overloads listed request-first, `(T command, DateTimeOffset at, CancellationToken)`, without `RequestContext` or Post's `args`. At 10.7.0 the time comes first | `IAmACommandProcessor.cs:98`, `:111`, `:171`, `:190`, `:261`, `:282` | `BrighterSchedulerSupport.md` #1 | `grep -rnE '\(T(Request)? (command\|@event\|request), (DateTimeOffset\|TimeSpan)' contents/`; `calls.py`, any call whose second argument is a time | **6** lines; **0** calls | **0** | 5.4, the positional-token scan |
+| The Avro mapper: `CharacterEncoding.Raw` as `MessageBody`'s content type; a constructor written `AvroMessageMapper<T>(…)`, which does not parse; `SerializeAsync(request).AsSyncOverAsync()`, which is not Confluent's API; and `new AvroDeserializer<T>()` with no registry. Rewriting it exposed three more. A sync mapper is bypassed by `PostAsync`, which maps with the async default. As the default mapper, any type that is not an `ISpecificRecord` throws. And `RequestToMessageType` rejects a bare `IRequest` | Confluent.SchemaRegistry.Serdes.Avro 2.15.0; `MessageType.cs:48`; `MessageMapperRegistry.cs` `ResolveClosedDefault`; run end to end against a schema registry | `DefaultMessageMappers.md` (#4, and #10, which named `AvroMessageMapper<>` as both defaults) | `grep -rn 'AvroMessageMapper<' contents/` | **5** | **0** | 5.3 (put to the maintainer); rewritten 5.4, by ruling |
+| `mappers.Regiter<…>`, `CS1061` | — | `DefaultMessageMappers.md` #11 | `grep -rn 'Regiter\b' contents/` | **1** | **0** | 5.4, reading #10's neighbour |
+| `PublishAsync` relied on to reach a mapper or the bus: the default mapper said to serialise a published event, CloudEvents extensions set for a publish, a test asserting that a published event lands on the `InternalBus`, and dummy events published to warm a mapper cache. `PublishAsync` dispatches to handlers in this process | run: `PublishAsync` → **0** messages, the local handler runs; `PostAsync` → **1** (sessions 101, 102 and 5.4) | `DefaultMessageMappers.md` #2, `DispatchingARequest.md` #3, `V10MigrationGuide.md` #26, `DynamicMessageDeserialization.md` (old #7, removed) | `calls.py` over every `Publish`/`PublishAsync` call; a prose grep tying either to a bus, broker, queue, topic, transport or the wire | **13** calls, **6** of them this defect | **7** calls, **0** of them: 2 declarations, 2 in-process read-model events, a scheduled local event, 2 test-double verifications | 5.3 (put to the maintainer); swept 5.4, by ruling |
+| CloudEvents extension properties said to reach the message whatever the mapper. Only `CloudEventJsonMessageMapper<>` (and the CloudEvents transform's JSON form, by reading) writes them. The default `JsonMessageMapper<>` drops both the context-bag and the `Publication` properties | `CloudEventJsonMessageMapper.cs:71`, `:80`; `CloudEventsTransformer.cs:293`; run, both sources, both mappers | `DispatchingARequest.md`, `UsingTheContextBag.md`, `CommandProcessorConfigurationReference.md` | `grep -rn -i 'CloudEventsAdditionalProperties\|extension propert' contents/` | **3** claims | **0**: each names the mapper that writes them | 5.4, running the `PublishAsync` repair's context |
+| A heading with a stray `c` and an unclosed code span, `**c` + backtick + `SendAsync…` | — | `FAQ.md` | read, beside a `PublishAsync` hit | **1** | **0** | 5.4, the sweep |
 
 ## Friction ledger
 
