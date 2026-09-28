@@ -57,6 +57,38 @@ public class GreetingMadeMessageMapper : IAmAMessageMapper<GreetingMade>
 }
 ```
 
+## Synchronous and Asynchronous Message Mappers
+
+**IAmAMessageMapper\<T\>** is the synchronous form. **IAmAMessageMapperAsync\<T\>** is the asynchronous one, with **MapToMessageAsync()** and **MapToRequestAsync()**, for a mapper that does I/O, such as calling a schema registry:
+
+```csharp
+using System.Net.Mime;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
+public class GreetingMadeMessageMapperAsync : IAmAMessageMapperAsync<GreetingMade>
+{
+    public IRequestContext? Context { get; set; }
+
+    public Task<Message> MapToMessageAsync(GreetingMade request, Publication publication,
+        CancellationToken cancellationToken = default)
+    {
+        var header = new MessageHeader(messageId: request.Id, topic: new RoutingKey("GreetingMade"), messageType: MessageType.MT_EVENT);
+        var body = new MessageBody(JsonSerializer.Serialize(request), new ContentType(MediaTypeNames.Application.Json), CharacterEncoding.UTF8);
+        return Task.FromResult(new Message(header, body));
+    }
+
+    public Task<GreetingMade> MapToRequestAsync(Message message, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(JsonSerializer.Deserialize<GreetingMade>(message.Body.Value)!);
+    }
+}
+```
+
+**Each path uses only its own kind of mapper.** `Post` and `DepositPost`, and a consumer on a `Reactor`, map with `IAmAMessageMapper<T>`. `PostAsync` and `DepositPostAsync`, and a consumer on a `Proactor`, map with `IAmAMessageMapperAsync<T>`. If a request type has a mapper only of the other kind, that path maps it with the [default message mapper](/contents/DefaultMessageMappers.md) instead, and nothing reports the substitution: your mapper never runs. If your code reaches a request type both ways, implement both interfaces, on one class or two. For choosing a pump, see [Proactor Message Mappers](/contents/ReactorAndProactor.md#proactor-message-mappers).
+
 ## Brighter Message Structure
 
 Brighter divides a message into two parts:

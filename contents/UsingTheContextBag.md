@@ -49,10 +49,13 @@ Internally we use the **Context Bag** in a number of the Quality of Service supp
 You can set the **RequestContext** explicitly when calling `Send`, `Publish`, or `DepositPost` methods. This allows you to set properties of the **RequestContext** for transmission to the **RequestHandler** instead of having a new context created by the **RequestContextFactory** for that pipeline.
 
 ```csharp
-public class OrderController : ControllerBase
-{
-    private readonly IAmACommandProcessor _commandProcessor;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Paramore.Brighter;
 
+public class OrderController(IAmACommandProcessor commandProcessor) : ControllerBase
+{
     public async Task<IActionResult> CreateOrder(CreateOrderRequest request)
     {
         var context = new RequestContext();
@@ -66,8 +69,8 @@ public class OrderController : ControllerBase
         };
 
         // Pass context explicitly
-        await _commandProcessor.SendAsync(
-            new CreateOrderCommand { OrderId = request.OrderId },
+        await commandProcessor.PostAsync(
+            new OrderCreated { OrderId = request.OrderId },
             requestContext: context
         );
 
@@ -76,6 +79,13 @@ public class OrderController : ControllerBase
 }
 ```
 
+**The partition key, headers and CloudEvents extensions act on the context you post with.** A
+message mapper reads them when `Post`, `PostAsync`, `DepositPost` or `DepositPostAsync` turns the
+request into a message, and it reads the context passed to that call. A context passed to `Send`
+or `Publish` reaches the handlers, but a handler that then posts without passing a context gets a
+new, empty one, so the keys do not carry through. Likewise, setting them on a handler's own
+`Context` does nothing unless the handler passes that context to its post.
+
 ### Partition Key
 
 The **PartitionKey** allows you to control message routing to specific partitions in messaging systems like Kafka, Azure Service Bus, or AWS Kinesis. This is useful for ensuring related messages are processed in order.
@@ -83,12 +93,18 @@ The **PartitionKey** allows you to control message routing to specific partition
 **Setting Partition Key via Context Bag:**
 
 ```csharp
-public class TenantAwareHandler : RequestHandler<MyCommand>
+using Paramore.Brighter;
+
+public class TenantAwareHandler(IAmACommandProcessor commandProcessor) : RequestHandler<MyCommand>
 {
     public override MyCommand Handle(MyCommand command)
     {
+        var context = new RequestContext();
+
         // Set partition key for message routing
-        Context.Bag[RequestContextBagNames.PartitionKey] = command.TenantId;
+        context.Bag[RequestContextBagNames.PartitionKey] = command.TenantId;
+
+        commandProcessor.Post(new TenantWorkDone(command.TenantId), requestContext: context);
 
         return base.Handle(command);
     }
@@ -113,12 +129,21 @@ Context.Bag[RequestContextBagNames.PartitionKey] = new PartitionKey("customer-12
 You can add custom headers to messages dynamically via the Request Context. These headers are merged with any static headers configured on the Publication.
 
 ```csharp
-public class OrderProcessingHandler : RequestHandler<ProcessOrderCommand>
+using System;
+using System.Collections.Generic;
+using Paramore.Brighter;
+
+public class OrderProcessingHandler(IAmACommandProcessor commandProcessor, IOrderService orderService)
+    : RequestHandler<ProcessOrderCommand>
 {
     public override ProcessOrderCommand Handle(ProcessOrderCommand command)
     {
+        // Process order...
+        orderService.Process(command);
+
         // Add custom headers dynamically
-        Context.Bag[RequestContextBagNames.Headers] = new Dictionary<string, object>
+        var context = new RequestContext();
+        context.Bag[RequestContextBagNames.Headers] = new Dictionary<string, object>
         {
             ["x-custom-header"] = "runtime-value",
             ["x-timestamp"] = DateTime.UtcNow,
@@ -126,8 +151,7 @@ public class OrderProcessingHandler : RequestHandler<ProcessOrderCommand>
             ["x-processing-region"] = Environment.GetEnvironmentVariable("REGION")
         };
 
-        // Process order...
-        _orderService.Process(command);
+        commandProcessor.Post(new OrderProcessed(command.OrderId), requestContext: context);
 
         return base.Handle(command);
     }
@@ -145,17 +169,23 @@ public class OrderProcessingHandler : RequestHandler<ProcessOrderCommand>
 When using CloudEvents, you can add custom extension properties via the Request Context.
 
 ```csharp
-public class EventPublishingHandler : RequestHandler<PublishEventCommand>
+using System.Collections.Generic;
+using Paramore.Brighter;
+
+public class EventPublishingHandler(IAmACommandProcessor commandProcessor) : RequestHandler<PublishEventCommand>
 {
     public override PublishEventCommand Handle(PublishEventCommand command)
     {
         // Add CloudEvents extension properties
-        Context.Bag[RequestContextBagNames.CloudEventsAdditionalProperties] = new Dictionary<string, object>
+        var context = new RequestContext();
+        context.Bag[RequestContextBagNames.CloudEventsAdditionalProperties] = new Dictionary<string, object>
         {
             ["myextension"] = "value",
             ["numericExtension"] = 42,
             ["businessContext"] = command.BusinessContext
         };
+
+        commandProcessor.Post(new BusinessEventRaised(command.BusinessContext), requestContext: context);
 
         return base.Handle(command);
     }
@@ -446,12 +476,14 @@ Context.Span.SetAttribute("custom.id", id);
 ### 5. Use Explicit RequestContext for Important Metadata
 
 ```csharp
-// Good - explicit context with important routing information
+using Paramore.Brighter;
+
+// Good - explicit context with important routing information, on the call that makes the message
 var context = new RequestContext();
 context.Bag[RequestContextBagNames.PartitionKey] = tenantId;
 context.Bag[RequestContextBagNames.Headers] = criticalHeaders;
 
-await _commandProcessor.SendAsync(command, requestContext: context);
+await commandProcessor.PostAsync(orderCreated, requestContext: context);
 ```
 
 ## Related Documentation

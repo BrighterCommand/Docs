@@ -47,9 +47,9 @@ These checks apply to all Brighter applications, including those that only use t
 | Handler type visibility | Error | Handler class must be `public`. Brighter only discovers public handler types — a non-public handler will silently not be found by the pipeline builder. |
 | Sync/async attribute consistency | Error | Async handlers (`IHandleRequestsAsync<T>`) must use async attributes (e.g. `RejectMessageOnErrorAsyncAttribute`). Sync handlers must use sync attributes. A mismatch will throw a `ConfigurationException` at pipeline build time. |
 | Backstop attribute ordering | Warning | Backstop error-handling attributes (`RejectMessageOnError`, `DeferMessageOnError`, `DontAckOnError`) should be at the outermost position (lowest step number). If a backstop has a higher step number than a resilience pipeline attribute, it will never execute on failure. |
-| Replay requires causation tracking | Error and Warning | A pipeline using `OnceOnlyAction.Replay` needs an Inbox and an Outbox that both implement the causation-tracking role interfaces *and* whose live schemas support it. A store that does not implement the interface is an Error; an un-migrated schema, a missing Outbox, or a probe that could not reach the store is a Warning. Only pipelines configured for `Replay` are checked. See [Replay On Seen](/contents/ReplayOnSeen.md). |
+| Replay requires causation tracking | Error and Warning | **Not in a released package yet**: Replay On Seen, and this rule, ship after Brighter 10.7.0. A pipeline using `OnceOnlyAction.Replay` needs an Inbox and an Outbox that both implement the causation-tracking role interfaces *and* whose live schemas support it. A store that does not implement the interface is an Error; an un-migrated schema, a missing Outbox, or a probe that could not reach the store is a Warning. Only pipelines configured for `Replay` are checked. See [Replay On Seen](/contents/ReplayOnSeen.md). |
 
-**Example error messages:**
+**Example error messages** (the last two come from the Replay rule, which ships after Brighter 10.7.0; 10.7.0 does not report them):
 
 ```text
 Handler type 'MyNamespace.OrderHandler' is not public — Brighter only supports
@@ -368,6 +368,10 @@ new RmqSubscription<OrderCreated>(...)
 ```
 
 ### Replay Without Causation Tracking
+
+> **Not in a released package yet.** Replay On Seen ships **after Brighter 10.7.0**, which is
+> the current release. `OnceOnlyAction.Replay` and the validation rule this section describes are
+> on Brighter's development branch and are in no version you can install today.
 
 A handler configured with `OnceOnlyAction.Replay` needs an Inbox and an Outbox that both track Causation Ids, *and* live schemas that can store them. Validation checks each store in turn. Only a store that does not implement the role interface is an Error — an un-migrated schema is a Warning, so the host starts cleanly and replay silently does nothing.
 
