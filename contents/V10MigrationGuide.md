@@ -757,6 +757,11 @@ dotnet test
 1. **Test with InMemory components** (fast):
 
 ```csharp
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Xunit;
+
 [Fact]
 public async Task Should_Process_Message_With_V10_Components()
 {
@@ -766,7 +771,7 @@ public async Task Should_Process_Message_With_V10_Components()
     var commandProcessor = serviceProvider.GetRequiredService<IAmACommandProcessor>();
 
     // Act
-    await commandProcessor.PublishAsync(new PersonCreated
+    await commandProcessor.PostAsync(new PersonCreated
     {
         Name = "Alice",
         Email = "alice@example.com"

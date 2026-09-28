@@ -162,7 +162,7 @@ public class EventPublishingHandler : RequestHandler<PublishEventCommand>
 }
 ```
 
-These properties will be serialized as CloudEvent extensions in the generated message envelope.
+These properties are serialized as CloudEvents extensions when the message is mapped into a structured-mode envelope, by `CloudEventJsonMessageMapper<>`. The default mapper, `JsonMessageMapper<>`, ignores them. `PublishAsync` maps nothing — it dispatches to handlers in this process — so they reach the wire only through `Post` or `PostAsync`.
 
 ### Originating Message
 

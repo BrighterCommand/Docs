@@ -791,7 +791,7 @@ ones you meet first.
 | `Topic` | `RoutingKey?` | `null` | The topic or routing key messages are published to. |
 | `Type` | `CloudEventsType` | `empty` | The CloudEvents type used for routing and policy. |
 | `DefaultHeaders` | `IDictionary<string, object>?` | `null` | Headers the default mappers add to every message. |
-| `CloudEventsAdditionalProperties` | `IDictionary<string, object>?` | `null` | Non-standard CloudEvents attributes serialised alongside the standard ones. |
+| `CloudEventsAdditionalProperties` | `IDictionary<string, object>?` | `null` | Non-standard CloudEvents attributes serialised alongside the standard ones in a structured-mode envelope, by `CloudEventJsonMessageMapper<>`. The default `JsonMessageMapper<>` does not write them. |
 | `ReplyTo` | `string?` | `null` | The queue a sender listens on under Request-Reply. |
 
 `Source` reads back with a trailing slash, because `Uri` normalises it. `Type` is empty on a

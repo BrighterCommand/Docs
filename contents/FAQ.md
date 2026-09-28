@@ -224,7 +224,7 @@ See: [Outbox Support](/contents/BrighterOutboxSupport.md)
 
 ### When should I use `SendAsync` or `PublishAsync` vs External Bus?
 
-**c`SendAsync` or `PublishAsync:**
+**`SendAsync` or `PublishAsync`:**
 
 - Avoids blocking I/O
 - Increases throughput (thread reuse)
