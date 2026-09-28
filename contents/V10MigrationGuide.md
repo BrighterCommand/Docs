@@ -248,7 +248,7 @@ var subscription = new Subscription<MyEvent>(
 
 ### 4. Polly Resilience Pipeline
 
-**Breaking Change**: `TimeoutPolicyAttribute` is obsolete. Use `UseResiliencePipeline` attribute.
+**Breaking Change**: `TimeoutPolicyAttribute` is obsolete. Use `UseResiliencePipeline` on a synchronous handler and `UseResiliencePipelineAsync` on an async one.
 
 **Before (V9)**:
 
@@ -272,26 +272,41 @@ public class MyHandler : RequestHandlerAsync<MyCommand>
 1. **Define a Resilience Pipeline**:
 
 ```csharp
-var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>();
-resiliencePipelineRegistry.TryAddBuilder<ResiliencePropertyKey<RequestContext>>(
+using System;
+using Paramore.Brighter.Extensions;
+using Polly;
+using Polly.Registry;
+using Polly.Retry;
+
+var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>()
+    .AddBrighterDefault();
+
+resiliencePipelineRegistry.TryAddBuilder(
     "MyPipeline",
-    (builder, context) =>
-    {
-        builder.AddTimeout(TimeSpan.FromSeconds(5));
-        builder.AddRetry(new RetryStrategyOptions
+    (builder, _) => builder
+        .AddTimeout(TimeSpan.FromSeconds(5))
+        .AddRetry(new RetryStrategyOptions
         {
             MaxRetryAttempts = 3,
             Delay = TimeSpan.FromMilliseconds(100)
-        });
-    });
+        }));
 ```
+
+`AddBrighterDefault` adds the pipelines Brighter itself requires. Assigning your own registry
+means Brighter does not add them for you, and without them the command processor throws
+`ConfigurationException`, so start from it.
 
 2. **Use the new attribute**:
 
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
 public class MyHandler : RequestHandlerAsync<MyCommand>
 {
-    [UseResiliencePipeline(policy: "MyPipeline", step: 1)]
+    [UseResiliencePipelineAsync(policy: "MyPipeline", step: 1)]
     public override async Task<MyCommand> HandleAsync(
         MyCommand command,
         CancellationToken cancellationToken = default)
@@ -305,71 +320,121 @@ public class MyHandler : RequestHandlerAsync<MyCommand>
 3. **Register the pipeline** with Brighter:
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter(options =>
 {
-    options.PolicyRegistry = resiliencePipelineRegistry;
+    options.ResiliencePipelineRegistry = resiliencePipelineRegistry;
 });
 ```
+
+`PolicyRegistry` is the obsolete Polly v7 `IPolicyRegistry<string>`, not this registry.
 
 **See also**: [Policy Retry and Circuit Breaker Documentation](/contents/PolicyRetryAndCircuitBreaker.md)
 
 ### 5. Request Context Interface Changes
 
-**Breaking Change**: `IRequestContext` interface has new properties.
+**Breaking Change**: `IRequestContext` has changed shape.
 
-**New Properties**:
+**Changed Properties**:
 
-- `PartitionKey`: Set message partition keys dynamically
-- `CustomHeaders`: Add custom headers via request context
-- `ResilienceContext`: Integration with Polly resilience pipeline
-- `OriginatingMessage`: Access the original message (for consumers)
+- `Bag` is a `ConcurrentDictionary<string, object>`; in V9 it was a `Dictionary<string, object>`
+- `Policies`, the Polly v7 registry, is obsolete; use `ResiliencePipeline`
+- `Policies` and `FeatureSwitches` are nullable
+
+**New Members**:
+
+- `Destination`: route a request through a particular producer ([Destination Override](/contents/UsingTheContextBag.md#destination-override))
+- `OriginatingMessage`: the message a consumer received ([Originating Message](/contents/UsingTheContextBag.md#originating-message))
+- `ResiliencePipeline`: the Polly v8 `ResiliencePipelineRegistry<string>` ([Resilience Pipeline Registry](/contents/UsingTheContextBag.md#resilience-pipeline-registry))
+- `ResilienceContext`: Polly's context for the current execution ([Resilience Context](/contents/UsingTheContextBag.md#resilience-context))
+- `Span`: the current OpenTelemetry `Activity` ([OpenTelemetry Span](/contents/UsingTheContextBag.md#opentelemetry-span))
+- `CreateCopy()`: a copy of the context for a new pipeline
 
 **Migration**: Most code should not be affected unless you implement `IRequestContext` directly.
 
 **If you implement `IRequestContext`** (rare):
 
 ```csharp
+using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using Paramore.Brighter;
+using Paramore.Brighter.FeatureSwitch;
+using Polly;
+using Polly.Registry;
+
 public class MyRequestContext : IRequestContext
 {
-    public Guid Id { get; set; }
-    public ISpan Span { get; set; }
-    public Dictionary<string, object> Bag { get; set; }
+    // V10: a ConcurrentDictionary, where V9 had a Dictionary
+    public ConcurrentDictionary<string, object> Bag { get; } = new();
+    public IAmAFeatureSwitchRegistry? FeatureSwitches { get; set; }
 
-    // V10: Add new properties
-    public string? PartitionKey { get; set; }
-    public Dictionary<string, string> CustomHeaders { get; set; } = new();
-    public ResilienceContext? ResilienceContext { get; set; }
+    [Obsolete("Migrate to ResiliencePipeline")]
+    public IPolicyRegistry<string>? Policies { get; set; }
+
+    // V10: new members
+    public ProducerKey? Destination { get; set; }
     public Message? OriginatingMessage { get; set; }
-}
-```
+    public ResiliencePipelineRegistry<string>? ResiliencePipeline { get; set; }
+    public ResilienceContext? ResilienceContext { get; set; }
+    public Activity? Span { get; set; }
 
-**Using new properties**:
-
-```csharp
-public class MyHandler : RequestHandlerAsync<MyCommand>
-{
-    public override async Task<MyCommand> HandleAsync(
-        MyCommand command,
-        CancellationToken cancellationToken = default)
+    public IRequestContext CreateCopy()
     {
-        // Set partition key for message routing
-        Context.PartitionKey = command.TenantId;
-
-        // Add custom headers
-        Context.CustomHeaders["X-Correlation-Id"] = command.CorrelationId;
-
-        // Access originating message (for consumers)
-        if (Context.OriginatingMessage != null)
+        var copy = new MyRequestContext
         {
-            var receivedTimestamp = Context.OriginatingMessage.Header.TimeStamp;
-        }
-
-        return await base.HandleAsync(command, cancellationToken);
+            FeatureSwitches = FeatureSwitches,
+            ResiliencePipeline = ResiliencePipeline,
+            OriginatingMessage = OriginatingMessage,
+            Span = Span
+        };
+        foreach (var item in Bag) copy.Bag[item.Key] = item.Value;
+        return copy;
     }
 }
 ```
 
-#### `InstrumentationOptions` (added in 10.7.0)
+**Partition keys and custom headers are not properties.** `IRequestContext` has no
+`PartitionKey` and no `CustomHeaders`. Put them in the `Bag` under the well-known keys
+`RequestContextBagNames.PartitionKey` and `RequestContextBagNames.Headers`, and pass the
+context with the request. Brighter's default message mappers read both:
+
+```csharp
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
+public class OrderService(IAmACommandProcessor commandProcessor)
+{
+    public async Task PlaceOrderAsync(OrderPlaced orderPlaced)
+    {
+        var context = new RequestContext();
+
+        // Set partition key for message routing
+        context.Bag[RequestContextBagNames.PartitionKey] = orderPlaced.TenantId;
+
+        // Add custom headers
+        context.Bag[RequestContextBagNames.Headers] = new Dictionary<string, object>
+        {
+            ["x-tenant-id"] = orderPlaced.TenantId
+        };
+
+        await commandProcessor.PostAsync(orderPlaced, requestContext: context);
+    }
+}
+```
+
+A custom mapper reads them only if it asks: `Context.GetPartitionKey()` and `Context.GetHeaders()`,
+in `Paramore.Brighter.Extensions`. See [Partition Key](/contents/UsingTheContextBag.md#partition-key)
+and [Custom Headers](/contents/UsingTheContextBag.md#custom-headers).
+
+#### `InstrumentationOptions` (after 10.7.0)
+
+> **Not in a released package yet.** `IRequestContext.InstrumentationOptions` ships **after
+> Brighter 10.7.0**, which is the current release. It is on Brighter's development branch and in
+> no version you can install today, so an implementation built against 10.7.0 compiles without
+> it; treat what follows as the change as it will ship.
 
 **Breaking Change**: `IRequestContext` gains a required `InstrumentationOptions` member.
 
@@ -384,16 +449,19 @@ the member is plain and abstract: any third-party or test type implementing the 
 fails to compile until it adds one line.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Observability;
+
 public class MyRequestContext : IRequestContext
 {
     // ... other members
 
-    // 10.7.0: add this
+    // After 10.7.0: add this
     public InstrumentationOptions InstrumentationOptions { get; set; } = InstrumentationOptions.All;
 }
 ```
 
-The shipped `RequestContext` already implements it, defaulting to
+The shipped `RequestContext` implements it on the development branch, defaulting to
 `InstrumentationOptions.All`, so code that uses the shipped context needs no change.
 
 ### 6. Request Id and CorrelationId type change

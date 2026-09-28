@@ -58,7 +58,7 @@ public handler types. Make the class public so the pipeline builder can find it
 Async handler uses sync attribute 'RejectMessageOnErrorAttribute' at step 0 —
 this will throw a ConfigurationException at pipeline build time
 
-'RejectMessageOnError' at step 5 is after 'UseResiliencePipeline' at step 3 —
+'RejectMessageOnErrorAttribute' at step 5 is after 'UseResiliencePipelineAttribute' at step 3 —
 in Brighter, lower step values are outer wrappers, so the backstop will never
 execute on failure
 
@@ -240,7 +240,7 @@ When `AddConsumers()` is used, validation is deferred to the `ServiceActivatorHo
 
 ### Async Handler with Sync Attributes
 
-An async handler must use async versions of pipeline attributes.
+An async handler must use async versions of pipeline attributes. The example below is wrong: `RejectMessageOnError` is the sync attribute, and the compiler accepts it on `HandleAsync` all the same. `ValidatePipelines()` reports it as an error at startup; without validation, the pipeline throws `ConfigurationException` the first time a request reaches the handler.
 
 **Before** (error):
 
@@ -277,17 +277,45 @@ The backstop attribute should have a lower step number than the resilience pipel
 **Before** (warning):
 
 ```csharp
-[UseResiliencePipeline(step: 0, "RetryPipeline")]  // runs first (inner)
-[RejectMessageOnErrorAsync(step: 1)]                // runs second (outer) — too late!
-public override async Task<OrderCreated> HandleAsync(OrderCreated command, ...)
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+using Paramore.Brighter.Reject.Attributes;
+
+public class OrderHandler : RequestHandlerAsync<OrderCreated>
+{
+    [UseResiliencePipelineAsync("RetryPipeline", step: 0)]  // runs first (outer)
+    [RejectMessageOnErrorAsync(step: 1)]                    // runs second (inner) — too late!
+    public override async Task<OrderCreated> HandleAsync(OrderCreated command,
+        CancellationToken cancellationToken = default)
+    {
+        // ...
+        return await base.HandleAsync(command, cancellationToken);
+    }
+}
 ```
 
 **After** (fixed):
 
 ```csharp
-[RejectMessageOnErrorAsync(step: 0)]                // runs first (outermost)
-[UseResiliencePipeline(step: 1, "RetryPipeline")]    // runs second (inner)
-public override async Task<OrderCreated> HandleAsync(OrderCreated command, ...)
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+using Paramore.Brighter.Reject.Attributes;
+
+public class OrderHandler : RequestHandlerAsync<OrderCreated>
+{
+    [RejectMessageOnErrorAsync(step: 0)]                    // runs first (outermost)
+    [UseResiliencePipelineAsync("RetryPipeline", step: 1)]  // runs second (inner)
+    public override async Task<OrderCreated> HandleAsync(OrderCreated command,
+        CancellationToken cancellationToken = default)
+    {
+        // ...
+        return await base.HandleAsync(command, cancellationToken);
+    }
+}
 ```
 
 In Brighter, lower step numbers are outer wrappers. The backstop needs to be outermost so it catches exceptions from the resilience pipeline and any handlers inside it.

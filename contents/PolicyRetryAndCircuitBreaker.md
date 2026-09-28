@@ -356,7 +356,7 @@ using Paramore.Brighter.Policies.Attributes;
 
 public class MyCancellableHandler : RequestHandlerAsync<MyCommand>
 {
-    [UseResiliencePipeline("MyRetryPipeline", step: 1)]
+    [UseResiliencePipelineAsync("MyRetryPipeline", step: 1)]
     public override async Task<MyCommand> HandleAsync(
         MyCommand command,
         CancellationToken cancellationToken = default)
