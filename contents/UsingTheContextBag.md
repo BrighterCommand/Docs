@@ -114,7 +114,9 @@ public class TenantAwareHandler(IAmACommandProcessor commandProcessor) : Request
 **Or using a PartitionKey object:**
 
 ```csharp
-Context.Bag[RequestContextBagNames.PartitionKey] = new PartitionKey("customer-1234");
+using Paramore.Brighter;
+
+context.Bag[RequestContextBagNames.PartitionKey] = new PartitionKey("customer-1234");
 ```
 
 **Important Notes:**
