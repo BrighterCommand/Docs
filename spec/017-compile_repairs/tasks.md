@@ -1718,7 +1718,7 @@ everywhere. Page list: § *The tranches*, phase 5 table.
     as 4.1; and the P0-7 predictions — `ITimerProvider` 4 → 0, `attr_mismatch` to exactly the
     deliberate `PipelineValidation.md:250`
 
-- [ ] **Task 5.2:** Repair the tranche pages in *Commands, Handlers and Pipelines*, *Darker* and *Understanding Brighter*
+- [x] **Task 5.2:** Repair the tranche pages in *Commands, Handlers and Pipelines*, *Darker* and *Understanding Brighter*
   - Input: those sections' phase 5 rows; 5.1's verdicts
   - Output: each page whole; baseline rows; ledger rows as 4.2
 
@@ -1901,6 +1901,120 @@ a defect beside its placeholder**: `DarkerAndBrighterPipelines.md` #1.
   them, `PostgreSQLMessageBroker.md` #7 and `QueryHandlerDependencies.md` #1, and the other two use
   the word only (`CQRSUseCasesAndPatterns.md` #1, `PostgreSQLMessageBroker.md` #4). Both are read as
   a type the page never shows, and get a stub, never `using StackExchange.Redis`
+
+**Task 5.2 — the *Commands, Handlers and Pipelines*, *Darker* and *Understanding Brighter* pages.**
+Ten pages. **BUILT 234 → 262** (+28): **27** `FAILED -> BUILT` on nine of the ten, and one new key,
+`QueryPipelinePolicies.md` #7, appended. The rest of the AC2 diff, joined on page and ordinal
+against the report at `d69a554`: `DarkerAndBrighterPipelines.md` #1 `FAILED -> SKIPPED` and
+`AgreementDispatcherRouting.md` #12 `- -> FAILED`, a split (§ *Splits*). `pagelint` **616 → 599**,
+every one of the 17 on a page whose blocks gained `using`s: `AgreementDispatcherRouting.md` −5,
+`BuildingAPipeline.md` −3, `CQRSUseCasesAndPatterns.md`, `DarkerConfigurationReference.md`,
+`HowConfiguringTheDispatcherWorks.md`, `QueryHandlerDependencies.md` −2 each, `AgreementDispatcher.md`
+−1 (per page, against a worktree at `origin/master`). Pages with nothing BUILT **57 → 49**, by
+requirements' `awk` and a Python join over the same report: seven gained a BUILT block
+(`AggregationQueryPatterns.md`, `AgreementDispatcherRouting.md`, `BuildingAPipeline.md`,
+`CQRSUseCasesAndPatterns.md`, `DarkerConfigurationReference.md`, `HowConfiguringTheDispatcherWorks.md`,
+`QueryHandlerDependencies.md`), and `DarkerAndBrighterPipelines.md` left because its one block is now
+SKIPPED, not because it built.
+
+- **Against 5.1's reading, block by block.** The floor was 246: 234 + 1 `using` + 11 empty stubs.
+  **Said:** `BuildingAPipeline.md` #3 BUILT by a `using` alone. **Measured:** same-page — the `using`
+  that builds it, `Paramore.Brighter.Logging.Handlers`, names Brighter's own `RequestLoggingHandler<>`,
+  not the one block 1 writes; #2 likewise resolves `[RequestLogging]` to Brighter's attribute, not
+  block 3's. **Said:** `DarkerConfigurationReference.md` #1 empty stub, #2 and
+  `QueryHandlerDependencies.md` #3 typed value. **Measured:** each also names `Program`, which Q2
+  rules out. **Said:** `HowConfiguringTheDispatcherWorks.md` #3 empty stub. **Measured:**
+  `ServiceControl` and `HostControl` are Topshelf's, a package the pin does not carry, and a unit may
+  not fake a third-party package. **Said:** `BuildingAPipeline.md` #4 members. **Measured:** unit rule
+  1 — the section tells the reader to write the handlers it chains. So **7** of the **27** reachable
+  blocks on these pages stay FAILED, and **7** of their **10** hard blocks built; one is SKIPPED and
+  two stay FAILED (`ParameterizedQueryPatterns.md` #4, same-page once its `using` is right, and
+  `ProjectionQueryPatterns.md` #3, a fragment). 20 + 7 + the appended block = **28**
+- **Six units.** `AgreementDispatcherRoutingContext.cs` (the scenarios' requests and handlers,
+  `services`, `registry`), `DarkerQueryPatternsContext.cs` (one EF Core model for four pages:
+  `AggregationQueryPatterns.md`, `ProjectionQueryPatterns.md`, `ParameterizedQueryPatterns.md`,
+  `QueryHandlerDependencies.md`), `DarkerConfigurationReferenceContext.cs`,
+  `HowConfiguringTheDispatcherWorksContext.cs`, `CQRSUseCasesAndPatternsContext.cs`. None is a type a
+  page tells the reader to write (rule 1, by reading). **Three shapes the rule forced, each recorded
+  in its unit:** a type no block names but whose members a block reads (an order's items, its
+  address) is a tuple, not a stub; a Darker handler stub is `abstract`, so it need not declare the
+  `Execute` no block names — its first form did, and put **8** errors against the scaffold tree,
+  which `--report` prints as a warning and does not fail on; a mapper stub derives from Brighter's
+  `JsonMessageMapper<T>` and so declares no member. `CQRSUseCasesAndPatterns.md` #1 now declares its
+  query and `DbContext` itself, because a unit that named the block's `Order` would not compile
+  beside block 2. `ParameterizedQueryPatterns.md` #3, #5 and `ProjectionQueryPatterns.md` #4, BUILT
+  before, are re-admitted with the new unit. `--report` → *"40 units checked, 0 violations"*
+- **Made whole:** `AgreementDispatcherRouting.md` #8 (it ended in a commented-out call with no `;`,
+  and now shows the scan working, below) and the three `{ /* ... */ }` routing lambdas that returned
+  nothing; `CQRSUseCasesAndPatterns.md` #2, whose commands were `: IRequest { /* ... */ }` and whose
+  actions sat outside any class, now a controller over `Command`s; `BuildingAPipeline.md` #1
+- **Skipped, with an accepted reason:** `DarkerAndBrighterPipelines.md` #1, two attribute stacks on
+  signatures shown side by side for comparison. Its `...` parameters are now the real
+  `CancellationToken`, and its `[RetryableQuery]` the corrected form
+- **Nine defects, and the carried `[RetryableQuery]` row closed** (§ *Defect ledger*). The pre-V10
+  logging handler, and the recurrence of its namespace in `FAQ.md`'s quoted exception, which a run
+  gives as `Paramore.Brighter.ICommand`; `.Successor =` for `SetSuccessor()`, and the manual chain
+  said to work from the registry alone; *"Cannot use AutoFromAssemblies"* with an Agreement
+  Dispatcher, on three pages; Darker's query processor said to default to Transient, and the
+  unscoped failure said to be a disposed `DbContext`, on two; `Activator.CreateInstance` as a Darker
+  factory, on two; `using System.Threading.Task;`; V9's `MessageMapperRegistry` initialiser;
+  `RmqSubscription<T>`'s pump type given the wrong reason; `CQRSUseCasesAndPatterns.md` #1's handler
+  reading members its own write model lacks. **`[RetryableQuery]`: 20 lines → 8**, every one left a
+  policy name that is registered, or a deliberate *"doesn't exist"*, and described as the one policy
+  the decorator runs; `QueryPipelinePolicies.md` gains the retry-and-breaker wrap it links to
+- **`--explain` on all 46 blocks the diff touches**, after `pagelint --changed` asked for `using`s on
+  four `QueryPipeline.md` fragments (now marked `// ...`): `[FallbackPolicy]` used with no `using
+  Paramore.Darker.Attributes` on three `QueryPipeline.md` blocks, a placeholder handler body that
+  returned nothing, and `System.Linq`, `System` and `System.Collections.Generic` missing from
+  `ProjectionQueryPatterns.md` #1, `ParameterizedQueryPatterns.md` #2 and
+  `CQRSWithBrighterAndDarker.md` #3. All repaired; what remains on those blocks is names their pages
+  never show
+- **The blocks that stay FAILED compile where their world exists** (§ *Blocks that stay FAILED*):
+  `DarkerConfigurationReference.md` #1, #2 and `QueryHandlerDependencies.md` #3 as a `Program.cs`
+  against Darker 4.1.1; `HowConfiguringTheDispatcherWorks.md` #3 beside #2 against Topshelf 4.3.0;
+  `ParameterizedQueryPatterns.md`'s six blocks together, with the never-shown entity stubbed;
+  `BuildingAPipeline.md` #1–#3 together in the pipeline run below — each **0** errors
+- **Behaviour, run with controls** against released packages (Brighter 10.7.0, Darker 4.1.1,
+  EF Core 9.0.15) in scratch console apps, net10.0, one process per case:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `BuildingAPipeline.md` #1–#3: the attribute puts the logging handler before the target | `AutoFromAssemblies()` → the handler logs, then *"Hello Ian"* | no attribute → *"Hello Ian"* only |
+  | The new sentence: a custom open generic handler must be registered | `.Handlers(r => r.Register<…>())` plus `AddTransient(typeof(RequestLoggingHandler<>))` → logs | without it → `ConfigurationException`, *"Could not create handler RequestLoggingHandler`1[GreetingCommand]"*; the async form the same, both ways |
+  | `AutoFromAssemblies` skips a non-public handler (why `BuildingAPipeline.md` says *public*) | public handler → found | `internal` → `ArgumentException`, *"No command handler was found"* |
+  | #4: the manual chain | a handler factory returning the wired `MyLoggingHandler` → both handlers run | a factory returning a new one → the logging handler only |
+  | `FAQ.md`: sending through `ICommand` | `ArgumentException`, *"… typeof command Paramore.Brighter.ICommand …"* | the concrete type → handled |
+  | `AgreementDispatcherRouting.md` #8: scan beside an agreement | `AutoFromAssemblies(excludeDynamicHandlerTypes: […])`, either order → High → `HighPriorityHandler`, Low → `StandardHandler`, a scanned `OtherCommand` handled | no exclusion, either order → every `Send` of `MyCommand` throws *"More than one handler was found"* |
+  | `DarkerConfigurationReference.md`: the default lifetime and the unscoped failure | `AddDarker()` → `IQueryProcessor` **Singleton**; scope validation on → *"Cannot resolve 'GetContextQueryHandler' from root provider because it requires scoped service"*; off → both scopes' queries see `DbContext` **#1**, never disposed | `QueryProcessorLifetime = Scoped` → **#1**, then **#2** |
+  | #4 and `ImplementAQueryHandler.md`: manual registration with the casts | the query returns `Ada,Bob` | the old form → `CS1503`, compiled |
+  | `QueryPipelinePolicies.md` #7: a retry wrapped round a breaker | `[RetryableQuery(1, "RetryAndBreak")]`, breaker of 2 → **2** attempts, then `BrokenCircuitException`; call 2 → **0** attempts | default → **4** attempts; the default breaker alone → **1**, then **0**; `"DefaultCircuitBreaker"` → `ConfigurationException`, 0 |
+  | *"`AddPolicies()` requires both `Constants` names"* | a registry without the breaker → `ConfigurationException`, *"… missing the Darker.CircuitBreakerPolicy policy"* | both → accepted |
+  | `HowConfiguringTheDispatcherWorks.md` #2 and its two warnings, against RabbitMQ | the block verbatim → a sent `GreetingCommand` handled **1** time | `Subscription<T>` → `ConfigurationException`, *"We expect an RmqSubscription"*; `Proactor` → *"You must provide a message mapper registry"*; `messagePumpType` omitted → handled, which is why the page now says `Reactor` is `RmqSubscription<T>`'s default |
+  | The Darker query-pattern handlers against SQL Server 2022 | `AggregationQueryPatterns.md` #1–#3, `ProjectionQueryPatterns.md` #1, #2, `QueryHandlerDependencies.md` #2 → correct results; #3's statistics 155 / 51.67 / 25 / 100 | #3 on an empty range → zeros, its `?? new SalesStatisticsDto()`; `ProjectionQueryPatterns.md` #1's comment, *"SELECT Id, Name, Email only"*, against the whole entity → four columns |
+
+  On SQLite, `AggregationQueryPatterns.md` #3 throws *"SQLite cannot apply aggregate operator 'Min'
+  on expressions of type 'decimal'"* — the provider's limit, and the page names none. Read, not run:
+  `CQRSUseCasesAndPatterns.md` #1 joins and aggregates as `ProjectionQueryPatterns.md` #2 does, run
+  above; its #2 is a controller over the command and query processors
+- **Put to the maintainer, not repaired** — each found reading this task's pages, none on its tranche:
+  **`Monitoring.md`**'s *Config file* section registers `MonitoringConfigurationSection,
+  Brighter.commandprocessor` in `app.config`; at 10.7.0 that type is a plain class, and the page's
+  links go to the retired `brightercommand.github.io`. **Topshelf** — pin it, so
+  `HowConfiguringTheDispatcherWorks.md` #3 builds, or retire the recommendation. **Handlers declared
+  without `public`**: 18 lines on 7 pages, which `AutoFromAssemblies()` never finds (the run above).
+  **`DarkerBasicConfiguration.md`'s troubleshooting** says handlers must end in *"Handler"* and not
+  be nested; Darker 4.1.1 scans `ExportedTypes` for `IQueryHandler<,>` and neither holds. Darker's own
+  README carries the uncast `Activator.CreateInstance` line (`README.md:110`)
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 28 rows and 3 re-admissions at `1cafef9` (`09f5848`). `--report` → exit **0**,
+  *"985 blocks: 262 BUILT, 706 FAILED, 17 SKIPPED"*, baseline 262, 0 findings
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings,
+  22 entries, 3 silenced; `optioncheck` 0 mismatches across 59 tables, 519 rows; shape, redirects and
+  `--verify` unmoved; `pagelint --changed origin/master` 0 errors. **Pages changed: 18**
+  (`git diff --name-only d69a554..HEAD -- contents`): **9** of the 10 tranche pages —
+  `AggregationQueryPatterns.md` built by its unit alone — and **9** by recurrence: `AgreementDispatcher.md`, `BuildingAnAsyncPipeline.md`, `CQRSWithBrighterAndDarker.md`,
+  `DarkerBasicConfiguration.md`, `FAQ.md`, `ImplementAQueryHandler.md`, `QueryPatterns.md`,
+  `QueryPipeline.md`, `QueryPipelinePolicies.md`
 
 ---
 
@@ -2216,6 +2330,18 @@ is rewritten against the tables below.
 | `PaginationQueryPatterns.md` | 4 | `CS0246` `GetOrdersCursorQuery`, `CursorPagedResult<>`, `OrderDto`; `ApplicationDbContext` | same-page: block 3 declares the first two, block 1 `OrderDto`; block 4 is *"Handler with cursor pagination:"*, straight after block 3 | 3 |
 | `QueryPipelinePolicies.md` | 1 | `CS0246` `Program` | instrument: a `Program.cs` with no declaration after its statements takes the `statements` wrapper, which declares no `Program`; Q2 (1.8) rules out a stub. Builds as a `Program.cs` in scratch against Darker 4.1.1, **0** errors | 3 |
 | `ReplayOnSeenReference.md` | 1 | `CS0117` `RequestContextBagNames.CausationId`; `CS0246` `ProcessPayment`; `CS0103` `_commandProcessor`, `batchId`, `orderId` | P2-2: `CausationId` is on Brighter `master` (`RequestContextBagNames.cs:143`), in no release. The pin bump brings it in through the ratchet; the other names are the handler's, and want a unit then | 4 |
+| `AgreementDispatcherRouting.md` | 12 | `CS0103` `_database` | the ❌ example calls a database the page never shows, through a type no block names, so unit rule 1 admits no stub. Split from #11 (§ *Splits*) | 5 |
+| `BuildingAPipeline.md` | 2 | `CS0246` `GreetingCommand`, `RequestLogging` | same-page: block 3 declares `RequestLoggingAttribute`, and the next sentence says so (*"We implement the **RequestLoggingAttribute** by creating our own Attribute class"*). A `using` of Brighter's `Logging.Attributes` builds it against Brighter's attribute instead | 5 |
+| `BuildingAPipeline.md` | 3 | `CS0246` `RequestLoggingHandler<>` | same-page: block 1 declares it. A `using` of Brighter's `Logging.Handlers` builds it against Brighter's handler instead. Blocks 1–3 compile together and run (§ *Phase 5 as executed*, 5.2) | 5 |
+| `BuildingAPipeline.md` | 4 | `CS0246` `MyCommand`, `MyCommandHandler`, `MyLoggingHandler`; `CS0103` `log` | **unit rule 1**: the section tells the reader to write the handlers it chains (*"You can derive from **RequestHandler\<T\>** and call **base.Handle()**"*). Run in scratch with them written | 5 |
+| `DarkerConfigurationReference.md` | 1 | `CS0246` `Program` | instrument: `typeof(Program).Assembly` takes the `statements` wrapper; Q2 (1.8) rules out a stub. Builds as a `Program.cs` against Darker 4.1.1 in scratch, **0** errors | 5 |
+| `DarkerConfigurationReference.md` | 2 | `CS0246` `Program` | as #1 | 5 |
+| `ParameterizedQueryPatterns.md` | 2 | `CS0246` `GetCustomerByEmailQuery` | same-page: block 1 declares it; block 2 is *"**Handler Example:**"* after it. The six blocks compile together, with the never-shown entity stubbed, at **0** errors | 5 |
+| `ParameterizedQueryPatterns.md` | 4 | `CS0246` `GetOrdersByCustomerQuery`, `OrderSummaryDto` | same-page, once its `using System.Threading.Tasks` is right: block 3 declares both; *"**Handler with optional filters:**"* | 5 |
+| `ParameterizedQueryPatterns.md` | 6 | `CS0246` `SearchProductsQuery`, `ProductDto` | same-page: block 5 declares both; *"**Handler with multiple optional criteria:**"* | 5 |
+| `ProjectionQueryPatterns.md` | 3 | `CS1513`, `CS0103` `Select` | parse — a fragment: the `.Select(…)` of block 2's handler with no receiver, under *"Database-computed fields"*. The reader has the whole in block 2 | 5 |
+| `QueryHandlerDependencies.md` | 3 | `CS0246` `Program`; `CS0103` `builder` | instrument, as `DarkerConfigurationReference.md` #1; `builder` is not stubbed, since no BUILT block would name it. Builds as a `Program.cs` against Darker 4.1.1, **0** errors | 5 |
+| `HowConfiguringTheDispatcherWorks.md` | 3 | `CS0246` `Topshelf`, `ServiceControl`, `HostControl` | the page hosts the Dispatcher in Topshelf, which the pin does not carry, and a unit may not stand in for a third-party package. Builds beside block 2 against Topshelf 4.3.0 in scratch, **0** errors. Put to the maintainer | 5 |
 
 ## Splits
 
@@ -2224,6 +2350,8 @@ is rewritten against the tables below.
 | Page | Old # | New # | Why | Task |
 |---|---:|---:|---|---:|
 | `SchedulingAMessage.md` | 7, 8, 9 | 8, 9, 10 | not a split: a block inserted at #7, the #4414 workaround. All three were FAILED at `c7329bb` and are BUILT now, so the AC2 diff reads #7–#9 as `FAILED -> BUILT` and #10 as a new key | 3.4 |
+| `AgreementDispatcherRouting.md` | 11 | 11, 12 | the ✅ and ❌ routing lambdas were one fence. #12's database is a type no block names, so no unit may supply it; apart, #11 builds and #12 is listed. #12 is a new key in the AC2 diff | 5.2 |
+| `QueryPipelinePolicies.md` | — | 7 | not a split: a block appended after the page's last, the retry-and-breaker wrap. A new key, BUILT | 5.2 |
 
 ## Blocks removed
 
@@ -2278,7 +2406,7 @@ BUILT, re-admitted at `ec38400`.
 | InMemory cancel and reschedule said to work on a request scheduled through the command processor — each scheduled call gets a new `InMemoryScheduler`, so `CancelAsync` finds nothing and the request runs; `ReSchedulerAsync` returns `False` | run, control same instance; `CommandProcessor.cs:427`, `InMemoryScheduler.cs:57` — **upstream, BrighterCommand/Brighter#4437**, filed 3.4 | `SchedulingAMessage.md`, `FAQ.md`, `InMemoryScheduler.md` (cancel example, `Should_Cancel_Scheduled_Command`) | `grep -rl 'issues/4437' contents/` | **3** pages | **stated** on all 3 — maintainer's ruling | 3.4, running block 4's claim |
 | Darker's default policies described as *"exponential backoff"* and a breaker that *"opens after consecutive failures"*, and as applying once registered. They retry 3 times after 50, 100 and 150 ms, the breaker opens on 1 failure for 500 ms, and neither runs without `[RetryableQuery]` | Darker 4.1.1 `QueryProcessorBuilderExtensions.cs:51`, `RetryableQueryDecorator.cs`; run, control without the attribute | `QueryPipelinePolicies.md` (the list and block 2's comment) | `grep -rnE 'Retries with exponential backoff\|Opens after consecutive failures\|Retry policy with exponential backoff' contents/` | **3** | **0** | 3.5, reading the page against Darker's source, then running |
 | *"The ASP.NET model binder will validate these attributes before the query reaches your handler"*. Only a controller marked `[ApiController]`, or a minimal API after `AddValidation()` (.NET 10), rejects the query; elsewhere it reaches the code | run on net10.0, controls both ways | `QueryObjectValidation.md` | `grep -rn 'model binder will validate' contents/` | **1** | **0** | 3.5, running block 2's claim |
-| `[RetryableQuery]`'s second argument described and used as a circuit-breaker name that adds a breaker to the retry. It is a policy name, and the decorator runs that one policy. `"DefaultCircuitBreaker"` is not registered by `AddDefaultPolicies()`, so it throws `ConfigurationException`; `circuitBreakerName:` is not a parameter (`CS1739`) | Darker 4.1.1 `RetryableQueryAttribute.cs:11`, `Constants.cs`; run, control `Constants.CircuitBreakerPolicyName`; compiled | `QueryPipeline.md` (4 lines, and the parameter list at line 239), `CQRSWithBrighterAndDarker.md` (2), `DarkerAndBrighterPipelines.md`, `ImplementAQueryHandler.md`, `QueryPatterns.md` | `grep -rnE 'RetryableQuery\(.*(DefaultCircuitBreaker\|circuitBreakerName)' contents/` | **9** lines, 5 pages | **open — phase 5**, maintainer's ruling | 3.5, reading Darker's source for the tranche's policy defaults |
+| `[RetryableQuery]`'s second argument described and used as a circuit-breaker name that adds a breaker to the retry. It is a policy name, and the decorator runs that one policy. `"DefaultCircuitBreaker"` is not registered by `AddDefaultPolicies()`, so it throws `ConfigurationException`; `circuitBreakerName:` is not a parameter (`CS1739`) | Darker 4.1.1 `RetryableQueryAttribute.cs:11`, `Constants.cs`; run, control `Constants.CircuitBreakerPolicyName`; compiled | `QueryPipeline.md` (4 lines, and the parameter list at line 239), `CQRSWithBrighterAndDarker.md` (2), `DarkerAndBrighterPipelines.md`, `ImplementAQueryHandler.md`, `QueryPatterns.md` | `grep -rnE 'RetryableQuery\(.*(DefaultCircuitBreaker\|circuitBreakerName)' contents/` | **9** lines, 5 pages; **20** lines, 6 pages, with any second argument (`grep -rnE 'RetryableQuery\([^)]*,' contents/`) | **0**; **8** with any second argument, each a registered policy or the deliberate *"doesn't exist"*, described as the one policy the decorator runs — maintainer's ruling, repaired in 5.2 | 3.5, reading Darker's source for the tranche's policy defaults |
 | `.ConfigureServices(hostContext, services) =>` — the lambda's parameter list never opened, and its body never closed (`CS1519`, `CS1001`) | compiled, old form `CS1519` | `MSSQLInbox.md`, `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md`, `DynamoInbox.md`, `AzureBlobArchiveProvider.md`, `BrighterBasicConfiguration.md` ×2, `DispatcherConfigurationReference.md` ×5 | `grep -rn 'ConfigureServices(hostContext, services) =>' contents/` | **13** lines, 8 pages | **0** | 4.1, `--classify` |
 | `opt.InboxConfiguration` inside `AddConsumers(options => …)` — `CS0103` | compiled | `MySQLInbox.md`, `PostgresInbox.md`, `SqliteInbox.md` | `grep -rn '^\s*opt\.InboxConfiguration' contents/` — **4** before, **1** after, `DynamoInbox.md`'s, whose parameter is `opt` | **3** | **0** | 4.1, a scan of every lambda |
 | `[UseInboxAsync]` on a handler class — `CS0592`; `RequestHandlerAttribute` is valid on methods only | `RequestHandlerAttribute.cs`, `AttributeUsage(AttributeTargets.Method)` | `InMemoryInbox.md` #2 | `grep -rn -A1 '^\s*\[UseInbox' contents/ \| grep -c class` | **1** | **0** | 4.1, `--explain` |
@@ -2295,6 +2423,15 @@ BUILT, re-admitted at `ec38400`.
 | Cooldown time given as `CooldownCount × interval`, recovery *"when the cooldown reaches zero"* — a topic sits out `CooldownCount` sweeps and is retried on the next, `(CooldownCount + 1) × TimerInterval` | `InMemoryOutboxCircuitBreaker.cs` (removes below zero), `OutboxProducerMediator.cs:721`; run end to end, controls no breaker and `0` | `SweeperCircuitBreaking.md` (formula, example, #2, #7 comments, steps), `UsingSweeperCircuitBreaking.md` #2 | `grep -rnE '(^\|[^+] )[0-9]+ (sweeps )?× [0-9]+s\|total cooldown\|[Rr]ecover after [0-9]\|When the cooldown reaches zero' contents/`, at `05fdeaf` and after | **8** | **0** | 4.4, running the sweeper for the row above |
 | Circuit breaking said to work with every Outbox, and `.UseMongoDbOutbox(…)` — no such method. The DynamoDB (V3, V4) and Spanner Outboxes ignore `trippedTopics`, so a tripped topic is swept as normal | `DynamoDbOutbox.cs:582`, `SpannerQueries.cs:12`; run against DynamoDB Local and the Spanner emulator, controls SQLite and MongoDB — **upstream, BrighterCommand/Brighter#4443, #4444**, filed 4.4 | `SweeperCircuitBreaking.md` (section, #5, troubleshooting) | the next row's grep, its first four alternatives | **4** | **0** — the table states it | 4.4, maintainer's ruling |
 | Explicit clearing said both to ignore the breaker and to respect it, and failed batches to be *"retried individually per topic"*. An explicit clear sends a tripped topic's messages; a failed `ClearOutboxAsync` trips the topic, a failed `ClearOutbox` does not unless the producer confirms publication | `OutboxProducerMediator.cs:425`, `:1220`, `:984`; run, sync and async, pre-tripped and fresh | `SweeperCircuitBreaking.md` § 6, § *Bulk Dispatch Support* | `grep -rnE 'UseMongoDbOutbox\|fully integrated with MongoDB\|works automatically with MongoDB\|works with all Brighter Outbox\|NOT subject to circuit breaking\|respects circuit breaker state\|retried individually per topic' contents/`, at `05fdeaf` and after; its last three alternatives are this row's | **3** | **0** | 4.4, maintainer's ruling |
+| A pre-V10 logging handler: `using Brighter.commandprocessor.Logging`, `namespace Brighter.commandprocessor`, `logger.InfoFormat`; prose placing it in *"the Brighter.CommandProcessor packages"* and passing *"an ILog reference"* — and on the async page, prose about logging beside a block that writes to an Inbox; `FAQ.md` quoting `Brighter.commandprocessor.ICommand` in an exception | `Logging/Handlers/RequestLoggingHandler.cs`; run, the FAQ's message `Paramore.Brighter.ICommand` | `BuildingAPipeline.md`, `BuildingAnAsyncPipeline.md`, `FAQ.md` | `grep -rnE 'Brighter\.commandprocessor\|Brighter\.CommandProcessor packages\|ILog reference' contents/` | **8** | **1** — `Monitoring.md:25`, an `app.config` section, put to the maintainer | 5.1, `--explain` |
+| `.Successor = …` and a method *"IHandleRequests\<TRequest\> Successor"* — the method is `SetSuccessor()`; and the manual chain said to run from the registry alone, which holds the handler's type, so a factory must return the wired instance | `RequestHandler.cs:74`; run, control a new instance | `BuildingAPipeline.md` | `grep -rnE '\.Successor *=\|TRequest\\> Successor\*\*\|Successor\.Handle\(\)' contents/` | **3** | **0** | 5.2, `--explain` |
+| *"Cannot use AutoFromAssemblies"* with an Agreement Dispatcher, *"creates fixed mappings"*. `AutoFromAssemblies(excludeDynamicHandlerTypes: …)` scans beside an agreement; without the exclusion every `Send` throws *"More than one handler was found"* | `IBrighterBuilder.cs:46`, `ServiceCollectionBrighterBuilder.cs:238`; run, both orders, controls both ways | `AgreementDispatcherRouting.md`, `AgreementDispatcher.md`, `FAQ.md` | `grep -rnEi "cannot use .?AutoFromAssemblies\|AutoFromAssemblies.? (won't\|will not) work\|creates fixed (1-to-1 )?mappings\|Instead of AutoFromAssemblies" contents/` | **7** | **0** | 5.1, P0-10 — running #8's claim |
+| Darker's query processor said to default to **Transient**, and an unscoped EF Core handler to fail on a *disposed DbContext*. It defaults to **Singleton** and resolves handlers from the root provider: with scope validation, *"Cannot resolve … from root provider"*; without, one `DbContext` for every query | Darker 4.1.1 `DarkerOptions.cs:9`; run, control `Scoped` | `DarkerConfigurationReference.md`, `DarkerBasicConfiguration.md` | `grep -rnEi 'disposed DbContext\|IQueryProcessor.{0,40}Transient\|Default Configuration \(Transient\)' contents/` | **5** | **0** | 5.2, reading the page against `DarkerOptions` |
+| `.Handlers(registry, Activator.CreateInstance, t => {}, Activator.CreateInstance)` — Darker's factories are `Func<Type, IQueryHandler>` and `Func<Type, IQueryHandlerDecorator>`, and `Activator.CreateInstance` returns `object` (`CS1503`). Darker's README carries the same line | `Builder/INeedHandlers.cs:9`; compiled, and run with the casts | `DarkerConfigurationReference.md`, `ImplementAQueryHandler.md` | `grep -rnE 'Handlers\(registry, Activator\.CreateInstance' contents/` | **2** | **0** | 5.1, `--explain` |
+| `using System.Threading.Task;` (`CS0234`) | compiled | `ParameterizedQueryPatterns.md` | `grep -rn 'using System\.Threading\.Task;' contents/` | **1** | **0** | 5.1, `--explain` |
+| V9's `new MessageMapperRegistry(messageMapperFactory) { { typeof(…), typeof(…) } }` (`CS7036`, `CS1922`) | `MessageMapperRegistry.cs:64`, `:296` | `HowConfiguringTheDispatcherWorks.md` | `grep -rnE 'new MessageMapperRegistry\([a-zA-Z]+\)$' contents/` | **1** | **0** | 5.1, `--explain` |
+| `messagePumpType` said to be set to `Reactor` because *"`Subscription<T>` defaults to `Proactor`"* — the block's `RmqSubscription<T>` (RMQ.Sync) defaults to `Reactor`; switching to `Proactor` is what fails | `RmqSubscription.cs:107`, `Subscription.cs:291`; run against RabbitMQ, controls omitted and `Proactor` | `HowConfiguringTheDispatcherWorks.md` | `grep -rn 'messagePumpType. is set explicitly' contents/` | **1** | **0** | 5.2, running #2's warnings |
+| A query handler reading `o.Customer` and `o.CreatedAt` from a write model that declares neither (`CS1061` once its names resolve); commands written `: IRequest { /* ... */ }` and controller actions outside a class | compiled | `CQRSUseCasesAndPatterns.md` #1, #2 | — | **2** blocks | **0** | 5.2, stubbing #1 |
 
 ## Friction ledger
 
