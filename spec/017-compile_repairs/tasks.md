@@ -1722,7 +1722,7 @@ everywhere. Page list: § *The tranches*, phase 5 table.
   - Input: those sections' phase 5 rows; 5.1's verdicts
   - Output: each page whole; baseline rows; ledger rows as 4.2
 
-- [ ] **Task 5.3:** Repair the tranche pages in *Transports*, *Using an External Bus* and *Health Checks and Observability*
+- [x] **Task 5.3:** Repair the tranche pages in *Transports*, *Using an External Bus* and *Health Checks and Observability*
   - Input: those sections' phase 5 rows; 5.1's verdicts
   - Output: each page whole; baseline rows; ledger rows as 4.2
 
@@ -2056,6 +2056,94 @@ by the `using`s above it: `PolicyRetryAndCircuitBreaker.md:326` → `:359`. Repa
   | Polly v8 order | `AddRetry().AddTimeout(100 ms)`, 300 ms work → **4** attempts | `AddTimeout().AddRetry()` → **1** attempt |
   | One composed pipeline in place of two attributes | `AddCircuitBreaker().AddRetry(3)`, always failing → sends 1, 2 **4** attempts each, send 3 `BrokenCircuitException`, **0** | two `[UseResiliencePipeline]` on the method → `CS0579` |
 
+
+**Task 5.3 — the *Transports*, *Using an External Bus* and *Health Checks and Observability* pages.**
+Six pages, all changed. **BUILT 265 → 288** (+23): **22** `FAILED -> BUILT` and two new keys BUILT,
+less `Telemetry.md` #1's `BUILT -> FAILED`, which is the old #1 renumbered by a block inserted above
+it (§ *Splits*). The rest of the AC2 diff, joined on page and ordinal against the report at
+`5129c20`: `Telemetry.md` #6 `- -> FAILED` (the same insertion), `CloudEventsReference.md` #5 (a block inserted above it) and
+`PostgreSQLBrokerTradeOffs.md` #2 (a split) `- -> BUILT`, `ConfiguringOpenTelemetry.md` #7 `FAILED ->
+-`: its Jaeger block, old #2, was removed and the five after it moved up (§ *Blocks removed*). **985 → 987 blocks.** `pagelint` **585 → 562** (−23, per page against a
+worktree at `5129c20`): `PostgreSQLMessageBroker.md` −10, `CloudEventsReference.md` −4,
+`Telemetry.md` −3, and −1 each on `ConfiguringOpenTelemetry.md`, `MigratingToNullableReferenceTypes.md`,
+`NullableReferenceTypes.md`, `PostgreSQLBrokerTradeOffs.md`, `S3LuggageStore.md`,
+`V10MigrationGuide.md`. Pages with nothing BUILT **48 → 44**, by requirements' `awk` and a Python
+join agreeing: `BrighterControlAPI.md`, `CloudEventsReference.md`, `PostgreSQLBrokerTradeOffs.md`,
+`S3LuggageStore.md`. Repair `2d938c8` (WIP, session 101), `154f78c` and `8d2fb8b`; baseline `af77ae4`.
+
+- **Five units.** `BrighterControlAPIContext.cs` (`app`), `CloudEventsReferenceContext.cs`,
+  `PostgreSQLMessageBrokerContext.cs` (mapped to both PostgreSQL pages), `TelemetryContext.cs`, and
+  `S3LuggageStoreContext.cs` (`serviceCollection`). None is a type a page tells the reader to write
+  (rule 1, by reading). `PostgreSQLMessageBroker.md` #11 and `Telemetry.md` #4, BUILT before, are
+  re-admitted with their units. `--report` → *"45 units checked, 0 violations"*
+- **The maintainer's five rulings, 2026-09-28.** (1) Tracing: rewrite `Telemetry.md`,
+  `PostgreSQLMessageBroker.md` #8 and, off the tranche, `ConfiguringOpenTelemetry.md`. (2) No pin
+  change: the tracing blocks that need `OpenTelemetry.Extensions.Hosting` and
+  `Paramore.Brighter.Extensions.Diagnostics` stay FAILED as a pin limit, each compiled in scratch
+  against the released packages at **0** errors. (3) Fix `CloudEventsSupport.md`, off the tranche;
+  the **11** non-generic subscriptions without `messagePumpType` are recorded, not repaired
+  (§ *Defect ledger*). (4) File the `souce` bug: BrighterCommand/Brighter#4458, linked from
+  `CloudEventsReference.md`. (5) `PostgreSQLBrokerTradeOffs.md`'s size: tested to 50 MB, larger may
+  fit, 150 MB rejected; AWS SQS is 1 MiB in its comparison table, with Brighter's support for SQS
+  messages over 256 KB said to ship in the release after 10.7.0
+- **Twenty-three defects** (§ *Defect ledger*), twelve on the two PostgreSQL pages. Five recur off
+  the tranche and were repaired there: `PostgresOutbox.md`, where the EF Core
+  provider's package is installed, now states the Npgsql version it needs; `HandlingLargeMessages.md`'s S3 store,
+  created with no `ACLs`; a `string` content type given to `MessageBody` on `KafkaConfiguration.md` and
+  `MessageMappers.md`; mappers missing a member of `IAmAMessageMapper<T>` on `Routing.md`,
+  `V10MigrationGuide.md` (#3, #18), `NullableReferenceTypes.md` (#7) and `FAQ.md` (#7, whose
+  `MapToMessage` also returned nothing); `Command`/`Event`
+  subclasses with no base-constructor call on `NullableReferenceTypes.md` (#9, now BUILT),
+  `MigratingToNullableReferenceTypes.md` (#4) and `V10MigrationGuide.md` (#20), whose example also
+  published where it meant to post
+- **`--explain` on every block the diff touches** (`git diff -U0 5129c20` hunks against fence
+  ranges): **39** blocks, **23** BUILT. It found the three constructor blocks without `using`s, now
+  given them. The **16** FAILED are the six pin-limited blocks below, `S3LuggageStore.md` #1, and on
+  the off-tranche pages names their pages never show and two blocks that put a type before a
+  statement (`MigratingToNullableReferenceTypes.md` #4, `V10MigrationGuide.md` #20), not repaired
+- **Behaviour, run with controls**, released 10.7.0 packages, net10.0, one process per case:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `PostgreSQLMessageBroker.md`: consumer and publication names | `channelName` equal to the publication's `Topic` → **1** handled | the page's names → **0**: the consumer reads `queue = ChannelName`, the producer writes `queue = Topic` |
+  | Sending to the broker | `PostAsync` → a row in the table | `PublishAsync` → no row; it runs local handlers |
+  | *Scheduled Messages* | `PostAsync(delay)` → the scheduler fires; the row appears at t≈6 s, visible at once | `PublishAsync(delay)` → a local handler, no row |
+  | What `visible_timeout` delays | a deferred message with `requeueDelay` 20 s → visible again at 19.5 s | `requeueDelay` 0 → handled 3×, the row deleted on reject |
+  | The outbox in an EF Core transaction | with the transaction provider, rollback → **0** outbox rows | without it → **1** |
+  | Message size, `PostgreSQLBrokerTradeOffs.md` | 1 KB, 5 MB, 50 MB round-trip | 150 MB → Npgsql `54000`, *"total size of jsonb object elements exceeds the maximum of 268435455 bytes"*; 200 MB → *"JSON value of length 209715200 is too large"*. 100 MB posted and not received within 6 s, unresolved, so the page claims 50 |
+  | `CloudEventsReference.md`: headers on the wire | RMQ.Async → `cloudEvents_id/source/specversion/time/type`, the content type in the AMQP property; Kafka → `ce_*` and `content-type` | a structured-mode mapper → the envelope in the body. SNS and ASB by reading |
+  | The Kafka partition key | `RequestContextBagNames.PartitionKey` in the context bag → the record key | no bag entry → empty key |
+  | `Telemetry.md`: spans need a registered tracer | `AddBrighterInstrumentation()` → **34** spans; a manual `BrighterTracer` with `AddSource("paramore.brighter")` → **34**, the name case-insensitive | `AddSource` alone → **0**; a wrong source → **0**; `Sdk.CreateTracerProviderBuilder().AddBrighterInstrumentation()` → **0** Brighter spans |
+  | Trace propagation | the OTel SDK initialised → RMQ `cloudEvents_traceparent`, `cloudevents_tracestate`; Kafka `ce_traceparent`, `ce_tracestate` | a bare `ActivityListener` → Brighter writes neither: it injects through `Propagators.DefaultTextMapPropagator` |
+  | `S3LuggageStore.md`: `ACLs`, on LocalStack | `ACLs` unset, bucket missing → `ConfigurationException`, *"No ACL setup on S3Luggage Store"*, no bucket | `ACLs = S3CannedACL.Private` → bucket created; `ACLs` unset, bucket present → accepted |
+  | `BrighterControlAPI.md` against a V10 Dispatcher | `GET /control/status` → the page's JSON, captured; `PATCH …/orders-subscription/performers/3` → 200, 3 performers | by routing key → 400 *"No such subscription"*; wrong case → **500**, `InvalidOperationException` from `Dispatcher.SetActivePerformers`; `baseRoute` `/ops/brighter` → served there, `/control/status` 404 |
+  | `V10MigrationGuide.md` #20: the default mapper | `PostAsync` → **1** message, `application/json` | `PublishAsync` → **0** |
+
+  Every table in `Telemetry.md` was rewritten from captured spans. Every SQL block in
+  `PostgreSQLMessageBroker.md` was run against the table
+- **The blocks that stay FAILED compile where their world exists** (§ *Blocks that stay FAILED*):
+  the six pin-limited tracing blocks — `Telemetry.md` #1, #6, `ConfiguringOpenTelemetry.md` #1, #5,
+  #6 and `PostgreSQLMessageBroker.md` #8 — in scratch against
+  `OpenTelemetry.Extensions.Hosting` and `Paramore.Brighter.Extensions.Diagnostics`; `S3LuggageStore.md`
+  #1 against `Paramore.Brighter.Transformers.AWS.V4` 10.7.0 — each **0** errors.
+  `ConfiguringOpenTelemetry.md` #2–#4 are exporter fragments marked `// ...`
+- **Put to the maintainer, not repaired:** `DefaultMessageMappers.md` #4, an Avro mapper that also
+  passes `CharacterEncoding.Raw` as `MessageBody`'s content type, but whose constructor
+  (`AvroMessageMapper<T>(…)`) does not parse and whose Confluent calls do not match that API;
+  whether `PublishAsync` shown as sending to a transport is swept across the corpus; and whether the
+  Control API's wrong-case 500 is filed
+- **`attr_mismatch.py` → 7**, before the baseline rows
+- **Baseline:** 24 rows and 2 re-admissions; `Telemetry.md` #1 and #4's rows removed. `--report` →
+  exit **0**, *"987 blocks: 288 BUILT, 682 FAILED, 17 SKIPPED"*, baseline 288, 0 findings
+- `linkcheck` 165 files, 0 broken; `versioncheck` 0 stale of 18 across 5; `symbolcheck` 0 findings,
+  22 entries, 3 silenced, `--verify-list` clean; `optioncheck` 0 mismatches across 59 tables, 519 rows;
+  shape, redirects and `--verify` 161 / 77 / 161; `pagelint --changed origin/master` 0 errors.
+  **Pages changed: 17** (`git diff --name-only 5129c20..HEAD -- contents`): the **6** tranche pages
+  and **11** by ruling or recurrence — `CloudEventsSupport.md`, `ConfiguringOpenTelemetry.md`,
+  `FAQ.md`, `HandlingLargeMessages.md`, `KafkaConfiguration.md`, `MessageMappers.md`,
+  `MigratingToNullableReferenceTypes.md`, `NullableReferenceTypes.md`, `PostgresOutbox.md`,
+  `Routing.md`, `V10MigrationGuide.md`
+
 ---
 
 ## Phase 6 — Acceptance *(8 tasks, one PR, no page touched)*
@@ -2381,6 +2469,13 @@ is rewritten against the tables below.
 | `ParameterizedQueryPatterns.md` | 6 | `CS0246` `SearchProductsQuery`, `ProductDto` | same-page: block 5 declares both; *"**Handler with multiple optional criteria:**"* | 5 |
 | `ProjectionQueryPatterns.md` | 3 | `CS1513`, `CS0103` `Select` | parse — a fragment: the `.Select(…)` of block 2's handler with no receiver, under *"Database-computed fields"*. The reader has the whole in block 2 | 5 |
 | `QueryHandlerDependencies.md` | 3 | `CS0246` `Program`; `CS0103` `builder` | instrument, as `DarkerConfigurationReference.md` #1; `builder` is not stubbed, since no BUILT block would name it. Builds as a `Program.cs` against Darker 4.1.1, **0** errors | 5 |
+| `Telemetry.md` | 1 | `CS0234` `Paramore.Brighter.Extensions.Diagnostics`; `CS1061` `AddOpenTelemetry` | pin: needs `OpenTelemetry.Extensions.Hosting` and `Paramore.Brighter.Extensions.Diagnostics`, which `refs.csproj` does not carry; ruled no pin change (5.3, ruling 2). Compiles in scratch against the released packages, **0** errors | 5 |
+| `Telemetry.md` | 6 | as #1 | pin: needs `OpenTelemetry.Extensions.Hosting` and `Paramore.Brighter.Extensions.Diagnostics`, which `refs.csproj` does not carry; ruled no pin change (5.3, ruling 2). Compiles in scratch against the released packages, **0** errors | 5 |
+| `PostgreSQLMessageBroker.md` | 8 | as `Telemetry.md` #1 | pin: needs `OpenTelemetry.Extensions.Hosting` and `Paramore.Brighter.Extensions.Diagnostics`, which `refs.csproj` does not carry; ruled no pin change (5.3, ruling 2). Compiles in scratch against the released packages, **0** errors | 5 |
+| `ConfiguringOpenTelemetry.md` | 1 | as `Telemetry.md` #1 | off the tranche, rewritten by ruling 1. pin: needs `OpenTelemetry.Extensions.Hosting` and `Paramore.Brighter.Extensions.Diagnostics`, which `refs.csproj` does not carry; ruled no pin change (5.3, ruling 2). Compiles in scratch against the released packages, **0** errors | 5 |
+| `ConfiguringOpenTelemetry.md` | 5 | as `Telemetry.md` #1 | as #1 | 5 |
+| `ConfiguringOpenTelemetry.md` | 6 | as `Telemetry.md` #1 | as #1 | 5 |
+| `S3LuggageStore.md` | 1 | `CS0234` `Paramore.Brighter.Transformers.AWS.V4`; `CS0246` `S3LuggageStore`, `S3LuggageOptions`, `AWSS3Connection` | pin (D3): the pin carries the V3 AWS transformer package, not `.V4`. Compiles in scratch against `Paramore.Brighter.Transformers.AWS.V4` 10.7.0, **0** errors, with `credentials` a parameter | 5 |
 
 ## Splits
 
@@ -2391,6 +2486,9 @@ is rewritten against the tables below.
 | `SchedulingAMessage.md` | 7, 8, 9 | 8, 9, 10 | not a split: a block inserted at #7, the #4414 workaround. All three were FAILED at `c7329bb` and are BUILT now, so the AC2 diff reads #7–#9 as `FAILED -> BUILT` and #10 as a new key | 3.4 |
 | `AgreementDispatcherRouting.md` | 11 | 11, 12 | the ✅ and ❌ routing lambdas were one fence. #12's database is a type no block names, so no unit may supply it; apart, #11 builds and #12 is listed. #12 is a new key in the AC2 diff | 5.2 |
 | `QueryPipelinePolicies.md` | — | 7 | not a split: a block appended after the page's last, the retry-and-breaker wrap. A new key, BUILT | 5.2 |
+| `PostgreSQLBrokerTradeOffs.md` | 1 | 1, 2 | the JSONB and JSON schemas were one fence; each now builds. #2 is a new key, BUILT | 5.3 |
+| `CloudEventsReference.md` | 3, 4 | 4, 5 | not a split: a block inserted at #3, the Kafka partition key set per message. Old #3 (SNS) and #4 (Azure Service Bus) are now #4 and #5; all five build, so the AC2 diff reads #3, #4 `FAILED -> BUILT` and #5 as a new key | 5.3 |
+| `Telemetry.md` | 1–5 | 2–6 | not a split: a block inserted at #1, *Enabling Brighter's Spans*, FAILED on the pin. Old #1 and #4, BUILT, are now #2 and #5, their rows moved; so the AC2 diff reads #1 `BUILT -> FAILED` and #6 as a new key | 5.3 |
 
 ## Blocks removed
 
@@ -2406,6 +2504,7 @@ after-report's keys and cannot show these, so they are listed here.*
 | `AnalyzerSupport.md` | 6 | FAILED | BRT008's fixed form | 2.4 |
 | `AnalyzerSupport.md` | 7 | BUILT | the `using` for the code fix's `Partitioner` | 2.4 |
 | `AnalyzerSupport.md` | 8 | FAILED | the BRT007 pragma, rewritten as BRT001 in the new block 1 | 2.4 |
+| `ConfiguringOpenTelemetry.md` | 2 | FAILED | the Jaeger exporter block — OpenTelemetry deprecated the exporter for OTLP, and the page now points the OTLP exporter at Jaeger (ruling 1). Old #3–#7 are now #2–#6, FAILED before and after, so the AC2 diff shows only #7 `FAILED -> -` | 5.3 |
 
 Old block 1 (BRT006's warning case, BUILT) also went; its address now holds the new pragma block,
 BUILT, re-admitted at `ec38400`.
@@ -2478,6 +2577,29 @@ BUILT, re-admitted at `ec38400`.
 | A Polly v8 pipeline's strategies said to wrap *"inner to outer"* in the order added, and `MyComprehensivePipeline` added timeout, retry, breaker. The first added is the outermost, so its 10 s timeout covered every retry together | run, both orders | `PolicyRetryAndCircuitBreaker.md` | `grep -rnE "order they.re added\|inner to outer" contents/`, and a scan of every `TryAddBuilder` chain | **1** sentence, 1 chain | **0** — `PolicyFallback.md`'s chain was right | 5.2, rewriting the stacked attributes |
 | `await` in a handler not marked `async` (`CS4032`) | compiled | `FeatureSwitches.md` #2 | — | **1** | **0** | 5.2, `--explain` |
 | A monitored handler that throws: the monitor's `ExceptionThrown` event carries the `Exception`, which `System.Text.Json` cannot serialize, so the caller gets `NotSupportedException` in place of the handler's exception. And `[MonitorAsync]` cannot send through `ControlBusSenderFactory`'s sender, which registers no async mapper. Both on Brighter `master` too | `MonitorEvent.cs:74`, `ControlBusSenderFactory.cs:56`; run, controls non-throwing and sync — **upstream, BrighterCommand/Brighter#4453, #4454**, filed 5.2 by the maintainer's word | `Monitoring.md` states both and links them | `grep -rn 'issues/445[34]' contents/` | **2** | **stated** | 5.2, running the rewritten page |
+| A PostgreSQL consumer's `channelName` different from the publication's `Topic`: the consumer reads `queue = ChannelName`, the producer writes `queue = Topic`, so nothing is received | run: **0** handled → **1** | `PostgreSQLMessageBroker.md` | reading every `PostgresSubscription` on the two PostgreSQL pages | **1** | **0** | 5.3, running the page |
+| `PublishAsync` said to send to the PostgreSQL broker; it runs local handlers and writes no row | run: `PostAsync` → a row; `PublishAsync` → none | `PostgreSQLMessageBroker.md` | `grep -n PublishAsync` on the two PostgreSQL pages | **2** lines, both sending with it | **2** lines, both saying it does not reach the table; the corpus-wide sweep is put to the maintainer | 5.3, running the page |
+| *Scheduled Messages* said a delay sets `visible_timeout`; `PostAsync(delay)` goes through the scheduler and the row appears when it fires, visible at once. `visible_timeout` delays only a requeue | run: row at t≈6 s; `requeueDelay` 20 s → visible at 19.5 s, control 0 → handled 3× | `PostgreSQLMessageBroker.md` | `grep -n 'CURRENT_TIMESTAMP + delay'` | **1** | **0** | 5.3, running the page |
+| *"(timeout not updated)"* during processing: retrieval moves `visible_timeout` on by the subscription's `visibleTimeout` | read, `PostgreSqlMessageConsumer` at 10.7.0; run | `PostgreSQLMessageBroker.md` | `grep -rn 'timeout not updated' contents/` | **1** | **0** | 5.3, running the page |
+| The outbox write said to join an EF Core transaction without the transaction provider | run: rollback with the provider → **0** outbox rows; without → **1** | `PostgreSQLMessageBroker.md` | reading the page's outbox sections | **1** | **0** | 5.3, running the page |
+| `[ClaimCheck(threshold:, dataStore:)]` — no such parameters; the attribute is `ClaimCheck(int step, int thresholdInKb)` on a mapper | `ClaimCheckAttribute.cs:43` | `PostgreSQLMessageBroker.md` | `grep -rnE 'ClaimCheck\([^)]*dataStore:' contents/` | **1** | **0** | 5.3, `--explain` |
+| `PostgresSubscription<T>` without `messagePumpType` → `ConfigurationException`, *"You must set a message pump type"* | run, with the generic `Subscription<T>` and `KafkaSubscription<T>` as controls, which build | `PostgreSQLMessageBroker.md` | a Python scan of every `new PostgresSubscription<` call on the page | **4** of 5 | **0** of 5 | 5.3, running the page |
+| The same, on **non-generic** subscriptions (`Subscription`, `KafkaSubscription`, `RmqSubscription` on RMQ.Async, `AzureServiceBusSubscription`, `SqsSubscription`) | run, as above | `AgreementDispatcher.md:122`, `CloudEventsSupport.md:185`, `DynamicMessageDeserialization.md:71`, `:210`, `:237`, `FAQ.md:254`, `:637`, `RoutingMultipleMessageTypes.md:104`, `:132`, `:195`, `:309` (lines at `5129c20`) | reading | **11** | **recorded, not repaired** — ruled 2026-09-28. The RMQ ones are to be checked as RMQ.Async: RMQ.Sync defaults to Reactor | 5.3, ruling 3 |
+| SQL naming a `created_at` column the broker's table does not have | every SQL block run against the table | `PostgreSQLMessageBroker.md` | `grep -rn created_at contents/` | **4** | **0** | 5.3, running the SQL |
+| *"Increase `timeOut` to reduce polling frequency"*; the empty-queue poll interval is `emptyChannelDelay` | read, `Subscription.cs` at 10.7.0 | `PostgreSQLMessageBroker.md` | ``grep -rn 'Increase `timeOut`' contents/`` | **1** | **0** | 5.3, reading |
+| `Paramore.Brighter.PostgreSql.EntityFrameworkCore` 10.7.0 resolves EF Core 10, so Npgsql's EF provider must be 10.x | run: 9.0.4 → `MissingMethodException` | `PostgreSQLMessageBroker.md` | `grep -rn 'Npgsql.EntityFrameworkCore' contents/` | **0** | **2**, stated on the page and on `PostgresOutbox.md`, where the package is installed | 5.3, running the page |
+| Message size: the page gave no measured limit, and AWS SQS as 256 KB | run: 50 MB round-trips, 150 MB rejected by Npgsql `54000`; SQS by the maintainer (ruling 5) | `PostgreSQLBrokerTradeOffs.md` | reading its comparison table | **1** | **0** | 5.3, running the page |
+| Tracing configured with `AddSource("Paramore.Brighter…")` alone. `AddBrighter()` registers no `IAmABrighterTracer`, so no Brighter span is ever recorded; `AddBrighterInstrumentation()` registers one | run: `AddSource` alone → **0** spans; `AddBrighterInstrumentation()` → **34** | `Telemetry.md`, `ConfiguringOpenTelemetry.md`, `PostgreSQLMessageBroker.md` #8 | `grep -rnE 'AddSource\("[Pp]aramore\.[Bb]righter' contents/` | **5** | **2**, both sentences saying `AddSource` alone records nothing | 5.3, running the page |
+| Span names, attributes and propagation headers in `Telemetry.md`'s tables | captured from spans, RMQ and Kafka, the SDK initialised | `Telemetry.md` | reading every table | every table | rewritten from the capture | 5.3, running the page |
+| The Jaeger exporter, deprecated by OpenTelemetry and not in the pin | read | `ConfiguringOpenTelemetry.md` | `grep -rn Jaeger contents/` | **4** | **3**, all saying to point OTLP at Jaeger | 5.3, ruling 1 |
+| CloudEvents header names and the content mode on the wire | captured from RMQ.Async and Kafka; SNS and ASB read | `CloudEventsReference.md`, `CloudEventsSupport.md` | reading every header list on both pages | both pages | rewritten from the capture | 5.3, running the page |
+| AWS writes the CloudEvents source as `souce` | read; **upstream, BrighterCommand/Brighter#4458**, filed on the maintainer's word | `CloudEventsReference.md` states it and links it | `grep -rn souce contents/` | **0** | **2**, the statement | 5.3, reading |
+| *"We default the **ACLs** … to **S3CannedACL.Private**"*: `ACLs` is `null`, and `CreateIfMissing` on a missing bucket throws | `S3LuggageOptions.cs:70`, `S3LuggageStore.cs:130` in both AWS packages; run on LocalStack, controls above | `S3LuggageStore.md`, `HandlingLargeMessages.md` (its store set no `ACLs`) | `grep -rn 'S3LuggageOptions' contents/` → 2 pages, every constructor read | **2** | **0** | 5.3, reading |
+| The Control API's status JSON was V9's, its list indented into one paragraph, its route written `{{subscriptionName}}`, and `availableTopics`/`topicName` described as topics — they are subscription names | `ApiExtensions.cs`, `DispatcherExtensions.cs` at 10.7.0; run against a V10 Dispatcher | `BrighterControlAPI.md` | `grep -rn 'control/status' contents/` → the one page | **1** page | **0** | 5.3, running the page |
+| A `string` passed as `MessageBody`'s content type, which is a `System.Net.Mime.ContentType` with no conversion from `string` | `MessageBody.cs:124` | `KafkaConfiguration.md:723`, `MessageMappers.md:146` | `grep -rnE 'new MessageBody\([^)]*, *("\|MediaTypeNames)' contents/`, and a scan of every `new MessageBody(` call's arguments | **2** | **0** — the scan found a third, `DefaultMessageMappers.md` #4, put to the maintainer with the rest of that block | 5.1, carried |
+| A mapper missing a member of `IAmAMessageMapper<T>`, with no `// ...` to say so | `IAmAMessageMapper.cs` | `Routing.md` #1, `V10MigrationGuide.md` #3, #18, `NullableReferenceTypes.md` #7, `FAQ.md` #7 (whose `MapToMessage` also returned nothing; it gains `[RetrieveClaim]` on the way back) | reading, from 5.1's list | **5** | **0** | 5.1, carried |
+| A `Command` or `Event` subclass that never calls a base constructor; neither has a parameterless one | `Command.cs:68`, `Event.cs:68` | `NullableReferenceTypes.md` #9, `MigratingToNullableReferenceTypes.md` #4, `V10MigrationGuide.md` #20 | `grep -rnE 'class \w+ *: *(Command\|Event) *$\|…\{'` → 16 lines, each read; a Python scan of every C# fence for a base call | **3** | **0**; `V10MigrationGuide.md` #1 is the skipped V9 form | 5.1, carried |
+| `V10MigrationGuide.md` #20: the default mapper shown by `PublishAsync` | run: `PostAsync` → **1** message, `application/json`; `PublishAsync` → **0** | `V10MigrationGuide.md` | the corpus sweep is put to the maintainer | **1** | **0** | 5.3, rewriting the block |
 
 ## Friction ledger
 
