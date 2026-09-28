@@ -1924,10 +1924,10 @@ SKIPPED, not because it built.
   block 3's. **Said:** `DarkerConfigurationReference.md` #1 empty stub, #2 and
   `QueryHandlerDependencies.md` #3 typed value. **Measured:** each also names `Program`, which Q2
   rules out. **Said:** `HowConfiguringTheDispatcherWorks.md` #3 empty stub. **Measured:**
-  `ServiceControl` and `HostControl` are Topshelf's, a package the pin does not carry, and a unit may
-  not fake a third-party package. **Said:** `BuildingAPipeline.md` #4 members. **Measured:** unit rule
+  `ServiceControl` and `HostControl` are Topshelf's, a package the pin does not carry; the block
+  builds only since Topshelf was retired (second pass, below). **Said:** `BuildingAPipeline.md` #4 members. **Measured:** unit rule
   1 — the section tells the reader to write the handlers it chains. So **7** of the **27** reachable
-  blocks on these pages stay FAILED, and **7** of their **10** hard blocks built; one is SKIPPED and
+  blocks on these pages stayed FAILED in the first pass (**6** after the second), and **7** of their **10** hard blocks built; one is SKIPPED and
   two stay FAILED (`ParameterizedQueryPatterns.md` #4, same-page once its `using` is right, and
   `ProjectionQueryPatterns.md` #3, a fragment). 20 + 7 + the appended block = **28**
 - **Six units.** `AgreementDispatcherRoutingContext.cs` (the scenarios' requests and handlers,
@@ -1971,7 +1971,7 @@ SKIPPED, not because it built.
   never show
 - **The blocks that stay FAILED compile where their world exists** (§ *Blocks that stay FAILED*):
   `DarkerConfigurationReference.md` #1, #2 and `QueryHandlerDependencies.md` #3 as a `Program.cs`
-  against Darker 4.1.1; `HowConfiguringTheDispatcherWorks.md` #3 beside #2 against Topshelf 4.3.0;
+  against Darker 4.1.1;
   `ParameterizedQueryPatterns.md`'s six blocks together, with the never-shown entity stubbed;
   `BuildingAPipeline.md` #1–#3 together in the pipeline run below — each **0** errors
 - **Behaviour, run with controls** against released packages (Brighter 10.7.0, Darker 4.1.1,
@@ -1996,15 +1996,10 @@ SKIPPED, not because it built.
   on expressions of type 'decimal'"* — the provider's limit, and the page names none. Read, not run:
   `CQRSUseCasesAndPatterns.md` #1 joins and aggregates as `ProjectionQueryPatterns.md` #2 does, run
   above; its #2 is a controller over the command and query processors
-- **Put to the maintainer, not repaired** — each found reading this task's pages, none on its tranche:
-  **`Monitoring.md`**'s *Config file* section registers `MonitoringConfigurationSection,
-  Brighter.commandprocessor` in `app.config`; at 10.7.0 that type is a plain class, and the page's
-  links go to the retired `brightercommand.github.io`. **Topshelf** — pin it, so
-  `HowConfiguringTheDispatcherWorks.md` #3 builds, or retire the recommendation. **Handlers declared
-  without `public`**: 18 lines on 7 pages, which `AutoFromAssemblies()` never finds (the run above).
-  **`DarkerBasicConfiguration.md`'s troubleshooting** says handlers must end in *"Handler"* and not
-  be nested; Darker 4.1.1 scans `ExportedTypes` for `IQueryHandler<,>` and neither holds. Darker's own
-  README carries the uncast `Activator.CreateInstance` line (`README.md:110`)
+- **Four findings off the tranche were put to the maintainer** — `Monitoring.md`'s V9 `app.config`
+  section, Topshelf, handlers declared without `public`, and `DarkerBasicConfiguration.md`'s naming
+  and nesting rules — and each was ruled on and repaired in the second pass, below. Darker's own README
+  carries the uncast `Activator.CreateInstance` line (`README.md:110`)
 - **`attr_mismatch.py` → 7**, before the baseline rows
 - **Baseline:** 28 rows and 3 re-admissions at `1cafef9` (`09f5848`). `--report` → exit **0**,
   *"985 blocks: 262 BUILT, 706 FAILED, 17 SKIPPED"*, baseline 262, 0 findings
@@ -2015,6 +2010,51 @@ SKIPPED, not because it built.
   `AggregationQueryPatterns.md` built by its unit alone — and **9** by recurrence: `AgreementDispatcher.md`, `BuildingAnAsyncPipeline.md`, `CQRSWithBrighterAndDarker.md`,
   `DarkerBasicConfiguration.md`, `FAQ.md`, `ImplementAQueryHandler.md`, `QueryPatterns.md`,
   `QueryPipeline.md`, `QueryPipelinePolicies.md`
+
+**Task 5.2, second pass — the four findings, ruled 2026-09-28.** The maintainer: rewrite
+`Monitoring.md`; retire Topshelf; make the non-public handlers public; fix
+`DarkerBasicConfiguration.md`'s troubleshooting. **BUILT 262 → 265**: `Monitoring.md` #1, #2 and
+`HowConfiguringTheDispatcherWorks.md` #3, all `FAILED -> BUILT`, no other key moved. `pagelint`
+**599 → 585**: `PolicyRetryAndCircuitBreaker.md` −6, `FeatureSwitches.md` −4, `Monitoring.md` −2,
+`MigratingToPollyV8.md` and `PolicyFallback.md` −1 each (per page, against a worktree at `623c786`).
+Pages with nothing BUILT **49 → 48**, `Monitoring.md`. `attr_mismatch.py` **7**, one hit's line moved
+by the `using`s above it: `PolicyRetryAndCircuitBreaker.md:326` → `:359`. Repair `f2ce226`, baseline
+`a347ba6`, `--report` exit 0, *"985 blocks: 265 BUILT, 703 FAILED, 17 SKIPPED"*.
+
+- **`Monitoring.md`, rewritten for V10.** The page registered a V9 `app.config` section and a
+  container call for `MonitorHandler<T>`, and linked the retired site's Control Bus page. At 10.7.0
+  the handler takes an `IAmAControlBusSender` and a `MonitorConfiguration` (a plain class) from the
+  container, and `AddBrighter()` makes `MonitorHandler<T>` available with either registration style.
+  The page now builds a sender with `ControlBusSenderFactory`, shows `[Monitor]`, and prints the
+  message format captured from a run. **Two upstream defects, found running it and stated on the
+  page** (§ *Defect ledger*); filing them is put to the maintainer
+- **Topshelf retired.** `HowConfiguringTheDispatcherWorks.md` now recommends `AddConsumers()`'s hosted
+  service and, without HostBuilder, runs the Dispatcher from a console app until Ctrl+C. #3 builds
+- **Handlers declared without `public`: 18 → 0** on 6 pages (a grep and a Python scan of every C#
+  fence agreeing), and `CommandProcessorConfigurationReference.md` says the scan registers only public
+  handlers. The mapper scan has no such filter, so the sentence names handlers alone
+- **`DarkerBasicConfiguration.md`**: a handler must be exported — public, and nested only in a public
+  class; its name does not matter
+- **`--explain` on the 20 blocks the rulings touched found three more**, each repaired at every
+  recurrence: `[UseResiliencePipeline]` stacked on one method, `CS0579` — the attribute is not
+  repeatable, by design since BrighterCommand/Brighter#2580 — on **7** blocks across **5** pages, each
+  now one pipeline composed in the order the stack meant; `PolicyRetryAndCircuitBreaker.md` saying a
+  pipeline's strategies wrap *"inner to outer"* in the order added, and building its comprehensive
+  pipeline timeout-first — Polly v8 makes the first strategy added the outermost, so that timeout
+  wrapped every retry; and a `FeatureSwitches.md` handler that awaited without `async`. With them,
+  `using`s on the touched blocks and two placeholder bodies that returned nothing
+- **Behaviour, run with controls**, released 10.7.0 packages, net10.0:
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `Monitoring.md` #1, #2 verbatim | `Send` → *"Hello Ada"*, **2** `MT_EVENT`s on `brighter.monitoring`, `EnterHandler` then `ExitHandler` | `IsMonitoringEnabled = false` → **0**; `.Handlers(…)` in place of `AutoFromAssemblies()` → **2** |
+  | Turning it off at runtime | request 1 → **2** events; flag set `false`; request 2 → none | — the first request is its control |
+  | A monitored handler that throws | `InvalidOperationException` in the handler → the caller gets **`NotSupportedException`**, *"… 'System.Reflection.MethodBase' instances is not supported"*; **1** event | the handler not throwing → **2** events |
+  | `[MonitorAsync]` through the factory's sender | *"No message mapper defined for request"*; **0** events | `[Monitor]`, sync → **2** |
+  | `HowConfiguringTheDispatcherWorks.md` #2 + #3 against RabbitMQ | Ctrl+C a second into a 4 s handler → *stopping*, the handler finishes, *ended*, exit **0** | without `e.Cancel = true` → exit **−2**, the handler never finishes |
+  | Darker's scan | a handler named `FetchSomething`, and one nested in a public class → found | `internal` → `MissingHandlerException`; public nested in an `internal` class → the same |
+  | Polly v8 order | `AddRetry().AddTimeout(100 ms)`, 300 ms work → **4** attempts | `AddTimeout().AddRetry()` → **1** attempt |
+  | One composed pipeline in place of two attributes | `AddCircuitBreaker().AddRetry(3)`, always failing → sends 1, 2 **4** attempts each, send 3 `BrokenCircuitException`, **0** | two `[UseResiliencePipeline]` on the method → `CS0579` |
 
 ---
 
@@ -2341,7 +2381,6 @@ is rewritten against the tables below.
 | `ParameterizedQueryPatterns.md` | 6 | `CS0246` `SearchProductsQuery`, `ProductDto` | same-page: block 5 declares both; *"**Handler with multiple optional criteria:**"* | 5 |
 | `ProjectionQueryPatterns.md` | 3 | `CS1513`, `CS0103` `Select` | parse — a fragment: the `.Select(…)` of block 2's handler with no receiver, under *"Database-computed fields"*. The reader has the whole in block 2 | 5 |
 | `QueryHandlerDependencies.md` | 3 | `CS0246` `Program`; `CS0103` `builder` | instrument, as `DarkerConfigurationReference.md` #1; `builder` is not stubbed, since no BUILT block would name it. Builds as a `Program.cs` against Darker 4.1.1, **0** errors | 5 |
-| `HowConfiguringTheDispatcherWorks.md` | 3 | `CS0246` `Topshelf`, `ServiceControl`, `HostControl` | the page hosts the Dispatcher in Topshelf, which the pin does not carry, and a unit may not stand in for a third-party package. Builds beside block 2 against Topshelf 4.3.0 in scratch, **0** errors. Put to the maintainer | 5 |
 
 ## Splits
 
@@ -2423,7 +2462,7 @@ BUILT, re-admitted at `ec38400`.
 | Cooldown time given as `CooldownCount × interval`, recovery *"when the cooldown reaches zero"* — a topic sits out `CooldownCount` sweeps and is retried on the next, `(CooldownCount + 1) × TimerInterval` | `InMemoryOutboxCircuitBreaker.cs` (removes below zero), `OutboxProducerMediator.cs:721`; run end to end, controls no breaker and `0` | `SweeperCircuitBreaking.md` (formula, example, #2, #7 comments, steps), `UsingSweeperCircuitBreaking.md` #2 | `grep -rnE '(^\|[^+] )[0-9]+ (sweeps )?× [0-9]+s\|total cooldown\|[Rr]ecover after [0-9]\|When the cooldown reaches zero' contents/`, at `05fdeaf` and after | **8** | **0** | 4.4, running the sweeper for the row above |
 | Circuit breaking said to work with every Outbox, and `.UseMongoDbOutbox(…)` — no such method. The DynamoDB (V3, V4) and Spanner Outboxes ignore `trippedTopics`, so a tripped topic is swept as normal | `DynamoDbOutbox.cs:582`, `SpannerQueries.cs:12`; run against DynamoDB Local and the Spanner emulator, controls SQLite and MongoDB — **upstream, BrighterCommand/Brighter#4443, #4444**, filed 4.4 | `SweeperCircuitBreaking.md` (section, #5, troubleshooting) | the next row's grep, its first four alternatives | **4** | **0** — the table states it | 4.4, maintainer's ruling |
 | Explicit clearing said both to ignore the breaker and to respect it, and failed batches to be *"retried individually per topic"*. An explicit clear sends a tripped topic's messages; a failed `ClearOutboxAsync` trips the topic, a failed `ClearOutbox` does not unless the producer confirms publication | `OutboxProducerMediator.cs:425`, `:1220`, `:984`; run, sync and async, pre-tripped and fresh | `SweeperCircuitBreaking.md` § 6, § *Bulk Dispatch Support* | `grep -rnE 'UseMongoDbOutbox\|fully integrated with MongoDB\|works automatically with MongoDB\|works with all Brighter Outbox\|NOT subject to circuit breaking\|respects circuit breaker state\|retried individually per topic' contents/`, at `05fdeaf` and after; its last three alternatives are this row's | **3** | **0** | 4.4, maintainer's ruling |
-| A pre-V10 logging handler: `using Brighter.commandprocessor.Logging`, `namespace Brighter.commandprocessor`, `logger.InfoFormat`; prose placing it in *"the Brighter.CommandProcessor packages"* and passing *"an ILog reference"* — and on the async page, prose about logging beside a block that writes to an Inbox; `FAQ.md` quoting `Brighter.commandprocessor.ICommand` in an exception | `Logging/Handlers/RequestLoggingHandler.cs`; run, the FAQ's message `Paramore.Brighter.ICommand` | `BuildingAPipeline.md`, `BuildingAnAsyncPipeline.md`, `FAQ.md` | `grep -rnE 'Brighter\.commandprocessor\|Brighter\.CommandProcessor packages\|ILog reference' contents/` | **8** | **1** — `Monitoring.md:25`, an `app.config` section, put to the maintainer | 5.1, `--explain` |
+| A pre-V10 logging handler: `using Brighter.commandprocessor.Logging`, `namespace Brighter.commandprocessor`, `logger.InfoFormat`; prose placing it in *"the Brighter.CommandProcessor packages"* and passing *"an ILog reference"* — and on the async page, prose about logging beside a block that writes to an Inbox; `FAQ.md` quoting `Brighter.commandprocessor.ICommand` in an exception | `Logging/Handlers/RequestLoggingHandler.cs`; run, the FAQ's message `Paramore.Brighter.ICommand` | `BuildingAPipeline.md`, `BuildingAnAsyncPipeline.md`, `FAQ.md` | `grep -rnE 'Brighter\.commandprocessor\|Brighter\.CommandProcessor packages\|ILog reference' contents/` | **8** | **0** — `Monitoring.md:25`'s `app.config` section went with the page's rewrite, by ruling | 5.1, `--explain` |
 | `.Successor = …` and a method *"IHandleRequests\<TRequest\> Successor"* — the method is `SetSuccessor()`; and the manual chain said to run from the registry alone, which holds the handler's type, so a factory must return the wired instance | `RequestHandler.cs:74`; run, control a new instance | `BuildingAPipeline.md` | `grep -rnE '\.Successor *=\|TRequest\\> Successor\*\*\|Successor\.Handle\(\)' contents/` | **3** | **0** | 5.2, `--explain` |
 | *"Cannot use AutoFromAssemblies"* with an Agreement Dispatcher, *"creates fixed mappings"*. `AutoFromAssemblies(excludeDynamicHandlerTypes: …)` scans beside an agreement; without the exclusion every `Send` throws *"More than one handler was found"* | `IBrighterBuilder.cs:46`, `ServiceCollectionBrighterBuilder.cs:238`; run, both orders, controls both ways | `AgreementDispatcherRouting.md`, `AgreementDispatcher.md`, `FAQ.md` | `grep -rnEi "cannot use .?AutoFromAssemblies\|AutoFromAssemblies.? (won't\|will not) work\|creates fixed (1-to-1 )?mappings\|Instead of AutoFromAssemblies" contents/` | **7** | **0** | 5.1, P0-10 — running #8's claim |
 | Darker's query processor said to default to **Transient**, and an unscoped EF Core handler to fail on a *disposed DbContext*. It defaults to **Singleton** and resolves handlers from the root provider: with scope validation, *"Cannot resolve … from root provider"*; without, one `DbContext` for every query | Darker 4.1.1 `DarkerOptions.cs:9`; run, control `Scoped` | `DarkerConfigurationReference.md`, `DarkerBasicConfiguration.md` | `grep -rnEi 'disposed DbContext\|IQueryProcessor.{0,40}Transient\|Default Configuration \(Transient\)' contents/` | **5** | **0** | 5.2, reading the page against `DarkerOptions` |
@@ -2432,6 +2471,13 @@ BUILT, re-admitted at `ec38400`.
 | V9's `new MessageMapperRegistry(messageMapperFactory) { { typeof(…), typeof(…) } }` (`CS7036`, `CS1922`) | `MessageMapperRegistry.cs:64`, `:296` | `HowConfiguringTheDispatcherWorks.md` | `grep -rnE 'new MessageMapperRegistry\([a-zA-Z]+\)$' contents/` | **1** | **0** | 5.1, `--explain` |
 | `messagePumpType` said to be set to `Reactor` because *"`Subscription<T>` defaults to `Proactor`"* — the block's `RmqSubscription<T>` (RMQ.Sync) defaults to `Reactor`; switching to `Proactor` is what fails | `RmqSubscription.cs:107`, `Subscription.cs:291`; run against RabbitMQ, controls omitted and `Proactor` | `HowConfiguringTheDispatcherWorks.md` | `grep -rn 'messagePumpType. is set explicitly' contents/` | **1** | **0** | 5.2, running #2's warnings |
 | A query handler reading `o.Customer` and `o.CreatedAt` from a write model that declares neither (`CS1061` once its names resolve); commands written `: IRequest { /* ... */ }` and controller actions outside a class | compiled | `CQRSUseCasesAndPatterns.md` #1, #2 | — | **2** blocks | **0** | 5.2, stubbing #1 |
+| `Monitoring.md` written for V9: an `app.config` section typed `MonitoringConfigurationSection, Brighter.commandprocessor`, `container.Register<TRequest, MonitorHandler<TRequest>>`, and the Control Bus on the retired site. At 10.7.0 the handler takes an `IAmAControlBusSender` and a `MonitorConfiguration` from the container | `Monitoring/Handlers/MonitorHandler.cs`, `Configuration/MonitoringConfigurationSection.cs`; run end to end | `Monitoring.md` | `grep -rnE 'configSections\|MonitoringConfigurationSection\|brightercommand\.github\.io/Brighter/ControlBus' contents/` | **5** | **0** | 5.1, the pre-V10 namespace recurrence; maintainer's ruling |
+| A handler declared without `public` — `AutoFromAssemblies()` scans only public handler types, so its request throws *"No command handler was found"* | `ServiceCollectionBrighterBuilder.cs:238`; run, control public | `BuildingAPipeline.md`, `BuildingAnAsyncPipeline.md`, `CommandProcessorConfigurationReference.md`, `FeatureSwitches.md`, `MigratingToPollyV8.md`, `PolicyRetryAndCircuitBreaker.md` | `grep -rnE '^\s*(internal\s+)?class\s+\w+\s*:\s*(RequestHandler\|RequestHandlerAsync)<' contents/`, and a scan of every C# fence | **18** | **0** | 5.2, running `BuildingAPipeline.md`; maintainer's ruling |
+| Darker's scan said to need handlers named *"…Handler"* and not nested. It registers every exported non-abstract `IQueryHandler<,>`: the name and nesting in a public class do not matter; `internal` does | Darker 4.1.1 `QueryHandlerRegistry.cs:48`; run, four cases | `DarkerBasicConfiguration.md` | `grep -rnEi 'end with .?"?Handler\|not nested within' contents/` | **2** | **0** | 5.2, reading the lifetime row's page; maintainer's ruling |
+| `[UseResiliencePipeline]` stacked on one method (`CS0579`) — not repeatable, by design since BrighterCommand/Brighter#2580; strategies are layered in one pipeline. `HowConfiguringTheCommandProcessorWorks.md` said *"you can use multiple attributes"* | `UseResiliencePipelineAttribute.cs:52`; compiled, and the composed form run | `PolicyRetryAndCircuitBreaker.md`, `HandlerFailure.md` ×2, `HowConfiguringTheCommandProcessorWorks.md`, `MigratingToPollyV8.md`, `PolicyFallback.md` ×2 | a scan of every C# fence for one attribute twice in one run of attribute lines | **7** blocks, 5 pages | **0**, `QueryPipeline.md`'s two `[RetryableQuery]` alternatives, commented as two handlers', aside | 5.2, `--explain` on the touched blocks |
+| A Polly v8 pipeline's strategies said to wrap *"inner to outer"* in the order added, and `MyComprehensivePipeline` added timeout, retry, breaker. The first added is the outermost, so its 10 s timeout covered every retry together | run, both orders | `PolicyRetryAndCircuitBreaker.md` | `grep -rnE "order they.re added\|inner to outer" contents/`, and a scan of every `TryAddBuilder` chain | **1** sentence, 1 chain | **0** — `PolicyFallback.md`'s chain was right | 5.2, rewriting the stacked attributes |
+| `await` in a handler not marked `async` (`CS4032`) | compiled | `FeatureSwitches.md` #2 | — | **1** | **0** | 5.2, `--explain` |
+| A monitored handler that throws: the monitor's `ExceptionThrown` event carries the `Exception`, which `System.Text.Json` cannot serialize, so the caller gets `NotSupportedException` in place of the handler's exception. And `[MonitorAsync]` cannot send through `ControlBusSenderFactory`'s sender, which registers no async mapper. Both on Brighter `master` too | `MonitorEvent.cs:74`, `ControlBusSenderFactory.cs:56`; run, controls non-throwing and sync — **upstream, not filed** | `Monitoring.md` states both | — | **2** | **stated** — filing put to the maintainer | 5.2, running the rewritten page |
 
 ## Friction ledger
 
