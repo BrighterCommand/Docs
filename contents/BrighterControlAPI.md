@@ -24,38 +24,41 @@ using Paramore.Brighter.ServiceActivator.Control.Api;
 app.MapBrighterControlEndpoints();
 ```
 
-When mapping the Brighter Control API you can pass a string to change the base route of these calls, by default it is set to `/control`
+The endpoints are mapped under `/control` by default. Pass a base route to put them somewhere else — `app.MapBrighterControlEndpoints("/ops/brighter")` serves `GET /ops/brighter/status`, and `/control/status` then returns 404.
 
 ## API's Provided
 
 ### Get Node Status
-You can retrieve the status of a Dispatcher node by calling `GET /control/status`
+You can retrieve the status of a Dispatcher node by calling `GET /control/status`.
 
 The response contains:
-    - **nodeName** : The name of the node running the Dispatcher
-    - **availableTopics** : The Topics that this node can service
-    - **subscriptions** : An array of Information about currently configured subscriptions
-        - **topicName** : Name of Topic
-        - **performers** : An array of performers
-        - **activePerformers** : Number of currently active performers
-        - **expectedPerformers** : Number of expected performers
-        - **isHealthy** : Is this subscription healthy on this node
-    - **isHealthy** : Is this node Healthy
-    - **numberOfActivePerformers** : The Number of Performers currently running on the Node
-    - **timeStamp** : Timestamp of Status Event
-    - **executingAssemblyVersion** : The version of the running process
 
-``` JSON
+- **nodeName**: The name of the node running the Dispatcher — the Dispatcher's `HostName`, `Brighter` followed by a UUID unless you set one
+- **availableTopics**: The **subscription names** this node services. Despite the field's name these are not topics: a subscription named `orders-subscription` on the routing key `Orders.OrderPlaced` appears as `orders-subscription`
+- **subscriptions**: An array with one entry per subscription:
+  - **topicName**: The subscription name, as in `availableTopics`
+  - **performers**: The names of the subscription's open performers
+  - **activePerformers**: The number of open performers
+  - **expectedPerformers**: The number of performers the subscription is configured to run
+  - **isHealthy**: `true` when `activePerformers` equals `expectedPerformers`
+- **isHealthy**: `true` when every subscription is healthy
+- **numberOfActivePerformers**: The number of open performers across all subscriptions
+- **timeStamp**: When the status was taken
+- **executingAssemblyVersion**: The version of Brighter's control package, not of your application
+
+A node running one subscription, `orders-subscription`, with one performer:
+
+```json
 {
-    "nodeName": "Brightere4888035-06f4-4ef8-b928-dbd47d958538",
+    "nodeName": "Brighter01a0e8e2-8d96-770e-9a8b-afc8e684fc23",
     "availableTopics": [
-        "Orders.NewOrderVersionEvent"
+        "orders-subscription"
     ],
     "subscriptions": [
         {
-            "topicName": "Orders.NewOrderVersionEvent",
+            "topicName": "orders-subscription",
             "performers": [
-                "Orders.NewOrderVersionEvent-0943a9d2-6a00-4cd5-a4cb-cd97106e2bbe"
+                "orders-subscription-01a0e8e2-8d9d-7668-a035-011682a1a192"
             ],
             "activePerformers": 1,
             "expectedPerformers": 1,
@@ -64,14 +67,17 @@ The response contains:
     ],
     "isHealthy": true,
     "numberOfActivePerformers": 1,
-    "timeStamp": "2024-06-29T15:45:46.8910117Z",
-    "executingAssemblyVersion": "9.7.8+476e3ad5c683683086393b17deceea509f68566a"
+    "timeStamp": "2026-09-28T16:39:17.211498+00:00",
+    "executingAssemblyVersion": "10.7.0+c1b8af886235ba3ddc9b3a88e880c121050aec77"
 }
 ```
 
 ### Update Performer Count
-You can update the number of running performers by calling `PATCH /control/subscriptions/{{subscriptionName}}/performers/{{numberOfPerformers:int}}`
+You can change the number of performers a subscription runs by calling `PATCH /control/subscriptions/{subscriptionName}/performers/{numberOfPerformers}`, where `numberOfPerformers` is an integer. The Dispatcher opens or closes performers to match, and the change shows in the next `GET /control/status`.
 
-This will return either :
-- OK with a Message such as `Active performers for Orders.NewOrderVersionEvent set to 2`
-- BAD REQUEST with a message such as `No such subscription Orders.NewOrderVersionCommand`
+`subscriptionName` is the subscription's name — the value `/control/status` reports as `topicName` — not its routing key. This returns either:
+
+- **200 OK** with a message such as `Active performers for orders-subscription set to 3`
+- **400 BAD REQUEST** with a message such as `No such subscription Orders.OrderPlaced`, when no subscription has that name
+
+**Match the name's case exactly.** The check for an unknown name ignores case but the update does not, so `ORDERS-SUBSCRIPTION` passes the check and then fails with a 500, an `InvalidOperationException` from the Dispatcher.

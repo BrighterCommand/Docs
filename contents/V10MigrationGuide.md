@@ -148,6 +148,12 @@ public class PersonCreatedMapper : IAmAMessageMapper<PersonCreated>
         var body = new MessageBody(JsonSerializer.Serialize(request));
         return new Message(header, body);
     }
+
+    public PersonCreated MapToRequest(Message message)
+    {
+        return JsonSerializer.Deserialize<PersonCreated>(message.Body.Value)
+            ?? throw new InvalidOperationException("Failed to deserialize");
+    }
 }
 ```
 
@@ -456,6 +462,7 @@ new RmqPublication
 2. **Use Cloud Events headers** in your mapper (optional):
 
 ```csharp
+using System;
 using System.Text.Json;
 using Paramore.Brighter;
 
@@ -476,6 +483,12 @@ public class PersonCreatedMapper : IAmAMessageMapper<PersonCreated>
 
         var body = new MessageBody(JsonSerializer.Serialize(request));
         return new Message(header, body);
+    }
+
+    public PersonCreated MapToRequest(Message message)
+    {
+        return JsonSerializer.Deserialize<PersonCreated>(message.Body.Value)
+            ?? throw new InvalidOperationException("Failed to deserialize");
     }
 }
 ```
@@ -524,18 +537,20 @@ messageMapperRegistry.Register<PersonCreated, PersonCreatedMapper>();
 **After (V10) - No Mapper Needed**:
 
 ```csharp
+using Paramore.Brighter;
+
 // No mapper registration needed for simple JSON serialization!
 // Brighter uses JsonMessageMapper<T> by default
 
 // Just define your message
-public class PersonCreated : Event
+public class PersonCreated() : Event(Id.Random())
 {
-    public string Name { get; set; }
-    public string Email { get; set; }
+    public required string Name { get; set; }
+    public required string Email { get; set; }
 }
 
-// Publish directly
-await commandProcessor.PublishAsync(new PersonCreated
+// Post it to the bus; the default mapper serializes it
+await commandProcessor.PostAsync(new PersonCreated
 {
     Name = "Alice",
     Email = "alice@example.com"

@@ -42,7 +42,8 @@ serviceCollection.AddBrighter()
         {
             BucketRegion = S3Region.EUWest1,
             HttpClientFactory = provider.GetService<IHttpClientFactory>(),
-            Strategy = StorageStrategy.CreateIfMissing
+            Strategy = StorageStrategy.CreateIfMissing,
+            ACLs = S3CannedACL.Private
         }));
 ```
 
@@ -83,4 +84,4 @@ In addition we set the following properties on the bucket, which can be controll
 
 We set *Tags* on the bucket if they are provided in the **Tags** property.
 
-We default the **ACLs** for the bucket to **S3CannedACL.Private, but you can choose to override this with another policy as described in [**S3CannedACL**](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-access-control.html#RESTCannedAccessPolicies).
+**ACLs** has no default: you choose the canned ACL the bucket is created with, from the policies described in [**S3CannedACL**](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-access-control.html#RESTCannedAccessPolicies). **S3CannedACL.Private** is the usual choice. If you leave **ACLs** unset and choose **StorageStrategy.CreateIfMissing**, a missing bucket is not created: the store throws a **ConfigurationException**, *"No ACL setup on S3Luggage Store"*. A bucket that already exists needs no ACL.

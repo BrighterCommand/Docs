@@ -61,8 +61,10 @@ string name = "default"; // ✅
 **Problem**:
 
 ```csharp
+using Paramore.Brighter;
+
 // ...
-public class CreateOrderCommand : Command
+public class CreateOrderCommand() : Command(Id.Random())
 {
     public string CustomerName { get; set; }
 }

@@ -218,6 +218,18 @@ public class CreateUserCommandMapper : IAmAMessageMapper<CreateUserCommand>
 {
     public IRequestContext? Context { get; set; }
 
+    public Message MapToMessage(CreateUserCommand request, Publication publication)
+    {
+        var header = new MessageHeader(
+            messageId: request.Id,
+            topic: publication.Topic,
+            messageType: MessageType.MT_COMMAND
+        );
+
+        var body = new MessageBody(JsonSerializer.Serialize(request));
+        return new Message(header, body);
+    }
+
     public CreateUserCommand MapToRequest(Message message)
     {
         var dto = JsonSerializer.Deserialize<CreateUserDto>(message.Body.Value);
@@ -269,13 +281,22 @@ public class OrderQuery
 Make nullability expectations explicit in documentation:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 /// <summary>
 /// Creates a new order.
 /// </summary>
-/// <param name="customerId">The customer ID (required, non-null)</param>
-/// <param name="notes">Optional notes (can be null)</param>
 public class CreateOrderCommand : Command
 {
+    /// <param name="customerId">The customer ID (required, non-null)</param>
+    /// <param name="notes">Optional notes (can be null)</param>
+    public CreateOrderCommand(Guid customerId, string? notes) : base(Id.Random())
+    {
+        CustomerId = customerId;
+        Notes = notes;
+    }
+
     public Guid CustomerId { get; }
     public string? Notes { get; }
 }

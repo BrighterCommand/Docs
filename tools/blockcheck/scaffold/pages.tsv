@@ -102,3 +102,4 @@ contents/PostgreSQLMessageBroker.md	PostgreSQLMessageBrokerContext	-
 contents/PostgreSQLBrokerTradeOffs.md	PostgreSQLMessageBrokerContext	-
 contents/CloudEventsReference.md	CloudEventsReferenceContext	-
 contents/Telemetry.md	TelemetryContext	-
+contents/S3LuggageStore.md	S3LuggageStoreContext	-
