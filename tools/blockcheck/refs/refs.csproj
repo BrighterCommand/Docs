@@ -226,6 +226,12 @@
          Microsoft.Extensions and carries a net9.0 build. -->
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.10.0" />
 
+    <!-- The Avro serializers DefaultMessageMappers.md's mapper calls, at the
+         Confluent version Paramore.Brighter.MessagingGateway.Kafka 10.7.0
+         depends on (its Serdes.Json is the same release). Brings Apache.Avro,
+         for ISpecificRecord. -->
+    <PackageReference Include="Confluent.SchemaRegistry.Serdes.Avro" Version="2.15.0" />
+
     <PackageReference Include="Paramore.Darker" Version="4.1.1" />
     <PackageReference Include="Paramore.Darker.AspNetCore" Version="4.1.1" />
     <PackageReference Include="Paramore.Darker.Policies" Version="4.1.1" />
