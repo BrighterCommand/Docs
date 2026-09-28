@@ -27,49 +27,54 @@ CloudEvents can be transmitted in two modes, and Brighter supports both:
 
 ### Binary-Mode (Recommended)
 
-In binary-mode, CloudEvents attributes are mapped to protocol headers, and the event data is placed in the message body.
+In binary-mode, CloudEvents attributes are mapped to protocol headers, and the event data is placed in the message body. The default `JsonMessageMapper<T>` writes binary mode, on every transport.
 
 **When to use binary mode:**
-- The transport protocol supports headers (RabbitMQ, Kafka, AMQP)
+- Your consumers read the attributes from headers
 - You want efficient serialization
 - You want to inspect event metadata without deserializing the body
 
-**Example RabbitMQ message with binary CloudEvents:**
+**Example RabbitMQ message with binary CloudEvents**, as `Paramore.Brighter.MessagingGateway.RMQ.Async` writes it:
 ```text
+Properties:
+  content-type: application/json
+
 Headers:
-  ce_id: "a89b61a2-5c5c-4d7e-8b8f-2e0f9c1d3e4f"
-  ce_source: "https://example.com/orders"
-  ce_type: "com.example.order.created"
-  ce_specversion: "1.0"
-  ce_datacontenttype: "application/json"
-  ce_time: "2025-01-02T10:30:00Z"
+  cloudEvents_id: "01a0e7d8-3aef-7360-bf91-1f2c771a9cb3"
+  cloudEvents_source: "https://example.com/orders"
+  cloudEvents_type: "com.example.order.created"
+  cloudEvents_specversion: "1.0"
+  cloudEvents_time: "2026-09-28T11:48:22.895Z"
 
 Body:
-  {"orderId": "12345", "customerId": "67890", "total": 99.99}
+  {"orderId":"12345","correlationId":null,"id":"01a0e7d8-3aef-7360-bf91-1f2c771a9cb3"}
 ```
+
+Each transport names the headers its own way — `ce_` on Kafka, one `cloudeventheaders` attribute on AWS SNS/SQS — see [CloudEvents Across Transports](/contents/CloudEventsReference.md#cloudevents-across-transports).
 
 ### Structured Content Mode
 
-In structured mode, both CloudEvents attributes and data are placed in the message body as a JSON object.
+In structured mode, both CloudEvents attributes and data are placed in the message body as a JSON object. `CloudEventJsonMessageMapper<T>` writes structured mode; choosing it is what selects the mode, whichever transport carries the message.
 
 **When to use structured mode:**
-- The transport has insufficient header support (AWS SNS/SQS)
+- A consumer reads the event from the body alone
 - You need to preserve all metadata in a single payload
-- The protocol doesn't support custom headers well
 
-**Example SNS/SQS message with structured CloudEvents:**
+**Example message body with structured CloudEvents:**
 ```json
 {
+  "id": "01a0e7d8-3e13-7fbe-abce-bce954e1b9b7",
   "specversion": "1.0",
-  "type": "com.example.order.created",
   "source": "https://example.com/orders",
-  "id": "a89b61a2-5c5c-4d7e-8b8f-2e0f9c1d3e4f",
-  "time": "2025-01-02T10:30:00Z",
+  "type": "com.example.order.created",
   "datacontenttype": "application/json",
+  "dataschema": null,
+  "subject": null,
+  "time": "2026-09-28T11:48:23.699316+00:00",
   "data": {
     "orderId": "12345",
-    "customerId": "67890",
-    "total": 99.99
+    "correlationId": null,
+    "id": "01a0e7d8-3e13-7fbe-abce-bce954e1b9b7"
   }
 }
 ```
@@ -338,9 +343,9 @@ See the [V10 Migration Guide](V10MigrationGuide.md) for complete migration instr
 
 ### 1. Choose the Right Content Mode
 
-- Use **binary mode** for protocols with header support (RabbitMQ, Kafka, Azure Service Bus)
-- Use **structured mode** for protocols with limited headers (AWS SNS/SQS)
-- Brighter selects the appropriate mode automatically based on the transport
+- Use **binary mode**, the default mapper's, when your consumers read headers; every transport Brighter supports carries the attributes beside the body
+- Use **structured mode**, `CloudEventJsonMessageMapper<T>`, when a consumer expects the whole envelope in the body
+- The mapper selects the mode, not the transport
 
 ### 2. Use Meaningful CloudEvents Type
 

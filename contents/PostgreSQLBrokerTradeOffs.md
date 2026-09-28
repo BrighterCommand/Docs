@@ -49,7 +49,7 @@ page to read once you have decided.
 **Not Suitable For**:
 
 - **High-volume scenarios** (> 1000 messages/second)
-- **Large messages** (PostgreSQL has practical limits for row sizes)
+- **Large messages** (each message is stored whole in one table column, so large payloads add to the database's load)
 - **Complex routing requirements** (better served by RabbitMQ or Kafka)
 - **Cross-organization messaging** (where dedicated broker provides better isolation)
 
@@ -65,8 +65,11 @@ page to read once you have decided.
 
 ### Message Size
 
-- **Practical limit**: ~1MB per message (PostgreSQL row size limits)
-- **Recommendation**: Use [Claim Check pattern](ClaimCheck.md) for large payloads
+- **Limit**: Brighter stores the whole message as one value in the `content` column. With JSONB,
+  PostgreSQL caps that value at 268,435,455 bytes (256 MB), and the stored message is larger than
+  the payload it carries. We have tested payloads up to 50 MB; larger ones may fit, but a 150 MB
+  payload is rejected on insert
+- **Recommendation**: Use [Claim Check pattern](ClaimCheck.md) for large payloads, well before that limit
 
 ### No Native Routing
 
@@ -90,16 +93,24 @@ PostgreSQL supports two JSON data types:
 
 ### JSONB Configuration
 
+`binaryMessagePayload` chooses the column type. Set it to `true` for JSONB, the recommended
+form:
+
 ```csharp
-// ...
-// Use JSONB (recommended)
+using Paramore.Brighter;
+
 var configuration = new RelationalDatabaseConfiguration(
     connectionString: connectionString,
     queueStoreTable: "brighter_messages",
     binaryMessagePayload: true  // JSONB
 );
+```
 
-// Use JSON (smaller storage)
+Leave it `false`, its default, for JSON and smaller storage:
+
+```csharp
+using Paramore.Brighter;
+
 var configuration = new RelationalDatabaseConfiguration(
     connectionString: connectionString,
     queueStoreTable: "brighter_messages",
@@ -115,13 +126,16 @@ var configuration = new RelationalDatabaseConfiguration(
 |---------|------------|----------|-------|---------|
 | **Setup Complexity** | Low | Medium | High | Low |
 | **Throughput** | Low-Medium | High | Very High | Medium |
-| **Message Size** | ~1MB | 128MB | ~1MB | 256KB |
+| **Message Size** | tested to 50MB (JSONB) | 128MB | ~1MB | 1MiB |
 | **Persistence** | Database | Disk/Memory | Disk | Managed |
 | **Routing** | Simple | Advanced | Topic-based | Simple |
 | **Transactional** | Yes (local) | No | No | No |
 | **Ordering** | Queue-level | Queue-level | Partition-level | FIFO queues |
 | **Operational Cost** | Low (existing DB) | Medium | High | Pay-per-use |
 | **Best For** | Low volume, transactional | General messaging | Event streaming | AWS ecosystem |
+
+AWS SQS accepts messages up to 1 MiB. Brighter's support for SQS messages over 256 KB ships in the
+release after 10.7.0.
 
 ---
 

@@ -23,6 +23,34 @@ Brighter provides comprehensive OpenTelemetry integration for distributed tracin
 
 ---
 
+## Enabling Brighter's Spans
+
+Brighter records spans only when a tracer, an `IAmABrighterTracer`, is registered in your container,
+and `AddBrighter()` does not register one. `AddBrighterInstrumentation()`, from the
+`Paramore.Brighter.Extensions.Diagnostics` package, registers it and adds its `ActivitySource`,
+`Paramore.Brighter`, to your tracer provider:
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Trace;
+using Paramore.Brighter.Extensions.Diagnostics;
+
+var services = new ServiceCollection();
+
+services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing
+        .AddBrighterInstrumentation()
+        .AddOtlpExporter());
+```
+
+`AddOpenTelemetry()` comes from `OpenTelemetry.Extensions.Hosting`, and `AddOtlpExporter()` from
+`OpenTelemetry.Exporter.OpenTelemetryProtocol`. Without a registered tracer,
+`AddSource("paramore.brighter")` listens to a source nothing writes to, and no Brighter span
+appears. [Configuring OpenTelemetry](/contents/ConfiguringOpenTelemetry.md) shows the setup for a
+producer and a consumer.
+
+---
+
 ## Configurable Instrumentation
 
 V10 provides fine-grained control over which attributes are recorded to optimize performance and reduce costs.
@@ -35,7 +63,7 @@ V10 provides fine-grained control over which attributes are recorded to optimize
 |---|---|
 | `RequestInformation` | Request ID, type and operation; on messages, the CloudEvents ID, type, source and subject |
 | `RequestBody` | The request body as JSON; on messages, the message body (expensive) |
-| `RequestContext` | Custom attributes from the request context |
+| `RequestContext` | Nothing at 10.7.0: no span reads this flag |
 | `Messaging` | Messaging attributes: destination, partition, message ID and type, body size, headers |
 | `DatabaseInformation` | Database attributes for Outbox and Inbox operations |
 | `ClamCheck` | Claim check operations (the member is spelled `ClamCheck`) |
@@ -52,9 +80,8 @@ var services = new ServiceCollection();
 
 services.AddBrighter(options =>
     {
-        // Command Processor spans: request ID, type and operation, plus the request context
-        options.InstrumentationOptions = InstrumentationOptions.RequestInformation
-                                       | InstrumentationOptions.RequestContext;
+        // Command Processor spans: request ID, type and operation
+        options.InstrumentationOptions = InstrumentationOptions.RequestInformation;
     })
     .AddProducers(configure =>
     {
@@ -70,23 +97,27 @@ services.AddBrighter(options =>
 
 ## Command Processor Spans
 
-When Brighter operates as a Command Processor, it creates spans for each operation:
+When Brighter operates as a Command Processor, it creates spans for each operation. A span is named
+for the request type's name, without its namespace:
 
 ### Span Names and Operations
 
 | Operation | Span Name | Kind | Description |
 |-----------|-----------|------|-------------|
 | `send` | `<request type> send` | Internal | Command routed to single handler |
-| `publish` | `<request type> publish` | Internal | Event routed to multiple handlers |
+| `create` | `<request type> create` | Internal | An event published to its handlers; the parent of one `publish` span per handler |
+| `publish` | `<request type> publish` | Internal | Event dispatched to one of its handlers |
 | `deposit` | `<request type> deposit` | Internal | Request transformed and stored in Outbox |
-| `clear` | `clear` | Internal | Messages dispatched from Outbox to broker |
-| `create` | `<channel> create` | Producer | Single message sent to broker |
-| `publish` (messaging) | `<channel> publish` | Producer | Batch of messages sent to broker |
+| `scheduler` | `<request type> scheduler` | Internal | Request handed to the scheduler, with a delay or a time |
+| `create` (clear) | `paramore.brighter.clear_messages create` | Producer | Messages cleared from the Outbox; the parent of a `clear` span |
+| `publish` (messaging) | `<routing key> publish` | Producer | Message sent to the broker |
 
 ### Example: Send Operation
 
 ```csharp
-// Creates span: "MyNamespace.ProcessOrderCommand send"
+using Paramore.Brighter;
+
+// Creates span: "ProcessOrderCommand send"
 await commandProcessor.SendAsync(new ProcessOrderCommand { OrderId = 123 });
 ```
 
@@ -94,92 +125,115 @@ await commandProcessor.SendAsync(new ProcessOrderCommand { OrderId = 123 });
 
 | Attribute | Type | Description | Example |
 |-----------|------|-------------|---------|
-| `paramore.brighter.requestid` | string | Request ID | `"1234-5678-9012-3456"` |
-| `paramore.brighter.requestids` | string | Batch: comma-separated IDs | `"1234..., 2345..."` |
-| `paramore.brighter.requesttype` | string | Full type name | `"MyNamespace.MyCommand"` |
-| `paramore.brighter.request_body` | string | Request as JSON | `{"orderId": 123}` |
+| `paramore.brighter.request.id` | string | Request ID | `"01a0e7cf-3c53-75f1-8566-3fd80badd0a1"` |
+| `paramore.brighter.request.type` | string | Request type's name | `"ProcessOrderCommand"` |
+| `paramore.brighter.request.body` | string | Request as JSON | `{"orderId":123, ...}` |
 | `paramore.brighter.operation` | string | Operation performed | `"send"` |
-| `paramore.brighter.spancontext.*` | varies | Custom context attributes | `spancontext.userid: "1234"` |
+| `messaging.operation.type` | string | Operation performed | `"send"` |
 
 ### Adding Custom Span Attributes
 
-You can add custom attributes via the Request Context:
+At 10.7.0 Brighter copies nothing from the request context onto a span. To record an attribute of
+your own, set it on `Activity.Current` in your handler: while the handler runs, that is the Command
+Processor's span for the request.
 
 ```csharp
-var context = new RequestContext();
-context.Bag["paramore.brighter.spancontext.userid"] = userId;
-context.Bag["paramore.brighter.spancontext.tenantid"] = tenantId;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
 
-await commandProcessor.SendAsync(command, context);
+public class ProcessOrderHandler : RequestHandlerAsync<ProcessOrderCommand>
+{
+    public override async Task<ProcessOrderCommand> HandleAsync(
+        ProcessOrderCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        // Recorded on the "ProcessOrderCommand send" span
+        Activity.Current?.SetTag("app.order_id", command.OrderId);
+
+        return await base.HandleAsync(command, cancellationToken);
+    }
+}
 ```
-
-Any context bag entries starting with `paramore.brighter.spancontext.` will be added as span attributes.
 
 ### Handler Pipeline Events
 
-Brighter records an event for each handler entered in the pipeline:
+Brighter records an event on the span for each handler entered in the pipeline, named for the
+handler:
 
 | Attribute | Type | Description | Example |
 |-----------|------|-------------|---------|
-| `paramore.brighter.handlername` | string | Full handler type name | `"MyNamespace.MyHandler"` |
-| `paramore.brighter.handlertype` | string | Sync or async | `"async"` |
+| `paramore.brighter.handler.name` | string | Handler type's name | `"ProcessOrderHandler"` |
+| `paramore.brighter.handler.type` | string | Sync or async | `"async"` |
 | `paramore.brighter.is_sink` | bool | Final handler in chain | `true` |
 
 ---
 
 ## Dispatcher (Consumer) Spans
 
-When Brighter operates as a Dispatcher (message consumer), it creates spans for each message received:
+When Brighter operates as a Dispatcher (message consumer), each message pump creates spans named for
+the routing key it reads, whichever transport it reads from:
 
 ### Span Names
 
-| Transport Type | Span Name | Kind | Description |
-|---------------|-----------|------|-------------|
-| Pull-based (Kafka) | `<channel> receive` | Consumer | Message pulled from broker |
-| Push-based (RabbitMQ) | `<channel> process` | Consumer | Message pushed by broker |
+| Span Name | Kind | Description |
+|-----------|------|-------------|
+| `<routing key> begin` | Consumer | The message pump starting |
+| `<routing key> receive` | Consumer | One read of the channel, a root span, including reads that find no message |
+| `<routing key> process` | Consumer | One message handled; its parent is the producer's span, carried in the message |
 
 ### Example Flow
 
+Measured with the in-memory transport, a published event and its handler:
+
 ```text
-Dispatcher Span: "task.commands receive" (Consumer)
-  └─> Message Translation (sibling)
-  └─> Command Processor Span: "ProcessTaskCommand send" (Internal)
-      └─> Handler Events
+order.placed publish (Producer, the sending service)
+  └─> order.placed process (Consumer)
+      └─> OrderPlaced create (Internal)
+          └─> OrderPlaced publish (Internal)
+              └─> Handler events: OrderPlacedHandler
 ```
 
 ### Message Attributes
 
 | Attribute | Type | Description | Example |
 |-----------|------|-------------|---------|
-| `messaging.system` | string | Broker type | `"rabbitmq"`, `"kafka"` |
-| `messaging.destination` | string | Channel name | `"task.commands"` |
-| `messaging.operation` | string | Operation type | `"receive"`, `"process"` |
-| `messaging.message_id` | string | Message ID | `"msg-1234"` |
-| `messaging.destination.partition.id` | string | Partition ID (Kafka) | `"0"` |
-| `messaging.message.body.size` | int | Payload size in bytes | `1024` |
-| `server.address` | string | Broker address | `"localhost:5672"` |
+| `messaging.system` | string | Always `internal_bus` on pump spans at 10.7.0, whichever transport the pump reads | `"internal_bus"` |
+| `messaging.destination.name` | string | Routing key | `"order.placed"` |
+| `messaging.operation.type` | string | Operation type | `"receive"`, `"process"` |
+| `messaging.message.id` | string | Message ID | `"01a0e7cf-3c70-7089-9e82-425719101515"` |
+| `messaging.message.type` | string | Message type | `"MT_EVENT"` |
+| `messaging.destination.partition.id` | string | Partition key | `"customer-12345"` |
+| `messaging.message.body.size` | int | Payload size in bytes | `66` |
+| `paramore.brighter.handled_count` | int | Times the message has been handled | `0` |
 
 ---
 
 ## Outbox Tracing
 
-Outbox operations create child spans for database operations:
+Outbox operations create child spans for database operations, each named
+`<operation> <database name> <table>`:
 
 ### Deposit Operation
 
 ```text
-deposit span (Internal)
-  └─> Transform pipeline spans
-  └─> Outbox add span (Database)
+OrderPlaced deposit (Internal)
+  └─> Mapper and transform events: JsonMessageMapper`1, CloudEventsTransformer
+  └─> add.message outbox requests (Client)
 ```
 
 ### Clear Operation
 
 ```text
-create/clear span (Internal)
-  └─> Outbox get span (Database)
-  └─> Produce message span (Producer)
-  └─> Outbox mark dispatched span (Database)
+paramore.brighter.clear_messages create (Producer)
+  └─> retrieve.message outbox requests (Client)
+  └─> paramore.brighter.clear_messages clear (Producer)
+      └─> order.placed publish (Producer)
+  └─> count.outstanding_messages outbox requests (Client)
+
+order.placed settle (Producer), a trace of its own
+  └─> mark_as_dispatched.outstanding_messages outbox requests (Client)
 ```
 
 ### Database Span Attributes
@@ -188,75 +242,94 @@ Outbox and Inbox database operations follow [OTel Database Semantic Conventions]
 
 | Attribute | Description | Example |
 |-----------|-------------|---------|
-| `db.system` | Database type | `"mysql"`, `"postgresql"` |
-| `db.name` | Database name | `"myapp"` |
-| `db.operation` | Operation type | `"outbox_add"`, `"outbox_get"` |
+| `db.system` | Database type; `brighter` for the in-memory stores | `"postgresql"` |
+| `db.name` | The configuration's database name, not the server's | `"Brighter"` |
+| `db.table` | Table | `"outbox"` |
+| `db.operation` | Operation | `"add.message"`, `"retrieve.message"`, `"mark_as_dispatched.outstanding_messages"` |
+| `db.operation.name` | SQL verb, on relational stores | `"INSERT"` |
+| `db.query.text` | SQL, on relational stores | `INSERT INTO {0} (...) VALUES (...)` |
+
+The PostgreSQL examples above are from `PostgreSqlOutbox`; `db.name` is the `databaseName` of its
+`RelationalDatabaseConfiguration`, which defaults to `Brighter`.
 
 ---
 
 ## Inbox Tracing
 
-Inbox operations create child spans for deduplication checks:
+Inbox operations create child spans for deduplication checks, under the span of the request the
+Inbox guards:
 
 ```text
-Dispatcher receive span (Consumer)
-  └─> Message translation
-      └─> Inbox check span (Database)
-  └─> Command Processor send span (Internal)
+order.placed process (Consumer)
+  └─> OrderPlaced create (Internal)
+      └─> OrderPlaced publish (Internal)
+          └─> message.exists inbox requests (Client)
+          └─> add.message inbox requests (Client)
 ```
 
 ### Inbox Operations
 
 | Operation | Span Name | Description |
 |-----------|-----------|-------------|
-| Check | `inbox_check` | Check if message already processed |
-| Add | `inbox_add` | Record message as processed |
+| Check | `message.exists <database name> <table>` | Check if message already processed |
+| Add | `add.message <database name> <table>` | Record message as processed |
 
 ---
 
 ## Transform Pipeline Tracing
 
-Transform operations (Claim Check, Compression, Encryption) create child spans for external calls:
+The Claim Check transform creates a span for each call to its luggage store, named
+`<operation> <provider> <bucket>`, with `claim_check.*` attributes: `claim_check.operation`, and,
+with `ClamCheck` set, `claim_check.provider`, `claim_check.bucket_name`, `claim_check.id` and
+`claim_check.content_lenght` (the attribute is spelled that way).
 
-### Claim Check (S3 Example)
+### Claim Check
 
 ```text
-deposit span (Internal)
-  └─> ClaimCheck transform span
-      └─> S3 put object span (HTTP Client)
-          Attributes: s3.bucket, s3.key, http.request.method
+BigEvent deposit (Internal)
+  └─> store.message <provider> <bucket> (Client)
 ```
 
 ### Retrieve Claim
 
 ```text
-Message translation span
-  └─> RetrieveClaim transform span
-      └─> S3 get object span (HTTP Client)
-          Attributes: s3.bucket, s3.key, http.request.method
+big.event process (Consumer)
+  └─> retrieve.message <provider> <bucket> (Client)
+  └─> delete.message <provider> <bucket> (Client)
 ```
 
-External call spans follow their respective OTel conventions:
-- **S3**: [Object Storage Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/object-stores/s3/)
-- **HTTP**: [HTTP Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/http/)
+The `delete.message` span appears because `[RetrieveClaim]` defaults to `retain: false`. The trees
+were measured with the in-memory luggage store, whose provider and bucket are both `in-memory`.
 
 ---
 
 ## W3C TraceContext Propagation
 
-Brighter automatically propagates trace context across service boundaries using [W3C TraceContext](https://w3c.github.io/trace-context/) headers.
+Brighter automatically propagates trace context across service boundaries using [W3C TraceContext](https://w3c.github.io/trace-context/).
 
 ### How It Works
 
-1. **Producer**: Brighter injects `traceparent` and `tracestate` into message headers
-2. **Consumer**: Brighter extracts `traceparent` and `tracestate` to continue the trace
+1. **Producer**: Brighter writes the producer span's `traceparent` and `tracestate` into the message
+2. **Consumer**: Brighter reads them, and the `process` span becomes a child of the producer's span, in the same trace
 
 ### Message Headers
 
+Each transport names the headers its own way. Measured on RabbitMQ
+(`Paramore.Brighter.MessagingGateway.RMQ.Async`) and Kafka:
+
 ```text
-traceparent: 00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01
-tracestate: congo=t61rcWkgMzE
+RabbitMQ:
+  cloudEvents_traceparent: 00-3519372db2bb5402dc1be3b11c7fc4e5-8675f8104bc40dbe-01
+  cloudevents_tracestate: congo=t61rcWkgMzE
+
+Kafka:
+  ce_traceparent: 00-c37cfd2c01adac953978b1abfb2c8d4c-3ae8fe73da7b454f-01
+  ce_tracestate: congo=t61rcWkgMzE
 ```
+
+RabbitMQ also writes the trace state under `cloudevents_:tracestate`, an older spelling kept for
+consumers that still read it. Brighter injects through OpenTelemetry's default propagator, which
+the OpenTelemetry SDK sets up; without the SDK, nothing is written.
 
 ### Integration with ASP.NET
 
@@ -265,9 +338,7 @@ Brighter participates in existing traces. When called from an ASP.NET controller
 ```text
 ASP.NET Request: "POST /orders"
   └─> Command Processor: "ProcessOrderCommand send"
-      └─> Handler: OrderHandler
-      └─> Publish: "OrderCreatedEvent publish"
-          └─> Outbox add
+      └─> Handler events: OrderHandler
 ```
 
 ---
@@ -282,9 +353,11 @@ CloudEvents adds alternative attribute names following [CloudEvents Semantic Con
 
 | Messaging Convention | CloudEvents Convention | Value |
 |---------------------|------------------------|-------|
-| `messaging.message_id` | `cloudevents.event_id` | Message ID |
-| `messaging.destination` | `cloudevents.event_source` | Event source |
+| `messaging.message.id` | `cloudevents.event_id` | Message ID |
+| N/A | `cloudevents.event_source` | Event source |
 | N/A | `cloudevents.event_type` | Event type |
+| N/A | `cloudevents.event_subject` | Event subject |
+| N/A | `cloudevents.event_spec_version` | `"1.0"` |
 
 ### Enabling CloudEvents Conventions
 
@@ -315,10 +388,19 @@ Set both flags and both sets of attributes will be recorded.
 
 2. **Use Sampling**: Configure sampling in production to reduce costs:
    ```csharp
-   .SetSampler(new TraceIdRatioBasedSampler(0.1)) // Sample 10% of traces
+   using Microsoft.Extensions.DependencyInjection;
+   using OpenTelemetry.Trace;
+   using Paramore.Brighter.Extensions.Diagnostics;
+
+   var services = new ServiceCollection();
+
+   services.AddOpenTelemetry()
+       .WithTracing(tracing => tracing
+           .AddBrighterInstrumentation()
+           .SetSampler(new TraceIdRatioBasedSampler(0.1))); // Sample 10% of traces
    ```
 
-3. **Add Custom Attributes Judiciously**: Only add context attributes that are essential for debugging and analysis
+3. **Add Custom Attributes Judiciously**: Only add attributes that are essential for debugging and analysis
 
 4. **Monitor Trace Costs**: Large payloads and high cardinality attributes can significantly increase observability costs
 
@@ -339,8 +421,8 @@ Set both flags and both sets of attributes will be recorded.
 | V9 Span Name | V10 Span Name |
 |--------------|---------------|
 | Custom handler names | `<request type> <operation>` |
-| `Outbox.Add` | Follows database conventions |
-| Transport-specific names | `<channel> create/publish/receive/process` |
+| `Outbox.Add` | `<operation> <database name> <table>`, such as `add.message outbox requests` |
+| Transport-specific names | `<routing key> publish`, and `<routing key> begin/receive/process` on the consumer |
 
 ### Changed Attributes
 
@@ -368,7 +450,7 @@ V9 used custom attribute names. V10 uses OTel standard conventions:
 
 **Solutions**:
 
-- Verify Activity Source is registered: `.AddSource("paramore.brighter")`
+- Verify Brighter's tracer is registered: `.AddBrighterInstrumentation()`, as in [Enabling Brighter's Spans](#enabling-brighters-spans)
 - Check exporter configuration and endpoint
 - Ensure services can reach the exporter endpoint
 - Check firewall rules
@@ -393,7 +475,7 @@ V9 used custom attribute names. V10 uses OTel standard conventions:
 - Leave `RequestBody` out of `InstrumentationOptions`
 - Reduce sampling rate: `.SetSampler(new TraceIdRatioBasedSampler(0.1))`
 - Disable unnecessary attribute collection
-- Use tail-based sampling to only keep interesting traces
+- Use tail-based sampling to only keep interesting traces: `Paramore.Brighter.Extensions.Diagnostics` adds `SetTailSampler()` to the tracer provider builder
 
 ### Missing Attributes
 
@@ -403,7 +485,7 @@ V9 used custom attribute names. V10 uses OTel standard conventions:
 
 - Check `Activity.IsAllDataRequested` is true (controlled by sampling)
 - Verify instrumentation options are configured correctly
-- Ensure custom context attributes start with `paramore.brighter.spancontext.`
+- Set attributes of your own on `Activity.Current` in the handler, as in [Adding Custom Span Attributes](#adding-custom-span-attributes): Brighter copies nothing from the request context
 
 ---
 
