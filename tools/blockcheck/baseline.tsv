@@ -313,3 +313,8 @@ contents/Telemetry.md	3	TelemetryContext.cs	2d938c8
 contents/Telemetry.md	5	TelemetryContext.cs	2d938c8
 contents/PostgreSQLMessageBroker.md	11	PostgreSQLMessageBrokerContext.cs	2d938c8
 contents/Telemetry.md	4	TelemetryContext.cs	2d938c8
+contents/InMemoryScheduler.md	5	-	b4c3ae0
+contents/CQRSWithBrighterAndDarker.md	7	-	b4c3ae0
+contents/BrighterSchedulerSupport.md	1	-	b4c3ae0
+contents/DefaultMessageMappers.md	4	-	b4c3ae0
+contents/DefaultMessageMappers.md	5	-	b4c3ae0
