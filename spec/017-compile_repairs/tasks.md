@@ -2522,7 +2522,7 @@ widening, both ledgers written, and the residual sentence 018 starts from.
   - Output: one walk row each; AC2's diff read against § *Splits*; AC14 is all eight other gates,
     bare, against `tools/README.md`
 
-- [ ] **Task 6.4:** Run the backwards check
+- [x] **Task 6.4:** Run the backwards check
   - Input: `git diff --name-only c7329bb -- contents/ tools/`; § *The tranches*; phase 5's P0-7 pages
   - Output: § *Backwards check* — every changed page is a tranche page or a P0-7 page, and every
     changed `tools/` file is a design deliverable; anything else is named and justified or reverted
@@ -2683,6 +2683,112 @@ its output. The tools were built first (`refs.csproj`, then `blockcheck.csproj`,
 **Seven met, and AC10 met on the pages.** Its ledger has three rows that do not say what the pages
 now say. With 6.1's three and 6.2's four, every criterion has now been walked. AC10's ledger is the
 one reading left open, and it closes with 6.5.
+
+#### Backwards check *(task 6.4)*
+
+Run at `2fdb256`. `git diff --name-only c7329bb -- contents/ tools/` lists **116** pages and **44**
+tool files. Every page change is a modification: 017 added, removed or renamed no page, so
+`SUMMARY.md` is untouched, as § *SUMMARY.md changes* said. Nothing outside `contents/`, `tools/`
+and `spec/` changed (`git diff --name-only c7329bb | grep -vE '^(contents|tools|spec)/'` → **0**).
+
+**The pages.** Of the 116, **64** are tranche pages and **7** are the P0-7 pages. The P0-7 pages are
+`CQRSWithBrighterAndDarker.md`, `HowServiceActivatorWorks.md`, `InMemoryScheduler.md`,
+`PipelineValidation.md`, `PolicyRetryAndCircuitBreaker.md`, `ReactorAndProactor.md` and
+`V10MigrationGuide.md`, and all seven changed. The tranche list is the 75 pages of § *The
+tranches*, taken from its four tables. **11** tranche pages have no diff, and each has a reason:
+
+- **Made whole by a unit alone:** `AggregationQueryPatterns.md`, `ClaimCheck.md`,
+  `MSSQLTransportInboxAndOutbox.md`, `RelationalDatabaseConfigurationReference.md` and
+  `TutorialStreamingWithKafka.md`
+- **Left FAILED:** the other six (`PaginationQueryPatterns.md`, `ReplayOnSeenReference.md`,
+  `ReturningResultsFromAHandler.md`, `TutorialDurableOutbox.md`, `TutorialFirstCommand.md`,
+  `TutorialFirstMessage.md`). Each FAILED block they carry has a row in § *Blocks that stay
+  FAILED*: same-page, unit rule 1, or P2-2
+
+**45 pages are neither.** None is reverted. Each one is reached by a § *Defect ledger* row, found
+on a tranche or P0-7 page and repaired wherever its recurrence grep landed (constraint 6), or by a
+ruling the maintainer gave. *Rows* below are the ledger rows that reach the page. Most name it in
+their *Page* column. **#8** (`requeueCount`) reaches its pages through its grep, which lists 17
+pages at `c7329bb`, and eight of them are here. The two phase 2 mapper-member lines on
+`CloudEventsSupport.md` and `MigratingToNullableReferenceTypes.md` recur **#83**. *Phases* are
+the phases whose commits touched the page (`git log c7329bb..HEAD`); 6.1 is phase 6's one
+page-changing task.
+
+Each (page, phase) pair was checked against the *Found by* column of the rows naming it. Four
+pairs did not match, and each was read in its commit:
+
+- **`CloudEventsSupport.md` and `MigratingToNullableReferenceTypes.md`, phase 2:** a mapper's
+  `Context` member (#83)
+- **`HowConfiguringTheCommandProcessorWorks.md`, 6.1:** AC8's `using`s
+- **`QueryPatterns.md`, phase 5:** #30's `circuitBreakerName` argument, recurring on a page the row
+  already names
+
+| Page | Diff | Phases | Rows |
+|---|---|---|---|
+| `AgreementDispatcher.md` | +12 −6 | 5 | #49, #70 |
+| `AwsScheduler.md` | +1 −1 | 3 | #23, #26 |
+| `AWSSQSConfiguration.md` | +16 −5 | 2, 3 | #8, #17, #19 |
+| `AWSSQSMigrateToV10.md` | +18 −6 | 3 | #23 |
+| `AzureServiceBusConfiguration.md` | +1 −1 | 2 | #8 |
+| `BasicConcepts.md` | +2 −2 | 2 | #8 |
+| `BrighterBasicConfiguration.md` | +24 −8 | 3, 4, 6.1 | #17, #31, #115 |
+| `BrighterInboxSupport.md` | +6 −0 | 4 | #38 |
+| `BrighterOutboxSupport.md` | +1 −1 | 5 | #103 |
+| `BrighterSchedulerSupport.md` | +20 −10 | 2, 5, 6.1 | #8, #9, #26, #90, #111 |
+| `CloudEventsSupport.md` | +34 −22 | 2, 5 | #70, #78, #83 |
+| `CommandProcessorConfigurationReference.md` | +19 −7 | 3, 5, 6.1 | #17, #57, #94, #115 |
+| `ConfiguringOpenTelemetry.md` | +83 −54 | 5, 6.1 | #75, #77, #113 |
+| `DarkerBasicConfiguration.md` | +4 −5 | 5 | #50, #58 |
+| `DefaultMessageMappers.md` | +95 −37 | 5 | #82, #91, #92, #93 |
+| `DispatcherConfigurationReference.md` | +15 −15 | 2, 4, 5 | #8, #9, #31, #103 |
+| `DispatchingARequest.md` | +8 −2 | 5 | #93, #94 |
+| `DynamicMessageDeserialization.md` | +1 −14 | 5 | #70, #93 |
+| `EFCoreOutbox.md` | +25 −13 | 6.1 | #115 |
+| `FAQ.md` | +24 −4 | 2, 3, 5 | #16, #27, #47, #49, #70, #83, #95 |
+| `FeatureSwitches.md` | +30 −10 | 5, 6.1 | #57, #61, #110 |
+| `FirestoreInbox.md` | +2 −0 | 4 | #38 |
+| `HandlerFailure.md` | +10 −8 | 2, 5, 6.1 | #8, #59, #110 |
+| `HowConfiguringTheCommandProcessorWorks.md` | +19 −6 | 5, 6.1 | #59; in 6.1, AC8's ruling — `using`s for a block marked `// ...` |
+| `ImplementAQueryHandler.md` | +9 −3 | 5 | #30, #51 |
+| `ImplementingExternalBus.md` | +6 −1 | 2 | #6 |
+| `InMemoryOptions.md` | +8 −2 | 3 | #17, #21, #26 |
+| `KafkaConfiguration.md` | +37 −10 | 2, 3, 5, 6.1 | #6, #8, #15, #17, #22, #82, #112 |
+| `MessageMappers.md` | +45 −4 | 2, 5, 6.1 | #6, #15, #82, #104, #112 |
+| `MessageTransforms.md` | +2 −2 | 2 | #6 |
+| `MigratingToNullableReferenceTypes.md` | +5 −1 | 2, 5 | #83, #84 |
+| `MigratingToPollyV8.md` | +20 −8 | 5 | #57, #59 |
+| `MongoDBInbox.md` | +18 −8 | 4, 6.1 | #38, #116 |
+| `MongoDBOutbox.md` | +33 −8 | 6.1 | #115, #116 |
+| `Monitoring.md` | +93 −49 | 5 | #47, #56, #62 |
+| `NullableReferenceTypes.md` | +37 −4 | 2, 5 | #6, #16, #83, #84 |
+| `OutboxArchiver.md` | +3 −1 | 2 | #6 |
+| `PolicyFallback.md` | +57 −26 | 5, 6.1 | #59, #60, #88, #106, #108, #109 |
+| `QueryPatterns.md` | +1 −1 | 5 | #30 |
+| `QueryPipeline.md` | +46 −35 | 5, 6.1 | #30, #59, #107 |
+| `RabbitMQConfiguration.md` | +4 −1 | 2, 3 | #8, #17 |
+| `Routing.md` | +24 −3 | 2, 5 | #6, #16, #83 |
+| `SpannerInbox.md` | +2 −0 | 4 | #38 |
+| `SweeperCircuitBreaking.md` | +99 −61 | 4, 6.1 | #43, #44, #45, #46, #115 |
+| `UsingTheContextBag.md` | +51 −17 | 5 | #94, #105 |
+
+**The tools.** Every changed file in `tools/` is a deliverable in `requirements.md` §
+*Deliverables*:
+
+| Deliverable | Files changed | Verdict |
+|---|---|---|
+| `tools/blockcheck.py` | modified | `--classify`, `--list-skips`, `--explain` |
+| `tools/blockcheck/Program.cs` | modified | the type dump, the unit-rule check, the `--explain` fix |
+| `tools/blockcheck/scaffold/units/*.cs`, `pages.tsv` | **31** units added, **7** modified (`PageContext.cs` among them); `pages.tsv` | the row says *"for the tranche pages"*. **60** pages map to a changed unit. **58** are tranche pages. The other two are `AWSSQSConfiguration.md` (`TransportConfigurationContext.cs`, shared with five phase 3 transport pages, at `7edaada`) and `SweeperCircuitBreaking.md` (`SweeperCircuitBreakingContext.cs`, mapped before 017, grown at `a61893b` for the phase 4 ruling on #43–#46). Both are serving pages already reached by ledger rows |
+| `tools/blockcheck/baseline.tsv` | modified | one row per newly BUILT block, keys identical to the BUILT keys (AC1, 6.3) |
+| `tools/blockcheck/refs/refs.csproj` | modified, **71 → 100** `PackageReference`s | **Beyond the row.** The row says *"P1-1 only"*, and P1-1 is **24** of the 29 packages (1.8, `23aa74f`). The other five were each added in their own commit, measured alone with no page changed, and merged in a phase PR the maintainer signed off: `Npgsql.EntityFrameworkCore.PostgreSQL`, `TickerQ.Dashboard` and `TickerQ.EntityFrameworkCore` (phase 4, `bd2b1ed`); `Microsoft.Extensions.TimeProvider.Testing` (`07d878b`) and `Confluent.SchemaRegistry.Serdes.Avro` (`aeb65f4`), both 5.4. None is removed. Removing them would un-build the blocks they judge |
+| `tools/README.md` | modified | rows 2 and 9, the corrected commands, the new modes |
+
+**Result.** No change is outside the check's two sets without a reason on record: 45 pages are
+reached by ledger rows or a ruling, and two units serve those pages. Five pin packages went beyond
+P1-1's letter, each measured alone and signed off in its phase's PR. Nothing is reverted.
+**Control:** the join that finds each page's rows, run over the 45, prints nothing. Run again
+with `Glossary.md` added, a page no ledger row names and no 017 commit touched, it prints
+*"NO ROW: Glossary.md"*, and nothing else.
 
 ---
 
