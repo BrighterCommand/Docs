@@ -117,7 +117,6 @@ contents/MSSQLTransportInboxAndOutbox.md	7	RelationalTransportContext.cs	280d1b7
 contents/MSSQLTransportInboxAndOutbox.md	8	RelationalTransportContext.cs	7edaada
 contents/MSSQLTransportInboxAndOutbox.md	9	RelationalTransportContext.cs	7edaada
 contents/MSSQLTransportInboxAndOutbox.md	10	RelationalTransportContext.cs	280d1b7
-contents/MessageMappers.md	3	MessageMappersContext.cs	280d1b7
 contents/MigratingToNullableReferenceTypes.md	1	MigratingToNullableReferenceTypesContext.cs	280d1b7
 contents/MigratingToNullableReferenceTypes.md	2	MigratingToNullableReferenceTypesContext.cs	280d1b7
 contents/MigratingToNullableReferenceTypes.md	3	MigratingToNullableReferenceTypesContext.cs	280d1b7
@@ -320,3 +319,4 @@ contents/DefaultMessageMappers.md	4	-	b4c3ae0
 contents/DefaultMessageMappers.md	5	-	b4c3ae0
 contents/V10MigrationGuide.md	9	-	f4cfd88
 contents/V10MigrationGuide.md	12	-	f4cfd88
+contents/MessageMappers.md	4	MessageMappersContext.cs	6ddcf7b
