@@ -2513,7 +2513,7 @@ widening, both ledgers written, and the residual sentence 018 starts from.
   - Output: § *The acceptance walk*, one row each: the reader named, what they read, their verdict.
     Walked first — both criteria ever found unmet at a close were unmarked ones
 
-- [ ] **Task 6.2:** Walk the four criteria instrumented by this spec — AC3, AC4, AC5, AC12
+- [x] **Task 6.2:** Walk the four criteria instrumented by this spec — AC3, AC4, AC5, AC12
   - Input: the red-proofs in § *Phase 1 as executed*; `--classify`; `--list-skips`
   - Output: one walk row each, the command and its output, exit code read first
 
@@ -2632,6 +2632,35 @@ their figures. `tools/README.md` rows 2 and 9 moved to `bd95ee0`.
 Command Processor no tracer when there is no external bus (`:304`), so an application with no
 `AddProducers` records no Command Processor span — run both ways. Stated on both pages; whether
 to file it upstream is the maintainer's.
+
+#### The acceptance walk: the four instrumented criteria *(task 6.2)*
+
+Walked at `631f5e1`, each command's exit code read before its output. `--report` there: exit **0**,
+*"990 blocks: 299 BUILT, 674 FAILED, 17 SKIPPED"*, *"scaffold rule: 45 units checked, 0
+violations"*, *"0 findings"*.
+
+| # | Command | Exit | Read | Verdict |
+|---|---|---:|---|---|
+| **AC3** | `python3 tools/blockcheck.py --classify > c1.tsv`, twice; `cmp`; against `probe/run.sh` at the same ref; `refs.txt` moved aside | **0**, **0**; control **2** | 674 rows, *"146 parse (45 pages), 323 import (64 pages), 21 other (13 pages), 19 same-page (11 pages), 35 values (11 pages), 130 page-type (54 pages)"*; the two runs byte-identical (stderr differs only in its temp directory's name). The probe classes the same 674 keys; the disagreements are below. Control: 0 rows, *"no reference list … nothing was checked"*; restored, byte-identical to the first run | **Met** |
+| **AC4** | `--classify` over the 75 tranche pages (the § *The tranches* tables); keys against § *Blocks that stay FAILED* | **0** | 44 FAILED blocks, *"1 parse, 9 import, 3 other, 13 same-page, 1 values, 17 page-type"*. **0** not listed; the same 44 keys as `--report`'s FAILED rows on those pages (`cmp`). The list's other **7** rows are off-tranche pages, FAILED, each with its reason: `ConfiguringOpenTelemetry.md` #1, #5, #6, `CQRSWithBrighterAndDarker.md` #2, #8, `DefaultMessageMappers.md` #6, #10. Control: the list less `TutorialFirstCommand.md` #2 prints that key | **Met** |
+| **AC5** | `--report` with a plant in `AzureSchedulerContext.cs`, one at a time, the unit restored (`git diff --quiet`) | type **1**; member **1**; real **0** | `class OrderService` (block 9 declares it) → 2 violations, rule 1's *"declared by … block 9"* and rule 3's *"named by no BUILT block"*; `property plantedValue` inside the holder → 1 violation, *"named by no BUILT block"*; verdicts unmoved by either (the AC2 diff against the real report, 0 lines). The real scaffold: 0 violations, `PageContext.cs` among the 45 — it passes, and needs no exception | **Met** |
+| **AC12** | `find tools/blockcheck -name '*.csproj' -not -path '*/obj/*' \| wc -l`; `grep -cF '^(\./)?spec/' tools/README.md`; `--list-skips > s` | —; —; **0** | **2** (the old `ls` glob, **1**); **1**; *"17 skipped of 990 blocks, across 7 pages"*, `wc -l < s` → **17**, AC1's SKIPPED; the keys identical to `--report`'s SKIPPED rows (`cmp`). Control: `--list-skips contents/SpannerOutbox.md`, no skip → **2** | **Met** |
+
+**AC3's disagreements with the probe**, all 674 keys joined:
+
+| Probe | `--classify` | Blocks | Why |
+|---|---|---:|---|
+| page-type / same-page / values / import | the same class | 130 / 19 / 35 / 241 | identical rules |
+| other | **parse** | **146** | the design splits out blocks that do not parse. The Roslyn half's `--parse` over the probe's stage reads *"990 blocks, 151 do not parse"*: those 146 exactly, and 5 SKIPPED (`CloudEventsSupport.md` #11, #12, `DarkerAndBrighterPipelines.md` #1, `V10MigrationGuide.md` #4, #19) |
+| other | **import** | **82** | the design orders *import* before *other*. **75** name a pinned type beside another diagnostic. **7** reach *import* through an extension method's name alone, and **all 7 are misread**: `AddOpenTelemetry` (×6 — `Telemetry.md` #1, #6, `ConfiguringOpenTelemetry.md` #1, #5, #6, `PostgreSQLMessageBroker.md` #8) is pinned only on `ILoggingBuilder`, and each block calls it on `IServiceCollection`; `Build` (`Logging.md` #4) is pinned only on OpenTelemetry's builders, and the block calls it on `INeedAHandlers` after a `// ...` elision. No `using` builds any of them |
+| other | other | 21 | |
+
+The seven are 1.10's blind spot a second time: `--classify` matches a name, not a receiver, as it
+matches `Order` to `StackExchange.Redis`. **No class figure is misread on a tranche page because of
+it**: the six OpenTelemetry blocks stay FAILED for the pin (§ *Blocks that stay FAILED*, ruling 2 of
+5.3), and `Logging.md` is on no tranche. The `Order` reading, ruled at 1.10, now touches **22**
+*import* blocks on **10** pages (1.10: 27 on 16), none on a tranche page. Not repaired, under the
+same ruling; recorded here for 6.6.
 
 ---
 
