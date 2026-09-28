@@ -1734,7 +1734,7 @@ everywhere. Page list: § *The tranches*, phase 5 table.
     block BUILT or showing `Order`; both in § *Defect ledger*
   - Notes: a sentence claiming how the scheduler uses time is run, with a control (P0-10).
 
-- [ ] **Task 5.5:** Repair the E4 attribute mismatches not already repaired
+- [x] **Task 5.5:** Repair the E4 attribute mismatches not already repaired
   - Input: `probe/attr_mismatch.py` output now; `design.md` § *E4* (verdict per hit) and
     § *API Resolved*
   - Output: `attr_mismatch.py > out; echo $?` → **1** with exactly `PipelineValidation.md:250` in
@@ -2249,6 +2249,92 @@ BUILT **44 → 42**, by the requirements' `awk` and a Python join agreeing: `Bri
   `DynamicMessageDeserialization.md`, `FAQ.md`, `UsingTheContextBag.md` and `V10MigrationGuide.md`,
   by ruling or recurrence
 
+**Task 5.5 — the E4 attribute mismatches, and what stood beside them.** **`attr_mismatch.py` 7 → 1,
+exit 1**, the one hit `PipelineValidation.md:250`, the deliberate *Before (error)* example, on its
+line; `--plant` → **OK**, exit 0. Six sync attributes on `HandleAsync` became the async form:
+`HowServiceActivatorWorks.md` #16 (`UseInboxAsync`), `PipelineValidation.md` #9 and #10,
+`PolicyRetryAndCircuitBreaker.md` #14, `ReactorAndProactor.md` #6 and `V10MigrationGuide.md` #10
+(`UseResiliencePipelineAsync`). **Second method:** a Python scan for any of the paired names without
+`Async` whose next non-attribute line is `HandleAsync` reads **8 → 2**. The two left are `:250` and
+`V10MigrationGuide.md` #8's `[TimeoutPolicy]`, the skipped *Before (V9)* form, whose attribute has
+no pair at 10.7.0 and which `attr_mismatch.py` does not read. **BUILT 293 → 295** (+2), both
+`FAILED -> BUILT` and nothing else moved in the AC2 diff against `608615a`'s report:
+`V10MigrationGuide.md` #9 (the registry) and #12 (an `IRequestContext` implementation). **989 blocks**
+on both sides, no fence added or removed. `pagelint` **553 → 543** (−10), per page against a worktree
+at `608615a`: `V10MigrationGuide.md` −6 (#9–#14), `PipelineValidation.md` −2 (#9, #10),
+`HowServiceActivatorWorks.md` −1 (#16), `ReactorAndProactor.md` −1 (#6; #5 already carried its
+`using`s). Pages with nothing BUILT **42 → 41**, `V10MigrationGuide.md` leaving: pages with a FAILED block and
+no BUILT one, by `comm` over the two `awk` lists and by a Python join, agreeing. A count of every page
+without a BUILT block reads 43 → 42, because it also takes in a page whose blocks are all SKIPPED.
+Repair `f4cfd88`; baseline `5c68181`.
+
+- **`:250` says it is wrong in prose.** The sentence under *Async Handler with Sync Attributes* now
+  says the example is wrong, that the compiler accepts it, that `ValidatePipelines()` reports it as an
+  error, and that without validation the pipeline throws `ConfigurationException` on the first request
+- **`PipelineValidation.md` #9, #10 kept what they demonstrate.** The attribute's kind changed, and
+  `(step: 0, "RetryPipeline")` — a named argument ahead of a positional one, out of position — became
+  `("RetryPipeline", step: 0)`. #9's comments called step 0 *inner* and step 1 *outer*, against the
+  page's own *"lower step numbers are outer wrappers"* and the validator's text; now *outer* and
+  *inner*. Both fragments are now whole handlers with `using`s, as #7 and #8 are, so `pagelint
+  --changed` can read them. The example warning message spelt the attribute names without the
+  `Attribute` suffix the validator prints (`AttributeType.Name`, captured below)
+- **`V10MigrationGuide.md` § 4 had two defects beside its attribute.** #9 built the pipeline with
+  `TryAddBuilder<ResiliencePropertyKey<RequestContext>>`, a generic builder whose pipeline Brighter
+  never looks up, and #11 assigned the registry to `PolicyRegistry`, the obsolete Polly v7
+  `IPolicyRegistry<string>` (a type mismatch). Now `AddBrighterDefault()` then `TryAddBuilder(name,
+  …)`, as `PolicyRetryAndCircuitBreaker.md` shows, into `ResiliencePipelineRegistry`. The sentence
+  under #9 names what happens without `AddBrighterDefault`, run below
+- **`V10MigrationGuide.md` § 5, the open `IRequestContext` row, closed.** The section listed
+  `PartitionKey` and `CustomHeaders` as new properties and #12 implemented `Guid Id`, `ISpan Span`
+  and a `Dictionary` `Bag`; 10.7.0 has none of those shapes (`git show 10.7.0:src/Paramore.Brighter/IRequestContext.cs`)
+  and has five members the section omitted: `Destination`, `ResiliencePipeline`, `Span` as an
+  `Activity`, `FeatureSwitches`, `CreateCopy()`. The section now lists what changed against V9
+  (`9.9.13`'s interface: `Bag`, `Policies`, `FeatureSwitches`) and links each new member to
+  `UsingTheContextBag.md`. #12 implements 10.7.0's interface and is BUILT; its `CreateCopy` copies
+  what the shipped `RequestContext.CreateCopy` copies. #13 was a handler setting properties that do
+  not exist; it is now a service that puts the partition key and a header in the `Bag` under
+  `RequestContextBagNames` and passes the context to `PostAsync`, run below
+- **`IRequestContext.InstrumentationOptions` said *"added in 10.7.0"*.** It is not in the tag
+  (`grep -c Instrumentation` → 0) and not on NuGet past 10.7.0; it is in `release_notes.md`'s
+  *Master* section, added by `0950f2864`. **Forthcoming, not dead**, so by the 2026-09-05 ruling it
+  stays, marked: the heading reads *(after 10.7.0)* and the section carries `> **Not in a released
+  package yet.**`, worded as the Replay On Seen pages word theirs. #14 gained its two `using`s;
+  `--explain` found `InstrumentationOptions` needs `Paramore.Brighter.Observability`
+- **`ReactorAndProactor.md` said mappers have no async variants.** *"Message mappers remain
+  synchronous"* under *Proactor Message Mappers*, and a note advising `Task.Run()` wrappers for async
+  I/O. At 10.7.0 the Proactor takes `IAmAMessageMapperRegistryAsync` (`Proactor.cs:63`) and the
+  Reactor `IAmAMessageMapperRegistry` (`Reactor.cs:63`). #5 is now an `IAmAMessageMapperAsync<T>`,
+  and the section says what the run showed: a pump given only the other kind of mapper uses the
+  default one, silently. The page's own `:43` already said mappers should be async under a
+  Proactor; `:73`, *"Mixing sync and async implementations will cause runtime errors"*, now
+  excepts mappers and links the section. Found reading around the E4 hit at `:200`
+- **`--explain` on every block the diff touches:** **13**, 2 BUILT. The 11 FAILED name only page
+  types and values: `MyCommand`, `OrderCreated`, `OrderPlaced`, `SomeAsyncOperation`, `services`,
+  `resiliencePipelineRegistry`; #14 adds the `CS0535`s its `// ... other members` declares. `pagelint
+  --changed origin/master` → **0** errors
+- **Behaviour, run with controls**, against the released 10.7.0 packages on net10.0 (`valrun`,
+  `pumprun`, `regrun`, `ctxrun` under the session scratchpad):
+
+  | Claim | Case → result | Control → result |
+  |---|---|---|
+  | `PipelineValidation.md` #7 is an error | `Validate()` → 1 error, *"Async handler uses sync attribute 'RejectMessageOnErrorAttribute' at step 0"*; without validation, `PublishAsync` → `ConfigurationException`, *"All handlers in an async pipeline must derive from IHandleRequestsAsync"* | #8 → 0 errors, 0 warnings; publishes |
+  | #9 is a warning, #10 is clean | repaired #9 → 0 errors, **1** warning, *"'RejectMessageOnErrorAsyncAttribute' at step 1 is after 'UseResiliencePipelineAsyncAttribute' at step 0"*; repaired #10 → 0, 0 | as published, #9 → 1 error **and** the warning; #10, the *After (fixed)*, → **1 error** |
+  | A pump uses only its own kind of mapper | Proactor, sync mapper only → **the default mapper** mapped it; Reactor, async mapper only → **the default mapper** | Proactor, async mapper → the custom async mapper; Reactor, sync mapper → the custom sync mapper. `AddConsumers` + `AutoFromAssemblies` + `InMemoryChannelFactory`, as `InMemoryTransport.md` configures it |
+  | `V10MigrationGuide.md` #9: start from `AddBrighterDefault` | own registry without it → `ConfigurationException`, *"missing the CommandProcessor.OutboxProducer resilience pipeline"* | with it → the `[UseResiliencePipelineAsync]` handler runs |
+  | #13: the `Bag` keys reach the message | #13 verbatim through `PostAsync` → `PartitionKey` `tenant-42`, header `x-tenant-id` `tenant-42` | `PostAsync` with no context → `PartitionKey` empty, header absent |
+
+- **`--report`** before the baseline rows → exit 1, 2 findings, both *"BUILT, not in the baseline"*;
+  after → exit **0**, *"989 blocks: 295 BUILT, 677 FAILED, 17 SKIPPED"*, baseline 295, 45 units,
+  0 findings. `linkcheck` 165, 0 broken; `versioncheck` 0 of 18; `symbolcheck` 0, 22 entries,
+  3 silenced, `--verify-list` clean; `optioncheck` 0, 59 tables, 519 rows; shape, redirects,
+  `--verify` 161 / 77 / 161. **Pages changed: 5** (`git diff --name-only 608615a..HEAD --
+  contents`), the five E4 pages
+- **Not repaired, found on the way, for the maintainer:** `PipelineValidation.md`'s Replay rule row
+  and its two Replay example messages describe a forthcoming feature without the *Not in a released
+  package yet* marker; `MessageMappers.md`, the mapper's home page, never mentions
+  `IAmAMessageMapperAsync<T>`; and `UsingTheContextBag.md`'s handler examples set `Context.Bag`
+  keys without posting, which is the claim #13 above replaced rather than a run of it
+
 ---
 
 ## Phase 6 — Acceptance *(8 tasks, one PR, no page touched)*
@@ -2631,7 +2717,7 @@ BUILT, re-admitted at `ec38400`.
 | `public Guid Id { get; set; }` on a request — hides `IRequest.Id`, which is an `Id` | `IRequest.cs:47` | `ImplementingAsyncHandler.md` | `grep -rn 'public Guid Id\b' contents/` | **2** | **1** — the other is not this defect (next row) | 2.3, reading |
 | `app.UseEndpoints(...)` on a `WebApplication` with no `app.UseRouting()` — throws `InvalidOperationException` at startup | run against 10.7.0 packages, net10.0; the control is the page's old block | `HealthChecks.md`, `BrighterControlAPI.md` | `grep -rn 'UseEndpoints' contents/` | **2** | **0** | 2.4, running the block |
 | BRT006–BRT008 (Kafka partitioner analyzers, code fixes) documented as shipped — in no release; only on BrighterCommand/Brighter#4255, open. Also *"includes code fixes"*: 10.7.0 has no code-fix project | `git ls-tree 10.7.0 src/Paramore.Brighter.Analyzer/Analyzers/` → 3 analyzers, BRT001–005 | `AnalyzerSupport.md` | `grep -rln 'BRT00[678]\|code fix' contents/` | **1** | **0** — removed, maintainer's ruling (a) | 2.4, verifying the page's reference code |
-| `IRequestContext` implemented with `Guid Id`, `ISpan Span`, `Dictionary<string, object> Bag`, `CustomHeaders` — at 10.7.0 the interface has no `Id` and no `CustomHeaders`, `Span` is an `Activity`, `Bag` a `ConcurrentDictionary` | `IRequestContext.cs` | `V10MigrationGuide.md:320` | — | **1** | **open — phase 5**, which holds that page for its E4 repair | 2.3, the row above's grep |
+| `IRequestContext` implemented with `Guid Id`, `ISpan Span`, `Dictionary<string, object> Bag`, `CustomHeaders` — at 10.7.0 the interface has no `Id` and no `CustomHeaders`, `Span` is an `Activity`, `Bag` a `ConcurrentDictionary`; the section also listed `PartitionKey` and `CustomHeaders` as new properties and set both on `Context` | `IRequestContext.cs` | `V10MigrationGuide.md` § 5, #12, #13 | `grep -rnE 'Context\??\.(PartitionKey\|CustomHeaders)\b\|`CustomHeaders`\|ISpan Span\|Guid Id \{ get; set; \}' contents/` → 6 at `608615a`, 2 now, both read and right (the corrective sentence; an entity's key) | **5** | **0** | 2.3, the row above's grep; closed in 5.5 |
 | `MapToMessage(TRequest request)` — V9's mapper signature; V10's takes a `Publication` | `IAmAMessageMapper.cs:33` | `Compression.md`, `Routing.md`, `KafkaConfiguration.md`, `MessageTransforms.md`, `ImplementingExternalBus.md`, `V10MigrationGuide.md`, `MessageMappers.md`, `OutboxArchiver.md`, `NullableReferenceTypes.md` (`string? topic = null`, found by the second method) | `grep -rnE 'MapToMessage\([A-Za-z<>]+ [a-z][A-Za-z]*(, string\? topic = null)?\)' contents/` | **14** lines, 10 pages | **2** — both skipped V9 forms | 2.5, `--explain` |
 | A mapper class without `IRequestContext? Context { get; set; }` — `CS0535` | `IAmAMessageMapper.cs:31` | 11 pages | mapper blocks declaring `: IAmAMessageMapper<` with no `IRequestContext? Context` | **17** | **1** — the skipped V9 form | 2.5, `--explain` after the signature fix |
 | `requeueCount: N` described as N requeues (*"Times a message is requeued"*, *"On the 4th failure"*) — it is N handlings, N−1 requeues; `0` behaves as `1` | `Message.cs:161`, `HandledCount >= requeueCount`; run, table in § *Phase 2 as executed* | 17 pages, including all 12 option tables | `grep -rnE 'requeued before it is treated\|exceed(s\|ed\|ing)? the requeue count\|Requeue up to 3\|Retry up to 3\|4th failure\|RequeueCount. is exceeded\|retries (remain\|exhausted)\|retry a message before\|number of requeue attempts\|requeue count exceeded\)\|When the count is exceeded' contents/` | **25** | **0** | 2.5, running |
@@ -2722,6 +2808,13 @@ BUILT, re-admitted at `ec38400`.
 | `PublishAsync` relied on to reach a mapper or the bus: the default mapper said to serialise a published event, CloudEvents extensions set for a publish, a test asserting that a published event lands on the `InternalBus`, and dummy events published to warm a mapper cache. `PublishAsync` dispatches to handlers in this process | run: `PublishAsync` → **0** messages, the local handler runs; `PostAsync` → **1** (sessions 101, 102 and 5.4) | `DefaultMessageMappers.md` #2, `DispatchingARequest.md` #3, `V10MigrationGuide.md` #26, `DynamicMessageDeserialization.md` (old #7, removed) | `calls.py` over every `Publish`/`PublishAsync` call; a prose grep tying either to a bus, broker, queue, topic, transport or the wire | **13** calls, **6** of them this defect | **7** calls, **0** of them: 2 declarations, 2 in-process read-model events, a scheduled local event, 2 test-double verifications | 5.3 (put to the maintainer); swept 5.4, by ruling |
 | CloudEvents extension properties said to reach the message whatever the mapper. Only `CloudEventJsonMessageMapper<>` (and the CloudEvents transform's JSON form, by reading) writes them. The default `JsonMessageMapper<>` drops both the context-bag and the `Publication` properties | `CloudEventJsonMessageMapper.cs:71`, `:80`; `CloudEventsTransformer.cs:293`; run, both sources, both mappers | `DispatchingARequest.md`, `UsingTheContextBag.md`, `CommandProcessorConfigurationReference.md` | `grep -rn -i 'CloudEventsAdditionalProperties\|extension propert' contents/` | **3** claims | **0**: each names the mapper that writes them | 5.4, running the `PublishAsync` repair's context |
 | A heading with a stray `c` and an unclosed code span, `**c` + backtick + `SendAsync…` | — | `FAQ.md` | read, beside a `PublishAsync` hit | **1** | **0** | 5.4, the sweep |
+| A sync handler attribute on `HandleAsync` (E4). The compiler accepts it; the pipeline throws `ConfigurationException` when built, and `ValidatePipelines()` reports it | `PipelineBuilder.cs:431`; `HandlerPipelineValidationRules.cs:110`; run | `HowServiceActivatorWorks.md` #16, `PipelineValidation.md` #9, #10, `PolicyRetryAndCircuitBreaker.md` #14, `ReactorAndProactor.md` #6, `V10MigrationGuide.md` #10 | `attr_mismatch.py`; a Python scan, paired name without `Async` then `HandleAsync` → 8, 2 now (below) | **6** | **0**; `PipelineValidation.md:250` deliberate, now wrong in prose; `V10MigrationGuide.md` #8, the skipped V9 form | design E4; 5.5 |
+| A named argument ahead of a positional one, out of position: `[UseResiliencePipeline(step: 0, "RetryPipeline")]` | `UseResiliencePipelineAttribute(string policy, int step)` | `PipelineValidation.md` #9, #10 | `grep -rnE '\[\w+\(\w+: *[^,()]+, *"' contents/` | **2** | **0** | 5.1, carried |
+| *Before (warning)*'s comments called step 0 *inner* and step 1 *outer*; lower steps are outer | `HandlerPipelineValidationRules.cs:76`, `:57` | `PipelineValidation.md` #9 | `grep -rnE 'step: 0.*\(inner\)' contents/` | **1** | **0** | 5.5, reading `:280` |
+| The example backstop warning named `'RejectMessageOnError'` and `'UseResiliencePipeline'`; the validator prints `AttributeType.Name` | `HandlerPipelineValidationRules.cs:74`; run | `PipelineValidation.md:61` | `grep -rnE "'(RejectMessageOnError\|UseResiliencePipeline)' at step" contents/` | **1** | **0** | 5.5, the run |
+| A resilience registry assigned to `PolicyRegistry`, the obsolete Polly v7 `IPolicyRegistry<string>`; and built with `TryAddBuilder<ResiliencePropertyKey<RequestContext>>`, a typed builder Brighter never looks up | `BrighterOptions.cs:56`, `:59` | `V10MigrationGuide.md` #9, #11 | `grep -rnE 'PolicyRegistry *= *\w*[Rr]esilience' contents/`; `grep -rn 'TryAddBuilder<' contents/` | **2** | **0** | 5.5, `--explain` of § 4 |
+| `IRequestContext.InstrumentationOptions` *"added in 10.7.0"*: it is after 10.7.0, forthcoming, and was unmarked | `IRequestContext.cs` at 10.7.0 (0 hits); `release_notes.md` *Master*; NuGet's latest is 10.7.0 | `V10MigrationGuide.md` | `grep -rn 'added in 10\.7\.0' contents/`; `grep -rnE '(added\|new\|introduced\|since) (in )?(Brighter )?(V?10\.7(\.0)?)' contents/` → 0 more | **1** | **0**, marked *Not in a released package yet* | 5.5, reading § 5 |
+| Mappers said to have no async variants, with `Task.Run()` wrappers advised; a Proactor maps with `IAmAMessageMapperAsync<T>` and skips a sync-only mapper for the default, silently | `Proactor.cs:63`, `Reactor.cs:63`; run both ways | `ReactorAndProactor.md` #5 and its note | `grep -rniE "mappers? (don't\|do not\|never) have async\|mappers? remain synchronous\|mappers? (are\|stay) synchronous" contents/` | **2** lines | **0** | 5.5, reading around `:200` |
 
 ## Friction ledger
 
