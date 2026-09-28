@@ -21,7 +21,8 @@ shows you how to register one.
 In standard Brighter routing, each request type maps to exactly one handler type at compile-time:
 
 ```csharp
-// ...
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter(options => { })
     .Handlers(registry =>
     {
@@ -52,7 +53,8 @@ This is Brighter's default and recommended approach for most scenarios.
 Agreement Dispatcher allows dynamic handler selection based on request content or context:
 
 ```csharp
-// ...
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter(options => { })
     .Handlers(registry =>
     {
@@ -78,8 +80,8 @@ services.AddBrighter(options => { })
 - Can change behavior over time
 - Supports multiple handlers
 - Access to request context
-- Cannot use `AutoFromAssemblies()`
-- Must register handlers explicitly
+- Registered explicitly, with `.Handlers()`
+- `AutoFromAssemblies()` must be told to skip the route's handlers
 - Small performance overhead (lambda execution)
 
 **When to use Agreement Dispatcher:**
@@ -97,7 +99,8 @@ services.AddBrighter(options => { })
 Route to different handlers as business rules evolve over time:
 
 ```csharp
-// ...
+using System;
+
 registry.Register<ProcessOrder>((request, context) =>
 {
     var order = request as ProcessOrder;
@@ -217,7 +220,8 @@ registry.RegisterAsync<CreateUser>((request, context) =>
 Route based on current state or status:
 
 ```csharp
-// ...
+using System;
+
 registry.Register<ProcessRefund>((request, context) =>
 {
     var refund = request as ProcessRefund;
@@ -243,33 +247,42 @@ registry.Register<ProcessRefund>((request, context) =>
 
 ## Agreement Dispatcher Limitations
 
-### Cannot Use AutoFromAssemblies
+### AutoFromAssemblies Must Skip the Route's Handlers
 
-Agreement Dispatcher requires explicit handler registration:
+An agreement is always registered explicitly. You can still scan your assemblies for every other handler, as long as the scan skips the agreement's handlers:
 
 ```csharp
-// ...
-// Cannot use AutoFromAssemblies with Agreement Dispatcher
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter(options => { })
+    .AutoFromAssemblies(excludeDynamicHandlerTypes: [typeof(Handler1), typeof(Handler2)])
     .Handlers(registry =>
     {
-        registry.Register<MyCommand>((request, context) => { /* ... */ },
+        registry.Register<MyCommand>((request, context) =>
+            {
+                // ... your routing logic
+                return [typeof(Handler1)];
+            },
             [typeof(Handler1), typeof(Handler2)]);
-    })
-    // .AutoFromAssemblies() won't work with Agreement Dispatcher
+    });
 ```
 
-**Why?** `AutoFromAssemblies()` creates fixed 1-to-1 mappings. Agreement Dispatcher needs explicit lambda registration and handler type lists for DI.
+**Why?** `AutoFromAssemblies()` registers every handler it finds as the one handler for its request type. Leave an agreement's handlers in the scan and each becomes a fixed route beside the agreement, so every `Send` of that request throws an `ArgumentException`, *"More than one handler was found for the typeof command MyCommand"*. `excludeDynamicHandlerTypes` keeps them out of the scan, and the agreement's handler types list still registers them with the container.
 
-**Solution**: Use `.Handlers()` to register Agreement Dispatcher routes explicitly:
+**Alternatively**, skip the scan and register every route with `.Handlers()`, mixing agreement and standard routes:
 
 ```csharp
-// ...
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter(options => { })
     .Handlers(registry =>
     {
         // Agreement dispatcher routes
-        registry.Register<MyCommand>((request, context) => { /* ... */ },
+        registry.Register<MyCommand>((request, context) =>
+            {
+                // ... your routing logic
+                return [typeof(Handler1)];
+            },
             [typeof(Handler1), typeof(Handler2)]);
 
         // You can still mix with standard routes
@@ -285,7 +298,8 @@ You must provide all possible handler types for DI registration:
 // ...
 registry.Register<MyCommand>((request, context) =>
 {
-    // Your routing logic...
+    // ... your routing logic
+    return [typeof(Handler1)];
 },
 [
     // All handlers that might be returned must be listed here
@@ -324,17 +338,22 @@ For most applications, this overhead is negligible:
 
 **Optimization tip**: Keep routing lambdas simple. Avoid expensive operations like database calls or external API calls.
 
+✅ **Good** - simple, fast routing logic:
+
 ```csharp
 // ...
-// Good - Simple, fast routing logic
 registry.Register<MyCommand>((request, context) =>
 {
     var cmd = request as MyCommand;
     return cmd?.Type == "Fast" ? [typeof(FastHandler)] : [typeof(SlowHandler)];
 },
 [typeof(FastHandler), typeof(SlowHandler)]);
+```
 
-// Bad - Expensive operation in routing lambda
+❌ **Bad** - an expensive operation in the routing lambda:
+
+```csharp
+// ...
 registry.Register<MyCommand>((request, context) =>
 {
     var cmd = request as MyCommand;

@@ -13,12 +13,13 @@ The options `AddDarker` and `AddHandlersFromAssemblies` take: the query processo
 
 ## Darker Query Processor Lifetime
 
-By default, the `IQueryProcessor` is registered with a **Transient** lifetime, meaning a new instance is created each time it's requested. However, if you're using Entity Framework Core, you need to register the Query Processor with a **Scoped** lifetime to match the EF Core DbContext lifetime.
+By default, the `IQueryProcessor` is registered with a **Singleton** lifetime, meaning one instance serves the whole application, and it resolves your handlers from the root service provider. However, if you're using Entity Framework Core, you need to register the Query Processor with a **Scoped** lifetime to match the EF Core DbContext lifetime.
 
-**Default Configuration (Transient):**
+**Default Configuration (Singleton):**
 
 ```csharp
-// ...
+using Paramore.Darker.AspNetCore;
+
 builder.Services.AddDarker()
     .AddHandlersFromAssemblies(typeof(Program).Assembly);
 ```
@@ -41,7 +42,7 @@ builder.Services.AddDarker(options =>
 .AddHandlersFromAssemblies(typeof(Program).Assembly);
 ```
 
-If you don't configure the scoped lifetime when using EF Core, you may encounter exceptions related to accessing a disposed DbContext.
+If you don't configure the scoped lifetime when using EF Core, the singleton query processor resolves each handler, and so its `DbContext`, from the root provider. Where scope validation is on, as it is by default in the Development environment, the first query throws an `InvalidOperationException`, *"Cannot resolve … from root provider because it requires scoped service"*. Elsewhere every query shares one `DbContext` for the life of the application.
 
 ## Darker Handler Registration Strategies
 
@@ -52,7 +53,8 @@ Darker provides two ways to register query handlers: automatic assembly scanning
 The `AddHandlersFromAssemblies` method scans one or more assemblies and automatically registers all query handlers it finds:
 
 ```csharp
-// ...
+using Paramore.Darker.AspNetCore;
+
 // Scan a single assembly
 builder.Services.AddDarker()
     .AddHandlersFromAssemblies(typeof(GetPeopleQuery).Assembly);
@@ -71,6 +73,8 @@ This approach follows convention over configuration and is the easiest way to re
 For more control over handler registration, you can use `QueryHandlerRegistry` to register handlers explicitly:
 
 ```csharp
+using System;
+using System.Collections.Generic;
 using Paramore.Darker;
 using Paramore.Darker.Builder;
 
@@ -79,12 +83,16 @@ registry.Register<GetPeopleQuery, IReadOnlyDictionary<int, string>, GetPeopleQue
 registry.Register<GetPersonNameQuery, string, GetPersonQueryHandler>();
 
 IQueryProcessor queryProcessor = QueryProcessorBuilder.With()
-    .Handlers(registry, Activator.CreateInstance, t => {}, Activator.CreateInstance)
+    .Handlers(
+        registry,
+        t => (IQueryHandler)Activator.CreateInstance(t)!,
+        t => { },
+        t => (IQueryHandlerDecorator)Activator.CreateInstance(t)!)
     .InMemoryQueryContextFactory()
     .Build();
 ```
 
-Manual registration is useful when you need fine-grained control over which handlers are registered or when you're not using ASP.NET Core's dependency injection.
+`Handlers` takes a factory for handlers and one for decorators, each a `Func<Type, …>` returning Darker's interface, so `Activator.CreateInstance`, which returns `object`, needs a cast; it also needs each handler to have a parameterless constructor. Manual registration is useful when you need fine-grained control over which handlers are registered or when you're not using ASP.NET Core's dependency injection.
 
 ## Further Reading
 

@@ -30,7 +30,7 @@ Common examples of orthogonal operations include:
 
 To handle these orthogonal concerns our [command processor](/contents/CommandsCommandDispatcherandProcessor.md#the-command-processor-pattern) uses a pipes and filters architectural style: the filters are where
 processing occurs, they do not share state with other filters, nor do they know about adjacent filters. The pipe is the connector between the filters in our case this is provided by the
-**IHandleRequests\<TRequest\>** interface which has a method **IHandleRequests\<TRequest\> Successor** that allows us to chain filters together.
+**IHandleRequests\<TRequest\>** interface which has a method **SetSuccessor(IHandleRequests\<TRequest\> successor)** that allows us to chain filters together.
 
 ![PipesAndFilters](_static/images/PipesAndFilters.png)
 
@@ -59,42 +59,47 @@ The limitation here is that you can only make assumptions about the type you rec
 
 Although it is possible to implement the [IHandleRequests](https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/IHandleRequests.cs) interface directly, we recommend deriving your handler from [RequestHandler<T>](https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/RequestHandler.cs\).
 
-Let us assume that we want to log all requests travelling through the pipeline. (We provide this for you in the Brighter.CommandProcessor packages so this for illustration only). We could implement a generic
+Let us assume that we want to log all requests travelling through the pipeline. (Brighter ships this as `RequestLoggingHandler<TRequest>` and `[RequestLogging]` in the `Paramore.Brighter` package, so this is for illustration only.). We could implement a generic
 handler as follows:
 
-``` csharp
+```csharp
 using System;
-using Newtonsoft.Json;
-using Brighter.commandprocessor.Logging;
+using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
 
-namespace Brighter.commandprocessor
+public class RequestLoggingHandler<TRequest>
+    : RequestHandler<TRequest> where TRequest : class, IRequest
 {
-    public class RequestLoggingHandler<TRequest>
-        : RequestHandler<TRequest> where TRequest : class, IRequest
+    private readonly ILogger<RequestLoggingHandler<TRequest>> _logger;
+    private HandlerTiming _timing;
+
+    public RequestLoggingHandler(ILogger<RequestLoggingHandler<TRequest>> logger)
     {
-        private HandlerTiming _timing;
+        _logger = logger;
+    }
 
-        public override void InitializeFromAttributeParams(
-            params object[] initializerList
-        )
-        {
-            _timing = (HandlerTiming)initializerList[0];
-        }
+    public override void InitializeFromAttributeParams(
+        params object?[] initializerList
+    )
+    {
+        _timing = (HandlerTiming)initializerList[0]!;
+    }
 
-        public override TRequest Handle(TRequest command)
-        {
-            LogCommand(command);
-            return base.Handle(command);
-        }
+    public override TRequest Handle(TRequest command)
+    {
+        LogCommand(command);
+        return base.Handle(command);
+    }
 
-        private void LogCommand(TRequest request)
-        {
-            logger.InfoFormat("Logging handler pipeline call. Pipeline timing {0} target, for {1} with values of {2} at: {3}",
-                _timing.ToString(),
-                typeof(TRequest),
-                JsonConvert.SerializeObject(request),
-                DateTime.UtcNow);
-        }
+    private void LogCommand(TRequest request)
+    {
+        _logger.LogInformation(
+            "Logging handler pipeline call. Pipeline timing {Timing} target, for {RequestType} with values of {Request} at: {Time}",
+            _timing,
+            typeof(TRequest),
+            JsonSerializer.Serialize(request),
+            DateTime.UtcNow);
     }
 }
 ```
@@ -107,7 +112,10 @@ It is worth remembering that handlers may be called after the target handler (in
 
 We now need to tell our pipeline to call this orthogonal handler before our target handler. To do this we use attributes. The code we want to write looks like this:
 
-``` csharp
+```csharp
+using System;
+using Paramore.Brighter;
+
 class GreetingCommandHandler : RequestHandler<GreetingCommand>
 {
     [RequestLogging(step: 1, timing: HandlerTiming.Before)]
@@ -123,7 +131,10 @@ The **RequestLogging** Attribute tells the Command Processor to insert a Logging
 
 We implement the **RequestLoggingAttribute** by creating our own Attribute class, derived from **RequestHandlerAttribute**.
 
-``` csharp
+```csharp
+using System;
+using Paramore.Brighter;
+
 public class RequestLoggingAttribute : RequestHandlerAttribute
 {
     public RequestLoggingAttribute(int step, HandlerTiming timing)
@@ -144,11 +155,10 @@ public class RequestLoggingAttribute : RequestHandlerAttribute
 
 The most important part of this implementation is the GetHandlerType() method, where we return the type of our handler. At runtime the Command Processor uses reflection to determine what attributes are on the target handler and requests an instance of that type from the user-supplied **Handler Factory**.
 
-Your Handler Factory needs to respond to requests for instances of a **RequestHandler\<T\>** specialized for a concrete type. For example, if you create a **RequestLoggingHandler\<TRequest\>** we will ask you for a **RequestLoggingHandler\<MyCommand\>** etc. Depending on your implementation of HandlerFactory, you may need to register an implementation for every concrete instance of your handler with your
-underlying IoC container etc.
+Your Handler Factory needs to respond to requests for instances of a **RequestHandler\<T\>** specialized for a concrete type. For example, if you create a **RequestLoggingHandler\<TRequest\>** we will ask you for a **RequestLoggingHandler\<MyCommand\>** etc. With `Paramore.Brighter.Extensions.DependencyInjection`, `AutoFromAssemblies()` registers a public open generic handler it finds in your assemblies, so the pipeline can create it. If you register your handlers by hand instead, register the open generic type yourself, with `services.AddTransient(typeof(RequestLoggingHandler<>))`; otherwise the first request through the pipeline throws a `ConfigurationException`, *"Could not create handler"*.
 
 Note that as we rely on an user supplied implementation of **IAmAHandlerFactory** to instantiate Handlers, you can have any dependencies in the constructor of your handler that you can resolve at
-runtime. In this case we pass in an ILog reference to actually log to.
+runtime. In this case we pass in an `ILogger<RequestLoggingHandler<TRequest>>` to log to.
 
 You may wish to pass parameter from your Attribute to the handler. Attributes can have constructor parameters or public members that you can set when adding the Attribute to a target method. These can only be
 compile time constants, see the documentation [here](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/attributes/). After the Command Processor calls your Handler Factory to create an
@@ -164,17 +174,19 @@ Attribute at run time. it can be tempting to set retrieve global state via the [
 
 Using an attribute based approach is not an approach favoured by everyone. Some people prefer a more explicit approach to configuring the pipeline.
 
-The trick is to remember that any handler that derives from **IHandleRequests\<TRequest\>** has a **Successor** and you can build a chain by having the first handler call the second handler\'s
-**Handle()** method i.e. **Successor.Handle()**. You can derive from **RequestHandler\<T\>** and call **base.Handle()** for this, even if you don\'t want to use the Attribute based pipelines.
+The trick is to remember that any handler that derives from **IHandleRequests\<TRequest\>** has a successor, set with **SetSuccessor()**, and you can build a chain by having the first handler call the second handler\'s
+**Handle()** method. You can derive from **RequestHandler\<T\>** and call **base.Handle()** for this, even if you don\'t want to use the Attribute based pipelines.
 
 In the SubscriberRegistry you just register the first Handler in your pipeline. When we lookup the Handler for the Command in the SubscriberRegistry we will call it\'s Handle method. It can execute your
-code, and then call it\'s Successor (using the Russian Doll approach).
+code, and then call it\'s successor (using the Russian Doll approach). The SubscriberRegistry holds the handler's *type*, so your Handler Factory must return the instance you wired up when it is asked for a `MyLoggingHandler`; a new `MyLoggingHandler` has no successor, and the request never reaches `MyCommandHandler`.
 
-``` csharp
+```csharp
+using Paramore.Brighter;
+
 var myCommandHandler = new MyCommandHandler();
 var myLoggingHandler = new MyLoggingHandler(log);
 
-myLoggingHandler.Successor = myCommandHandler;
+myLoggingHandler.SetSuccessor(myCommandHandler);
 
 var subscriberRegistry = new SubscriberRegistry();
 subscriberRegistry.Register<MyCommand, MyLoggingHandler>();

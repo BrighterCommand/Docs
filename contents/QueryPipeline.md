@@ -63,6 +63,7 @@ The order in which decorators execute is controlled by the **step number** speci
 
 ```csharp
 using Paramore.Darker;
+using Paramore.Darker.Attributes;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
 using System.Threading;
@@ -72,13 +73,14 @@ public sealed class GetPersonQueryHandler : QueryHandlerAsync<GetPersonNameQuery
 {
     [QueryLogging(1)]              // Executes FIRST (step 1)
     [FallbackPolicy(2)]            // Executes SECOND (step 2)
-    [RetryableQuery(3, "MyCircuitBreaker")]  // Executes THIRD (step 3)
+    [RetryableQuery(3)]            // Executes THIRD (step 3)
     public override async Task<string> ExecuteAsync(
         GetPersonNameQuery query,
         CancellationToken cancellationToken = default)
     {
-        // Your query logic here
+        // ... your query logic here
         // This executes LAST, after all decorators
+        return string.Empty;
     }
 }
 ```
@@ -87,7 +89,7 @@ public sealed class GetPersonQueryHandler : QueryHandlerAsync<GetPersonNameQuery
 
 - **Logging should typically be first (step 1)**: This ensures all operations are logged, including retries and fallbacks
 - **Fallback before retry (step 2 before 3)**: If a retry exhausts its attempts, the fallback can provide a default result
-- **Retry with circuit breaker should be last (step 3)**: This ensures retries happen after other decorators have a chance to handle the request
+- **Retry should be last (step 3)**: This ensures retries happen after other decorators have a chance to handle the request
 
 However, you can adjust the ordering to suit your specific needs. For example, you might want retry before fallback if you only want to use the fallback when all retries are exhausted.
 
@@ -167,7 +169,7 @@ Darker integrates with [Polly](https://github.com/App-vNext/Polly) to provide re
 
 #### RetryableQuery Decorator
 
-The `RetryableQuery` decorator automatically retries a query when it encounters transient failures. It integrates with Polly circuit breakers to prevent overwhelming failing systems.
+The `RetryableQuery` decorator runs a query inside a Polly policy from your policy registry: by default the retry policy that `AddDefaultPolicies()` registers, so a query that hits a transient failure is tried again. Name a different policy, such as a circuit breaker, and it runs that policy instead.
 
 **Purpose:**
 
@@ -202,7 +204,7 @@ app.Run();
 
 **Usage:**
 
-Apply the `[RetryableQuery]` attribute with a step number and the name of a circuit breaker policy:
+Apply the `[RetryableQuery]` attribute with a step number, and optionally the name of the policy to run:
 
 ```csharp
 using Paramore.Darker;
@@ -222,7 +224,7 @@ public sealed class GetPeopleQueryHandler : QueryHandlerAsync<GetPeopleQuery, IR
     }
 
     [QueryLogging(1)]
-    [RetryableQuery(2, "DefaultCircuitBreaker")]  // Retry with circuit breaker
+    [RetryableQuery(2)]            // Retry with the default retry policy
     public override async Task<IReadOnlyDictionary<int, string>> ExecuteAsync(
         GetPeopleQuery query,
         CancellationToken cancellationToken = default)
@@ -236,9 +238,9 @@ public sealed class GetPeopleQueryHandler : QueryHandlerAsync<GetPeopleQuery, IR
 The `RetryableQuery` attribute takes two parameters:
 
 - **Step number**: Controls when this decorator executes in the pipeline (typically after logging and fallback)
-- **Circuit breaker name**: The name of a circuit breaker policy in your policy registry
+- **Policy name** (optional): The name of the policy in your policy registry that the decorator runs. It defaults to `Constants.RetryPolicyName`, the retry policy `AddDefaultPolicies()` registers
 
-When a query fails, the retry policy will attempt to execute it again based on your policy configuration (see [Configuring Polly Policies](/contents/QueryPipelinePolicies.md)). If failures continue, the circuit breaker will open, preventing further attempts until the circuit closes again.
+The decorator runs that one policy. With the default, a query that fails is executed again, up to the retries your policy allows (see [Configuring Polly Policies](/contents/QueryPipelinePolicies.md)). Naming a circuit breaker runs the breaker *instead of* the retry, not as well; to retry and break, register a policy that wraps both and name that.
 
 #### FallbackPolicy Decorator
 
@@ -281,6 +283,7 @@ Apply the `[FallbackPolicy]` attribute and implement a `FallbackAsync` method in
 
 ```csharp
 using Paramore.Darker;
+using Paramore.Darker.Attributes;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
 using System.Threading;
@@ -297,7 +300,7 @@ public sealed class GetPersonQueryHandler : QueryHandlerAsync<GetPersonNameQuery
 
     [QueryLogging(1)]
     [FallbackPolicy(2)]  // Provide fallback if query fails
-    [RetryableQuery(3, "DefaultCircuitBreaker")]
+    [RetryableQuery(3)]
     public override async Task<string> ExecuteAsync(
         GetPersonNameQuery query,
         CancellationToken cancellationToken = default)
@@ -332,7 +335,7 @@ The fallback method should:
 
 #### Circuit Breaker Integration
 
-Both `RetryableQuery` and custom policies can integrate with Polly circuit breakers. A circuit breaker prevents your application from repeatedly attempting operations that are likely to fail, giving failing systems time to recover.
+A Polly circuit breaker is a policy like any other: register it under a name, and pass that name to `RetryableQuery`. A circuit breaker prevents your application from repeatedly attempting operations that are likely to fail, giving failing systems time to recover.
 
 **Circuit Breaker States:**
 
@@ -350,10 +353,11 @@ Both `RetryableQuery` and custom policies can integrate with Polly circuit break
 
 **Usage:**
 
-Circuit breakers are specified by name in the `RetryableQuery` attribute:
+The `RetryableQuery` attribute runs only the policy it names, so naming a circuit breaker on its own gives you a breaker with no retry. To retry and break, name a policy that wraps a retry around a breaker, as [Configuring Polly Policies](/contents/QueryPipelinePolicies.md#advanced-query-policy-configurations) shows:
 
 ```csharp
-[RetryableQuery(2, "ExternalApiCircuitBreaker")]
+// ...
+[RetryableQuery(2, "ExternalApiRetryAndBreak")]
 public override async Task<OrderData> ExecuteAsync(
     GetOrderQuery query,
     CancellationToken cancellationToken = default)
@@ -362,7 +366,7 @@ public override async Task<OrderData> ExecuteAsync(
 }
 ```
 
-You can use different circuit breakers for different types of failures or different external dependencies. See [Configuring Polly Policies](/contents/QueryPipelinePolicies.md) for how to define circuit breakers.
+You can register a different policy for each external dependency, and name it on that dependency's handlers. See [Configuring Polly Policies](/contents/QueryPipelinePolicies.md) for how to define them.
 
 ### Custom Decorators
 
@@ -406,7 +410,7 @@ public sealed class GetPeopleQueryHandler : QueryHandlerAsync<GetPeopleQuery, IR
     }
 
     [QueryLogging(1)]              // Log all executions, including retries
-    [RetryableQuery(2, "DefaultCircuitBreaker")]  // Retry on transient failures
+    [RetryableQuery(2)]            // Retry on transient failures
     public override async Task<IReadOnlyDictionary<int, string>> ExecuteAsync(
         GetPeopleQuery query,
         CancellationToken cancellationToken = default)
@@ -427,7 +431,7 @@ public sealed class GetPeopleQueryHandler : QueryHandlerAsync<GetPeopleQuery, IR
 
 - Complete visibility into query execution, including retries
 - Automatic recovery from transient failures
-- Circuit breaker protection against cascading failures
+- Circuit breaker protection as well, if you name a policy that wraps a breaker inside the retry
 
 ### Pattern: Logging + Fallback + Retry
 
@@ -435,6 +439,7 @@ This pattern adds fallback behavior to provide graceful degradation when all ret
 
 ```csharp
 using Paramore.Darker;
+using Paramore.Darker.Attributes;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
 using System.Threading;
@@ -451,7 +456,7 @@ public sealed class GetPersonQueryHandler : QueryHandlerAsync<GetPersonNameQuery
 
     [QueryLogging(1)]              // Log everything
     [FallbackPolicy(2)]            // Provide fallback if needed
-    [RetryableQuery(3, "DefaultCircuitBreaker")]  // Retry before falling back
+    [RetryableQuery(3)]            // Retry before falling back
     public override async Task<string> ExecuteAsync(
         GetPersonNameQuery query,
         CancellationToken cancellationToken = default)
@@ -492,7 +497,7 @@ public sealed class GetPersonQueryHandler : QueryHandlerAsync<GetPersonNameQuery
 
 ### Pattern: Multiple Circuit Breakers for Different Dependencies
 
-When your query handler interacts with multiple external systems, you can apply different circuit breakers to different failure scenarios:
+When your query handler interacts with multiple external systems, you can apply different circuit breakers to different failure scenarios. Each is a policy you register under its own name; the decorator runs only that policy, so a breaker named here does not also retry unless you register it wrapped in a retry:
 
 ```csharp
 using Paramore.Darker;
@@ -550,9 +555,10 @@ For more fine-grained control, you might create separate query handlers for each
 
 Place logging first (step 1) so all operations are logged, including retries and fallbacks:
 ```csharp
+// ...
 [QueryLogging(1)]
 [FallbackPolicy(2)]
-[RetryableQuery(3, "CircuitBreaker")]
+[RetryableQuery(3)]
 ```
 
 **2. Use circuit breakers for external dependencies**
@@ -579,9 +585,9 @@ public override Task<Result> FallbackAsync(Query query, ...)
 
 Each decorator should have a single responsibility. Compose multiple simple decorators rather than creating complex custom decorators.
 
-**5. Use named circuit breakers for different failure types**
+**5. Use named policies for different dependencies**
 
-Create separate circuit breakers for different external dependencies or failure scenarios:
+Register a separate circuit breaker for each external dependency, and name it on that dependency's handlers:
 ```csharp
 [RetryableQuery(2, "DatabaseCircuitBreaker")]    // For database queries
 [RetryableQuery(2, "ExternalApiCircuitBreaker")] // For API queries
@@ -612,14 +618,16 @@ Putting retry before logging means individual retry attempts won't be logged. Pu
 
 ❌ Bad:
 ```csharp
-[RetryableQuery(1, "CB")]
+// ...
+[RetryableQuery(1)]
 [QueryLogging(2)]  // Won't log individual retries
 ```
 
 ✅ Good:
 ```csharp
+// ...
 [QueryLogging(1)]  // Logs everything including retries
-[RetryableQuery(2, "CB")]
+[RetryableQuery(2)]
 ```
 
 **2. Forgetting to configure policies**
@@ -640,9 +648,9 @@ builder.Services.AddDarker()
     .AddDefaultPolicies();
 ```
 
-**3. Circuit breaker naming mismatches**
+**3. Policy naming mismatches**
 
-Referencing a circuit breaker name that doesn't exist in the policy registry will cause runtime errors.
+Naming a policy that doesn't exist in the policy registry throws a `ConfigurationException`, *"Policy does not exist in policy registry"*, the first time the handler runs.
 
 ❌ Bad:
 ```csharp

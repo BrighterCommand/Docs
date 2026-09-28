@@ -18,17 +18,19 @@ Both frameworks use the same pipeline architecture where each handler/decorator 
 
 **Attribute-Based Ordering:**
 Both use attributes with step numbers to control decorator execution order:
+
+<!-- blockcheck: skip a method signature shown for comparison, with no body or class to compile in -->
 ```csharp
 // ...
 // Brighter
 [RequestLoggingAsync(1, HandlerTiming.Before)]
 [UseResiliencePipelineAsync("RetryPolicy", 2)]
-public override Task<AddGreetingCommand> HandleAsync(AddGreetingCommand command, ...)
+public override Task<AddGreetingCommand> HandleAsync(AddGreetingCommand command, CancellationToken cancellationToken = default)
 
 // Darker
 [QueryLogging(1)]
-[RetryableQuery(2, "DefaultCircuitBreaker")]
-public override Task<string> ExecuteAsync(GetPersonNameQuery query, ...)
+[RetryableQuery(2)]
+public override Task<string> ExecuteAsync(GetPersonNameQuery query, CancellationToken cancellationToken = default)
 ```
 
 **Policy Integration:**

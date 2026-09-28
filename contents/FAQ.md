@@ -355,7 +355,7 @@ registry.RegisterAsync<MyCommand>((request, context) =>
 );
 ```
 
-**Note**: You cannot use `AutoFromAssemblies()` with Agreement Dispatcher - must use `Handlers()` method.
+**Note**: If you also call `AutoFromAssemblies()`, pass the agreement's handlers in `excludeDynamicHandlerTypes`. Otherwise the scan registers each of them as a fixed route beside the agreement, and sending the request throws *"More than one handler was found"*.
 
 See: [Agreement Dispatcher](/contents/AgreementDispatcher.md)
 
@@ -374,7 +374,7 @@ ICommand command = new GreetingCommand("Ian");
 commandProcessor.Send(command);
 ```
 
-Then you will get this error: *\"ArgumentException \"No command handler was found for the typeof command Brighter.commandprocessor.ICommand - a command should have exactly one handler.\"\"*
+Then you will get this error: *\"ArgumentException \"No command handler was found for the typeof command Paramore.Brighter.ICommand - a command should have exactly one handler.\"\"*
 
 Now, you don\'t see this issue if you pass the concrete type in, so the compiler can correctly resolve the run-time type.
 

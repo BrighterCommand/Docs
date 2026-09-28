@@ -27,7 +27,7 @@ Although it is possible to implement the
 interface directly, we recommend deriving your handler from
 [RequestHandlerAsync\<T\>](https://github.com/BrighterCommand/Brighter/blob/master/src/Paramore.Brighter/RequestHandlerAsync.cs).
 
-Let us assume that we want to log all requests travelling through the pipeline. (We provide this for you in the Brighter.CommandProcessor packages so this for illustration only). We could implement a generic
+Let us assume that we want to record every request travelling through the pipeline in an Inbox before it is handled, which is command sourcing. (Brighter ships this as `[UseInboxAsync]` in the `Paramore.Brighter` package, so this is for illustration only.) We could implement a generic
 handler as follows:
 
 ``` csharp
@@ -54,7 +54,7 @@ public class CommandSourcingHandlerAsync<T> : RequestHandlerAsync<T> where T : c
 }
 ```
 
-Our HandleAsync method is the method which will be called by the pipeline to service the request. After we log we call **return await base.HandleAsync(command, cancellationToken)** to ensure that the next handler in the
+Our HandleAsync method is the method which will be called by the pipeline to service the request. After we add the command to the Inbox we call **return await base.HandleAsync(command, cancellationToken)** to ensure that the next handler in the
 chain is called.
 
 If we failed to do this, the *target handler* would not be called nor any subsequent handlers in the chain. This call to the next item in the chain is how we support the \'Russian Doll\' model - because the next
@@ -113,11 +113,10 @@ public class UseCommandSourcingAsyncAttribute : RequestHandlerAttribute
 The most important part of this implementation is the GetHandlerType() method, where we return the type of our handler. At runtime the Command Processor uses reflection to determine what attributes are on the target handler and requests an instance of that type from the user-supplied **Handler Factory**.
 
 Your Handler Factory needs to respond to requests for instances of a **RequestHandlerAsync\<T\>** specialized for a concrete type. For example, if you create a **CommandSourcingHandlerAsync\<TRequest\>** we
-will ask you for a **CommandSourcingHandlerAsync\<MyCommand\>** etc. Depending on your implementation of HandlerFactory, you may need to register an implementation for every concrete instance of your handler
-with your underlying IoC container etc.
+will ask you for a **CommandSourcingHandlerAsync\<MyCommand\>** etc. With `Paramore.Brighter.Extensions.DependencyInjection`, `AutoFromAssemblies()` registers a public open generic handler it finds in your assemblies, so the pipeline can create it. If you register your handlers by hand instead, register the open generic type yourself, with `services.AddTransient(typeof(CommandSourcingHandlerAsync<>))`; otherwise the first request through the pipeline throws a `ConfigurationException`, *"Could not create handler"*.
 
 Note that as we rely on an user supplied implementation of **IAmAHandlerFactoryAsync** to instantiate Handlers, you can have any dependencies in the constructor of your handler that you can resolve at
-runtime. In this case we pass in an ILog reference to actually log to.
+runtime. In this case we pass in an `IAmAnInboxAsync` to write to.
 
 You may wish to pass parameter from your Attribute to the handler. Attributes can have constructor parameters or public members that you can set when adding the Attribute to a target method. These can only be
 compile time constants, see the documentation [here](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/attributes).

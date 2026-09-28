@@ -176,7 +176,7 @@ public sealed class GetPeopleQueryHandler : QueryHandlerAsync<GetPeopleQuery, IR
     }
 
     [QueryLogging(1)]
-    [RetryableQuery(2, "DefaultCircuitBreaker")]
+    [RetryableQuery(2)]
     public override async Task<IReadOnlyDictionary<int, string>> ExecuteAsync(
         GetPeopleQuery query,
         CancellationToken cancellationToken = default)
@@ -436,6 +436,8 @@ The assembly scanner looks for:
 For fine-grained control, register handlers explicitly using `QueryHandlerRegistry`:
 
 ```csharp
+using System;
+using System.Collections.Generic;
 using Paramore.Darker;
 using Paramore.Darker.Builder;
 
@@ -448,12 +450,16 @@ registry.Register<GetOrderQuery, Order, GetOrderQueryHandler>();
 
 // Build the query processor
 IQueryProcessor queryProcessor = QueryProcessorBuilder.With()
-    .Handlers(registry, Activator.CreateInstance, t => {}, Activator.CreateInstance)
+    .Handlers(
+        registry,
+        t => (IQueryHandler)Activator.CreateInstance(t)!,
+        t => { },
+        t => (IQueryHandlerDecorator)Activator.CreateInstance(t)!)
     .InMemoryQueryContextFactory()
     .Build();
 ```
 
-Manual registration is useful when:
+`Activator.CreateInstance` returns `object`, so each factory casts to Darker's interface, and each handler needs a parameterless constructor. Manual registration is useful when:
 
 - You need precise control over which handlers are registered
 - You're not using ASP.NET Core's dependency injection

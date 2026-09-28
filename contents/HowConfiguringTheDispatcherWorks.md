@@ -36,11 +36,11 @@ The default message mapper typically handles serializing and deserializing messa
 
 If you are using a custom Message Mapper, then you need to register your [Message Mapper](/contents/MessageMappers.md) so that we can find it. The registry must implement **IAmAMessageMapperRegistry**. We recommend using Brighter's **MessageMapperRegistry** unless you have more specific requirements.
 
-``` csharp
-var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory)
-{
-    { typeof(GreetingCommand), typeof(GreetingCommandMessageMapper) }
-};
+```csharp
+using Paramore.Brighter;
+
+var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory, null);
+messageMapperRegistry.Register<GreetingCommand, GreetingCommandMessageMapper>();
 ```
 
 ### Channel Factory
@@ -51,7 +51,7 @@ The Channel Factory is where we take a dependency on a specific Broker. We pass 
 
 This code fragment shows putting the whole thing together
 
-``` csharp
+```csharp
 using System;
 using Paramore.Brighter;
 using Paramore.Brighter.MessagingGateway.RMQ.Sync;
@@ -102,9 +102,11 @@ _dispatcher = DispatchBuilder.StartNew()
 **Two details in that block will bite you if you change them.** The subscription is typed
 `RmqSubscription<T>` rather than `Subscription<T>`, because a transport's channel factory casts
 to its own subscription type and throws `ConfigurationException` when the cast fails — code that
-compiles perfectly and dies at `Receive()`. And `messagePumpType` is set explicitly to
-`Reactor`: `Subscription<T>` defaults to `Proactor`, which needs the *async* mapper registry,
-and the third and fourth arguments to `MessageMappers` here are `null`.
+compiles perfectly and dies at `Receive()`. And `messagePumpType` is `Reactor`, which is also
+`RmqSubscription<T>`'s default, though `Subscription<T>` defaults to `Proactor`. A `Proactor` needs
+the *async* mapper registry, and the third and fourth arguments to `MessageMappers` here are
+`null`, so switching the pump throws `ConfigurationException` at `Receive()`, *"You must provide a
+message mapper registry for the Dispatcher to work"*.
 
 ## Validating Consumer Configuration
 
@@ -131,25 +133,28 @@ The following code shows an example of using the **Dispatcher** from Topshelf. T
 
 We do allow you to start and stop individual channels, but this is an advanced feature for operating the services.
 
-``` csharp
+```csharp
+using Paramore.Brighter.ServiceActivator;
+using Topshelf;
+
 internal class GreetingService : ServiceControl
 {
-    private Dispatcher _dispatcher;
+    private Dispatcher? _dispatcher;
 
     public GreetingService()
     {
-       /* Configfuration Code Goes here*/
+       // ... configure the Dispatcher, as above
     }
 
     public bool Start(HostControl hostControl)
     {
-        _dispatcher.Receive();
+        _dispatcher!.Receive();
         return true;
     }
 
     public bool Stop(HostControl hostControl)
     {
-        _dispatcher.End().Wait();
+        _dispatcher!.End().Wait();
         _dispatcher = null;
         return false;
     }

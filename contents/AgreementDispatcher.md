@@ -380,19 +380,25 @@ registry.Register<MyCommand>((request, context) => [typeof(MyHandler)],
 
 ### AutoFromAssemblies Conflicts
 
-**Problem**: Agreement dispatcher routes not working with `AutoFromAssemblies()`.
+**Problem**: Sending a request routed by an agreement throws `ArgumentException`, *"More than one handler was found for the typeof command MyCommand"*, when you also call `AutoFromAssemblies()`.
 
-**Cause**: `AutoFromAssemblies()` creates fixed mappings.
+**Cause**: `AutoFromAssemblies()` registers every handler it finds as the one handler for its request type, so the agreement's handlers also become fixed routes beside it.
 
-**Solution**: Use explicit `.Handlers()` registration:
+**Solution**: Pass the agreement's handlers to `AutoFromAssemblies()` in `excludeDynamicHandlerTypes`, so the scan skips them:
 
 ```csharp
-// Instead of AutoFromAssemblies
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter(options => { })
+    .AutoFromAssemblies(excludeDynamicHandlerTypes: [typeof(MyHandler), typeof(MyOtherHandler)])
     .Handlers(registry =>
     {
-        // Explicit registration for Agreement Dispatcher
-        registry.Register<MyCommand>((request, context) => { /* ... */ }, [/* handlers */]);
+        registry.Register<MyCommand>((request, context) =>
+            {
+                // ... your routing logic
+                return [typeof(MyHandler)];
+            },
+            [typeof(MyHandler), typeof(MyOtherHandler)]);
     });
 ```
 

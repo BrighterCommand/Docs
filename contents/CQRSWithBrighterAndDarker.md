@@ -229,6 +229,8 @@ Here's a brief example of a Darker query handler. For complete details, see [Imp
 using Paramore.Darker;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -267,7 +269,7 @@ public sealed class GetOrderDetailsQueryHandler :
     }
 
     [QueryLogging(step: 1)]
-    [RetryableQuery(step: 2, circuitBreakerName: "DatabaseCircuitBreaker")]
+    [RetryableQuery(step: 2)]
     public override async Task<OrderDetailsDto> ExecuteAsync(
         GetOrderDetailsQuery query,
         CancellationToken cancellationToken = default)
@@ -787,7 +789,7 @@ public sealed class GetOrderDetailsQueryHandler :
     }
 
     [QueryLogging(step: 1)]
-    [RetryableQuery(step: 2, circuitBreakerName: "DatabaseCircuitBreaker")]
+    [RetryableQuery(step: 2)]
     public override async Task<OrderDetailsDto> ExecuteAsync(
         GetOrderDetailsQuery query,
         CancellationToken cancellationToken = default)

@@ -374,7 +374,7 @@ var app = builder.Build();
 app.Run();
 ```
 
-Without the scoped configuration, you'll encounter exceptions about disposed DbContext instances.
+Without the scoped configuration, the query processor is a singleton that resolves handlers from the root provider: in Development, where scope validation is on, the first query throws an `InvalidOperationException` (*"Cannot resolve … from root provider because it requires scoped service"*), and elsewhere every query shares one `DbContext` for the life of the application.
 
 ### Pattern: Multiple Handler Assemblies
 
@@ -413,7 +413,7 @@ If you receive an exception that a handler cannot be found for a query:
 
 **Lifetime scope issues with EF Core**
 
-If you see exceptions about a disposed DbContext:
+If you see an `InvalidOperationException` saying a handler cannot be resolved from the root provider because it requires a scoped service, or queries see each other's changes through one shared `DbContext`:
 - Ensure you've configured `QueryProcessorLifetime = ServiceLifetime.Scoped` in the Darker options
 - Verify your DbContext is registered with scoped lifetime (default for EF Core)
 - Check that you're not trying to use the query result after the scope has been disposed

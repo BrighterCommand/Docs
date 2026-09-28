@@ -163,7 +163,7 @@ public sealed class GetProductCatalogQueryHandler :
     }
 
     [QueryLogging(step: 1)]
-    [RetryableQuery(step: 2, circuitBreakerName: "DatabaseCircuitBreaker")]
+    [RetryableQuery(step: 2)]
     public override async Task<PagedResult<ProductCatalogItemDto>> ExecuteAsync(
         GetProductCatalogQuery query,
         CancellationToken cancellationToken = default)
