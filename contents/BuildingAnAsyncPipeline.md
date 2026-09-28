@@ -70,7 +70,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Paramore.Brighter;
 
-internal class GreetingCommandRequestHandlerAsync : RequestHandlerAsync<GreetingCommand>
+public class GreetingCommandRequestHandlerAsync : RequestHandlerAsync<GreetingCommand>
 {
     [UseCommandSourcingAsync(step: 1, timing: HandlerTiming.Before)]
     public override async Task<GreetingCommand> HandleAsync(GreetingCommand command, CancellationToken cancellationToken = default)

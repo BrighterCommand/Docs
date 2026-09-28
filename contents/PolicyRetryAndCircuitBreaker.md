@@ -47,7 +47,10 @@ By adding the **UseResiliencePipeline** attribute, you instruct the Command Proc
 ### Basic Example
 
 ```csharp
-internal class MyQoSProtectedHandler : RequestHandler<MyCommand>
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
+public class MyQoSProtectedHandler : RequestHandler<MyCommand>
 {
     [UseResiliencePipeline(policy: "MyRetryPipeline", step: 1)]
     public override MyCommand Handle(MyCommand command)
@@ -69,7 +72,7 @@ using System.Threading.Tasks;
 using Paramore.Brighter;
 using Paramore.Brighter.Policies.Attributes;
 
-internal class MyQoSProtectedHandlerAsync : RequestHandlerAsync<MyCommand>
+public class MyQoSProtectedHandlerAsync : RequestHandlerAsync<MyCommand>
 {
     [UseResiliencePipelineAsync(policy: "MyRetryPipeline", step: 1)]
     public override async Task<MyCommand> HandleAsync(
@@ -164,32 +167,42 @@ public class MyTimedHandler : RequestHandler<MyCommand>
 
 ## Combining Multiple Strategies
 
-You can combine multiple resilience strategies in a single pipeline. Strategies are applied in the order they're added (inner to outer wrapping).
+You can combine multiple resilience strategies in a single pipeline. The first strategy you add is the outermost: it wraps every strategy added after it. So to time out each attempt, retry the attempts that fail, and stop retrying while a service is known to be down, add the circuit breaker first and the timeout last.
 
 ### Retry + Circuit Breaker + Timeout
 
 ```csharp
+using System;
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Retry;
+
 resiliencePipelineRegistry.TryAddBuilder("MyComprehensivePipeline",
     (builder, context) => builder
-        .AddTimeout(TimeSpan.FromSeconds(10))              // Innermost: Timeout individual attempts
+        .AddCircuitBreaker(new CircuitBreakerStrategyOptions
+        {
+            FailureRatio = 0.5,
+            MinimumThroughput = 10,
+            BreakDuration = TimeSpan.FromSeconds(60)
+        })                                                  // Outermost: Circuit breaker
         .AddRetry(new RetryStrategyOptions
         {
             MaxRetryAttempts = 3,
             Delay = TimeSpan.FromSeconds(1),
             BackoffType = DelayBackoffType.Exponential
         })                                                  // Middle: Retry on failures
-        .AddCircuitBreaker(new CircuitBreakerStrategyOptions
-        {
-            FailureRatio = 0.5,
-            MinimumThroughput = 10,
-            BreakDuration = TimeSpan.FromSeconds(60)
-        }));                                                // Outermost: Circuit breaker
+        .AddTimeout(TimeSpan.FromSeconds(10)));             // Innermost: Timeout individual attempts
 ```
+
+Added the other way round, the timeout would wrap the retries and limit all of them together to 10 seconds, and the circuit breaker would sit inside the retry.
 
 **Handler Usage**:
 
 ```csharp
-internal class MyQoSProtectedHandler : RequestHandler<MyCommand>
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
+public class MyQoSProtectedHandler : RequestHandler<MyCommand>
 {
     [UseResiliencePipeline("MyComprehensivePipeline", step: 1)]
     public override MyCommand Handle(MyCommand command)
@@ -210,15 +223,27 @@ internal class MyQoSProtectedHandler : RequestHandler<MyCommand>
 
 ---
 
-## Using Multiple Pipelines on a Handler
+## Combining Resilience Strategies on a Handler
 
-You can apply multiple resilience pipeline attributes to a handler. Each attribute wraps subsequent steps in the pipeline.
+A handler method takes one `[UseResiliencePipeline]`. The attribute is not repeatable, so a second one on the same method does not compile (`CS0579`, *"Duplicate 'UseResiliencePipeline' attribute"*). To layer strategies, compose them in one pipeline, as [Combining Multiple Strategies](#combining-multiple-strategies) shows, and name that:
 
 ```csharp
-internal class MyMultiPipelineHandler : RequestHandler<MyCommand>
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Registry;
+using Polly.Retry;
+
+resiliencePipelineRegistry.TryAddBuilder("MyCircuitBreakerAndRetryPipeline",
+    (builder, context) => builder
+        .AddCircuitBreaker(new CircuitBreakerStrategyOptions())  // Outermost
+        .AddRetry(new RetryStrategyOptions()));                   // Inside the circuit breaker
+
+public class MyMultiPipelineHandler : RequestHandler<MyCommand>
 {
-    [UseResiliencePipeline("MyCircuitBreakerPipeline", step: 1)]
-    [UseResiliencePipeline("MyRetryPipeline", step: 2)]
+    [UseResiliencePipeline("MyCircuitBreakerAndRetryPipeline", step: 1)]
     public override MyCommand Handle(MyCommand command)
     {
         // Circuit breaker wraps retry, which wraps this handler
@@ -227,7 +252,7 @@ internal class MyMultiPipelineHandler : RequestHandler<MyCommand>
 }
 ```
 
-**Execution order**: Circuit Breaker → Retry → Handler
+Other attributes, such as `[FallbackPolicy]` or `[RejectMessageOnError]`, can still sit beside it at their own steps.
 
 ---
 
@@ -236,7 +261,10 @@ internal class MyMultiPipelineHandler : RequestHandler<MyCommand>
 For strategies like Circuit Breaker, you often want a separate instance per handler type (so failures in one handler don't affect others). Use `UseTypePipeline = true` to scope pipelines by handler type.
 
 ```csharp
-internal class OrderServiceHandler : RequestHandler<ProcessOrderCommand>
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
+public class OrderServiceHandler : RequestHandler<ProcessOrderCommand>
 {
     [UseResiliencePipeline("SharedCircuitBreaker", step: 1, UseTypePipeline = true)]
     public override ProcessOrderCommand Handle(ProcessOrderCommand command)
@@ -246,7 +274,7 @@ internal class OrderServiceHandler : RequestHandler<ProcessOrderCommand>
     }
 }
 
-internal class PaymentServiceHandler : RequestHandler<ProcessPaymentCommand>
+public class PaymentServiceHandler : RequestHandler<ProcessPaymentCommand>
 {
     [UseResiliencePipeline("SharedCircuitBreaker", step: 1, UseTypePipeline = true)]
     public override ProcessPaymentCommand Handle(ProcessPaymentCommand command)
@@ -321,7 +349,12 @@ resiliencePipelineRegistry.TryAddBuilder("MyHedgingPipeline",
 Polly v8 resilience pipelines properly integrate with `CancellationToken`, allowing you to cancel operations in progress.
 
 ```csharp
-internal class MyCancellableHandler : RequestHandlerAsync<MyCommand>
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
+public class MyCancellableHandler : RequestHandlerAsync<MyCommand>
 {
     [UseResiliencePipeline("MyRetryPipeline", step: 1)]
     public override async Task<MyCommand> HandleAsync(

@@ -1,5 +1,5 @@
 ---
-description: "Brighter emits monitoring information from an External Bus using a configured Control Bus."
+description: "A monitored handler posts an event to a control bus as it is entered and exited, so you can watch what your handlers do from outside the process."
 layout:
   description:
     visible: false
@@ -9,78 +9,122 @@ layout:
 
 > **Reference** · Applies to **Brighter V10**
 
-Brighter emits monitoring information from an External Bus using a configured [Control Bus](https://brightercommand.github.io/Brighter/ControlBus.html).
+A monitored handler posts an event to a control bus as it is entered and exited, so you can watch what your handlers do from outside the process.
 
-## Configuring Monitoring
+Each event names the handler, carries the request it handled, and records how long it took. The events are ordinary messages on a topic of your choosing, so anything that can read your broker can consume them. For tracing and metrics through OpenTelemetry instead, see [Telemetry](/contents/Telemetry.md).
 
-Firstly [configure a Control
-Bus](https://brightercommand.github.io/Brighter/ControlBus.html#configure) in the brighter application to emit monitoring messages
+## Monitoring Configuration
 
-## Config file
+Monitoring needs two things in your container besides Brighter itself:
 
-Monitoring requires a new section to be added to the application config file:
+- An `IAmAControlBusSender`, which sends each `MonitorEvent` to your broker
+- A `MonitorConfiguration`, which turns monitoring on and names this instance in every event
 
-``` xml
-<configSections>
-    <section name="monitoring" type ="paramore.brighter.commandprocessor.monitoring.Configuration.MonitoringConfigurationSection, Brighter.commandprocessor" allowLocation ="true" allowDefinition="Everywhere"/>
-</configSections>
-```
+`ControlBusSenderFactory` builds a sender from an Outbox and a producer registry. The registry needs a publication whose `RequestType` is `MonitorEvent`; its `Topic` is where the events go. This example uses the in-memory bus; in an application, use your transport's producer registry factory, such as `RmqProducerRegistryFactory`, with the same publication:
 
-The monitoring config can then be speicified later in the file:
+```csharp
+using System;
+using System.Transactions;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Monitoring.Configuration;
+using Paramore.Brighter.Monitoring.Events;
+using Paramore.Brighter.Observability;
 
-``` xml
-<monitoring>
-    <monitor isMonitoringEnabled="true" instanceName="ManagementAndMonitoring"/>
-</monitoring>
-```
+var monitoringTopic = new RoutingKey("brighter.monitoring");
 
-This enables runtime changes to enable/disable emitting of monitoring messages.
+var producerRegistry = new InMemoryProducerRegistryFactory(
+        new InternalBus(),
+        [new Publication { Topic = monitoringTopic, RequestType = typeof(MonitorEvent) }],
+        InstrumentationOptions.None)
+    .Create();
 
-## Handler Configuration
+var controlBusSender = new ControlBusSenderFactory().Create<Message, CommittableTransaction>(
+    new InMemoryOutbox(TimeProvider.System), producerRegistry, new BrighterTracer());
 
-Each handler that requires monitoring must be configured in two stages, a Handler attribute and container registration of a MonitorHandler for the given request:
-
-For example, given:
-
--   TRequest - a Brighter Request, inheriting from IRequest
--   TRequestHandler - handles the TRequest, inheriting IHandleRequest
-    \<TRequest\>
-
-### Attribute
-
-The following attribute must be added to the Handle method in the handler, TRequestHandler:
-
-``` csharp
-[Monitor(step:1, timing:HandlerTiming.Before, handlerType:typeof(TRequestHandler))]
-```
-
-Please note the step and timing can vary if monitoring should be after another attribute step, or timing should be emitted after.
-
-### Container registration
-
-The following additional handler must be registered in the application container (where `MonitorHandler<T>` is a built-in Brighter handler):
-
-``` csharp
-container.Register<TRequest, MonitorHandler<TRequest>>
-```
-
-## Monitor message format
-
-A message is emitted from the Control Bus on Handler Entry and Handler Exit. The following is the form of the message:
-
-``` javascript
+var services = new ServiceCollection();
+services.AddSingleton(controlBusSender);
+services.AddSingleton(new MonitorConfiguration
 {
-    "Exception": null, // or Exception message
-    "EventType": "EnterHandler or ExitHandler",
-    "EventTime": "2016-06-21T15:48:26.1390192Z",
-    "TimeElapsedMs": 0 or Duration,
-    "HandlerName": "...",
-    "HandlerFullAssemblyName": "...",
-    "InstanceName": "ManagementAndMonitoring",
-    "RequestBody": "{\"Id\":\"dc32b35f-bc75-4197-9178-c8310a63e4fb\", ... }",
-    "Id": "048cc207-e820-40fa-b931-55b60203fbc2"
+    IsMonitoringEnabled = true,
+    InstanceName = "OrdersService"
+});
+
+services.AddBrighter()
+    .AutoFromAssemblies();
+```
+
+The sender has its own command processor and Outbox, separate from the ones your application posts through.
+
+You do not register the monitoring handler itself. `AddBrighter()` makes Brighter's own `MonitorHandler<T>` available to the pipeline, whether you register your handlers with `AutoFromAssemblies()` or with `Handlers()`.
+
+## Monitor Attribute Usage
+
+Mark each handler you want monitored with `[Monitor]`, naming the handler's own type:
+
+```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Monitoring.Attributes;
+
+public class GreetingCommand() : Command(Id.Random())
+{
+    public string Name { get; set; } = "";
+}
+
+public class GreetingCommandHandler : RequestHandler<GreetingCommand>
+{
+    [Monitor(step: 1, timing: HandlerTiming.Before, handlerType: typeof(GreetingCommandHandler))]
+    public override GreetingCommand Handle(GreetingCommand command)
+    {
+        Console.WriteLine($"Hello {command.Name}");
+        return base.Handle(command);
+    }
 }
 ```
 
-Messages can be processed from the queue and interated with your monitoring tool of choice, for example Live python consumers emitting to console or logstash consumption to the ELK stack using relevant plugins
-to provide performance raditators or dashboards.
+The `step` and `timing` place the monitor in the pipeline like any other attribute. With `step: 1`, the time an event records includes every later step in the pipeline, not only your handler. `handlerType` is what the event reports as the handler's name.
+
+`[MonitorAsync]` is the attribute for a `RequestHandlerAsync<T>`; see [Monitoring Limitations](#monitoring-limitations) before you use it.
+
+## Turning Monitoring On and Off
+
+`MonitorConfiguration.IsMonitoringEnabled` is read each time a monitor handler is created. With the default transient handler lifetime that is once per request, so setting it to `false` on the instance you registered stops the events from the next request, without removing any attributes. While it is `false`, the monitor simply passes the request on.
+
+## Monitor Message Format
+
+A monitored request produces two messages, an `EnterHandler` event before the handler runs and an `ExitHandler` event after it. Each is an `MT_EVENT` on the publication's topic, with a JSON body like this one, captured from the example above (its assembly was named `mon`):
+
+```json
+{
+  "exception": null,
+  "eventType": "ExitHandler",
+  "eventTime": "2026-09-28T08:25:33.219522Z",
+  "timeElapsedMs": 47,
+  "handlerName": "GreetingCommandHandler",
+  "handlerFullAssemblyName": "GreetingCommandHandler, mon, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "instanceName": "OrdersService",
+  "requestBody": "{\"name\":\"Ada\",\"correlationId\":null,\"id\":\"01a0e71e-88ed-7acb-a5aa-a5863e075b6c\"}",
+  "correlationId": null,
+  "id": "01a0e71e-8923-7ae3-82a0-f3654db2fcbf"
+}
+```
+
+- `timeElapsedMs` is `0` on `EnterHandler`, and the time from entry to exit on `ExitHandler`
+- `requestBody` is the request serialized to JSON, as a string
+- `instanceName` is `MonitorConfiguration.InstanceName`, which tells apart the instances of a service that share a topic
+
+A consumer on that topic can forward the events to your monitoring tool, for example to Logstash and the ELK stack for dashboards.
+
+## Monitoring Limitations
+
+Two defects in Brighter 10.7.0 limit what monitoring can do:
+
+- **A monitored handler that throws loses its exception.** The monitor tries to send an `ExceptionThrown` event carrying the exception, and serializing an `Exception` fails, so the caller receives a `NotSupportedException` (*"Serialization and deserialization of 'System.Reflection.MethodBase' instances is not supported"*) instead of the exception your handler threw. Monitor only handlers whose exceptions you do not need to see, until this is fixed
+- **`[MonitorAsync]` cannot send through the sender `ControlBusSenderFactory` builds.** That sender has no async message mapper for `MonitorEvent`, so an async monitored handler fails with *"No message mapper defined for request"*
+
+## Further Reading
+
+- [Telemetry](/contents/Telemetry.md) - Tracing and metrics through OpenTelemetry
+- [Building a Pipeline of Request Handlers](/contents/BuildingAPipeline.md) - How attributes such as `[Monitor]` place a handler in the pipeline

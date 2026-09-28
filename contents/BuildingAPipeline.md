@@ -116,7 +116,7 @@ We now need to tell our pipeline to call this orthogonal handler before our targ
 using System;
 using Paramore.Brighter;
 
-class GreetingCommandHandler : RequestHandler<GreetingCommand>
+public class GreetingCommandHandler : RequestHandler<GreetingCommand>
 {
     [RequestLogging(step: 1, timing: HandlerTiming.Before)]
     public override GreetingCommand Handle(GreetingCommand command)

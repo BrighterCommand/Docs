@@ -79,7 +79,7 @@ And use them in your handler like this:
 
 ``` csharp
 // ...
-internal class MyQoSProtectedHandler : RequestHandler<MyCommand>
+public class MyQoSProtectedHandler : RequestHandler<MyCommand>
 {
     [UseResiliencePipeline(policy: "RetryPipeline", step: 1)]
     public override MyCommand Handle(MyCommand command)
@@ -425,7 +425,7 @@ sets `ThrowOnError`; neither is usually set by hand.
 
 ### Type Registration
 
-The **IBrighterBuilder** fluent interface can scan your assemblies for your *Request Handlers* (inherit from **IHandleRequests<>** or **IHandleRequestsAsync<>**) and *Message Mappers* (inherit from **IAmAMessageMapper<>**) and register then with the **ServiceCollection**. This is the most common way to register your code.
+The **IBrighterBuilder** fluent interface can scan your assemblies for your *Request Handlers* (inherit from **IHandleRequests<>** or **IHandleRequestsAsync<>**) and *Message Mappers* (inherit from **IAmAMessageMapper<>**) and register them with the **ServiceCollection**. This is the most common way to register your code. The scan registers only **public** handlers: a handler declared `internal` is never found, and sending its request throws an `ArgumentException`, *"No command handler was found"*.
 
 ``` csharp
 // ...

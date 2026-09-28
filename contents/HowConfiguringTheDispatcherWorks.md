@@ -127,44 +127,27 @@ The Dispatcher reads messages of input channels. Internally it creates a message
 
 To use the Dispatcher you need to host it in a consumer application. Usually a console application or Windows Service is appropriate. 
 
-We recommend using HostBuilder, but if not you will need to use something like [Topshelf](http://topshelf-project.com/) to host your consumers.
+We recommend using HostBuilder: `AddConsumers()` runs the Dispatcher for you in a hosted service, `ServiceActivatorHostedService`, which starts it with the host and stops it on shutdown. See [BasicConfiguration](/contents/BrighterBasicConfiguration.md).
 
-The following code shows an example of using the **Dispatcher** from Topshelf. The key methods are **Dispatcher.Receive()** to start the message pumps and **Dispatcher.End()** to shut them.
+Without HostBuilder, you start and stop the Dispatcher yourself. The key methods are **Dispatcher.Receive()** to start the message pumps and **Dispatcher.End()** to shut them, which waits for each pump to finish the message it is handling. The following code runs the Dispatcher built above in a console application until you press Ctrl+C.
 
 We do allow you to start and stop individual channels, but this is an advanced feature for operating the services.
 
 ```csharp
-using Paramore.Brighter.ServiceActivator;
-using Topshelf;
+using System;
+using System.Threading;
 
-internal class GreetingService : ServiceControl
+// ... build _dispatcher, as above
+
+using var stop = new ManualResetEventSlim();
+Console.CancelKeyPress += (_, e) =>
 {
-    private Dispatcher? _dispatcher;
+    e.Cancel = true;  // let the Dispatcher shut down, rather than killing the process
+    stop.Set();
+};
 
-    public GreetingService()
-    {
-       // ... configure the Dispatcher, as above
-    }
-
-    public bool Start(HostControl hostControl)
-    {
-        _dispatcher!.Receive();
-        return true;
-    }
-
-    public bool Stop(HostControl hostControl)
-    {
-        _dispatcher!.End().Wait();
-        _dispatcher = null;
-        return false;
-    }
-
-    public void Shutdown(HostControl hostcontrol)
-    {
-        if (_dispatcher != null)
-            _dispatcher.End();
-        return;
-    }
-}
+_dispatcher.Receive();
+stop.Wait();
+await _dispatcher.End();
 ```
 

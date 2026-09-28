@@ -24,8 +24,12 @@ By adding the **FeatureSwitch** Attribute or **FeatureSwitchAsync** Attribute, y
 
 In the following example, **MyFeatureSwitchedHandler** will only be run if it has been configured in the **Feature Switch Registry** and set to **FeatureSwitchStatus.On**.
 
-``` csharp
-class MyFeatureSwitchedHandler : RequestHandler<MyCommand>
+```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.FeatureSwitch;
+using Paramore.Brighter.FeatureSwitch.Attributes;
+
+public class MyFeatureSwitchedHandler : RequestHandler<MyCommand>
 {
     [FeatureSwitch(typeof(MyFeatureSwitchedHandler), FeatureSwitchStatus.Config, step: 1)]
     public override MyCommand Handle (MyCommand command)
@@ -38,13 +42,19 @@ class MyFeatureSwitchedHandler : RequestHandler<MyCommand>
 
 In the second example, **MyIncompleteHandlerAsync** will not be run in the pipeline.
 
-``` csharp
-class MyIncompleteHandlerAsync : RequestHandlerAsync<MyCommand>
+```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.FeatureSwitch;
+using Paramore.Brighter.FeatureSwitch.Attributes;
+
+public class MyIncompleteHandlerAsync : RequestHandlerAsync<MyCommand>
 {
     [FeatureSwitchAsync(typeof(MyIncompleteHandlerAsync), FeatureSwitchStatus.Off, step: 1)]
-    public override Task<MyCommand> HandleAsync(MyCommand command, CancellationToken cancellationToken = default)
+    public override async Task<MyCommand> HandleAsync(MyCommand command, CancellationToken cancellationToken = default)
     {
-        /* Nothing implmented so we're skipping this handler */
+        /* Nothing implemented so we're skipping this handler */
         return await base.HandleAsync(command, cancellationToken);
     }
 }
@@ -57,7 +67,11 @@ By default, when a feature switch is **Off**, the handler is skipped and the mes
 The `dontAck` parameter controls this behavior. When set to `true` and the feature is off, the attribute throws a `DontAckAction` instead of silently consuming the message. The [message pump](/contents/HowServiceActivatorWorks.md) leaves the message unacknowledged on the channel, and the transport re-delivers it after its visibility timeout expires.
 
 ```csharp
-class MyFeatureSwitchedHandler : RequestHandler<MyCommand>
+using Paramore.Brighter;
+using Paramore.Brighter.FeatureSwitch;
+using Paramore.Brighter.FeatureSwitch.Attributes;
+
+public class MyFeatureSwitchedHandler : RequestHandler<MyCommand>
 {
     [FeatureSwitch(typeof(MyFeatureSwitchedHandler), FeatureSwitchStatus.Config, step: 1, dontAck: true)]
     public override MyCommand Handle(MyCommand command)
@@ -72,7 +86,13 @@ class MyFeatureSwitchedHandler : RequestHandler<MyCommand>
 The async variant works the same way:
 
 ```csharp
-class MyFeatureSwitchedHandlerAsync : RequestHandlerAsync<MyCommand>
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.FeatureSwitch;
+using Paramore.Brighter.FeatureSwitch.Attributes;
+
+public class MyFeatureSwitchedHandlerAsync : RequestHandlerAsync<MyCommand>
 {
     [FeatureSwitchAsync(typeof(MyFeatureSwitchedHandlerAsync), FeatureSwitchStatus.Config, step: 1, dontAck: true)]
     public override async Task<MyCommand> HandleAsync(MyCommand command, CancellationToken cancellationToken = default)
