@@ -2537,7 +2537,7 @@ widening, both ledgers written, and the residual sentence 018 starts from.
   - Output: § *Friction ledger*, one row per place the workflow itself got in the way, each with
     what 018 should do about it
 
-- [ ] **Task 6.7:** Put D4 to the maintainer, with 017's runs as evidence
+- [x] **Task 6.7:** Put D4 to the maintainer, with 017's runs as evidence
   - Input: `design.md` D4; every `attr_mismatch.py` run recorded in phases 2–5
   - Output: a § *For the maintainer* entry: the proposal (a `pagelint` rule or a `blockcheck` mode,
     with the `CLAUDE.md` ledger row it would need), the hits it found and when, and the maintainer's
@@ -2847,6 +2847,86 @@ insertion a hand-aligned diff. **#68:** the two reading criteria were first read
 both were unmet there. **#70** puts the name-not-receiver blind spot, ruled at 1.10, back to the
 maintainer as a proposal for 018, with 017's three families as its evidence. It asks for a new
 ruling and does not reopen the old one.
+
+#### For the maintainer: D4, `attr_mismatch` as a standing gate *(task 6.7)*
+
+Written at `adc1005`. No page, tool or gate touched. Design D4 held one question to the close:
+should `probe/attr_mismatch.py` become a standing gate, and if so in which instrument?
+
+**What it guards against.** The probe catches a sync handler attribute on `HandleAsync`, or an
+`…Async` one on `Handle`. The compiler accepts both. Brighter throws `ConfigurationException` when it
+builds the pipeline (design E4, run with a control), and `ValidatePipelines()` reports it. So
+`blockcheck` cannot see it: a block that carries the defect and compiles is written into the
+baseline and certified. That is why design rule 8 ran the probe in every tranche PR.
+
+**The runs.** Twenty-five in phases 2–5, each before its task's baseline rows (obligation 15),
+with the design's run and the runs after them for context:
+
+| When | Runs | Reading |
+|---|---:|---|
+| Design E4; § 2 at `c7329bb` | 2 | **7**, exit 1 — 6 defects on 5 pages, 1 deliberate |
+| Phase 2, 2.1–2.6 | 6 | 7 each |
+| Phase 3, 3.1–3.6 | 6 | 7 each |
+| Phase 4, 4.1–4.5 | 5 | 7 each |
+| Phase 5, 5.1–5.4 and 5.2's second pass | 5 | 7 each; two hits' lines moved (`:190` → `:200`, `:326` → `:359`) |
+| 5.5 | 1 | **7 → 1**, the six repaired |
+| 5.5's second pass, 5.6 | 2 | 1, `PipelineValidation.md:250` |
+| 6.1's repairs, 6.3's AC9, and 6.7 at `adc1005` | 3 | 1, exit 1; `--plant` → OK, exit 0 |
+
+**What the runs show.**
+
+- **Every defect it found was found at the design, and it found nothing after.** The count never
+  rose: no 017 repair wrote a new mismatch, and none made a mismatched block BUILT before its
+  repair. Obligation 15 held, but no case ever tested it.
+- **The risk it guarded is still latent.** The six repaired blocks are all still FAILED, and so is
+  `:250`: `baseline.tsv` holds none of `HowServiceActivatorWorks.md` #16, `PipelineValidation.md`
+  #7, #9, #10, `PolicyRetryAndCircuitBreaker.md` #14, `ReactorAndProactor.md` #6 or
+  `V10MigrationGuide.md` #10. Suppose an edit reintroduces a mismatch into one of them. The PR
+  that later makes that block build would baseline the broken form, and nothing would say so.
+- **Its scope is right, and narrow.** It reads Brighter's `Handle`/`HandleAsync` only: Darker 4.1.1
+  has no async twins, and the first run's six Darker false positives were removed at the design.
+  An attribute on a class is `CS0592`, which the compiler already reports (`InMemoryInbox.md` #2,
+  4.1). An attribute with no pair, like `V10MigrationGuide.md` #8's V9 `[TimeoutPolicy]`, has
+  nothing to mismatch.
+- **The pair list is version-bound.** 13 names, read from 10.7.0. `master` at `2461094a6` has the
+  same 43 attribute classes, so the list is the same today. A future release may change it.
+- **It named its deliberate hit by line**, and that line shaped where prose could go (friction #79).
+
+**The proposal: `pagelint` rule 8, not a `blockcheck` mode.**
+
+1. **It reads text, and must read FAILED blocks.** The six were FAILED when found. A `blockcheck`
+   mode would build the .NET instrument to run a regex. It would also run only in CI's `blocks`
+   job, beside a verdict set that means *compiles*.
+2. **The probe is already half a `pagelint` rule.** It reads blocks through `pagelint.Page`, as
+   016 friction 53 requires, and needs no pin to run.
+3. **The opt-out is per block, with a reason.** A page-wide marker like `allow-serviceactivator`
+   would also have silenced `PipelineValidation.md` #9 and #10, two real defects sitting beside
+   the deliberate #7. So the proposal follows `blockcheck`'s form: the line before the fence
+   carries `<!-- pagelint: attr-mismatch-intended <reason> -->`, and the reason is mandatory.
+   `PipelineValidation.md` #7 gets that marker, and AC9's *"exactly one hit"* becomes **0**
+   (friction #79).
+4. **The pairs live beside `APPLIES_TO`** as a `PAIRED` tuple in `tools/pagelint.py`. Its comment
+   holds the `git grep` that derives it, so the version bump that edits `APPLIES_TO` re-derives
+   `PAIRED` in the same edit.
+5. **The red-proof moves with it.** `pagelint` has no plants today. The probe's `--plant` (two
+   cases that must hit, one that must not) becomes `pagelint --plant-attr` or a plant file, run in
+   CI.
+
+**What it needs.** One `CLAUDE.md` ledger row, and a short § *Handler attributes match their
+handler* under *Page Conventions*:
+
+| Convention | Rule | Repo-wide | `--changed` |
+|---|---|---|---|
+| A handler attribute's kind matches its method's: sync on `Handle`, `…Async` on `HandleAsync` | 8 (`ATTRIBUTE KIND`) | error | error |
+
+Beside the row, it needs `tools/README.md`'s `pagelint` figures and the marker on
+`PipelineValidation.md` #7. `probe/attr_mismatch.py` would then be retired, with its history kept
+here. Its natural home is 018's phase 1, where the instruments are built.
+
+**The maintainer's answer: ruled 2026-09-29, *`pagelint` rule 8, in 018*** — the proposal as
+written: per-block opt-out with a reason, `PAIRED` beside `APPLIES_TO`, the ledger row, the
+red-proof carried over, and the probe retired. 017 builds nothing; the rule is an input to 018's
+phase 1.
 
 ---
 

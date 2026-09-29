@@ -384,7 +384,7 @@ mean a verdict changed for a reason nobody repaired — the E2 control says it s
 | **D1** | **P0-7's second clause targets zero blocks.** Re-scope it to *"a sync attribute on an async handler, or the reverse, surveyed across the 13 paired attributes"* — 6 defects, 5 pages — and add `attr_mismatch.py` as its instrument (AC9)? | **Ruled 2026-09-26: re-scope.** P0-7 and AC9 rewritten in `requirements.md` | the maintainer |
 | **D2** | **Pin `OpenTelemetry.Exporter.Jaeger`?** Its last release is 1.5.1; upstream OpenTelemetry deprecated it for OTLP | **Ruled 2026-09-26: not pinned.** | the maintainer |
 | **D3** | **A second pin for the AWS V4 family?** 7 V4 packages are named on pages and cannot share `refs.csproj` | **Ruled 2026-09-26: 018.** | — |
-| **D4** | **Make `attr_mismatch` a standing gate** (a `pagelint` rule or a `blockcheck` mode) rather than a probe? | **Not in 017** — a new convention needs a `CLAUDE.md` ledger row. Propose it at the close, with 017's run as its evidence | the maintainer |
+| **D4** | **Make `attr_mismatch` a standing gate** (a `pagelint` rule or a `blockcheck` mode) rather than a probe? | **Ruled 2026-09-29 (task 6.7): a `pagelint` rule 8, built in 018** — per-block opt-out with a reason, and a `CLAUDE.md` ledger row. Not in 017; the proposal and 017's 25 runs are in `tasks.md` § *For the maintainer: D4* | the maintainer |
 | Q3 | target | **set:** BUILT ≥ 250; pages with nothing BUILT ≤ 60 | settled by § *Target And Tranches* |
 | Q5 | stubs extend to ~400 blocks, members only as used | **stands**, now with rules 1–4 enforced | the maintainer, if not ruled at the requirements review |
 | Q7 | grow the pin early | **stands, in phase 1**, less D2 and D3 | settled by E2 |
