@@ -1,7 +1,7 @@
 # Spec 017: Compile Repairs — Tasks
 
 **Created:** 2026-09-26
-**Status:** **APPROVED 2026-09-26** — `.tasks-approved`. Reviewed 2026-09-26, five findings, repaired
+**Status:** **CLOSED 2026-10-02 — 42 of 42.** § *What 017 shipped* ends in the residual 018 starts from; acceptance is the maintainer's. Tasks approved 2026-09-26 (`.tasks-approved`), reviewed 2026-09-26, five findings, repaired
 **Requirements:** approved 2026-09-26 · **Design:** approved 2026-09-26
 
 **Six phases, 42 tasks, one pull request per phase.** Phases merge under `tools/README.md`
@@ -2543,7 +2543,7 @@ widening, both ledgers written, and the residual sentence 018 starts from.
     with the `CLAUDE.md` ledger row it would need), the hits it found and when, and the maintainer's
     answer or *not yet ruled*
 
-- [ ] **Task 6.8:** Close the spec
+- [x] **Task 6.8:** Close the spec
   - Input: `README.md` § *Status Checklist*; `--classify` over the whole corpus
   - Output: the README checklist ticked through *Spec closed*; this file's and the README's status
     lines updated; § *What 017 shipped* ending in **one sentence naming the residual**, its figure
@@ -2927,6 +2927,50 @@ here. Its natural home is 018's phase 1, where the instruments are built.
 written: per-block opt-out with a reason, `PAIRED` beside `APPLIES_TO`, the ledger row, the
 red-proof carried over, and the probe retired. 017 builds nothing; the rule is an input to 018's
 phase 1.
+
+#### What 017 shipped *(task 6.8)*
+
+Measured at `e0385b4`, after building both projects. `--report` → exit **0**, *"990 blocks: 299
+BUILT, 674 FAILED, 17 SKIPPED"*, *"baseline: 299 blocks required to build"*, *"scaffold rule: 45
+units checked, 0 violations"*, *"0 findings, 17 skipped"*. `--classify` → exit **0**, 674 rows.
+
+| | `c7329bb` (016's close) | Now |
+|---|---:|---:|
+| **BUILT**, and the baseline that holds them | 101 | **299** |
+| FAILED / SKIPPED, of 989 → 990 blocks | 872 / 16 | **674 / 17** |
+| Pages with a FAILED block / with nothing BUILT | 140 / 97 | **88 / 39** |
+| `pagelint` `using` debt | 743 blocks, 115 pages | **524 blocks, 66 pages** |
+| Scaffold units / pages mapped | 14 / 15 | **45 / 67**; 427 identifiers, 143 stubbed types |
+| Packages pinned in `refs.csproj` | 71 | **100** |
+
+| | |
+|---|---|
+| **The instruments** | `--classify`, which is committed, deterministic and red-proofed (AC3), and has replaced 016's uncommitted 102 and 364. `--list-skips` and `--explain`. The unit rule enforced on every `--report` (AC5). 016's AC3, AC7 and AC10 commands corrected, each with a control (AC12) |
+| **The pages** | **116** changed under `contents/` (`git diff --name-only c7329bb -- contents/`): **64** of the 75 tranche pages (the other 11 made whole by a unit or listed FAILED), all 7 P0-7 pages, and 45 more, each reached by a defect-ledger row (6.4). PRs #190–#194, and phase 6's |
+| **The ledgers** | **116** defect rows, each with its recurrence grep or probe, and *After* **0** (AC10, 6.5). Friction entries **67–80** (6.6) |
+| **Upstream** | BrighterCommand/Brighter#4453, #4454, #4458, #4465, each filed on the maintainer's word and stated on its page |
+| **Ruled for 018** | D4: `attr_mismatch` becomes `pagelint` rule 8 (6.7) |
+
+**Open at the close, both the maintainer's:**
+
+- **AC8's second half and AC11.** The named readers found them unmet at 6.1. Under the 2026-09-28
+  ruling, they were repaired in this PR (§ *AC8 and AC11, repaired under the ruling*), and the
+  walk rows still carry the 6.1 verdict. Re-reading the repairs is this PR's review.
+- **6.1's `CommandProcessorBuilder` finding.** With no external bus, the Command Processor has no
+  tracer. It is stated on both pages; filing upstream is *not yet ruled*.
+
+**Where the residual is**, by `--classify` joined to § *The tranches*. The 75 tranche pages hold
+**44** FAILED blocks on 24 pages, each named in § *Blocks that stay FAILED* (AC4). The other **630**
+are on **64** pages no tranche reached, and 36 of those pages have nothing BUILT. By class, those
+630 are 314 *import*, 145 *parse*, 113 *page-type*, 34 *values*, 18 *other* and 6 *same-page*.
+*Import* is a lower bound on the work: at 1.10, **162** blocks it called *import* had a defect
+behind the missing `using` (friction #71).
+
+**The residual, the line 018 starts from:** **674 of 990 C# blocks still do not compile against
+the released packages, and 630 of them sit on the 64 pages 017's tranches never reached — 314 of
+those name a pinned type they never import, 145 do not parse and 113 need a type their page never
+shows — so 018 first builds `pagelint` rule 8 and gives `--classify` its second compile, and
+then tranches those 64 pages by what that instrument finds.**
 
 ---
 

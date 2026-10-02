@@ -1,7 +1,7 @@
 # Spec 017: Compile Repairs
 
 **Created:** 2026-09-26
-**Status:** Writing Phase — tasks approved 2026-09-26; phase 1 next
+**Status:** **CLOSED 2026-10-02 — 42 of 42.** Awaiting the maintainer's acceptance; the residual is `tasks.md` § *What 017 shipped*
 
 > **Re-derive this README before executing it.** It was written before anyone looked — check every
 > count and every named gap against the tree, with the command beside the figure.
@@ -150,9 +150,14 @@ taken first, never through a pipe (016's AC1/AC2/AC10 finding).
 - [x] Documentation outline created — `design.md`, 2026-09-26
 - [x] Outline reviewed and approved — 2026-09-26
 - [x] Writing tasks identified — `tasks.md`, 2026-09-26
-- [ ] Writing complete
-- [ ] Documentation reviewed
-- [ ] Spec closed
+- [x] Writing complete — **42 of 42**, 2026-10-02, re-derived:
+      `grep -c '^- \[x\] \*\*Task' spec/017-compile_repairs/tasks.md`. PRs #190–#194, and phase 6's
+- [x] Documentation reviewed — `tasks.md` § *Phase 6 as executed*, the acceptance walk. **AC6
+      accepted by the maintainer 2026-09-28**; AC1–AC5, AC7, AC8's first half, AC9, AC10 (at 6.5) and
+      AC12–AC14 met. AC8's second half and AC11 were unmet at 6.1 and repaired in phase 6's PR under the
+      2026-09-28 ruling, so the readers re-read them in that PR's review
+- [x] Spec closed — 2026-10-02. § *What 017 shipped* and the residual are the line 018 starts
+      from. D4 ruled for 018 (6.7)
 
 ## Next Steps
 
