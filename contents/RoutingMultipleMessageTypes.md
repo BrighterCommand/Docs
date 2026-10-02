@@ -16,6 +16,12 @@ The most common approach for dynamic deserialization is using the **CloudEvents 
 ### CloudEvents Type Routing Example
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+using Paramore.Brighter.MessagingGateway.Kafka;
+using Confluent.Kafka;
+
 // ...
 var subscription = new KafkaSubscription(
     new SubscriptionName("paramore.example.taskstate"),
@@ -29,9 +35,8 @@ var subscription = new KafkaSubscription(
             => typeof(TaskUpdated),
         var t when t == new CloudEventsType("io.goparamore.task.completed")
             => typeof(TaskCompleted),
-        _ => throw new ArgumentException(
-            $"No type mapping found for message with CloudEvents type {message.Header.Type}",
-            nameof(message)
+        _ => throw new InvalidMessageAction(
+            $"No type mapping found for message with CloudEvents type {message.Header.Type}"
         )
     },
     groupId: "kafka-TaskProcessor-Sample",
@@ -50,6 +55,8 @@ var subscription = new KafkaSubscription(
 3. Callback matches CloudEvents type to Request type
 4. Brighter deserializes message to correct Request type
 5. Routes to appropriate handler based on type
+
+For an unsupported type, throw `InvalidMessageAction` to request rejection as `Unacceptable`. The rejection destination depends on the transport and configuration; see [Dynamic Deserialization Error Handling](/contents/DynamicMessageDeserialization.md#dynamic-deserialization-error-handling). An ordinary `ArgumentException` is logged and acknowledged instead.
 
 ### Setting CloudEvents Type on Publication
 
@@ -101,6 +108,11 @@ While CloudEvents type is recommended, you can implement any routing strategy by
 ### Routing by Custom Header
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 // ...
 var subscription = new RmqSubscription(
     new SubscriptionName("paramore.example.orders"),
@@ -116,11 +128,11 @@ var subscription = new RmqSubscription(
                 "Create" => typeof(CreateOrder),
                 "Update" => typeof(UpdateOrder),
                 "Cancel" => typeof(CancelOrder),
-                _ => throw new ArgumentException($"Unknown order type: {orderType}")
+                _ => throw new InvalidMessageAction($"Unknown order type: {orderType}")
             };
         }
 
-        throw new ArgumentException("OrderType header not found");
+        throw new InvalidMessageAction("OrderType header not found");
     },
     timeOut: TimeSpan.FromMilliseconds(100)
 );
@@ -129,6 +141,12 @@ var subscription = new RmqSubscription(
 ### Routing by Message Body Content
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+using Paramore.Brighter.MessagingGateway.AzureServiceBus;
+using System.Text.Json;
+
 // ...
 var subscription = new AzureServiceBusSubscription(
     new SubscriptionName("paramore.example.events"),
@@ -136,22 +154,31 @@ var subscription = new AzureServiceBusSubscription(
     routingKey: new RoutingKey("events"),
     getRequestType: message =>
     {
-        // Parse JSON to determine type
-        using var doc = JsonDocument.Parse(message.Body.Value);
-        var root = doc.RootElement;
-
-        if (root.TryGetProperty("eventType", out var eventType))
+        try
         {
+            using var doc = JsonDocument.Parse(message.Body.Value);
+            var root = doc.RootElement;
+
+            if (root.ValueKind != JsonValueKind.Object ||
+                !root.TryGetProperty("eventType", out var eventType) ||
+                eventType.ValueKind != JsonValueKind.String)
+            {
+                throw new InvalidMessageAction(
+                    "Message body must be an object with a string eventType property");
+            }
+
             return eventType.GetString() switch
             {
                 "UserCreated" => typeof(UserCreated),
                 "UserUpdated" => typeof(UserUpdated),
                 "UserDeleted" => typeof(UserDeleted),
-                _ => throw new ArgumentException($"Unknown event type: {eventType}")
+                _ => throw new InvalidMessageAction($"Unknown event type: {eventType}")
             };
         }
-
-        throw new ArgumentException("eventType property not found in message body");
+        catch (JsonException ex)
+        {
+            throw new InvalidMessageAction("Message body is not valid JSON", ex);
+        }
     },
     timeOut: TimeSpan.FromMilliseconds(100)
 );
@@ -192,6 +219,13 @@ With dynamic deserialization:
 Dynamic message deserialization can be combined with [Agreement Dispatcher](AgreementDispatcher.md) for even more flexible routing:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+using Paramore.Brighter.MessagingGateway.Kafka;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // First: Resolve message type dynamically
 var subscription = new KafkaSubscription(
     new SubscriptionName("paramore.example.orders"),
@@ -201,9 +235,9 @@ var subscription = new KafkaSubscription(
     {
         var t when t == new CloudEventsType("com.example.order.created")
             => typeof(OrderCreated),
-        _ => throw new ArgumentException($"Unknown type: {message.Header.Type}")
+        _ => throw new InvalidMessageAction($"Unknown type: {message.Header.Type}")
     },
-    // ... other config
+    groupId: "order-processor"
 );
 
 // Second: Dynamically choose handler based on content
@@ -240,6 +274,14 @@ This provides two levels of routing:
 ### Kafka with CloudEvents Routing
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+using Paramore.Brighter.MessagingGateway.Kafka;
+using Confluent.Kafka;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // ...
 var subscription = new KafkaSubscription(
     new SubscriptionName("paramore.example.inventory"),
@@ -253,9 +295,8 @@ var subscription = new KafkaSubscription(
             => typeof(ItemRemoved),
         var t when t == new CloudEventsType("com.example.inventory.stockadjusted")
             => typeof(StockAdjusted),
-        _ => throw new ArgumentException(
-            $"Unmapped CloudEvents type: {message.Header.Type}",
-            nameof(message)
+        _ => throw new InvalidMessageAction(
+            $"Unmapped CloudEvents type: {message.Header.Type}"
         )
     },
     groupId: "inventory-processor",
@@ -280,6 +321,11 @@ services.AddConsumers(options =>
 ### RabbitMQ with CloudEvents Routing
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 // ...
 var subscription = new RmqSubscription(
     new SubscriptionName("paramore.example.notifications"),
@@ -293,9 +339,8 @@ var subscription = new RmqSubscription(
             => typeof(SmsSent),
         var t when t == new CloudEventsType("com.example.push.sent")
             => typeof(PushNotificationSent),
-        _ => throw new ArgumentException(
-            $"Unknown notification type: {message.Header.Type}",
-            nameof(message)
+        _ => throw new InvalidMessageAction(
+            $"Unknown notification type: {message.Header.Type}"
         )
     },
     timeOut: TimeSpan.FromMilliseconds(100),
@@ -306,10 +351,16 @@ var subscription = new RmqSubscription(
 ### AWS SQS with CloudEvents Routing
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 // ...
 var subscription = new SqsSubscription(
     new SubscriptionName("paramore.example.orders"),
     channelName: new ChannelName("orders"),
+    channelType: ChannelType.PubSub,
     routingKey: new RoutingKey("orders"),
     getRequestType: message => message.Header.Type switch
     {
@@ -319,14 +370,13 @@ var subscription = new SqsSubscription(
             => typeof(OrderShipped),
         var t when t == new CloudEventsType("com.example.order.delivered")
             => typeof(OrderDelivered),
-        _ => throw new ArgumentException(
-            $"Unrecognized order event: {message.Header.Type}",
-            nameof(message)
+        _ => throw new InvalidMessageAction(
+            $"Unrecognized order event: {message.Header.Type}"
         )
     },
     bufferSize: 10,
     timeOut: TimeSpan.FromMilliseconds(100),
-    lockTimeout: TimeSpan.FromSeconds(30)
+    queueAttributes: new SqsAttributes(lockTimeout: TimeSpan.FromSeconds(30))
 );
 ```
 

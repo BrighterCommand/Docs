@@ -252,6 +252,11 @@ See: [Outbox Support](/contents/BrighterOutboxSupport.md)
 Yes! Use **Dynamic Deserialization** with a `getRequestType` callback:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 new KafkaSubscription(
     new SubscriptionName("task.updates"),
     channelName: new ChannelName("task.state"),
@@ -262,9 +267,9 @@ new KafkaSubscription(
             => typeof(TaskCreated),
         var m when m.Header.Type == new CloudEventsType("io.goparamore.task.updated")
             => typeof(TaskUpdated),
-        _ => throw new ArgumentException($"Unknown message type: {message.Header.Type}")
+        _ => throw new InvalidMessageAction($"Unknown message type: {message.Header.Type}")
     }
-)
+);
 ```
 
 **However**, the **DataType Channel** pattern (one type per channel) is simpler and recommended for most scenarios.

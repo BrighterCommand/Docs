@@ -647,6 +647,11 @@ V10 supports multiple message types on the same channel.
 **Example**:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 new KafkaSubscription(
     new SubscriptionName("task-state-subscription"),
     channelName: new ChannelName("task.state"),
@@ -659,9 +664,8 @@ new KafkaSubscription(
             => typeof(TaskUpdated),
         var m when m.Header.Type == new CloudEventsType("io.paramore.task.deleted")
             => typeof(TaskDeleted),
-        _ => throw new ArgumentException(
-            $"No type mapping found for message with type {message.Header.Type}",
-            nameof(message))
+        _ => throw new InvalidMessageAction(
+            $"No type mapping found for message with type {message.Header.Type}")
     },
     groupId: "task-consumer-group",
     messagePumpType: MessagePumpType.Proactor
