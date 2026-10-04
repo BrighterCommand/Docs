@@ -51,7 +51,7 @@ producer and a consumer.
 
 **The Command Processor also needs an external bus.** At 10.7.0 it is given the tracer only when
 you configure producers with `AddProducers`; with none, `Send`, `Publish` and their async forms
-record no span, even with the tracer registered.
+record no span, even with the tracer registered. This is reported as [#4510](https://github.com/BrighterCommand/Brighter/issues/4510).
 
 ---
 

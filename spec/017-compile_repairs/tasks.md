@@ -1,7 +1,7 @@
 # Spec 017: Compile Repairs — Tasks
 
 **Created:** 2026-09-26
-**Status:** **CLOSED 2026-10-02 — 42 of 42.** § *What 017 shipped* ends in the residual 018 starts from; acceptance is the maintainer's. Tasks approved 2026-09-26 (`.tasks-approved`), reviewed 2026-09-26, five findings, repaired
+**Status:** **ACCEPTED 2026-10-04 — 42 of 42.** § *What 017 shipped* ends in the residual 018 starts from. Tasks approved 2026-09-26 (`.tasks-approved`), reviewed 2026-09-26, five findings, repaired
 **Requirements:** approved 2026-09-26 · **Design:** approved 2026-09-26
 
 **Six phases, 42 tasks, one pull request per phase.** Phases merge under `tools/README.md`
@@ -2558,8 +2558,8 @@ Walked first, at `960ce6d`. The walker prepares each reading; the verdict is the
 | # | Who reads it | What they read | Walker's finding | Verdict |
 |---|---|---|---|---|
 | **AC6** | **the maintainer** | `--list-scaffold`: *"427 identifiers from 45 unit(s) … 67 page(s) scaffolded"*; the 45 unit files (1,391 lines), each stub under a comment naming the block that uses it; **143 stubbed types** in 16 units, the other 29 units supplying values only | Rules 2–4 and rule 1's first half are enforced: `--report` → *"scaffold rule: 45 units checked, 0 violations"*. For rule 1's second half, every page line naming a stubbed type was read — **12** prose lines, **7** in-block comments — and **none** tells the reader to write the type: each says the type is the sample's or another page's. Worth the reader's eye: `TestingQueryHandlersContext.cs` stubs the two handlers under test, with bodies that throw (the page says they are written elsewhere); `TutorialStreamingWithKafkaContext.cs` stubs `GreetingEvent`, which the reader wrote in `TutorialFirstMessage.md` #1 | **Accepted**, the maintainer, 2026-09-28 |
-| **AC8**, second half | **the reviewer** | the **44** `// ...` lines the diff `c7329bb..HEAD -- contents/` adds, each mapped to its block; and `pagelint`'s *"is marked `// ...`"* warnings at `c7329bb` and at `HEAD`, per page — **227 → 171** | **38** of the 44 sit in blocks that carry their `using`s. Of the six that do not, five are `AgreementDispatcherRouting.md` blocks that need none — #4, #5, #6, #10, #11 are BUILT with no `using`, #12 fails on `_database` alone. The marked set **grew on three pages**, by six blocks. `QueryPipeline.md` #12, #16, #17 are attribute lists with nothing to decorate (`CS7014`, `CS1002`): no `using` completes them. **Three were marked where the `using` could have been written:** `QueryPipeline.md` #8 (`RetryableQuery`, `Task<>`, `CancellationToken` unresolved), `PolicyFallback.md` #3 (`FallbackPolicy`, `UseResiliencePipeline`), `HowConfiguringTheCommandProcessorWorks.md` #6 (`UseResiliencePipeline`) — each by `--explain`. `PolicyFallback.md` #1 got its `using`s in the same commit (`f2ce226`) | **Unmet on three blocks** — ruled 2026-09-28: *repaired in this PR* (below) |
-| **AC11** | **the reviewer** | the **101** rows of the phases' *Claim / Case / Control* tables and their *"Read, not run"* paragraphs, against the **207** repaired blocks whose change is more than a `using` or a fence (`git diff -U0 c7329bb HEAD -- contents/`, hunks against fence ranges), each read with its prose | **119** of the 207 assert behaviour. **89** are covered by a run with its control — about 20 of them by a run of the same claim on a sibling block or page, and two (`DarkerConfigurationReference.md` #4, `ImplementAQueryHandler.md` #16) with a compile failure as the control. **Three table rows have no control**, all 2.5's: unwrap falling back to `DataRef`, `ErrorHandlingOptions.md` #4's commented values, and Compress's threshold (no case). The **30** below are not run with a control | **Unmet** — ruled 2026-09-28: *repaired in this PR* (below) |
+| **AC8**, second half | **the reviewer** | the **44** `// ...` lines the diff `c7329bb..HEAD -- contents/` adds, each mapped to its block; and `pagelint`'s *"is marked `// ...`"* warnings at `c7329bb` and at `HEAD`, per page — **227 → 171** | **38** of the 44 sit in blocks that carry their `using`s. Of the six that do not, five are `AgreementDispatcherRouting.md` blocks that need none — #4, #5, #6, #10, #11 are BUILT with no `using`, #12 fails on `_database` alone. The marked set **grew on three pages**, by six blocks. `QueryPipeline.md` #12, #16, #17 are attribute lists with nothing to decorate (`CS7014`, `CS1002`): no `using` completes them. **Three were marked where the `using` could have been written:** `QueryPipeline.md` #8 (`RetryableQuery`, `Task<>`, `CancellationToken` unresolved), `PolicyFallback.md` #3 (`FallbackPolicy`, `UseResiliencePipeline`), `HowConfiguringTheCommandProcessorWorks.md` #6 (`UseResiliencePipeline`) — each by `--explain`. `PolicyFallback.md` #1 got its `using`s in the same commit (`f2ce226`) | **Unmet on three blocks** — ruled 2026-09-28: *repaired in this PR* (below); the repairs **accepted**, the maintainer, 2026-10-04 |
+| **AC11** | **the reviewer** | the **101** rows of the phases' *Claim / Case / Control* tables and their *"Read, not run"* paragraphs, against the **207** repaired blocks whose change is more than a `using` or a fence (`git diff -U0 c7329bb HEAD -- contents/`, hunks against fence ranges), each read with its prose | **119** of the 207 assert behaviour. **89** are covered by a run with its control — about 20 of them by a run of the same claim on a sibling block or page, and two (`DarkerConfigurationReference.md` #4, `ImplementAQueryHandler.md` #16) with a compile failure as the control. **Three table rows have no control**, all 2.5's: unwrap falling back to `DataRef`, `ErrorHandlingOptions.md` #4's commented values, and Compress's threshold (no case). The **30** below are not run with a control | **Unmet** — ruled 2026-09-28: *repaired in this PR* (below); the repairs **accepted**, the maintainer, 2026-10-04 |
 
 **AC11's thirty**, by what is missing — each block once, under the first thing it lacks:
 
@@ -2628,10 +2628,10 @@ once the ruling put the repairs here: `blockcheck` 295 → **299** BUILT (the fo
 verdict moved against `960ce6d`'s report), `pagelint` 537 → **524**; the other seven gates bare at
 their figures. `tools/README.md` rows 2 and 9 moved to `bd95ee0`.
 
-**For the maintainer, not yet ruled:** at 10.7.0 `CommandProcessorBuilder.Build()` gives the
+**For the maintainer, ruled 2026-10-04 — filed as BrighterCommand/Brighter#4510:** at 10.7.0 `CommandProcessorBuilder.Build()` gives the
 Command Processor no tracer when there is no external bus (`:304`), so an application with no
-`AddProducers` records no Command Processor span — run both ways. Stated on both pages; whether
-to file it upstream is the maintainer's.
+`AddProducers` records no Command Processor span — run both ways. Stated on both pages, each
+linking the issue.
 
 #### The acceptance walk: the four instrumented criteria *(task 6.2)*
 
@@ -2951,13 +2951,13 @@ units checked, 0 violations"*, *"0 findings, 17 skipped"*. `--classify` → exit
 | **Upstream** | BrighterCommand/Brighter#4453, #4454, #4458, #4465, each filed on the maintainer's word and stated on its page |
 | **Ruled for 018** | D4: `attr_mismatch` becomes `pagelint` rule 8 (6.7) |
 
-**Open at the close, both the maintainer's:**
+**Open at the close, both the maintainer's, both ruled 2026-10-04:**
 
 - **AC8's second half and AC11.** The named readers found them unmet at 6.1. Under the 2026-09-28
-  ruling, they were repaired in this PR (§ *AC8 and AC11, repaired under the ruling*), and the
-  walk rows still carry the 6.1 verdict. Re-reading the repairs is this PR's review.
+  ruling, they were repaired in phase 6's PR (§ *AC8 and AC11, repaired under the ruling*), and the
+  maintainer accepted the repairs in that PR's review (#196).
 - **6.1's `CommandProcessorBuilder` finding.** With no external bus, the Command Processor has no
-  tracer. It is stated on both pages; filing upstream is *not yet ruled*.
+  tracer. Filed as BrighterCommand/Brighter#4510, and linked from both pages.
 
 **Where the residual is**, by `--classify` joined to § *The tranches*. The 75 tranche pages hold
 **44** FAILED blocks on 24 pages, each named in § *Blocks that stay FAILED* (AC4). The other **630**

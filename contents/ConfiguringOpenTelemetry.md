@@ -28,7 +28,7 @@ container. `AddBrighter()` does not register one, so listening to the source is 
 `AddBrighterInstrumentation()`, from the `Paramore.Brighter.Extensions.Diagnostics` package, does
 both: it registers the tracer and adds the source. The Command Processor takes that tracer only when
 it has an external bus, configured with `AddProducers`; with no producers, its requests record no
-span at 10.7.0.
+span at 10.7.0. This is reported as [#4510](https://github.com/BrighterCommand/Brighter/issues/4510).
 
 Use it on the tracer provider that `AddOpenTelemetry()` builds, which shares your application's
 container. A provider built with `Sdk.CreateTracerProviderBuilder()` keeps its own services, so the
