@@ -73,17 +73,22 @@ resolves **545 reference assemblies**; neither moved a verdict. `pagelint` fell 
 the repaired pages, 19 on six pages the falsehoods were on, and 25 on 13 pages outside both, by
 defects' recurrences and the maintainer's rulings.
 
+**Rows 2 and 9 moved again at `bd95ee0`, spec 017 phase 6**, whose acceptance walk found behavioural
+claims in repaired blocks that had never been run. Run, the false ones were repaired, and the
+repairs made **4** MongoDB blocks build: the baseline went 295 → **299**, with no unit and no
+package added. `pagelint` fell 537 → **524**, on blocks the repairs gave their `using` directives.
+
 | # | Gate | Command | Expected at `412fd34` |
 |---:|---|---|---|
 | 1 | `linkcheck` | `python3 tools/linkcheck.py` | **165 files, 0 broken** |
-| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 537 warnings, 162 pages** — at `5981b12`; it read **616** at `ca6a0b2`, **658** at `2223fcb`, **706** at `5407298`, **743** at `b941837`, **744** at `3be2a78` and **757** at `412fd34` |
+| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 524 warnings, 162 pages** — at `bd95ee0`; it read **537** at `5981b12`, **616** at `ca6a0b2`, **658** at `2223fcb`, **706** at `5407298`, **743** at `b941837`, **744** at `3be2a78` and **757** at `412fd34` |
 | 3 | shape | `python3 tools/urlmap.py --check-shape` | **161 pages, 12 sections, widest 12 of 20, deepest 4 of 4** |
 | 4 | redirects | `python3 tools/urlmap.py --check-redirects` | **77 entries, 7858 bytes** |
 | 5 | `versioncheck` | `python3 tools/versioncheck.py` | **0 stale pins of 18, across 5 pages** |
 | 6 | `optioncheck` | `dotnet run --project tools/optioncheck` | **0 mismatches across 59 tables, 519 rows** |
 | 7 | `--verify` | `python3 tools/urlmap.py --verify` | **161 predicted = 161 published** |
 | 8 | `symbolcheck` | `python3 tools/symbolcheck.py` | **0 findings — 22 entries, 161 pages, 3 silenced** — at `3be2a78`; it read **5 entries, 1 silenced** at `412fd34` |
-| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **990 blocks: 295 BUILT, 678 FAILED, 17 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 17 skipped**, against **545 reference assemblies** with **45 scaffold units checked, 0 violations** — at `5981b12`; it read **983 blocks, 234 BUILT** against 542 with 35 units at `ca6a0b2`, **189 BUILT** against 538 with 30 units at `2223fcb`, **982 blocks, 129 BUILT** with 22 units at `5407298`, **989 blocks, 101 BUILT, 872 FAILED** at `b941837`, unmoved at `23aa74f` with 14 units, and **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
+| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **990 blocks: 299 BUILT, 674 FAILED, 17 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 17 skipped**, against **545 reference assemblies** with **45 scaffold units checked, 0 violations** — at `bd95ee0`; it read **295 BUILT** at `5981b12`, **983 blocks, 234 BUILT** against 542 with 35 units at `ca6a0b2`, **189 BUILT** against 538 with 30 units at `2223fcb`, **982 blocks, 129 BUILT** with 22 units at `5407298`, **989 blocks, 101 BUILT, 872 FAILED** at `b941837`, unmoved at `23aa74f` with 14 units, and **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
 
 **Four of the nine are not in the `check` job of `.github/workflows/docs.yml`, and each absence
 is a decision rather than an oversight:**

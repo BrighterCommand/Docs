@@ -622,14 +622,23 @@ An Outbox has three pieces:
 In this example, we want to use EF Core with an MySQL Outbox. See the documentation for Outboxes for specific configuration options.
 
 ``` csharp
-// ...
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MySql;
+using Paramore.Brighter.MySql.EntityFrameworkCore;
+using Paramore.Brighter.Outbox.MySql;
+
 public void ConfigureServices(IServiceCollection services)
 {
-            
     var outboxConfiguration = new RelationalDatabaseConfiguration(DbConnectionString());
     services.AddSingleton<IAmARelationalDatabaseConfiguration>(outboxConfiguration);
 
-    services.AddBrighter(...)
+    services.AddDbContext<GreetingsEntityGateway>(options =>
+        options.UseMySql(DbConnectionString(), ServerVersion.AutoDetect(DbConnectionString())));
+
+    services.AddBrighter()
         .AddProducers((configure) =>
         {
             configure.Outbox = new MySqlOutbox(outboxConfiguration);
@@ -638,7 +647,7 @@ public void ConfigureServices(IServiceCollection services)
         })
         .AutoFromAssemblies();
 
-        ...
+    // ...
 }
 
 ```

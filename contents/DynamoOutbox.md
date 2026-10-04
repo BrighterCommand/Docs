@@ -48,6 +48,8 @@ using Paramore.Brighter.Outbox.Hosting;
 public void ConfigureServices(IServiceCollection services)
 {
     // ... dynamoDb is your IAmazonDynamoDB client, producerRegistry your transport
+    services.AddSingleton<IAmazonDynamoDB>(dynamoDb);
+
     services.AddBrighter()
         .AddProducers(configure =>
         {

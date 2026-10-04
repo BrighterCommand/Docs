@@ -1,7 +1,7 @@
 # Spec 017: Compile Repairs — Tasks
 
 **Created:** 2026-09-26
-**Status:** **APPROVED 2026-09-26** — `.tasks-approved`. Reviewed 2026-09-26, five findings, repaired
+**Status:** **ACCEPTED 2026-10-04 — 42 of 42.** § *What 017 shipped* ends in the residual 018 starts from. Tasks approved 2026-09-26 (`.tasks-approved`), reviewed 2026-09-26, five findings, repaired
 **Requirements:** approved 2026-09-26 · **Design:** approved 2026-09-26
 
 **Six phases, 42 tasks, one pull request per phase.** Phases merge under `tools/README.md`
@@ -721,12 +721,12 @@ nine defects; two are upstream bugs, filed on the maintainer's ruling. All are i
   |---|---|---|
   | `ClaimCheck`: a body at the threshold is checked in | 1024 bytes, 1 KB → `Claim Check {id}`, bag and `DataRef` set | 1023 bytes → inline, no claim |
   | `retain: false` deletes the luggage | unwrap → `HasClaimAsync` false | `retain: true` → still true |
-  | unwrap falls back to `DataRef` | bag entry removed → body restored | — |
+  | unwrap falls back to `DataRef` | bag entry removed → body restored | both absent → body stays `Claim Check {id}`, no throw; `DataRef` naming a missing claim → `ArgumentOutOfRangeException`; bag and `DataRef` disagree → the bag's (6.1) |
   | `HandlingLargeMessages.md` #4's three assertions | verbatim → pass | body under threshold → `StartsWithException` |
   | a missing store throws `NotImplementedException` | tracer registered, no store → *"This is a null store…"* | no tracer → the tracer's `InvalidOperationException` masks it; store + tracer → posts |
   | Decompress restores a Compress body | `PostAsync` → `application/gzip; charset=utf-8` on the bus, **not** decompressed (all three methods) | `Post` → `application/gzip`, round-trips; charset stripped → round-trips |
-  | Compress honours its threshold | — | body under 150 KB → uncompressed; Decompress on a plain body → unchanged |
-  | `ErrorHandlingOptions.md` #4's commented values | verbatim → `orders.dlq`, `orders.invalid`, `dead-letter-orders` | — |
+  | Compress honours its threshold | 153,600 B (150 KiB) → 811 B, `application/gzip`, `originalContentType` `application/json` (6.1) | body under 150 KB → uncompressed; Decompress on a plain body → unchanged |
+  | `ErrorHandlingOptions.md` #4's commented values | verbatim → `orders.dlq`, `orders.invalid`, `dead-letter-orders` | topic `payments` → `payments.dlq`; template `dlq-{0}` → `dlq-orders`; `null` → `orders.dlq`, the default (6.1) |
   | `requeueCount: 3` → DLQ | handler runs **3** times, then DLQ | `0` and `1` → 1 run; `2` → 2; `-1` → 80,269 runs in 1.5 s, no DLQ |
   | `unacceptableMessageLimit` stops the pump | limit 3, 6 throwing messages → 3 runs, `DS_STOPPED` | limit 0 → 6 runs, still running |
   | `[RejectMessageOnErrorAsync]` sends escapes to the DLQ | Proactor → DLQ 1 | no attribute → DLQ 0; **the page's Reactor** → `ConfigurationException`, pump stops, handler never runs |
@@ -2507,47 +2507,470 @@ and this file.
 **Goal:** every criterion decided by its command or its named reader, the page set checked for
 widening, both ledgers written, and the residual sentence 018 starts from.
 
-- [ ] **Task 6.1:** Walk the three criteria with no instrument by design — AC6, AC8's second half, AC11
+- [x] **Task 6.1:** Walk the three criteria with no instrument by design — AC6, AC8's second half, AC11
   - Input: `requirements.md` § *Acceptance criteria*; `--list-scaffold` per stub unit; the diff's
     `// ...` lines; each PR's recorded runs
   - Output: § *The acceptance walk*, one row each: the reader named, what they read, their verdict.
     Walked first — both criteria ever found unmet at a close were unmarked ones
 
-- [ ] **Task 6.2:** Walk the four criteria instrumented by this spec — AC3, AC4, AC5, AC12
+- [x] **Task 6.2:** Walk the four criteria instrumented by this spec — AC3, AC4, AC5, AC12
   - Input: the red-proofs in § *Phase 1 as executed*; `--classify`; `--list-skips`
   - Output: one walk row each, the command and its output, exit code read first
 
-- [ ] **Task 6.3:** Walk AC1, AC2, AC7, AC8's first half, AC9, AC10, AC13, AC14
+- [x] **Task 6.3:** Walk AC1, AC2, AC7, AC8's first half, AC9, AC10, AC13, AC14
   - Input: `requirements.md`'s commands; `before.tsv`; § *Splits*; § *Defect ledger*
   - Output: one walk row each; AC2's diff read against § *Splits*; AC14 is all eight other gates,
     bare, against `tools/README.md`
 
-- [ ] **Task 6.4:** Run the backwards check
+- [x] **Task 6.4:** Run the backwards check
   - Input: `git diff --name-only c7329bb -- contents/ tools/`; § *The tranches*; phase 5's P0-7 pages
   - Output: § *Backwards check* — every changed page is a tranche page or a P0-7 page, and every
     changed `tools/` file is a design deliverable; anything else is named and justified or reverted
 
-- [ ] **Task 6.5:** Write the defect ledger
+- [x] **Task 6.5:** Write the defect ledger
   - Input: § *Defect ledger* rows from phases 2–5
   - Output: the ledger complete — defect, page, recurrence grep, count before, count after (**0**),
     and *found by*: `--classify`, `attr_mismatch`, a run, or re-derivation
 
-- [ ] **Task 6.6:** Write the friction ledger
+- [x] **Task 6.6:** Write the friction ledger
   - Input: the *as executed* sections of phases 1–5
   - Output: § *Friction ledger*, one row per place the workflow itself got in the way, each with
     what 018 should do about it
 
-- [ ] **Task 6.7:** Put D4 to the maintainer, with 017's runs as evidence
+- [x] **Task 6.7:** Put D4 to the maintainer, with 017's runs as evidence
   - Input: `design.md` D4; every `attr_mismatch.py` run recorded in phases 2–5
   - Output: a § *For the maintainer* entry: the proposal (a `pagelint` rule or a `blockcheck` mode,
     with the `CLAUDE.md` ledger row it would need), the hits it found and when, and the maintainer's
     answer or *not yet ruled*
 
-- [ ] **Task 6.8:** Close the spec
+- [x] **Task 6.8:** Close the spec
   - Input: `README.md` § *Status Checklist*; `--classify` over the whole corpus
   - Output: the README checklist ticked through *Spec closed*; this file's and the README's status
     lines updated; § *What 017 shipped* ending in **one sentence naming the residual**, its figure
     re-derived by `--classify` (P2-1) — the line 018 starts from; `PROMPT.md` updated
+
+### Phase 6 as executed
+
+#### The acceptance walk: the three criteria with no instrument *(task 6.1)*
+
+Walked first, at `960ce6d`. The walker prepares each reading; the verdict is the named reader's.
+
+| # | Who reads it | What they read | Walker's finding | Verdict |
+|---|---|---|---|---|
+| **AC6** | **the maintainer** | `--list-scaffold`: *"427 identifiers from 45 unit(s) … 67 page(s) scaffolded"*; the 45 unit files (1,391 lines), each stub under a comment naming the block that uses it; **143 stubbed types** in 16 units, the other 29 units supplying values only | Rules 2–4 and rule 1's first half are enforced: `--report` → *"scaffold rule: 45 units checked, 0 violations"*. For rule 1's second half, every page line naming a stubbed type was read — **12** prose lines, **7** in-block comments — and **none** tells the reader to write the type: each says the type is the sample's or another page's. Worth the reader's eye: `TestingQueryHandlersContext.cs` stubs the two handlers under test, with bodies that throw (the page says they are written elsewhere); `TutorialStreamingWithKafkaContext.cs` stubs `GreetingEvent`, which the reader wrote in `TutorialFirstMessage.md` #1 | **Accepted**, the maintainer, 2026-09-28 |
+| **AC8**, second half | **the reviewer** | the **44** `// ...` lines the diff `c7329bb..HEAD -- contents/` adds, each mapped to its block; and `pagelint`'s *"is marked `// ...`"* warnings at `c7329bb` and at `HEAD`, per page — **227 → 171** | **38** of the 44 sit in blocks that carry their `using`s. Of the six that do not, five are `AgreementDispatcherRouting.md` blocks that need none — #4, #5, #6, #10, #11 are BUILT with no `using`, #12 fails on `_database` alone. The marked set **grew on three pages**, by six blocks. `QueryPipeline.md` #12, #16, #17 are attribute lists with nothing to decorate (`CS7014`, `CS1002`): no `using` completes them. **Three were marked where the `using` could have been written:** `QueryPipeline.md` #8 (`RetryableQuery`, `Task<>`, `CancellationToken` unresolved), `PolicyFallback.md` #3 (`FallbackPolicy`, `UseResiliencePipeline`), `HowConfiguringTheCommandProcessorWorks.md` #6 (`UseResiliencePipeline`) — each by `--explain`. `PolicyFallback.md` #1 got its `using`s in the same commit (`f2ce226`) | **Unmet on three blocks** — ruled 2026-09-28: *repaired in this PR* (below); the repairs **accepted**, the maintainer, 2026-10-04 |
+| **AC11** | **the reviewer** | the **101** rows of the phases' *Claim / Case / Control* tables and their *"Read, not run"* paragraphs, against the **207** repaired blocks whose change is more than a `using` or a fence (`git diff -U0 c7329bb HEAD -- contents/`, hunks against fence ranges), each read with its prose | **119** of the 207 assert behaviour. **89** are covered by a run with its control — about 20 of them by a run of the same claim on a sibling block or page, and two (`DarkerConfigurationReference.md` #4, `ImplementAQueryHandler.md` #16) with a compile failure as the control. **Three table rows have no control**, all 2.5's: unwrap falling back to `DataRef`, `ErrorHandlingOptions.md` #4's commented values, and Compress's threshold (no case). The **30** below are not run with a control | **Unmet** — ruled 2026-09-28: *repaired in this PR* (below); the repairs **accepted**, the maintainer, 2026-10-04 |
+
+**AC11's thirty**, by what is missing — each block once, under the first thing it lacks:
+
+| Missing | Blocks |
+|---|---|
+| **no run, a claim 017 wrote** | `KafkaConfiguration.md` #20 — *"a round-trip through a UTF-8 string would corrupt the header"*, added at `:692`; the Avro run (5.3) never takes that path |
+| **no run, a claim 017 kept** | `QueryPipeline.md` #12, #16, #17 — Darker decorator order and what logging sees of retries; `FeatureSwitches.md` #1–#4 — a switched-off handler skipped, `dontAck` leaving the message (compiled only, § *Defect ledger*); `MessageMappers.md` #6 — the same UTF-8 claim as Kafka's; `InMemoryOutbox.md` #2's comment that `PostAsync` deposits; `AgreementDispatcherRouting.md` #9 — `.Handlers()` mixing agreement and fixed routes; `Telemetry.md` #6 — `TraceIdRatioBasedSampler(0.1)`, OpenTelemetry's claim |
+| **half run** | `PolicyFallback.md` #3 and `HandlerFailure.md` #10, #11 — the breaker-around-retry half run, the backstop outside them not; `QueryPipeline.md` #1, #10 — the default retry run, step order and retry-before-fallback not; `BuildingAnAsyncPipeline.md` #2 — the public-handler half run, the async pipeline's order not; `PostgreSQLMessageBroker.md` #5 — the 60 s invisibility; `SchedulingAMessage.md` #5 — `SendAsync(delay)` run, the block's backoff not |
+| **run, no control** | `Telemetry.md` #2, #3, #4 — span names and attributes captured from real spans |
+| **read, not run** | `SchedulingAMessage.md` #6 (`Proactor.cs:522`), `V10MigrationGuide.md` #12 (`CreateCopy`), `DapperOutbox.md` #2 and `DynamoOutbox.md` #2 (the first is the handler 3.3 ran), `CloudEventsReference.md` #4, #5 (SNS, ASB), `BrighterSchedulerSupport.md` #7's delay |
+
+1 + 11 + 8 + 3 + 7. **Every claim in the last row was read against 10.7.0 source and none has been
+found false**; AC11 asks for a run, and these are recorded as read. **Ruled 2026-09-28: both repaired in this PR**, which therefore changes pages; phase 6's *"no page
+touched"* no longer holds for task 6.1.
+
+#### AC8 and AC11, repaired under the ruling *(task 6.1)*
+
+**AC8.** The three blocks carry their `using`s where the `// ...` stood, and
+`HowConfiguringTheCommandProcessorWorks.md` #5 beside them; its two `UsePolicy` blocks sit under
+*Legacy* and are left. Writing `PolicyFallback.md` #3's `using` made its attribute resolve, and so
+exposed `CS7036`: `[FallbackPolicy(backstop: true, step: 1)]` omits the required `circuitBreaker`.
+Its recurrence is four lines on the page, all repaired; #4, #8 and #10, touched by that, gained
+their `using`s and #4 its `return`.
+
+**AC11.** Every one of the thirty run against released packages — Brighter `10.7.0`, Darker
+`4.1.1`, net10.0, `Microsoft.Extensions.Hosting` `10.0.10` — in scratch console apps, with Postgres,
+MySQL, `amazon/dynamodb-local` and LocalStack in Docker, each container removed after. 2.5's three
+rows gained the case or control they lacked (their table, above).
+
+| Claim | Case → result | Control → result | Verdict |
+|---|---|---|---|
+| Darker: the lowest step runs first (`QueryPipeline.md` #1) | `Log(1) Fallback(2) Retry(3)` → logging, fallback, retry, handler | steps reversed → retry, fallback, logging, handler | true: `PipelineBuilder` sorts `OrderByDescending(Step)`, so the lowest step is outermost |
+| Darker: retries exhausted before the fallback (#10) | `Fallback(2) Retry(3)`, always throws → 4 attempts, then 1 fallback | `Retry(2) Fallback(3)` → 1 attempt, 1 fallback; with 2 transient failures still 1 and 1 | true for the block; **the prose beside #1 recommended the control's layout** |
+| Darker: logging at step 1 logs retries (#12, #17; the pattern and best-practice prose) | `Log(1) Retry(2)`, 2 transient failures → one *Executing*, one *completed in 156ms*; attempts invisible | `Retry(1) Log(2)` → *Executing* three times | **false**; and #16's *"won't log individual retries"* is the reverse of the truth |
+| Brighter: a backstop outside a breaker-and-retry pipeline (`PolicyFallback.md` #3, `HandlerFailure.md` #10, #11) | send 1, 2 → 4 attempts, then `Fallback()` with `InvalidOperationException`; send 3 → no attempt, `BrokenCircuitException` | fallback at step 3 → 1 attempt, no retry; `circuitBreaker: true` → sends 1, 2 throw, send 3 falls back | the ordering true; **the page's *"If the handler throws"* list false** — the original exception reaches Fallback, `BrokenCircuitException` only on later calls |
+| Polly's fallback beside `[FallbackPolicy]` (`PolicyFallback.md` #10) | as written → `CS0029`, then `CS1929` (`AddFallback` needs `ResiliencePipelineBuilder<Product>`) | typed on the request with `UseTypePipeline` → substitutes the request, which `Send` discards; typed `<string>` → `ConfigurationException` | **false**; rewritten, the service call through `GetPipeline<Product>` inside the handler: failing service → 4 calls, `CreateOrder with default`; healthy → 1 call, `real` |
+| Async pipeline: the lower step runs first (`BuildingAnAsyncPipeline.md` #2) | step 1, step 2, handler | swapped → the other attribute first | true |
+| Feature switches (`FeatureSwitches.md` #1–#4) | registry On → runs; Off → skipped; `dontAck: true` in a consumer → message held (`bus depth=1`), runs when switched On | `dontAck: false` → acknowledged and lost (`depth=0`, never runs) | true; **two sentences false**: no registry → `Config` is On; a registry missing the handler → `ConfigurationException`; redelivery is at once on the in-memory transport, not *"after its visibility timeout"* |
+| `.Handlers()` mixes agreement and fixed routes (`AgreementDispatcherRouting.md` #9) | route 1 → `Handler1`, 2 → `Handler2`, `OtherCommandHandler` ran | `AutoFromAssemblies()` without the exclusion → *"More than one handler was found"* | true |
+| `PostAsync` deposits in the in-memory outbox (`InMemoryOutbox.md` #2) | `EntryCount=1`, `outstanding=0`, 1 on the bus | `PublishAsync` → 0 entries; `DepositPostAsync` → `outstanding=1`, bus 0 | **partly**: deposited *and dispatched at once*; comment rewritten, the unused `_outbox` field removed |
+| `CreateCopy` copies what the shipped context copies (`V10MigrationGuide.md` #12) | shipped: a new `Bag` with the entries; `Span`, `Policies`, `ResiliencePipeline`, `FeatureSwitches`, `OriginatingMessage` by reference | `Destination`, `ResilienceContext` → `null` | **partly**: the page's copy omitted `Policies`; added |
+| `SendAsync(delay)` backoff (`SchedulingAMessage.md` #5) | gaps 1.03, 2.00, 4.00 s | fixed 0 s → all by 0.03 s; 3 s → 3.04, 3.00, 3.00 s | true |
+| A bare `DeferMessageAction` waits `requeueDelay` (#6; `BrighterSchedulerSupport.md` #7) | 5 s, count 3 → gaps 5.11, 5.02 s, 3 attempts, dropped | 2 s, count 5 → 2.0 s gaps, 5 attempts; an explicit 3000 ms → 3.0 s | true; **beside it, false**: *"falls back to immediate requeue if no scheduler configured"* — DI always registers `InMemorySchedulerFactory` (`ServiceCollectionExtensions.cs:195`); with `UseScheduler` removed, still 5 s |
+| A schema-registry header survives only as `Raw` (`KafkaConfiguration.md` #20, `MessageMappers.md` #6) | id 200 through a UTF-8 string → `C8` becomes `EFBFBD`; `.Bytes` intact under `UTF8` **and** `Raw`; a MySQL text-column outbox → corrupt under both, `Raw` delivering base64 | id 65 → intact everywhere but the `Raw` text column; `binaryMessagePayload: true` → intact | **the advice false**: the encoding changes only `.Value`; the damage is a text-column outbox, and `binaryMessagePayload` is the repair |
+| Telemetry attributes, span name, a handler's tag (`Telemetry.md` #2–#4) | as captured in 5.3 | `None` → only the app's tag; unset → the same as `None`; `All` → adds the body; `PublishAsync` → `create` and two `publish`; a tag outside the handler → on the app span | true; **two omissions**: unset is `None`, and with no `AddProducers` no Command Processor span at all — `CommandProcessorBuilder.Build()` passes no tracer when `_bus == null` (`:304`) |
+| `TraceIdRatioBasedSampler(0.1)` (`Telemetry.md` #6) | N=2000, four runs → 8.6–10.1 % | 0.5 → 47.9–49.4 %; 1.0 → 100 % | true |
+| Postgres: a received, unacknowledged message is invisible 60 s (`PostgreSQLMessageBroker.md` #5) | B sees nothing at 0–50 s, receives it at 60.2 s | 5 s → 5.0 s; 30 s → 30.1 s; acknowledged → never within 75 s | true |
+| CloudEvents names on SNS and ASB (`CloudEventsReference.md` #4, #5) | SNS via LocalStack → `cloudeventheaders` with `souce`, as the page says; ASB, in process through `ConvertToServiceBusMessage` → the page's six names | no CloudEvents options → still written, source `http://goparamore.io/`, type empty | true — ASB is Brighter's hand-off to the SDK, not a broker's delivery |
+| Entity and outbox commit together (`DapperOutbox.md` #2, `DynamoOutbox.md` #2) | MySQL → 1 greeting row, 1 outbox row; DynamoDB-local → both present | a throw after the deposit → 0 and 0; absent and absent | true; **beside it**: `DapperOutbox.md` #1 fails to resolve `MySqlTransactionProvider` — below |
+
+**Beside the runs.** `DapperOutbox.md` #1 names `MySqlTransactionProvider` by `typeof` and never
+registers the `IAmARelationalDatabaseConfiguration` it is built from, so the command processor
+fails to resolve. Surveyed across every `typeof(...)` provider on the site: **15** blocks on **10**
+pages lacked what their provider is built from — the relational configuration, the EF Core
+`DbContext`, `IAmazonDynamoDB` or `IAmAMongoDbConfiguration` — each now registered in its block;
+run, the MongoDB and DynamoDB cases fail without it and resolve with it. `--explain` over the 27
+blocks the diff touches then found `EFCoreOutbox.md`'s V9 `Use{DB}Outbox` prose and a fragment
+of literal `...`, `CommandProcessorConfigurationReference.md` #18's two, and on the MongoDB pages
+`OnResolvingACollection.Create` (the value is `CreateIfNotExists`) and a `MongoClientSettings`
+initialiser setting `ConnectionString`, which it has no such property for; all repaired. Given
+their `using`s, **4** MongoDB blocks build; `attr_mismatch.py` read **1**, `PipelineValidation.md:250`,
+before their rows (`bd95ee0`).
+
+**Gate movement.** Said, by phase 6's heading: *"no page touched"*, so no gate moves. Measured,
+once the ruling put the repairs here: `blockcheck` 295 → **299** BUILT (the four above, no other
+verdict moved against `960ce6d`'s report), `pagelint` 537 → **524**; the other seven gates bare at
+their figures. `tools/README.md` rows 2 and 9 moved to `bd95ee0`.
+
+**For the maintainer, ruled 2026-10-04 — filed as BrighterCommand/Brighter#4510:** at 10.7.0 `CommandProcessorBuilder.Build()` gives the
+Command Processor no tracer when there is no external bus (`:304`), so an application with no
+`AddProducers` records no Command Processor span — run both ways. Stated on both pages, each
+linking the issue.
+
+#### The acceptance walk: the four instrumented criteria *(task 6.2)*
+
+Walked at `631f5e1`, each command's exit code read before its output. `--report` there: exit **0**,
+*"990 blocks: 299 BUILT, 674 FAILED, 17 SKIPPED"*, *"scaffold rule: 45 units checked, 0
+violations"*, *"0 findings"*.
+
+| # | Command | Exit | Read | Verdict |
+|---|---|---:|---|---|
+| **AC3** | `python3 tools/blockcheck.py --classify > c1.tsv`, twice; `cmp`; against `probe/run.sh` at the same ref; `refs.txt` moved aside | **0**, **0**; control **2** | 674 rows, *"146 parse (45 pages), 323 import (64 pages), 21 other (13 pages), 19 same-page (11 pages), 35 values (11 pages), 130 page-type (54 pages)"*; the two runs byte-identical (stderr differs only in its temp directory's name). The probe classes the same 674 keys; the disagreements are below. Control: 0 rows, *"no reference list … nothing was checked"*; restored, byte-identical to the first run | **Met** |
+| **AC4** | `--classify` over the 75 tranche pages (the § *The tranches* tables); keys against § *Blocks that stay FAILED* | **0** | 44 FAILED blocks, *"1 parse, 9 import, 3 other, 13 same-page, 1 values, 17 page-type"*. **0** not listed; the same 44 keys as `--report`'s FAILED rows on those pages (`cmp`). The list's other **7** rows are off-tranche pages, FAILED, each with its reason: `ConfiguringOpenTelemetry.md` #1, #5, #6, `CQRSWithBrighterAndDarker.md` #2, #8, `DefaultMessageMappers.md` #6, #10. Control: the list less `TutorialFirstCommand.md` #2 prints that key | **Met** |
+| **AC5** | `--report` with a plant in `AzureSchedulerContext.cs`, one at a time, the unit restored (`git diff --quiet`) | type **1**; member **1**; real **0** | `class OrderService` (block 9 declares it) → 2 violations, rule 1's *"declared by … block 9"* and rule 3's *"named by no BUILT block"*; `property plantedValue` inside the holder → 1 violation, *"named by no BUILT block"*; verdicts unmoved by either (the AC2 diff against the real report, 0 lines). The real scaffold: 0 violations, `PageContext.cs` among the 45 — it passes, and needs no exception | **Met** |
+| **AC12** | `find tools/blockcheck -name '*.csproj' -not -path '*/obj/*' \| wc -l`; `grep -cF '^(\./)?spec/' tools/README.md`; `--list-skips > s` | —; —; **0** | **2** (the old `ls` glob, **1**); **1**; *"17 skipped of 990 blocks, across 7 pages"*, `wc -l < s` → **17**, AC1's SKIPPED; the keys identical to `--report`'s SKIPPED rows (`cmp`). Control: `--list-skips contents/SpannerOutbox.md`, no skip → **2** | **Met** |
+
+**AC3's disagreements with the probe**, all 674 keys joined:
+
+| Probe | `--classify` | Blocks | Why |
+|---|---|---:|---|
+| page-type / same-page / values / import | the same class | 130 / 19 / 35 / 241 | identical rules |
+| other | **parse** | **146** | the design splits out blocks that do not parse. The Roslyn half's `--parse` over the probe's stage reads *"990 blocks, 151 do not parse"*: those 146 exactly, and 5 SKIPPED (`CloudEventsSupport.md` #11, #12, `DarkerAndBrighterPipelines.md` #1, `V10MigrationGuide.md` #4, #19) |
+| other | **import** | **82** | the design orders *import* before *other*. **75** name a pinned type beside another diagnostic. **7** reach *import* through an extension method's name alone, and **all 7 are misread**: `AddOpenTelemetry` (×6 — `Telemetry.md` #1, #6, `ConfiguringOpenTelemetry.md` #1, #5, #6, `PostgreSQLMessageBroker.md` #8) is pinned only on `ILoggingBuilder`, and each block calls it on `IServiceCollection`; `Build` (`Logging.md` #4) is pinned only on OpenTelemetry's builders, and the block calls it on `INeedAHandlers` after a `// ...` elision. No `using` builds any of them |
+| other | other | 21 | |
+
+The seven are 1.10's blind spot a second time: `--classify` matches a name, not a receiver, as it
+matches `Order` to `StackExchange.Redis`. **No class figure is misread on a tranche page because of
+it**: the six OpenTelemetry blocks stay FAILED for the pin (§ *Blocks that stay FAILED*, ruling 2 of
+5.3), and `Logging.md` is on no tranche. The `Order` reading, ruled at 1.10, now touches **22**
+*import* blocks on **10** pages (1.10: 27 on 16), none on a tranche page. Not repaired, under the
+same ruling; recorded here for 6.6.
+
+#### The acceptance walk: the eight remaining criteria *(task 6.3)*
+
+Walked at `f46221d`, which is `631f5e1` for every page, unit and tool; each exit code was read before
+its output. The tools were built first (`refs.csproj`, then `blockcheck.csproj`, both Release), and
+`before.tsv` was regenerated from `c7329bb` in a worktree, as § *The AC2 before-report* says. It read
+*"989 blocks: 101 BUILT, 872 FAILED, 16 SKIPPED, 0 NOT_COMPILABLE"*, **989** rows, exit **0**.
+
+| # | Command | Exit | Read | Verdict |
+|---|---|---:|---|---|
+| **AC1** | `python3 tools/blockcheck.py --report after.tsv > out`; the baseline's keys against the report's BUILT keys; pages with a FAILED block and no BUILT one (`comm -23` of the two `awk` page lists) | **0** | *"990 blocks: 299 BUILT, 674 FAILED, 17 SKIPPED, 0 NOT_COMPILABLE"*, *"baseline: 299 blocks required to build"*, *"0 findings, 17 skipped"*, 545 reference assemblies. The baseline's 299 (page, ordinal) keys and the report's 299 BUILT keys are **identical** (`cmp`). Against the target set at design: BUILT **299 ≥ 250**, and pages with nothing BUILT **39 ≤ 60**. That is 41 at 5.6 less `MongoDBInbox.md` and `MongoDBOutbox.md`, which have no baseline row at `5981b12` and four at `bd95ee0` | **Met** |
+| **AC2** | the `awk` diff, `before.tsv` against `after.tsv`; and the reverse join, for keys the diff cannot print | **—** | **211** lines. **198** read `FAILED -> BUILT`: 5.6's 194, plus the four MongoDB blocks 6.1 made BUILT. The other **13** are 5.6's thirteen, unchanged, and each has a § *Splits* row or is the accepted skip: two `BUILT -> FAILED` (`Telemetry.md` #1, `MessageMappers.md` #3 — insertions above a BUILT block, whose rows moved), four ` -> BUILT` and six ` -> FAILED` new keys, and `FAILED -> SKIPPED` `DarkerAndBrighterPipelines.md` #1. The reverse join finds **9** `c7329bb` keys that are absent, and § *Blocks removed* lists every one of them. **Control:** `Telemetry.md` #2 flipped in a copy of `after.tsv` → exactly `BUILT -> FAILED contents/Telemetry.md 2`; the report against itself → **0** lines | **Met** |
+| **AC7** | `grep -l '^global using' tools/blockcheck/scaffold/units/*.cs \| wc -l`; `python3 tools/pagelint.py --changed origin/master`; the same with `--changed c7329bb` | —; **0**; **0** | **0** of 45 units. `origin/master` is `960ce6d`, the merge base, so the first run covers this PR. The second covers all of 017's diff at once, which is more than *"every tranche PR"* asks for; each phase recorded its own run at its close. Both read *"0 errors"*. **Control:** a plant unit holding `global using System;` → **1**, removed (`git status` clean) | **Met** |
+| **AC8**, first half | `python3 tools/pagelint.py \| tail -1`, at `HEAD` and in a `c7329bb` worktree; each debt warning mapped to its block by fence line (`enumerate_blocks()`); the blocks 017 touched, found from `git diff -U0 c7329bb HEAD -- contents/` hunks against fence ranges | **0**, **0** | **743 → 524**, a fall of **219** against **198** blocks newly BUILT. Every one of the 524 maps to a block: 466 FAILED, 41 BUILT, 17 SKIPPED. Of the **322** blocks 017 touched, **295** are out of debt and **27** remain in it. **All 27 are marked `// ...`** (3 BUILT, 22 FAILED, 2 SKIPPED), and those are the lines 6.1 read for AC8's second half. **None** of the touched blocks is in unmarked debt | **Met** |
+| **AC9** | `grep -rn 'ITimerProvider' contents/ \| wc -l`; `attr_mismatch.py`; `attr_mismatch.py --plant`; `CQRSWithBrighterAndDarker.md` in AC1's report | —; **1**; **0** | **0**. The one hit is `contents/PipelineValidation.md:250 RejectMessageOnError on a async handler`, the deliberate example, which the page now calls wrong in prose. The plant: *"sync-on-async hit, async-on-sync hit, matched pair silent: OK"*. `CQRSWithBrighterAndDarker.md` #7, the write model declaring `class Order` (`:666`), is **BUILT**, as is #6 | **Met** |
+| **AC10** | each row of § *Defect ledger*: its recurrence grep run as written (alternation unescaped from the table), its output read against the row's *After* | — | **116** rows. **64** reproduce their *After* exactly, from a single grep. Every other row with a grep reads what the row says, once its stated qualifier is applied: the hits it names as right (#5, #17, #32, #40, #41, #80, #81), an exclusion (#43, `Timed`), or a count inverted for an omission (#104, **3**). Rows decided by a run, a scan or a reading were read, not re-run. The rulings (*stated*, *documented*, *recorded, not repaired*) read as ruled. **Three rows are not whole.** **#15** (`MessageBody` given a string for its `ContentType`) and **#16** (mapper excerpts missing a member with no `// ...`) still read *"open"*, with no grep. Both were repaired in later phases: every `new MessageBody` on the two pages now takes a `ContentType` (`grep -rnE 'new MessageBody\([^)]*, *(MediaTypeNames\.[A-Za-z.]+\|"[^"]*") *[,)]' contents/` → **0**), and #16 is #83's defect on #83's five blocks, with #83 at **0**. **#100**'s second grep, `TryAddBuilder<`, now reads **1**: `PolicyFallback.md:306`'s `TryAddBuilder<Product>`, 6.1's correct repair for #109. The row's defect is the key type, `TryAddBuilder<ResiliencePropertyKey`, which reads **0**. #24, #55 and #61 name no grep at all | **Met on the pages; unmet in the ledger on three rows.** They go to 6.5, whose output is the ledger complete, and AC10 is re-read there |
+| **AC13** | `grep -rn '299 BUILT' --include='*.md' --include='*.yml' --include='*.py' . > f; grep -vcE '^(\./)?spec/' f`; the same for `524 warnings` | —; — | **1** — `tools/README.md:91`, row 9. `524 warnings` → **1**, row 2. **Control:** `0 errors`, a figure several files quote → **7** | **Met** |
+| **AC14** | the eight other gates, bare, against `tools/README.md` rows 1–8 | all **0** | `linkcheck` *"165 files checked"*, 0 broken. `pagelint` *"0 errors, 524 warnings … across 162 pages"*. Shape *"161 pages, 12 sections, deepest 4 of 4 segments, widest 12 of 20"*. Redirects *"77 entries, 7858 bytes"*. `versioncheck` *"0 stale pins of 18 examined across 5 page(s)"*. `optioncheck` *"0 mismatches across 59 tables and 519 rows"*. `--verify` *"predicted 161, published 161, 161 agree"*. `symbolcheck` *"22 entries, 161 pages checked, 3 silenced"*, and `--verify-list` clean. Every figure is its row's | **Met** |
+
+**Seven met, and AC10 met on the pages.** Its ledger has three rows that do not say what the pages
+now say. With 6.1's three and 6.2's four, every criterion has now been walked. AC10's ledger is the
+one reading left open, and it closes with 6.5.
+
+#### Backwards check *(task 6.4)*
+
+Run at `2fdb256`. `git diff --name-only c7329bb -- contents/ tools/` lists **116** pages and **44**
+tool files. Every page change is a modification: 017 added, removed or renamed no page, so
+`SUMMARY.md` is untouched, as § *SUMMARY.md changes* said. Nothing outside `contents/`, `tools/`
+and `spec/` changed (`git diff --name-only c7329bb | grep -vE '^(contents|tools|spec)/'` → **0**).
+
+**The pages.** Of the 116, **64** are tranche pages and **7** are the P0-7 pages. The P0-7 pages are
+`CQRSWithBrighterAndDarker.md`, `HowServiceActivatorWorks.md`, `InMemoryScheduler.md`,
+`PipelineValidation.md`, `PolicyRetryAndCircuitBreaker.md`, `ReactorAndProactor.md` and
+`V10MigrationGuide.md`, and all seven changed. The tranche list is the 75 pages of § *The
+tranches*, taken from its four tables. **11** tranche pages have no diff, and each has a reason:
+
+- **Made whole by a unit alone:** `AggregationQueryPatterns.md`, `ClaimCheck.md`,
+  `MSSQLTransportInboxAndOutbox.md`, `RelationalDatabaseConfigurationReference.md` and
+  `TutorialStreamingWithKafka.md`
+- **Left FAILED:** the other six (`PaginationQueryPatterns.md`, `ReplayOnSeenReference.md`,
+  `ReturningResultsFromAHandler.md`, `TutorialDurableOutbox.md`, `TutorialFirstCommand.md`,
+  `TutorialFirstMessage.md`). Each FAILED block they carry has a row in § *Blocks that stay
+  FAILED*: same-page, unit rule 1, or P2-2
+
+**45 pages are neither.** None is reverted. Each one is reached by a § *Defect ledger* row, found
+on a tranche or P0-7 page and repaired wherever its recurrence grep landed (constraint 6), or by a
+ruling the maintainer gave. *Rows* below are the ledger rows that reach the page. Most name it in
+their *Page* column. **#8** (`requeueCount`) reaches its pages through its grep, which lists 17
+pages at `c7329bb`, and eight of them are here. The two phase 2 mapper-member lines on
+`CloudEventsSupport.md` and `MigratingToNullableReferenceTypes.md` recur **#7**, whose *Page*
+column says only *"11 pages"*. *Phases* are
+the phases whose commits touched the page (`git log c7329bb..HEAD`); 6.1 is phase 6's one
+page-changing task.
+
+Each (page, phase) pair was checked against the *Found by* column of the rows naming it. Four
+pairs did not match, and each was read in its commit:
+
+- **`CloudEventsSupport.md` and `MigratingToNullableReferenceTypes.md`, phase 2:** a mapper's
+  `Context` member (#7)
+- **`HowConfiguringTheCommandProcessorWorks.md`, 6.1:** AC8's `using`s
+- **`QueryPatterns.md`, phase 5:** #30's `circuitBreakerName` argument, recurring on a page the row
+  already names
+
+| Page | Diff | Phases | Rows |
+|---|---|---|---|
+| `AgreementDispatcher.md` | +12 −6 | 5 | #49, #70 |
+| `AwsScheduler.md` | +1 −1 | 3 | #23, #26 |
+| `AWSSQSConfiguration.md` | +16 −5 | 2, 3 | #8, #17, #19 |
+| `AWSSQSMigrateToV10.md` | +18 −6 | 3 | #23 |
+| `AzureServiceBusConfiguration.md` | +1 −1 | 2 | #8 |
+| `BasicConcepts.md` | +2 −2 | 2 | #8 |
+| `BrighterBasicConfiguration.md` | +24 −8 | 3, 4, 6.1 | #17, #31, #115 |
+| `BrighterInboxSupport.md` | +6 −0 | 4 | #38 |
+| `BrighterOutboxSupport.md` | +1 −1 | 5 | #103 |
+| `BrighterSchedulerSupport.md` | +20 −10 | 2, 5, 6.1 | #8, #9, #26, #90, #111 |
+| `CloudEventsSupport.md` | +34 −22 | 2, 5 | #7, #70, #78 |
+| `CommandProcessorConfigurationReference.md` | +19 −7 | 3, 5, 6.1 | #17, #57, #94, #115 |
+| `ConfiguringOpenTelemetry.md` | +83 −54 | 5, 6.1 | #75, #77, #113 |
+| `DarkerBasicConfiguration.md` | +4 −5 | 5 | #50, #58 |
+| `DefaultMessageMappers.md` | +95 −37 | 5 | #82, #91, #92, #93 |
+| `DispatcherConfigurationReference.md` | +15 −15 | 2, 4, 5 | #8, #9, #31, #103 |
+| `DispatchingARequest.md` | +8 −2 | 5 | #93, #94 |
+| `DynamicMessageDeserialization.md` | +1 −14 | 5 | #70, #93 |
+| `EFCoreOutbox.md` | +25 −13 | 6.1 | #115 |
+| `FAQ.md` | +24 −4 | 2, 3, 5 | #16, #27, #47, #49, #70, #83, #95 |
+| `FeatureSwitches.md` | +30 −10 | 5, 6.1 | #57, #61, #110 |
+| `FirestoreInbox.md` | +2 −0 | 4 | #38 |
+| `HandlerFailure.md` | +10 −8 | 2, 5, 6.1 | #8, #59, #110 |
+| `HowConfiguringTheCommandProcessorWorks.md` | +19 −6 | 5, 6.1 | #59; in 6.1, AC8's ruling — `using`s for a block marked `// ...` |
+| `ImplementAQueryHandler.md` | +9 −3 | 5 | #30, #51 |
+| `ImplementingExternalBus.md` | +6 −1 | 2 | #6 |
+| `InMemoryOptions.md` | +8 −2 | 3 | #17, #21, #26 |
+| `KafkaConfiguration.md` | +37 −10 | 2, 3, 5, 6.1 | #6, #8, #15, #17, #22, #82, #112 |
+| `MessageMappers.md` | +45 −4 | 2, 5, 6.1 | #6, #15, #82, #104, #112 |
+| `MessageTransforms.md` | +2 −2 | 2 | #6 |
+| `MigratingToNullableReferenceTypes.md` | +5 −1 | 2, 5 | #7, #84 |
+| `MigratingToPollyV8.md` | +20 −8 | 5 | #57, #59 |
+| `MongoDBInbox.md` | +18 −8 | 4, 6.1 | #38, #116 |
+| `MongoDBOutbox.md` | +33 −8 | 6.1 | #115, #116 |
+| `Monitoring.md` | +93 −49 | 5 | #47, #56, #62 |
+| `NullableReferenceTypes.md` | +37 −4 | 2, 5 | #6, #16, #83, #84 |
+| `OutboxArchiver.md` | +3 −1 | 2 | #6 |
+| `PolicyFallback.md` | +57 −26 | 5, 6.1 | #59, #60, #88, #106, #108, #109 |
+| `QueryPatterns.md` | +1 −1 | 5 | #30 |
+| `QueryPipeline.md` | +46 −35 | 5, 6.1 | #30, #59, #107 |
+| `RabbitMQConfiguration.md` | +4 −1 | 2, 3 | #8, #17 |
+| `Routing.md` | +24 −3 | 2, 5 | #6, #16, #83 |
+| `SpannerInbox.md` | +2 −0 | 4 | #38 |
+| `SweeperCircuitBreaking.md` | +99 −61 | 4, 6.1 | #43, #44, #45, #46, #115 |
+| `UsingTheContextBag.md` | +51 −17 | 5 | #94, #105 |
+
+**The tools.** Every changed file in `tools/` is a deliverable in `requirements.md` §
+*Deliverables*:
+
+| Deliverable | Files changed | Verdict |
+|---|---|---|
+| `tools/blockcheck.py` | modified | `--classify`, `--list-skips`, `--explain` |
+| `tools/blockcheck/Program.cs` | modified | the type dump, the unit-rule check, the `--explain` fix |
+| `tools/blockcheck/scaffold/units/*.cs`, `pages.tsv` | **31** units added, **7** modified (`PageContext.cs` among them); `pages.tsv` | the row says *"for the tranche pages"*. **60** pages map to a changed unit. **58** are tranche pages. The other two are `AWSSQSConfiguration.md` (`TransportConfigurationContext.cs`, shared with five phase 3 transport pages, at `7edaada`) and `SweeperCircuitBreaking.md` (`SweeperCircuitBreakingContext.cs`, mapped before 017, grown at `a61893b` for the phase 4 ruling on #43–#46). Both are serving pages already reached by ledger rows |
+| `tools/blockcheck/baseline.tsv` | modified | one row per newly BUILT block, keys identical to the BUILT keys (AC1, 6.3) |
+| `tools/blockcheck/refs/refs.csproj` | modified, **71 → 100** `PackageReference`s | **Beyond the row.** The row says *"P1-1 only"*, and P1-1 is **24** of the 29 packages (1.8, `23aa74f`). The other five were each added in their own commit, measured alone with no page changed, and merged in a phase PR the maintainer signed off: `Npgsql.EntityFrameworkCore.PostgreSQL`, `TickerQ.Dashboard` and `TickerQ.EntityFrameworkCore` (phase 4, `bd2b1ed`); `Microsoft.Extensions.TimeProvider.Testing` (`07d878b`) and `Confluent.SchemaRegistry.Serdes.Avro` (`aeb65f4`), both 5.4. None is removed. Removing them would un-build the blocks they judge |
+| `tools/README.md` | modified | rows 2 and 9, the corrected commands, the new modes |
+
+**Result.** No change is outside the check's two sets without a reason on record: 45 pages are
+reached by ledger rows or a ruling, and two units serve those pages. Five pin packages went beyond
+P1-1's letter, each measured alone and signed off in its phase's PR. Nothing is reverted.
+**Control:** the join that finds each page's rows, run over the 45, prints nothing. Run again
+with `Glossary.md` added, a page no ledger row names and no 017 commit touched, it prints
+*"NO ROW: Glossary.md"*, and nothing else.
+
+#### The defect ledger complete *(task 6.5)*
+
+Written at `ddcf445`, from 6.3's AC10 residue. No page, tool or gate touched. Six rows changed, one
+more was corrected on the way, and two probes were added beside `v4scan.py`. Every *Before* was
+re-read at `c7329bb` (`git grep` on that tree, or the probe with `--root` over `git archive`), and
+every *After* at `HEAD`.
+
+| Row | Was | Now | Before → after |
+|---|---|---|---|
+| **#15** | *"open"*, no grep | **#82**'s defect on #82's two blocks, repaired at `154f78c` (5.3). Given #82's grep | **2 → 0** |
+| **#16** | *"open"*, no grep | **#83**'s defect on #83's five blocks. Given #83's scan | **5 → 0** |
+| **#24** | no grep | `asyncscan.py`, its `CS1997` lines. At `c7329bb` it also finds `ImplementingAsyncHandler.md:50`, the `Task` return #1 already records | **1 → 0** |
+| **#55** | no grep | Three parts. The write model is block-local: `o.Customer` is read on 5 other pages, each against its own block's model, and only a compile decides it. The `{ /* ... */ }` requests: a grep, **4 → 0**. Controller actions outside a class: a grep, **4 → 2** (below) | **2** blocks **→ 0** |
+| **#61** | no grep | `asyncscan.py`, its `CS4032` lines | **1 → 0** |
+| **#83** | *"reading, from 5.1's list"* | `mapperscan.py`. At `c7329bb` it reads **13**: #83's five, and eight missing only `Context`, which are **#7**'s | **5 → 0** |
+| **#100** | `TryAddBuilder<` → **1** | `TryAddBuilder<ResiliencePropertyKey`: the key type is the defect, and a builder for the result type is right (`PolicyFallback.md`'s `TryAddBuilder<Product>`, 6.1's #109) | **2 → 0** |
+
+**The probes, each with its control.** `asyncscan.py` finds both of its defects at `c7329bb` and
+nothing at `HEAD`. It failed its first control, missing `FeatureSwitches.md` #2 twice over: the
+`= default` parameter tripped an exclusion meant for `=>`, and the block's fence was written
+`` ``` csharp ``, with a space, which the fence pattern did not allow. The first run also matched
+three primary-constructor classes as methods. `mapperscan.py`, before its two exclusions,
+read **16** at `c7329bb` and **3** at `HEAD`. The three are `V10MigrationGuide.md` #19, a skipped V9 form, and
+`MigratingToNullableReferenceTypes.md` #22 and `OutboxArchiver.md` #4. Both of those carry a
+`// ...` and were given `Context` in phase 2 with the other member left out. #83's defect is a
+member missing *"with no `// ...` to say so"*, and `pagelint` reads the marker per block, so the
+scan does the same and skips what `blockcheck` skips.
+
+**#55's two survivors are residual, not recurrences.** `QueryPatterns.md` #5 and
+`ShowMeTheCode.md` #1 show a controller action with no controller. Both pages are off-tranche and
+both blocks are FAILED, and `--classify` calls each `import`. Design § P0-6 names this shape: a
+method shown without its class is a wrapper to make whole, not an API defect. They are 018's.
+
+**One correction outside the six.** 6.4 attributed the phase 2 `Context` lines on
+`CloudEventsSupport.md` and `MigratingToNullableReferenceTypes.md` to #83. The scan's split shows
+they are **#7**'s (*"A mapper class without `IRequestContext? Context`"*). #7's *Page* column
+reads only *"11 pages"*, so no join by name could find it. 6.4's paragraph, its list and its two
+table rows now say #7.
+
+**AC10, re-read.** The seven rows above were run as written, alternation unescaped: every grep
+and probe reads the row's *After*, and #55's second grep reads its two named survivors. The
+other 109 rows are as 6.3 read them. All 116 rows parse as seven cells. **Met.**
+
+#### The friction ledger *(task 6.6)*
+
+Written at `549d36f`, from the *as executed* sections of phases 1–6 and the session notes behind
+them. No page, tool or gate touched. **Fourteen entries, 67–80**, in § *Friction ledger*, each with
+what 018 should do, and two recurrences left unnumbered (53, and 58's family). The ledger stands at
+**80**. The count is re-derived by the grep under the table (**14**), and the same grep for an
+**81** reads **0**. Every row parses as three cells.
+
+The two costliest entries both concern *when* a check runs. **#67:** the ordinal key made every
+insertion a hand-aligned diff. **#68:** the two reading criteria were first read at acceptance and
+both were unmet there. **#70** puts the name-not-receiver blind spot, ruled at 1.10, back to the
+maintainer as a proposal for 018, with 017's three families as its evidence. It asks for a new
+ruling and does not reopen the old one.
+
+#### For the maintainer: D4, `attr_mismatch` as a standing gate *(task 6.7)*
+
+Written at `adc1005`. No page, tool or gate touched. Design D4 held one question to the close:
+should `probe/attr_mismatch.py` become a standing gate, and if so in which instrument?
+
+**What it guards against.** The probe catches a sync handler attribute on `HandleAsync`, or an
+`…Async` one on `Handle`. The compiler accepts both. Brighter throws `ConfigurationException` when it
+builds the pipeline (design E4, run with a control), and `ValidatePipelines()` reports it. So
+`blockcheck` cannot see it: a block that carries the defect and compiles is written into the
+baseline and certified. That is why design rule 8 ran the probe in every tranche PR.
+
+**The runs.** Twenty-five in phases 2–5, each before its task's baseline rows (obligation 15),
+with the design's run and the runs after them for context:
+
+| When | Runs | Reading |
+|---|---:|---|
+| Design E4; § 2 at `c7329bb` | 2 | **7**, exit 1 — 6 defects on 5 pages, 1 deliberate |
+| Phase 2, 2.1–2.6 | 6 | 7 each |
+| Phase 3, 3.1–3.6 | 6 | 7 each |
+| Phase 4, 4.1–4.5 | 5 | 7 each |
+| Phase 5, 5.1–5.4 and 5.2's second pass | 5 | 7 each; two hits' lines moved (`:190` → `:200`, `:326` → `:359`) |
+| 5.5 | 1 | **7 → 1**, the six repaired |
+| 5.5's second pass, 5.6 | 2 | 1, `PipelineValidation.md:250` |
+| 6.1's repairs, 6.3's AC9, and 6.7 at `adc1005` | 3 | 1, exit 1; `--plant` → OK, exit 0 |
+
+**What the runs show.**
+
+- **Every defect it found was found at the design, and it found nothing after.** The count never
+  rose: no 017 repair wrote a new mismatch, and none made a mismatched block BUILT before its
+  repair. Obligation 15 held, but no case ever tested it.
+- **The risk it guarded is still latent.** The six repaired blocks are all still FAILED, and so is
+  `:250`: `baseline.tsv` holds none of `HowServiceActivatorWorks.md` #16, `PipelineValidation.md`
+  #7, #9, #10, `PolicyRetryAndCircuitBreaker.md` #14, `ReactorAndProactor.md` #6 or
+  `V10MigrationGuide.md` #10. Suppose an edit reintroduces a mismatch into one of them. The PR
+  that later makes that block build would baseline the broken form, and nothing would say so.
+- **Its scope is right, and narrow.** It reads Brighter's `Handle`/`HandleAsync` only: Darker 4.1.1
+  has no async twins, and the first run's six Darker false positives were removed at the design.
+  An attribute on a class is `CS0592`, which the compiler already reports (`InMemoryInbox.md` #2,
+  4.1). An attribute with no pair, like `V10MigrationGuide.md` #8's V9 `[TimeoutPolicy]`, has
+  nothing to mismatch.
+- **The pair list is version-bound.** 13 names, read from 10.7.0. `master` at `2461094a6` has the
+  same 43 attribute classes, so the list is the same today. A future release may change it.
+- **It named its deliberate hit by line**, and that line shaped where prose could go (friction #79).
+
+**The proposal: `pagelint` rule 8, not a `blockcheck` mode.**
+
+1. **It reads text, and must read FAILED blocks.** The six were FAILED when found. A `blockcheck`
+   mode would build the .NET instrument to run a regex. It would also run only in CI's `blocks`
+   job, beside a verdict set that means *compiles*.
+2. **The probe is already half a `pagelint` rule.** It reads blocks through `pagelint.Page`, as
+   016 friction 53 requires, and needs no pin to run.
+3. **The opt-out is per block, with a reason.** A page-wide marker like `allow-serviceactivator`
+   would also have silenced `PipelineValidation.md` #9 and #10, two real defects sitting beside
+   the deliberate #7. So the proposal follows `blockcheck`'s form: the line before the fence
+   carries `<!-- pagelint: attr-mismatch-intended <reason> -->`, and the reason is mandatory.
+   `PipelineValidation.md` #7 gets that marker, and AC9's *"exactly one hit"* becomes **0**
+   (friction #79).
+4. **The pairs live beside `APPLIES_TO`** as a `PAIRED` tuple in `tools/pagelint.py`. Its comment
+   holds the `git grep` that derives it, so the version bump that edits `APPLIES_TO` re-derives
+   `PAIRED` in the same edit.
+5. **The red-proof moves with it.** `pagelint` has no plants today. The probe's `--plant` (two
+   cases that must hit, one that must not) becomes `pagelint --plant-attr` or a plant file, run in
+   CI.
+
+**What it needs.** One `CLAUDE.md` ledger row, and a short § *Handler attributes match their
+handler* under *Page Conventions*:
+
+| Convention | Rule | Repo-wide | `--changed` |
+|---|---|---|---|
+| A handler attribute's kind matches its method's: sync on `Handle`, `…Async` on `HandleAsync` | 8 (`ATTRIBUTE KIND`) | error | error |
+
+Beside the row, it needs `tools/README.md`'s `pagelint` figures and the marker on
+`PipelineValidation.md` #7. `probe/attr_mismatch.py` would then be retired, with its history kept
+here. Its natural home is 018's phase 1, where the instruments are built.
+
+**The maintainer's answer: ruled 2026-09-29, *`pagelint` rule 8, in 018*** — the proposal as
+written: per-block opt-out with a reason, `PAIRED` beside `APPLIES_TO`, the ledger row, the
+red-proof carried over, and the probe retired. 017 builds nothing; the rule is an input to 018's
+phase 1.
+
+#### What 017 shipped *(task 6.8)*
+
+Measured at `e0385b4`, after building both projects. `--report` → exit **0**, *"990 blocks: 299
+BUILT, 674 FAILED, 17 SKIPPED"*, *"baseline: 299 blocks required to build"*, *"scaffold rule: 45
+units checked, 0 violations"*, *"0 findings, 17 skipped"*. `--classify` → exit **0**, 674 rows.
+
+| | `c7329bb` (016's close) | Now |
+|---|---:|---:|
+| **BUILT**, and the baseline that holds them | 101 | **299** |
+| FAILED / SKIPPED, of 989 → 990 blocks | 872 / 16 | **674 / 17** |
+| Pages with a FAILED block / with nothing BUILT | 140 / 97 | **88 / 39** |
+| `pagelint` `using` debt | 743 blocks, 115 pages | **524 blocks, 66 pages** |
+| Scaffold units / pages mapped | 14 / 15 | **45 / 67**; 427 identifiers, 143 stubbed types |
+| Packages pinned in `refs.csproj` | 71 | **100** |
+
+| | |
+|---|---|
+| **The instruments** | `--classify`, which is committed, deterministic and red-proofed (AC3), and has replaced 016's uncommitted 102 and 364. `--list-skips` and `--explain`. The unit rule enforced on every `--report` (AC5). 016's AC3, AC7 and AC10 commands corrected, each with a control (AC12) |
+| **The pages** | **116** changed under `contents/` (`git diff --name-only c7329bb -- contents/`): **64** of the 75 tranche pages (the other 11 made whole by a unit or listed FAILED), all 7 P0-7 pages, and 45 more, each reached by a defect-ledger row (6.4). PRs #190–#194, and phase 6's |
+| **The ledgers** | **116** defect rows, each with its recurrence grep or probe, and *After* **0** (AC10, 6.5). Friction entries **67–80** (6.6) |
+| **Upstream** | BrighterCommand/Brighter#4453, #4454, #4458, #4465, each filed on the maintainer's word and stated on its page |
+| **Ruled for 018** | D4: `attr_mismatch` becomes `pagelint` rule 8 (6.7) |
+
+**Open at the close, both the maintainer's, both ruled 2026-10-04:**
+
+- **AC8's second half and AC11.** The named readers found them unmet at 6.1. Under the 2026-09-28
+  ruling, they were repaired in phase 6's PR (§ *AC8 and AC11, repaired under the ruling*), and the
+  maintainer accepted the repairs in that PR's review (#196).
+- **6.1's `CommandProcessorBuilder` finding.** With no external bus, the Command Processor has no
+  tracer. Filed as BrighterCommand/Brighter#4510, and linked from both pages.
+
+**Where the residual is**, by `--classify` joined to § *The tranches*. The 75 tranche pages hold
+**44** FAILED blocks on 24 pages, each named in § *Blocks that stay FAILED* (AC4). The other **630**
+are on **64** pages no tranche reached, and 36 of those pages have nothing BUILT. By class, those
+630 are 314 *import*, 145 *parse*, 113 *page-type*, 34 *values*, 18 *other* and 6 *same-page*.
+*Import* is a lower bound on the work: at 1.10, **162** blocks it called *import* had a defect
+behind the missing `using` (friction #71).
+
+**The residual, the line 018 starts from:** **674 of 990 C# blocks still do not compile against
+the released packages, and 630 of them sit on the 64 pages 017's tranches never reached — 314 of
+those name a pinned type they never import, 145 do not parse and 113 need a type their page never
+shows — so 018 first builds `pagelint` rule 8 and gives `--classify` its second compile, and
+then tranches those 64 pages by what that instrument finds.**
 
 ---
 
@@ -2893,8 +3316,8 @@ BUILT, re-admitted at `ec38400`.
 | `UseExternalLuggageStore` resolves `IAmABrighterTracer` with `GetRequiredService` and only `AddBrighterInstrumentation()` registers one, so a claim check without tracing throws on first `Post`; the page's null-store exception appears only with a tracer | run; `ServiceCollectionExtensions.cs:1008` — **upstream, BrighterCommand/Brighter#4433** | `HandlingLargeMessages.md` step 3 and its failures list | — | **1** | **documented** — maintainer's ruling | 2.5, running the null-store claim's control |
 | A Reactor subscription paired with an async handler — the pump stops with `ConfigurationException` (`InvalidCastException` inside), and the handler never runs; the page's own step 4 says so | run, control Proactor | `HandlingPoisonMessages.md` step 3 → `Proactor` | reading: the other four tranche pages have no handler beside their subscriptions | **1** | **0** | 2.5, running block 2's claim |
 | A log excerpt quoting messages Brighter does not emit (*"Failed to process message … requeueing"*, *"Requeue count exceeded"*) | `Reactor.cs:601–670`, the templates; replaced with a captured run | `HandlingPoisonMessages.md` step 1 | `grep -rnE 'Requeue count exceeded for message\|Failed to process message' contents/` | **3** | **0** | 2.5, reading step 1 against the run's log |
-| `new MessageBody(bytes, "JSON")` / `(s, MediaTypeNames.Application.Octet, …)` — a string where 10.7.0 takes a `ContentType?` | `CS1503` from `--explain` | `KafkaConfiguration.md` #20, `MessageMappers.md` #5 | — | **2** | **open — phases 3 and 5** | 2.5, `--explain` on the touched blocks |
-| Mapper excerpts that omit a required member with no `// ...` (`CS0535` `MapToRequest` / `MapToMessage`) | `CS0535` | `Routing.md` #1, `V10MigrationGuide.md` #3, #18, `NullableReferenceTypes.md` #7, `FAQ.md` #7 | — | **5** | **open — their phases** | 2.5, `--explain` on the touched blocks |
+| `new MessageBody(bytes, "JSON")` / `(s, MediaTypeNames.Application.Octet, …)` — a string where 10.7.0 takes a `ContentType?` | `CS1503` from `--explain` | `KafkaConfiguration.md` #20, `MessageMappers.md` #5 | #82's: `grep -rnE 'new MessageBody\([^)]*, *("\|MediaTypeNames)' contents/` | **2** | **0** — carried as #82, repaired at `154f78c` (5.3) | 2.5, `--explain` on the touched blocks |
+| Mapper excerpts that omit a required member with no `// ...` (`CS0535` `MapToRequest` / `MapToMessage`) | `CS0535` | `Routing.md` #1, `V10MigrationGuide.md` #3, #18, `NullableReferenceTypes.md` #7, `FAQ.md` #7 | #83's: `python3 spec/017-compile_repairs/probe/mapperscan.py` | **5** | **0** — carried as #83, the same five blocks | 2.5, `--explain` on the touched blocks |
 | A `Publication` a reader posts through with no `RequestType` — `Post` throws `ConfigurationException` (*"No producer found for request type"*); BRT001 warns on it | `FindPublicationByPublicationTopicOrRequestType.cs:81`; run, control both ways | `InMemoryTransport.md`, `AWSSQSConfiguration.md`, `BrighterBasicConfiguration.md`, `CommandProcessorConfigurationReference.md`, `InMemoryOptions.md`, `KafkaConfiguration.md`, `RabbitMQConfiguration.md`, `V10MigrationGuide.md` | `python3 spec/017-compile_repairs/probe/pubscan.py` | **23** | **2** — `AnalyzerSupport.md`'s BRT001 suppression and `HandlingLargeMessages.md`'s `WrapAsync`, both right | 3.2, running the complete example |
 | `InternalBus` said to have no backpressure and the in-memory transport no dead letter queue — `InternalBus(boundedCapacity)` blocks a sender when full; `DeadLetterRoutingKey` moves a rejected message to that topic | `InternalBus.cs:39`, `InMemoryMessageConsumer.cs:218`; run, control both ways | `InMemoryTransport.md` | `grep -rnE 'No backpressure\|No dead letter queues' contents/` | **2** | **0** | 3.2, reading the page against the source |
 | `SqsPublication { SqsAttributes = … }` — the property is `QueueAttributes` (`CS0117`) | `SqsPublication.cs:73` | `AWSSQSConfiguration.md` | `grep -rnE '\bSqsAttributes\s*=' contents/` | **1** | **0** | 3.2, `--explain` after the block's `using`s |
@@ -2902,7 +3325,7 @@ BUILT, re-admitted at `ec38400`.
 | `new InMemoryOutbox()` — V10's constructor takes a `TimeProvider` (`CS7036`) | `InMemoryOutbox.cs:91` | `InMemoryOptions.md`, `InMemoryOutbox.md` | `grep -rnE 'new InMemoryOutbox\(\)' contents/` | **2** | **0** | 3.2, `--explain` after the block's `using`s |
 | `publication.SetConfigHook(…)` — the hook is on `KafkaProducerRegistryFactory`; the block also wrapped its publication as `new KafkaPublication() {publication}` and dropped a `;` | `KafkaProducerRegistryFactory.cs:87`; compiled, old form `CS1061` | `KafkaConfiguration.md` | `grep -rn 'publication\.SetConfigHook' contents/` | **1** | **0** | 3.2, reading the block beside its prose |
 | A V4 package recommended with the V3 namespace, or the namespaces said to stay the same: every Brighter `.V4` package at 10.7.0 declares its types in `<V3 namespace>.V4` (`Locking.DynamoDb` → `Locking.DynamoDB.V4`), so a reader who installs the V4 package and copies a V3 `using` gets `CS0234` | `git ls-tree 10.7.0 src/*.V4`, each project's `namespace` lines; the lock blocks compiled against the V4 packages, control V3 `CS0234` | `AWSSQSMigrateToV10.md`, `AwsScheduler.md`, `DynamoInbox.md`; by reading `DynamoOutbox.md`, `DistributedLock.md`, `DynamoDbDistributedLock.md` | `python3 spec/017-compile_repairs/probe/v4scan.py` — blind to a page whose V4 package ID is also its namespace, which is why `DynamoOutbox.md` was read | **4** | **0** | 3.3, adding the lock blocks' `using`s |
-| A value returned from `async Task` — `ScheduleNotification` returned `schedulerId` (`CS1997`) | `CS1997` from `--explain`; `PostAsync(TimeSpan, …)` returns `Task<string>`, `IAmACommandProcessor.cs:282` | `SchedulingAMessage.md` #3 | — | **1** | **0** | 3.4, `--explain` after the block's `using`s |
+| A value returned from `async Task` — `ScheduleNotification` returned `schedulerId` (`CS1997`) | `CS1997` from `--explain`; `PostAsync(TimeSpan, …)` returns `Task<string>`, `IAmACommandProcessor.cs:282` | `SchedulingAMessage.md` #3 | `python3 spec/017-compile_repairs/probe/asyncscan.py`, its `CS1997` lines. At `c7329bb` it reads **2**: this one, and `ImplementingAsyncHandler.md:50`, #1's `Task` return | **1** | **0** | 3.4, `--explain` after the block's `using`s |
 | `command with { … }` on a request — needs a record, and a Brighter `Command` is a class, which a record cannot derive from | `Command.cs:42` | `SchedulingAMessage.md` #5 | `grep -rnE '\bwith \{' contents/` | **1** | **0** | 3.4, stubbing the block's `OperationCommand` |
 | `AutoFromAssemblies()` or `AsyncHandlersFromAssemblies` with a scheduler — the scheduler's handlers registered twice, so a scheduled request throws when it falls due, and ends the process with InMemory | run; registry read, control `HandlersFromAssemblies` — **upstream, BrighterCommand/Brighter#4414**, fixed by #4419 on `master`, unreleased | `SchedulingAMessage.md` states it with the workaround. Recorded, not repaired: `AwsScheduler.md`, `AzureScheduler.md`, `BrighterSchedulerSupport.md`, `HangfireScheduler.md`, `InMemoryOptions.md`, `InMemoryScheduler.md`, `QuartzScheduler.md`, `SwitchingSchedulers.md`, `V10MigrationGuide.md` | `grep -rl 'UseScheduler' contents/ \| xargs grep -lE 'AutoFromAssemblies\(\|AsyncHandlersFromAssemblies'` | **10** pages | **stated** on 1 — maintainer's ruling; 9 recorded | 3.4, running |
 | InMemory cancel and reschedule said to work on a request scheduled through the command processor — each scheduled call gets a new `InMemoryScheduler`, so `CancelAsync` finds nothing and the request runs; `ReSchedulerAsync` returns `False` | run, control same instance; `CommandProcessor.cs:427`, `InMemoryScheduler.cs:57` — **upstream, BrighterCommand/Brighter#4437**, filed 3.4 | `SchedulingAMessage.md`, `FAQ.md`, `InMemoryScheduler.md` (cancel example, `Should_Cancel_Scheduled_Command`) | `grep -rl 'issues/4437' contents/` | **3** pages | **stated** on all 3 — maintainer's ruling | 3.4, running block 4's claim |
@@ -2933,13 +3356,13 @@ BUILT, re-admitted at `ec38400`.
 | `using System.Threading.Task;` (`CS0234`) | compiled | `ParameterizedQueryPatterns.md` | `grep -rn 'using System\.Threading\.Task;' contents/` | **1** | **0** | 5.1, `--explain` |
 | V9's `new MessageMapperRegistry(messageMapperFactory) { { typeof(…), typeof(…) } }` (`CS7036`, `CS1922`) | `MessageMapperRegistry.cs:64`, `:296` | `HowConfiguringTheDispatcherWorks.md` | `grep -rnE 'new MessageMapperRegistry\([a-zA-Z]+\)$' contents/` | **1** | **0** | 5.1, `--explain` |
 | `messagePumpType` said to be set to `Reactor` because *"`Subscription<T>` defaults to `Proactor`"* — the block's `RmqSubscription<T>` (RMQ.Sync) defaults to `Reactor`; switching to `Proactor` is what fails | `RmqSubscription.cs:107`, `Subscription.cs:291`; run against RabbitMQ, controls omitted and `Proactor` | `HowConfiguringTheDispatcherWorks.md` | `grep -rn 'messagePumpType. is set explicitly' contents/` | **1** | **0** | 5.2, running #2's warnings |
-| A query handler reading `o.Customer` and `o.CreatedAt` from a write model that declares neither (`CS1061` once its names resolve); commands written `: IRequest { /* ... */ }` and controller actions outside a class | compiled | `CQRSUseCasesAndPatterns.md` #1, #2 | — | **2** blocks | **0** | 5.2, stubbing #1 |
+| A query handler reading `o.Customer` and `o.CreatedAt` from a write model that declares neither (`CS1061` once its names resolve); commands written `: IRequest { /* ... */ }` and controller actions outside a class | compiled | `CQRSUseCasesAndPatterns.md` #1, #2 | The write model is block-local: `o.Customer` is read on 5 other pages, each against its own block's model, and only a compile says whether that model declares it. `grep -rnE ': *I(Request\|Query<[^>]*>\|Command\|Event) *\{ */\* *\.\.\. *\*/ *\}' contents/` → 4 before, 0 after. `grep -rnE '^\[Http(Get\|Post\|Put\|Patch\|Delete)' contents/` → 4 before, **2** after: `QueryPatterns.md` #5 and `ShowMeTheCode.md` #1, off-tranche FAILED blocks that `--classify` calls `import`. An action shown without its controller is a wrapper shape, not an API defect (design, P0-6), so both are residual | **2** blocks | **0** | 5.2, stubbing #1 |
 | `Monitoring.md` written for V9: an `app.config` section typed `MonitoringConfigurationSection, Brighter.commandprocessor`, `container.Register<TRequest, MonitorHandler<TRequest>>`, and the Control Bus on the retired site. At 10.7.0 the handler takes an `IAmAControlBusSender` and a `MonitorConfiguration` from the container | `Monitoring/Handlers/MonitorHandler.cs`, `Configuration/MonitoringConfigurationSection.cs`; run end to end | `Monitoring.md` | `grep -rnE 'configSections\|MonitoringConfigurationSection\|brightercommand\.github\.io/Brighter/ControlBus' contents/` | **5** | **0** | 5.1, the pre-V10 namespace recurrence; maintainer's ruling |
 | A handler declared without `public` — `AutoFromAssemblies()` scans only public handler types, so its request throws *"No command handler was found"* | `ServiceCollectionBrighterBuilder.cs:238`; run, control public | `BuildingAPipeline.md`, `BuildingAnAsyncPipeline.md`, `CommandProcessorConfigurationReference.md`, `FeatureSwitches.md`, `MigratingToPollyV8.md`, `PolicyRetryAndCircuitBreaker.md` | `grep -rnE '^\s*(internal\s+)?class\s+\w+\s*:\s*(RequestHandler\|RequestHandlerAsync)<' contents/`, and a scan of every C# fence | **18** | **0** | 5.2, running `BuildingAPipeline.md`; maintainer's ruling |
 | Darker's scan said to need handlers named *"…Handler"* and not nested. It registers every exported non-abstract `IQueryHandler<,>`: the name and nesting in a public class do not matter; `internal` does | Darker 4.1.1 `QueryHandlerRegistry.cs:48`; run, four cases | `DarkerBasicConfiguration.md` | `grep -rnEi 'end with .?"?Handler\|not nested within' contents/` | **2** | **0** | 5.2, reading the lifetime row's page; maintainer's ruling |
 | `[UseResiliencePipeline]` stacked on one method (`CS0579`) — not repeatable, by design since BrighterCommand/Brighter#2580; strategies are layered in one pipeline. `HowConfiguringTheCommandProcessorWorks.md` said *"you can use multiple attributes"* | `UseResiliencePipelineAttribute.cs:52`; compiled, and the composed form run | `PolicyRetryAndCircuitBreaker.md`, `HandlerFailure.md` ×2, `HowConfiguringTheCommandProcessorWorks.md`, `MigratingToPollyV8.md`, `PolicyFallback.md` ×2 | a scan of every C# fence for one attribute twice in one run of attribute lines | **7** blocks, 5 pages | **0**, `QueryPipeline.md`'s two `[RetryableQuery]` alternatives, commented as two handlers', aside | 5.2, `--explain` on the touched blocks |
 | A Polly v8 pipeline's strategies said to wrap *"inner to outer"* in the order added, and `MyComprehensivePipeline` added timeout, retry, breaker. The first added is the outermost, so its 10 s timeout covered every retry together | run, both orders | `PolicyRetryAndCircuitBreaker.md` | `grep -rnE "order they.re added\|inner to outer" contents/`, and a scan of every `TryAddBuilder` chain | **1** sentence, 1 chain | **0** — `PolicyFallback.md`'s chain was right | 5.2, rewriting the stacked attributes |
-| `await` in a handler not marked `async` (`CS4032`) | compiled | `FeatureSwitches.md` #2 | — | **1** | **0** | 5.2, `--explain` |
+| `await` in a handler not marked `async` (`CS4032`) | compiled | `FeatureSwitches.md` #2 | `python3 spec/017-compile_repairs/probe/asyncscan.py`, its `CS4032` lines | **1** | **0** | 5.2, `--explain` |
 | A monitored handler that throws: the monitor's `ExceptionThrown` event carries the `Exception`, which `System.Text.Json` cannot serialize, so the caller gets `NotSupportedException` in place of the handler's exception. And `[MonitorAsync]` cannot send through `ControlBusSenderFactory`'s sender, which registers no async mapper. Both on Brighter `master` too | `MonitorEvent.cs:74`, `ControlBusSenderFactory.cs:56`; run, controls non-throwing and sync — **upstream, BrighterCommand/Brighter#4453, #4454**, filed 5.2 by the maintainer's word | `Monitoring.md` states both and links them | `grep -rn 'issues/445[34]' contents/` | **2** | **stated** | 5.2, running the rewritten page |
 | A PostgreSQL consumer's `channelName` different from the publication's `Topic`: the consumer reads `queue = ChannelName`, the producer writes `queue = Topic`, so nothing is received | run: **0** handled → **1** | `PostgreSQLMessageBroker.md` | reading every `PostgresSubscription` on the two PostgreSQL pages | **1** | **0** | 5.3, running the page |
 | `PublishAsync` said to send to the PostgreSQL broker; it runs local handlers and writes no row | run: `PostAsync` → a row; `PublishAsync` → none | `PostgreSQLMessageBroker.md` | `grep -n PublishAsync` on the two PostgreSQL pages | **2** lines, both sending with it | **2** lines, both saying it does not reach the table; the corpus-wide sweep is put to the maintainer | 5.3, running the page |
@@ -2961,7 +3384,7 @@ BUILT, re-admitted at `ec38400`.
 | *"We default the **ACLs** … to **S3CannedACL.Private**"*: `ACLs` is `null`, and `CreateIfMissing` on a missing bucket throws | `S3LuggageOptions.cs:70`, `S3LuggageStore.cs:130` in both AWS packages; run on LocalStack, controls above | `S3LuggageStore.md`, `HandlingLargeMessages.md` (its store set no `ACLs`) | `grep -rn 'S3LuggageOptions' contents/` → 2 pages, every constructor read | **2** | **0** | 5.3, reading |
 | The Control API's status JSON was V9's, its list indented into one paragraph, its route written `{{subscriptionName}}`, and `availableTopics`/`topicName` described as topics — they are subscription names | `ApiExtensions.cs`, `DispatcherExtensions.cs` at 10.7.0; run against a V10 Dispatcher | `BrighterControlAPI.md` | `grep -rn 'control/status' contents/` → the one page | **1** page | **0** | 5.3, running the page |
 | A `string` passed as `MessageBody`'s content type, which is a `System.Net.Mime.ContentType` with no conversion from `string` | `MessageBody.cs:124` | `KafkaConfiguration.md:723`, `MessageMappers.md:146` | `grep -rnE 'new MessageBody\([^)]*, *("\|MediaTypeNames)' contents/`, and a scan of every `new MessageBody(` call's arguments | **2** | **0** — the scan found a third, `DefaultMessageMappers.md` #4, put to the maintainer with the rest of that block | 5.1, carried |
-| A mapper missing a member of `IAmAMessageMapper<T>`, with no `// ...` to say so | `IAmAMessageMapper.cs` | `Routing.md` #1, `V10MigrationGuide.md` #3, #18, `NullableReferenceTypes.md` #7, `FAQ.md` #7 (whose `MapToMessage` also returned nothing; it gains `[RetrieveClaim]` on the way back) | reading, from 5.1's list | **5** | **0** | 5.1, carried |
+| A mapper missing a member of `IAmAMessageMapper<T>`, with no `// ...` to say so | `IAmAMessageMapper.cs` | `Routing.md` #1, `V10MigrationGuide.md` #3, #18, `NullableReferenceTypes.md` #7, `FAQ.md` #7 (whose `MapToMessage` also returned nothing; it gains `[RetrieveClaim]` on the way back) | `python3 spec/017-compile_repairs/probe/mapperscan.py`, written in 6.5 after 5.1 had found these by reading. It reads a `// ...` per block, as `pagelint` does, and skips `blockcheck`'s labelled V9 forms. At `c7329bb` it reads **13**: these five, each missing a `MapTo…` method, and eight missing only `Context`, which are #7's | **5** | **0** | 5.1, carried |
 | A `Command` or `Event` subclass that never calls a base constructor; neither has a parameterless one | `Command.cs:68`, `Event.cs:68` | `NullableReferenceTypes.md` #9, `MigratingToNullableReferenceTypes.md` #4, `V10MigrationGuide.md` #20 | `grep -rnE 'class \w+ *: *(Command\|Event) *$\|…\{'` → 16 lines, each read; a Python scan of every C# fence for a base call | **3** | **0**; `V10MigrationGuide.md` #1 is the skipped V9 form | 5.1, carried |
 | `V10MigrationGuide.md` #20: the default mapper shown by `PublishAsync` | run: `PostAsync` → **1** message, `application/json`; `PublishAsync` → **0** | `V10MigrationGuide.md` | the corpus sweep is put to the maintainer | **1** | **0** | 5.3, rewriting the block |
 | `ITimerProvider` named as the InMemory scheduler's timer seam, with a `FakeTimerProvider : ITimerProvider` passed to `new InMemorySchedulerFactory(…)`. There is no such interface, and the factory has no constructor parameters: the seam is `InMemorySchedulerFactory.TimeProvider`, a `System.TimeProvider` | `InMemorySchedulerFactory.cs:37`, `InMemoryScheduler.cs:244`; run, `FakeTimeProvider` with controls | `InMemoryScheduler.md` | `grep -rn ITimerProvider contents/` | **4** | **0** | 5.4, P0-7 |
@@ -2978,16 +3401,58 @@ BUILT, re-admitted at `ec38400`.
 | A named argument ahead of a positional one, out of position: `[UseResiliencePipeline(step: 0, "RetryPipeline")]` | `UseResiliencePipelineAttribute(string policy, int step)` | `PipelineValidation.md` #9, #10 | `grep -rnE '\[\w+\(\w+: *[^,()]+, *"' contents/` | **2** | **0** | 5.1, carried |
 | *Before (warning)*'s comments called step 0 *inner* and step 1 *outer*; lower steps are outer | `HandlerPipelineValidationRules.cs:76`, `:57` | `PipelineValidation.md` #9 | `grep -rnE 'step: 0.*\(inner\)' contents/` | **1** | **0** | 5.5, reading `:280` |
 | The example backstop warning named `'RejectMessageOnError'` and `'UseResiliencePipeline'`; the validator prints `AttributeType.Name` | `HandlerPipelineValidationRules.cs:74`; run | `PipelineValidation.md:61` | `grep -rnE "'(RejectMessageOnError\|UseResiliencePipeline)' at step" contents/` | **1** | **0** | 5.5, the run |
-| A resilience registry assigned to `PolicyRegistry`, the obsolete Polly v7 `IPolicyRegistry<string>`; and built with `TryAddBuilder<ResiliencePropertyKey<RequestContext>>`, a typed builder Brighter never looks up | `BrighterOptions.cs:56`, `:59` | `V10MigrationGuide.md` #9, #11 | `grep -rnE 'PolicyRegistry *= *\w*[Rr]esilience' contents/`; `grep -rn 'TryAddBuilder<' contents/` | **2** | **0** | 5.5, `--explain` of § 4 |
+| A resilience registry assigned to `PolicyRegistry`, the obsolete Polly v7 `IPolicyRegistry<string>`; and built with `TryAddBuilder<ResiliencePropertyKey<RequestContext>>`, a typed builder Brighter never looks up | `BrighterOptions.cs:56`, `:59` | `V10MigrationGuide.md` #9, #11 | `grep -rnE 'PolicyRegistry *= *\w*[Rr]esilience' contents/`; `grep -rn 'TryAddBuilder<ResiliencePropertyKey' contents/` — the key type, since a `TryAddBuilder<T>` of the result type is right (`PolicyFallback.md`'s `TryAddBuilder<Product>`, #109) | **2** | **0** | 5.5, `--explain` of § 4 |
 | `IRequestContext.InstrumentationOptions` *"added in 10.7.0"*: it is after 10.7.0, forthcoming, and was unmarked | `IRequestContext.cs` at 10.7.0 (0 hits); `release_notes.md` *Master*; NuGet's latest is 10.7.0 | `V10MigrationGuide.md` | `grep -rn 'added in 10\.7\.0' contents/`; `grep -rnE '(added\|new\|introduced\|since) (in )?(Brighter )?(V?10\.7(\.0)?)' contents/` → 0 more | **1** | **0**, marked *Not in a released package yet* | 5.5, reading § 5 |
 | Mappers said to have no async variants, with `Task.Run()` wrappers advised; a Proactor maps with `IAmAMessageMapperAsync<T>` and skips a sync-only mapper for the default, silently | `Proactor.cs:63`, `Reactor.cs:63`; run both ways | `ReactorAndProactor.md` #5 and its note | `grep -rniE "mappers? (don't\|do not\|never) have async\|mappers? remain synchronous\|mappers? (are\|stay) synchronous" contents/` | **2** lines | **0** | 5.5, reading around `:200` |
 | Forthcoming Replay validation shown unmarked: the rule's row, two example messages and a section, with no *Not in a released package yet* | `git grep -il causation 10.7.0 -- src` → 0; on `master`, the validation rules | `PipelineValidation.md` | `grep -rln 'OnceOnlyAction.Replay' contents/` → **8** pages, each read beside `grep -c 'Not in a released package yet'`: five marked already; `DispatcherConfigurationReference.md` (`ActionOnExists`) and `BrighterOutboxSupport.md` (the Sweeper) named Replay as an option with no marker, and now say it ships after 10.7.0 | **3** pages | **0** | 5.5, ruled into phase 5 |
 | The mapper's home page names only `IAmAMessageMapper<T>`; nothing there says `PostAsync`, `DepositPostAsync` and a Proactor use `IAmAMessageMapperAsync<T>` and fall back to the default mapper silently | run, all four calls and both pumps | `MessageMappers.md` | `grep -c 'IAmAMessageMapperAsync' contents/MessageMappers.md` | **0** | **3** | 5.5, ruled into phase 5 |
 | Partition key, headers or CloudEvents extensions set on a handler's own `Context` with nothing posted, or on a context passed to `SendAsync`; they act only on the context passed to the call that makes the message | `CommandProcessor.cs:1533` (`requestContext ?? _requestContextFactory.Create()`); run | `UsingTheContextBag.md` #2, #3, #5, #6, #18 | `grep -rnE 'Context\.Bag\[RequestContextBagNames\.(PartitionKey\|Headers\|CloudEvents)' contents/` → 3 lines, the page's key snippets, each read; `:117`, *"Or using a PartitionKey object"*, wrote to `Context` under an example that now fills `context`, and follows it; `grep -rnE 'SendAsync\([^)]*requestContext' contents/` | **5** | **0** | 5.5, ruled into phase 5 |
+| `[FallbackPolicy(backstop: true, step: 1)]` — omits `circuitBreaker`, a required parameter (`CS7036`); hidden while the blocks had no `using`, since the attribute itself did not resolve | `FallbackPolicyAttribute.cs:46` | `PolicyFallback.md` #3, #4, #8, #10 | `grep -rnE 'FallbackPolicy\(backstop: (true\|false), step' contents/` | **4** | **0** | 6.1, writing AC8's `using`s |
+| Darker's decorator order read backwards: logging at step 1 said to log each retry, and retry outside fallback offered as the way to reach the fallback only after retries | Darker 4.1.1 `PipelineBuilder.cs:155` (`OrderByDescending(Step)`); run, controls the reversed steps | `QueryPipeline.md` (the ordering bullets, the Logging + Retry pattern, best practice 1, pitfall 1 and its two blocks) | `grep -rniE 'Logs everything including retries\|including retries and fallbacks\|Won.t log individual retries\|fallback will be used before retries\|you might want retry before fallback\|Log all executions, including retries\|including retries$' contents/` | **8** | **0** | 6.1, a run |
+| A backstop's exception flow: *"Fallback catches BrokenCircuitException"* after the retries — the original exception reaches Fallback, `BrokenCircuitException` only on later calls | run, controls fallback inside and `circuitBreaker: true` | `PolicyFallback.md` | `grep -rn 'Fallback catches BrokenCircuitException' contents/` | **1** | **0** | 6.1, a run |
+| Polly's typed fallback on a non-generic builder (`CS0029`, `CS1929`), said to hand the handler a default value through `[UseResiliencePipeline]` — it can substitute only the request | compiled; run, controls typed on the request and on `string` | `PolicyFallback.md` #10 | `grep -rn 'FallbackStrategyOptions' contents/` → every use typed with `TryAddBuilder<T>` | **1** | **0** | 6.1, a run |
+| A `Config` feature switch said to run *"only if configured"* — with no registry it is On, a missing entry throws `ConfigurationException`; a `DontAckAction` said to redeliver *"after its visibility timeout"* — the pump `Nack`s it and the transport decides | `FeatureSwitchHandler.cs:68`, `FluentConfigRegistry.cs:32`, `Proactor.cs:307`; run | `FeatureSwitches.md`, `HandlerFailure.md` ×2 | `grep -rniE 'only be run if it has been configured\|re-delivers it after its visibility timeout' contents/` | **4** | **0** | 6.1, a run |
+| No scheduler said to mean *"immediate requeue"*, and such transports to *"require an external scheduler"* — DI registers `InMemorySchedulerFactory` | `ServiceCollectionExtensions.cs:195`; run with `UseScheduler` removed | `BrighterSchedulerSupport.md` | `grep -rniE 'immediate requeue\|Requires an external scheduler' contents/` | **2** | **0** | 6.1, a run |
+| `CharacterEncoding.Raw` presented as what keeps binary bytes intact — the byte constructors keep them under any encoding; a text-column Outbox corrupts them under both, and `binaryMessagePayload: true` is the repair | run: a UTF-8 round-trip, the Kafka bytes path, a MySQL Outbox text and binary column; control a schema id below 0x80 | `KafkaConfiguration.md`, `MessageMappers.md` | `grep -rnE 'CharacterEncoding.Raw\*\*, as a round-trip\|\*\*CharacterEncoding.Raw\*\* if not' contents/` | **2** | **0** | 6.1, a run |
+| Brighter's spans said to need only `AddBrighterInstrumentation()` — the Command Processor records none without `AddProducers`; and `InstrumentationOptions` unset is `None`, unstated | `CommandProcessorBuilder.cs:304`; run, controls with and without producers, and each option | `Telemetry.md`, `ConfiguringOpenTelemetry.md` | an omission: no grep finds it; both pages that say how to enable spans now state it | **2** | **0** | 6.1, a run |
+| A custom `CreateCopy` shown without `Policies`, which the shipped context copies; an `InMemoryOutbox.md` comment saying `PostAsync` only deposits | `RequestContext.cs:131`; run | `V10MigrationGuide.md` #12, `InMemoryOutbox.md` #2 | `grep -rn 'Deposit message to outbox' contents/` | **1** | **0** | 6.1, a run |
+| A provider named by `typeof(...)` in `AddProducers` with nothing registered that it is built from — `IAmARelationalDatabaseConfiguration`, the EF Core `DbContext`, `IAmazonDynamoDB`, `IAmAMongoDbConfiguration`; resolving the command processor throws | constructors at 10.7.0; run, MongoDB and DynamoDB, with and without the registration | `BrighterBasicConfiguration.md` ×2, `CommandProcessorConfigurationReference.md`, `DapperOutbox.md`, `DynamoOutbox.md`, `EFCoreOutbox.md`, `MongoDBOutbox.md` ×3, `MsSqlDistributedLock.md`, `MySqlDistributedLock.md`, `PostgresDistributedLock.md`, `SweeperCircuitBreaking.md` ×2, `UsingSweeperCircuitBreaking.md` | every block with `Provider = typeof(`, read for its registrations | **15** of 28 blocks | **0** of 28 | 6.1, a run |
+| MongoDB: `OnResolvingACollection.Create` — the value is `CreateIfNotExists`; `new MongoClientSettings { ConnectionString = … }` — no such property (`CS0117`) | `OnResolvingACollection.cs`; compiled | `MongoDBOutbox.md`, `MongoDBInbox.md` | `grep -rnE 'OnResolvingACollection\.Create\b\|ConnectionString = new ConnectionString' contents/` | **6** | **0** | 6.1, `--explain` on the touched blocks |
 
 ## Friction ledger
 
-*One row per place the workflow got in the way.*
+The ledger stood at **66** when 017 opened (`spec/016-compile_gate/tasks.md` § *Workflow friction*,
+60–66). 017 wrote none as it went; every entry below is read from phases 1–6's *as executed*
+sections and the session notes behind them, and each names where it was met. Written at `549d36f`.
+
+| # | What got in the way | What 018 should do |
+|---:|---|---|
+| **67** | **AC2's key is (page, ordinal), so an insertion renumbers every later block on its page.** A BUILT block below an inserted fence reads `BUILT -> FAILED` (`Telemetry.md` #1, `MessageMappers.md` #3) and its baseline row has to be removed and re-added; a removed block is invisible, because the diff reads only the after-report's keys (2.4; 6.3's reverse join found **9**); and 5.6's **194** `FAILED -> BUILT` counts some inserted fences against an old key. Two § *Splits* rows said less than the diff reads until 5.6 rewrote them. 5.4 counted its own moves by aligning each fence's first non-`using` line against the old ref, by hand | Give `blockcheck` a diff that aligns fences across two refs by content, the way 5.4 did by hand, and prints *inserted*, *removed* and *renumbered* as verdicts of their own, with the baseline keyed the same way. Obligation 16's § *Splits* is then checked output, not a table someone remembers to write |
+| **68** | **The two acceptance criteria that are readings were read only at acceptance, and both were unmet.** AC8's second half (a `// ...` added where a `using` could have been written) and AC11 (every behavioural repair run with a control) were walked at 6.1: three blocks and thirty blocks short. The ruling repaired them in phase 6, so *"no page touched"* stopped being true, and the thirty runs found a false or partial sentence in more than half of 6.1's 18 rows. Three rows lacking a control had stood in phase 2's tables since 2.5 | Run both readings in every phase's close task, with 6.1's method: the blocks the phase's diff touches (`git diff -U0` hunks against fence ranges) against the phase's run tables, and each added `// ...` against `--explain`. The acceptance walk then re-reads criteria that have already been met, which is what obligation 3 wants of a check |
+| **69** | **Nothing a session made survived it.** The behaviour runs (`valrun`, `pumprun`, `avrorun`, 6.1's thirty), the helpers that fed every task from 5.3 on (`touched.py`, the input to *"`--explain` on every block the diff touches"*; `show.py`; `calls.py`), the probe's working directory (about 2 minutes to rebuild) and the script that re-ran all 116 ledger rows at 6.3 all lived in the session scratchpad and were rebuilt from the notes. So was the harness knowledge: Brighter's static `ApplicationLogging` keeps the first container's `LoggerFactory`, so every run is one process per case (3.3); Darker throws without an `ILoggerFactory` (3.5); `avrogen` refuses a schema without a namespace (5.4). A reviewer reading a *Case / Control* table has nothing to re-run | Commit, under `spec/018-*/probe/`, every helper used in more than one task, and each behaviour run's `Program.cs` beside the table row it proves, with its case and control. A run table's row then names a file. `before.tsv` stays regenerated, not kept (tasks review #1): that is a report, and these are instruments |
+| **70** | **`--classify` matches a name, not a receiver.** A pinned type or extension method with the same name as a page's own satisfies *import*: `Order` resolves to `StackExchange.Redis`'s enum (**27** blocks on 16 pages at 1.10; **22** on 10 at 6.2); `AddOpenTelemetry` ×6, pinned only on `ILoggingBuilder` (6.2); `Build` on OpenTelemetry's builders (6.2); a member access `Id` (5.1). The same blind spot reached a compile: `BuildingAPipeline.md` #3's `using` resolved Brighter's own `RequestLoggingHandler<>`, not the one block 1 writes, and the probe called it BUILT (5.2). **Ruled 2026-09-27: not repaired.** Every phase carried an `awk` exclusion in the tranche recipe and a reading rule in every repair task, and each pin growth could add a collision nobody looks for | Put the repair to the maintainer again, now with 017's three families as evidence: `--classify` reads the receiver the Roslyn half already has, and a pin change lists the pinned names that collide with a name a page uses as its own before any tranche reads it |
+| **71** | **The tranche lists were decided by a probe in `spec/`, with the committed instrument as their lower bound.** At 1.10 `--classify` read **162** blocks as *import* that the probe, supplying the `using`s, found a DEFECT behind, and 16 tranche-2 pages as 0-hard. Every hard-block table (4.1, 5.1) needed three columns — `--classify`, probe, reading — and the three disagreed each time. The probe was wrong in its own way too: `RequestValidation.md` #10 HIDDEN (2.6), `BrighterControlAPI.md` #1 hard (5.1) | Give `--classify` the probe's second stage — supply the `using`s, compile again, classify what remains — so that one committed, red-proofed instrument decides what 018's tranches hold |
+| **72** | **A prediction scoped to the tranche could not see the work it would cause.** `pagelint` came in below its band at 2.6 (−17), 3.6 (−6) and 4.5 (−6); BUILT above its ceiling at 4.5 (+4) and 5.6 (+1); 5.1's *"no pin change"* grew the pin twice. The mechanism is the same each time: obligation 14's recurrence grep lands off the tranche, `pagelint --changed` then asks rule 6 of every block it touched, and some of those build. From 3.1 on the predictions said *"lower further by recurrences, explained"* — a clause no outcome can fail | Predict the off-tranche term from the recurrence greps, which 4.1 and 5.1 already ran before any repair: their tables name the pages and blocks a recurrence repair will touch, so their rule 6 warnings and BUILT candidates can be counted then. A band that includes them can miss |
+| **73** | **Every off-tranche finding stopped its task for a ruling, and the rulings converged.** 3.4, 3.5, 4.2, 4.4 (twice), 5.2, 5.3, 5.4, 5.5 and 6.1 put off-tranche findings to the maintainer; 5.2 and 5.5 each needed a second pass after the answer. Every ruling on an off-tranche defect but two said *repair it in this PR* — the two are 3.5's `[RetryableQuery]` row, carried to phase 5, and 5.3's eleven subscriptions, recorded. The backwards check (6.4) then had to justify **45** pages that are neither tranche nor P0-7 after the fact, by ledger row | Write the default the rulings reached into 018's standing obligations: a defect verified at the pinned release is repaired at every recurrence in the phase that finds it, and only a change of scope — a page rewritten, a feature removed, an issue filed upstream — is put to the maintainer. Give each repair phase a *second pass* task, so that a ruling has somewhere to land |
+| **74** | **Defect-ledger rows were written before their greps had been run as written.** At 6.3, **#15** and **#16** still read *"open"* with no grep, though both were repaired, as **#82** and **#83**; #24, #55 and #61 named no grep; #100's matched a correct repair. The `[RetryableQuery]` row's grep matched the instance, not the defect (said 9 lines, measured 20, 5.1). #7's *Page* column read *"11 pages"*, so no join by name could find it (6.5). Closing them took task 6.5 and two new probes, one of which failed its first control | A row is written only once its grep or probe has run, as written, and read the *After* the row states; its *Page* column names pages; a defect carried to a later phase is closed by editing its row, not by opening a second one |
+| **75** | **The `statements` wrapper declares no `Program`.** A `Program.cs` whose statements have no declaration after them, and which names `Program` (`typeof(Program).Assembly`), fails `CS0246`: `QueryPipelinePolicies.md` #1, `TickerQScheduler.md` #2, `DarkerConfigurationReference.md` #1, #2 and `QueryHandlerDependencies.md` #3, each built as a real `Program.cs` in scratch at **0** errors. Q2 (1.8) rules out a stub, so they are listed FAILED against the instrument, and 4.1's pin prediction missed by one on it | Stage a block of top-level statements that names `Program` as a top-level file, where the compiler synthesises `Program`, as P1-3 answered `args` by giving the wrapper's method the parameter |
+| **76** | **The pin is not the world the reader builds in, and the difference lives in prose.** 15 of § *Blocks that stay FAILED*'s rows are FAILED for the instrument or the pin — the five above, four V4-family blocks (D3) and six OpenTelemetry blocks (5.3, ruling 2) — and 14 of them compile in scratch against the released packages at 0 errors, a second build that no gate records. The pin is `net9.0`; every behaviour run was `net10.0`, where a reader of `TickerQScheduler.md` gets TickerQ 10.4.0, not the pin's 9.0.2 (3.4) | Besides D3's V4 pin, make *compiles against the released packages, not in the pin* a verdict the gate reports and re-checks, and measure what the `net9.0` pin misses against `net10.0` before 018's tranches are drawn |
+| **77** | **A scaffold unit that does not compile is a warning.** 5.2's first Darker handler stub declared an `Execute` no block names and put **8** errors against the scaffold tree; `--report` printed *"WARNING: 8 error(s) reported against scaffold trees, not counted against any block"* and exited 0. The unit rule caught the member; nothing caught the compile | Make an error against a scaffold tree a finding, exit 1, as a unit-rule violation is. A unit that does not compile can fail its page's blocks for a reason that is not the page's |
+| **78** | **One unit per page assumes one world per page.** `pages.tsv` maps a page to one unit. `CQRSUseCasesAndPatterns.md` #1 and #2 assume different unshown `Order` models, and a unit that named #1's would not compile beside #2, so #1 was rewritten to declare its own query and `DbContext` (5.2). The page is better for it, but the instrument, not the reader, chose the change | Let `pages.tsv` map a unit per block where a page's blocks assume different worlds, so that a page is rewritten because a reader needs it, never because the scaffold cannot serve it |
+| **79** | **A criterion named the deliberate hit by its line.** AC9 and 5.5's output read *exactly `PipelineValidation.md:250`*. 5.5's second pass put a Replay note after the example messages, moved the hit to `:252`, and rewrote the note into an existing line so that nothing above `:250` changed length. The design's E4 lines had drifted before phase 5 began (`ReactorAndProactor.md:190` → `:200`), and a `using` moved another hit `:326` → `:359` (5.2). A line number shaped where prose could go | Whichever form 6.7's D4 takes, exempt the deliberate example with a marker on the page, as `pagelint`'s `allow-serviceactivator` does, and name a hit in a criterion by page and block, never by line |
+| **80** | **Two instruments cannot say what the work needed them to.** `pagelint` has no per-page output, so every task that reconciled rule 6 did it *"per page, against a worktree at"* the phase's base — **15** times, from 2.6 to 6.3. `optioncheck` could not mark `AzureBlobArchiveProvider.md`'s new options table: *"CANNOT CONSTRUCT"* for a primary-constructor argument and *"ROW NAMES NOTHING"* for two fields, so the table ships unchecked (4.4) | A `pagelint` per-page count, so a delta is a diff of two outputs. `optioncheck` construction of primary-constructor options, and rows that name fields |
+
+**Recurrences, not numbered.** **Friction 53** — the fence spelled `` ``` csharp ``, with a space, which
+the obvious pattern misses: `asyncscan.py` failed its first control on `FeatureSwitches.md` #2 for it
+(6.5). It is also obligation 9 recurring, since the probe enumerated fences with its own pattern
+rather than through `pagelint.Page`. **Friction 58's family** — zsh is not the shell a recipe was
+written for: `"$r:contents/…"` applies zsh's `:c` modifier to the variable, and has to be written
+`"${r}:contents/…"` (session notes, phase 5).
+
+```bash
+# 66 + 14 (67–80) = 80
+grep -cE '^\| \*\*(6[7-9]|7[0-9]|80)\*\* \|' spec/017-compile_repairs/tasks.md     # 14
+```
 
 ## What the tasks review found — 2026-09-26
 

@@ -33,6 +33,8 @@ public void ConfigureServices(IServiceCollection services)
 
     // ... producerRegistry and outboxConfiguration come from your transport
     // and your database configuration
+    services.AddSingleton<IAmARelationalDatabaseConfiguration>(outboxConfiguration);
+
     services.AddBrighter()
         .AddProducers(configure =>
         {

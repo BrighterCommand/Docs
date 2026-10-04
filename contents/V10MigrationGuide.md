@@ -384,6 +384,9 @@ public class MyRequestContext : IRequestContext
     {
         var copy = new MyRequestContext
         {
+#pragma warning disable CS0618 // Policies is obsolete, and the shipped context still copies it
+            Policies = Policies,
+#pragma warning restore CS0618
             FeatureSwitches = FeatureSwitches,
             ResiliencePipeline = ResiliencePipeline,
             OriginatingMessage = OriginatingMessage,
