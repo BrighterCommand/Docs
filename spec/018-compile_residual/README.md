@@ -1,7 +1,7 @@
 # Spec 018: Compile Residual
 
 **Created:** 2026-10-04
-**Status:** Tasks Phase — `tasks.md` drafted 2026-10-05, awaiting `/spec:review`
+**Status:** Writing Phase — tasks approved 2026-10-05; phase 1 next
 
 > **Re-derive this README before executing it.** It was written before anyone looked — check every
 > count and every named gap against the tree, with the command beside the figure.

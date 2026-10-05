@@ -1,6 +1,6 @@
 # Spec 018: Compile Residual — Tasks
 
-**Status:** Draft, for `/spec:review`
+**Status:** **APPROVED 2026-10-05** — `.tasks-approved`. Three review findings repaired (§ *What the tasks review found*).
 **Requirements:** approved 2026-10-04 · **Design:** approved 2026-10-05
 
 **Eight phases, 61 tasks, one pull request per phase.** Phases merge under `tools/README.md`
@@ -148,8 +148,9 @@ comment and changes no block's text.
 - [ ] **Task 1.6:** Write rule 8 into `CLAUDE.md`
   - Input: design § *Rule 8*, *`CLAUDE.md`*; `CLAUDE.md` § *The ledger* and § *Complete code blocks*
   - Output: one ledger row, and § *Handler attributes match their handler* after *Complete code
-    blocks*. Then `grep -rn 'rule 7\|seven rules\|rules 1' .claude/commands/` for any command quoting
-    a rule count this changes, each hit read and fixed (the *Writing Review* rule)
+    blocks*. Then `grep -rn 'pagelint' .claude/commands/` (**2** files at `77b7113`: `implement.md`,
+    `review.md`), each hit read against the new rule and fixed where it quotes a rule set or count
+    (the *Writing Review* rule)
 
 - [ ] **Task 1.7:** Update `tools/README.md` for rule 8
   - Input: `tools/README.md` row 2, § *What each gate actually checks*, § *The other modes*
@@ -429,7 +430,8 @@ at 2.14 and not before. **Every phase changes the site.**
 - [ ] **Task 8.2:** Walk the instrumented criteria: AC1–AC3, AC5–AC7, AC11–AC14
   - Input: each criterion's command, run at the phase's head
   - Output: one row per criterion: the command, its output, the verdict. AC12's BUILT is against
-    design's **≥ 560**, and the nothing-BUILT figure against **≤ 14**
+    design's **≥ 560**, and the nothing-BUILT figure against **≤ 14**. AC13's join command is written
+    above § *Blocks that stay FAILED* and run there, zero rows either side
 
 - [ ] **Task 8.3:** Check backwards: what changed that should not have
   - Input: `git diff --name-only 3a79b20 -- contents/`
@@ -488,6 +490,15 @@ design, and their greps were run there.*
 
 *Numbered from 81, continuing 017's 67–80. Written at task 8.5.*
 
-## What the tasks review found
+## What the tasks review found — 2026-10-05
 
-*Written at `/spec:review`.*
+| # | Found | Now |
+|---:|---|---|
+| 1 | Task 1.6's grep for stale rule claims, `'rule 7\|seven rules\|rules 1'`, matches **0** lines in `.claude/commands/`, so it could not find what it was for | `grep -rn 'pagelint' .claude/commands/` → 2 files, each hit read |
+| 2 | AC13's join had no home: no task wrote the command | 8.2 writes it above § *Blocks that stay FAILED* and runs it |
+| 3 | Task 4.3 named *"15 handler blocks"*, a figure nothing produced | it names the blocks § *Phase 2 as executed* lists |
+
+Checked and holding: 61 tasks by `grep -c` (8 / 15 / 7 / 6 / 6 / 6 / 7 / 6); every new check has a
+red-proof task with a two-way control; the expected outputs that can be read today hold (rule 8's one
+hit is `PipelineValidation.md` block 7; `grep -c Shouldly contents/TestDoubleOptions.md` → 0;
+E6's 23 / 8; `pagelint` 524).
