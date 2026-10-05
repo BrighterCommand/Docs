@@ -1,7 +1,7 @@
 # Spec 018: Compile Residual
 
 **Created:** 2026-10-04
-**Status:** Design Phase — `design.md` drafted 2026-10-04, awaiting `/spec:review`
+**Status:** Tasks Phase — design approved 2026-10-05
 
 > **Re-derive this README before executing it.** It was written before anyone looked — check every
 > count and every named gap against the tree, with the command beside the figure.
@@ -96,7 +96,7 @@ Provisional. `/spec:requirements` settles them.
 - [x] Requirements gathered — `requirements.md`, 2026-10-04
 - [x] Requirements reviewed and approved — 2026-10-04
 - [x] Documentation outline created — `design.md`, 2026-10-04
-- [ ] Outline reviewed and approved
+- [x] Outline reviewed and approved — 2026-10-05
 - [ ] Writing tasks identified
 - [ ] Writing complete
 - [ ] Documentation reviewed

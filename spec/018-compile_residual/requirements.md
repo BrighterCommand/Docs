@@ -363,8 +363,12 @@ already declare (`pagelint` rule 2).
 | Rule 8 documented | `CLAUDE.md` § *Page Conventions* (new subsection) and § *The ledger* (new row); `tools/README.md` rows 2 and 9 and *What each gate actually checks* |
 | The marker | `contents/PipelineValidation.md`, above block 7 |
 | The second compile | `tools/blockcheck.py` (`--classify`), and the C# half under `tools/blockcheck/` if a mode is needed there |
-| The V4 pin | `tools/blockcheck/refs-v4/refs-v4.csproj`, or as open question 4 decides; `.github/workflows/docs.yml` `blocks` job |
-| Repaired pages | the 64 pages, or the subset open question 3 settles, under `contents/` |
+| The V4 pin | `tools/blockcheck/refs-v4/refs-v4.csproj`; the `v4` column of `tools/blockcheck/scaffold/pages.tsv`; `.github/workflows/docs.yml` `blocks` job |
+| The handler wrapper (P0-7) | `tools/blockcheck.py` (`WRAPPERS`, the shape reader) |
+| Shouldly (P0-8) | `tools/blockcheck/refs/refs.csproj`; `contents/TestDoubleOptions.md` |
+| The skip reasons (P0-9) | `design.md` § *Page Repair Rules*, beside 017's |
+| `AddServiceActivator` (P0-10) | `tools/symbolwatch.tsv`; `contents/AwsScheduler.md`, `AzureScheduler.md`, `FAQ.md`, `V10MigrationGuide.md` |
+| Repaired pages | the 64 pages under `contents/`, and the 3 tranche pages that hold V4 blocks |
 | The baseline | `tools/blockcheck/baseline.tsv`; scaffold units under `tools/blockcheck/scaffold/` and `pages.tsv` |
 | Instruments that outlive a task | `spec/018-compile_residual/probe/` (#69) |
 | The record | `spec/018-compile_residual/design.md`, `tasks.md` (ledgers, run tables, § *What 018 shipped*) |

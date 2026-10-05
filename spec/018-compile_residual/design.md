@@ -1,7 +1,7 @@
 # Spec 018: Compile Residual — Design
 
 **Created:** 2026-10-04
-**Status:** Draft, for `/spec:review`
+**Status:** **APPROVED 2026-10-05** — `.design-approved`. D1–D5 ruled 2026-10-04; five review findings repaired (§ *What the Design Review Found*).
 **Requirements:** approved 2026-10-04 (`.requirements-approved`), seven open questions approved open
 
 > Every number here was measured 2026-10-04 at Docs `master` `3a79b20`, Brighter `10.7.0` and
@@ -162,6 +162,21 @@ or `ExecuteAsync`, over the whole corpus, by verdict.
 `base.HandleAsync` and the like, because the `members` wrapper stages them in a `Holder` with no
 base class (`tools/blockcheck.py:355–368`). This is the `wrapper` bucket of E2 from the other side.
 
+### E6 — the `AddServiceActivator` row, trialled
+
+**Method.** In a scratch worktree at `f5962ff`, one row is appended to `tools/symbolwatch.tsv`:
+`AddServiceActivator`, `brighter`, `AddConsumers`. `python3 tools/symbolcheck.py` then runs twice.
+
+| Run | Exit | Output |
+|---|---:|---|
+| **Case**: the row alone | **1** | *"7 site(s) across 4 page(s), from 23 watchlist entries"*: `AwsScheduler.md:290`, `AzureScheduler.md:231`, `FAQ.md:126`, `:580`, `V10MigrationGuide.md:171`, `:199`, `:207` |
+| **Control**: plus `<!-- symbolcheck: allow AddServiceActivator -->` on `FAQ.md` and `V10MigrationGuide.md`, and the two sites rewritten to `AddConsumers` | **0** | *"23 entries, 161 pages checked, 8 silenced"*: `FAQ.md` ×2, `V10MigrationGuide.md` ×3 |
+
+`symbolcheck` counts silenced **lines**, not pages, so the five discussion lines are five sites. The
+worktree was removed afterwards. In phase 3 the opt-out goes on its own line beside the page's first
+site, as `S3LuggageStore.md:50` does, and not under the banner, where rule 7 reads the opening
+sentence.
+
 ## API Resolved For This Design
 
 ```bash
@@ -307,13 +322,44 @@ needed: the recompile is the existing `--explain` over a rewritten stage.
 **Red-proof (AC6).** One recorded run over five named blocks, each with a known answer. A
 `built-by-using` block (one of the 34); a `defect` behind a `using` (one of the 50 *api*); a
 `page-type` block; a `parse` block; and the **control**: a block that page-declares a type also
-pinned elsewhere (an `Order` block), which must **not** come out `built-by-using`. A second run
-with the page-declared check disabled must turn the control `built-by-using`, which shows the
-check is what decides it.
+pinned elsewhere (an `Order` block), which must **not** come out `built-by-using`. A second run,
+from a scratch copy of `blockcheck.py` with the page-declared check removed, must turn the control
+`built-by-using`. That shows the check is what decides it, and the scratch copy is never committed.
 
 **Reconciled (AC7).** A block-by-block join of the new `--classify` against `probe/run.sh`'s
 `verdicts.tsv` at the same ref. Every disagreement is listed with its reason. The expected
 disagreements are E4's 39 and 29, each read by the probe by name and by `--classify` by receiver.
+
+## The Handler Wrapper (D2)
+
+**Which blocks.** A block that `blockcheck` already shapes `members` (`tools/blockcheck.py:263`),
+whose text overrides `Handle`, `HandleAsync`, `Execute` or `ExecuteAsync`. E5 counts **32** FAILED
+blocks today, and none BUILT. So no baselined block changes its staging, and the gate cannot lose
+a row by this change.
+
+**What it stages.** The `members` wrapper's `public class Holder` gains a base class. The base class
+is read from the method, and its type arguments from the signature:
+
+| Method | Base | Type arguments |
+|---|---|---|
+| `Handle(TRequest …)` | `Paramore.Brighter.RequestHandler<TRequest>` | the parameter's type |
+| `HandleAsync(TRequest …)` | `Paramore.Brighter.RequestHandlerAsync<TRequest>` | the first parameter's type |
+| `Execute(TQuery …)` | `Paramore.Darker.QueryHandler<TQuery, TResult>` | the parameter's type; the return type |
+| `ExecuteAsync(TQuery …)` | `Paramore.Darker.QueryHandlerAsync<TQuery, TResult>` | the first parameter's type; `T` of the returned `Task<T>` |
+
+**The base is written fully qualified**, so the wrapper adds no `using`. A block that needs
+`using Paramore.Brighter;` for its own names still fails without it, and `pagelint` rule 6's debt is
+untouched. All four bases are live (§ *API Resolved*).
+
+**When it does not wrap.** The block keeps today's base-less `Holder` when its signature cannot be
+read, or when two overrides name different request types. A one-line regex reads **27** of the 32
+signatures. The other 5 (`BrighterInboxSupport.md` #1, `EFCoreQueryIntegration.md` #1–#3,
+`ShowMeTheCode.md` #5) break the signature across lines, so the reader must join lines up to the
+opening `{`. Phase 2's task reports how many of the 32 it wraps, and names each one it does not.
+
+**Red-proof.** Four plants, one per row of the table, each must stage with its base and build. A
+control, a members block with no override, must stage exactly as today: `--stage` output
+byte-identical to `f5962ff` for every non-handler members block.
 
 ## The V4 Pin
 
@@ -358,7 +404,7 @@ runs in every tranche PR"*, is replaced by rule 8 the gate, which now runs on ev
 | A forthcoming API, which the page already says ships after the pinned release | 4 | SKIPPED, reason *"forthcoming: ships after Brighter 10.7.0, as the page says at line N"* | **D3** |
 | A single option, argument or expression shown alone, with no enclosing call on the page | ≤ 64 | SKIPPED, reason *"a single option shown alone; its type is named in the sentence before it"*, where that type resolves in the pin | **D3** |
 | A handler method shown without its class | 32 | built by the handler wrapper | **D2** |
-| Shouldly assertions | 6 | `Shouldly` pinned in `refs.csproj` | **D4** |
+| Shouldly assertions | 6 | `Shouldly` **4.3.0** pinned in `refs.csproj`, the version Brighter's own tests use (`Directory.Packages.props:150` at 10.7.0). The page calls `ShouldBe…` and never names the package (`grep -c Shouldly contents/TestDoubleOptions.md` → **0**), so its repair adds `using Shouldly;` to each block and one sentence naming the package | **D4** |
 | `AddServiceActivator` as current code | 2 sites | rewrite to `AddConsumers`, add a `symbolwatch.tsv` row, and opt out the two V9 discussion pages | **D5** |
 
 **And from 017's friction, as standing obligations in `tasks.md` § 1** (P0-6): #68 (both reading
@@ -444,7 +490,7 @@ cited from its rows, not restated.
 | shape / redirects / `--verify` | **unmoved** | **unmoved** | **unmoved** | no `SUMMARY.md` change |
 | `versioncheck` | **unmoved** | **unmoved** | **unmoved** | no tutorial pin touched. A repair that adds one is predicted in its phase |
 | `optioncheck` | **unmoved** | **unmoved** | **unmoved** | no option table touched |
-| `symbolcheck` | **unmoved** | **unmoved** | phase 3: **entries 22 → 23**, and **silenced** rises by the opt-out sites on `V10MigrationGuide.md` and `FAQ.md` (D5); otherwise unmoved | the `AddServiceActivator` row and its opt-outs |
+| `symbolcheck` | **unmoved** | **unmoved** | phase 3: **22 → 23 entries, 3 → 8 silenced** (E6, D5); otherwise unmoved | the `AddServiceActivator` row and its opt-outs |
 | `blockcheck` corpus | **unmoved, 990** | **unmoved** | **moves both ways**: retags (−3 for E2's JSON) and fence splits (+ for E2's 15 two-snippet and 7 mixed blocks); predicted per phase | a split adds a block |
 | `blockcheck` BUILT | **unmoved, 299** | **rises by the blocks the handler wrapper (D2), the `Program` fix (#75) and the Shouldly pin (D4) make build**, measured by phase 2's first task before any row is written. Up to 32 + 6, less those that fail for another reason | **rises**, to ≥ 560 by the close | |
 | `blockcheck` scope lines | unmoved | **+1 line**, the V4 pin's assemblies; the main pin's assemblies **rise** by Shouldly's (D4); the scaffold rule also checks the `v4` column | units rise with each phase's stubs | |
@@ -462,6 +508,16 @@ D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and 
 | **D5** | **`AddServiceActivator`:** rewrite the two sites to `AddConsumers`, and add a `symbolwatch.tsv` row, with per-symbol opt-outs on `V10MigrationGuide.md` and `FAQ.md`, which discuss the V9 name | **Yes, in phase 3** (S1 holds both sites). 015's triage is the precedent for a watchlist row with opt-outs | **Yes**, the maintainer, 2026-10-04 |
 | **D6** | **Is the V4 pin's selection per page enough?** | **Yes, today.** E3: every BUILT block on the four V4 pages builds under V4. Per-block selection stays P2-3, triggered only by a page that mixes V3 and V4 blocks | — |
 | **D7** | **Raise P1-3, the `net10.0` measurement, to P0?** | **No, but run it in phase 2 before the tables are drawn**, as friction #76 asks. Raise it if it moves a verdict | — |
+
+## What the Design Review Found — 2026-10-05
+
+| # | Found | Now |
+|---:|---|---|
+| 1 | `symbolcheck`'s phase 3 movement was *"silenced +n"*, unmeasured | E6 trials the row: **22 → 23 entries, 3 → 8 silenced**, with a red run of 7 sites on 4 pages |
+| 2 | D2 was ruled, but the design had no section saying how the wrapper chooses a base class | § *The Handler Wrapper*: four bases, fully qualified; 27 of 32 signatures read by one line, 5 need joined lines; a red-proof with a byte-identical control |
+| 3 | D4 pinned Shouldly with no version, and missed that the page never names it | 4.3.0, Brighter's own; the page repair adds `using Shouldly;` and names the package |
+| 4 | AC6's control said *"with the check disabled"*, with no way to disable it | a scratch copy of `blockcheck.py`, never committed |
+| 5 | `requirements.md` § *Deliverables* lacked P0-7 to P0-10's files, and two rows still deferred to answered questions | rewritten (that section is not quoted by any later step) |
 
 ## Design Quality Checklist
 
