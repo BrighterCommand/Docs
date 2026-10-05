@@ -188,6 +188,11 @@ See [Dynamic Message Deserialization](DynamicMessageDeserialization.md) for deta
 
 **Example:**
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 new KafkaSubscription(
     new SubscriptionName("paramore.example.orders"),
     channelName: new ChannelName("orders"),
@@ -198,10 +203,10 @@ new KafkaSubscription(
             => typeof(OrderCreated),
         var t when t == new CloudEventsType("com.example.order.updated")
             => typeof(OrderUpdated),
-        _ => throw new ArgumentException($"Unknown CloudEvents type: {message.Header.Type}")
+        _ => throw new InvalidMessageAction($"Unknown CloudEvents type: {message.Header.Type}")
     },
-    // ... other config
-)
+    groupId: "order-processor"
+);
 ```
 
 ## OpenTelemetry Integration

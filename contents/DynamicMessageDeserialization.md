@@ -122,31 +122,28 @@ getRequestType: message =>
 
 ### 2. Provide Comprehensive Type Mappings
 
-Handle all expected message types and provide a clear error for unmapped types:
+Handle all expected message types. Throw `InvalidMessageAction` from `Paramore.Brighter.Actions` when a message has no supported type. This explicitly requests rejection as an unacceptable message:
 
 ```csharp
-// Good - Clear error message
-getRequestType: message => message.Header.Type switch
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+
+// Pass this callback as the subscription's getRequestType argument.
+Func<Message, Type> getRequestType = message => message.Header.Type switch
 {
     var t when t == new CloudEventsType("com.example.task.created")
         => typeof(TaskCreated),
     var t when t == new CloudEventsType("com.example.task.updated")
         => typeof(TaskUpdated),
-    _ => throw new ArgumentException(
+    _ => throw new InvalidMessageAction(
         $"No type mapping found for CloudEvents type '{message.Header.Type}'. " +
-        $"Supported types: com.example.task.created, com.example.task.updated",
-        nameof(message)
+        $"Supported types: com.example.task.created, com.example.task.updated"
     )
-}
-
-// Bad - Generic error
-getRequestType: message => message.Header.Type switch
-{
-    var t when t == new CloudEventsType("com.example.task.created")
-        => typeof(TaskCreated),
-    _ => throw new Exception("Unknown message type")
-}
+};
 ```
+
+An ordinary exception such as `ArgumentException` or `Exception` does not request rejection. If it escapes `getRequestType`, the dispatcher logs it, increments the unacceptable-message count, and acknowledges the message.
 
 ### 3. Use Meaningful CloudEvents Types
 
@@ -222,6 +219,12 @@ var subscription = new KafkaSubscription(
 Handle unmapped message types gracefully:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+using Paramore.Brighter.MessagingGateway.Kafka;
+using Microsoft.Extensions.Logging;
+
 var subscription = new KafkaSubscription(
     new SubscriptionName("paramore.example.tasks"),
     channelName: new ChannelName("task.events"),
@@ -236,10 +239,9 @@ var subscription = new KafkaSubscription(
                     => typeof(TaskCreated),
                 var t when t == new CloudEventsType("io.goparamore.task.updated")
                     => typeof(TaskUpdated),
-                _ => throw new ArgumentException(
+                _ => throw new InvalidMessageAction(
                     $"Unmapped CloudEvents type: {message.Header.Type}. " +
-                    $"Message ID: {message.Id}",
-                    nameof(message)
+                    $"Message ID: {message.Id}"
                 )
             };
         }
@@ -253,11 +255,13 @@ var subscription = new KafkaSubscription(
             throw;
         }
     },
-    // ... other config
+    groupId: "task-processor"
 );
 ```
 
-Failed messages will go to the dead letter queue based on your failure handling configuration.
+`InvalidMessageAction` rejects the message as `Unacceptable`, using its message as the rejection description. The consumer and subscription configuration determine the destination: an invalid-message channel or dead-letter queue where supported and configured. A rejected message may be discarded if neither is available; rejection alone does not guarantee storage in a DLQ. See [Invalid Message Handling](/contents/HandlerFailure.md#invalid-message-handling-invalidmessageaction).
+
+Rejection increments the unacceptable-message count. Consumption continues unless the configured `UnacceptableMessageLimit` is reached. Ordinary callback exceptions still follow the log-and-acknowledge behavior described above.
 
 ## Further Reading
 
