@@ -34,6 +34,11 @@ jobs:
       # blocking unrelated work.
       - run: python3 tools/pagelint.py
 
+      # Spec 018 phase 1, design § Rule 8. Rule 8 (ATTRIBUTE KIND) has one hit in
+      # the corpus and it is marked, so the step above cannot show the rule still
+      # fires. These five in-memory plants can: exit 0 only if every one behaves.
+      - run: python3 tools/pagelint.py --plant
+
       # On a pull request the code rules become errors, but only for blocks that
       # overlap the diff. Fixing a typo on a 700-line page therefore obliges
       # nothing beyond the typo.

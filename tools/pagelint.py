@@ -17,6 +17,10 @@ Rules, and what each is for:
   SERVICEACTIVATOR    "ServiceActivator" in prose where "Dispatcher" is meant
   USING DIRECTIVES    a C# block with no `using` lines (warning, counted;
                       stays a warning under --changed if marked `// ...`)
+  ATTRIBUTE KIND      a sync handler attribute on HandleAsync, or an `...Async`
+                      one on Handle: it compiles, and Brighter rejects it when
+                      it builds the pipeline
+  ATTRIBUTE KIND MARKER   an attr-mismatch-intended marker that binds nothing
   SUMMARY MISSING     no prose after the banner to summarise the page with
   SUMMARY TOO LONG    an opening sentence over 200 characters, rendered
   SUMMARY ENDS IN COLON   an opening sentence promising a list an index drops
@@ -106,6 +110,7 @@ Usage:
     python3 tools/pagelint.py contents/Glossary.md     # specific pages
     python3 tools/pagelint.py --changed origin/master  # strict on changed blocks
     python3 tools/pagelint.py --fix                    # repair, then report what is left
+    python3 tools/pagelint.py --plant                  # rule 8's planted cases; exit 0 if all behave
 
 Cross-page uniqueness is a property of the corpus, so when given explicit paths
 the tool still loads every page for context and only reports on the ones asked
@@ -162,6 +167,15 @@ PAGE_TYPES = ('Tutorial', 'How-to', 'Reference', 'Explanation')
 # HERE and nowhere else -- CLAUDE.md documents this tuple, and
 # apply_banners.py imports it.
 APPLIES_TO = ('Brighter V10 and Darker V4', 'Brighter V10', 'Darker V4')
+
+# Rule 8. Brighter handler attributes that exist with and without the Async
+# suffix. Re-derive with the version bump that edits APPLIES_TO, in ../Brighter
+# at the new tag:
+#   git grep -hoE 'class [A-Za-z]+Attribute' <tag> -- src | sed -E 's/class ([A-Za-z]+)Attribute/\1/' \
+#     | sort -u > a; grep -E 'Async$' a | sed 's/Async$//' | sort -u | comm -12 - a
+PAIRED = ('BulkDepositCallSite', 'DeferMessageOnError', 'DepositCallSite', 'DontAckOnError',
+          'FallbackPolicy', 'FeatureSwitch', 'Monitor', 'RejectMessageOnError', 'RequestLogging',
+          'UseInbox', 'UsePolicy', 'UseResiliencePipeline', 'ValidateRequest')
 
 BANNER_RE = re.compile(
     r'^> \*\*(Tutorial|How-to|Reference|Explanation)\*\*'      # page type
@@ -504,6 +518,129 @@ def check_code_blocks(page, strict_ranges):
                     'C# block has no `using` lines; a reader cannot compile it as '
                     'shown. Add them, or mark the omission with `// ...`'))
     return findings
+
+
+# --------------------------------------------------------------------------
+# Rule 8 — a handler attribute's kind matches its handler's
+# --------------------------------------------------------------------------
+#
+# `[UsePolicy]` on `HandleAsync` compiles. Brighter throws ConfigurationException
+# when it builds the pipeline, and ValidatePipelines() reports it at startup, so
+# a block can enter blockcheck's baseline and still be wrong. The compiler cannot
+# see it; this can.
+#
+# scan() is spec 017's probe/attr_mismatch.py, moved unchanged, so its 25 runs
+# there stand as this rule's history. It reads every C# block, BUILT or not, and
+# does not consult the banner: PAIRED names Brighter attributes only, and Darker
+# 4.1.1 has no async twins, so a Darker page cannot hit.
+#
+# The opt-out is per block, not per page, because the one page that shows the
+# mistake on purpose (PipelineValidation.md) has correct blocks beside it, and a
+# page-wide marker would have hidden a real mismatch among them. It binds the way
+# blockcheck's skip does -- see blockcheck.scan_skips() -- and fails the same
+# three ways, each reported rather than ignored.
+
+ATTR_KIND_RE = re.compile(r'^\s*\[\s*(' + '|'.join(PAIRED) + r')(Async)?\s*\(')
+ATTR_OPT_OUT_RE = re.compile(r'^<!--\s*pagelint:\s*attr-mismatch-intended\s+(\S.*?)\s*-->$')
+ATTR_OPT_OUT_ANY_RE = re.compile(r'^<!--\s*pagelint:\s*attr-mismatch-intended\b')
+ATTR_OPT_OUT_EXAMPLE = '<!-- pagelint: attr-mismatch-intended <reason> -->'
+
+
+def scan(lines):
+    """lines: [(lineno, text)]. Yields (lineno, attribute, method-kind)."""
+    for i, (n, text) in enumerate(lines):
+        m = ATTR_KIND_RE.search(text)
+        if not m: continue
+        j = i + 1
+        while j < len(lines) and (lines[j][1].strip().startswith('[') or not lines[j][1].strip()): j += 1
+        if j == len(lines): continue
+        target = lines[j][1]
+        is_async = bool(re.search(r'\bHandleAsync\b', target))
+        is_sync = bool(re.search(r'\bHandle\s*\(', target)) and not is_async
+        if (m.group(2) is None and is_async) or (m.group(2) and is_sync):
+            yield n, m.group(1) + (m.group(2) or ''), 'async' if is_async else 'sync'
+
+
+def check_attribute_kind(page):
+    """Rule 8. Returns (findings, honoured) -- honoured is [(lineno, reason)].
+
+    A marker binds the next C# fence that opens after it. It binds nothing, and
+    is reported, when it has no reason, when no C# block follows it, or when the
+    block already has one.
+    """
+    findings, honoured, bound = [], [], {}
+    starts = sorted(b['start'] for b in page.blocks
+                    if b['info'].split(',')[0].lower() in CSHARP_TAGS)
+    for lineno, line in page.prose:
+        stripped = line.strip()
+        if not ATTR_OPT_OUT_ANY_RE.match(stripped):
+            continue
+        match = ATTR_OPT_OUT_RE.match(stripped)
+        target = next((s for s in starts if s > lineno), None)
+        if not match:
+            problem = f'no reason given; write {ATTR_OPT_OUT_EXAMPLE}'
+        elif target is None:
+            problem = 'no C# block follows it, so it marks nothing'
+        elif target in bound:
+            problem = (f'the block at line {target} already has a marker, at line '
+                       f'{bound[target]}')
+        else:
+            bound[target] = lineno
+            honoured.append((lineno, match.group(1)))
+            continue
+        if target is not None:
+            problem += '. The block below is still checked'
+        findings.append(error(page.rel, lineno, 'ATTRIBUTE KIND MARKER', problem))
+
+    for block in page.blocks:
+        if block['start'] not in starts or block['start'] in bound:
+            continue
+        for lineno, attr, kind in scan(block['body']):
+            if kind == 'async':
+                why = (f'[{attr}] is the sync attribute, on HandleAsync. '
+                       f'Use [{attr}Async]')
+            else:
+                why = (f'[{attr}] is the async attribute, on Handle. '
+                       f'Use [{attr[:-len("Async")]}]')
+            findings.append(error(
+                page.rel, lineno, 'ATTRIBUTE KIND',
+                f'{why}, or mark the block {ATTR_OPT_OUT_EXAMPLE} if the '
+                'mismatch is the point'))
+    return findings, honoured
+
+
+def plant():
+    """Rule 8's red-proof, in memory: exit 0 only if every plant behaves.
+
+    A mode rather than a file under contents/, because pagelint refuses paths
+    outside it and a plant page would publish. The first three are the probe's;
+    the last two exist because the opt-out does.
+    """
+    marked = '<!-- pagelint: attr-mismatch-intended the mistake this section teaches -->'
+    sync_on_async = ['[UsePolicy("retry", step: 1)]',
+                     'public override async Task<X> HandleAsync(X c, CancellationToken t)']
+    async_on_sync = ['[RequestLoggingAsync(0, HandlerTiming.Before)]',
+                     'public override X Handle(X c)']
+    matched = ['[UsePolicy("retry", step: 1)]', '[RequestLogging(0, HandlerTiming.Before)]',
+               'public override X Handle(X c)']
+    plants = (  # (name, lines above the fence, block body, rule expected, hits)
+        ('sync attribute on HandleAsync', [], sync_on_async, 'ATTRIBUTE KIND', 1),
+        ('...Async attribute on Handle', [], async_on_sync, 'ATTRIBUTE KIND', 1),
+        ('matched pair, sync on Handle', [], matched, 'ATTRIBUTE KIND', 0),
+        ('mismatch under a marker with a reason', [marked], sync_on_async, 'ATTRIBUTE KIND', 0),
+        ('a marker with no reason', ['<!-- pagelint: attr-mismatch-intended -->'],
+         sync_on_async, 'ATTRIBUTE KIND MARKER', 1),
+    )
+    failed = 0
+    for name, above, body, rule, want in plants:
+        lines = ['# Plant', ''] + above + ['```csharp'] + body + ['```']
+        findings, _ = check_attribute_kind(Page('<plant>', '<plant>', lines))
+        got = sum(1 for f in findings if f.rule == rule)
+        ok = got == want
+        failed += not ok
+        print(f'{"OK    " if ok else "FAILED"} {name}: {rule} x{got}, expected x{want}')
+    print(f'\n{len(plants) - failed} of {len(plants)} plants behave.')
+    return 1 if failed else 0
 
 
 # --------------------------------------------------------------------------
@@ -1200,6 +1337,11 @@ def main(argv):
             merge_base = args.pop(0)
         elif arg == '--fix':
             fix = True
+        elif arg == '--plant':
+            if len(argv) != 1:
+                print('--plant takes no other arguments', file=sys.stderr)
+                return 2
+            return plant()
         elif arg.startswith('-'):
             print(f'unknown option: {arg}', file=sys.stderr)
             return 2
@@ -1270,7 +1412,7 @@ def main(argv):
             pages = load_pages()
         print()
 
-    findings = []
+    findings, honoured = [], []
     for rel in reported:
         page = pages[rel]
         # A root page takes rule 7 only -- see ROOT_PAGES.
@@ -1279,6 +1421,9 @@ def main(argv):
         findings += check_banner(page)
         findings += check_code_blocks(page, strict.get(rel, []))
         findings += check_terminology(page)
+        kind, marks = check_attribute_kind(page)
+        findings += kind
+        honoured += [(rel, lineno, reason) for lineno, reason in marks]
     findings += check_headings(pages, [r for r in reported if not pages[r].is_root])
     findings += check_summaries(pages, reported)
 
@@ -1289,6 +1434,13 @@ def main(argv):
         if finding.severity == 'warning':
             label += ' (warning)'
         print(f'{finding.path}:{finding.line}: {label}: {finding.message}')
+
+    # Every honoured marker is printed with its reason, symbolcheck's
+    # convention: a silenced check should be as visible as a failing one.
+    for rel, lineno, reason in honoured:
+        print(f'{rel}:{lineno}: attr-mismatch-intended: {reason}')
+    if honoured:
+        print(f'{len(honoured)} block(s) marked attr-mismatch-intended')
 
     errors = sum(1 for f in findings if f.severity == 'error')
     warnings = len(findings) - errors

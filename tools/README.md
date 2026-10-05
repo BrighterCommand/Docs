@@ -23,9 +23,10 @@ not be in a command.
 `412fd34` is `master` as of 2026-09-13 — spec 014 phase 4, PR #161. Re-derive these before
 quoting them; the command is in the row so that you can.
 
-**`linkcheck` reads 165 here and read 164 at `fc77c42`, one merge earlier.** The file you are
-reading is the +1: `tools/` is inside `linkcheck`'s walk, so this file entered its corpus the day
-it was written. Both numbers are true at their refs, which is what the refs are for.
+**`linkcheck`'s file count moves whenever a file lands anywhere it walks, not only under
+`contents/`.** It read 164 at `fc77c42`; this file made it 165, because `tools/` is inside the
+walk; and `bugfixes/0001-unmapped-type-guidance/bugfix.md` made it 166 at `94ad0ed`. Each number is
+true at its ref, which is what the refs are for.
 
 **Two rows carry a second ref, `3be2a78` — spec 015 phase 4, the triage repairs.** `symbolcheck`
 went from 5 watchlist entries to **22** when the triage's seventeen confirmed-dead names were
@@ -80,8 +81,8 @@ package added. `pagelint` fell 537 → **524**, on blocks the repairs gave their
 
 | # | Gate | Command | Expected at `412fd34` |
 |---:|---|---|---|
-| 1 | `linkcheck` | `python3 tools/linkcheck.py` | **165 files, 0 broken** |
-| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 524 warnings, 162 pages** — at `bd95ee0`; it read **537** at `5981b12`, **616** at `ca6a0b2`, **658** at `2223fcb`, **706** at `5407298`, **743** at `b941837`, **744** at `3be2a78` and **757** at `412fd34` |
+| 1 | `linkcheck` | `python3 tools/linkcheck.py` | **166 files, 0 broken** — at `94ad0ed`; it read **165** at `bd95ee0` |
+| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 512 warnings, 162 pages**, with **1 block marked `attr-mismatch-intended`** — at `94ad0ed` plus spec 018 phase 1, which moved no warning; it read **524** at `bd95ee0`, **537** at `5981b12`, **616** at `ca6a0b2`, **658** at `2223fcb`, **706** at `5407298`, **743** at `b941837`, **744** at `3be2a78` and **757** at `412fd34` |
 | 3 | shape | `python3 tools/urlmap.py --check-shape` | **161 pages, 12 sections, widest 12 of 20, deepest 4 of 4** |
 | 4 | redirects | `python3 tools/urlmap.py --check-redirects` | **77 entries, 7858 bytes** |
 | 5 | `versioncheck` | `python3 tools/versioncheck.py` | **0 stale pins of 18, across 5 pages** |
@@ -169,6 +170,7 @@ python3 tools/linkcheck.py contents/Glossary.md      # specific files; skips the
 python3 tools/pagelint.py contents/Glossary.md       # specific pages
 python3 tools/pagelint.py --changed origin/master    # strict on code blocks overlapping the diff
 python3 tools/pagelint.py --fix                      # repair banners, fences, descriptions
+python3 tools/pagelint.py --plant                    # rule 8's five in-memory plants; exit 0 only if all behave
 python3 tools/symbolcheck.py contents/Glossary.md    # specific pages
 python3 tools/symbolcheck.py --census                # open-world report, never a gate, always exit 0
 python3 tools/symbolcheck.py --verify-list           # is every watchlist row still dead?
@@ -232,14 +234,18 @@ that file is a diff someone reads, not a command someone reruns until the build 
   `EMPTY TARGET`, and `ORPHAN` — a page under `contents/` that `SUMMARY.md` never links to.
   Orphans are reported only on a whole-repo run.
   **Its corpus is the repository, not the published tree**: it walks everything except `.git`,
-  `.github`, `.claude`, `.repomix`, `spec/` and `node_modules`, which is why its file count (165)
+  `.github`, `.claude`, `.repomix`, `spec/` and `node_modules`, which is why its file count (166)
   is higher than `pagelint`'s page count (162) and why *this file* is in it.
   It resolves a link to `CLAUDE.md` but has no index of its headings, so
   **an anchored link into `CLAUDE.md` reports `MISSING ANCHOR` even when the heading exists.**
   Cite `CLAUDE.md` sections as prose here, not as anchored links.
 - **`pagelint`** — the authoring conventions, rule by rule, over `contents/` plus the root
   `README.md`. `CLAUDE.md` § *Enforcement* carries the ledger that maps every convention to its
-  rule and back; do not restate it here.
+  rule and back; do not restate it here. **Rule 8, `ATTRIBUTE KIND`**, is the one rule that reads
+  what a block *means* rather than how it is formed: a handler attribute of the wrong kind for its
+  method compiles and fails at pipeline build. Its one corpus hit is marked, so CI runs `--plant`
+  beside the whole-repo step to show the rule still fires — `CLAUDE.md` § *Handler attributes
+  match their handler*.
 - **`urlmap --check-shape`** — the navigation's shape: at least 2 pages per section, at most 20
   top-level entries, at most 4 URL segments, and no `SUMMARY.md` heading with leading whitespace.
 - **`urlmap --check-redirects`** — every redirect in `.gitbook.yaml` resolves to a file that
