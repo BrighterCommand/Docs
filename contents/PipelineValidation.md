@@ -244,6 +244,7 @@ An async handler must use async versions of pipeline attributes. The example bel
 
 **Before** (error):
 
+<!-- pagelint: attr-mismatch-intended the Before (error) example: a sync attribute on HandleAsync is the mistake this section teaches -->
 ```csharp
 public class OrderHandler : RequestHandlerAsync<OrderCreated>
 {

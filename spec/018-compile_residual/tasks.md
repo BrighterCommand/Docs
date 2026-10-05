@@ -110,7 +110,7 @@ Design § *Rule 8*. **Predicted:** every gate unmoved, except a new `pagelint --
 `pagelint` reads **0 errors, 524 warnings, 162 pages** at both ends, because the marker is an HTML
 comment and changes no block's text.
 
-- [ ] **Task 1.1:** Add `PAIRED` and the `ATTRIBUTE KIND` check to `tools/pagelint.py`
+- [x] **Task 1.1:** Add `PAIRED` and the `ATTRIBUTE KIND` check to `tools/pagelint.py`
   - Input: design § *Rule 8* (what it reads, what it reports, `PAIRED`, the message);
     `spec/017-compile_repairs/probe/attr_mismatch.py` (`scan()`, moved unchanged);
     `tools/pagelint.py` `:164` (`APPLIES_TO`), `:475` (`check_code_blocks`)
@@ -121,47 +121,113 @@ comment and changes no block's text.
   - Notes: `PAIRED` is re-derived at both refs as you write it (§ 1 obligation 1); the design's 13
     are the expected answer
 
-- [ ] **Task 1.2:** Add the `attr-mismatch-intended` opt-out and its three faults
+- [x] **Task 1.2:** Add the `attr-mismatch-intended` opt-out and its three faults
   - Input: design § *Rule 8*, *The opt-out*; `tools/blockcheck.py:280–300`, the binding it copies
   - Output: a marker binding to the next C# block below it. A marker with no reason, a marker with no
     C# block after it, and a second marker on one block are each an error. Honoured markers print
     with their reasons and a count line, *"N block(s) marked attr-mismatch-intended"*
 
-- [ ] **Task 1.3:** Add `pagelint --plant` and record its red-proof
+- [x] **Task 1.3:** Add `pagelint --plant` and record its red-proof
   - Input: design § *Rule 8*, the five-plant table; 1.1 and 1.2
   - Output: `python3 tools/pagelint.py --plant; echo $?` → **0**, all five plants behaving. A
     red-proof run, with one plant's expectation inverted in a scratch copy, → **1**, recorded here
     with its output (AC1, AC3)
 
-- [ ] **Task 1.4:** Mark `PipelineValidation.md` block 7
+- [x] **Task 1.4:** Mark `PipelineValidation.md` block 7
   - Input: design § *Rule 8*, *The page*
   - Output: the marker line above the fence of block 7. `python3 tools/pagelint.py` → **0
     errors**, *"1 block(s) marked attr-mismatch-intended"*. Recorded here: the run with the marker
     removed reports `ATTRIBUTE KIND` on block 7 (AC2). `blockcheck --report` is unmoved, at 990 / 299
   - Notes: changes the published site. Its sign-off is asked for in 1.8's PR
 
-- [ ] **Task 1.5:** Run rule 8 in CI
+- [x] **Task 1.5:** Run rule 8 in CI
   - Input: `.github/workflows/docs.yml`, the `check` job
   - Output: a bare `- run: python3 tools/pagelint.py --plant` step after the `pagelint` step, with
     a comment citing design § *Rule 8*
 
-- [ ] **Task 1.6:** Write rule 8 into `CLAUDE.md`
+- [x] **Task 1.6:** Write rule 8 into `CLAUDE.md`
   - Input: design § *Rule 8*, *`CLAUDE.md`*; `CLAUDE.md` § *The ledger* and § *Complete code blocks*
   - Output: one ledger row, and § *Handler attributes match their handler* after *Complete code
     blocks*. Then `grep -rn 'pagelint' .claude/commands/` (**2** files at `77b7113`: `implement.md`,
     `review.md`), each hit read against the new rule and fixed where it quotes a rule set or count
     (the *Writing Review* rule)
 
-- [ ] **Task 1.7:** Update `tools/README.md` for rule 8
+- [x] **Task 1.7:** Update `tools/README.md` for rule 8
   - Input: `tools/README.md` row 2, § *What each gate actually checks*, § *The other modes*
   - Output: row 2 with the phase's ref (warnings unmoved); `pagelint`'s bullet naming rule 8; *The
     other modes* listing `pagelint.py --plant`. AC14's corrected-form count → **1** for any new figure
 
-- [ ] **Task 1.8:** Close phase 1
+- [x] **Task 1.8:** Close phase 1
   - Input: § 1 obligations 6, 7, 19; the phase's prediction
   - Output: § *Phase 1 as executed*, with every gate's figure against the prediction, and the
     reading criteria (AC9/AC10: **no block's text changed**, so none applies, stated). Then the PR,
     asking for sign-off (one page changed) and for deletion of its head ref by name
+
+
+### Phase 1 as executed — 2026-10-05
+
+**Measured at phase start, `94ad0ed`.** `master` moved after tasks were approved: #195, a bugfix
+outside the programme, changed six pages and added `bugfixes/0001-unmapped-type-guidance/`. Two
+figures moved with it. The prediction above was made at `1b6f7f9` and stands as written:
+
+| Figure | Said (`1b6f7f9`) | Measured (`94ad0ed`), method 1 | Method 2 | Cause |
+|---|---:|---|---|---|
+| `pagelint` warnings | 524 | summary line → **512 / 66 pages** | `grep -c 'USING DIRECTIVES'` → **512** | #195 repaired 12 debt blocks on its six pages |
+| `linkcheck` files | 165 | **166** | a worktree at `019ef8e` → **165** | #195's `bugfix.md` is inside the walk |
+| `blockcheck` | 990 / 299 / 674 / 17 | `--report` rows → **990 / 299 / 674 / 17** | `grep -vc '^#' baseline.tsv` → **299** | unmoved |
+| `PAIRED` | 13 | the derivation at Brighter `10.7.0` → **13** | at Brighter `origin/master` → the same 13 | — |
+
+`tools/README.md` rows 1 and 2 now carry `94ad0ed`'s figures with their refs.
+
+**Rule 8's first red run** (1.1), the whole repo before the marker, exit 1:
+
+```text
+contents/PipelineValidation.md:250: ATTRIBUTE KIND: [RejectMessageOnError] is the sync attribute, on HandleAsync. Use [RejectMessageOnErrorAsync], or mark the block <!-- pagelint: attr-mismatch-intended <reason> --> if the mismatch is the point
+
+1 errors, 512 warnings (using-directive debt: 512 blocks across 66 pages) across 162 pages.
+```
+
+`--changed origin/master` reports the same error, exit 1, so the rule is an error at both levels.
+
+**The marker's three faults** (1.2), each planted on `PipelineValidation.md` and reverted. Each is
+an error, and the first and third leave the block checked:
+
+```text
+contents/PipelineValidation.md:248: ATTRIBUTE KIND MARKER: the block at line 249 already has a marker, at line 247. The block below is still checked
+contents/PipelineValidation.md:420: ATTRIBUTE KIND MARKER: no C# block follows it, so it marks nothing
+contents/PipelineValidation.md:247: ATTRIBUTE KIND MARKER: no reason given; write <!-- pagelint: attr-mismatch-intended <reason> -->. The block below is still checked
+```
+
+**`--plant`'s red-proof** (1.3, AC1, AC3): a scratch copy with the matched-pair plant expecting 1
+hit rather than 0, exit **1**. The real one exits **0**, 5 of 5. `--plant x` exits 2.
+
+```text
+FAILED matched pair, sync on Handle: ATTRIBUTE KIND x0, expected x1
+4 of 5 plants behave.
+```
+
+**The page** (1.4, AC2): with the marker, `pagelint` reports **0 errors** and *"1 block(s) marked
+attr-mismatch-intended"*. Without it, the red run above. `blockcheck --report` gives
+`PipelineValidation.md`'s 16 verdicts identically with and without the marker, and the corpus stays
+at 990 / 299.
+
+**Gates against the prediction** (*every gate unmoved; `pagelint` 0 errors at both ends*):
+
+| Gate | Predicted | Measured | Why any difference |
+|---|---|---|---|
+| `linkcheck` | unmoved | 166, 0 broken | 165 → 166 is #195, before the phase |
+| `pagelint` | 0 errors, 524 warnings | **0 errors, 512 warnings, 162 pages**; 1 marked | 524 → 512 is #195; the phase moved none |
+| `pagelint --plant` | exit 0 | exit **0**, 5 of 5 | — |
+| `symbolcheck` | unmoved | 22 entries, 161 pages, 3 silenced, 0 found | — |
+| `blockcheck` | 990 / 299 | **990 / 299 / 674 / 17** | — |
+
+**Reading criteria** (obligation 19): the marker is an HTML comment above a fence, so **no block's
+text changed**. Neither AC9 nor AC10 applies.
+
+**Commands that cite what changed** (1.6): `grep -rn 'pagelint' .claude/commands/` → `implement.md`
+(`:69` rule 6, `:80` the gate commands) and `review.md` (`:2`, `:12`, `:25`, `:81`). None quotes a
+rule count that rule 8 moves. The ledger's three review-only conventions are still three, and
+`review.md`'s error filter keeps the new marker lines.
 
 ---
 

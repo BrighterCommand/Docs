@@ -373,6 +373,32 @@ never silenced. It still counts towards the debt and still says so in its own wo
 Without that, relocating a block verbatim is indistinguishable from writing a new
 one, and a page split cannot honour "move the text, do not improve it".
 
+### Handler attributes match their handler
+
+A sync handler attribute decorates `Handle`; its `…Async` twin decorates `HandleAsync`.
+`[UsePolicy]` on `HandleAsync` **compiles**, so the compiler is no help: Brighter throws
+`ConfigurationException` when it builds the pipeline, and `ValidatePipelines()` reports it
+at startup. A block can therefore build, enter `blockcheck`'s baseline, and still teach
+the reader a pipeline that fails. Rule 8 (`ATTRIBUTE KIND`) reads every C# block for it.
+
+The attributes it knows are the ones Brighter ships in both forms, held as `PAIRED`
+beside `APPLIES_TO` in `tools/pagelint.py`, with the command that re-derives them at a
+version bump. Edit them there and nowhere else.
+
+A block that shows the mismatch on purpose carries a marker on the line above its fence:
+
+```markdown
+<!-- pagelint: attr-mismatch-intended the Before (error) example: a sync attribute on HandleAsync is the mistake this section teaches -->
+```
+
+That is `PipelineValidation.md`'s, the one block in the corpus that needs it. The marker
+silences rule 8 for **that block only**, and every honoured marker prints with its
+reason. It is per block rather than per page because that page has correct examples
+beside the deliberate one, and a page-wide marker would have hidden a real mismatch
+among them. A marker with no reason, with no C# block after it, or that is a block's
+second, is itself an error. `python3 tools/pagelint.py --plant` proves the rule still
+fires, since the corpus's one hit is marked.
+
 ### The opening sentence
 
 Every page's first sentence after the banner has to survive being read on its own.
@@ -543,6 +569,7 @@ failure the claim in this paragraph is meant to prevent:
 | Language tag on every fence | 4 | error | error |
 | "Dispatcher", not "ServiceActivator" or "Service Activator", in prose | 5 | error | error |
 | `using` directives in C# blocks | 6 | warning, counted | error, unless the block marks its omission `// ...` |
+| A handler attribute's kind matches its method's: sync on `Handle`, `…Async` on `HandleAsync` | 8 (`ATTRIBUTE KIND`) | error | error, unless the block is marked `attr-mismatch-intended` with a reason |
 | An opening sentence exists | 7 (`SUMMARY MISSING`) | error | error |
 | It is ≤ 200 characters **rendered** | 7 (`SUMMARY TOO LONG`) | error | error |
 | It does not end in a colon | 7 (`SUMMARY ENDS IN COLON`) | error | error |
