@@ -435,6 +435,10 @@ The sweep itself also stays on that thread: when a send completes, as Kafka's do
 
 The schedule is measured in elapsed time, not by the wall clock, so a clock that steps backwards does not delay a sweep.
 
+Because sweeps run one after another on that one thread, **a hung sweep records nothing**. No later sweep starts while it is stuck, so there is no `tick.lag`, `sweep.duration` or `sweeps` until it ends. `lock_unavailable` shows up only on *other* instances that share the distributed lock, and with a single instance or the in-memory lock, not even that. So don't use `lock_unavailable` or `tick.lag` to detect a stall. Alert on sweeps that should have completed and didn't, as in [Suggested Alerts](#suggested-alerts).
+
+The same thread also means that code in the sweep's path that blocks on a task, such as a custom distributed lock, producer or Outbox that calls `.GetAwaiter().GetResult()` on an async method, can deadlock the sweeper. Brighter's own implementations don't do this.
+
 ### Publish Confirmation Queue Depth
 
 Kafka and RabbitMQ (`RMQ.Sync`) producers raise publish confirmations on a dedicated thread per producer, in batches of up to 32. Brighter's own handler for a confirmation marks the message dispatched in the Outbox. If confirmations arrive faster than those handlers finish, they queue. Messages then stay unmarked past `MinimumMessageAge`, and the sweeper sends them again.
@@ -459,7 +463,7 @@ The examples below use PromQL, with the names a Prometheus exporter produces: do
 sum(increase(paramore_brighter_outbox_sweeper_sweeps_total{paramore_brighter_outbox_sweeper_outcome="completed"}[30s])) == 0
 ```
 
-Sum across instances. When several instances share a distributed lock, only one of them completes sweeps, and the rest record `lock_unavailable`. An alert on each instance would fire for every instance that is not holding the lock. A stalled sweeper may also stop reporting altogether, so pair the alert with `absent()` on the same series if your backend drops series that go stale.
+Sum across instances, and count only `completed`. When several instances share a distributed lock, only one of them completes sweeps, and the rest record `lock_unavailable`. An alert on each instance would fire for every instance that is not holding the lock. An alert on sweeps of any outcome would never fire while the lock holder is hung, because the other instances keep recording `lock_unavailable`. A stalled sweeper may also stop reporting altogether, so pair the alert with `absent()` on the same series if your backend drops series that go stale.
 
 **Sweeps start late.** The p99 tick lag is above the sweep interval:
 
