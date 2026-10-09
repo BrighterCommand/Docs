@@ -431,7 +431,23 @@ The sweeper runs on its own dedicated thread, not on a thread-pool timer. So a b
 - If a sweep overruns its interval, the next sweep starts late, and `tick.lag` shows by how much.
 - If a sweep starts a whole interval or more late, the schedule restarts from that sweep. The sweeper never runs sweeps back to back to catch up.
 
-Only the schedule is free of the thread pool. Once a sweep does real asynchronous I/O, such as sending to Kafka or reading a database Outbox, its continuations still run on the pool. A starved pool therefore shows up first as a longer `sweep.duration`, and then as `tick.lag` on the sweeps that follow.
+The sweep itself also stays on that thread: when a send completes, as Kafka's does, on the broker client's own thread, the sweep resumes on the sweeper's thread rather than waiting for a pool thread. A producer or Outbox that awaits with `ConfigureAwait(false)` internally, as database clients and the AWS SDK do, still resumes on the pool. With those, a starved pool shows up first as a longer `sweep.duration`, and then as `tick.lag` on the sweeps that follow.
+
+The schedule is measured in elapsed time, not by the wall clock, so a clock that steps backwards does not delay a sweep.
+
+### Publish Confirmation Queue Depth
+
+Kafka and RabbitMQ (`RMQ.Sync`) producers raise publish confirmations on a dedicated thread per producer, in batches of up to 32. Brighter's own handler for a confirmation marks the message dispatched in the Outbox. If confirmations arrive faster than those handlers finish, they queue. Messages then stay unmarked past `MinimumMessageAge`, and the sweeper sends them again.
+
+| Instrument | Type | Unit | Attributes |
+|------------|------|------|------------|
+| `paramore.brighter.publish_confirmation.queue.depth` | UpDownCounter (observable) | `{confirmation}` | `messaging.system`, `messaging.destination.name` |
+
+It counts the confirmations waiting or running for each producer. `AddBrighterInstrumentation()` registers it. A depth that keeps growing means the Outbox cannot keep up with the broker's confirmations:
+
+```promql
+min_over_time(sum by (messaging_destination_name) (paramore_brighter_publish_confirmation_queue_depth)[5m:]) > 100
+```
 
 ### Suggested Alerts
 
