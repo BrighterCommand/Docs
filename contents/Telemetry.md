@@ -386,6 +386,146 @@ Set both flags and both sets of attributes will be recorded.
 
 ---
 
+## Outbox Sweeper Metrics
+
+The [Outbox Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) runs in the background, so when it stalls nothing fails visibly. Messages simply stay in the Outbox. To make a stall visible, the sweeper records three metrics about its own health on the `Paramore.Brighter` meter. They tell you whether sweeps are running, whether they start on time, and how long they take.
+
+### Enabling the Metrics
+
+`AddBrighterInstrumentation()` on the `MeterProviderBuilder` registers the sweeper's meter, alongside Brighter's messaging and database meters, and listens to the `Paramore.Brighter` meter. It comes from the `Paramore.Brighter.Extensions.Diagnostics` package:
+
+```csharp
+using OpenTelemetry.Metrics;
+using Paramore.Brighter.Extensions.Diagnostics;
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics => metrics
+        .AddBrighterInstrumentation()
+        .AddOtlpExporter());
+```
+
+If you do not call `AddBrighterInstrumentation()`, the sweeper uses a no-op meter and records nothing.
+
+### Instruments
+
+| Instrument | Type | Unit | Description |
+|------------|------|------|-------------|
+| `paramore.brighter.outbox_sweeper.tick.lag` | Histogram | `s` | How long after its due time a sweep started |
+| `paramore.brighter.outbox_sweeper.sweep.duration` | Histogram | `s` | How long a sweep took |
+| `paramore.brighter.outbox_sweeper.sweeps` | Counter | `{sweep}` | Number of sweeps, by how each ended |
+
+`sweep.duration` and `sweeps` carry a `paramore.brighter.outbox_sweeper.outcome` attribute:
+
+| Outcome | Meaning |
+|---------|---------|
+| `completed` | The sweep ran to the end |
+| `failed` | The sweep threw an exception. The sweeper logs it and sweeps again on the next tick |
+| `lock_unavailable` | The sweep did not run, because another sweeper holds the [distributed lock](/contents/DistributedLock.md) |
+
+These metrics describe the sweeper, not the messages it sends. They do not count how many messages a sweep found or dispatched.
+
+### How the Sweeper Keeps Time
+
+The sweeper runs on its own dedicated thread, not on a thread-pool timer. So a busy or starved thread pool cannot stop sweeps from starting. Each sweep is due one `TimerInterval` after the previous one was due:
+
+- If a sweep overruns its interval, the next sweep starts late, and `tick.lag` shows by how much.
+- If a sweep starts a whole interval or more late, the schedule restarts from that sweep. The sweeper never runs sweeps back to back to catch up.
+
+The sweep itself also stays on that thread: when a send completes, as Kafka's does, on the broker client's own thread, the sweep resumes on the sweeper's thread rather than waiting for a pool thread. A producer or Outbox that awaits with `ConfigureAwait(false)` internally, as database clients and the AWS SDK do, still resumes on the pool. With those, a starved pool shows up first as a longer `sweep.duration`, and then as `tick.lag` on the sweeps that follow.
+
+The schedule is measured in elapsed time, not by the wall clock, so a clock that steps backwards does not delay a sweep.
+
+Because sweeps run one after another on that one thread, **a hung sweep records nothing**. No later sweep starts while it is stuck, so there is no `tick.lag`, `sweep.duration` or `sweeps` until it ends. `lock_unavailable` shows up only on *other* instances that share the distributed lock, and with a single instance or the in-memory lock, not even that. So don't use `lock_unavailable` or `tick.lag` to detect a stall. Alert on sweeps that should have completed and didn't, as in [Suggested Alerts](#suggested-alerts).
+
+The same thread also means that code in the sweep's path that blocks on a task, such as a custom distributed lock, producer or Outbox that calls `.GetAwaiter().GetResult()` on an async method, can deadlock the sweeper. Brighter's own implementations don't do this.
+
+### Publish Confirmation Queue Depth
+
+Kafka and RabbitMQ (`RMQ.Sync`) producers raise publish confirmations on a dedicated thread per producer, in batches of up to 32. Brighter's own handler for a confirmation marks the message dispatched in the Outbox. If confirmations arrive faster than those handlers finish, they queue. Messages then stay unmarked past `MinimumMessageAge`, and the sweeper sends them again.
+
+| Instrument | Type | Unit | Attributes |
+|------------|------|------|------------|
+| `paramore.brighter.publish_confirmation.queue.depth` | UpDownCounter (observable) | `{confirmation}` | `messaging.system`, `messaging.destination.name` |
+
+It counts the confirmations waiting or running for each producer. `AddBrighterInstrumentation()` registers it. A depth that keeps growing means the Outbox cannot keep up with the broker's confirmations:
+
+```promql
+min_over_time(sum by (messaging_destination_name) (paramore_brighter_publish_confirmation_queue_depth)[5m:]) > 100
+```
+
+### Suggested Alerts
+
+The examples below use PromQL, with the names a Prometheus exporter produces: dots become underscores, and the unit and `_total` are added as suffixes. Adjust them for your backend.
+
+**The sweeper has stalled.** No sweep has completed for several intervals. With a 5-second `TimerInterval`, this alerts after about 30 seconds:
+
+```promql
+sum(increase(paramore_brighter_outbox_sweeper_sweeps_total{paramore_brighter_outbox_sweeper_outcome="completed"}[30s])) == 0
+```
+
+Sum across instances, and count only `completed`. When several instances share a distributed lock, only one of them completes sweeps, and the rest record `lock_unavailable`. An alert on each instance would fire for every instance that is not holding the lock. An alert on sweeps of any outcome would never fire while the lock holder is hung, because the other instances keep recording `lock_unavailable`. A stalled sweeper may also stop reporting altogether, so pair the alert with `absent()` on the same series if your backend drops series that go stale.
+
+**Sweeps start late.** The p99 tick lag is above the sweep interval:
+
+```promql
+histogram_quantile(0.99, sum by (le) (rate(paramore_brighter_outbox_sweeper_tick_lag_seconds_bucket[5m]))) > 5
+```
+
+**Sweeps are failing.**
+
+```promql
+sum(increase(paramore_brighter_outbox_sweeper_sweeps_total{paramore_brighter_outbox_sweeper_outcome="failed"}[5m])) > 0
+```
+
+To find the reason for a failure, check the sweeper's error log.
+
+### Histogram Buckets
+
+The OpenTelemetry .NET SDK's default histogram buckets were designed for millisecond values: 0, 5, 10, 25, 50 and so on. Both sweeper histograms record seconds, and most values fall below 5, so with the default buckets nearly every value lands in the first one or two. Add a view that sets buckets that fit your `TimerInterval`:
+
+```csharp
+using OpenTelemetry.Metrics;
+using Paramore.Brighter.Extensions.Diagnostics;
+
+var sweeperBuckets = new ExplicitBucketHistogramConfiguration
+{
+    Boundaries = [0, 0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60]
+};
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics => metrics
+        .AddBrighterInstrumentation()
+        .AddView("paramore.brighter.outbox_sweeper.tick.lag", sweeperBuckets)
+        .AddView("paramore.brighter.outbox_sweeper.sweep.duration", sweeperBuckets)
+        .AddOtlpExporter());
+```
+
+### Telling a Slow Broker From a Starved Process
+
+| `sweep.duration` | `tick.lag` | Likely cause |
+|------------------|------------|--------------|
+| Low | Low | Healthy |
+| High | Low | The broker or Outbox store is slow, but each sweep still finishes within its interval |
+| High | High | Sweeps overrun their interval. Check whether the broker or Outbox is slow, or the thread pool is starved (see below) |
+| Low | High | The process is not getting CPU, for example because of container CPU throttling |
+
+To see whether the thread pool is starved, enable the .NET runtime's built-in `System.Runtime` meter (.NET 9 and later) and look at the thread pool's queue length and thread count:
+
+```csharp
+using OpenTelemetry.Metrics;
+using Paramore.Brighter.Extensions.Diagnostics;
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics => metrics
+        .AddBrighterInstrumentation()
+        .AddMeter("System.Runtime")
+        .AddOtlpExporter());
+```
+
+A `dotnet.thread_pool.queue.length` that keeps growing, together with a `dotnet.thread_pool.thread.count` that climbs only slowly, means work is queuing faster than the pool can add threads. On Kubernetes, compare this with CPU throttling (`container_cpu_cfs_throttled_periods_total`). Brighter does not re-export these runtime metrics. See [.NET runtime metrics](https://learn.microsoft.com/dotnet/core/diagnostics/built-in-metrics-runtime).
+
+---
+
 ## Telemetry Best Practices
 
 1. **Start with Minimal Instrumentation**: Enable `RequestInformation` and `Messaging`, and leave out expensive flags like `RequestBody`
@@ -502,3 +642,5 @@ V9 used custom attribute names. V10 uses OTel standard conventions:
 - [OpenTelemetry .NET Documentation](https://opentelemetry.io/docs/instrumentation/net/)
 - [Brighter CloudEvents Support](CloudEventsSupport.md)
 - [Brighter Request Context](UsingTheContextBag.md)
+- [Outbox Support](/contents/BrighterOutboxSupport.md) - The Outbox Sweeper, whose health metrics are described above
+- [.NET Runtime Metrics](https://learn.microsoft.com/dotnet/core/diagnostics/built-in-metrics-runtime)
