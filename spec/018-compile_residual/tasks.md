@@ -304,7 +304,7 @@ reason, and does not hold the phase.
   - Output: a flag printing `page<TAB>warnings`, sorted, whose column sums to the summary line's
     **512**: two methods that must agree
 
-- [ ] **Task 2.11:** *(P1)* Measure the `net9.0` pin against `net10.0` (friction #76)
+- [x] **Task 2.11:** *(P1)* Measure the `net9.0` pin against `net10.0` (friction #76)
   - Input: design D7; `refs.csproj`'s `TargetFramework`
   - Output: § *Phase 2 as executed*, *net10.0*: a scratch `net10.0` build of the pin, the packages
     that resolve to a different version, and `--report`'s verdicts under it against the `net9.0`
@@ -854,6 +854,51 @@ one error and one warning in process: one row (the warning), `1 errors`, exit **
 
 **Said and measured.** The task said the column sums to **524**. Measured **512**: #195 moved the
 debt from 524 to 512 before phase 1 (§ *Phase 1 as executed*). The task now says 512.
+
+#### net10.0 (2.11, friction #76, D7)
+
+`probe/net10.py` (obligation 18) copies both pins into scratch with `net10.0`, restores them, and
+compiles the same staged corpus against the committed `net9.0` reference lists and the scratch
+`net10.0` ones. Nothing under `tools/` is written.
+
+**The framework alone does not restore.** With only `<TargetFramework>` changed, the main pin fails
+**NU1605**. `Paramore.Brighter.MsSql.EntityFrameworkCore` 10.7.0 needs `Microsoft.EntityFrameworkCore`
+≥ **10.0.10** on `net10.0`, and the pin's 9.0.15 is then a downgrade. Three of the pin's explicit
+packages are framework-tied by their own comments. The scratch copies raise them to what a `net10.0`
+reader gets:
+
+| Package | `net9.0` pin | `net10.0` | Source |
+|---|---|---|---|
+| `Microsoft.EntityFrameworkCore` | 9.0.15 | **10.0.10** | the `net10.0` group of `Paramore.Brighter.MsSql.EntityFrameworkCore` 10.7.0's nuspec |
+| `Npgsql.EntityFrameworkCore.PostgreSQL` | 9.0.4 | **10.0.3** | its latest stable for EF Core 10 (nuget.org) |
+| `TickerQ.Dashboard`, `TickerQ.EntityFrameworkCore` | 9.0.2 | **10.4.0** | the `net10.0` group of `Paramore.Brighter.MessageScheduler.TickerQ` 10.7.0's nuspec |
+
+**Packages that resolve differently**, from each restore's `project.assets.json`, are the same on
+both pins. On `net9.0` the pin resolves **317** packages, and on `net10.0` it resolves **291**.
+**17** resolve at a different version:
+- the EF Core family (10 packages, from 9.0.15 to 10.0.10)
+- TickerQ (4 packages, to 10.4.0)
+- `Npgsql` (10.0.2 → 10.0.3) and `FlexLabs.EntityFrameworkCore.Upsert` (9.0.0 → 10.0.0)
+- `Microsoft.NETCore.Platforms` (5.0.0 → 1.1.0)
+
+**27** resolve on `net9.0` only, all `System.*` / `Microsoft.*` packages that the `net10.0`
+framework supplies in-box (317 − 27 + 1 = 291, which agrees). **1** resolves on `net10.0` only: `System.Reflection.TypeExtensions`
+4.7.0. The restores warn `NU1608`, because `Pomelo.EntityFrameworkCore.MySql` 9.0.0 caps EF Core
+Relational at 9.0.999. They also warn `NU1903`, on `SQLitePCLRaw.lib.e_sqlite3` 2.1.11. Reference
+assemblies: **548 → 553** on each pin.
+
+**Verdicts: none moved.** Of 973 judged blocks (17 SKIPPED excluded, as `--report` discards them),
+every verdict and every FAILED block's code set is identical. Two methods agree: the block-by-block
+comparison finds **0** moved, and BUILT is **300 / 300** on the main pin and **3 / 3** on the V4 pin,
+which matches `--report`'s 303.
+
+**Control.** The `net10.0` main list with TickerQ's assemblies removed moves **5** verdicts, all
+on `TickerQScheduler.md` (#1, #2, #3, #7, #8). So the comparison can see a move, and its 0 is a
+measurement. The probe exits 1 when the control does not move.
+
+**D7's condition is not met.** No verdict moves, so nothing goes to the maintainer before 2.14,
+and P2-2 (*compiles against the released packages, not in the pin* as a verdict) stays P2. The pin
+stays `net9.0`.
 
 ---
 
