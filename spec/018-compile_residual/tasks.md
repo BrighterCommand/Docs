@@ -323,7 +323,7 @@ reason, and does not hold the phase.
     `--report` exit 0. § *Phase 2 as executed* reconciles them against 2.1, block by block. Each
     new BUILT block is clean under rule 8 (`pagelint` 0 errors)
 
-- [ ] **Task 2.14:** Draw the S1–S5 page tables from `--classify` (AC8)
+- [x] **Task 2.14:** Draw the S1–S5 page tables from `--classify` (AC8)
   - Input: `--classify` at phase 2's head; design § *The section groups*; `SUMMARY.md`
   - Output: § *The groups*, one table per group, every column derived from `--classify` by the
     command written above it, and no probe column. The three tranche pages with V4 blocks are in S4
@@ -1158,8 +1158,158 @@ at 2.14 and not before. **Every phase changes the site.**
 
 ## The groups
 
-*Drawn at task 2.14 from `--classify`, and not before (AC8). Design § *The section groups* holds
-the working figures they replace.*
+*Drawn at task 2.14 from `--classify` at `71cb09b` (phase 2's head after 2.13), and not before (AC8).
+They replace design § *The section groups*' working figures, which came from the probe.*
+
+**Every table is drawn by one command**, over three files that committed commands write:
+
+```bash
+python3 tools/blockcheck.py --classify > classify.tsv
+python3 tools/blockcheck.py --report report.tsv
+python3 spec/018-compile_residual/probe/tranche_pages.py spec/017-compile_repairs/tasks.md > tranche.txt
+python3 spec/018-compile_residual/probe/groups.py classify.tsv report.tsv tranche.txt
+```
+
+**Where each column comes from:**
+- **FAILED and the six class columns** count `--classify`'s rows per page, by its third column
+  (`class`, the second compile's). An empty cell is 0.
+- **BUILT** counts `--report`'s `BUILT` rows. It is the gate's own output, not a probe's, and it
+  is what the *nothing BUILT* target is measured on.
+- **The rows** are every page with a FAILED block that is not one of 017's 75 tranche pages, plus
+  the three tranche pages whose FAILED blocks are all on the V4 pin, marked **(V4)**. 017's tranche
+  list chooses rows and never fills a column.
+- **The section** of a page is the first `SUMMARY.md` section that links it.
+
+`groups.py` exits 1 unless it can verify three things: every row is in exactly one group, the
+FAILED column equals `--report`'s FAILED on the same pages, and every FAILED block on a (V4) page
+is on the V4 pin.
+
+#### S1: Scheduler
+
+| Section | Page | FAILED | parse | built-by-using | defect | same-page | values | page-type | BUILT |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Scheduler | `AwsScheduler.md` | 23 | 5 |  | 2 |  | 6 | 10 | 1 |
+| Scheduler | `AzureScheduler.md` | 21 | 5 | 6 | 2 |  | 3 | 5 | 5 |
+| Scheduler | `BrighterSchedulerSupport.md` | 6 | 1 |  | 2 |  |  | 3 | 1 |
+| Scheduler | `CustomScheduler.md` | 4 |  |  | 2 |  |  | 2 | 0 |
+| Scheduler | `HangfireScheduler.md` | 27 | 5 |  | 3 | 2 | 13 | 4 | 2 |
+| Scheduler | `InMemoryScheduler.md` | 14 | 1 | 1 |  |  | 4 | 8 | 2 |
+| Scheduler | `QuartzScheduler.md` | 27 | 5 | 1 | 1 |  | 16 | 4 | 0 |
+| Scheduler | `SwitchingSchedulers.md` | 7 | 7 |  |  |  |  |  | 0 |
+| **S1** | **8 pages** | **129** | **29** | **8** | **12** | **2** | **42** | **36** | **11** |
+
+S1: 8 pages, 129 FAILED, **3 with nothing BUILT**.
+
+#### S2: Commands, Handlers and Pipelines; Get Started
+
+| Section | Page | FAILED | parse | built-by-using | defect | same-page | values | page-type | BUILT |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Commands, Handlers and Pipelines | `AgreementDispatcher.md` | 14 | 1 |  | 1 |  |  | 12 | 0 |
+| Commands, Handlers and Pipelines | `AsyncDispatchARequest.md` | 4 | 1 |  | 1 |  |  | 2 | 0 |
+| Commands, Handlers and Pipelines | `DispatchingARequest.md` | 8 |  |  |  |  |  | 8 | 0 |
+| Commands, Handlers and Pipelines | `FeatureSwitches.md` | 7 |  |  | 1 |  |  | 6 | 0 |
+| Commands, Handlers and Pipelines | `MigratingToPollyV8.md` | 8 |  | 1 | 3 |  | 1 | 3 | 1 |
+| Commands, Handlers and Pipelines | `PipelineValidation.md` | 16 | 9 |  | 2 |  | 2 | 3 | 0 |
+| Commands, Handlers and Pipelines | `PolicyFallback.md` | 9 |  |  | 1 |  |  | 8 | 0 |
+| Commands, Handlers and Pipelines | `PolicyRetryAndCircuitBreaker.md` | 18 | 2 | 1 |  | 1 | 6 | 8 | 1 |
+| Commands, Handlers and Pipelines | `UsingTheContextBag.md` | 17 | 1 |  | 1 |  | 2 | 13 | 1 |
+| Get Started | `ShowMeTheCode.md` | 6 | 1 |  | 1 |  |  | 4 | 0 |
+| **S2** | **10 pages** | **107** | **15** | **2** | **11** | **1** | **11** | **67** | **3** |
+
+S2: 10 pages, 107 FAILED, **7 with nothing BUILT**.
+
+#### S3: Darker; Understanding Brighter
+
+| Section | Page | FAILED | parse | built-by-using | defect | same-page | values | page-type | BUILT |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Darker | `DarkerBasicConfiguration.md` | 11 |  | 1 | 3 |  | 3 | 4 | 0 |
+| Darker | `EFCoreQueryIntegration.md` | 5 | 3 |  |  |  | 1 | 1 | 0 |
+| Darker | `ImplementAQueryHandler.md` | 21 | 2 | 2 | 1 | 1 |  | 15 | 2 |
+| Darker | `QueriesAndQueryObjects.md` | 20 | 5 |  | 1 | 2 |  | 12 | 3 |
+| Darker | `QueryPatterns.md` | 5 | 1 |  | 3 |  |  | 1 | 0 |
+| Darker | `QueryPipeline.md` | 25 | 12 | 3 | 1 |  | 2 | 7 | 0 |
+| Understanding Brighter | `CQRSWithBrighterAndDarker.md` | 11 | 3 | 1 | 3 | 2 |  | 2 | 2 |
+| Understanding Brighter | `HowConfiguringTheCommandProcessorWorks.md` | 9 | 1 |  |  |  |  | 8 | 1 |
+| Understanding Brighter | `HowServiceActivatorWorks.md` | 17 | 4 |  | 3 |  | 1 | 9 | 0 |
+| Understanding Brighter | `ReactorAndProactor.md` | 13 |  |  |  |  |  | 13 | 0 |
+| **S3** | **10 pages** | **137** | **31** | **7** | **15** | **5** | **7** | **72** | **8** |
+
+S3: 10 pages, 137 FAILED, **6 with nothing BUILT**.
+
+#### S4: Using an External Bus; Transports
+
+| Section | Page | FAILED | parse | built-by-using | defect | same-page | values | page-type | BUILT |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Using an External Bus | `AsyncAPISupport.md` | 11 | 2 |  | 1 | 2 | 3 | 3 | 1 |
+| Using an External Bus | `CloudEventsSupport.md` | 10 | 3 |  | 1 |  |  | 6 | 2 |
+| Using an External Bus | `DefaultMessageMappers.md` | 13 | 1 |  | 1 |  |  | 11 | 2 |
+| Using an External Bus | `DynamicMessageDeserialization.md` | 8 | 3 |  | 1 |  |  | 4 | 0 |
+| Using an External Bus | `HandlerFailure.md` | 11 |  |  | 1 |  |  | 10 | 0 |
+| Using an External Bus | `ImplementingExternalBus.md` | 3 |  |  | 1 |  |  | 2 | 0 |
+| Using an External Bus | `MessageMappers.md` | 6 | 2 |  |  |  |  | 4 | 1 |
+| Using an External Bus | `MessageTransforms.md` | 8 | 1 | 2 | 2 |  |  | 3 | 0 |
+| Using an External Bus | `Routing.md` | 4 | 1 | 1 |  | 1 |  | 1 | 0 |
+| Using an External Bus | `RoutingMultipleMessageTypes.md` | 9 |  |  |  |  | 1 | 8 | 0 |
+| Using an External Bus | `S3LuggageStore.md` (V4) | 1 |  |  |  |  | 1 |  | 1 |
+| Transports | `AWSSQSConfiguration.md` | 5 | 1 |  | 4 |  |  |  | 5 |
+| Transports | `AWSSQSMigrateToV10.md` | 5 |  | 3 | 2 |  |  |  | 2 |
+| Transports | `AzureServiceBusConfiguration.md` | 2 | 2 |  |  |  |  |  | 0 |
+| Transports | `KafkaConfiguration.md` | 20 | 14 |  |  |  | 1 | 5 | 0 |
+| Transports | `RabbitMQConfiguration.md` | 6 | 5 |  | 1 |  |  |  | 0 |
+| Transports | `RabbitMQConnectionStability.md` | 3 |  | 1 | 1 |  |  | 1 | 0 |
+| **S4** | **17 pages** | **125** | **35** | **7** | **16** | **3** | **6** | **58** | **14** |
+
+S4: 17 pages, 125 FAILED, **10 with nothing BUILT**.
+
+#### S5: Brighter Configuration; V10 Migration; Outbox and Inbox; Reference; Health Checks and Observability
+
+| Section | Page | FAILED | parse | built-by-using | defect | same-page | values | page-type | BUILT |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Brighter Configuration | `BrighterBasicConfiguration.md` | 3 |  |  |  |  |  | 3 | 2 |
+| Brighter Configuration | `CommandProcessorConfigurationReference.md` | 21 | 8 | 1 | 2 |  | 1 | 9 | 1 |
+| Brighter Configuration | `DispatcherConfigurationReference.md` | 5 | 5 |  |  |  |  |  | 0 |
+| Brighter Configuration | `InMemoryOptions.md` | 3 |  |  | 1 |  |  | 2 | 0 |
+| Brighter Configuration | `TestDoubleOptions.md` | 12 | 1 | 1 | 6 |  | 1 | 3 | 0 |
+| V10 Migration | `MigratingToNullableReferenceTypes.md` | 5 |  |  | 3 |  |  | 2 | 17 |
+| V10 Migration | `NullableReferenceTypes.md` | 13 |  | 5 | 4 |  |  | 4 | 3 |
+| V10 Migration | `V10MigrationGuide.md` | 19 | 3 | 2 | 1 | 3 | 1 | 9 | 2 |
+| Outbox and Inbox | `BrighterInboxSupport.md` | 2 | 1 |  |  |  |  | 1 | 0 |
+| Outbox and Inbox | `BrighterOutboxSupport.md` | 2 |  |  | 2 |  |  |  | 0 |
+| Outbox and Inbox | `CausationTrackingStores.md` | 2 |  |  | 2 |  |  |  | 0 |
+| Outbox and Inbox | `DistributedLock.md` (V4) | 1 |  |  |  |  | 1 |  | 1 |
+| Outbox and Inbox | `DynamoDbDistributedLock.md` (V4) | 2 |  |  |  |  | 2 |  | 0 |
+| Outbox and Inbox | `EFCoreOutbox.md` | 2 |  |  |  |  |  | 2 | 0 |
+| Outbox and Inbox | `MongoDBInbox.md` | 3 | 1 | 2 |  |  |  |  | 1 |
+| Outbox and Inbox | `MongoDBOutbox.md` | 2 | 1 |  | 1 |  |  |  | 3 |
+| Outbox and Inbox | `OutboxArchiver.md` | 4 | 2 |  | 1 |  | 1 |  | 0 |
+| Outbox and Inbox | `SweeperCircuitBreaking.md` | 3 | 1 | 1 | 1 |  |  |  | 6 |
+| Outbox and Inbox | `TurningOnReplayOnSeen.md` | 6 |  |  | 5 |  | 1 |  | 0 |
+| Reference | `FAQ.md` | 17 | 4 |  | 5 |  | 1 | 7 | 2 |
+| Health Checks and Observability | `ConfiguringOpenTelemetry.md` | 6 | 3 |  | 3 |  |  |  | 0 |
+| Health Checks and Observability | `Logging.md` | 3 |  |  | 2 |  |  | 1 | 2 |
+| **S5** | **22 pages** | **136** | **30** | **12** | **39** | **3** | **9** | **43** | **40** |
+
+S5: 22 pages, 136 FAILED, **11 with nothing BUILT**.
+
+**Totals: 67 pages, 634 FAILED**, of which 140 are parse, 36 built-by-using, 93 defect,
+14 same-page, 75 values and 276 page-type. **37** pages have nothing BUILT.
+
+**Two methods agree.**
+- `groups.py`'s FAILED column gives **634**, the same as `--report`'s FAILED on those 67 pages.
+- `awk` over `--report` and the tranche list alone gives **630** FAILED on **64** off-tranche pages.
+  Adding the **4** V4 blocks (`S3LuggageStore.md` #1, `DistributedLock.md` #2,
+  `DynamoDbDistributedLock.md` #1, #2) gives 634.
+- The other **36** FAILED blocks on tranche pages are not in any group.
+
+**Against the design's working figures:**
+- **S1–S3 are identical** in pages and FAILED: 8 / 129, 10 / 107 and 10 / 137.
+- **S4 is 16 / 124 → 17 / 125, and S5 is 20 / 133 → 22 / 136.** The only difference is the three
+  (V4) tranche pages, which the task puts in S4 and S5, adding 1 and 3 FAILED blocks.
+- **Nothing BUILT is 36 → 37**, again only `DynamoDbDistributedLock.md`. That is the design's 36
+  off-tranche pages, and the 39 in § *The targets* is still 36 + 3.
+- Phase 2's four new BUILT blocks are all on tranche pages, which is why no off-tranche figure moved.
+- The design's *Reachable* and *Hard* columns came from the probe. They are replaced by the six
+  classes, and nothing here is carried from them.
 
 ## Blocks that stay FAILED
 
