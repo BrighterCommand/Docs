@@ -299,10 +299,10 @@ reason, and does not hold the phase.
   - Output: a compile error in a scaffold unit printed as a finding, exit 1. Red-proof: a planted
     broken unit → exit 1; the real units → **0** such findings at `1b6f7f9`, recorded
 
-- [ ] **Task 2.10:** *(P1)* Give `pagelint` a per-page warning count (friction #80)
+- [x] **Task 2.10:** *(P1)* Give `pagelint` a per-page warning count (friction #80)
   - Input: friction #80; `tools/pagelint.py` `main`
   - Output: a flag printing `page<TAB>warnings`, sorted, whose column sums to the summary line's
-    **524**: two methods that must agree
+    **512**: two methods that must agree
 
 - [ ] **Task 2.11:** *(P1)* Measure the `net9.0` pin against `net10.0` (friction #76)
   - Input: design D7; `refs.csproj`'s `TargetFramework`
@@ -826,6 +826,34 @@ than asserting an exit code the control already has.
 did not exist at that ref, so the figure is measured at 2.9's commit: **45 units** (44 main, 1 V4),
 **0** compile errors. `--report` is otherwise unmoved: **990 / 303 / 670 / 17**, exit 1, the same
 four findings.
+
+#### `pagelint --per-page` (2.10, friction #80)
+
+`--per-page` replaces the findings with one `page<TAB>warnings` row per page that has a warning,
+sorted by path, on stdout. The summary line goes to stderr: `N errors, N warnings across N pages
+with a warning, of N checked`. So two runs diff clean, and a phase's debt delta is a `diff` of two
+outputs rather than a worktree at its base. It combines with paths and `--changed`. With `--fix` it
+exits 2, because `--fix` prints its repairs first. Errors are not rows, but they set exit 1 as a
+full run does. `tools/README.md` § *The other modes* lists it.
+
+**Two methods that agree,** at 2.10's commit:
+
+| Method | Rows | Sum |
+|---|---:|---:|
+| `pagelint.py --per-page`, `awk -F'\t' '{s+=$2} END{print s, NR}'` | **66** | **512** |
+| `pagelint.py \| grep '(warning)' \| cut -d: -f1 \| LC_ALL=C sort \| uniq -c` | **66** | **512** |
+
+The two tables are byte-identical (`diff`, silent), and both equal the full run's summary line,
+*512 warnings (using-directive debt: 512 blocks across 66 pages)*. `LC_ALL=C` is needed: the
+shell's default collation orders `AWSSQS…` after `AgreementDispatcher.md`, and Python's does not.
+
+**Red-proof, two-way.** For a known-present and a known-absent page, `--per-page
+contents/AgreementDispatcher.md contents/Glossary.md` gives one row, `AgreementDispatcher.md 12`,
+and no row for `Glossary.md` (0 warnings), exit 0. For the error path, `print_per_page` was given
+one error and one warning in process: one row (the warning), `1 errors`, exit **1**.
+
+**Said and measured.** The task said the column sums to **524**. Measured **512**: #195 moved the
+debt from 524 to 512 before phase 1 (§ *Phase 1 as executed*). The task now says 512.
 
 ---
 

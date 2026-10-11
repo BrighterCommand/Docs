@@ -171,6 +171,7 @@ python3 tools/pagelint.py contents/Glossary.md       # specific pages
 python3 tools/pagelint.py --changed origin/master    # strict on code blocks overlapping the diff
 python3 tools/pagelint.py --fix                      # repair banners, fences, descriptions
 python3 tools/pagelint.py --plant                    # rule 8's five in-memory plants; exit 0 only if all behave
+python3 tools/pagelint.py --per-page                 # page<TAB>warnings, sorted; diff two runs for a debt delta
 python3 tools/symbolcheck.py contents/Glossary.md    # specific pages
 python3 tools/symbolcheck.py --census                # open-world report, never a gate, always exit 0
 python3 tools/symbolcheck.py --verify-list           # is every watchlist row still dead?
