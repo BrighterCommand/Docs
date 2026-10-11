@@ -317,7 +317,7 @@ reason, and does not hold the phase.
     gate. Row 9 at the phase's ref. The fourth scope line explained. `--classify`'s description
     rewritten for five columns and six classes. AC14's count → **1** for each new figure
 
-- [ ] **Task 2.13:** Baseline what phase 2 made build
+- [x] **Task 2.13:** Baseline what phase 2 made build
   - Input: 2.1's predicted set; `--report` after 2.5–2.8
   - Output: rows in `tools/blockcheck/baseline.tsv` for exactly the blocks that now build;
     `--report` exit 0. § *Phase 2 as executed* reconciles them against 2.1, block by block. Each
@@ -931,6 +931,41 @@ Its **`0 findings`** becomes true only when 2.13 writes the four rows. Today it 
 copy of the figure, as `0 violations` beside it already was. The first draft repeated
 `548 reference assemblies` in the phase paragraph, which counted 2. The paragraph now points at the
 row instead.
+
+#### Baselined (2.13)
+
+`baseline.tsv` gains **4** rows and moves **3**, all to ref **`937db00`**. That is the commit
+holding 2.6 and 2.8, the work that made each block build under its present scaffold name. Each row
+sits beside its page's other rows, and a header comment says what the phase admitted.
+
+| Page | # | Scaffold | Row |
+|---|---:|---|---|
+| `DarkerConfigurationReference.md` | 1 | `DarkerConfigurationReferenceContext.cs` | new (2.8) |
+| `DarkerConfigurationReference.md` | 2 | `DarkerConfigurationReferenceContext.cs` | new (2.8) |
+| `QueryPipelinePolicies.md` | 1 | `-` | new (2.8) |
+| `TickerQScheduler.md` | 2 | `TickerQSchedulerContext.cs` | new (2.8) |
+| `AwsScheduler.md` | 19 | `v4` | `f6a9a7c` → `937db00` (2.6) |
+| `DistributedLock.md` | 1 | `v4` | `f6a9a7c` → `937db00` (2.6) |
+| `S3LuggageStore.md` | 2 | `S3LuggageStoreContext.cs+v4` | `f6a9a7c` → `937db00` (2.6) |
+
+**Against 2.1, block by block.** BUILT now, minus the rows at `f6a9a7c`
+(`comm -13` of the two sorted `page<TAB>ordinal` lists), gives exactly the four 2.1 predicted for
+2.8. The reverse, `comm -23`, is **empty**: no block stopped building. 2.1 predicted **0** for the
+handler wrapper (2.5) and **0** for Shouldly (2.7), and 0 is what each made build.
+
+**Two methods agree:** `grep -v '^#' baseline.tsv | grep -vc '^$'` → **303**, and `--report`'s
+BUILT rows → **303**.
+
+**Rule 8.** `pagelint` on the three pages gives **0 errors**. The four blocks are `statements`
+blocks with no handler method and no handler attribute, so rule 8 has nothing to read in them. The
+pages' one warning is `QueryPipelinePolicies.md`'s block at `:117`, a declared `// ...`, and it is
+not one of the four.
+
+**Gates.** `--report` → **990 / 303 / 670 / 17, 0 findings, exit 0**, with `baseline: 303 blocks
+required to build`, `scaffold rule: 45 units checked, 0 violations, 0 compile errors`, `pin rule:
+4 pages on the v4 pin, 0 violations`, and 548 reference assemblies on each pin. **`tools/README.md`
+row 9, written at 2.12, re-derived:** every figure in it equals this run, including `0 findings`,
+so it needs no edit.
 
 ---
 
