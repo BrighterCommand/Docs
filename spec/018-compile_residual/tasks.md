@@ -310,7 +310,7 @@ reason, and does not hold the phase.
     that resolve to a different version, and `--report`'s verdicts under it against the `net9.0`
     ones. If any verdict moves, it is put to the maintainer before 2.14
 
-- [ ] **Task 2.12:** Update CI and `tools/README.md` for phase 2's instruments
+- [x] **Task 2.12:** Update CI and `tools/README.md` for phase 2's instruments
   - Input: `.github/workflows/docs.yml` `blocks` job; `tools/README.md` row 9, § *Reading a number*,
     § *The other modes*, the `--classify` bullet
   - Output: a `dotnet build tools/blockcheck/refs-v4/refs-v4.csproj -c Release` step before the
@@ -899,6 +899,38 @@ measurement. The probe exits 1 when the control does not move.
 **D7's condition is not met.** No verdict moves, so nothing goes to the maintainer before 2.14,
 and P2-2 (*compiles against the released packages, not in the pin* as a verdict) stays P2. The pin
 stays `net9.0`.
+
+#### CI and `tools/README.md` (2.12)
+
+**CI.** The `blocks` job builds `refs-v4/refs-v4.csproj` between `refs.csproj` and
+`blockcheck.csproj`. That order needs 2.9's `<Compile Remove="refs-v4/**" />`, without which the
+third build fails `CS0579` (§ *The V4 pin (2.6)*).
+
+**`tools/README.md`:**
+- a paragraph for this phase above the table
+- row 9 rewritten, with its `bd95ee0` figures kept as history
+- the `blocks` job's build list grown to three, with the drift check's exit 2 stated
+- § *Reading a number*: four scope lines, not three. The fourth is `pin rule: N pages on the v4
+  pin, 0 violations`. The per-pin compiler lines and their `(v4 pin)` suffix are explained, and so
+  are 2.9's `compile errors`
+- the `--classify` bullet rewritten for five columns, the six classes, `first` and D8's resolution
+
+`pagelint --per-page` was listed at 2.10.
+
+**Row 9 is written as it reads at the phase's commit.** Its verdict figures are measured:
+`--report` gives **990 / 303 / 670 / 17**, 548 assemblies on each pin, 30 blocks on the V4 pin,
+45 units with 0 violations and 0 compile errors, and 4 pages on the V4 pin with 0 violations.
+Its **`0 findings`** becomes true only when 2.13 writes the four rows. Today it reads **4**. So
+2.13 re-derives row 9 before the phase is committed.
+
+**AC14**, the corrected form (`grep -rn '<figure>' --include='*.md' --include='*.yml'
+--include='*.py' . | grep -vcE '^(\./)?spec/'`), is **1** for each of: `303 BUILT`,
+`670 FAILED`, `548 reference assemblies`, `30 blocks on the v4 pin`, `4 pages on the v4 pin`.
+`0 compile errors` counts **2**: row 9, and § *Reading a number*'s line format
+(`scaffold rule: N units checked, 0 violations, 0 compile errors`), which is a template and not a
+copy of the figure, as `0 violations` beside it already was. The first draft repeated
+`548 reference assemblies` in the phase paragraph, which counted 2. The paragraph now points at the
+row instead.
 
 ---
 

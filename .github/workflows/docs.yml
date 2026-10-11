@@ -226,5 +226,6 @@ jobs:
         with:
           python-version: '3.12'
       - run: dotnet build tools/blockcheck/refs/refs.csproj -c Release
+      - run: dotnet build tools/blockcheck/refs-v4/refs-v4.csproj -c Release
       - run: dotnet build tools/blockcheck/blockcheck.csproj -c Release
       - run: python3 tools/blockcheck.py --report "$RUNNER_TEMP/blockcheck.tsv"
