@@ -981,6 +981,9 @@ def mode_show(blocks, args):
 # 3 to 11 are enforced across the two halves: 3, 4, 6, 7, 10 and 11 here, 5, 8
 # and 9 in tools/blockcheck/Program.cs, which returns 2 for each and is
 # propagated.
+# The prefix the Roslyn tool writes before each error it reports against a
+# scaffold unit rather than a block. `--report` reads these as findings.
+SCAFFOLD_ERROR = 'scaffold error: '
 TOOL_DLL = os.path.join(ROOT, 'tools', 'blockcheck', 'bin', 'Release', 'net9.0',
                         'blockcheck.dll')
 REFS_LIST = os.path.join(ROOT, 'tools', 'blockcheck', 'refs', 'bin', 'Release',
@@ -1192,14 +1195,18 @@ def mode_report(blocks, args):
         groups = stage_by_pin(blocks, staged)
         if groups is None:
             return 2
-        verdicts = {}
+        verdicts, unit_errors = {}, []
         for pin, (directory, refs, _) in groups.items():
             result = subprocess.run(['dotnet', TOOL_DLL, directory, refs],
                                     capture_output=True, text=True)
             # The V4 pin's scope lines say which pin they count, so that its
             # `N reference assemblies` is never read as the main pin's -- a
-            # pin that did not restore must not shrink silently.
+            # pin that did not restore must not shrink silently. A `scaffold
+            # error:` line is not a scope line: it is kept for the findings.
             for line in result.stderr.splitlines():
+                if line.startswith(SCAFFOLD_ERROR):
+                    unit_errors.append(line[len(SCAFFOLD_ERROR):].split('\t'))
+                    continue
                 print(line + (f' ({pin} pin)' if pin != 'main' else ''),
                       file=sys.stderr)
             if result.returncode != 0:
@@ -1257,6 +1264,17 @@ def mode_report(blocks, args):
     pin_violations, pins_ruled = pin_rule_violations(blocks, scaffolds)
     for violation in pin_violations:
         print(f'PIN RULE: {violation}', file=sys.stderr)
+    # A UNIT THAT DOES NOT COMPILE IS A FINDING (friction #77), as a unit-rule
+    # violation is. The tool keeps such errors out of every block's verdict,
+    # rightly, and until spec 018 that left them a warning on a green run.
+    by_ident = {block.ident: block for block in blocks}
+    uncompiled = []
+    for staged_unit, at, code, message, count, first in unit_errors:
+        unit = os.path.relpath(os.path.join(
+            SCAFFOLD_DIR, 'units', staged_unit[len('unit_'):]), ROOT)
+        block = by_ident[first]
+        uncompiled.append(f'{unit}:{at}  {code} {message} -- in {count} '
+                          f'block(s), first {block.rel} block {block.ordinal}')
 
     # Scope first, verdict second. `0 findings` out of 0 blocks and `0 findings`
     # out of 985 are different claims, and only one of them is worth having.
@@ -1337,7 +1355,8 @@ def mode_report(blocks, args):
     for title, items in (('stopped building', regressed),
                          ('baselined block no longer exists', vanished),
                          ('builds and is not baselined', unlisted),
-                         ('scaffold changed since admission', rescaffolded)):
+                         ('scaffold changed since admission', rescaffolded),
+                         ('scaffold unit does not compile', uncompiled)):
         if items:
             print(f'\n----- {title} ({len(items)}) -----', file=sys.stderr)
             for item in items:
@@ -1348,10 +1367,11 @@ def mode_report(blocks, args):
     # corpus that is wrong on its own terms.
     findings = (len(malformed) + len(regressed) + len(vanished)
                 + len(unlisted) + len(rescaffolded) + len(rule_violations)
-                + len(pin_violations))
+                + len(pin_violations) + len(uncompiled))
     print(f'baseline: {len(baseline)} blocks required to build', file=sys.stderr)
     print(f'scaffold rule: {units_ruled} units checked, '
-          f'{len(rule_violations)} violations', file=sys.stderr)
+          f'{len(rule_violations)} violations, '
+          f'{len(uncompiled)} compile errors', file=sys.stderr)
     print(f'pin rule: {pins_ruled} pages on the v4 pin, '
           f'{len(pin_violations)} violations', file=sys.stderr)
     print(f'{findings} findings' + (f', {skipped} skipped' if skipped else ''),

@@ -294,7 +294,7 @@ reason, and does not hold the phase.
   - Output: such a block staged as a top-level file. Red-proof: one block naming `Program` builds;
     control: a `statements` block that does not name it stages exactly as before (`cmp`)
 
-- [ ] **Task 2.9:** *(P1)* Make a scaffold unit that does not compile a finding (friction #77)
+- [x] **Task 2.9:** *(P1)* Make a scaffold unit that does not compile a finding (friction #77)
   - Input: friction #77; the unit rule in `--report`
   - Output: a compile error in a scaffold unit printed as a finding, exit 1. Red-proof: a planted
     broken unit → exit 1; the real units → **0** such findings at `1b6f7f9`, recorded
@@ -714,6 +714,12 @@ the tool's own scope line and by `grep -vc '^#'`. `wc -l` gives 546 because it c
 E3's construction rebuilt today gives the same 545-assembly set (`diff`, silent). The design now
 says 545.
 
+**`blockcheck.csproj` was left globbing `refs-v4/`.** It removed `refs/**` from its sources and not
+`refs-v4/**`, so once `refs-v4.csproj` was built, `dotnet build tools/blockcheck/blockcheck.csproj`
+failed with **7 × `CS0579`** (duplicate assembly attributes from `refs-v4/obj/…/AssemblyInfo.cs`).
+2.6's runs used a `blockcheck.dll` built before the pin's first restore. `<Compile Remove="refs-v4/**" />`
+was added at 2.9. 2.12's CI step builds `refs-v4` before `blockcheck`, so without it the job would fail there.
+
 
 #### Shouldly in the pin (2.7)
 
@@ -789,6 +795,37 @@ keep only a `CS0103` (`builder` or `WebApplication`, which the page never declar
 `defect` (`CS1061`, `CS1929`) and #10 stays `defect` (`CS1501`); both are read at their phase.
 Corpus-wide: **670 FAILED: 141 parse, 36 built-by-using, 99 defect, 28 same-page, 77 values, 289
 page-type**.
+
+#### A unit that does not compile (2.9, friction #77)
+
+The Roslyn tool keeps an error reported against a scaffold unit's tree out of the block's verdict,
+as before. It now keeps each one, keyed by unit, code, position and message, and prints it once at
+the end of the run as a `scaffold error:` line, with how many blocks it rode with and the first.
+That replaces the `WARNING: N error(s) reported against scaffold trees` line, which counted one
+error once per block. `--report` takes those lines out of the scope lines, lists them under
+*scaffold unit does not compile* by unit file, line and column, and counts each as a finding. The
+summary line becomes `scaffold rule: N units checked, N violations, N compile errors`.
+
+**Red-proof, two-way:** `probe/unit_plants.py` (obligation 18). It runs `--report` in process twice,
+with `load_scaffold` patched so the units of `PageContext.cs` point at a scratch copy. The plant is
+`using Plant.DoesNotExist;` prepended, a `CS0246` in the unit's own tree. The unit rule cannot see
+it, because it reads declarations and `global using` and not plain `using`s. So the only check that
+can turn the plant into a finding is the one under test.
+
+| Run | Exit | Findings | Unit rule | Compile errors |
+|---|---:|---:|---:|---:|
+| control, the real units | 1 | 4 | 0 | **0** |
+| plant, `PageContext.cs` | **1** | **5** | 0 | **1** |
+
+The plant's finding: `tools/blockcheck/scaffold/units/PageContext.cs:1:7  CS0246 … -- in 2
+block(s), first contents/DapperOutbox.md block 1`. The control's exit is already 1, from 2.8's four
+unbaselined blocks (2.13's rows). So the probe asserts the plant adds exactly one finding, rather
+than asserting an exit code the control already has.
+
+**Said and measured.** The task said *the real units → 0 such findings at `1b6f7f9`*. The instrument
+did not exist at that ref, so the figure is measured at 2.9's commit: **45 units** (44 main, 1 V4),
+**0** compile errors. `--report` is otherwise unmoved: **990 / 303 / 670 / 17**, exit 1, the same
+four findings.
 
 ---
 

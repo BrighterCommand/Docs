@@ -513,7 +513,10 @@ internal static class Program
             : Console.Out;
         var clock = Stopwatch.StartNew();
         int built = 0;
-        int scaffoldErrors = 0;
+        // A unit's own errors, once each however many blocks it rode with:
+        // (unit, code, line:col, message) -> (blocks that saw it, the first).
+        var scaffoldErrors = new SortedDictionary<(string Unit, string Code, string At, string Message),
+            (int Blocks, string First)>();
         var explained = new HashSet<string>(StringComparer.Ordinal);
         int diagnosticsWritten = 0;
         try
@@ -543,9 +546,19 @@ internal static class Program
                 // scaffold's tree is an instrument fault, not a documentation
                 // defect, and counting it as one would fail every page that
                 // shares that scaffold for a reason no reader could act on. It
-                // is not swallowed: the count is printed at the end of the run.
+                // is not swallowed: each is printed once at the end of the run,
+                // as a `scaffold error:` line, and `--report` makes it a finding
+                // (friction #77) -- a unit that does not compile can fail its
+                // page's blocks for a reason that is not the page's.
                 var errors = all.Where(d => d.Location.SourceTree == tree).ToList();
-                scaffoldErrors += all.Count - errors.Count;
+                foreach (var d in all.Where(d => d.Location.SourceTree != tree))
+                {
+                    var pos = d.Location.GetLineSpan().StartLinePosition;
+                    var key = (scaffold, d.Id, $"{pos.Line + 1}:{pos.Character + 1}", d.GetMessage());
+                    scaffoldErrors[key] = scaffoldErrors.TryGetValue(key, out var seen)
+                        ? (seen.Blocks + 1, seen.First)
+                        : (1, id);
+                }
                 if (errors.Count == 0) built++;
 
                 if (explain.Count > 0)
@@ -603,10 +616,11 @@ internal static class Program
         Console.Error.WriteLine(
             $"{files.Count} blocks, {built} built, {files.Count - built} failing" +
             (scaffoldTrees.Count > 0 ? $", {scaffoldTrees.Count} scaffold unit(s)" : string.Empty));
-        if (scaffoldErrors > 0)
+        // One line per distinct error, tab-separated after the prefix, so that
+        // `--report` can read it and a person can too.
+        foreach (var ((unit, code, at, message), (blocks, first)) in scaffoldErrors)
             Console.Error.WriteLine(
-                $"WARNING: {scaffoldErrors} error(s) reported against scaffold trees, " +
-                "not counted against any block");
+                $"scaffold error: {unit}\t{at}\t{code}\t{message}\t{blocks}\t{first}");
         Console.Error.WriteLine(
             $"{clock.Elapsed.TotalSeconds:F1}s total, " +
             $"{clock.Elapsed.TotalMilliseconds / files.Count:F0}ms per block");
