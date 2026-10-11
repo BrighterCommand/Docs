@@ -240,13 +240,13 @@ assemblies rise by Shouldly's, and there is a new scope line for the V4 pin. Eve
 unmoved. Tasks 2.8–2.11 are **P1**: one that does not fit is carried to the residual with its
 reason, and does not hold the phase.
 
-- [ ] **Task 2.1:** Measure what phase 2's staging changes will build, before any row
+- [x] **Task 2.1:** Measure what phase 2's staging changes will build, before any row
   - Input: design § *Gate Movement Predicted*, phase 2's BUILT row; E5's 32 blocks; E2's 6 Shouldly
     blocks; `--list` for blocks naming `Program`
   - Output: § *Phase 2 as executed*, *Predicted BUILT*: the block list each of 2.5, 2.7 and 2.8 is
     expected to make BUILT, with how it was found. This is the set 2.13 reconciles against
 
-- [ ] **Task 2.2:** Give `--classify` its second compile, receiver-aware
+- [x] **Task 2.2:** Give `--classify` its second compile, receiver-aware
   - Input: design § *The Second Compile* (classes, five columns, resolution); `tools/blockcheck.py`
     `:254`, `:1198–1204`; `spec/017-compile_repairs/probe/usings.py` (the `using` supply it
     promotes)
@@ -254,27 +254,28 @@ reason, and does not hold the phase.
     per-class counts on stderr, exit 0, and exit 2 on nothing to classify. A name is resolved only
     when the page does not declare it and the staged base does not supply it
 
-- [ ] **Task 2.3:** Red-proof the second compile (AC6)
+- [x] **Task 2.3:** Red-proof the second compile (AC6)
   - Input: design § *The Second Compile*, *Red-proof*
-  - Output: § *Phase 2 as executed*, a five-row table (block, expected class, actual class) with
-    exactly one row per class named, plus the `Order` control. A second run from a scratch copy with
-    the page-declared check removed turns the control `built-by-using`, recorded. The scratch copy is
-    not committed
+  - Output: § *Phase 2 as executed*, a table (block, expected class, actual class) with exactly one
+    row per class named, plus one control per check that decides a name (D8): page-declared and
+    page evidence. A run from a scratch copy with each check removed moves its control into the
+    wrong class, recorded. The scratch copies are not committed
 
-- [ ] **Task 2.4:** Reconcile `--classify` with the 018 probe (AC7)
+- [x] **Task 2.4:** Reconcile `--classify` with the 018 probe (AC7)
   - Input: `probe/run.sh`'s `verdicts.tsv` at the same ref; 2.2's output
   - Output: `spec/018-compile_residual/probe/reconcile.py` (obligation 18), and § *Phase 2 as
     executed*, a disagreement table: every block where the two differ, each with its reason. E4's
     39 and 29 are expected, in the receiver-aware direction
 
-- [ ] **Task 2.5:** Add the handler wrapper (P0-7)
+- [x] **Task 2.5:** Add the handler wrapper (P0-7)
   - Input: design § *The Handler Wrapper*; `tools/blockcheck.py:263`, `:355`
-  - Output: members blocks overriding the four methods are staged with their fully qualified
-    base. § *Phase 2 as executed* records how many of the 32 are wrapped, and names each one that is
-    not. Red-proof: four plants, one per base, each staging and building. Control: `--stage` output
-    byte-identical to `1b6f7f9` for every members block that is not a handler (`cmp`, silent)
+  - Output: members blocks overriding the four methods, and (D9) `Fallback` / `FallbackAsync`, are
+    staged with their fully qualified base. § *Phase 2 as executed* records how many are wrapped, and
+    names each one that is not. Red-proof: one plant per row of the wrapper's table, each staging and
+    building. Control: `--stage` output byte-identical to `1b6f7f9` for every block that is not
+    wrapped (`cmp`, silent)
 
-- [ ] **Task 2.6:** Add the V4 pin (P0-5)
+- [x] **Task 2.6:** Add the V4 pin (P0-5)
   - Input: design § *The V4 Pin*; `spec/018-compile_residual/probe/v4pin.sh`;
     `tools/blockcheck/scaffold/pages.tsv`
   - Output: `tools/blockcheck/refs-v4/refs-v4.csproj` with its comment; a `v4` cell on the four
@@ -282,13 +283,13 @@ reason, and does not hold the phase.
     two-way: a V4 page unmarked, and a marked page with no V4 block, are each a finding (exit 1);
     the corrected map → exit 0. AC11's `grep -c 'CS0234.*V4'` over `--explain` of the six → **0**
 
-- [ ] **Task 2.7:** Pin Shouldly (P0-8)
+- [x] **Task 2.7:** Pin Shouldly (P0-8)
   - Input: design § *Page Repair Rules*, the Shouldly row; `tools/blockcheck/refs/refs.csproj`
   - Output: `Shouldly` `4.3.0` in `refs.csproj`, with a comment citing Brighter's
     `Directory.Packages.props:150`. The restore is clean and the assembly count is recorded. No page
     is touched; `TestDoubleOptions.md`'s repair is 7.4's
 
-- [ ] **Task 2.8:** *(P1)* Let a `statements` block name `Program` (friction #75)
+- [x] **Task 2.8:** *(P1)* Let a `statements` block name `Program` (friction #75)
   - Input: friction #75 (`spec/017-compile_repairs/tasks.md` § *Friction ledger*); `WRAPPERS`
   - Output: such a block staged as a top-level file. Red-proof: one block naming `Program` builds;
     control: a `statements` block that does not name it stages exactly as before (`cmp`)
@@ -332,6 +333,462 @@ reason, and does not hold the phase.
   - Input: § 1 obligations 6, 19; the phase's prediction
   - Output: § *Phase 2 as executed*, gates against the prediction; readings (no page touched,
     stated); the PR, asking for deletion of its head ref by name
+
+
+### Phase 2 as executed
+
+**Measured at phase start, `f6a9a7c`.** `--report` → **990 / 299 / 674 / 17**, exit 0, unmoved
+since `1b6f7f9` (§ 2).
+
+#### Predicted BUILT (2.1)
+
+**How it was found.** `probe/predict.py` (obligation 18) prototypes each staging change **on its
+candidates only**, in scratch, and compiles them with the gate's own Roslyn tool. Nothing in
+`tools/` is changed. It writes one row per candidate: set, page, block, verdict, codes.
+
+```bash
+python3 spec/018-compile_residual/probe/predict.py <scratch>    # exit 0; 61 rows
+```
+
+| Set | Task | Candidates, method 1 (`predict.py`) | Method 2 | Predicted BUILT |
+|---|---|---:|---|---:|
+| **H**: `members` blocks overriding `Handle`, `HandleAsync`, `Execute` or `ExecuteAsync`, staged `Holder : <fully qualified base>` | 2.5 | **32** FAILED; **29** wrapped | design E5 → **32** | **0** |
+| **S**: blocks calling `.Should…`, against a scratch pin with `Shouldly` `4.3.0` (**548** assemblies, main pin 545) | 2.7 | **6** FAILED | design E2, *pin-gap* → **6** | **0** |
+| **P**: `statements` blocks naming `Program`, staged unwrapped as a top-level file | 2.8 | **17** FAILED | every block naming `Program`, by verdict and shape → **17** FAILED `statements`, and **0** BUILT `statements` | **4** |
+
+**The set 2.13 reconciles against is four blocks, all from 2.8:**
+
+| Page | # | Today | Under 2.8 |
+|---|---:|---|---|
+| `DarkerConfigurationReference.md` | 1 | FAILED | BUILT |
+| `DarkerConfigurationReference.md` | 2 | FAILED | BUILT |
+| `QueryPipelinePolicies.md` | 1 | FAILED | BUILT |
+| `TickerQScheduler.md` | 2 | FAILED | BUILT |
+
+**2.8 cannot lose a baseline row.** No BUILT `statements` block names `Program`; the BUILT blocks
+that do are `types` or `toplevel` (`MSSQLOutbox.md` #3, `MySQLOutbox.md` #3, `PostgresOutbox.md` #3,
+`SqliteOutbox.md` #3, `QueryPipelinePolicies.md` #2), and 2.8 does not touch those shapes.
+
+**Why H and S move nothing.** The wrapper does what it is for: `Context` and `base.HandleAsync`
+stop being errors, and an abstract member left unimplemented now shows as `CS0534` against the base
+(`ImplementAQueryHandler.md` #5). What remains is the page's own: names it never declares
+(`MyCommand`, `TaskReminderCommand`, `_mailGateway`) and the `using` directives it omits
+(`Task<>`, `CancellationToken`). Each of the 29 still has a `CS0246` or `CS0103` of that kind. The
+six Shouldly blocks fail on `SpyCommandProcessor`, `CommandType` and the page's message types,
+**even with `using Shouldly;` added**, the repair 7.4 was to make. So D2 and D4 are needed by the
+phases that repair those pages, and on their own move no verdict.
+
+**The 29 the wrapper reads**, all still FAILED and each repaired or listed by its page's phase
+(4.3 and kin): `BrighterInboxSupport.md` #1; `BrighterOutboxSupport.md` #1; `CloudEventsSupport.md`
+#5; `CQRSWithBrighterAndDarker.md` #11, #12, #13; `DispatchingARequest.md` #8; `EFCoreOutbox.md` #2;
+`FAQ.md` #8; `HowConfiguringTheCommandProcessorWorks.md` #5, #6, #8, #9; `ImplementAQueryHandler.md`
+#4, #5, #8; `PolicyFallback.md` #3, #4, #5; `QueryPatterns.md` #3; `QueryPipeline.md` #8, #13, #22,
+#23; `ShowMeTheCode.md` #2, #3, #4, #5; `TurningOnReplayOnSeen.md` #4.
+
+**The three blocks the wrapper cannot read** are `EFCoreQueryIntegration.md` #1–#3. Each is written
+`ExecuteAsync(...)`, so there is no parameter to read the query type from.
+
+**Said and measured:**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| Design § *Gate Movement Predicted*: BUILT rises *"up to 32 + 6"* by D2, #75 and D4 | **+4**, all #75; D2 **0** of 29, D4 **0** of 6 | the row now carries **+4** |
+| Design § *The Handler Wrapper*: a one-line regex reads 27, and the other 5 *"break the signature across lines"* | joining lines reads 27. Of the other 5, 2 (`BrighterInboxSupport.md` #1, `ShowMeTheCode.md` #5) name their parameter `@event` and read once `@` is admitted, so **29**. 3 have no parameter at all | the paragraph now says 29, and why the 3 stay unwrapped |
+| 017 friction #75: `QueryHandlerDependencies.md` #3 builds *"as a real `Program.cs` … at 0 errors"* | **`CS0103`, `builder`**. The block calls `builder.Services` and never declares `builder` | a page defect, read in its phase; not an instrument gap |
+
+
+#### The second compile (2.2)
+
+`--classify` now prints `page·ordinal·class·first·names`. `first` is the first compile's class, and
+its column is **byte-identical** to the old four-column output's class on all 674 rows (`cmp` of
+`cut -f1-3` from the old tool against `cut -f1,2,4` from the new, silent). `names` is what decided
+`class`: the namespaces supplied for `built-by-using`, the diagnostic codes for `defect` (and
+`wrapper:` names), the missing names otherwise. The `using`s are supplied in up to four rounds, as
+017's probe did.
+
+**Receiver-aware**, design D1 and D8. A name is not resolved when any block on the page declares
+it. Nor is it resolved when it is a member of a handler base the staged `Holder` lacks. Those
+members were read from source at Brighter `10.7.0` and Darker `4.1.1`, and the command is written
+beside `HANDLER_BASE_MEMBERS`. A block left holding one is `defect` with `wrapper:`, never
+`built-by-using`. First-party namespaces are supplied before third-party ones. A third-party
+namespace is supplied only when a block on the page imports from its root (D8, ruled at 2.3). The
+compile settles in **3** rounds; not settling within `USING_ROUNDS` (8) is exit 2.
+
+| Figure | Method 1 | Method 2 | Agrees? |
+|---|---|---|---|
+| Second compile, at `f6a9a7c`, after 2.4's `CS0308` repair | stderr → **141 parse, 32 built-by-using, 119 defect, 28 same-page, 67 values, 287 page-type** | `cut -f3 \| sort \| uniq -c` → the same six | **yes** |
+| First compile | stderr → **141 / 315 / 21 / 19 / 35 / 143** | the old tool's summary line → the same | **yes** |
+| Rows | **674** | `--report`'s FAILED → **674** | **yes** |
+
+**Checked:** two runs from fresh staging `cmp` silent. Exit **2** on a page with nothing FAILED
+(`AggregationQueryPatterns.md`) and on a page with no blocks. `--report` is unmoved: 990 / 299 /
+674 / 17, 0 findings. AC6's red-proof is 2.3.
+
+**Said and measured.** The old tool counted a pinned type in the global namespace as `import`
+evidence. The first draft of the second compile dropped such types from the shared table, and
+`ImplementAQueryHandler.md` #9's `first` moved `import` → `page-type`. The first compile now reads
+every name the dump lists, as before. Only the second compile needs a namespace, because it writes
+the `using`.
+
+
+#### Red-proof (2.3, AC6)
+
+**Run 1**, the tool as committed, over the five pages, exit 0:
+
+```bash
+python3 tools/blockcheck.py --classify contents/Routing.md contents/AWSSQSConfiguration.md \
+    contents/TestDoubleOptions.md contents/BuildingAPipeline.md contents/NullableReferenceTypes.md
+```
+
+| Block | Expected | Actual | Why it is known |
+|---|---|---|---|
+| `Routing.md` #2 | `built-by-using` | **`built-by-using`**, `Paramore.Brighter` | one of E1's 34 |
+| `AWSSQSConfiguration.md` #7 | `defect` | **`defect`**, `CS1739` | behind `Paramore.Brighter` and `…MessagingGateway.AWSSQS`: *"The best overload for 'SqsSubscription' does not have a parameter named 'name'"*, an *api* block |
+| `TestDoubleOptions.md` #11 | `page-type` | **`page-type`**, `Mock`, `MyCommand`, `MyHandler`, `Times` | `MyCommand` and `MyHandler` are never shown; Moq is not pinned |
+| `TestDoubleOptions.md` #2 | `parse` | **`parse`** | does not parse as staged |
+| **Control, page-declared:** `BuildingAPipeline.md` #3 | not `built-by-using` | **`same-page`**, `RequestLoggingHandler` | the page declares `RequestLoggingHandler<TRequest>`, and `Paramore.Brighter.Logging.Handlers` ships one |
+| **Control, page evidence:** `NullableReferenceTypes.md` #4 | not given `StackExchange.Redis` | **`page-type`**, `CreateOrderCommand`, `IOrderRepository`, `Order` | the page never declares `Order` and imports nothing from `StackExchange` |
+
+**Run 2**, a scratch copy with the page-declared check removed
+(`if name in declared or …` → `if name in artefacts or …`). Of the 37 rows on the five pages, only
+the first control moves:
+`BuildingAPipeline.md` #3 → **`built-by-using`**, `Paramore.Brighter.Logging.Handlers`.
+
+**Run 3**, a scratch copy with page evidence removed (`new = first_party or new`). Of the 37 rows,
+only the second control changes class: `NullableReferenceTypes.md` #4 → **`defect`**, `CS0117`, given
+`StackExchange.Redis` for `Order`. `TestDoubleOptions.md` #11 keeps its class and drops `Mock` and
+`Times` from its names, because Moq was supplied.
+
+Each check therefore decides its control, and the four class rows hold with both checks in place.
+
+**What D1 alone let through**, found by this task's first draft. The design's control was an
+`Order` block that page-declares `Order`. Searching for one showed that D1's page-declared check
+cannot reach most `Order` blocks: the pages that use `Order` mostly never declare it. A scratch run
+that printed every supplied namespace, over all 674 rows:
+
+| Name → namespace | Rows, D1 as designed | Pages |
+|---|---:|---|
+| `Order` → `StackExchange.Redis` | **20** | `AwsScheduler.md`, `AzureScheduler.md`, `DispatchingARequest.md`, `HangfireScheduler.md`, `ImplementAQueryHandler.md`, `InMemoryScheduler.md`, `NullableReferenceTypes.md`, `QuartzScheduler.md`, `QueriesAndQueryObjects.md` |
+| `Context` → `Polly` | **11** | `TurningOnReplayOnSeen.md`, `UsingTheContextBag.md`: a `types` block whose `RequestHandler` base was imported in the same round |
+| `Tag`, `User`, `Id`, `ICache`, `ILog`, `LogProvider`, `Build`, `Topic`, `Seconds`, `Log`, `Priority` | 1–2 each | MongoDB, AWS IAM, `Json.Schema`, Hangfire, Quartz, OpenTelemetry, GCP, Humanizer, NLog, Spanner |
+
+So 2.2's record had said *"0 rows supply `StackExchange.Redis`"*, and that was measured on the
+`names` column. That column carries supplied namespaces only for `built-by-using` rows. The
+supplied set is what decides, and it held 20 such rows. **D8**, ruled by the maintainer 2026-10-05,
+added tiering and page evidence:
+
+| Third-party supplied | D1 as designed | + tiered | + page evidence (D8, committed) |
+|---|---:|---:|---:|
+| `StackExchange.Redis` | 20 | 20 | **0** |
+| `Polly` | 17 | 10 | **6**, all on pages that import Polly |
+| `built-by-using` | 32 | 32 | **32** |
+| class changes against D1 | — | 0 | **20**: 16 `defect` → `page-type`, 2 `same-page` → `page-type`, 1 `values` → `page-type`, 1 `values` → `defect` |
+
+All **21** rows that still receive a third-party namespace are on pages importing from its root:
+AWS, Hangfire, Kafka, Polly and Xunit pages. **The cost runs the other way**, and it is known:
+`AwsScheduler.md` #2, #3, #21 and #22 need `Amazon.RegionEndpoint`, and the page imports nothing
+from `Amazon`, so they read `page-type`. The page is one of the V4 pages (2.6).
+
+**The page-declared check has a cost too.** `QueriesAndQueryObjects.md` declares
+`interface IQuery<out TResult>` to show Darker's, and `BuildingAPipeline.md` declares
+`RequestLoggingHandler<TRequest>` to show Brighter's. So `QueriesAndQueryObjects.md` #22, #23 and
+`BuildingAPipeline.md` #3 read `same-page` where `using Paramore.Darker;` or
+`using Paramore.Brighter.Logging.Handlers;` would build them. They are read at their phases.
+
+
+#### Reconciled with the probe (2.4, AC7)
+
+`probe/reconcile.py` (obligation 18) joins `--classify` to `probe/run.sh`'s `verdicts.tsv`, both
+written at `f6a9a7c` in one run, block by block. `same-page`, `values` and `page-type` fold onto
+the probe's STUB. It derives each disagreement's reason from the data, and exits 1 when a row has
+none.
+
+```bash
+bash spec/018-compile_residual/probe/run.sh <W>                    # exit 0
+python3 spec/018-compile_residual/probe/reconcile.py <W>            # exit 0: 14 disagreements, 0 unexplained
+```
+
+| Probe | `--classify` | Blocks |
+|---|---|---:|
+| PARSE | parse | 141 |
+| BUILT | built-by-using | 32 |
+| BUILT | STUB | **3** |
+| DEFECT | defect | 118 |
+| DEFECT | STUB | **10** |
+| STUB | defect | **1** |
+| STUB | STUB | 369 |
+
+674 rows on each side, the same blocks (the script refuses otherwise). **14 disagree:**
+
+| Page | # | Probe | `--classify` | Reason |
+|---|---:|---|---|---|
+| `AwsScheduler.md` | 4 | DEFECT | page-type | page evidence: `MongoDB.Driver` for `Tag` |
+| `AwsScheduler.md` | 10 | DEFECT | page-type | page evidence: `Amazon.IdentityManagement.Model` for `User`, and `Json.Schema` |
+| `AwsScheduler.md` | 15 | DEFECT | page-type | page evidence: `MongoDB.Driver` for `Tag` |
+| `BuildingAPipeline.md` | 3 | BUILT | same-page | page-declared: `RequestLoggingHandler` |
+| `DispatchingARequest.md` | 1 | DEFECT | page-type | `CS0308` on `GetService<T>`, read as a missing `using` |
+| `ImplementAQueryHandler.md` | 7 | DEFECT | page-type | page evidence: `Amazon.Runtime.Internal.Util` for `ICache` |
+| `MessageMappers.md` | 6 | DEFECT | page-type | page evidence: `Google.Cloud.PubSub.V1` for `Topic` |
+| `MigratingToPollyV8.md` | 8 | STUB | defect | page evidence: `Humanizer` for `1.Seconds()`, which the page never names. `CS1061` is the right reading |
+| `QueriesAndQueryObjects.md` | 22 | BUILT | same-page | page-declared: `IQuery` |
+| `QueriesAndQueryObjects.md` | 23 | BUILT | same-page | page-declared: `IQuery` |
+| `RabbitMQConnectionStability.md` | 3 | DEFECT | page-type | page evidence: `NLog.Fluent` for `Log` |
+| `UsingTheContextBag.md` | 13 | DEFECT | page-type | page evidence: `Polly` for `Context` |
+| `UsingTheContextBag.md` | 14 | DEFECT | page-type | page evidence: `Polly` for `Context` |
+| `UsingTheContextBag.md` | 17 | DEFECT | page-type | page evidence: `Polly` for `Context` |
+
+All but `MigratingToPollyV8.md` #8 run in the receiver-aware direction. That one runs the other way
+for the same reason: the probe made a call compile with a package the page never names.
+
+**Two readings for the repair phases.** The three `same-page` rows are 2.3's known cost of the
+page-declared check: each builds with a `using`. `UsingTheContextBag.md` #13, #14 and #17 are
+`statements` blocks: a handler's lines shown outside any class, naming `RequestHandler.Context`. Read
+`page-type` on `Context`, but their repair is not a type stub.
+
+**Red-proof**, two-way: a copy of the run's inputs with `Routing.md` #2 planted as `page-type` →
+**15 disagreements, 1 unexplained** (the plant), exit **1**. The real inputs → exit **0**.
+
+**Said and measured.** Design § *The Second Compile* expected *"E4's 39 and 29"* disagreements;
+measured **14**. The 39 are first-compile *import* rows, not verdicts. The probe's `run.sh` already
+drops `Order` from its type table by name, so its 22 `Order` rows cannot disagree. E4's 29
+second-compile DEFECTs land as follows:
+
+| E4 tag (first, by `hardcat.py`'s order) | `defect` | `page-type` | Why the `defect`s stay |
+|---|---:|---:|---|
+| `wrapper` (22) | **18** | 4 | 16 are `members` handler blocks failing `CS0117` (`'object'` has no `HandleAsync`): the base class is missing, which 2.5 supplies, and receiver-aware resolution cannot. `AsyncDispatchARequest.md` #4 is a `statements` block calling `base.HandleAsync`. `DispatchingARequest.md` #1 is the `CS0308` row above, now `page-type` |
+| `collision?` (7) | **3** | 4 | `MigratingToPollyV8.md` #11, #12: the page's own `Task` (never declared) meets `System.Threading.Tasks.Task`, and `[Validation]` is no Brighter attribute at 10.7.0. `UsingTheContextBag.md` #8: `Activity.SetAttribute` and `AddEvent(string)` do not exist on `System.Diagnostics.Activity`. Each is read at its phase |
+
+**Defect in 2.2's instrument, repaired here** (obligation 21). A generic extension method whose type
+has a non-generic instance overload of the same name is reported as `CS0308`, not `CS1061`. One such
+call is `serviceProvider.GetService<T>()`, where the overload is `IServiceProvider.GetService(Type)`.
+The second compile read that as a defect. `NON_GENERIC_RE` now reads it as the missing `using` it
+is. At the first compile there are **0** `CS0308`s (`grep -c CS0308` over the probe's
+`explain.txt`), so `first` cannot move, and it did not (`cmp`). At the second compile, exactly one
+row moves: `DispatchingARequest.md` #1, `defect` → `page-type` (`GreetingCommand`). Its `using`s plus
+`Microsoft.Extensions.DependencyInjection`, compiled by hand, leave only `CS0246` on
+`GreetingCommand`.
+
+
+#### The handler wrapper (2.5)
+
+`handler_base` reads the base from the joined signature, and `wrap` writes
+`public abstract class Holder : <base>`, fully qualified (design § *The Handler Wrapper*).
+
+**D9, ruled by the maintainer 2026-10-09.** Five `members` blocks show a handler by its `Fallback`
+alone: `PolicyFallback.md` #6, #7, #9 (`MyCommand Fallback(MyCommand)`, Brighter's) and
+`QueryPipeline.md` #24, #25 (`Task<string> FallbackAsync(Query)`, Darker's). Each was `defect` with
+`wrapper:Context`. The wrapper now reads `Fallback` and `FallbackAsync` too, and the return type
+picks the product.
+
+**The Holder is abstract**, found by the plants. A Darker `Fallback` shown alone fails `CS0534` in a
+concrete `Holder`, for want of the `Execute` its base declares abstract. Over the corpus the change
+moves **0** verdicts and **0** classes: `--classify` before and after is identical (`cmp`), and
+`--report` differs only in error counts. At the first compile **9** wrapped blocks each lose one
+`CS0534`: `CQRSWithBrighterAndDarker.md` #13, `ImplementAQueryHandler.md` #4, #5,
+`QueryPatterns.md` #3, `QueryPipeline.md` #13, #22–#25 and `ShowMeTheCode.md` #3. Each was a
+cascade. When the block's own `CancellationToken` or query type is unresolved, Roslyn reports the
+abstract member unimplemented and does not report `CS0115`. At the second compile, with the
+`using`s supplied, none of the 9 carries `CS0534` either way.
+
+**Wrapped: 34**, every one FAILED today, so no baseline row moves. They are 2.1's 29 and D9's 5.
+`handler_base` → 34 against 2.1's `predict.py` 29 + the D9 search's 5: **agrees**. **Not wrapped,
+with the reason it gives:**
+
+| Page | # | Verdict | Reason |
+|---|---:|---|---|
+| `EFCoreQueryIntegration.md` | 1 | FAILED | `ExecuteAsync(...)` names no request type to read |
+| `EFCoreQueryIntegration.md` | 2 | FAILED | the same |
+| `EFCoreQueryIntegration.md` | 3 | FAILED | the same |
+| `DarkerAndBrighterPipelines.md` | 1 | SKIPPED | its overrides imply two bases: `RequestHandlerAsync<AddGreetingCommand>` and `QueryHandlerAsync<GetPersonNameQuery, string>` |
+
+**Red-proof**, `probe/handler_plants.py` (obligation 18). Each plant is a `Block` staged by `wrap`
+itself, and compiled by the gate's Roslyn tool against a scaffold unit that declares `PlantCommand`
+and `PlantQuery`. Exit 0, **11 of 11**:
+
+| Plant | Wrapped | Base-less |
+|---|---|---|
+| `Handle` | BUILT | FAILED `CS0103`, `CS0115`, `CS0117` |
+| `HandleAsync` | BUILT | FAILED `CS0103`, `CS0115`, `CS0117` |
+| `Execute` | BUILT | FAILED `CS0115` |
+| `ExecuteAsync` | BUILT | FAILED `CS0115` |
+| `Fallback`, Brighter | BUILT | FAILED `CS0115`, `CS0117` |
+| `Fallback`, Darker | BUILT | FAILED `CS0115` |
+| `FallbackAsync`, Brighter | BUILT | FAILED `CS0115`, `CS0117` |
+| `FallbackAsync`, Darker | BUILT | FAILED `CS0115` |
+| `ExecuteAsync(PlantQuery)`, no `CancellationToken` | FAILED `CS0115`, as it must: abstract hides no wrong override | — |
+| `ExecuteAsync(...)` | unwrapped: *names no request type to read* | — |
+| `Handle` and `Execute` in one block | unwrapped: *its overrides imply two bases* | — |
+
+A scratch copy of `blockcheck.py` with the wrapper's base disabled runs the same probe to exit
+**1**: every plant fails wrapped. The copy is not committed.
+
+**Control.** `--stage` from `HEAD`'s `blockcheck.py` against the new one: `index.tsv` identical, and
+**956 of 956** unwrapped blocks byte-identical, the 92 non-handler `members` blocks among them.
+**34 of 34** wrapped blocks differ in exactly one line, the `Holder`. `--verify-extraction` → 990 of
+990 identical, exit 0.
+
+**Gates against the prediction** (2.1: the wrapper makes **0** BUILT): `--report` → 990 / 299 / 674 /
+17, **0 findings**. `--classify`, second compile, before → after the wrapper:
+
+| Among the 34 | Blocks |
+|---|---:|
+| `defect` → `page-type` | **15** |
+| `defect` → `defect` | 7 |
+| `parse` → `parse` | 11 |
+| `page-type` → `page-type` | 1 |
+| `CS0117` (`'object'` has no `HandleAsync`) | 19 → **0** |
+| `wrapper:` notes, corpus-wide | 6 → **0** |
+| class changes outside the 34 | **0** |
+
+Corpus-wide: **141 parse, 32 built-by-using, 104 defect, 28 same-page, 67 values, 302 page-type**. The
+first compile moved with the staging, which it reads: five of the 34 changed `first` (`other` →
+`page-type` 4, `import` → `other` 1).
+
+**The 7 still `defect`** carry codes the wrapper cannot reach, each read at its phase:
+`BrighterOutboxSupport.md` #1 (`CS1520`, a method with no return type), `CloudEventsSupport.md` #5
+(`CS1061`), `FAQ.md` #8, `QueryPatterns.md` #3 and `TurningOnReplayOnSeen.md` #4 (`CS0111`, a
+member declared twice: two snippets in one fence), `PolicyFallback.md` #5 (`CS0104`, `CS0161`), and
+`QueryPipeline.md` #8 (`CS0161`).
+
+
+#### The V4 pin (2.6)
+
+`tools/blockcheck/refs-v4/refs-v4.csproj` is `refs.csproj` with the seven AWS packages swapped
+for their `.V4` twins. Its comment cites `refs.csproj:191–192`, and says the two move in one edit.
+It builds with **0** errors and **0** warnings to **545** reference assemblies, with
+`awssdk.sqs/4.0.100.7` against the main pin's `3.7.500.5`. `pages.tsv` gains a fourth column,
+`pin`. `S3LuggageStore.md` is marked `v4`, and the other three V4 pages get rows of their own
+(`-`, `-`, `v4`).
+
+**Four pages**, two methods: `grep -rlE '^\s*using [A-Za-z.]*\.V4\b' contents/*.md` → **4**, the
+same four the design names. **30 blocks** compile against the V4 pin, and **3** of them build.
+
+**Built on the way, each a decision the design left open:**
+
+- **The stamp names its project.** `refs.txt`'s first line is now `# refs-v4.csproj SHA256 …`.
+  `stale_pin` takes the project and list it checks, and reads the label from the project's file
+  name
+- **`AssemblyName` is `RefsV4`.** TickerQ's source generator writes the assembly name into code,
+  and `refs-v4` failed `CS0246` on `v4`
+- **`pin_drift`**: the two package lists may differ only by the seven swaps, or exit 2
+- **The scaffold name carries the pin**, so the three BUILT blocks on V4 pages are re-admitted:
+  `AwsScheduler.md` #19 (`-` → `v4`), `DistributedLock.md` #1 (`-` → `v4`), `S3LuggageStore.md` #2
+  (`S3LuggageStoreContext.cs` → `S3LuggageStoreContext.cs+v4`). Each is written at `f6a9a7c`, the
+  ref measured from, and 2.13 moves them with its own rows to the phase's commit
+- **`--explain` and `--classify` are pin-aware**, as `--report` is. One run per pin; `--classify`
+  keeps a type table per pin
+
+**Red-proofs**, each two-way:
+
+| Case | Result | Exit |
+|---|---|---:|
+| The four V4 pages unmarked (the map before the marks) | 4 × `PIN RULE: … imports a .V4 namespace and is not marked v4`. Verdicts unmoved | **1** |
+| `AWSSQSConfiguration.md` marked `v4`, a page with no V4 import | `PIN RULE: … marked v4, and no C# block on it imports a .V4 namespace`, and #1, #3–#6 stop building (E3's reverse) | **1** |
+| The corrected map, before the three rows were re-admitted | 3 × *scaffold changed since admission*, the rows above | **1** |
+| The corrected map and rows | 0 findings; `pin rule: 4 pages on the v4 pin, 0 violations` | **0** |
+| `pin_drift` on the committed files | `None` | — |
+| …on a scratch copy with one V4 package at `10.6.0` | *expected, absent* / *present, unexpected* for that package | — |
+| …on a scratch copy with one swap undone | the same, for `Transformers.AWS` | — |
+| `refs-v4.csproj` edited without a rebuild | the stale stamp, *nothing was checked* | **2** |
+
+The scratch copies are not committed, and the map was restored after each planted row (`cmp`).
+
+**AC11:** `grep -c 'CS0234.*V4'` over `--explain` of the six blocks → **0**. What is left is E3's:
+one `CS0103` each on `DistributedLock.md` #2, `DynamoDbDistributedLock.md` #1, #2 and
+`S3LuggageStore.md` #1, and 6 and 14 missing names on `AwsScheduler.md` #2 and #3.
+
+**Gates.** `--report` → **990 / 299 / 674 / 17, 0 findings**, exit 0. Its scope lines now include
+`545 reference assemblies (v4 pin)` and `30 blocks, 3 built, 27 failing, 1 scaffold unit(s) (v4
+pin)`. Verdicts are identical to the run before the pin, block by block (`cmp` of `cut -f1-3`). Only
+6 rows changed codes, all on V4 pages. `--verify-extraction` → 990 of 990. `--classify` changes
+**exactly six** rows, the six blocks above. Four become `values`, each needing one value stub as E3
+found. `AwsScheduler.md` #2 becomes `page-type` on `RegionEndpoint`, D8's known cost. #3 stays `defect`
+(`CS1061`, `CS1503`) without its `CS0234`. Corpus-wide: **141 parse, 32 built-by-using, 99 defect,
+28 same-page, 71 values, 303 page-type**.
+
+**CI is not yet green on this branch.** The `blocks` job does not build the V4 pin, so the gate
+exits 2 there until 2.12 adds the step.
+
+**Said and measured.** Design E3: *"546 reference assemblies"* for the V4 pin. Measured **545** by
+the tool's own scope line and by `grep -vc '^#'`. `wc -l` gives 546 because it counts the stamp.
+E3's construction rebuilt today gives the same 545-assembly set (`diff`, silent). The design now
+says 545.
+
+
+#### Shouldly in the pin (2.7)
+
+`Shouldly` `4.3.0` is in `refs.csproj`, with a comment citing Brighter's
+`Directory.Packages.props:150`, read at `10.7.0`: `<PackageVersion Include="Shouldly" Version="4.3.0" />`.
+It is in `refs-v4.csproj` too, at the same place, **because 2.6's `pin_drift` requires it**: a
+package in one pin and not the other is exit 2. It sits after line 191, so the V4 pin's citation of
+`refs.csproj:191–192` still holds.
+
+**Restore and build:** both pins, **0** errors and **0** warnings. Assemblies **545 → 548** in each
+pin, by `--report`'s scope lines and by `grep -vc '^#'` of each `refs.txt`. The three are
+`shouldly/4.3.0`, `diffengine/11.3.0` and `emptyfiles/4.4.0`. 2.1's scratch pin measured the same
+548.
+
+**No page is touched**, and nothing moves, as 2.1 predicted. `--report` → 990 / 299 / 674 / 17, 0
+findings, with verdicts **and** error codes identical to 2.6's run (`diff`, silent). `--classify` is
+identical (`diff`, silent). The six blocks stay `defect` on `CS1061`, because D8 supplies a
+third-party namespace only on page evidence, and the page imports nothing from `Shouldly`
+(`grep -c Shouldly contents/TestDoubleOptions.md` → **0**, defect ledger row 2). That is the right
+reading: the page never tells its reader which package `ShouldBe` comes from.
+
+**The pin is shown to work, two-way.** The six blocks were staged with the `using`s `--classify`
+supplies them (`System`, `Paramore.Brighter`, `Paramore.Brighter.Testing`) and compiled against the
+new pin, without and then with `using Shouldly;`:
+
+| | `Should…` errors | Blocks with one | All errors |
+|---|---:|---:|---:|
+| without `using Shouldly;` | **10** | 6 | 32 |
+| with it | **0** | 0 | 22 |
+
+The 22 that remain are 7.4's to read. Most are page types (`PaymentProcessed`, `SendNotification`,
+`CommandA`), and two are `.First()` without `System.Linq`. `TestDoubleOptions.md` #8 also carries
+`CS8130` and `CS1503` on a deconstruction of `Id`s, which is likely an API mismatch, read at 7.4.
+
+
+#### `Program` (2.8, friction #75)
+
+A `statements` block that names `Program` in its code is staged with no wrapper, as the top-level
+file it is. The Roslyn tool sees the global statements and compiles it as an executable, where C#
+synthesises `Program`. `names_program` reads the block with comments and string literals removed,
+so a `// Program.cs` header does not trigger it. Today all **17** such blocks name it as
+`typeof(Program).Assembly`: 16 inside `AddHandlersFromAssemblies`, 1 inside `MigrationsAssembly`.
+That is the same 17 2.1 counted, by its search and by `names_program`.
+
+**Control.** The corpus was staged twice by the same tool, with `names_program` forced off and on.
+**973 of 973** blocks that do not name `Program` stage byte-identically, **515** other
+`statements` blocks among them. The 17 that do differ. `index.tsv` differs in exactly those 17
+rows, their wrapper count now 0. `--verify-extraction` → 990 of 990.
+
+**Red-proof, two-way.** A block naming `Program` builds: the four below, each FAILED `CS0246` on
+`Program` with the change off and BUILT with it on. A block that does not name it stages exactly as
+before (the control).
+
+**Against 2.1's prediction, block by block:** the four predicted are the four that build.
+
+| Page | # | Before | After |
+|---|---:|---|---|
+| `DarkerConfigurationReference.md` | 1 | FAILED `CS0246` | **BUILT** |
+| `DarkerConfigurationReference.md` | 2 | FAILED `CS0246` | **BUILT** |
+| `QueryPipelinePolicies.md` | 1 | FAILED `CS0246` | **BUILT** |
+| `TickerQScheduler.md` | 2 | FAILED `CS0246` | **BUILT** |
+
+`--report` → **990 / 303 / 670 / 17**, exit **1**, with exactly four findings: these four, under
+*builds and is not baselined*. Their rows are 2.13's. The other 13 lose the `Program` `CS0246`. Twelve
+keep only a `CS0103` (`builder` or `WebApplication`, which the page never declares).
+`DarkerBasicConfiguration.md` #10 keeps `CS0246` for a type of its own. Nothing else moves.
+
+**`--classify`, the 13 still FAILED:** 4 become **`built-by-using`**, each one
+`using Microsoft.AspNetCore.Builder;` away from building: `DarkerBasicConfiguration.md` #1 and
+`QueryPipeline.md` #2, #4, #6. 6 become `values` on `builder`: `DarkerBasicConfiguration.md` #6, #7,
+`EFCoreQueryIntegration.md` #4, `QueryHandlerDependencies.md` #3 and `QueryPipeline.md` #18, #19.
+`DarkerBasicConfiguration.md` #2 stays `page-type` (`GetPeopleQuery`, `GetPersonNameQuery`). #9 stays
+`defect` (`CS1061`, `CS1929`) and #10 stays `defect` (`CS1501`); both are read at their phase.
+Corpus-wide: **670 FAILED: 141 parse, 36 built-by-using, 99 defect, 28 same-page, 77 values, 289
+page-type**.
 
 ---
 

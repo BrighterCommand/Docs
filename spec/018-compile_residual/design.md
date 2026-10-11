@@ -120,7 +120,7 @@ policy; `CommandProcessorConfigurationReference.md` #13 is `services.AddBrighter
 ### E3 — the V4 pin, case, control and reverse
 
 **Method.** `probe/v4pin.sh` copies `refs.csproj` with seven `PackageReference`s swapped for their
-`.V4` twins, builds it (0 errors; 546 reference assemblies; `awssdk.sqs/4.0.100.7` against the main
+`.V4` twins, builds it (0 errors; 545 reference assemblies; `awssdk.sqs/4.0.100.7` against the main
 pin's `3.7.500.5`), and compiles three sets against both pins.
 
 | Set | Against the V4 pin | Against the main pin |
@@ -307,38 +307,54 @@ the true figure, as open question 2 recommended. Nothing parses the four columns
 | `values` | after the `using`s, only lower-case missing names | a value stub |
 | `page-type` | after the `using`s, a capitalised name no pin ships and the page never shows | a type stub |
 
-**Resolution is receiver-aware (D1).** A name is resolved to a pinned type only when it
-is not something the block or its page already supplies:
+**Resolution is receiver-aware (D1, D8).** A name is resolved to a pinned type only when it
+is not something the block or its page already supplies, and only from a package the page uses:
 - it is **not declared on the page** (`TYPE_DECL_RE` over the page's blocks, as `same-page` already
-  does), which removes `Order`, `Task`, `Tag` and `User`
-- it is **not a member of the staged class's base**, which removes `Context`. The handler wrapper
-  (D2) makes the base known. A members block it does not wrap, because its signature names no request
-  type, has `Context`, `Bag` and `base.Handle…` read as wrapper artefacts: classed `defect` with a
-  note, never `built-by-using`
+  does). That removes a page's own `Order` where the page shows it
+- it is **not a member of the staged class's base**. The handler wrapper (D2) makes the base known. A
+  members block it does not wrap, because its signature names no request type, has `Context`, `Bag`
+  and `base.Handle…` read as wrapper artefacts: classed `defect` with a note, never
+  `built-by-using`
+- **tiered** (D8): while any missing name resolves to a Paramore, System or Microsoft namespace,
+  only those are supplied, and the block recompiles. A handler class whose `RequestHandler` base is
+  imported this way has `Context` from the base before Polly can claim it
+- **on page evidence** (D8): a third-party namespace is supplied only when a block on the page
+  already imports from its root. A page that uses `Order` without declaring it does not get
+  `StackExchange.Redis`. The cost is the other direction: a page that needs a third-party type
+  and imports nothing from its package reads `page-type`
 
 The pinned type table is read by `Program.cs --types`, which exists (017 phase 1). No new C# mode is
 needed: the recompile is the existing `--explain` over a rewritten stage.
 
-**Red-proof (AC6).** One recorded run over five named blocks, each with a known answer. A
-`built-by-using` block (one of the 34); a `defect` behind a `using` (one of the 50 *api*); a
-`page-type` block; a `parse` block; and the **control**: a block that page-declares a type also
-pinned elsewhere (an `Order` block), which must **not** come out `built-by-using`. A second run,
-from a scratch copy of `blockcheck.py` with the page-declared check removed, must turn the control
-`built-by-using`. That shows the check is what decides it, and the scratch copy is never committed.
+**Red-proof (AC6).** One recorded run over named blocks, each with a known answer: a
+`built-by-using` block (one of the 34), a `defect` behind a `using` (one of the 50 *api*), a
+`page-type` block and a `parse` block. Then **two controls, one per check that decides a name**.
+Each must stay out of its wrong class with its check in place, and fall into it from a scratch copy
+of `blockcheck.py` with that check removed:
+- **page-declared**: a block naming a type its page declares and a pin also ships, which must not be
+  `built-by-using`
+- **page evidence**: a block naming `Order` on a page that never declares it, which must not be
+  given `StackExchange.Redis`
+
+The scratch copies are never committed.
 
 **Reconciled (AC7).** A block-by-block join of the new `--classify` against `probe/run.sh`'s
-`verdicts.tsv` at the same ref. Every disagreement is listed with its reason. The expected
-disagreements are E4's 39 and 29, each read by the probe by name and by `--classify` by receiver.
+`verdicts.tsv` at the same ref. Every disagreement is listed with its reason. The disagreements are
+the verdicts the receiver-aware read changes. E4's 39 are first-compile rows, and the probe already
+drops `Order` by name, so they are not among them. Measured at task 2.4: **14**, each with its
+reason (`tasks.md` § *Phase 2 as executed*).
 
-## The Handler Wrapper (D2)
+## The Handler Wrapper (D2, D9)
 
 **Which blocks.** A block that `blockcheck` already shapes `members` (`tools/blockcheck.py:263`),
-whose text overrides `Handle`, `HandleAsync`, `Execute` or `ExecuteAsync`. E5 counts **32** FAILED
-blocks today, and none BUILT. So no baselined block changes its staging, and the gate cannot lose
-a row by this change.
+whose text overrides `Handle`, `HandleAsync`, `Execute`, `ExecuteAsync`, or (D9) `Fallback` or
+`FallbackAsync`. E5 counts **32** FAILED blocks on the first four, and D9 adds **5** that show a
+handler by its `Fallback` alone. None is BUILT. So no baselined block changes its staging, and the
+gate cannot lose a row by this change.
 
-**What it stages.** The `members` wrapper's `public class Holder` gains a base class. The base class
-is read from the method, and its type arguments from the signature:
+**What it stages.** The `members` wrapper's `public class Holder` becomes
+`public abstract class Holder : <base>`. The base class is read from the method, and its type
+arguments from the signature:
 
 | Method | Base | Type arguments |
 |---|---|---|
@@ -346,20 +362,32 @@ is read from the method, and its type arguments from the signature:
 | `HandleAsync(TRequest …)` | `Paramore.Brighter.RequestHandlerAsync<TRequest>` | the first parameter's type |
 | `Execute(TQuery …)` | `Paramore.Darker.QueryHandler<TQuery, TResult>` | the parameter's type; the return type |
 | `ExecuteAsync(TQuery …)` | `Paramore.Darker.QueryHandlerAsync<TQuery, TResult>` | the first parameter's type; `T` of the returned `Task<T>` |
+| `Fallback(T …)` (D9) | Brighter's `RequestHandler<T>` when it returns `T`; otherwise Darker's `QueryHandler<T, TResult>` | as the rows above |
+| `FallbackAsync(T …)` (D9) | Brighter's `RequestHandlerAsync<T>` when it returns `Task<T>`; otherwise Darker's `QueryHandlerAsync<T, TResult>` | as the rows above |
+
+Both products have a `Fallback`. The return type tells them apart: Brighter's returns the request
+it was given, and Darker's returns the query's result.
 
 **The base is written fully qualified**, so the wrapper adds no `using`. A block that needs
 `using Paramore.Brighter;` for its own names still fails without it, and `pagelint` rule 6's debt is
 untouched. All four bases are live (§ *API Resolved*).
 
-**When it does not wrap.** The block keeps today's base-less `Holder` when its signature cannot be
-read, or when two overrides name different request types. A one-line regex reads **27** of the 32
-signatures. The other 5 (`BrighterInboxSupport.md` #1, `EFCoreQueryIntegration.md` #1–#3,
-`ShowMeTheCode.md` #5) break the signature across lines, so the reader must join lines up to the
-opening `{`. Phase 2's task reports how many of the 32 it wraps, and names each one it does not.
+**The Holder is abstract.** A block that shows one method of a handler shows part of a class. A
+concrete `Holder` would claim the members the page does not show. A Darker handler shown by its
+`Fallback` alone then fails `CS0534`, for want of the `Execute` its base declares abstract. A
+signature that overrides nothing still fails `CS0115`, so a wrong override is not hidden.
 
-**Red-proof.** Four plants, one per row of the table, each must stage with its base and build. A
-control, a members block with no override, must stage exactly as today: `--stage` output
-byte-identical to `f5962ff` for every non-handler members block.
+**When it does not wrap.** The block keeps today's base-less `Holder` when its signature cannot be
+read, or when its overrides imply two bases. The reader joins lines up to the opening `{` and admits
+a verbatim identifier (`@event`). It wraps **34**: 29 of E5's 32 and D9's 5. The FAILED blocks
+it leaves are `EFCoreQueryIntegration.md` #1–#3, written `ExecuteAsync(...)`, with no parameter to
+read the query type from. `DarkerAndBrighterPipelines.md` #1 (SKIPPED) overrides a Brighter and a
+Darker handler in one block, which no single base can hold.
+
+**Red-proof.** `probe/handler_plants.py` stages one plant per row of the table, eight in all, through
+`wrap` itself. Each must build with its base and fail without it. Two must stay unwrapped with their
+reason, and one wrong override must still fail `CS0115`. A control, every block the wrapper does
+not wrap, must stage exactly as before: `--stage` output byte-identical to the previous ref.
 
 ## The V4 Pin
 
@@ -382,7 +410,17 @@ tools/blockcheck/
 - **Its comment** says why it exists, citing `refs.csproj:191–192`, and that its versions move with
   `refs.csproj`'s Brighter version in the same edit
 - **The baseline key is unchanged.** A block is still (page, ordinal); the pin is a property of the
-  page, as the scaffold unit is
+  page, as the scaffold unit is. **The scaffold column records it** (`v4`, or `<unit>+v4`), because
+  `baseline.tsv` says the scaffold is part of the claim a row makes. So the three BUILT blocks on
+  V4 pages are re-admitted with it, and a later change of pin is the gate's *scaffold changed since
+  admission*
+- **The copy cannot drift.** `refs-v4.csproj` repeats `refs.csproj`'s 100 packages. On every run,
+  `blockcheck.py` checks that the two lists differ only by the seven `.V4` swaps, at the same
+  versions, and exits 2 otherwise. A version bump made in one file and not the other is then a red
+  build, not a stale pin
+- **Every mode that compiles is pin-aware**: `--report`, `--explain` and `--classify`, each
+  staging per pin and running the Roslyn tool once per pin. `--classify` resolves a V4 page's names
+  against the V4 pin's type table
 
 **Expected verdict movement:** none at phase 2. Four of the six need a value stub, and two need more
 (E3). Each is repaired in the phase that holds its page's section: `AwsScheduler.md` #2, #3 in S1;
@@ -492,12 +530,12 @@ cited from its rows, not restated.
 | `optioncheck` | **unmoved** | **unmoved** | **unmoved** | no option table touched |
 | `symbolcheck` | **unmoved** | **unmoved** | phase 3: **22 → 23 entries, 3 → 8 silenced** (E6, D5); otherwise unmoved | the `AddServiceActivator` row and its opt-outs |
 | `blockcheck` corpus | **unmoved, 990** | **unmoved** | **moves both ways**: retags (−3 for E2's JSON) and fence splits (+ for E2's 15 two-snippet and 7 mixed blocks); predicted per phase | a split adds a block |
-| `blockcheck` BUILT | **unmoved, 299** | **rises by the blocks the handler wrapper (D2), the `Program` fix (#75) and the Shouldly pin (D4) make build**, measured by phase 2's first task before any row is written. Up to 32 + 6, less those that fail for another reason | **rises**, to ≥ 560 by the close | |
+| `blockcheck` BUILT | **unmoved, 299** | **rises by the blocks the handler wrapper (D2), the `Program` fix (#75) and the Shouldly pin (D4) make build**, measured by phase 2's first task before any row is written: **+4**, all from the `Program` fix; the wrapper and Shouldly make none build alone (`tasks.md` § *Phase 2 as executed*) | **rises**, to ≥ 560 by the close | |
 | `blockcheck` scope lines | unmoved | **+1 line**, the V4 pin's assemblies; the main pin's assemblies **rise** by Shouldly's (D4); the scaffold rule also checks the `v4` column | units rise with each phase's stubs | |
 
 ## Design Decisions
 
-D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and D7 needed no ruling.
+D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and D7 needed no ruling. D8 and D9 were ruled at phase 2, on 2026-10-05 and 2026-10-09.
 
 | # | Question | Decision | Ruled |
 |---|---|---|---|
@@ -508,6 +546,8 @@ D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and 
 | **D5** | **`AddServiceActivator`:** rewrite the two sites to `AddConsumers`, and add a `symbolwatch.tsv` row, with per-symbol opt-outs on `V10MigrationGuide.md` and `FAQ.md`, which discuss the V9 name | **Yes, in phase 3** (S1 holds both sites). 015's triage is the precedent for a watchlist row with opt-outs | **Yes**, the maintainer, 2026-10-04 |
 | **D6** | **Is the V4 pin's selection per page enough?** | **Yes, today.** E3: every BUILT block on the four V4 pages builds under V4. Per-block selection stays P2-3, triggered only by a page that mixes V3 and V4 blocks | — |
 | **D7** | **Raise P1-3, the `net10.0` measurement, to P0?** | **No, but run it in phase 2 before the tables are drawn**, as friction #76 asks. Raise it if it moves a verdict | — |
+| **D8** | **Tiered resolution and page evidence?** Task 2.3's red-proof found D1's two checks let `Order` resolve to `StackExchange.Redis` on 20 rows (pages that use `Order` without declaring it), and `Context` to `Polly` on 11 | **Yes, both.** Tiered alone moves Polly 17 → 10 and Redis not at all. With page evidence, Redis → **0**, Polly → 6 (all on pages that import Polly), `built-by-using` unmoved at 32 | **Yes**, the maintainer, 2026-10-05 |
+| **D9** | **Wrap handlers shown by their `Fallback` alone?** Task 2.5 found five `members` blocks (`PolicyFallback.md` #6, #7, #9; `QueryPipeline.md` #24, #25) overriding only `Fallback` or `FallbackAsync`, outside D2's four methods, each carrying `wrapper:Context` | **Yes.** The return type picks the product: the request type, or a `Task` of it, means Brighter; anything else means Darker. The Holder is abstract, so a Darker `Fallback` shown alone is not failed for the `Execute` it does not show | **Yes**, the maintainer, 2026-10-09 |
 
 ## What the Design Review Found — 2026-10-05
 

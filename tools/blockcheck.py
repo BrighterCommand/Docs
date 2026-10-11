@@ -380,6 +380,111 @@ WRAPPERS = {
 }
 
 
+# THE HANDLER WRAPPER (spec 018, design D2). A `members` block that overrides a
+# handler method is a handler shown without its class, and in a base-less
+# Holder its `override` has nothing to override and its `Context` belongs to
+# nobody. So the Holder is given the base the method implies, read from the
+# signature, written fully qualified so that the wrapper adds no `using`: a
+# block that needs `using Paramore.Brighter;` for its own names still fails
+# without it, and pagelint rule 6's debt is untouched.
+#
+#   Handle(TRequest …)         Paramore.Brighter.RequestHandler<TRequest>
+#   HandleAsync(TRequest …)    Paramore.Brighter.RequestHandlerAsync<TRequest>
+#   Execute(TQuery …)          Paramore.Darker.QueryHandler<TQuery, TResult>
+#   ExecuteAsync(TQuery …)     Paramore.Darker.QueryHandlerAsync<TQuery, TResult>,
+#                              TResult being T of the returned Task<T>
+#   Fallback(T …)              Brighter's sync base when it returns T, Darker's
+#                              QueryHandler<T, TResult> when it returns anything else
+#   FallbackAsync(T …)         likewise, reading T of the returned Task<T>
+#
+# The two Fallback rows are D9 (ruled 2026-10-09, task 2.5): five blocks show a
+# handler by its Fallback alone. Both products have one, and the return type is
+# what tells them apart -- Brighter's returns the request it was given,
+# Darker's the query's result.
+#
+# THE HOLDER IS ABSTRACT when it has a base. A block that shows one method of a
+# handler shows PART of a class, and a concrete Holder would claim the members
+# the page does not show: a Darker handler shown by its `Fallback` alone fails
+# CS0534 for want of the `Execute` its base declares abstract. Abstract, the
+# Holder claims only what the block shows. A signature that overrides nothing
+# still fails CS0115, so a wrong override is not hidden by this.
+#
+# IT DOES NOT GUESS. The block keeps the base-less Holder when no signature can
+# be read -- `ExecuteAsync(...)` names no query type -- or when its overrides
+# imply two different bases, since a class has one. `handler_base` says which,
+# and why, so that a block left unwrapped can be named rather than counted.
+HANDLER_METHODS = ('HandleAsync', 'Handle', 'ExecuteAsync', 'Execute',
+                   'FallbackAsync', 'Fallback')
+OVERRIDE_RE = re.compile(
+    r'\boverride\s+(?P<ret>[^;{}()]+?)\s+(?P<method>' + '|'.join(HANDLER_METHODS)
+    + r')\s*\(\s*(?P<arg>[^()]*?)\s*[,)=]')
+PARAM_RE = re.compile(r'^(?P<type>[\w.]+(?:<[\w.<>, ?]*>)?\??)\s+@?\w+$')
+TASK_OF_RE = re.compile(r'^(?:System\.Threading\.Tasks\.)?Task<(?P<inner>.+)>$')
+
+
+def handler_base(block):
+    """`(base, None)` for a handler block, `(None, why)` otherwise.
+
+    A block that is not `members`, or overrides none of the four methods, is
+    `(None, None)`: there is nothing to wrap and nothing to explain. Lines are
+    joined before reading, so a signature broken across lines reads as one.
+    """
+    if block.shape != 'members':
+        return None, None
+    text = ' '.join(line.strip() for line in block.rest)
+    found = list(OVERRIDE_RE.finditer(text))
+    if not found:
+        return None, None
+    bases = set()
+    for match in found:
+        ret = re.sub(r'^(?:async\s+|new\s+|sealed\s+)+', '', match.group('ret').strip())
+        method, param = match.group('method'), PARAM_RE.match(match.group('arg'))
+        if not param:
+            return None, (f'{method}({match.group("arg")}) names no '
+                          'request type to read')
+        arg = param.group('type')
+        if method == 'Handle':
+            bases.add(f'Paramore.Brighter.RequestHandler<{arg}>')
+        elif method == 'HandleAsync':
+            bases.add(f'Paramore.Brighter.RequestHandlerAsync<{arg}>')
+        elif method == 'Execute':
+            bases.add(f'Paramore.Darker.QueryHandler<{arg}, {ret}>')
+        elif method == 'Fallback':
+            bases.add(f'Paramore.Brighter.RequestHandler<{arg}>' if ret == arg
+                      else f'Paramore.Darker.QueryHandler<{arg}, {ret}>')
+        else:
+            inner = TASK_OF_RE.match(ret)
+            if not inner:
+                return None, f'{method} returns {ret}, not Task<T>'
+            result = inner.group('inner')
+            if method == 'FallbackAsync' and result == arg:
+                bases.add(f'Paramore.Brighter.RequestHandlerAsync<{arg}>')
+            else:
+                bases.add(f'Paramore.Darker.QueryHandlerAsync<{arg}, {result}>')
+    if len(bases) > 1:
+        return None, 'its overrides imply two bases: ' + ' and '.join(sorted(bases))
+    return bases.pop(), None
+
+
+# A `statements` BLOCK THAT NAMES `Program` IS A Program.cs (spec 017 friction
+# #75, spec 018 task 2.8). `typeof(Program).Assembly` is how a host's
+# registration finds its handlers, and C# synthesises `Program` for a file of
+# top-level statements -- so such a block is staged as exactly that file, with
+# no wrapper, and compiled as an executable (Program.cs reads the tree and
+# sees the global statements). Inside the generic Holder the same text fails
+# CS0246, because no `Program` exists. It is read with comments and string
+# literals removed, so `// Program.cs` above a block does not make it one.
+PROGRAM_RE = re.compile(r'\bProgram\b')
+CODE_NOISE_RE = re.compile(r'//.*$|"(?:\\.|[^"\\])*"')
+
+
+def names_program(block):
+    """Does a `statements` block name `Program` in its code?"""
+    return (block.shape == 'statements'
+            and any(PROGRAM_RE.search(CODE_NOISE_RE.sub('', line))
+                    for line in block.rest))
+
+
 def wrap(block, scaffold=None):
     """The staged compilation unit for a block: usings, wrapper, body, close.
 
@@ -407,9 +512,16 @@ def wrap(block, scaffold=None):
         opens = [line.replace('__NAME__', f'Block_{block.ident}').replace('{@', '{')
                  for line in scaffold.prelude_lines]
         closes = ['}' for line in scaffold.prelude_lines if '{@' in line]
+    elif names_program(block):
+        opens, closes = [], []
     else:
         opens = [line.replace('__NS__', f'B_{block.ident}')
                  for line in WRAPPERS[block.shape]]
+        base, _ = handler_base(block)
+        if base:
+            opens = [f'public abstract class Holder : {base}'
+                     if line == 'public class Holder'
+                     else line for line in opens]
         closes = ['}' for line in opens if line.strip() == '{']
     lines = usings + opens + block.rest + closes
     return ('\n'.join(lines) + '\n',
@@ -432,9 +544,10 @@ INJECT_RE = re.compile(r'^\s*//\s*blockcheck:\s*(using .+;)\s*$')
 class Scaffold:
     """What one page's blocks are compiled with, beyond the page itself."""
 
-    def __init__(self, unit=None, prelude=None):
+    def __init__(self, unit=None, prelude=None, pin='-'):
         self.unit = unit                # file under scaffold/units/, or None
         self.prelude = prelude          # file under scaffold/preludes/, or None
+        self.pin = pin                  # 'v4' for the V4 pin, '-' for the main one
         self.usings = []
         self.prelude_lines = []
         if unit:
@@ -451,7 +564,15 @@ class Scaffold:
 
     @property
     def name(self):
+        """What the block was compiled with, as baseline.tsv records it.
+
+        The pin is part of it: a block admitted against one package set and
+        later compiled against another is a different claim, and the gate's
+        `scaffold changed since admission` heading is how it says so.
+        """
         parts = [os.path.basename(p) for p in (self.unit, self.prelude) if p]
+        if self.pin == 'v4':
+            parts.append('v4')
         return '+'.join(parts) if parts else '-'
 
 
@@ -474,11 +595,18 @@ def load_scaffold():
             if not line.strip() or line.lstrip().startswith('#'):
                 continue
             fields = line.rstrip('\n').split('\t')
-            if len(fields) != 3:
+            if len(fields) != 4:
                 raise ScaffoldError(
-                    f'{SCAFFOLD_MAP}:{lineno}: expected 3 tab-separated fields, '
+                    f'{SCAFFOLD_MAP}:{lineno}: expected 4 tab-separated fields, '
                     f'got {len(fields)}')
-            rel, unit, prelude = fields
+            rel, unit, prelude, pin = fields
+            if pin not in ('-', 'v4'):
+                raise ScaffoldError(
+                    f'{SCAFFOLD_MAP}:{lineno}: pin is `v4` or `-`, not {pin!r}')
+            if unit == prelude == pin == '-':
+                raise ScaffoldError(
+                    f'{SCAFFOLD_MAP}:{lineno}: {rel} is given nothing, so its '
+                    'row says nothing')
             paths = []
             for kind, value, ext in (('units', unit, '.cs'),
                                      ('preludes', prelude, '.txt')):
@@ -490,8 +618,14 @@ def load_scaffold():
                     raise ScaffoldError(
                         f'{SCAFFOLD_MAP}:{lineno}: no such {kind[:-1]}: {path}')
                 paths.append(path)
-            scaffolds[rel] = Scaffold(*paths)
+            scaffolds[rel] = Scaffold(*paths, pin=pin)
     return scaffolds
+
+
+def pin_of(rel, scaffolds):
+    """The pin a page's blocks compile against: 'v4' or 'main'."""
+    scaffold = scaffolds.get(rel)
+    return 'v4' if scaffold is not None and scaffold.pin == 'v4' else 'main'
 
 
 # --------------------------------------------------------------------------
@@ -601,7 +735,7 @@ def mode_list(blocks):
     return 0
 
 
-def mode_stage(blocks, args):
+def mode_stage(blocks, args, quiet=False):
     """Write one compilation unit per block, plus the index that describes them.
 
     The index is what the Roslyn tool reads and what `--verify-extraction`
@@ -643,8 +777,9 @@ def mode_stage(blocks, args):
         for row in index:
             fh.write('\t'.join(str(field) for field in row) + '\n')
     scaffolded = sum(1 for row in index if row[7] != '-')
-    print(f'{len(index)} blocks staged in {out}, {scaffolded} with a scaffold '
-          f'unit, {len(scaffolds)} pages in the map', file=sys.stderr)
+    if not quiet:
+        print(f'{len(index)} blocks staged in {out}, {scaffolded} with a scaffold '
+              f'unit, {len(scaffolds)} pages in the map', file=sys.stderr)
     return 0
 
 
@@ -781,9 +916,15 @@ def mode_list_scaffold(args):
     for rel, scaffold in sorted(scaffolds.items()):
         for using in scaffold.usings:
             print(f'{rel}\tinjected\t{using}')
+        if scaffold.pin == 'v4':
+            print(f'{rel}\tpin\tv4')
 
+    pinned = sum(1 for scaffold in scaffolds.values() if scaffold.pin == 'v4')
+    given = sum(1 for scaffold in scaffolds.values()
+                if scaffold.unit or scaffold.prelude)
     print(f'{len(rows)} identifiers from {len(units)} unit(s) and '
-          f'{len(preludes)} prelude(s); {len(scaffolds)} page(s) scaffolded',
+          f'{len(preludes)} prelude(s); {given} page(s) '
+          f'scaffolded by a unit or prelude, {pinned} on the v4 pin',
           file=sys.stderr)
     return 0
 
@@ -845,7 +986,29 @@ TOOL_DLL = os.path.join(ROOT, 'tools', 'blockcheck', 'bin', 'Release', 'net9.0',
 REFS_LIST = os.path.join(ROOT, 'tools', 'blockcheck', 'refs', 'bin', 'Release',
                          'net9.0', 'refs.txt')
 REFS_PROJECT = os.path.join(ROOT, 'tools', 'blockcheck', 'refs', 'refs.csproj')
+# THE V4 PIN (spec 018, design § The V4 Pin). The AWS V4 packages need
+# AWSSDK.SQS 4.x and the V3 ones cap it below 4.0, so they cannot share a
+# project with the main pin. A page marked `v4` in scaffold/pages.tsv is
+# compiled against this list instead; every other page against REFS_LIST.
+REFS_V4_LIST = os.path.join(ROOT, 'tools', 'blockcheck', 'refs-v4', 'bin',
+                            'Release', 'net9.0', 'refs.txt')
+REFS_V4_PROJECT = os.path.join(ROOT, 'tools', 'blockcheck', 'refs-v4',
+                               'refs-v4.csproj')
+PINS = {'main': (REFS_PROJECT, REFS_LIST), 'v4': (REFS_V4_PROJECT, REFS_V4_LIST)}
+# The only packages in which the two pins may differ, each by its `.V4` suffix.
+V4_SWAPPED = ('Paramore.Brighter.DynamoDb', 'Paramore.Brighter.Inbox.DynamoDB',
+              'Paramore.Brighter.Locking.DynamoDB',
+              'Paramore.Brighter.MessageScheduler.AWS',
+              'Paramore.Brighter.MessagingGateway.AWSSQS',
+              'Paramore.Brighter.Outbox.DynamoDB',
+              'Paramore.Brighter.Transformers.AWS')
+PACKAGE_RE = re.compile(
+    r'<PackageReference\s+Include="([^"]+)"\s+Version="([^"]+)"\s*/>')
+# A C# block that imports a V4 namespace: the page's evidence that it is a V4
+# page, and what the pairing rule reads.
+V4_USING_RE = re.compile(r'^\s*using\s+(?:static\s+)?[\w.]+\.V4(?:\.[\w.]+)?\s*;')
 BUILD_HINT = ('  dotnet build tools/blockcheck/refs/refs.csproj -c Release\n'
+              '  dotnet build tools/blockcheck/refs-v4/refs-v4.csproj -c Release\n'
               '  dotnet build tools/blockcheck/blockcheck.csproj -c Release')
 # One path, and no flag to change it: a gate that can be pointed at another
 # list can be silenced (design Constraint 6).
@@ -886,27 +1049,52 @@ def load_baseline():
     return rows
 
 
-def stale_pin():
-    """Was `refs.txt` written by the `refs.csproj` on disk right now?
+def stale_pin(project=REFS_PROJECT, listing=REFS_LIST):
+    """Was this `refs.txt` written by the project on disk right now?
 
     Returns a reason, or None when the stamp matches. The stamp is refs.txt's
-    first line, written by refs.csproj itself; a list with no stamp is stale by
-    definition, because the only thing that writes one is a build of the current
-    project.
+    first line, written by the project itself and naming it; a list with no
+    stamp is stale by definition, because the only thing that writes one is a
+    build of the current project.
     """
-    with open(REFS_LIST, encoding='utf-8') as handle:
+    with open(listing, encoding='utf-8') as handle:
         first = handle.readline().strip()
-    want = hashlib.sha256(
-        open(REFS_PROJECT, 'rb').read()).hexdigest().lower()
-    prefix = '# refs.csproj SHA256 '
+    want = hashlib.sha256(open(project, 'rb').read()).hexdigest().lower()
+    label = os.path.basename(project)
+    prefix = f'# {label} SHA256 '
     if not first.startswith(prefix):
-        return (f'{REFS_LIST} carries no pin stamp on its first line, so it '
+        return (f'{listing} carries no {label} stamp on its first line, so it '
                 'cannot be told from a stale one')
     got = first[len(prefix):].strip().lower()
     if got != want:
-        return (f'{REFS_LIST} was written by a different refs.csproj\n'
-                f'  refs.txt   {got}\n  refs.csproj {want}')
+        return (f'{listing} was written by a different {label}\n'
+                f'  refs.txt     {got}\n  {label} {want}')
     return None
+
+
+def pin_drift():
+    """Does refs-v4.csproj differ from refs.csproj by anything but the swaps?
+
+    Returns a reason, or None. The V4 pin is a copy of the main one, and a copy
+    drifts: a version bump made in one file and not the other would leave the
+    V4 pages compiled against last release's packages, quietly. So the two
+    package lists are compared on every run, and only V4_SWAPPED may differ,
+    each by its `.V4` suffix, at the same version.
+    """
+    def packages(path):
+        with open(path, encoding='utf-8') as fh:
+            return set(PACKAGE_RE.findall(fh.read()))
+    main, v4 = packages(REFS_PROJECT), packages(REFS_V4_PROJECT)
+    want = {(name + '.V4' if name in V4_SWAPPED else name, version)
+            for name, version in main}
+    if want == v4 and len(main) == len(v4):
+        return None
+    lines = [f'{os.path.relpath(REFS_V4_PROJECT, ROOT)} has drifted from '
+             f'{os.path.relpath(REFS_PROJECT, ROOT)}: the two may differ only '
+             'by the seven .V4 swaps']
+    lines += [f'  expected, absent: {n} {v}' for n, v in sorted(want - v4)]
+    lines += [f'  present, unexpected: {n} {v}' for n, v in sorted(v4 - want)]
+    return '\n'.join(lines)
 
 
 def tool_unready():
@@ -919,13 +1107,58 @@ def tool_unready():
         return f'no scaffold directory at {SCAFFOLD_DIR}: nothing was checked'
     if not os.path.exists(TOOL_DLL):
         return f'{TOOL_DLL} is not built: nothing was checked\n' + BUILD_HINT
-    if not os.path.exists(REFS_LIST):
-        return (f'no reference list at {REFS_LIST}: the reference project has not '
-                'been restored and built, so nothing was checked\n' + BUILD_HINT)
-    stale = stale_pin()
-    if stale is not None:
-        return f'{stale}\nnothing was checked\n' + BUILD_HINT
+    for project, listing in PINS.values():
+        if not os.path.exists(listing):
+            return (f'no reference list at {listing}: the reference project has '
+                    'not been restored and built, so nothing was checked\n'
+                    + BUILD_HINT)
+        stale = stale_pin(project, listing)
+        if stale is not None:
+            return f'{stale}\nnothing was checked\n' + BUILD_HINT
+    drift = pin_drift()
+    if drift is not None:
+        return f'{drift}\nnothing was checked'
     return None
+
+
+def stage_by_pin(blocks, root):
+    """Stage each pin's blocks in a directory of its own, under `root`.
+
+    Returns `{pin: (directory, reference list, blocks)}` for the pins that have
+    blocks, or None when staging failed. The Roslyn tool takes one reference
+    list per run, so a pin is a run.
+    """
+    scaffolds = load_scaffold()
+    groups = {}
+    for block in blocks:
+        groups.setdefault(pin_of(block.rel, scaffolds), []).append(block)
+    staged = {}
+    for pin, group in sorted(groups.items()):
+        directory = os.path.join(root, pin)
+        if mode_stage(group, [directory], quiet=True) != 0:
+            return None
+        staged[pin] = (directory, PINS[pin][1], group)
+    units = sum(1 for block in blocks
+                if block.rel in scaffolds and scaffolds[block.rel].unit)
+    print(f'{len(blocks)} blocks staged in {root}, {units} with a scaffold '
+          f'unit, {len(scaffolds)} pages in the map'
+          + ''.join(f'; {len(group)} on the {pin} pin'
+                    for pin, (_, _, group) in staged.items() if pin != 'main'),
+          file=sys.stderr)
+    return staged
+
+
+def pin_rule_violations(blocks, scaffolds):
+    """A page marked `v4` imports a .V4 namespace, and one that does is marked."""
+    importing = {block.rel for block in blocks
+                 if any(V4_USING_RE.match(line) for line in block.usings)}
+    marked = {rel for rel, scaffold in scaffolds.items() if scaffold.pin == 'v4'}
+    violations = [f'{rel}: imports a .V4 namespace and is not marked v4 in '
+                  f'{os.path.relpath(SCAFFOLD_MAP, ROOT)}'
+                  for rel in sorted(importing - marked)]
+    violations += [f'{rel}: marked v4, and no C# block on it imports a .V4 '
+                   'namespace' for rel in sorted(marked - importing)]
+    return violations, len(marked)
 
 
 def mode_report(blocks, args):
@@ -956,21 +1189,26 @@ def mode_report(blocks, args):
 
     staged = tempfile.mkdtemp(prefix='blockcheck-')
     try:
-        if mode_stage(blocks, [staged]) != 0:
+        groups = stage_by_pin(blocks, staged)
+        if groups is None:
             return 2
-        result = subprocess.run(
-            ['dotnet', TOOL_DLL, staged, REFS_LIST],
-            capture_output=True, text=True)
-        sys.stderr.write(result.stderr)
-        if result.returncode != 0:
-            return 2
-
         verdicts = {}
-        for line in result.stdout.split('\n'):
-            if not line:
-                continue
-            ident, verdict, count, codes = line.split('\t')
-            verdicts[ident] = (verdict, count, codes)
+        for pin, (directory, refs, _) in groups.items():
+            result = subprocess.run(['dotnet', TOOL_DLL, directory, refs],
+                                    capture_output=True, text=True)
+            # The V4 pin's scope lines say which pin they count, so that its
+            # `N reference assemblies` is never read as the main pin's -- a
+            # pin that did not restore must not shrink silently.
+            for line in result.stderr.splitlines():
+                print(line + (f' ({pin} pin)' if pin != 'main' else ''),
+                      file=sys.stderr)
+            if result.returncode != 0:
+                return 2
+            for line in result.stdout.split('\n'):
+                if not line:
+                    continue
+                ident, verdict, count, codes = line.split('\t')
+                verdicts[ident] = (verdict, count, codes)
 
         rows, counts = [], {verdict: 0 for verdict in VERDICTS}
         judged = {}
@@ -1012,6 +1250,13 @@ def mode_report(blocks, args):
     rule_violations, units_ruled = ruled
     for violation in rule_violations:
         print(f'SCAFFOLD RULE: {violation}', file=sys.stderr)
+    # THE PAIRING RULE, beside the unit rule: the `v4` cell and the page's own
+    # imports must agree, both ways. A V4 page left unmarked fails on CS0234
+    # for a namespace the main pin cannot have; a marked page with no V4
+    # import is compiled against the wrong AWS SDK for no reason.
+    pin_violations, pins_ruled = pin_rule_violations(blocks, scaffolds)
+    for violation in pin_violations:
+        print(f'PIN RULE: {violation}', file=sys.stderr)
 
     # Scope first, verdict second. `0 findings` out of 0 blocks and `0 findings`
     # out of 985 are different claims, and only one of them is worth having.
@@ -1102,10 +1347,13 @@ def mode_report(blocks, args):
     # is not a claim about whether a block compiles -- it is a claim about the
     # corpus that is wrong on its own terms.
     findings = (len(malformed) + len(regressed) + len(vanished)
-                + len(unlisted) + len(rescaffolded) + len(rule_violations))
+                + len(unlisted) + len(rescaffolded) + len(rule_violations)
+                + len(pin_violations))
     print(f'baseline: {len(baseline)} blocks required to build', file=sys.stderr)
     print(f'scaffold rule: {units_ruled} units checked, '
           f'{len(rule_violations)} violations', file=sys.stderr)
+    print(f'pin rule: {pins_ruled} pages on the v4 pin, '
+          f'{len(pin_violations)} violations', file=sys.stderr)
     print(f'{findings} findings' + (f', {skipped} skipped' if skipped else ''),
           file=sys.stderr)
     return 1 if findings else 0
@@ -1134,14 +1382,21 @@ def mode_explain(blocks, args):
         return 2
     staged = tempfile.mkdtemp(prefix='blockcheck-explain-')
     try:
-        if mode_stage([by_ident[ident] for ident in dict.fromkeys(args)],
-                      [staged]) != 0:
+        groups = stage_by_pin([by_ident[ident] for ident in dict.fromkeys(args)],
+                              staged)
+        if groups is None:
             return 2
-        run = subprocess.run(['dotnet', TOOL_DLL, '--explain', staged, REFS_LIST,
-                              *args], capture_output=True, text=True)
-        sys.stdout.write(run.stdout)
-        sys.stderr.write(run.stderr)
-        return run.returncode
+        worst = 0
+        for pin, (directory, refs, group) in groups.items():
+            run = subprocess.run(['dotnet', TOOL_DLL, '--explain', directory, refs,
+                                  *[block.ident for block in group]],
+                                 capture_output=True, text=True)
+            sys.stdout.write(run.stdout)
+            for line in run.stderr.splitlines():
+                print(line + (f' ({pin} pin)' if pin != 'main' else ''),
+                      file=sys.stderr)
+            worst = max(worst, run.returncode)
+        return worst
     finally:
         shutil.rmtree(staged, ignore_errors=True)
 
@@ -1176,11 +1431,14 @@ def mode_list_skips(blocks, args):
 # --------------------------------------------------------------------------
 # The classification
 # --------------------------------------------------------------------------
-# WHAT STANDS BETWEEN A FAILED BLOCK AND BUILT, BY THE FIRST RULE THAT MATCHES.
+# WHAT STANDS BETWEEN A FAILED BLOCK AND BUILT -- TWICE.
 #
 # Spec 016 split its failures by hand, from a type dump nobody committed, and
 # its figures could not be re-derived a week later. This is that split as a
 # mode, so the next spec starts from a command rather than from a paragraph.
+#
+# THE FIRST COMPILE is the block as the gate compiles it, and its class is the
+# `first` column, unchanged since spec 017:
 #
 #   parse      the block does not parse -- a fragment, a signature, a `...`
 #   import     a missing name is a type the pin ships, or a CS1061 names an
@@ -1192,18 +1450,109 @@ def mode_list_skips(blocks, args):
 #   values     every missing name is lower-case or _: a variable in scope
 #   page-type  the rest: a type the page names and never shows
 #
-# IT CLASSIFIES BY WHAT BLOCKS THE BLOCK TODAY, NOT BY EVERYTHING THAT WILL.
-# The compiler reports the errors it reaches; an `import` block given its
+# It classifies by what blocks the block TODAY, not by everything that will:
+# the compiler reports the errors it reaches, and an `import` block given its
 # `using`s often goes on to need a stub. Spec 017's probe measured 226 of 368.
-CLASS_ORDER = ('parse', 'import', 'other', 'same-page', 'values', 'page-type')
+# So that figure is a lower bound, and it is kept beside the real one.
+#
+# THE SECOND COMPILE (spec 018, design § The Second Compile) supplies every
+# `using` the pinned type table resolves, recompiles, and classes what is left.
+# That is the `class` column:
+#
+#   parse           as above; nothing is supplied to a block that cannot parse
+#   built-by-using  builds once given its `using`s
+#   defect          after the `using`s, a binder error that is not a missing
+#                   name -- or a handler-base member, read below
+#   same-page       after the `using`s, as `same-page` above
+#   values          after the `using`s, only lower-case missing names
+#   page-type       after the `using`s, a capitalised name no pin ships and the
+#                   page never shows
+#
+# RESOLUTION IS RECEIVER-AWARE, AND THAT IS THE WHOLE DIFFERENCE FROM THE PROBE
+# IT PROMOTES. Spec 017's probe resolved a name to the first pinned namespace
+# that ships it, so `Order` became StackExchange.Redis and `Context` became
+# Polly: 39 wrong `import` rows and 29 wrong DEFECT verdicts (design E4). A
+# name is resolved only when
+#   - the page does not declare it, in any of its blocks: `Order`, `Task`,
+#     `Tag` and `User` are the page's own types, and
+#   - the staged class's base does not supply it. A `members` block is staged
+#     inside a `Holder`; when that Holder has no base, a handler's `Context`,
+#     `Name` or `base.Handle…` is an artefact of the staging, not a missing
+#     import. Such a name is never resolved, and a block left holding one is
+#     `defect`, with the names after `wrapper:`, never `built-by-using`.
+#
+# THOSE TWO WERE NOT ENOUGH, and task 2.3's red-proof is what showed it. A page
+# that uses `Order` without ever declaring it still got StackExchange.Redis --
+# 20 rows -- and a block whose handler class derives from a not-yet-imported
+# `RequestHandler` got Polly for `Context`, because both names were resolved
+# in the same round. Two more rules, ruled by the maintainer 2026-10-05:
+#   - TIERED. While any missing name resolves to a Paramore, System or
+#     Microsoft namespace, only those are supplied, and the block recompiles.
+#     A base class imported this way supplies `Context` before anything else
+#     can claim it.
+#   - PAGE EVIDENCE. A third-party namespace is supplied only when some block
+#     on the page already imports from its root (`using Amazon.Runtime;`
+#     admits `Amazon`). A page about Polly gets Polly; a page about orders
+#     does not get Redis. Its cost is the other direction: a page that needs a
+#     third-party type and imports nothing from that package reads
+#     `page-type`, never `built-by-using`.
+CLASS_ORDER = ('parse', 'built-by-using', 'defect', 'same-page', 'values',
+               'page-type')
+FIRST_ORDER = ('parse', 'import', 'other', 'same-page', 'values', 'page-type')
 MISSING_NAME_RE = re.compile(r"name '([^']+)'")
 MISSING_EXT_RE = re.compile(r"no accessible extension method '([^']+)'")
+# A generic extension method whose type has a NON-generic instance overload of
+# the same name -- `serviceProvider.GetService<T>()` -- is not CS1061 but
+# CS0308, "the non-generic method 'IServiceProvider.GetService(Type)' cannot be
+# used with type arguments". It is the same missing `using`, and task 2.4 found
+# the second compile reading it as a defect (`DispatchingARequest.md` #1).
+NON_GENERIC_RE = re.compile(r"non-generic method '(?:[^'(]*\.)?(\w+)\(")
 TYPE_DECL_RE = re.compile(r'\b(?:class|record|interface|struct|enum)\s+([A-Za-z_]\w*)')
+
+# The public members of the four handler bases a staged Holder can carry, read
+# from source at the pinned releases -- Brighter 10.7.0 `RequestHandler.cs`,
+# `RequestHandlerAsync.cs`; Darker 4.1.1 `QueryHandler.cs`,
+# `QueryHandlerAsync.cs` -- with:
+#   git -C ../Brighter show 10.7.0:src/Paramore.Brighter/RequestHandler.cs \
+#       | grep -nE '^\s*(public|protected) '
+# and the same for the other three. Re-derive them at a version bump.
+HANDLER_BASE_MEMBERS = frozenset((
+    'Context', 'Name', 'ContinueOnCapturedContext', 'SetSuccessor',
+    'AddToLifetime', 'DescribePath', 'InitializeFromAttributeParams',
+    'Handle', 'HandleAsync', 'Fallback', 'FallbackAsync',
+    'Execute', 'ExecuteAsync'))
+
+# How many times `using`s are supplied and the block recompiled. A `using`
+# can uncover a name the compiler had not reached, and tiering spends a round
+# per tier. Spec 017's probe settled in at most three rounds over the whole
+# corpus; tiered, this one settles in three (2.3, at f6a9a7c). Not settling is
+# exit 2, since a class read from an unfinished compile is not a class.
+USING_ROUNDS = 8
+FIRST_PARTY_TIERS = 3       # namespace_rank's tiers 0-2: Paramore, System, Microsoft
+USING_ROOT_RE = re.compile(
+    r'^\s*(?:global\s+)?using\s+(?:static\s+)?(?:\w+\s*=\s*)?([A-Za-z_]\w*)')
+
+
+def missing_names(diagnostics):
+    """(type-or-value names, extension-method names, any other diagnostic?)."""
+    missing, ext_missing, other = [], [], False
+    for code, message in diagnostics:
+        name = MISSING_NAME_RE.search(message)
+        ext = MISSING_EXT_RE.search(message)
+        if code in ('CS0246', 'CS0103') and name:
+            missing.append(name.group(1).split('<')[0])
+        elif code == 'CS1061' and ext:
+            ext_missing.append(ext.group(1))
+        elif code == 'CS0308' and NON_GENERIC_RE.search(message):
+            ext_missing.append(NON_GENERIC_RE.search(message).group(1))
+        else:
+            other = True
+    return missing, ext_missing, other
 
 
 def classify_failure(diagnostics, broken, types, extensions, declared_elsewhere):
-    """One FAILED block's class and the names that decided it."""
-    missing, ext_missing, other = [], [], False
+    """One FAILED block's FIRST-compile class and the names that decided it."""
+    missing, ext_missing, other_codes = [], [], False
     for code, message in diagnostics:
         name = MISSING_NAME_RE.search(message)
         ext = MISSING_EXT_RE.search(message)
@@ -1212,13 +1561,13 @@ def classify_failure(diagnostics, broken, types, extensions, declared_elsewhere)
         elif code == 'CS1061' and ext and ext.group(1) in extensions:
             ext_missing.append(ext.group(1))
         else:
-            other = True
+            other_codes = True
     names = sorted(set(missing + ext_missing))
     if broken:
         return 'parse', names
     if ext_missing or any(n in types for n in missing):
         return 'import', names
-    if other or not missing:
+    if other_codes or not missing:
         return 'other', names
     capitalised = [n for n in missing if not (n[0].islower() or n[0] == '_')]
     if capitalised and all(n in declared_elsewhere for n in capitalised):
@@ -1228,19 +1577,70 @@ def classify_failure(diagnostics, broken, types, extensions, declared_elsewhere)
     return 'page-type', names
 
 
-def mode_classify(blocks, args):
-    """Classify every FAILED block, or those of the pages named.
+def namespace_rank(namespace):
+    """Which of several pinned namespaces shipping one name a reader means.
 
-    Rows go to stdout as page, ordinal, class, names -- sorted, so two runs
-    `diff` clean -- and the counts go to stderr. A classification is data, like
-    `--list`, so it exits 0; it exits 2 when the tools are not ready or when
-    there is nothing FAILED to classify, since an empty listing and a clean
-    corpus are different claims.
+    Brighter's own first, then the framework's, then Microsoft's, then the
+    rest; shorter before longer. The probe's order, carried over, so that AC7's
+    reconciliation differs only where the receiver-aware rule says it should.
+    """
+    tier = (0 if namespace.startswith('Paramore') else
+            1 if namespace.startswith('System') else
+            2 if namespace.startswith('Microsoft') else 3)
+    return (tier, len(namespace), namespace)
+
+
+def resolvable(name, table, declared, artefacts):
+    """The namespace a missing name resolves to, or None. Receiver-aware."""
+    if name in declared or name in artefacts or name not in table:
+        return None
+    return min(table[name], key=namespace_rank)
+
+
+def classify_second(diagnostics, artefacts, declared_elsewhere, supplied):
+    """One block's SECOND-compile class, from what is left after its `using`s.
+
+    `artefacts` is the set of handler-base names the block's staging leaves
+    unsupplied; `supplied` the namespaces the second compile added.
+    """
+    if not diagnostics:
+        return 'built-by-using', sorted(supplied)
+    missing, ext_missing, other = missing_names(diagnostics)
+    stranded = sorted({n for n in missing + ext_missing if n in artefacts})
+    if other or ext_missing or stranded:
+        codes = sorted({code for code, message in diagnostics
+                        if not (code in ('CS0246', 'CS0103')
+                                and MISSING_NAME_RE.search(message))})
+        return 'defect', codes + ([f'wrapper:{"+".join(stranded)}']
+                                  if stranded else [])
+    names = sorted(set(missing))
+    capitalised = [n for n in names if not (n[0].islower() or n[0] == '_')]
+    if capitalised and all(n in declared_elsewhere for n in capitalised):
+        return 'same-page', names
+    if not capitalised:
+        return 'values', names
+    return 'page-type', names
+
+
+def mode_classify(blocks, args):
+    """Classify every FAILED block, or those of the pages named, twice.
+
+    Rows go to stdout as page, ordinal, class, first, names -- sorted, so two
+    runs `diff` clean -- and the counts per class go to stderr. `class` is the
+    second compile's and `first` the first's; see the comment above
+    CLASS_ORDER. `names` is what decided the class: the namespaces supplied for
+    `built-by-using`, the diagnostic codes for `defect` (and `wrapper:` names),
+    the missing names otherwise.
+
+    A classification is data, like `--list`, so it exits 0; it exits 2 when
+    the tools are not ready or when there is nothing FAILED to classify, since
+    an empty listing and a clean corpus are different claims.
     """
     unready = tool_unready()
     if unready is not None:
         print(unready, file=sys.stderr)
         return 2
+    page_blocks = blocks
     if args:
         wanted = {os.path.relpath(os.path.abspath(a), ROOT) for a in args}
         unknown = wanted - {block.rel for block in blocks}
@@ -1250,22 +1650,66 @@ def mode_classify(blocks, args):
             return 2
         blocks = [block for block in blocks if block.rel in wanted]
 
+    def tool(*argv):
+        run = subprocess.run(['dotnet', TOOL_DLL, *argv],
+                             capture_output=True, text=True)
+        if run.returncode != 0:
+            sys.stderr.write(run.stderr)
+            return None
+        return [line for line in run.stdout.split('\n') if line]
+
+    def explain(idents):
+        """{ident: [(code, message)]}, or None when the tool failed.
+
+        Each block is explained against its own pin, from the directory it
+        was staged into.
+        """
+        found = {}
+        for pin, (directory, refs, _) in groups.items():
+            mine = [ident for ident in idents if pin_by_ident[ident] == pin]
+            if not mine:
+                continue
+            lines = tool('--explain', directory, refs, *mine)
+            if lines is None:
+                return None
+            for line in lines:
+                fields = line.split('\t', 3)
+                found.setdefault(fields[0], []).append((fields[1], fields[3]))
+        return found
+
+    # Declarations are read from the page's text, not the staged file, so a
+    # wrapper's own class is never mistaken for one the page shows -- and from
+    # every block of the page, named or not, since `same-page` and the
+    # receiver-aware rule both ask about the page.
+    declared = {}
+    for block in page_blocks:
+        for name in TYPE_DECL_RE.findall(block.text):
+            declared.setdefault(block.rel, {}).setdefault(name, set()).add(block.ordinal)
+    # The page's evidence for a third-party package: the roots of the
+    # namespaces its own blocks import.
+    roots = {}
+    for block in page_blocks:
+        for line in block.usings:
+            match = USING_ROOT_RE.match(line)
+            if match:
+                roots.setdefault(block.rel, set()).add(match.group(1))
+
     staged = tempfile.mkdtemp(prefix='blockcheck-classify-')
     try:
-        if mode_stage(blocks, [staged]) != 0:
+        groups = stage_by_pin(blocks, staged)
+        if groups is None:
             return 2
-
-        def tool(*argv):
-            run = subprocess.run(['dotnet', TOOL_DLL, *argv],
-                                 capture_output=True, text=True)
-            if run.returncode != 0:
-                sys.stderr.write(run.stderr)
-                return None
-            return [line for line in run.stdout.split('\n') if line]
-
-        verdicts = tool(staged, REFS_LIST)
-        if verdicts is None:
-            return 2
+        pin_by_ident = {block.ident: pin
+                        for pin, (_, _, group) in groups.items() for block in group}
+        verdicts, parsed, dumps = [], [], {}
+        for pin, (directory, refs, _) in groups.items():
+            ran = tool(directory, refs)
+            parses = tool('--parse', directory)
+            dumps[pin] = tool('--types', refs)
+            if ran is None or parses is None or dumps[pin] is None:
+                return 2
+            verdicts += ran
+            parsed += parses
         failed_ids = {line.split('\t')[0] for line in verdicts
                       if line.split('\t')[1] == 'FAILED'}
         failed = [block for block in blocks
@@ -1275,46 +1719,123 @@ def mode_classify(blocks, args):
                   file=sys.stderr)
             return 2
 
-        parsed = tool('--parse', staged)
-        explained = tool('--explain', staged, REFS_LIST,
-                         *[block.ident for block in failed])
-        dump = tool('--types', REFS_LIST)
-        if parsed is None or explained is None or dump is None:
+        first = explain([block.ident for block in failed])
+        if first is None:
             return 2
+        broken = {line.split('\t')[0] for line in parsed
+                  if line.split('\t')[1] == 'BROKEN'}
+        # One type table per pin: a V4 page's names resolve against the V4
+        # packages, which is the point of compiling it against them.
+        table, ext_table = {}, {}
+        for pin, dump in dumps.items():
+            table[pin], ext_table[pin] = {}, {}
+            for line in dump:
+                kind, name, namespace = (line.split('\t') + ['', ''])[:3]
+                if namespace and kind in ('type', 'ext'):
+                    (table if kind == 'type' else ext_table)[pin].setdefault(
+                        name, set()).add(namespace)
+        path_of = {block.ident: os.path.join(groups[pin_by_ident[block.ident]][0],
+                                             block.ident + '.cs')
+                   for block in failed}
+
+        # THE SECOND COMPILE. Each round supplies the `using`s the last one's
+        # diagnostics resolve, rewrites the staged file as those directives
+        # above the first compile's text, and recompiles. A block that cannot
+        # parse is given nothing.
+        texts, supplied, artefacts = {}, {}, {}
+        for block in failed:
+            with open(path_of[block.ident], encoding='utf-8') as fh:
+                texts[block.ident] = fh.read()
+            supplied[block.ident] = set()
+            # The staged Holder has a base only when the wrapper wrote one;
+            # read from the staged text, so the rule follows the staging.
+            holder_without_base = (block.shape == 'members'
+                                   and '\npublic class Holder\n' in
+                                   '\n' + texts[block.ident])
+            artefacts[block.ident] = (HANDLER_BASE_MEMBERS if holder_without_base
+                                      else frozenset())
+        second = {ident: diags for ident, diags in first.items()}
+        candidates = [block for block in failed if block.ident not in broken]
+        settled = 0
+        for round_ in range(USING_ROUNDS + 1):
+            changed = []
+            for block in candidates:
+                missing, ext_missing, _ = missing_names(second.get(block.ident, []))
+                page_declared = set(declared.get(block.rel, {}))
+                pin = pin_by_ident[block.ident]
+                new = {namespace for namespace in
+                       [resolvable(n, table[pin], page_declared,
+                                   artefacts[block.ident])
+                        for n in missing]
+                       + [resolvable(n, ext_table[pin], page_declared,
+                                     artefacts[block.ident])
+                          for n in ext_missing]
+                       if namespace} - supplied[block.ident]
+                first_party = {namespace for namespace in new
+                               if namespace_rank(namespace)[0] < FIRST_PARTY_TIERS}
+                new = first_party or {
+                    namespace for namespace in new
+                    if namespace.split('.')[0] in roots.get(block.rel, ())}
+                if new:
+                    supplied[block.ident] |= new
+                    changed.append(block.ident)
+                    with open(path_of[block.ident], 'w', encoding='utf-8') as fh:
+                        fh.write(''.join(f'using {namespace};\n' for namespace
+                                         in sorted(supplied[block.ident]))
+                                 + texts[block.ident])
+            if not changed:
+                settled = round_
+                break
+            if round_ == USING_ROUNDS:
+                print(f'the second compile had not settled after {USING_ROUNDS} '
+                      f'rounds ({len(changed)} blocks still changing): nothing '
+                      'was classified', file=sys.stderr)
+                return 2
+            again = explain(changed)
+            if again is None:
+                return 2
+            for ident in changed:
+                second[ident] = again.get(ident, [])
     finally:
         shutil.rmtree(staged, ignore_errors=True)
 
-    broken = {line.split('\t')[0] for line in parsed
-              if line.split('\t')[1] == 'BROKEN'}
-    diagnostics = {}
-    for line in explained:
-        fields = line.split('\t', 3)
-        diagnostics.setdefault(fields[0], []).append((fields[1], fields[3]))
-    types = {line.split('\t')[1] for line in dump if line.startswith('type\t')}
-    extensions = {line.split('\t')[1] for line in dump if line.startswith('ext\t')}
-
-    # Declarations are read from the page's text, not the staged file, so a
-    # wrapper's own class is never mistaken for one the page shows.
-    declared = {}
-    for block in blocks:
-        for name in TYPE_DECL_RE.findall(block.text):
-            declared.setdefault(block.rel, {}).setdefault(name, set()).add(block.ordinal)
-
+    # The first compile's evidence is every name the dump lists, a type in
+    # the global namespace included -- as spec 017 read it. Only the second
+    # compile needs a namespace, because it has to write the `using`.
+    types = {pin: {line.split('\t')[1] for line in dump if line.startswith('type\t')}
+             for pin, dump in dumps.items()}
+    extensions = {pin: {line.split('\t')[1] for line in dump
+                        if line.startswith('ext\t')}
+                  for pin, dump in dumps.items()}
     counts = {name: 0 for name in CLASS_ORDER}
     pages = {name: set() for name in CLASS_ORDER}
+    firsts = {name: 0 for name in FIRST_ORDER}
     for block in sorted(failed, key=lambda b: (b.rel, b.ordinal)):
         elsewhere = {name for name, ordinals in declared.get(block.rel, {}).items()
                      if ordinals - {block.ordinal}}
-        cls, names = classify_failure(diagnostics.get(block.ident, []),
-                                      block.ident in broken, types, extensions,
-                                      elsewhere)
+        pin = pin_by_ident[block.ident]
+        was, first_names = classify_failure(first.get(block.ident, []),
+                                            block.ident in broken, types[pin],
+                                            extensions[pin], elsewhere)
+        if block.ident in broken:
+            cls, names = 'parse', first_names
+        else:
+            cls, names = classify_second(second.get(block.ident, []),
+                                         artefacts[block.ident], elsewhere,
+                                         supplied[block.ident])
         counts[cls] += 1
         pages[cls].add(block.rel)
-        print(f'{block.rel}\t{block.ordinal}\t{cls}\t{",".join(names) or "-"}')
+        firsts[was] += 1
+        print(f'{block.rel}\t{block.ordinal}\t{cls}\t{was}\t'
+              f'{",".join(names) or "-"}')
 
-    print(f'{len(failed)} FAILED blocks classified: '
+    print(f'{len(failed)} FAILED blocks classified at the second compile: '
           + ', '.join(f'{counts[c]} {c} ({len(pages[c])} pages)' for c in CLASS_ORDER),
           file=sys.stderr)
+    print(f'the second compile settled after {settled} round(s) of `using`s',
+          file=sys.stderr)
+    print('at the first compile: '
+          + ', '.join(f'{firsts[c]} {c}' for c in FIRST_ORDER), file=sys.stderr)
     return 0
 
 
