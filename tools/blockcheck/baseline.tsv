@@ -29,6 +29,9 @@
 # Spec 018 phase 2 changed no page. It admitted four blocks that build once a `statements`
 # block naming `Program` is staged as a top-level file, and re-admitted three whose scaffold
 # name gained `v4` when their pages moved to the V4 pin. All seven are at `937db00`.
+#
+# Brighter 10.8.0 (bugfix 0002) moved the pins. CausationTrackingStores.md #1 builds against it,
+# because `RequestContextBagNames.CausationId` shipped; it is at `5e0a63b`.
 contents/AWSSQSConfiguration.md	1	TransportConfigurationContext.cs	7edaada
 contents/AWSSQSConfiguration.md	3	TransportConfigurationContext.cs	7edaada
 contents/AWSSQSConfiguration.md	4	TransportConfigurationContext.cs	7edaada
@@ -332,3 +335,4 @@ contents/MongoDBInbox.md	2	-	7c6c0a1
 contents/MongoDBOutbox.md	1	-	7c6c0a1
 contents/MongoDBOutbox.md	2	-	7c6c0a1
 contents/MongoDBOutbox.md	3	-	7c6c0a1
+contents/CausationTrackingStores.md	1	-	5e0a63b
