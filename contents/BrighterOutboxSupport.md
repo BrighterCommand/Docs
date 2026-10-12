@@ -181,7 +181,7 @@ The benefits of using an **Outbox Sweeper** are:
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `TimerInterval` | `int` | `5` | How many seconds the Sweeper waits between checks for undispatched messages. |
+| `TimerInterval` | `int` | `5` | How many seconds the Sweeper waits between checks for undispatched messages. Must be at least 1; a lower value throws a `ConfigurationException` when the Sweeper is created. |
 | `MinimumMessageAge` | `TimeSpan` | `5000 ms` | How old a message must be before the Sweeper attempts to dispatch it. |
 | `BatchSize` | `int` | `100` | How many messages the Sweeper attempts to dispatch in each check. |
 | `UseBulk` | `bool` | `false` | Whether the Sweeper dispatches in bulk; not every messaging gateway supports it. |
@@ -189,6 +189,8 @@ The benefits of using an **Outbox Sweeper** are:
 `Args` is a public field rather than a property: a `Dictionary<string, object>` of extra
 arguments a particular flavour of Outbox needs. It is read-only, so add to the dictionary
 rather than assigning a new one.
+
+To monitor whether the sweeper is running and keeping to its schedule, see [Outbox Sweeper Metrics](/contents/Telemetry.md#outbox-sweeper-metrics).
 
 It is important to note that the lower the Minimum Message age is the more likely it is that your message will be dispatches more than once (as if you are explicitly clearing messages your application may have instructed the clearing of a message at the same time as the **Outbox Sweeper**)
 
