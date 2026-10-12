@@ -226,6 +226,12 @@
          Microsoft.Extensions and carries a net9.0 build. -->
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.10.0" />
 
+    <!-- The assertions TestDoubleOptions.md's blocks make (`ShouldBe`,
+         `ShouldContain`), at the version Brighter's own tests use:
+         Directory.Packages.props:150 at 10.7.0. The page's reader installs
+         it beside Paramore.Brighter.Testing (spec 018 D4). -->
+    <PackageReference Include="Shouldly" Version="4.3.0" />
+
     <!-- The Avro serializers DefaultMessageMappers.md's mapper calls, at the
          Confluent version Paramore.Brighter.MessagingGateway.Kafka 10.7.0
          depends on (its Serdes.Json is the same release). Brings Apache.Avro,

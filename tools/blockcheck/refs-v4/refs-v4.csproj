@@ -1,0 +1,268 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- THE V4 PIN (spec 018, design § The V4 Pin). refs.csproj with exactly
+       seven packages swapped for their .V4 twins: DynamoDb, Inbox.DynamoDB,
+       Locking.DynamoDB, MessageScheduler.AWS, MessagingGateway.AWSSQS,
+       Outbox.DynamoDB and Transformers.AWS.
+
+       WHY A SECOND PROJECT. refs.csproj:191-192 says why it holds no V4
+       package: the V4 family needs AWSSDK.SQS 4.x, the V3 one caps it below
+       4.0, and one project restores one. So the pages whose blocks import a .V4 namespace,
+       marked `v4` in scaffold/pages.tsv, are compiled against this pin, and
+       every other page against refs.csproj. One pin cannot replace the other:
+       nine BUILT blocks on V3 pages break under this one (spec 018 E3).
+
+       IT MOVES WITH refs.csproj, IN THE SAME EDIT. Every other line is that
+       file's. tools/blockcheck.py compares the two package lists on every
+       run, and a list that differs by anything but the seven swaps is exit 2:
+       nothing checked. So a version bump is two files, and forgetting the
+       second is a red build rather than a stale pin. -->
+
+  <PropertyGroup>
+    <!-- net9.0, matching blockcheck.csproj, tools/optioncheck and the CI job's
+         setup-dotnet 9.0.x. -->
+    <TargetFramework>net9.0</TargetFramework>
+    <!-- A valid identifier. TickerQ's source generator writes the assembly
+         name into code, and `refs-v4` is not one: CS0246 on `v4`. -->
+    <AssemblyName>RefsV4</AssemblyName>
+    <RootNamespace>RefsV4</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <!-- Without this, a package whose types no source mentions is pruned from
+         the output, and the blocks would then compile against a short list —
+         which fails them for want of a reference rather than for want of
+         correctness, believably and in the direction that confirms the thesis. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- NO SOURCES, AND THAT IS THE POINT OF THIS PROJECT EXISTING.
+
+         Spec 016 friction 56: the probe's README documented a recipe nobody
+         had run, and it took its references from the project that COMPILES the
+         blocks. That project's build fails — the blocks do not compile, which
+         is the whole premise — so bin/ holds 0 DLLs, and the run would have
+         reported all 985 blocks broken. A believable number, in the direction
+         that confirms the thesis. A project that compiles blocks cannot also
+         assemble references for them.
+
+         THE PIN LIVES HERE AND NOWHERE ELSE. Every entry carries an explicit
+         version, so a version bump is this file and no other. blockcheck.csproj
+         pins Microsoft.CodeAnalysis.CSharp, which is the compiler driving the
+         check and not the API surface being checked — a different pin, in a
+         different file, for a different reason.
+
+         The list is the probe's, carried forward verbatim: 67 packages, which
+         is the set the probe restored and ran against. Re-deriving it here
+         would put a second, unproven list in the repository and the difference
+         between the two would be silent. -->
+  </ItemGroup>
+
+  <!-- THE REFERENCE SET IS WHAT MSBUILD RESOLVED, WRITTEN OUT.
+
+       The probe took its references by copying `bin/*.dll` and then copying
+       the framework targeting pack in beside them by hand:
+
+           cp $(dirname $(which dotnet))/packs/Microsoft.NETCore.App.Ref/8.0.0/ref/net8.0/*.dll
+
+       That works, and it is a documented step a person performs. Skipped, the
+       run reports 981 blocks failing on CS0518 — "predefined type
+       System.Object is not defined" — which is 99.9% of the corpus broken for
+       want of a reference nobody mentioned. Measured, 2026-09-20, by skipping
+       it: 233 assemblies, 1 block built, 984 failing.
+
+       So the project states its own reference set instead. @(ReferencePath)
+       after ResolveReferences is exactly what the compiler would have been
+       given: the 67 packages AND the targeting pack for this TargetFramework,
+       with no SDK version written down anywhere. tools/blockcheck reads this
+       file, and refuses to run — exit 2, nothing checked — when it is absent
+       or names an assembly that is not there.
+
+       THE FIRST LINE IS A STAMP, AND PHASE 2 ADDED IT AFTER BEING BITTEN.
+       Adding Darker to this file for Q3 introduced an XML error — an MSBuild
+       comment may not contain a double hyphen — so the project failed to LOAD,
+       no target ran, and the previous refs.txt stayed exactly where it was. The
+       corpus run that followed reported the same 61 built as before and looked
+       entirely healthy: it had measured the old pin. An absent refs.txt was
+       already exit 2; a STALE one was indistinguishable from a current one, and
+       it is the more believable of the two failures because nothing is missing.
+
+       Deleting the file before the build would not have caught it either: a
+       project that fails to load runs no targets, including that one. So the
+       file states which refs.csproj produced it, and tools/blockcheck.py hashes
+       refs.csproj and compares. Wrong hash, or no stamp, is exit 2. -->
+  <Target Name="WriteReferenceList" AfterTargets="ResolveReferences">
+    <GetFileHash Files="$(MSBuildProjectFullPath)" Algorithm="SHA256">
+      <Output TaskParameter="Items" ItemName="_RefsProjectHash" />
+    </GetFileHash>
+    <WriteLinesToFile File="$(OutputPath)refs.txt"
+                      Lines="# refs-v4.csproj SHA256 %(_RefsProjectHash.FileHash)"
+                      Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile File="$(OutputPath)refs.txt" Lines="@(ReferencePath)"
+                      Overwrite="false" WriteOnlyWhenDifferent="true" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="Paramore.Brighter" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Archive.Azure" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.AsyncAPI" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.MsSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.MySql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.PostgreSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.Spanner" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.Sqlite" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Dapper" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.DynamoDb.V4" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Firestore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.DynamoDB.V4" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.Firestore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.MongoDb" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.MsSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.MySql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.Postgres" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.Spanner" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Inbox.Sqlite" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Locking.Azure" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Locking.DynamoDB.V4" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Locking.Firestore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Locking.MongoDb" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Locking.MsSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Locking.MySql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Locking.PostgresSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.AWS.V4" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.Azure" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.Hangfire" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.Quartz" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.TickerQ" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.AWSSQS.V4" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.AzureServiceBus" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.GcpPubSub" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.Kafka" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.MQTT" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.MsSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.Postgres" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.RMQ.Async" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.RMQ.Sync" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.Redis" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.RocketMQ" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MongoDb" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MsSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MySql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.DynamoDB.V4" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Firestore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Hosting" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MongoDb" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MsSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MySql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.PostgreSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Spanner" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Sqlite" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.PostgreSql" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.Hosting" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Spanner" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Sqlite" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Transformers.AWS.V4" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Transformers.Azure" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Transformers.Gcp" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Transformers.MongoGridFS" Version="10.7.0" />
+
+    <!-- DARKER, AND IT IS PINNED SEPARATELY BECAUSE IT VERSIONS SEPARATELY.
+         Brighter is at 10.7.0 and Darker's latest release is 4.1.1; there has
+         never been a "Darker V10". Spec 016 Q3 asked whether Darker's surface
+         joins the first baseline and phase 2 ruled YES by measurement: the four
+         packages restore alongside Brighter's 67 with no conflict, and they are
+         what 42 pages of Darker documentation is written against.
+
+         Four packages, not six. `Paramore.Darker.Builder` and
+         `Paramore.Darker.Policies.Constants` are a namespace and a type, and
+         requirements.md P2-2 counts all six as strings on purpose: a string
+         in a `using` is not a package, and pinning the two that are not would
+         fail the restore. -->
+    <!-- SPEC 017 GREW THE PIN, AND MEASURED IT ALONE. Every package below is
+         one a page names, and each was added with no page changed: the
+         verdicts before and after were diffed and none moved. A pin that moved
+         a verdict would be a change nobody repaired.
+
+         Brighter packages the pages name that the probe's 67 did not carry. -->
+    <PackageReference Include="Paramore.Brighter.AsyncAPI.NJsonSchema" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MsSql.EntityFrameworkCore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.MySql.EntityFrameworkCore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.PostgreSql.EntityFrameworkCore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Control" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Control.Api" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.Diagnostics" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Sqlite.EntityFrameworkCore" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Testing" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Validation.DataAnnotations" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Validation.FluentValidation" Version="10.7.0" />
+    <PackageReference Include="Paramore.Brighter.Validation.Specification" Version="10.7.0" />
+
+    <!-- What the scheduler pages configure the schedulers WITH. Hangfire and
+         Quartz are at the versions Paramore.Brighter.MessageScheduler.Hangfire
+         and .Quartz 10.7.0 themselves depend on, so a reader who installs the
+         Brighter package gets these. Hangfire's storage packages are third
+         party and version independently; each is its latest stable release.
+
+         HERE, unlike refs.csproj: the AWS V4 family, swapped in for its V3
+         twins above. Nor OpenTelemetry.Exporter.Jaeger (D2), which upstream
+         deprecated for OTLP. -->
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.24" />
+    <PackageReference Include="Hangfire.Core" Version="1.8.24" />
+    <PackageReference Include="Hangfire.MemoryStorage" Version="1.8.1.2" />
+    <PackageReference Include="Hangfire.MySqlStorage" Version="2.0.3" />
+    <PackageReference Include="Hangfire.PostgreSql" Version="1.21.1" />
+    <PackageReference Include="Hangfire.Redis.StackExchange" Version="1.12.0" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.8.24" />
+    <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.18.1" />
+    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.18.1" />
+
+    <!-- The floor Paramore.Brighter.MsSql.EntityFrameworkCore 10.7.0 sets for
+         net9.0. Below it the restore fails NU1605, a package downgrade. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.15" />
+
+    <!-- The EF Core provider PostgresOutbox.md's DbContext registration calls
+         (UseNpgsql); SqlServer, Sqlite and Pomelo arrive transitively, Npgsql's
+         does not. 9.0.4, the latest for EF Core 9. -->
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+
+    <!-- TickerQScheduler.md's persistence and dashboard blocks, at the version
+         Paramore.Brighter.MessageScheduler.TickerQ 10.7.0 takes for net9.0. -->
+    <PackageReference Include="TickerQ.Dashboard" Version="9.0.2" />
+    <PackageReference Include="TickerQ.EntityFrameworkCore" Version="9.0.2" />
+
+    <!-- The test pages' own frameworks: xunit at the version Brighter's own
+         tests use, and Moq. -->
+    <PackageReference Include="Moq" Version="4.21.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+
+    <!-- FakeTimeProvider, which InMemoryScheduler.md sets as the scheduler's
+         clock in a test. Latest stable; it versions apart from the rest of
+         Microsoft.Extensions and carries a net9.0 build. -->
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.10.0" />
+
+    <!-- The assertions TestDoubleOptions.md's blocks make (`ShouldBe`,
+         `ShouldContain`), at the version Brighter's own tests use:
+         Directory.Packages.props:150 at 10.7.0. The page's reader installs
+         it beside Paramore.Brighter.Testing (spec 018 D4). -->
+    <PackageReference Include="Shouldly" Version="4.3.0" />
+
+    <!-- The Avro serializers DefaultMessageMappers.md's mapper calls, at the
+         Confluent version Paramore.Brighter.MessagingGateway.Kafka 10.7.0
+         depends on (its Serdes.Json is the same release). Brings Apache.Avro,
+         for ISpecificRecord. -->
+    <PackageReference Include="Confluent.SchemaRegistry.Serdes.Avro" Version="2.15.0" />
+
+    <PackageReference Include="Paramore.Darker" Version="4.1.1" />
+    <PackageReference Include="Paramore.Darker.AspNetCore" Version="4.1.1" />
+    <PackageReference Include="Paramore.Darker.Policies" Version="4.1.1" />
+    <PackageReference Include="Paramore.Darker.QueryLogging" Version="4.1.1" />
+  </ItemGroup>
+
+</Project>

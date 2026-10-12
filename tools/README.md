@@ -79,6 +79,15 @@ claims in repaired blocks that had never been run. Run, the false ones were repa
 repairs made **4** MongoDB blocks build: the baseline went 295 → **299**, with no unit and no
 package added. `pagelint` fell 537 → **524**, on blocks the repairs gave their `using` directives.
 
+**Row 9 moved again at spec 018 phase 2**, the instruments, with no page changed. The baseline went
+299 → **303**: four `statements` blocks that name `Program` build once staged as the top-level files
+they are. A second pin, `tools/blockcheck/refs-v4/refs-v4.csproj`, compiles the **30 blocks** on the
+four pages a `v4` cell in `scaffold/pages.tsv` puts on it. It is the main pin with the AWS packages
+swapped for their V4 family, since one project restores one AWS SDK. Three baselined blocks on those
+pages were re-admitted under the new scaffold name. Both pins gained `Shouldly`, three assemblies
+each, so row 9's assembly count is per pin. `--report` now also counts a scaffold unit that does not compile, and a
+page whose `v4` cell disagrees with its own imports, as findings.
+
 | # | Gate | Command | Expected at `412fd34` |
 |---:|---|---|---|
 | 1 | `linkcheck` | `python3 tools/linkcheck.py` | **166 files, 0 broken** — at `94ad0ed`; it read **165** at `bd95ee0` |
@@ -89,7 +98,7 @@ package added. `pagelint` fell 537 → **524**, on blocks the repairs gave their
 | 6 | `optioncheck` | `dotnet run --project tools/optioncheck` | **0 mismatches across 59 tables, 519 rows** |
 | 7 | `--verify` | `python3 tools/urlmap.py --verify` | **161 predicted = 161 published** |
 | 8 | `symbolcheck` | `python3 tools/symbolcheck.py` | **0 findings — 22 entries, 161 pages, 3 silenced** — at `3be2a78`; it read **5 entries, 1 silenced** at `412fd34` |
-| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **990 blocks: 299 BUILT, 674 FAILED, 17 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 17 skipped**, against **545 reference assemblies** with **45 scaffold units checked, 0 violations** — at `bd95ee0`; it read **295 BUILT** at `5981b12`, **983 blocks, 234 BUILT** against 542 with 35 units at `ca6a0b2`, **189 BUILT** against 538 with 30 units at `2223fcb`, **982 blocks, 129 BUILT** with 22 units at `5407298`, **989 blocks, 101 BUILT, 872 FAILED** at `b941837`, unmoved at `23aa74f` with 14 units, and **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
+| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **993 blocks: 303 BUILT, 673 FAILED, 17 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 17 skipped**, against **548 reference assemblies** on each pin, **30 blocks on the v4 pin**, with **45 scaffold units checked, 0 violations, 0 compile errors** and **4 pages on the v4 pin, 0 violations** — at spec 018 phase 2, merged with #199, whose three `Telemetry.md` blocks are FAILED; it read **990 blocks, 299 BUILT, 674 FAILED** against 545 with 45 units at `bd95ee0`, **295 BUILT** at `5981b12`, **983 blocks, 234 BUILT** against 542 with 35 units at `ca6a0b2`, **189 BUILT** against 538 with 30 units at `2223fcb`, **982 blocks, 129 BUILT** with 22 units at `5407298`, **989 blocks, 101 BUILT, 872 FAILED** at `b941837`, unmoved at `23aa74f` with 14 units, and **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
 
 **Four of the nine are not in the `check` job of `.github/workflows/docs.yml`, and each absence
 is a decision rather than an oversight:**
@@ -104,13 +113,18 @@ is a decision rather than an oversight:**
 - **6 runs in its own `options` job** and has no schedule, because it reflects over a *pinned*
   package: nothing outside this repository can change its verdict.
 - **9 runs in its own `blocks` job** and has no schedule, for 6's reason: it compiles against the
-  packages pinned in `tools/blockcheck/refs/refs.csproj`. It needs two builds first, and **without
-  them it exits 2 rather than failing every block**:
+  packages pinned in `tools/blockcheck/refs/refs.csproj` and, for the pages on the V4 pin,
+  `tools/blockcheck/refs-v4/refs-v4.csproj`. It needs three builds first, and **without them it
+  exits 2 rather than failing every block**:
 
   ```bash
   dotnet build tools/blockcheck/refs/refs.csproj -c Release
+  dotnet build tools/blockcheck/refs-v4/refs-v4.csproj -c Release
   dotnet build tools/blockcheck/blockcheck.csproj -c Release
   ```
+
+  `--report` also exits 2 when the two pins' package lists differ by anything but the AWS V4 swaps,
+  so a package added to one pin and not the other is never a silent difference.
 
 ### Reading a number before you trust it
 
@@ -120,10 +134,19 @@ claim as `0 findings, 1 silenced`, and `blockcheck`'s `0 findings` is only as wi
 baseline — it prints the count of blocks it requires to build beside it. A gate that has silently degraded to checking nothing passes
 every corpus ever written.
 
-**`blockcheck` prints three scope lines, and each can shrink without failing anything:**
+**`blockcheck` prints four scope lines, and each can shrink without failing anything:**
 `N reference assemblies` (the pin it compiled against), `baseline: N blocks required to build`,
-and `scaffold rule: N units checked, 0 violations` — row 9 above carries each figure. A smaller first figure is a pin that did not
-restore; a smaller third is a unit the rule never looked at.
+`scaffold rule: N units checked, 0 violations, 0 compile errors`, and `pin rule: N pages on the v4
+pin, 0 violations` — row 9 above carries each figure. A smaller first figure is a pin that did not
+restore; a smaller third is a unit the rule never looked at; a smaller fourth is a page that left the
+V4 pin. The compiler's own lines (`N reference assemblies`, `N blocks, N built, N failing`) print
+once per pin, and the V4 pin's carry a `(v4 pin)` suffix, so its assembly count is never read as
+the main pin's.
+
+**The scaffold rule's `compile errors` are errors in a unit's own file**, reported once each under
+*scaffold unit does not compile*, however many blocks the unit rode with. They are kept out of every
+block's verdict, because they are not the page's fault, and they are a finding because a unit that
+does not compile can fail its page's blocks for a reason no reader could act on.
 
 **Two commands that read a `blockcheck` number are easy to write wrongly, and both were**, in spec
 016's acceptance criteria. Each ran, printed a plausible figure, and measured less than it said:
@@ -171,6 +194,7 @@ python3 tools/pagelint.py contents/Glossary.md       # specific pages
 python3 tools/pagelint.py --changed origin/master    # strict on code blocks overlapping the diff
 python3 tools/pagelint.py --fix                      # repair banners, fences, descriptions
 python3 tools/pagelint.py --plant                    # rule 8's five in-memory plants; exit 0 only if all behave
+python3 tools/pagelint.py --per-page                 # page<TAB>warnings, sorted; diff two runs for a debt delta
 python3 tools/symbolcheck.py contents/Glossary.md    # specific pages
 python3 tools/symbolcheck.py --census                # open-world report, never a gate, always exit 0
 python3 tools/symbolcheck.py --verify-list           # is every watchlist row still dead?
@@ -191,14 +215,23 @@ python3 tools/blockcheck.py --explain <id>...        # every diagnostic of those
 exits **2** when there is nothing to report — a page with no C# block, or none in the state asked
 about — so an empty listing is never mistaken for a clean one:
 
-- **`--classify`** prints `page<TAB>ordinal<TAB>class<TAB>names` for every FAILED block, and a
-  per-class count on stderr. The class is the first of these that matches: *parse* (the block
-  does not parse on its own), *import* (a missing name is a pinned type or extension method),
-  *other* (an error that is not a missing name), *same-page* (another block on the page declares
-  it), *values* (every missing name is a lower-case value), *page-type* (a type the page names and
-  never shows). It reads the compiler's first errors, so a class is what stops the block today, not
-  everything that will; and it reads its type table from the pin, so the counts move when
-  `refs.csproj` does
+- **`--classify`** prints `page<TAB>ordinal<TAB>class<TAB>first<TAB>names` for every FAILED block,
+  and a per-class count on stderr. It compiles each block twice. The second compile supplies the
+  `using` directives the pin's type table resolves, then reads what is left. That gives `class`, the
+  first of these that matches:
+  - *parse*: the block does not parse as staged
+  - *built-by-using*: it builds once given its `using`s
+  - *defect*: after them, a binder error that is not a missing name
+  - *same-page*: only names another block on the page declares
+  - *values*: only lower-case missing names
+  - *page-type*: a capitalised name no pin ships and the page never shows
+
+  `first` is the class from the first compile alone, kept beside it as the lower bound. `names` is
+  what decided the class: the namespaces supplied for *built-by-using*, the diagnostic codes for
+  *defect*, and the missing names otherwise. A name is resolved only when the page does not declare
+  it and the staged base does not supply it. Paramore, System and Microsoft namespaces are tried
+  first, and a third-party namespace only when a block on the page already imports from its root.
+  Each block is read against its own pin, so the counts move when either `refs` project does
 - **`--list-skips`** prints `page<TAB>ordinal<TAB>reason`, one row per
   `<!-- blockcheck: skip <reason> -->`. It reads the scanner `--report` uses, so its line count is
   always `--report`'s SKIPPED

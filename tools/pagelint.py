@@ -111,6 +111,12 @@ Usage:
     python3 tools/pagelint.py --changed origin/master  # strict on changed blocks
     python3 tools/pagelint.py --fix                    # repair, then report what is left
     python3 tools/pagelint.py --plant                  # rule 8's planted cases; exit 0 if all behave
+    python3 tools/pagelint.py --per-page               # page<TAB>warnings, sorted; summary on stderr
+
+--per-page replaces the findings with one row per page that has a warning, so a
+phase's debt delta is a diff of two outputs rather than a worktree at its base
+(friction #80). Its column sums to the summary line's warning count. It
+combines with paths and --changed, and not with --fix.
 
 Cross-page uniqueness is a property of the corpus, so when given explicit paths
 the tool still loads every page for context and only reports on the ones asked
@@ -1325,6 +1331,7 @@ def describe_scope(merge_base, ranges, pages, reported):
 def main(argv):
     merge_base = None
     fix = False
+    per_page = False
     paths = []
     args = list(argv)
     while args:
@@ -1337,6 +1344,8 @@ def main(argv):
             merge_base = args.pop(0)
         elif arg == '--fix':
             fix = True
+        elif arg == '--per-page':
+            per_page = True
         elif arg == '--plant':
             if len(argv) != 1:
                 print('--plant takes no other arguments', file=sys.stderr)
@@ -1354,6 +1363,12 @@ def main(argv):
     if fix and merge_base:
         print('--fix and --changed do not combine: --changed only varies the '
               'strictness of a rule --fix does not repair', file=sys.stderr)
+        return 2
+    # --fix prints what it changed before what is left, and a per-page table
+    # interleaved with that would be neither diffable nor readable.
+    if fix and per_page:
+        print('--fix and --per-page do not combine: run --fix, then --per-page',
+              file=sys.stderr)
         return 2
 
     pages = load_pages()
@@ -1429,6 +1444,9 @@ def main(argv):
 
     findings.sort(key=lambda f: (f.path, f.line, f.rule))
 
+    if per_page:
+        return print_per_page(findings, len(reported))
+
     for finding in findings:
         label = finding.rule
         if finding.severity == 'warning':
@@ -1453,6 +1471,28 @@ def main(argv):
     summary += f' across {len(reported)} pages.'
     print(summary)
 
+    return 1 if errors else 0
+
+
+def print_per_page(findings, n_reported):
+    """`page<TAB>warnings` for each page with a warning, sorted by page.
+
+    Only the rows go to stdout, so two runs diff clean. The summary line goes to
+    stderr, worded as the full run's is, because the column must sum to its
+    warning count and a reader should not have to run the tool twice to check.
+    Errors are not rows here; they are counted in the summary and set the exit
+    code exactly as a full run does.
+    """
+    per = {}
+    for finding in findings:
+        if finding.severity == 'warning':
+            per[finding.path] = per.get(finding.path, 0) + 1
+    for path in sorted(per):
+        print(f'{path}\t{per[path]}')
+    errors = sum(1 for f in findings if f.severity == 'error')
+    warnings = len(findings) - errors
+    print(f'{errors} errors, {warnings} warnings across {len(per)} pages with '
+          f'a warning, of {n_reported} checked', file=sys.stderr)
     return 1 if errors else 0
 
 

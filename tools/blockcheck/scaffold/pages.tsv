@@ -1,6 +1,6 @@
 # Which scaffold a page's blocks are compiled with. One row per page.
 #
-#   page <TAB> unit <TAB> prelude
+#   page <TAB> unit <TAB> prelude <TAB> pin
 #
 # `unit`    a file under scaffold/units/, compiled alongside every block of
 #           that page, supplying identifiers the page names but no block
@@ -11,6 +11,12 @@
 #           `-` for none. THERE ARE NONE, since 016 phase 5: the four carried
 #           from 015's harness were mapped to no page and declared domain
 #           types, so they were deleted. A prelude obeys the unit rule below.
+# `pin`     `v4` compiles the page against refs-v4/refs-v4.csproj, the main
+#           pin with the seven AWS packages swapped for their .V4 twins; `-`
+#           against refs/refs.csproj (spec 018, design § The V4 Pin).
+#           THE PAIRING RULE, checked by `--report` beside the unit rule: a
+#           page marked `v4` has a C# block importing a .V4 namespace, and a
+#           page with such a block is marked `v4`. A violation is a finding.
 #
 # THE UNIT OF ADMISSION IS A PAGE, NOT A BLOCK. A page's blocks share a world,
 # which is what makes the hand-work tractable and what stops a scaffold being
@@ -34,72 +40,76 @@
 # The static class a unit's own `// blockcheck: using static X;` line brings
 # into scope is exempt from 1, since no block names it; its members are not
 # exempt from 3. A page is listed here only if its unit makes at least one
-# block build. `baseline.tsv` records the scaffold each admitted block was
+# block build, or it is on the v4 pin. A row that gives a page nothing --
+# `-` in all three -- is exit 2. `baseline.tsv` records the scaffold each admitted block was
 # measured with.
-contents/DapperOutbox.md	PageContext	-
-contents/AzureScheduler.md	AzureSchedulerContext	-
-contents/DynamoOutbox.md	DynamoOutboxContext	-
-contents/FAQ.md	FAQContext	-
-contents/HandlingPoisonMessages.md	HandlingPoisonMessagesContext	-
-contents/HowConfiguringTheCommandProcessorWorks.md	HowConfiguringTheCommandProcessorWorksContext	-
-contents/MSSQLTransportInboxAndOutbox.md	RelationalTransportContext	-
-contents/MessageMappers.md	MessageMappersContext	-
-contents/MigratingToNullableReferenceTypes.md	MigratingToNullableReferenceTypesContext	-
-contents/MigratingToPollyV8.md	MigratingToPollyV8Context	-
-contents/PolicyRetryAndCircuitBreaker.md	PolicyRetryAndCircuitBreakerContext	-
-contents/PostgreSQLTransportAndOutbox.md	RelationalTransportContext	-
-contents/SweeperCircuitBreaking.md	SweeperCircuitBreakingContext	-
-contents/TickerQScheduler.md	TickerQSchedulerContext	-
-contents/UsingSweeperCircuitBreaking.md	UsingSweeperCircuitBreakingContext	-
-contents/TutorialStreamingWithKafka.md	TutorialStreamingWithKafkaContext	-
-contents/RequestValidation.md	RequestValidationContext	-
-contents/RelationalDatabaseConfigurationReference.md	RelationalDatabaseConfigurationReferenceContext	-
-contents/HealthChecks.md	HealthChecksContext	-
-contents/ClaimCheck.md	ClaimCheckContext	-
-contents/Compression.md	CompressionContext	-
-contents/ErrorHandlingOptions.md	ErrorHandlingOptionsContext	-
-contents/HandlingLargeMessages.md	HandlingLargeMessagesContext	-
-contents/InMemoryTransport.md	InMemoryTransportContext	-
-contents/GcpPubSubConfiguration.md	TransportConfigurationContext	-
-contents/MQTTConfiguration.md	TransportConfigurationContext	-
-contents/MSSQLMessageBroker.md	TransportConfigurationContext	-
-contents/RedisConfiguration.md	TransportConfigurationContext	-
-contents/RocketMQConfiguration.md	TransportConfigurationContext	-
-contents/AWSSQSConfiguration.md	TransportConfigurationContext	-
-contents/BoxProvisioningConfiguration.md	BoxProvisioningConfigurationContext	-
-contents/TransactionalMessagingWithTheOutbox.md	TransactionalMessagingWithTheOutboxContext	-
-contents/SchedulingAMessage.md	SchedulingAMessageContext	-
-contents/QueryResultTypes.md	QueryResultTypesContext	-
-contents/QueryObjectValidation.md	QueryObjectValidationContext	-
-contents/TestingQueryHandlers.md	TestingQueryHandlersContext	-
-contents/MSSQLOutbox.md	RelationalOutboxContext	-
-contents/MySQLOutbox.md	RelationalOutboxContext	-
-contents/PostgresOutbox.md	RelationalOutboxContext	-
-contents/SqliteOutbox.md	RelationalOutboxContext	-
-contents/MSSQLInbox.md	RelationalInboxContext	-
-contents/MySQLInbox.md	RelationalInboxContext	-
-contents/PostgresInbox.md	RelationalInboxContext	-
-contents/SqliteInbox.md	RelationalInboxContext	-
-contents/InMemoryInbox.md	InMemoryBoxContext	-
-contents/InMemoryOutbox.md	InMemoryBoxContext	-
-contents/DynamoInbox.md	DynamoInboxContext	-
-contents/AzureBlobDistributedLock.md	DistributedLockProviderContext	-
-contents/FirestoreDistributedLock.md	DistributedLockProviderContext	-
-contents/MongoDbDistributedLock.md	DistributedLockProviderContext	-
-contents/MsSqlDistributedLock.md	DistributedLockProviderContext	-
-contents/MySqlDistributedLock.md	DistributedLockProviderContext	-
-contents/PostgresDistributedLock.md	DistributedLockProviderContext	-
-contents/AgreementDispatcherRouting.md	AgreementDispatcherRoutingContext	-
-contents/AggregationQueryPatterns.md	DarkerQueryPatternsContext	-
-contents/ProjectionQueryPatterns.md	DarkerQueryPatternsContext	-
-contents/ParameterizedQueryPatterns.md	DarkerQueryPatternsContext	-
-contents/QueryHandlerDependencies.md	DarkerQueryPatternsContext	-
-contents/DarkerConfigurationReference.md	DarkerConfigurationReferenceContext	-
-contents/HowConfiguringTheDispatcherWorks.md	HowConfiguringTheDispatcherWorksContext	-
-contents/CQRSUseCasesAndPatterns.md	CQRSUseCasesAndPatternsContext	-
-contents/BrighterControlAPI.md	BrighterControlAPIContext	-
-contents/PostgreSQLMessageBroker.md	PostgreSQLMessageBrokerContext	-
-contents/PostgreSQLBrokerTradeOffs.md	PostgreSQLMessageBrokerContext	-
-contents/CloudEventsReference.md	CloudEventsReferenceContext	-
-contents/Telemetry.md	TelemetryContext	-
-contents/S3LuggageStore.md	S3LuggageStoreContext	-
+contents/DapperOutbox.md	PageContext	-	-
+contents/AzureScheduler.md	AzureSchedulerContext	-	-
+contents/DynamoOutbox.md	DynamoOutboxContext	-	-
+contents/FAQ.md	FAQContext	-	-
+contents/HandlingPoisonMessages.md	HandlingPoisonMessagesContext	-	-
+contents/HowConfiguringTheCommandProcessorWorks.md	HowConfiguringTheCommandProcessorWorksContext	-	-
+contents/MSSQLTransportInboxAndOutbox.md	RelationalTransportContext	-	-
+contents/MessageMappers.md	MessageMappersContext	-	-
+contents/MigratingToNullableReferenceTypes.md	MigratingToNullableReferenceTypesContext	-	-
+contents/MigratingToPollyV8.md	MigratingToPollyV8Context	-	-
+contents/PolicyRetryAndCircuitBreaker.md	PolicyRetryAndCircuitBreakerContext	-	-
+contents/PostgreSQLTransportAndOutbox.md	RelationalTransportContext	-	-
+contents/SweeperCircuitBreaking.md	SweeperCircuitBreakingContext	-	-
+contents/TickerQScheduler.md	TickerQSchedulerContext	-	-
+contents/UsingSweeperCircuitBreaking.md	UsingSweeperCircuitBreakingContext	-	-
+contents/TutorialStreamingWithKafka.md	TutorialStreamingWithKafkaContext	-	-
+contents/RequestValidation.md	RequestValidationContext	-	-
+contents/RelationalDatabaseConfigurationReference.md	RelationalDatabaseConfigurationReferenceContext	-	-
+contents/HealthChecks.md	HealthChecksContext	-	-
+contents/ClaimCheck.md	ClaimCheckContext	-	-
+contents/Compression.md	CompressionContext	-	-
+contents/ErrorHandlingOptions.md	ErrorHandlingOptionsContext	-	-
+contents/HandlingLargeMessages.md	HandlingLargeMessagesContext	-	-
+contents/InMemoryTransport.md	InMemoryTransportContext	-	-
+contents/GcpPubSubConfiguration.md	TransportConfigurationContext	-	-
+contents/MQTTConfiguration.md	TransportConfigurationContext	-	-
+contents/MSSQLMessageBroker.md	TransportConfigurationContext	-	-
+contents/RedisConfiguration.md	TransportConfigurationContext	-	-
+contents/RocketMQConfiguration.md	TransportConfigurationContext	-	-
+contents/AWSSQSConfiguration.md	TransportConfigurationContext	-	-
+contents/BoxProvisioningConfiguration.md	BoxProvisioningConfigurationContext	-	-
+contents/TransactionalMessagingWithTheOutbox.md	TransactionalMessagingWithTheOutboxContext	-	-
+contents/SchedulingAMessage.md	SchedulingAMessageContext	-	-
+contents/QueryResultTypes.md	QueryResultTypesContext	-	-
+contents/QueryObjectValidation.md	QueryObjectValidationContext	-	-
+contents/TestingQueryHandlers.md	TestingQueryHandlersContext	-	-
+contents/MSSQLOutbox.md	RelationalOutboxContext	-	-
+contents/MySQLOutbox.md	RelationalOutboxContext	-	-
+contents/PostgresOutbox.md	RelationalOutboxContext	-	-
+contents/SqliteOutbox.md	RelationalOutboxContext	-	-
+contents/MSSQLInbox.md	RelationalInboxContext	-	-
+contents/MySQLInbox.md	RelationalInboxContext	-	-
+contents/PostgresInbox.md	RelationalInboxContext	-	-
+contents/SqliteInbox.md	RelationalInboxContext	-	-
+contents/InMemoryInbox.md	InMemoryBoxContext	-	-
+contents/InMemoryOutbox.md	InMemoryBoxContext	-	-
+contents/DynamoInbox.md	DynamoInboxContext	-	-
+contents/AzureBlobDistributedLock.md	DistributedLockProviderContext	-	-
+contents/FirestoreDistributedLock.md	DistributedLockProviderContext	-	-
+contents/MongoDbDistributedLock.md	DistributedLockProviderContext	-	-
+contents/MsSqlDistributedLock.md	DistributedLockProviderContext	-	-
+contents/MySqlDistributedLock.md	DistributedLockProviderContext	-	-
+contents/PostgresDistributedLock.md	DistributedLockProviderContext	-	-
+contents/AgreementDispatcherRouting.md	AgreementDispatcherRoutingContext	-	-
+contents/AggregationQueryPatterns.md	DarkerQueryPatternsContext	-	-
+contents/ProjectionQueryPatterns.md	DarkerQueryPatternsContext	-	-
+contents/ParameterizedQueryPatterns.md	DarkerQueryPatternsContext	-	-
+contents/QueryHandlerDependencies.md	DarkerQueryPatternsContext	-	-
+contents/DarkerConfigurationReference.md	DarkerConfigurationReferenceContext	-	-
+contents/HowConfiguringTheDispatcherWorks.md	HowConfiguringTheDispatcherWorksContext	-	-
+contents/CQRSUseCasesAndPatterns.md	CQRSUseCasesAndPatternsContext	-	-
+contents/BrighterControlAPI.md	BrighterControlAPIContext	-	-
+contents/PostgreSQLMessageBroker.md	PostgreSQLMessageBrokerContext	-	-
+contents/PostgreSQLBrokerTradeOffs.md	PostgreSQLMessageBrokerContext	-	-
+contents/CloudEventsReference.md	CloudEventsReferenceContext	-	-
+contents/Telemetry.md	TelemetryContext	-	-
+contents/S3LuggageStore.md	S3LuggageStoreContext	-	v4
+contents/AwsScheduler.md	-	-	v4
+contents/DistributedLock.md	-	-	v4
+contents/DynamoDbDistributedLock.md	-	-	v4
