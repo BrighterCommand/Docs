@@ -329,7 +329,7 @@ reason, and does not hold the phase.
     command written above it, and no probe column. The three tranche pages with V4 blocks are in S4
     and S5. The tables' FAILED column sums to `--report`'s FAILED on the 64 + 3 pages
 
-- [ ] **Task 2.15:** Close phase 2
+- [x] **Task 2.15:** Close phase 2
   - Input: § 1 obligations 6, 19; the phase's prediction
   - Output: § *Phase 2 as executed*, gates against the prediction; readings (no page touched,
     stated); the PR, asking for deletion of its head ref by name
@@ -966,6 +966,58 @@ required to build`, `scaffold rule: 45 units checked, 0 violations, 0 compile er
 4 pages on the v4 pin, 0 violations`, and 548 reference assemblies on each pin. **`tools/README.md`
 row 9, written at 2.12, re-derived:** every figure in it equals this run, including `0 findings`,
 so it needs no edit.
+
+#### Phase 2 closed (2.15)
+
+**`master` moved during the phase.** #199 merged at `6a57698` on 2026-10-10 (outbox sweeper health
+metrics). It changed `BrighterOutboxSupport.md` (4 lines, no block) and `Telemetry.md` (+142, three
+new C# blocks). `origin/master` was merged into this branch with no conflict. Its three blocks are
+`Telemetry.md` #6, #7 and #8, all FAILED and all `defect` on `CS0234`. `Telemetry.md` is a 017
+tranche page, so they join that page's FAILED blocks outside § *The groups*: **36 → 39**. The
+tables were re-drawn at the merge, and `diff` against 2.14's was silent.
+
+**Gates against the prediction.** The prediction is § *Phase 2*'s header.
+
+| Gate | Predicted | At `1b05c3e` (before the merge) | Merged with #199 |
+|---|---|---|---|
+| `blockcheck` corpus | unmoved, 990 | **990** | **993**, #199's three blocks |
+| BUILT | + 2.1's set (4) | 299 → **303** | **303** |
+| FAILED | − the same | 674 → **670** | **673**, #199's three |
+| SKIPPED / findings | — | 17 / **0**, exit 0 | 17 / **0**, exit 0 |
+| assemblies | main pin + Shouldly's | 545 → **548**, and **548** on the V4 pin | same |
+| scope lines | + the V4 pin's | the `(v4 pin)` lines, and `pin rule: 4 pages, 0 violations` | same |
+| scaffold rule | unmoved | 45 units, 0 violations, **0 compile errors** (2.9) | same |
+| `linkcheck` | unmoved | 166 / 0 | 166 / 0 |
+| `pagelint` | unmoved | 0 errors / 512 / 162, `--plant` 5 / 5 | same: #199's blocks carry their `using`s |
+| shape · redirects | unmoved | 161 pages, widest 12 of 20 · 77 entries, 7858 bytes | same |
+| `optioncheck` | unmoved | 0 / 59 tables / 519 rows | same |
+| `symbolcheck` | unmoved | 0, 22 entries, 3 silenced | same |
+| `versioncheck` | unmoved, 0 of 18 | **18 stale of 18** | **18 stale of 18** |
+| `--verify-extraction` | — | 990 / 990 | — |
+| probes | — | `handler_plants.py`, `unit_plants.py`, `net10.py`, `groups.py`: exit 0 | — |
+
+**Every difference has its mechanism:**
+- **The extra scope lines** are 2.6's pin rule and 2.9's compile errors. The prediction named only
+  the V4 assemblies line. Both are this phase's instruments, and neither is a regression.
+- **The corpus figures after the merge** are #199's three blocks, which `master`'s own gate
+  admitted as FAILED.
+- **`versioncheck` is red for a reason outside this repository.** Brighter **10.8.0** reached
+  NuGet on **2026-10-06**. The five tutorial pages pin 10.7.0, so all 18 pins are stale. `master`'s
+  `versions` job has failed on every scheduled run from 2026-10-06, an hour after the release, to
+  2026-10-11, and on #199's push. 2026-10-05's run passed. The phase touched none of those pages. Bumping them changes the published site, and the
+  bump belongs with the `refs` pin (10.7.0) and a replay of each tutorial. So it is put to the
+  maintainer as its own change and not made here.
+
+**Readings (obligation 19).** `git diff --name-only f6a9a7c -- contents SUMMARY.md README.md
+.gitbook.yaml` lists only #199's two pages, which arrived by merge. **Phase 2 changed no page**, so
+it adds no `// ...` and no behavioural claim, and AC9 and AC10 have nothing to read.
+
+**`tools/README.md` row 9** was re-derived at the merged head: 993 / 303 / 673 / 17, 0 findings.
+AC14's corrected form is **1** for `993 blocks`, `303 BUILT` and `673 FAILED`.
+
+**Carried to later phases:**
+- `Telemetry.md` #6, #7, #8 (`CS0234`, #199's): tranche-page blocks for phase 8's residual reading
+- the readings named in § *Phase 2 as executed* for the repair phases
 
 ---
 
