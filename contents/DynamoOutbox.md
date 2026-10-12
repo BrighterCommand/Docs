@@ -148,7 +148,7 @@ public class AddGreetingHandlerAsync : RequestHandlerAsync<AddGreeting>
 
 ## DynamoDb Outbox Options
 
-`DynamoDbConfiguration` names the table and its four global secondary indexes, and carries the
+`DynamoDbConfiguration` names the table and its five global secondary indexes, and carries the
 two settings that govern expiry and scan concurrency.
 
 <!-- optioncheck: Paramore.Brighter.Outbox.DynamoDB.DynamoDbConfiguration -->
@@ -160,26 +160,27 @@ two settings that govern expiry and scan concurrency.
 | `DeliveredAllTopicsIndexName` | `string` | `"DeliveredAllTopics"` | Names the global secondary index of dispatched messages covering every topic. |
 | `OutstandingIndexName` | `string` | `"Outstanding"` | Names the global secondary index of undispatched messages, indexed by topic. |
 | `OutstandingAllTopicsIndexName` | `string` | `"OutstandingAllTopics"` | Names the global secondary index of undispatched messages covering every topic. |
+| `CausationIndexName` | `string` | `"Causation"` | Names the global secondary index over the Causation Id, which [Replay On Seen](/contents/ReplayOnSeen.md) queries; leave it at the default, for the reason under [The index name](#the-index-name). |
 | `TimeToLive` | `TimeSpan?` | `null` | Sets how long a message survives in the table before DynamoDB expires it; messages do not expire when it is null. |
 | `ScanConcurrency` | `int` | `3` | Sets how many segments a parallel scan for outstanding messages uses. |
 
 **`timeout` and `numberOfShards` are constructor parameters, not properties you can set.** They
 surface as the get-only `Timeout` and `NumberOfShards`. `numberOfShards` defaults to 3 and
 shards the outstanding index so an active topic does not build a hot partition; the Outbox
-throws `ArgumentOutOfRangeException` above 20. `timeout` defaults to 500 and **nothing reads
-it**; neither does the DynamoDB Outbox read the `outBoxTimeout` argument the `IAmAnOutbox`
-methods take, which it accepts and passes between overloads without ever acting on. Configure
-timeouts on the `AmazonDynamoDBClient` you hand to the Outbox instead. `tableName` and
-`scanConcurrency` are constructor parameters as well, but each has a
-settable property and is in the table above.
+throws `ArgumentOutOfRangeException` above 20. `timeout` is the deadline, in milliseconds, for
+each Outbox operation, and defaults to 500; zero or -1 disables it, and anything below -1 throws
+`ArgumentOutOfRangeException`. The deadline covers the whole operation, batch items and query
+pages included, and an operation that overruns it is cancelled and surfaces as
+`OperationCanceledException`. The `outBoxTimeout` argument the `IAmAnOutbox` methods take
+overrides it for one call: -1, the default, uses the configured `timeout`, and zero disables the
+deadline. Timeouts you configure on the `AmazonDynamoDBClient` still apply alongside it.
+`tableName` and `scanConcurrency` are constructor parameters as well, but each has a settable
+property and is in the table above.
 
 ## Replay Support: The Causation Index
 
-> **Not in a released package yet.** This section describes
-> [Replay On Seen](/contents/ReplayOnSeen.md), which ships **after Brighter 10.7.0** — the
-> current release. `DynamoDbConfiguration.CausationIndexName` and the `CausationId` attribute
-> below are on Brighter's development branch and are in no version you can install today, which
-> is why `CausationIndexName` is absent from the options table above.
+> **Requires Brighter 10.8.0 or later.** Earlier versions of both DynamoDB Outbox packages have
+> no `DynamoDbConfiguration.CausationIndexName` and no `CausationId` attribute.
 
 [Replay On Seen](/contents/ReplayOnSeen.md) resends every Outbox message produced under a given Causation Id. On DynamoDB that means querying on a non-key attribute, which needs a Global Secondary Index — by default one named **Causation**, with `CausationId` as its hash key.
 
@@ -274,7 +275,7 @@ Two operational notes:
 
 `DynamoDbConfiguration.CausationIndexName` defaults to `"Causation"`. **Leave it there.**
 
-It has a public setter, unlike the name suggests it should be treated — but it does not behave like the `Outstanding` and `Delivered` index names, which you can rename freely. The Causation index name is also declared on `MessageItem` as an attribute argument, and attribute arguments must be compile-time constants, so the annotation cannot read your configured value. `DynamoDbTableFactory` therefore always generates an index called `Causation`, whatever you set here.
+It has a public setter, as the other index names do, and the same catch applies to all of them: each index name is also declared on `MessageItem` as an attribute argument, and attribute arguments must be compile-time constants, so the annotation cannot read your configured value. `DynamoDbTableFactory` therefore always generates an index called `Causation`, whatever you set here.
 
 Point `CausationIndexName` at another name and the probe and the replay query both target a GSI the table model never declares. Nothing errors: `SupportsCausationTracking()` simply reports `false`, and replay silently finds no messages. If you have a genuine reason to rename it, you must create the index under that name yourself.
 

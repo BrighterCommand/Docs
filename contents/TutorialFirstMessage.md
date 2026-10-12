@@ -80,7 +80,7 @@ docker compose up -d
 
 ```bash
 dotnet new classlib -n Greetings -f net9.0
-dotnet add Greetings package Paramore.Brighter --version 10.7.0
+dotnet add Greetings package Paramore.Brighter --version 10.8.0
 ```
 
 Delete the generated `Class1.cs`, and put this in `Greetings/GreetingEvent.cs`:
@@ -126,9 +126,9 @@ library has nothing to run, and neither process exists.
 
 ```bash
 dotnet new console -n GreetingsSender -f net9.0
-dotnet add GreetingsSender package Paramore.Brighter.Extensions.DependencyInjection --version 10.7.0
-dotnet add GreetingsSender package Paramore.Brighter.MessagingGateway.RMQ.Async --version 10.7.0
-dotnet add GreetingsSender package Microsoft.Extensions.Hosting --version 10.0.10
+dotnet add GreetingsSender package Paramore.Brighter.Extensions.DependencyInjection --version 10.8.0
+dotnet add GreetingsSender package Paramore.Brighter.MessagingGateway.RMQ.Async --version 10.8.0
+dotnet add GreetingsSender package Microsoft.Extensions.Hosting --version 10.0.12
 dotnet add GreetingsSender reference Greetings
 ```
 
@@ -214,10 +214,10 @@ the two in the order that works.
 
 ```bash
 dotnet new console -n GreetingsReceiver -f net9.0
-dotnet add GreetingsReceiver package Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection --version 10.7.0
-dotnet add GreetingsReceiver package Paramore.Brighter.ServiceActivator.Extensions.Hosting --version 10.7.0
-dotnet add GreetingsReceiver package Paramore.Brighter.MessagingGateway.RMQ.Async --version 10.7.0
-dotnet add GreetingsReceiver package Microsoft.Extensions.Hosting --version 10.0.10
+dotnet add GreetingsReceiver package Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection --version 10.8.0
+dotnet add GreetingsReceiver package Paramore.Brighter.ServiceActivator.Extensions.Hosting --version 10.8.0
+dotnet add GreetingsReceiver package Paramore.Brighter.MessagingGateway.RMQ.Async --version 10.8.0
+dotnet add GreetingsReceiver package Microsoft.Extensions.Hosting --version 10.0.12
 dotnet add GreetingsReceiver reference Greetings
 ```
 
@@ -227,7 +227,7 @@ dotnet add GreetingsReceiver reference Greetings
 > `ServiceActivatorHostedService` type so that existing code keeps compiling. You are on the
 > right page. See [Dispatcher](/contents/Glossary.md#dispatcher).
 >
-> This is also why rung 2 pins `Microsoft.Extensions.Hosting` at **10.0.10** rather than rung
+> This is also why rung 2 pins `Microsoft.Extensions.Hosting` at **10.0.12** rather than rung
 > 1's `9.0.0` — `Paramore.Brighter.ServiceActivator.Extensions.Hosting` requires it, and the
 > older pin fails the build with `NU1605`.
 
@@ -278,7 +278,7 @@ using Paramore.Brighter.ServiceActivator.Extensions.Hosting;
 // Naming GreetingEvent here is also what loads the Greetings assembly. AutoFromAssemblies
 // below scans the assemblies loaded so far, so reordering this beneath it is a silent no-op.
 //
-// isDurable defaults to false, so the queue does not survive a broker restart. That is a
+// isDurable defaults to true, so the queue's definition survives a broker restart. That is a
 // property of the *queue*, and it is a different question from whether a message survives
 // the *sender* crashing — which is what rung 3's durable Outbox is about.
 var subscriptions = new Subscription[]
@@ -404,9 +404,10 @@ Open <http://localhost:15672> and log in with `guest` / `guest`. Under **Exchang
 If the queue is missing, the receiver has not run. If it is there with messages piling up, the
 receiver has stopped but its queue survived — which is the `autoDelete: false` behaviour above.
 
-Both are declared **non-durable**, so a broker restart removes them. That is a property of the
-*queue*, and a different question from whether a message survives the *sender* crashing — which
-is rung 3's subject.
+The exchange is declared **non-durable**, so a broker restart removes it; the queue is declared
+**durable**, so its definition survives one. Both are properties of what the broker declares,
+and a different question from whether a message survives the *sender* crashing — which is
+rung 3's subject.
 
 Stop the broker when you are done:
 

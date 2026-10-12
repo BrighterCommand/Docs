@@ -58,7 +58,7 @@ Every `Paramore.Brighter*` package these pages install is pinned to the same ver
 `dotnet add package` line you will meet has this shape:
 
 ```bash
-dotnet add package Paramore.Brighter --version 10.7.0
+dotnet add package Paramore.Brighter --version 10.8.0
 ```
 
 Those pins are checked against NuGet on every pull request and once a day, so the versions

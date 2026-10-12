@@ -349,6 +349,7 @@ services.AddBrighter(options =>
 - `ResiliencePipeline`: the Polly v8 `ResiliencePipelineRegistry<string>` ([Resilience Pipeline Registry](/contents/UsingTheContextBag.md#resilience-pipeline-registry))
 - `ResilienceContext`: Polly's context for the current execution ([Resilience Context](/contents/UsingTheContextBag.md#resilience-context))
 - `Span`: the current OpenTelemetry `Activity` ([OpenTelemetry Span](/contents/UsingTheContextBag.md#opentelemetry-span))
+- `InstrumentationOptions`: the instrumentation options of the pipeline that created the context, from Brighter 10.8.0 ([below](#instrumentationoptions-brighter-1080))
 - `CreateCopy()`: a copy of the context for a new pipeline
 
 **Migration**: Most code should not be affected unless you implement `IRequestContext` directly.
@@ -361,6 +362,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using Paramore.Brighter;
 using Paramore.Brighter.FeatureSwitch;
+using Paramore.Brighter.Observability;
 using Polly;
 using Polly.Registry;
 
@@ -380,6 +382,9 @@ public class MyRequestContext : IRequestContext
     public ResilienceContext? ResilienceContext { get; set; }
     public Activity? Span { get; set; }
 
+    // Brighter 10.8.0 and later
+    public InstrumentationOptions InstrumentationOptions { get; set; } = InstrumentationOptions.All;
+
     public IRequestContext CreateCopy()
     {
         var copy = new MyRequestContext
@@ -390,7 +395,8 @@ public class MyRequestContext : IRequestContext
             FeatureSwitches = FeatureSwitches,
             ResiliencePipeline = ResiliencePipeline,
             OriginatingMessage = OriginatingMessage,
-            Span = Span
+            Span = Span,
+            InstrumentationOptions = InstrumentationOptions
         };
         foreach (var item in Bag) copy.Bag[item.Key] = item.Value;
         return copy;
@@ -432,40 +438,23 @@ A custom mapper reads them only if it asks: `Context.GetPartitionKey()` and `Con
 in `Paramore.Brighter.Extensions`. See [Partition Key](/contents/UsingTheContextBag.md#partition-key)
 and [Custom Headers](/contents/UsingTheContextBag.md#custom-headers).
 
-#### `InstrumentationOptions` (after 10.7.0)
+#### `InstrumentationOptions` (Brighter 10.8.0)
 
-> **Not in a released package yet.** `IRequestContext.InstrumentationOptions` ships **after
-> Brighter 10.7.0**, which is the current release. It is on Brighter's development branch and in
-> no version you can install today, so an implementation built against 10.7.0 compiles without
-> it; treat what follows as the change as it will ship.
+**Breaking Change**: From Brighter 10.8.0, `IRequestContext` has a required `InstrumentationOptions` member.
 
-**Breaking Change**: `IRequestContext` gains a required `InstrumentationOptions` member.
+It carries the `InstrumentationOptions` the Command Processor was configured with — the
+Command Processor sets it on every context it prepares for a pipeline — so middleware handlers
+can gate their own telemetry, on `InstrumentationOptions.Brighter` for example, without needing
+to know how the Command Processor was configured. The Inbox handler gates its span events,
+including those of [Replay On Seen](/contents/ReplayOnSeenReference.md#turning-the-events-on),
+this way.
 
-It carries the instrumentation options configured for the pipeline that created the
-context, so middleware handlers can gate their own telemetry — on
-`InstrumentationOptions.Brighter`, for example — without needing to know how the
-Command Processor was configured.
-
-This is **source-breaking for direct implementors of `IRequestContext` only**.
-`Paramore.Brighter` targets `netstandard2.0`, which has no default interface members, so
-the member is plain and abstract: any third-party or test type implementing the interface
-fails to compile until it adds one line.
-
-```csharp
-using Paramore.Brighter;
-using Paramore.Brighter.Observability;
-
-public class MyRequestContext : IRequestContext
-{
-    // ... other members
-
-    // After 10.7.0: add this
-    public InstrumentationOptions InstrumentationOptions { get; set; } = InstrumentationOptions.All;
-}
-```
-
-The shipped `RequestContext` implements it on the development branch, defaulting to
-`InstrumentationOptions.All`, so code that uses the shipped context needs no change.
+This breaks **direct implementors of `IRequestContext` only**. `Paramore.Brighter` targets
+`netstandard2.0`, which has no default interface members, so the member is abstract: a type
+that implements the interface does not compile against 10.8.0 until it declares the property,
+and one compiled against an earlier version has to be rebuilt. The example above declares it,
+defaulting to `InstrumentationOptions.All`, and copies it in `CreateCopy()` — both as the
+shipped `RequestContext` does — so code that uses the shipped context needs no change.
 
 ### 6. Request Id and CorrelationId type change
 

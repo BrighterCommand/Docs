@@ -44,8 +44,8 @@ When you run it, the handler prints `Hello Ian` and the program exits.
 ```bash
 dotnet new console -n HelloWorld -f net9.0
 cd HelloWorld
-dotnet add package Paramore.Brighter --version 10.7.0
-dotnet add package Paramore.Brighter.Extensions.DependencyInjection --version 10.7.0
+dotnet add package Paramore.Brighter --version 10.8.0
+dotnet add package Paramore.Brighter.Extensions.DependencyInjection --version 10.8.0
 dotnet add package Microsoft.Extensions.Hosting --version 9.0.0
 ```
 
@@ -58,8 +58,8 @@ dotnet add package Microsoft.Extensions.Hosting --version 9.0.0
 ```xml
 <ItemGroup>
   <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
-  <PackageReference Include="Paramore.Brighter" Version="10.7.0" />
-  <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.7.0" />
+  <PackageReference Include="Paramore.Brighter" Version="10.8.0" />
+  <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.0" />
 </ItemGroup>
 ```
 

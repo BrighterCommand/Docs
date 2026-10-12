@@ -98,12 +98,12 @@ docker compose up -d
 All six go to the sender. The receiver and the shared library do not change.
 
 ```bash
-dotnet add GreetingsSender package Paramore.Brighter.Outbox.PostgreSql --version 10.7.0
-dotnet add GreetingsSender package Paramore.Brighter.PostgreSql --version 10.7.0
-dotnet add GreetingsSender package Paramore.Brighter.BoxProvisioning --version 10.7.0
-dotnet add GreetingsSender package Paramore.Brighter.BoxProvisioning.PostgreSql --version 10.7.0
-dotnet add GreetingsSender package Paramore.Brighter.Outbox.Hosting --version 10.7.0
-dotnet add GreetingsSender package Npgsql --version 10.0.2
+dotnet add GreetingsSender package Paramore.Brighter.Outbox.PostgreSql --version 10.8.0
+dotnet add GreetingsSender package Paramore.Brighter.PostgreSql --version 10.8.0
+dotnet add GreetingsSender package Paramore.Brighter.BoxProvisioning --version 10.8.0
+dotnet add GreetingsSender package Paramore.Brighter.BoxProvisioning.PostgreSql --version 10.8.0
+dotnet add GreetingsSender package Paramore.Brighter.Outbox.Hosting --version 10.8.0
+dotnet add GreetingsSender package Npgsql --version 10.0.3
 ```
 
 Five of the six are Brighter's. Two are worth pausing on:

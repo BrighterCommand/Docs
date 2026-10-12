@@ -375,6 +375,7 @@ The `BrighterOptions` object the `AddBrighter` delegate receives.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
+| `DefaultScopeAffinity` | `ScopeAffinity` | `AlwaysNew` | Whether a pipeline adopts an ambient DI scope its caller already owns (`JoinAmbient`) or always creates and owns its own (`AlwaysNew`). |
 | `FeatureSwitchRegistry` | `IAmAFeatureSwitchRegistry?` | `null` | Supplies the feature switches handlers are toggled by. |
 | `HandlerLifetime` | `ServiceLifetime` | `Transient` | The lifetime request handlers are registered with. |
 | `IsolateTransientHandlerScope` | `bool` | `true` | Whether each transient handler in a pipeline gets its own DI scope. |
@@ -387,6 +388,14 @@ The `BrighterOptions` object the `AddBrighter` delegate receives.
 
 `PolicyRegistry` is obsolete in V10; configure `ResiliencePipelineRegistry` instead, as
 [Adding Polly Resilience Pipelines](#adding-polly-resilience-pipelines) shows.
+
+`DefaultScopeAffinity` applies only to `Scoped` lifetimes. A handler pipeline joins an ambient
+scope when it is `JoinAmbient` and `HandlerLifetime` is `Scoped`; a mapper and transformer
+pipeline joins one when it is `JoinAmbient`, at least one of `MapperLifetime` and
+`TransformerLifetime` is `Scoped`, and neither is `Transient`. Every other combination creates
+a new scope. `AddBrighterRequestScope()`, from `Paramore.Brighter.Extensions.AspNetCore`, offers
+the current HTTP request's scope as the ambient one and selects `JoinAmbient`, overriding the
+value you assign here.
 
 ## Validating Your Configuration
 

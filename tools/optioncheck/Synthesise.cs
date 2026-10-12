@@ -254,4 +254,8 @@ internal sealed class NullHandlerFactory : IAmAHandlerFactorySync
     public IHandleRequests? Create(Type handlerType, IAmALifetime lifetime) => null;
 
     public void Release(IHandleRequests handler, IAmALifetime lifetime) { }
+
+    // Brighter 10.8.0 added this to IAmAHandlerFactory. Null is "no scope to offer", as
+    // Brighter's own ControlBusHandlerFactory answers.
+    public IAmAScope? CreatePipelineScope() => null;
 }

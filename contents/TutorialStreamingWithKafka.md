@@ -107,8 +107,8 @@ Both processes talk to the broker, so both change. Remove RabbitMQ and add Kafka
 ```bash
 dotnet remove GreetingsSender package Paramore.Brighter.MessagingGateway.RMQ.Async
 dotnet remove GreetingsReceiver package Paramore.Brighter.MessagingGateway.RMQ.Async
-dotnet add GreetingsSender package Paramore.Brighter.MessagingGateway.Kafka --version 10.7.0
-dotnet add GreetingsReceiver package Paramore.Brighter.MessagingGateway.Kafka --version 10.7.0
+dotnet add GreetingsSender package Paramore.Brighter.MessagingGateway.Kafka --version 10.8.0
+dotnet add GreetingsReceiver package Paramore.Brighter.MessagingGateway.Kafka --version 10.8.0
 ```
 
 That is the entire package change. `Paramore.Brighter`,
@@ -512,40 +512,41 @@ docker exec kafka /opt/kafka/bin/kafka-consumer-groups.sh \
   --bootstrap-server localhost:9092 --describe --group greeting.readers
 ```
 
-Run that immediately after the greetings are handled and the answer is surprising:
+Run that straight after step 7's greetings are handled:
 
 ```text
 TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG
-greeting.event  0          -               3               -
-greeting.event  1          -               3               -
-greeting.event  2          -               3               -
+greeting.event  0          3               6               3
+greeting.event  1          3               6               3
+greeting.event  2          3               6               3
 ```
 
-**Nothing is committed, although every message was handled.** Handling a message *stores* an
-offset; it does not commit one. Brighter commits on two paths, and at nine messages neither has
-run yet:
+**Every greeting has been handled, and only the first nine are committed.** Handling a message
+*stores* an offset; it does not commit one. Brighter commits on three paths:
 
-- **`commitBatchSize`**, default **10** — offsets are committed in batches, and nine is not ten.
-- **`sweepUncommittedOffsetsInterval`**, default **30 seconds** — a timer that commits whatever
+- **`commitBatchSize`**, default **10**: offsets are committed in batches, and nine is not ten.
+- **`sweepUncommittedOffsetsInterval`**, default **30 seconds**: a timer that commits whatever
   is still outstanding.
+- **When a partition is revoked**: a rebalance commits the stored offsets of the partitions being
+  taken away, before they move.
 
-Wait half a minute and ask again:
+The first nine were committed by the sweep or by step 6's rebalance, whichever came first. The
+second nine are waiting for the next sweep. Wait half a minute and ask again:
 
 ```text
-greeting.event  0          2               3               1
-greeting.event  1          2               3               1
-greeting.event  2          2               3               1
+greeting.event  0          6               6               0
+greeting.event  1          6               6               0
+greeting.event  2          6               6               0
 ```
 
-The sweeper has committed, and each partition is left **one short**. That residual `LAG 1` is a
-Brighter defect rather than Kafka semantics, tracked as
-[#4281](https://github.com/BrighterCommand/Brighter/issues/4281); a group that has handled
-everything ought to reach `LAG 0`.
+The sweeper has committed, and every partition is at `LAG 0`: the group has committed everything
+it handled.
 
-**Whatever is uncommitted when a rebalance happens gets handled again.** Look back at step 6: as
-well as logging the new assignment, each receiver handled one greeting a second time — the one
-sitting at the uncommitted offset on each partition it picked up. Three greetings, one per
-partition, already handled by the instance that had them before.
+**Whatever a consumer had not committed when it stopped gets handled again.** Step 6 cost you
+nothing, because the rebalance committed before it moved the partitions. A process that dies gets
+no such chance. Kill a receiver with `kill -9` within half a minute of it handling a batch, then
+start another. The new one handles every greeting in that batch again, because nothing was
+committed for them.
 
 That is **[at-least-once](/contents/Glossary.md#at-least-once) delivery**, and it is the honest
 statement about every broker on this ladder. Rung 3's Outbox gave you at-least-once on the
@@ -553,8 +554,8 @@ sending side; this is the same promise on the receiving side. **Nothing is lost.
 arrive twice. A handler that does real work — charging a card, sending an email — has to
 tolerate seeing the same message again.**
 
-Tuning the two options above changes *how many* duplicates a rebalance costs, and cannot take it
-to zero: a rebalance can always arrive between handling a message and committing its offset.
+Tuning the two options above changes *how much* a crash can cost you, and cannot take it to
+zero: a process can always die between handling a message and committing its offset.
 [Kafka Configuration](/contents/KafkaConfiguration.md) documents both, along with everything
 else `KafkaSubscription` and `KafkaPublication` expose.
 
@@ -578,8 +579,9 @@ You swapped one package and gained a scaling model:
 - **Ordering is per key, not per topic — and the single-threaded Reactor pump is what delivers
   it.** One pump per performer, one performer by default, so one member drains its partitions in
   turn. It is not a pump per partition.
-- **Delivery is at-least-once, and a rebalance is when you notice.** Offsets commit in batches
-  or on a timer, so anything uncommitted when partitions move is handled again.
+- **Delivery is at-least-once, and a crash is when you notice.** Offsets commit in batches, on a
+  timer, or when a rebalance takes a partition away, so anything a consumer handled and had not
+  committed when it died is handled again.
 
 That is the ladder. You have built a command and a handler, sent a message between two
 processes, made the send survive a crash, and scaled the receiving side across a partitioned
