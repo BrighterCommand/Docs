@@ -101,7 +101,7 @@ WATCHLIST = os.path.join(ROOT, 'tools', 'symbolwatch.tsv')
 # command. Nothing in .github/workflows/docs.yml's `check` job has them, which
 # is why neither --census nor --verify-list runs there.
 PRODUCT_REFS = {
-    'brighter': ('../Brighter', ('10.7.0', 'origin/master')),
+    'brighter': ('../Brighter', ('10.8.0', 'origin/master')),
     'darker': ('../Darker', ('4.1.1', 'origin/master')),
 }
 

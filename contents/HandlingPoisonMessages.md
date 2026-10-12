@@ -270,10 +270,10 @@ await producer.SendAsync(replayed);
 
 **Replaying a message your system already partly processed will double the effects that succeeded
 before the failure.** If the handler is not idempotent, fix that before replaying anything in bulk.
-Brighter's [Replay On Seen](/contents/ReplayOnSeen.md) is designed for exactly this problem —
-**note that it ships after 10.7.0 and is in no release you can install today**, so on V10 the
-protection has to come from an [Inbox](/contents/BrighterInboxSupport.md) or from handlers you have
-made idempotent yourself.
+The protection comes from an [Inbox](/contents/BrighterInboxSupport.md) or from handlers you have
+made idempotent yourself. From Brighter 10.8.0, an Inbox set to
+[Replay On Seen](/contents/ReplayOnSeen.md) goes further: a duplicate re-sends the messages the
+original handling produced, without running the handler again.
 
 ## Poison Message Handling on Your Transport
 
@@ -297,5 +297,5 @@ right.
   affects retries and dead lettering
 - [Pipeline Validation](/contents/PipelineValidation.md) — why a sync attribute on an async handler
   fails at build time
-- [Replay On Seen](/contents/ReplayOnSeen.md) — de-duplicating replayed messages, after 10.7.0
+- [Replay On Seen](/contents/ReplayOnSeen.md) — re-sending a handler's messages on a duplicate, from Brighter 10.8.0
 - [Brighter Inbox Support](/contents/BrighterInboxSupport.md) — idempotency on V10

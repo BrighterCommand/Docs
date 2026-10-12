@@ -254,7 +254,7 @@ behave the same way here; the rest are RabbitMQ's own.
 | `requeueDelay` | `TimeSpan?` | `0 ms` | How long delivery of a requeued message is delayed. |
 | `unacceptableMessageLimit` | `int` | `0` | Unacceptable messages before the channel stops; 0 disables the limit. |
 | `unacceptableMessageLimitWindow` | `TimeSpan?` | `null` | The window the unacceptable-message count resets at the end of. |
-| `isDurable` | `bool` | `false` | Whether the queue definition survives a broker restart. |
+| `isDurable` | `bool` | `true` | Whether the queue definition survives a broker restart. |
 | `messagePumpType` | `MessagePumpType` | `none` | Selects the Reactor or Proactor concurrency model. |
 | `channelFactory` | `IAmAChannelFactory?` | `null` | Creates the channel; falls back to `DefaultChannelFactory` when null. |
 | `highAvailability` | `bool` | `false` | Mirrors the queue across nodes on brokers before RabbitMQ 3. |
@@ -271,6 +271,16 @@ behave the same way here; the rest are RabbitMQ's own.
 `RmqSubscription` takes 23 parameters and has no `queueType` among them, so quorum queues are
 available only on `RMQ.Async`. `highAvailability` and `maxQueueLength` are both deprecated,
 as the bullets above record.
+
+The two clients also differ on one default: `isDurable` is `true` on `RMQ.Async` and `false`
+on `RMQ.Sync`. RabbitMQ 4.3 deprecates transient, non-exclusive queues and refuses to declare
+them unless the broker is configured to permit the feature, so on `RMQ.Async` a non-durable
+queue is something you ask for with `isDurable: false`. RabbitMQ will not redeclare an existing
+queue with a different durability: a queue that already exists as non-durable — as one created
+by `RMQ.Async` before 10.8.0 will — fails with `PRECONDITION_FAILED - inequivalent arg 'durable'`,
+which Brighter surfaces as a `ChannelFailureException` on the first receive. Either pass
+`isDurable: false` to match it, or drain and delete the queue and let Brighter recreate it as
+durable.
 
 The generic form `RmqSubscription<T>`, which every example below uses, takes the same options
 and supplies four defaults the table cannot: `requestType` is `T`, `subscriptionName`,
@@ -362,7 +372,8 @@ For full persistence, you should configure:
 
 **Consumer Configuration**:
 
-- Set `isDurable: true` on the subscription
+- Keep `isDurable: true` on the subscription — the default on `RMQ.Async`; on `RMQ.Sync` you
+  must set it
 - This ensures the queue definition survives broker restarts
 
 **Complete Example**:

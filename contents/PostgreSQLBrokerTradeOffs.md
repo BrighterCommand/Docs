@@ -134,8 +134,9 @@ var configuration = new RelationalDatabaseConfiguration(
 | **Operational Cost** | Low (existing DB) | Medium | High | Pay-per-use |
 | **Best For** | Low volume, transactional | General messaging | Event streaming | AWS ecosystem |
 
-AWS SQS accepts messages up to 1 MiB. Brighter's support for SQS messages over 256 KB ships in the
-release after 10.7.0.
+AWS SQS accepts messages up to 1 MiB, and a new queue defaults to that limit; an SNS topic defaults
+to 256 KiB. From Brighter 10.8.0, `SnsAttributes` and `SqsAttributes` take an optional
+`maximumMessageSize`, in bytes, which raises the limit of a topic Brighter creates.
 
 ---
 

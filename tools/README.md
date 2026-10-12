@@ -79,6 +79,12 @@ claims in repaired blocks that had never been run. Run, the false ones were repa
 repairs made **4** MongoDB blocks build: the baseline went 295 → **299**, with no unit and no
 package added. `pagelint` fell 537 → **524**, on blocks the repairs gave their `using` directives.
 
+**Rows 1, 6 and 9 moved at bugfix 0002, Brighter 10.8.0** (`bugfixes/0002-brighter-10.8.0/bugfix.md`).
+The pins moved to the new release, and each pin now resolves 551 assemblies. One block,
+`CausationTrackingStores.md` #1, builds because the release shipped what it names. One block was
+removed from `V10MigrationGuide.md` with the section it illustrated. `optioncheck` gained ten rows
+for options the release added.
+
 **Row 9 moved again at spec 018 phase 2**, the instruments, with no page changed. The baseline went
 299 → **303**: four `statements` blocks that name `Program` build once staged as the top-level files
 they are. A second pin, `tools/blockcheck/refs-v4/refs-v4.csproj`, compiles the **30 blocks** on the
@@ -90,15 +96,15 @@ page whose `v4` cell disagrees with its own imports, as findings.
 
 | # | Gate | Command | Expected at `412fd34` |
 |---:|---|---|---|
-| 1 | `linkcheck` | `python3 tools/linkcheck.py` | **166 files, 0 broken** — at `94ad0ed`; it read **165** at `bd95ee0` |
+| 1 | `linkcheck` | `python3 tools/linkcheck.py` | **168 files, 0 broken** — at bugfix 0002, whose record and probe note are files it walks; it read **166** at `94ad0ed` and **165** at `bd95ee0` |
 | 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 512 warnings, 162 pages**, with **1 block marked `attr-mismatch-intended`** — at `94ad0ed` plus spec 018 phase 1, which moved no warning; it read **524** at `bd95ee0`, **537** at `5981b12`, **616** at `ca6a0b2`, **658** at `2223fcb`, **706** at `5407298`, **743** at `b941837`, **744** at `3be2a78` and **757** at `412fd34` |
 | 3 | shape | `python3 tools/urlmap.py --check-shape` | **161 pages, 12 sections, widest 12 of 20, deepest 4 of 4** |
 | 4 | redirects | `python3 tools/urlmap.py --check-redirects` | **77 entries, 7858 bytes** |
 | 5 | `versioncheck` | `python3 tools/versioncheck.py` | **0 stale pins of 18, across 5 pages** |
-| 6 | `optioncheck` | `dotnet run --project tools/optioncheck` | **0 mismatches across 59 tables, 519 rows** |
+| 6 | `optioncheck` | `dotnet run --project tools/optioncheck` | **0 mismatches across 59 tables, 529 rows** — at bugfix 0002, pinned to Brighter 10.8.0; it read **519 rows** against 10.7.0 |
 | 7 | `--verify` | `python3 tools/urlmap.py --verify` | **161 predicted = 161 published** |
 | 8 | `symbolcheck` | `python3 tools/symbolcheck.py` | **0 findings — 22 entries, 161 pages, 3 silenced** — at `3be2a78`; it read **5 entries, 1 silenced** at `412fd34` |
-| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **993 blocks: 303 BUILT, 673 FAILED, 17 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 17 skipped**, against **548 reference assemblies** on each pin, **30 blocks on the v4 pin**, with **45 scaffold units checked, 0 violations, 0 compile errors** and **4 pages on the v4 pin, 0 violations** — at spec 018 phase 2, merged with #199, whose three `Telemetry.md` blocks are FAILED; it read **990 blocks, 299 BUILT, 674 FAILED** against 545 with 45 units at `bd95ee0`, **295 BUILT** at `5981b12`, **983 blocks, 234 BUILT** against 542 with 35 units at `ca6a0b2`, **189 BUILT** against 538 with 30 units at `2223fcb`, **982 blocks, 129 BUILT** with 22 units at `5407298`, **989 blocks, 101 BUILT, 872 FAILED** at `b941837`, unmoved at `23aa74f` with 14 units, and **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
+| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **992 blocks: 304 BUILT, 671 FAILED, 17 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 17 skipped**, against **551 reference assemblies** on each pin, **30 blocks on the v4 pin**, with **45 scaffold units checked, 0 violations, 0 compile errors** and **4 pages on the v4 pin, 0 violations** — at bugfix 0002, against Brighter 10.8.0; it read **993 blocks, 303 BUILT, 673 FAILED** against 548 at spec 018 phase 2, merged with #199, whose three `Telemetry.md` blocks are FAILED, and **990 blocks, 299 BUILT, 674 FAILED** against 545 with 45 units at `bd95ee0`, **295 BUILT** at `5981b12`, **983 blocks, 234 BUILT** against 542 with 35 units at `ca6a0b2`, **189 BUILT** against 538 with 30 units at `2223fcb`, **982 blocks, 129 BUILT** with 22 units at `5407298`, **989 blocks, 101 BUILT, 872 FAILED** at `b941837`, unmoved at `23aa74f` with 14 units, and **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
 
 **Four of the nine are not in the `check` job of `.github/workflows/docs.yml`, and each absence
 is a decision rather than an oversight:**

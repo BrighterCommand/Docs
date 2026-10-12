@@ -76,10 +76,10 @@ state than not having the tutorial at all. Add a row when a rung ships.
 
 | Rung | Page | Sample | Against | Last run | Machine time |
 |---|---|---|---|---|---|
-| 1 | `contents/TutorialFirstCommand.md` | `samples/CommandProcessor/HelloWorld` | 10.7.0 | 2026-08-25 (`faeac68`) | 11s |
-| 2 | `contents/TutorialFirstMessage.md` | `samples/Tutorials/02-FirstMessage` | — | not yet written | — |
-| 3 | `contents/TutorialDurableOutbox.md` | `samples/Tutorials/03-DurableOutbox` | — | not yet written | — |
-| 4 | `contents/TutorialStreamingWithKafka.md` | `samples/Tutorials/04-Kafka` | — | not yet written | — |
+| 1 | `contents/TutorialFirstCommand.md` | `samples/CommandProcessor/HelloWorld` | 10.8.0 | 2026-10-12 | 95s (SDK 9.0.100; 29 MB restored at ~280 KB/s, build and run 3s) |
+| 2 | `contents/TutorialFirstMessage.md` | `samples/Tutorials/02-FirstMessage` | 10.8.0 | 2026-10-12 | 244s (43 MB restored at ~280 KB/s, builds 12s) |
+| 3 | `contents/TutorialDurableOutbox.md` | `samples/Tutorials/03-DurableOutbox` | 10.8.0 | 2026-10-12 | 23s package add, builds 1s |
+| 4 | `contents/TutorialStreamingWithKafka.md` | `samples/Tutorials/04-Kafka` | 10.8.0 | 2026-10-12 | 197s package swap (slow feed), builds 1s |
 
 **Machine time is create-restore-build-run**, not the duration the page quotes a reader. The
 page's figure is mostly reading and typing; this column is the part a slow feed or a broken

@@ -81,7 +81,7 @@ the underlying `Topic` object. The topic takes its name from the publication's `
 `GcpPubSubSubscription` takes its options as constructor arguments, so the option is the
 parameter you type. The seventeen it shares with
 [`Subscription`](/contents/DispatcherConfigurationReference.md#subscription-options) behave the
-same way here; the other sixteen are Pub/Sub's own. At thirty-three parameters it is the widest
+same way here; the other eighteen are Pub/Sub's own. At thirty-five parameters it is the widest
 subscription Brighter ships.
 
 <!-- optioncheck: Paramore.Brighter.MessagingGateway.GcpPubSub.GcpPubSubSubscription
@@ -126,10 +126,20 @@ subscription Brighter ships.
 | `subscriptionMode` | `SubscriptionMode` | `Stream` | Selects the streaming pull consumer or the unary pull consumer. |
 | `streamingConfiguration` | `Action<SubscriberClientBuilder>?` | `null` | Configures the streaming client for this subscription alone. |
 | `subscriberMember` | `string?` | `null` | The IAM member granted the subscriber role; null derives the project's Pub/Sub service account. |
+| `deadLetterRoutingKey` | `RoutingKey?` | `null` | The topic Brighter publishes a rejected message to before acknowledging the original. |
+| `invalidMessageRoutingKey` | `RoutingKey?` | `null` | The topic an unacceptable message is published to instead of `deadLetterRoutingKey`. |
 
 `DeadLetterPolicy` is a class rather than an option. It takes the dead letter topic and its
 subscription as constructor arguments and exposes `PublisherMember`, `SubscriberMember`,
 `AckDeadlineSeconds` (60) and `MaxDeliveryAttempts` (10) as properties.
+
+`deadLetter` and `deadLetterRoutingKey` are two different mechanisms. `deadLetter` configures
+Pub/Sub's own dead letter policy, which forwards a message after `MaxDeliveryAttempts`
+deliveries. `deadLetterRoutingKey` is Brighter's: when a handler rejects a message, Brighter
+publishes a copy, stamped with the rejection reason, to that topic and then acknowledges the
+original. An unacceptable message goes to `invalidMessageRoutingKey` when it is set and to
+`deadLetterRoutingKey` when it is not. Brighter creates a missing destination topic on first use
+when `makeChannels` is `Create`.
 
 The generic form `GcpPubSubSubscription<T>` supplies `requestType` from `T` and takes the same
 options otherwise, apart from `streamingConfiguration`, which it does not expose. It still

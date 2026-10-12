@@ -1,0 +1,3 @@
+services:
+  kafka:
+    container_name: replay234-kafka

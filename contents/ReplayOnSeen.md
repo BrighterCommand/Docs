@@ -9,10 +9,8 @@ layout:
 
 > **Explanation** · Applies to **Brighter V10**
 
-> **Not in a released package yet.** Replay On Seen ships **after Brighter 10.7.0**, which is
-> the current release. `OnceOnlyAction.Replay`, `SupportsCausationTracking` and the Causation Id
-> plumbing this page describes are on Brighter's development branch and are in no version you
-> can install today, so treat what follows as the feature as it will ship.
+> **Requires Brighter 10.8.0 or later.** Earlier versions have no `OnceOnlyAction.Replay`,
+> no `SupportsCausationTracking` and no Causation Id.
 
 When your [Inbox](/contents/BrighterInboxSupport.md) recognises a message it has already
 handled, it normally throws or logs a warning and stops — the work is done, so there is

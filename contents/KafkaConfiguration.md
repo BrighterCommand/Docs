@@ -324,7 +324,7 @@ We support a number of Kafka specific *Subscription* options:
 `KafkaSubscription` takes its options as constructor arguments, so the option is the parameter
 you type. The seventeen it shares with
 [`Subscription`](/contents/DispatcherConfigurationReference.md#subscription-options) behave
-the same way here; the other thirteen are Kafka's own, and this is the widest subscription
+the same way here; the other fourteen are Kafka's own, and this is the widest subscription
 table in the documentation.
 
 <!-- optioncheck: Paramore.Brighter.MessagingGateway.Kafka.KafkaSubscription
@@ -366,11 +366,14 @@ table in the documentation.
 | `configHook` | `Action<ConsumerConfig>?` | `null` | Modifies the Confluent `ConsumerConfig` before the consumer is created. |
 | `deadLetterRoutingKey` | `RoutingKey?` | `null` | The topic messages are dead-lettered to. |
 | `invalidMessageRoutingKey` | `RoutingKey?` | `null` | The topic unacceptable messages are routed to. |
+| `errorLogLevel` | `Func<Error, LogLevel>?` | `null` | Chooses the level each error the Confluent consumer raises is logged at; `LogLevel.None` suppresses the entry. Null logs fatal errors at `Error` and the rest at `Warning`. |
 
 `makeChannels` is `Create`, so Brighter creates a topic it cannot find, using
 `numOfPartitions` and `replicationFactor`; set it to `Validate` where the topic is declared by
 your infrastructure. `sessionTimeout` and `partitionAssignmentStrategy` are deprecated in
 favour of the same settings on a `ClassicGroupProtocol`, as the bullets above record.
+`errorLogLevel` changes logging only: an error the client marks fatal is handled as fatal
+whatever level the function returns.
 
 **Four options are set as properties after construction rather than as constructor
 arguments**, so they are not on the table above: `GroupProtocol`,

@@ -107,7 +107,7 @@ Some transports provide native DLQ support. For transports without native DLQ, B
 
 | Transport | DLQ Type | Invalid Message | Notes |
 |-----------|----------|-----------------|-------|
-| RabbitMQ | Native (Dead Letter Exchange) | Not supported | Uses DLX with routing key |
+| RabbitMQ | Native (Dead Letter Exchange) | Brighter-managed, from 10.8.0 | Uses DLX with routing key; `InvalidMessageRoutingKey` names a queue for unacceptable messages |
 | AWS SQS | Brighter-managed | Brighter-managed | Direct send to DLQ queue |
 | Azure Service Bus | Native | Not supported | Built-in DLQ per subscription |
 | Kafka | Brighter-managed | Brighter-managed | Lazy producer to DLQ topic |
@@ -116,11 +116,15 @@ Some transports provide native DLQ support. For transports without native DLQ, B
 | PostgreSQL | Brighter-managed | Brighter-managed | Visibility timeout model |
 | MQTT | Brighter-managed | Brighter-managed | Fire-and-forget, no ack concept |
 | RocketMQ | Brighter-managed | Brighter-managed | |
-| GCP Pub/Sub | Native (`DeadLetterPolicy`) | Not supported | Configured on the subscription's `deadLetter` parameter |
+| GCP Pub/Sub | Native (`DeadLetterPolicy`), and Brighter-managed from 10.8.0 | Brighter-managed, from 10.8.0 | `deadLetter` configures the native policy; `deadLetterRoutingKey` and `invalidMessageRoutingKey` route a rejected message |
 
 ### Configuring DLQ on a Subscription
 
-On the Brighter-managed transports, set `deadLetterRoutingKey` and optionally `invalidMessageRoutingKey` on your subscription; both are constructor parameters of every subscription type that implements `IUseBrighterDeadLetterSupport`. The native transports configure their own: `RmqSubscription` takes `deadLetterChannelName` and `deadLetterRoutingKey` for its dead letter exchange, `GcpPubSubSubscription` takes a `DeadLetterPolicy`, and Azure Service Bus dead-letters with no Brighter setting at all. None of those three routes invalid messages separately.
+On the Brighter-managed transports, set `deadLetterRoutingKey` and optionally `invalidMessageRoutingKey` on your subscription; both are constructor parameters of every subscription type that implements `IUseBrighterDeadLetterSupport`. The native transports configure their own:
+
+- **RabbitMQ:** `RmqSubscription` takes `deadLetterChannelName` and `deadLetterRoutingKey` for its dead letter exchange. From Brighter 10.8.0 it also has an `InvalidMessageRoutingKey` property: an unacceptable message is forwarded to that queue, and the original is acknowledged only once the broker confirms the forward. With `OnMissingChannel.Create`, Brighter declares the queue and binds it to the subscription's exchange. Left unset, unacceptable messages take the dead letter exchange like any other rejection.
+- **GCP Pub/Sub:** `GcpPubSubSubscription` takes a `DeadLetterPolicy` for native dead-lettering. From Brighter 10.8.0 it also takes `deadLetterRoutingKey` and `invalidMessageRoutingKey`. A rejected message is published to the invalid-message topic when its reason is `Unacceptable`, or to the dead-letter topic otherwise, and then acknowledged. Pub/Sub discards a message published to a topic nothing subscribes to, so create a subscription on each destination topic.
+- **Azure Service Bus** dead-letters with no Brighter setting at all, and does not route invalid messages separately.
 
 **Kafka subscription with DLQ and invalid message routing:**
 

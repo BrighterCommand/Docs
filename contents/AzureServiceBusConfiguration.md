@@ -45,10 +45,14 @@ get-only, so they are set once at construction.
 
 ## Azure Service Bus Publication
 
-`AzureServiceBusPublication` adds no properties to the
-[base publication options](/contents/CommandProcessorConfigurationReference.md#publication-options).
-It does add one public *field*, `UseServiceBusQueue`, which defaults to `false` and sends to a
-Service Bus queue instead of a topic.
+`AzureServiceBusPublication` adds two properties to the
+[base publication options](/contents/CommandProcessorConfigurationReference.md#publication-options):
+
+- `UseServiceBusQueue` (default `false`) sends to a Service Bus queue instead of a topic.
+- `TimeToLive` (default `null`) is the time to live set on every message the publication sends;
+  `null` leaves the queue or topic default in place. It must be positive — setting zero or a
+  negative duration throws `ArgumentOutOfRangeException` — and Service Bus caps it at the
+  entity's default time to live.
 
 Basic Brighter configutarion publications is as follows
 
@@ -93,18 +97,40 @@ the property you set.
 | `MaxDeliveryCount` | `int` | `5` | Deliveries the transport attempts before dead-lettering a message. |
 | `DeadLetteringOnMessageExpiration` | `bool` | `true` | Whether an expired message is dead-lettered rather than dropped. |
 | `LockDuration` | `TimeSpan` | `60000 ms` | How long a message lock is held while a handler runs. |
+| `MaxAutoLockRenewalDuration` | `TimeSpan` | `300000 ms` | How long Brighter keeps renewing the lock on a received message, or on a session, while it is processed; `TimeSpan.Zero` disables renewal. A negative value throws `ConfigurationException` when the consumer is created. |
 | `DefaultMessageTimeToLive` | `TimeSpan` | `259200000 ms` | How long a message sits on the entity before it expires. |
 | `QueueIdleBeforeDelete` | `TimeSpan` | `TimeSpan.MaxValue` | How long a queue is idle before Service Bus deletes it. |
 | `RequireSession` | `bool` | `false` | Whether the subscription is session-enabled. |
+| `SqlFilter` | `string` | `""` | Obsolete — use `Rule`. A SQL filter expression, applied to the subscription as a SQL rule named `sqlFilter`. |
+| `Rule` | `CreateRuleOptions?` | `null` | The rule that filters, and can act on, the messages the subscription receives. Setting both `Rule` and `SqlFilter` throws `ConfigurationException` when the subscription is constructed. |
+| `UseServiceBusQueue` | `bool` | `false` | Reads a Service Bus queue instead of a topic subscription. |
 
 `MaxDeliveryCount` is the transport's own count and is not Brighter's `requeueCount`: it fires
 on lock expiry, which is what a slow or crashed handler looks like to Service Bus.
 `LockDuration` is one minute and `DefaultMessageTimeToLive` is three days.
 
-**Two further options are public fields rather than properties**, so they are not on the table
-above: `SqlFilter` (default `""`), a [Topic Filter](https://docs.microsoft.com/en-us/azure/service-bus-messaging/topic-filters)
-applied to the subscription, and `UseServiceBusQueue` (default `false`), which reads a Service
-Bus queue instead of a topic subscription.
+`MaxAutoLockRenewalDuration` is a budget, five minutes by default, that starts when a batch is
+received — so time a message spends waiting in the channel buffer counts against it — and a
+session shares one budget across its batch. When the budget runs out, the last renewed lock
+stays valid until its deadline on the broker, and a handler that is already running is not
+cancelled.
+
+`Rule` takes a `CreateRuleOptions` from `Azure.Messaging.ServiceBus.Administration`, which names
+a [Topic Filter](https://docs.microsoft.com/en-us/azure/service-bus-messaging/topic-filters) and
+an optional action. Which `makeChannels` mode the subscription uses decides what happens to it:
+
+- With `Create`, Brighter creates or updates the rule by name, and removes the default
+  catch-all rule once the named rule is in place. Other named rules are left alone, so remove a
+  rule yourself when you rename the one you configure. When neither `Rule` nor `SqlFilter` is
+  set, a new subscription gets the default rule and an existing one keeps the rules it has.
+- With `Validate`, Brighter checks only that the subscription exists.
+- With `Assume`, Brighter performs no administration at all.
+
+When a consumer creates a queue for `UseServiceBusQueue`, it applies the delivery count,
+expiration, lock duration, lifetime, idle timeout and session settings above; it does not
+reconfigure a queue that already exists. A producer creates a queue with the broker's defaults,
+and Service Bus does not let you change a queue's session requirement after it is created — so
+provision a session-enabled queue before producers start, or let the consumer create it first.
 
 ## Azure Service Bus Subscription Options
 
