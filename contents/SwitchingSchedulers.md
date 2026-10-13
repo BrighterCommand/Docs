@@ -26,8 +26,13 @@ Your handlers, your commands and your calls to `SendAsync`, `PostAsync` and `Pub
 Before, on the InMemory scheduler:
 
 ```csharp
-// ...
-services.AddBrighter(options => { ... })
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
+services.AddBrighter(options =>
+    {
+        // ...
+    })
     .UseScheduler(new InMemorySchedulerFactory())
     .AutoFromAssemblies();
 ```
@@ -35,9 +40,16 @@ services.AddBrighter(options => { ... })
 Before, on Quartz:
 
 ```csharp
-// ...
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Quartz;
+using Quartz;
+
 // Before (Quartz)
-services.AddBrighter(options => { ... })
+services.AddBrighter(options =>
+    {
+        // ...
+    })
     .UseScheduler(provider =>
     {
         var schedulerFactory = provider.GetRequiredService<ISchedulerFactory>();
@@ -57,12 +69,19 @@ What follows replaces the `UseScheduler` call, and nothing else.
 Hangfire needs its own storage, its server, and the job type Brighter schedules against, registered alongside the factory:
 
 ```csharp
-// ...
+using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Hangfire;
+
 services.AddHangfire(config => config.UseSqlServerStorage(connectionString));
 services.AddHangfireServer();
 services.AddSingleton<BrighterHangfireSchedulerJob>();
 
-services.AddBrighter(options => { ... })
+services.AddBrighter(options =>
+    {
+        // ...
+    })
     .UseScheduler(new HangfireMessageSchedulerFactory())
     .AutoFromAssemblies();
 ```
@@ -72,8 +91,15 @@ services.AddBrighter(options => { ... })
 Quartz supplies its own `IScheduler`, which `QuartzSchedulerFactory` wraps, so the factory is resolved from the service provider rather than constructed directly:
 
 ```csharp
-// ...
-services.AddBrighter(options => { ... })
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Quartz;
+using Quartz;
+
+services.AddBrighter(options =>
+    {
+        // ...
+    })
     .UseScheduler(provider =>
     {
         var factory = provider.GetRequiredService<ISchedulerFactory>();
@@ -86,9 +112,15 @@ services.AddBrighter(options => { ... })
 ### Switching to AWS Scheduler
 
 ```csharp
-// ...
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.AWS;
+
 // After (Production on AWS)
-services.AddBrighter(options => { ... })
+services.AddBrighter(options =>
+    {
+        // ...
+    })
     .UseScheduler(new AwsSchedulerFactory(awsConnection, "scheduler-role")
     {
         SchedulerTopicOrQueue = new RoutingKey("scheduler-topic"),
@@ -107,9 +139,15 @@ services.AddBrighter(options => { ... })
 ### Switching to Azure Service Bus
 
 ```csharp
-// ...
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Azure;
+
 // After (Production on Azure)
-services.AddBrighter(options => { ... })
+services.AddBrighter(options =>
+    {
+        // ...
+    })
     .UseScheduler(new AzureServiceBusSchedulerFactory(
         clientProvider,
         new RoutingKey("brighter-scheduler-topic")
@@ -141,23 +179,33 @@ services.AddBrighter(options => { ... })
 You can run both schedulers during transition, choosing between them at startup, so the change can be rolled forward and back without a redeployment:
 
 ```csharp
-// ...
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Hangfire;
+using Paramore.Brighter.MessageScheduler.Quartz;
+using Quartz;
+
 // Run both schedulers temporarily
-services.AddBrighter(options => { ... })
-    .UseScheduler(provider =>
+var brighter = services.AddBrighter(options =>
     {
-        // Choose based on feature flag or configuration
-        if (Configuration.GetValue<bool>("UseQuartz"))
-        {
-            var factory = provider.GetRequiredService<ISchedulerFactory>();
-            return new QuartzSchedulerFactory(factory.GetScheduler().Result);
-        }
-        else
-        {
-            return new HangfireMessageSchedulerFactory();
-        }
+        // ...
     })
     .AutoFromAssemblies();
+
+// Choose based on feature flag or configuration
+if (configuration.GetValue<bool>("UseQuartz"))
+{
+    brighter.UseScheduler(provider =>
+    {
+        var factory = provider.GetRequiredService<ISchedulerFactory>();
+        return new QuartzSchedulerFactory(factory.GetScheduler().GetAwaiter().GetResult());
+    });
+}
+else
+{
+    brighter.UseScheduler(new HangfireMessageSchedulerFactory());
+}
 ```
 
 Reverse the condition to migrate the other way.

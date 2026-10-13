@@ -64,12 +64,19 @@ public interface IAmACommandProcessor
 Specifies the **absolute time** when the message should be delivered:
 
 ```csharp
-// ...
+using System;
+using Paramore.Brighter;
+
 // Schedule for specific date and time
 var schedulerId = await commandProcessor.SendAsync(
     new DateTimeOffset(2025, 1, 15, 14, 30, 0, TimeSpan.Zero),
     new ProcessOrderCommand { OrderId = orderId }
 );
+```
+
+```csharp
+using System;
+using Paramore.Brighter;
 
 // Schedule for 1 hour from now
 var schedulerId = await commandProcessor.SendAsync(
@@ -83,12 +90,19 @@ var schedulerId = await commandProcessor.SendAsync(
 Specifies a **relative delay** from the current time:
 
 ```csharp
-// ...
+using System;
+using Paramore.Brighter;
+
 // Schedule for 30 minutes from now
 var schedulerId = await commandProcessor.SendAsync(
     TimeSpan.FromMinutes(30),
     new ProcessPaymentCommand { TransactionId = txId }
 );
+```
+
+```csharp
+using System;
+using Paramore.Brighter;
 
 // Schedule for 5 seconds from now (useful for retry)
 var schedulerId = commandProcessor.Send(
@@ -106,7 +120,9 @@ All scheduling methods return a `string` representing the **scheduler ID**. This
 - **Track** scheduled messages in your application
 
 ```csharp
-// ...
+using System;
+using Paramore.Brighter;
+
 // Save the scheduler ID for later use
 string schedulerId = await commandProcessor.SendAsync(
     TimeSpan.FromMinutes(30),
@@ -155,8 +171,13 @@ Your Handler executes
 To use scheduling, you need to configure a scheduler when setting up Brighter:
 
 ```csharp
-// ...
-services.AddBrighter(options => { ... })
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Hangfire;
+
+services.AddBrighter(options =>
+    {
+        // ...
+    })
     // Hangfire's own storage is configured with AddHangfire, not on the factory
     .UseScheduler(new HangfireMessageSchedulerFactory())
     .AutoFromAssemblies();
@@ -202,7 +223,12 @@ Use an external scheduler when:
 When your handler encounters a transient error (e.g., database temporarily unavailable), you can throw a `DeferMessageAction` exception to requeue the message with a delay:
 
 ```csharp
-public class ProcessOrderHandlerAsync : RequestHandlerAsync<ProcessOrderCommand>
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+
+public class ProcessOrderHandlerAsync(IOrderService orderService) : RequestHandlerAsync<ProcessOrderCommand>
 {
     public override async Task<ProcessOrderCommand> HandleAsync(
         ProcessOrderCommand command,
@@ -210,10 +236,10 @@ public class ProcessOrderHandlerAsync : RequestHandlerAsync<ProcessOrderCommand>
     {
         try
         {
-            await _orderService.ProcessAsync(command.OrderId, cancellationToken);
+            await orderService.ProcessAsync(command.OrderId, cancellationToken);
             return await base.HandleAsync(command, cancellationToken);
         }
-        catch (DatabaseUnavailableException ex)
+        catch (DatabaseUnavailableException)
         {
             // Requeue with delay to give database time to recover
             throw new DeferMessageAction();
