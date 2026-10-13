@@ -91,6 +91,8 @@ AWS and InMemory factories; the request hook carries the same name on all three.
 Configure Brighter with Quartz scheduler:
 
 ```csharp
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessageScheduler.Quartz;
 using Quartz;
@@ -137,6 +139,13 @@ var app = builder.Build();
 For production, use a persistent job store:
 
 ```csharp
+using System;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Quartz;
+using Quartz;
+
 builder.Services.AddQuartz(q =>
 {
     q.SchedulerId = "BrighterScheduler";
@@ -151,14 +160,14 @@ builder.Services.AddQuartz(q =>
             sqlServer.ConnectionString = builder.Configuration.GetConnectionString("Quartz");
             sqlServer.TablePrefix = "QRTZ_";
         });
-        store.UseJsonSerializer();  // Use JSON serialization for job data
-    });
+        store.UseNewtonsoftJsonSerializer();  // Use JSON serialization for job data
 
-    // Optional: Enable clustering for HA
-    q.UseClustering(clustering =>
-    {
-        clustering.CheckinInterval = TimeSpan.FromSeconds(20);
-        clustering.CheckinMisfireThreshold = TimeSpan.FromSeconds(30);
+        // Optional: Enable clustering for HA
+        store.UseClustering(clustering =>
+        {
+            clustering.CheckinInterval = TimeSpan.FromSeconds(20);
+            clustering.CheckinMisfireThreshold = TimeSpan.FromSeconds(30);
+        });
     });
 
     // Use Microsoft DI for job creation
@@ -214,13 +223,16 @@ You can configure Quartz via appsettings.json:
 Then configure with:
 
 ```csharp
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Quartz;
+
 builder.Services.AddQuartz(q =>
 {
     q.UseMicrosoftDependencyInjectionJobFactory();
 
     // Load configuration from appsettings
     var quartzConfig = builder.Configuration.GetSection("Quartz");
-    q.UseProperties = true;
 
     // Apply configuration
     foreach (var item in quartzConfig.AsEnumerable())
@@ -240,6 +252,8 @@ Quartz supports multiple persistent job stores:
 ### SQL Server
 
 ```csharp
+using Quartz;
+
 q.UsePersistentStore(store =>
 {
     store.UseSqlServer(sqlServer =>
@@ -247,7 +261,7 @@ q.UsePersistentStore(store =>
         sqlServer.ConnectionString = connectionString;
         sqlServer.TablePrefix = "QRTZ_";
     });
-    store.UseJsonSerializer();
+    store.UseNewtonsoftJsonSerializer();
 });
 ```
 
@@ -256,6 +270,8 @@ q.UsePersistentStore(store =>
 ### PostgreSQL
 
 ```csharp
+using Quartz;
+
 q.UsePersistentStore(store =>
 {
     store.UsePostgres(postgres =>
@@ -263,7 +279,7 @@ q.UsePersistentStore(store =>
         postgres.ConnectionString = connectionString;
         postgres.TablePrefix = "qrtz_";
     });
-    store.UseJsonSerializer();
+    store.UseNewtonsoftJsonSerializer();
 });
 ```
 
@@ -272,6 +288,8 @@ q.UsePersistentStore(store =>
 ### MySQL
 
 ```csharp
+using Quartz;
+
 q.UsePersistentStore(store =>
 {
     store.UseMySql(mysql =>
@@ -279,7 +297,7 @@ q.UsePersistentStore(store =>
         mysql.ConnectionString = connectionString;
         mysql.TablePrefix = "QRTZ_";
     });
-    store.UseJsonSerializer();
+    store.UseNewtonsoftJsonSerializer();
 });
 ```
 
@@ -290,6 +308,8 @@ q.UsePersistentStore(store =>
 For development, you can use the in-memory store (no persistence):
 
 ```csharp
+using Quartz;
+
 // No UsePersistentStore call needed - in-memory is default
 q.UseMicrosoftDependencyInjectionJobFactory();
 ```
@@ -303,7 +323,16 @@ q.UseMicrosoftDependencyInjectionJobFactory();
 By default, Brighter uses `Guid.NewGuid()` for scheduler IDs. Customize this behavior:
 
 ```csharp
-builder.Services.UseScheduler(provider =>
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Quartz;
+using Quartz;
+
+builder.Services.AddBrighter(options =>
+{
+    // ...
+})
+.UseScheduler(provider =>
 {
     var schedulerFactory = provider.GetRequiredService<ISchedulerFactory>();
     var scheduler = schedulerFactory.GetScheduler().GetAwaiter().GetResult();
@@ -311,7 +340,7 @@ builder.Services.UseScheduler(provider =>
     return new QuartzSchedulerFactory(scheduler)
     {
         // Customize message scheduler ID
-        GetOrCreateMessageSchedulerId = message => message.Id,
+        GetOrCreateSchedulerId = message => message.Id.Value,
 
         // Customize request scheduler ID
         GetOrCreateRequestSchedulerId = request =>
@@ -323,7 +352,7 @@ builder.Services.UseScheduler(provider =>
             return request.Id.ToString();
         }
     };
-})
+});
 ```
 
 **Why customize?**
@@ -337,7 +366,9 @@ builder.Services.UseScheduler(provider =>
 Organize jobs into groups:
 
 ```csharp
-return new QuartzSchedulerFactory(scheduler)
+using Paramore.Brighter.MessageScheduler.Quartz;
+
+var schedulerFactory = new QuartzSchedulerFactory(scheduler)
 {
     Group = "BrighterJobs"  // All Brighter jobs in this group
 };
@@ -354,12 +385,13 @@ return new QuartzSchedulerFactory(scheduler)
 Configure how Quartz handles missed triggers:
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Quartz;
+
 builder.Services.AddQuartz(q =>
 {
-    q.UseMisfire​Handler(options =>
-    {
-        options.MisfireThreshold = TimeSpan.FromMinutes(1);
-    });
+    q.MisfireThreshold = TimeSpan.FromMinutes(1);
 
     // Additional Quartz configuration...
 });
@@ -370,23 +402,25 @@ builder.Services.AddQuartz(q =>
 ### Basic Scheduling
 
 ```csharp
-public class OrderService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
+using System;
+using System.Threading.Tasks;
+using Paramore.Brighter;
 
+public class OrderService(IAmACommandProcessor commandProcessor, IOrderRepository repository)
+{
     public async Task CreateOrder(Order order)
     {
-        await _repository.SaveAsync(order);
+        await repository.SaveAsync(order);
 
         // Schedule order processing for 1 hour later
-        var schedulerId = await _commandProcessor.SendAsync(
+        var schedulerId = await commandProcessor.SendAsync(
             TimeSpan.FromHours(1),
             new ProcessOrderCommand { OrderId = order.Id }
         );
 
         // Store scheduler ID for potential cancellation
         order.ProcessSchedulerId = schedulerId;
-        await _repository.UpdateAsync(order);
+        await repository.UpdateAsync(order);
     }
 }
 ```
@@ -399,24 +433,22 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Brighter;
 
-public class OrderService
+public class OrderService(
+    IAmAMessageSchedulerAsync scheduler, IOrderRepository repository, ILogger<OrderService> logger)
 {
-    // ... _repository and _logger, injected as your application supplies them
-    private readonly IAmAMessageSchedulerAsync _scheduler;
-
     public async Task CancelOrder(Guid orderId)
     {
-        var order = await _repository.GetAsync(orderId);
+        var order = await repository.GetAsync(orderId);
 
         // Cancel the scheduled processing
         if (!string.IsNullOrEmpty(order.ProcessSchedulerId))
         {
-            await _scheduler.CancelAsync(order.ProcessSchedulerId);
-            _logger.LogInformation("Cancelled scheduled processing for order {OrderId}", orderId);
+            await scheduler.CancelAsync(order.ProcessSchedulerId);
+            logger.LogInformation("Cancelled scheduled processing for order {OrderId}", orderId);
         }
 
         order.Status = OrderStatus.Cancelled;
-        await _repository.UpdateAsync(order);
+        await repository.UpdateAsync(order);
     }
 }
 ```
@@ -424,21 +456,24 @@ public class OrderService
 ### Scheduling with Absolute Time
 
 ```csharp
-public class ReportService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
 
+public class ReportService(IAmACommandProcessor commandProcessor, ILogger<ReportService> logger)
+{
     public async Task ScheduleDailyReport()
     {
         // Schedule for tomorrow at 9 AM
         var tomorrow9AM = DateTimeOffset.UtcNow.Date.AddDays(1).AddHours(9);
 
-        var schedulerId = await _commandProcessor.SendAsync(
+        var schedulerId = await commandProcessor.SendAsync(
             tomorrow9AM,
             new GenerateDailyReportCommand { Date = DateTime.UtcNow.Date }
         );
 
-        _logger.LogInformation("Scheduled daily report: {SchedulerId}", schedulerId);
+        logger.LogInformation("Scheduled daily report: {SchedulerId}", schedulerId);
     }
 }
 ```
@@ -448,6 +483,10 @@ public class ReportService
 Quartz supports clustering for high availability:
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Quartz;
+
 builder.Services.AddQuartz(q =>
 {
     q.SchedulerId = "AUTO";  // Each instance gets unique ID
@@ -458,14 +497,14 @@ builder.Services.AddQuartz(q =>
         {
             sqlServer.ConnectionString = connectionString;
         });
-        store.UseJsonSerializer();
-    });
+        store.UseNewtonsoftJsonSerializer();
 
-    // Enable clustering
-    q.UseClustering(clustering =>
-    {
-        clustering.CheckinInterval = TimeSpan.FromSeconds(20);
-        clustering.CheckinMisfireThreshold = TimeSpan.FromSeconds(30);
+        // Enable clustering
+        store.UseClustering(clustering =>
+        {
+            clustering.CheckinInterval = TimeSpan.FromSeconds(20);
+            clustering.CheckinMisfireThreshold = TimeSpan.FromSeconds(30);
+        });
     });
 });
 ```
@@ -493,6 +532,19 @@ builder.Services.AddQuartz(q =>
 Monitor job execution with listeners:
 
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Quartz;
+
+// Register listener
+builder.Services.AddQuartz(q =>
+{
+    q.AddJobListener<BrighterJobListener>();
+    // ... other configuration
+});
+
 public class BrighterJobListener : IJobListener
 {
     private readonly ILogger<BrighterJobListener> _logger;
@@ -529,13 +581,6 @@ public class BrighterJobListener : IJobListener
         return Task.CompletedTask;
     }
 }
-
-// Register listener
-builder.Services.AddQuartz(q =>
-{
-    q.AddJobListener<BrighterJobListener>();
-    // ... other configuration
-});
 ```
 
 ### Health Checks
@@ -543,6 +588,18 @@ builder.Services.AddQuartz(q =>
 Monitor Quartz scheduler health:
 
 ```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Quartz;
+
+// Register health check
+builder.Services.AddHealthChecks()
+    .AddCheck<QuartzHealthCheck>("quartz");
+
 public class QuartzHealthCheck : IHealthCheck
 {
     private readonly ISchedulerFactory _schedulerFactory;
@@ -582,10 +639,6 @@ public class QuartzHealthCheck : IHealthCheck
         }
     }
 }
-
-// Register health check
-builder.Services.AddHealthChecks()
-    .AddCheck<QuartzHealthCheck>("quartz");
 ```
 
 ## Quartz Best Practices
@@ -593,11 +646,13 @@ builder.Services.AddHealthChecks()
 ### 1. Always Use Persistent Job Store in Production
 
 ```csharp
+using Quartz;
+
 // Good - Persistent store
 q.UsePersistentStore(store =>
 {
     store.UseSqlServer(connectionString);
-    store.UseJsonSerializer();
+    store.UseNewtonsoftJsonSerializer();
 });
 
 // Bad - In-memory store in production
@@ -607,8 +662,11 @@ q.UsePersistentStore(store =>
 ### 2. Enable Clustering for High Availability
 
 ```csharp
-// Good - Clustered for HA
-q.UseClustering(clustering =>
+using System;
+using Quartz;
+
+// Good - Clustered for HA, on the persistent store
+store.UseClustering(clustering =>
 {
     clustering.CheckinInterval = TimeSpan.FromSeconds(20);
 });
@@ -622,8 +680,8 @@ q.UseClustering(clustering =>
 ```csharp
 // Good - Store ID for later cancellation
 var schedulerId = await _commandProcessor.SendAsync(delay, command);
-entity.SchedulerId = schedulerId;
-await _repository.SaveAsync(entity);
+order.ProcessSchedulerId = schedulerId;
+await _repository.SaveAsync(order);
 
 // Bad - Lost ability to cancel
 await _commandProcessor.SendAsync(delay, command);  // ID discarded
@@ -632,8 +690,10 @@ await _commandProcessor.SendAsync(delay, command);  // ID discarded
 ### 4. Use JSON Serialization
 
 ```csharp
+using Quartz;
+
 // Good - JSON serialization (more portable)
-store.UseJsonSerializer();
+store.UseNewtonsoftJsonSerializer();
 
 // Avoid - Binary serialization (versioning issues)
 store.UseBinarySerializer();
@@ -642,23 +702,27 @@ store.UseBinarySerializer();
 ### 5. Configure Appropriate Check-In Intervals
 
 ```csharp
+using System;
+using Quartz;
+
 // Good - Balanced check-in
-q.UseClustering(clustering =>
+store.UseClustering(clustering =>
 {
     clustering.CheckinInterval = TimeSpan.FromSeconds(20);
     clustering.CheckinMisfireThreshold = TimeSpan.FromSeconds(30);
+
+    // Avoid - Too frequent (database load):   clustering.CheckinInterval = TimeSpan.FromSeconds(1);
+    // Avoid - Too infrequent (slow failover): clustering.CheckinInterval = TimeSpan.FromMinutes(5);
 });
-
-// Avoid - Too frequent (database load)
-clustering.CheckinInterval = TimeSpan.FromSeconds(1);
-
-// Avoid - Too infrequent (slow failover)
-clustering.CheckinInterval = TimeSpan.FromMinutes(5);
 ```
 
 ### 6. Monitor Job Execution
 
+Register a job listener, such as the `BrighterJobListener` shown under monitoring above, and a trigger listener (an `ITriggerListener`) written the same way:
+
 ```csharp
+using Quartz;
+
 // Good - Add listeners for monitoring
 q.AddJobListener<BrighterJobListener>();
 q.AddTriggerListener<BrighterTriggerListener>();
@@ -667,8 +731,14 @@ q.AddTriggerListener<BrighterTriggerListener>();
 ### 7. Handle Timezone Correctly
 
 ```csharp
+using System;
+
 // Good - Use UTC for consistency
 var scheduledTime = DateTimeOffset.UtcNow.AddHours(1);
+```
+
+```csharp
+using System;
 
 // Bad - Local time (ambiguous across instances)
 var scheduledTime = DateTimeOffset.Now.AddHours(1);
@@ -678,7 +748,7 @@ var scheduledTime = DateTimeOffset.Now.AddHours(1);
 
 ```csharp
 // For high-volume systems, increase connection pool
-"Server=localhost;Database=Quartz;Max Pool Size=50;..."
+var connectionString = "Server=localhost;Database=Quartz;Max Pool Size=50;...";
 ```
 
 ## Quartz Troubleshooting
@@ -697,6 +767,9 @@ var scheduledTime = DateTimeOffset.Now.AddHours(1);
 **Solutions**:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Quartz;
+
 // Verify scheduler is started
 var scheduler = await _schedulerFactory.GetScheduler();
 var isStarted = scheduler.IsStarted;
@@ -717,8 +790,10 @@ services.AddSingleton<QuartzBrighterJob>();
 **Solution**:
 
 ```csharp
-// Enable clustering
-q.UseClustering();
+using Quartz;
+
+// Enable clustering, on the persistent store
+store.UseClustering();
 
 // Ensure clocks are synchronized (use NTP)
 // Check for clock drift across instances
@@ -732,11 +807,14 @@ q.UseClustering();
 
 **Solution**:
 ```csharp
+using System;
+using Quartz;
+
 // Increase connection pool size
-"Server=localhost;Database=Quartz;Max Pool Size=100;..."
+var connectionString = "Server=localhost;Database=Quartz;Max Pool Size=100;...";
 
 // Reduce clustering check-in frequency
-clustering.CheckinInterval = TimeSpan.FromSeconds(30);
+store.UseClustering(clustering => clustering.CheckinInterval = TimeSpan.FromSeconds(30));
 
 // Consider database-specific optimizations
 // (indexes, isolation levels, etc.)

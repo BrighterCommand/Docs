@@ -714,6 +714,8 @@ app.UseHangfireDashboard();  // No authorization
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessageScheduler.Hangfire;
 
+// brighter is the builder that services.AddBrighter(...) returns
+
 // Good - Separate queue for Brighter jobs
 brighter.UseScheduler(new HangfireMessageSchedulerFactory
 {

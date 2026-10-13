@@ -118,3 +118,4 @@ contents/BrighterSchedulerSupport.md	BrighterSchedulerSupportContext	-	-
 contents/SwitchingSchedulers.md	SwitchingSchedulersContext	-	-
 contents/InMemoryScheduler.md	InMemorySchedulerContext	-	-
 contents/HangfireScheduler.md	HangfireSchedulerContext	-	-
+contents/QuartzScheduler.md	QuartzSchedulerContext	-	-
