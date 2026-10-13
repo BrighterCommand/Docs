@@ -110,7 +110,7 @@ contents/PostgreSQLBrokerTradeOffs.md	PostgreSQLMessageBrokerContext	-	-
 contents/CloudEventsReference.md	CloudEventsReferenceContext	-	-
 contents/Telemetry.md	TelemetryContext	-	-
 contents/S3LuggageStore.md	S3LuggageStoreContext	-	v4
-contents/AwsScheduler.md	-	-	v4
+contents/AwsScheduler.md	AwsSchedulerContext	-	v4
 contents/DistributedLock.md	-	-	v4
 contents/DynamoDbDistributedLock.md	-	-	v4
 contents/CustomScheduler.md	CustomSchedulerContext	-	-
