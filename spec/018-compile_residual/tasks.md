@@ -1030,11 +1030,11 @@ at 2.14 and not before. **Every phase changes the site.**
 
 ### Phase 3 — S1, Scheduler *(7 tasks, one PR)*
 
-- [ ] **Task 3.1:** Predict phase 3's gate movement
+- [x] **Task 3.1:** Predict phase 3's gate movement
   - Input: § *The groups*, S1; the recurrence greps for every DEFECT in S1's table (obligation 20)
   - Output: § *Phase 3 as executed*, *Predicted*: BUILT, FAILED, corpus and `pagelint` debt as
-    bands, the off-group term listed by page and block, and `symbolcheck` **22 → 23 entries, 3 → 8
-    silenced** (design E6)
+    bands, the off-group term listed by page and block, and `symbolcheck` **22 → 24 entries, 3 → 14
+    silenced** (design E6, D10)
 
 - [ ] **Task 3.2:** Repair S1's reachable blocks
   - Input: S1's table, the `built-by-using`, `values` and `page-type` rows; 017 § *Scaffold Stub
@@ -1043,19 +1043,20 @@ at 2.14 and not before. **Every phase changes the site.**
     BUILT, or listed in § *Blocks that stay FAILED* with its diagnostic
 
 - [ ] **Task 3.3:** Repair S1's hard blocks
-  - Input: S1's table, the `parse` and `defect` rows; design E2's buckets; 10.7.0 source for each
-    defect
+  - Input: S1's table, the `parse` and `defect` rows; design E2's buckets; 10.8.0 source for each
+    defect, the pinned release
   - Output: each block in one of the four states. Literal `...` rewritten as `// ...`. The three
     JSON fences (`AwsScheduler.md` #13, #14, `AzureScheduler.md` #19) retagged `json`. Splits in
     § *Splits*, defects in § *Defect ledger* with their recurrence greps. `AwsScheduler.md` #2 and
     #3, the V4 blocks, are judged against the V4 pin
 
-- [ ] **Task 3.4:** Repair `AddServiceActivator` and watch for it (P0-10)
-  - Input: design E6 and D5; `tools/symbolwatch.tsv`'s row format
-  - Output: `AwsScheduler.md` and `AzureScheduler.md` calling `AddConsumers`; one row in
-    `tools/symbolwatch.tsv`; `<!-- symbolcheck: allow AddServiceActivator -->` beside the first site
-    on `FAQ.md` and `V10MigrationGuide.md`. `symbolcheck` → *"23 entries … 8 silenced"*, exit 0;
-    `symbolcheck --verify-list` → the new row DEAD at both refs. The red run (7 sites, exit 1) is
+- [ ] **Task 3.4:** Repair `AddServiceActivator` and `UseExternalBus`, and watch for both (P0-10)
+  - Input: design E6, D5 and D10; `tools/symbolwatch.tsv`'s row format
+  - Output: `AwsScheduler.md` and `AzureScheduler.md` calling `AddConsumers` and `AddProducers`; two
+    rows in `tools/symbolwatch.tsv`; `<!-- symbolcheck: allow AddServiceActivator -->` and
+    `<!-- symbolcheck: allow UseExternalBus -->` beside the first site on `FAQ.md` and
+    `V10MigrationGuide.md`. `symbolcheck` → *"24 entries … 14 silenced"*, exit 0;
+    `symbolcheck --verify-list` → the new rows DEAD at both refs. The red run (15 sites, exit 1) is
     recorded, and `tools/README.md` row 8 updated
 
 - [ ] **Task 3.5:** Run S1's behavioural claims (AC10)
@@ -1073,6 +1074,78 @@ at 2.14 and not before. **Every phase changes the site.**
   - Output: baseline rows for every new BUILT block; `--report` exit 0; `pagelint` 0 errors; the
     phase's readings (AC9, AC10) over its diff; gates reconciled against 3.1; the PR, with sign-off
     and head-ref deletion asked by name
+
+### Phase 3 as executed
+
+**Measured at phase start, `f3f685f`.** `--report` → **992 / 304 / 671 / 17, 0 findings**, exit 0;
+`--classify` → 141 parse, 36 built-by-using, 96 defect, 28 same-page, 77 values, 293 page-type,
+settled in 3 rounds. 551 reference assemblies on each pin.
+
+#### Predicted (3.1)
+
+**Said and measured.** The pins moved to Brighter **10.8.0** (bugfix 0002, `5e0a63b`) after
+§ *The groups* was drawn at 10.7.0.
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| § *The groups*, drawn at 10.7.0: S5 **22 pages / 136** FAILED, 11 with nothing BUILT; totals **634**, 93 defect, 276 page-type, 37 with nothing BUILT | `groups.py` at `f3f685f`: **S1 identical row for row** (8 / 129, 3 with nothing BUILT). S2–S4 unchanged in pages and FAILED. S5 **22 / 134**, 10 with nothing BUILT: `CausationTrackingStores.md` #1 builds, and `V10MigrationGuide.md` lost a block. Totals **632**, 88 defect, 279 page-type, **36** with nothing BUILT. Two methods: the FAILED column, 632; `awk` over `--report` and the tranche list, 628 on 64 pages + the 4 V4 blocks, 632 | the tables and totals are re-drawn |
+| Design E2 and D3: four `OnceOnlyAction.Replay` blocks are *forthcoming*, SKIPPED | it shipped in 10.8.0. `TurningOnReplayOnSeen.md`'s 5 defect blocks are now 1 defect + 4 page-type, so D3's first reason has **0** blocks | design E2, § *Page Repair Rules* and § *The targets* say so |
+| Task 3.3: *"10.7.0 source for each defect"* | the pins are 10.8.0 | the task says 10.8.0 |
+| Design D5, E6 and task 3.4: `symbolcheck` 22 → 23 entries, 3 → 8 silenced | both sites also chain `UseExternalBus`, dead the same way. **D10** adds its row: **24 entries, 14 silenced** | design D10 and the gate row; tasks 3.1 and 3.4 |
+| S1's table: **12 defect** blocks | the second compile's diagnostics (below): **5** are API defects, **4** are two snippets in one fence, **1** is a fragment, and **2** are misreads by the classifier | the table stands, being the instrument's; the repairs follow the reading |
+
+**Reading S1's 12 defect blocks.** `--explain` shows only the first compile, where a missing `using`
+hides what comes after it. `probe/second.py` (obligation 18) keeps `--classify`'s stage and explains
+it after the `using`s are supplied:
+
+```bash
+python3 spec/018-compile_residual/probe/second.py <scratch> contents/AwsScheduler.md … contents/SwitchingSchedulers.md
+# 129 FAILED blocks classified … 12 defect (6 pages); 524 diagnostic lines
+```
+
+| Page | # | Second compile | Reading against 10.8.0 | Repair |
+|---|---:|---|---|---|
+| `AwsScheduler.md` | 3 | `CS1061` `AddServiceActivator`; `CS1503` ×3 on `SqsSubscription<FireAwsScheduler>` | ledger 1 and 4. The generic `SqsSubscription<T>` begins `getRequestType` (V4) or `subscriptionName, channelName, channelType, routingKey` (V3); the page passes three names positionally | 3.4; 3.3, named arguments |
+| `AzureScheduler.md` | 6 | `CS1061` `AddServiceActivator` | ledger 1 and 4 | 3.4 |
+| `AzureScheduler.md` | 22 | `CS1739` `deadLetterQueueHandling` | no such parameter; dead-lettering is set on `AzureServiceBusSubscriptionConfiguration` (`DeadLetteringOnMessageExpiration`) | 3.3, ledger 5 |
+| `CustomScheduler.md` | 1 | `CS0535` ×9 | `IAmAMessageSchedulerAsync`/`Sync` have five members each; the block shows two, without the `CancellationToken` | 3.3, ledger 6 |
+| `CustomScheduler.md` | 3 | `CS0535` ×10 | the same, for `IAmARequestSchedulerAsync`/`Sync` | 3.3, ledger 6 |
+| `BrighterSchedulerSupport.md` | 2, 3 | `CS0128` `schedulerId` | two snippets in one fence | 3.3, split |
+| `HangfireScheduler.md` | 25 | `CS0128` `scheduledTime` | two snippets | 3.3, split |
+| `QuartzScheduler.md` | 23 | `CS0128` `scheduledTime` | two snippets | 3.3, split |
+| `AwsScheduler.md` | 22 | `CS0841` `awsConnection` | a fragment: the value is used in the line that declares it | 3.3 |
+| `HangfireScheduler.md` | 1 | `CS1501` `GetConnectionString` | **a misread.** The classifier supplied `Microsoft.EntityFrameworkCore`, whose `DatabaseFacade.GetConnectionString()` takes no argument. With `using Microsoft.Extensions.Configuration;` the block **builds** | 3.2, a `using` |
+| `HangfireScheduler.md` | 7 | `CS0266` `IsolationLevel` | **a misread.** It supplied `System.Data`; Hangfire.MySql takes `System.Transactions.IsolationLevel`. With that `using`, only `configuration` and `connectionString` remain: *values* | 3.2, a `using` and a stub |
+
+The two misreads were each compiled with the corrected `using` in scratch, against the main pin.
+
+**Recurrence greps (obligation 20), run as written at `f3f685f`:**
+
+| Defect | Grep | Hits | Off-group |
+|---|---|---:|---|
+| 1 `AddServiceActivator` as current code | `grep -rn 'Services.AddServiceActivator(' contents/` | **2** | none; the 5 V9 discussion lines on `FAQ.md` and `V10MigrationGuide.md` take an opt-out (D5) |
+| 4 `UseExternalBus` as current code | `grep -rn '^\.UseExternalBus(' contents/` | **2** | none; the 6 discussion lines take an opt-out (D10) |
+| 5 `deadLetterQueueHandling` | `grep -rn 'deadLetterQueueHandling' contents/` | **1** | none |
+| 6 a scheduler interface implemented in part | `grep -rnE 'class \w+ : IAmA(Message\|Request)SchedulerAsync' contents/` | **2** | none |
+| 7 `SqsSubscription<T>` given its names positionally | `grep -rn -A1 'new SqsSubscription<' contents/ \| grep -E '^\S+-\s+new SubscriptionName\('` | **1** | none. `AWSSQSConfiguration.md`'s four use `name:`, a different defect, which `--classify` already counts on that page (`AWSSQSConfiguration.md` #7, `CS1739`) |
+
+**The off-group term is two pages and no block.** `FAQ.md` and `V10MigrationGuide.md` gain the two
+opt-out comments, outside any fence, so no verdict and no `pagelint` count can move on them.
+
+**Predicted:**
+
+| Gate | At `f3f685f` | Predicted at the close | Mechanism |
+|---|---|---|---|
+| corpus | 992 | **993–1,000** | −3 for the JSON retags; **+4** at least for the four `CS0128` splits; up to +4 more if a parse block holds types and statements |
+| BUILT | 304 | **370–425** | S1's 86 reachable blocks (8 built-by-using, 42 values, 36 page-type), less those a stub cannot reach, plus the repaired hard blocks and their splits. Off-group: **0** |
+| FAILED | 671 | **544–580** | −129 for S1, plus what stays FAILED and listed: at least the 2 *same-page*, `HangfireScheduler.md` #12 and #20 |
+| SKIPPED | 17 | **17–35** | D3's *single option shown alone*: `AwsScheduler.md` #17, #23, #24, `AzureScheduler.md` #15, #16 and kin, each where its type resolves in the pin |
+| `pagelint` | 0 errors / 512 | **0 errors / 400–460** | S1's 111 warnings (21 + 20 + 5 + 4 + 18 + 11 + 25 + 7, `--per-page`) fall as blocks gain their `using`s or leave the C# corpus; a declared `// ...` keeps its warning. Off-group: **0** |
+| `symbolcheck` | 22 entries, 3 silenced | **24 entries, 14 silenced**, exit 0 | D5 and D10 |
+| scaffold rule | 45 units | **46–52 units**, 0 violations, 0 compile errors | a unit per S1 page that needs a stub; `AzureSchedulerContext.cs` exists |
+| `linkcheck` · shape · redirects · `--verify` | 168 / 0 · 161, widest 12 · 77 · 161 = 161 | **unmoved** | no link or `SUMMARY.md` change; `spec/` is outside the walk |
+| `versioncheck` · `optioncheck` | 0 / 18 · 0 / 59 / 529 | **unmoved** | no tutorial pin and no option table touched |
+| `pagelint --plant` | 5 / 5 | **unmoved** | |
 
 ### Phase 4 — S2, Commands, Handlers and Pipelines; Get Started *(6 tasks, one PR)*
 
@@ -1211,7 +1284,8 @@ at 2.14 and not before. **Every phase changes the site.**
 ## The groups
 
 *Drawn at task 2.14 from `--classify` at `71cb09b` (phase 2's head after 2.13), and not before (AC8).
-They replace design § *The section groups*' working figures, which came from the probe.*
+Re-drawn at task 3.1 at `f3f685f`, the pins at Brighter 10.8.0; what that moved is in § *Phase 3 as
+executed*. They replace design § *The section groups*' working figures, which came from the probe.*
 
 **Every table is drawn by one command**, over three files that committed commands write:
 
@@ -1281,10 +1355,10 @@ S2: 10 pages, 107 FAILED, **7 with nothing BUILT**.
 | Darker | `QueryPatterns.md` | 5 | 1 |  | 3 |  |  | 1 | 0 |
 | Darker | `QueryPipeline.md` | 25 | 12 | 3 | 1 |  | 2 | 7 | 0 |
 | Understanding Brighter | `CQRSWithBrighterAndDarker.md` | 11 | 3 | 1 | 3 | 2 |  | 2 | 2 |
-| Understanding Brighter | `HowConfiguringTheCommandProcessorWorks.md` | 9 | 1 |  |  |  |  | 8 | 1 |
+| Understanding Brighter | `HowConfiguringTheCommandProcessorWorks.md` | 9 | 1 |  | 1 |  |  | 7 | 1 |
 | Understanding Brighter | `HowServiceActivatorWorks.md` | 17 | 4 |  | 3 |  | 1 | 9 | 0 |
 | Understanding Brighter | `ReactorAndProactor.md` | 13 |  |  |  |  |  | 13 | 0 |
-| **S3** | **10 pages** | **137** | **31** | **7** | **15** | **5** | **7** | **72** | **8** |
+| **S3** | **10 pages** | **137** | **31** | **7** | **16** | **5** | **7** | **71** | **8** |
 
 S3: 10 pages, 137 FAILED, **6 with nothing BUILT**.
 
@@ -1324,10 +1398,10 @@ S4: 17 pages, 125 FAILED, **10 with nothing BUILT**.
 | Brighter Configuration | `TestDoubleOptions.md` | 12 | 1 | 1 | 6 |  | 1 | 3 | 0 |
 | V10 Migration | `MigratingToNullableReferenceTypes.md` | 5 |  |  | 3 |  |  | 2 | 17 |
 | V10 Migration | `NullableReferenceTypes.md` | 13 |  | 5 | 4 |  |  | 4 | 3 |
-| V10 Migration | `V10MigrationGuide.md` | 19 | 3 | 2 | 1 | 3 | 1 | 9 | 2 |
+| V10 Migration | `V10MigrationGuide.md` | 18 | 3 | 2 |  | 3 | 1 | 9 | 2 |
 | Outbox and Inbox | `BrighterInboxSupport.md` | 2 | 1 |  |  |  |  | 1 | 0 |
 | Outbox and Inbox | `BrighterOutboxSupport.md` | 2 |  |  | 2 |  |  |  | 0 |
-| Outbox and Inbox | `CausationTrackingStores.md` | 2 |  |  | 2 |  |  |  | 0 |
+| Outbox and Inbox | `CausationTrackingStores.md` | 1 |  |  | 1 |  |  |  | 1 |
 | Outbox and Inbox | `DistributedLock.md` (V4) | 1 |  |  |  |  | 1 |  | 1 |
 | Outbox and Inbox | `DynamoDbDistributedLock.md` (V4) | 2 |  |  |  |  | 2 |  | 0 |
 | Outbox and Inbox | `EFCoreOutbox.md` | 2 |  |  |  |  |  | 2 | 0 |
@@ -1335,30 +1409,31 @@ S4: 17 pages, 125 FAILED, **10 with nothing BUILT**.
 | Outbox and Inbox | `MongoDBOutbox.md` | 2 | 1 |  | 1 |  |  |  | 3 |
 | Outbox and Inbox | `OutboxArchiver.md` | 4 | 2 |  | 1 |  | 1 |  | 0 |
 | Outbox and Inbox | `SweeperCircuitBreaking.md` | 3 | 1 | 1 | 1 |  |  |  | 6 |
-| Outbox and Inbox | `TurningOnReplayOnSeen.md` | 6 |  |  | 5 |  | 1 |  | 0 |
+| Outbox and Inbox | `TurningOnReplayOnSeen.md` | 6 |  |  | 1 |  | 1 | 4 | 0 |
 | Reference | `FAQ.md` | 17 | 4 |  | 5 |  | 1 | 7 | 2 |
 | Health Checks and Observability | `ConfiguringOpenTelemetry.md` | 6 | 3 |  | 3 |  |  |  | 0 |
 | Health Checks and Observability | `Logging.md` | 3 |  |  | 2 |  |  | 1 | 2 |
-| **S5** | **22 pages** | **136** | **30** | **12** | **39** | **3** | **9** | **43** | **40** |
+| **S5** | **22 pages** | **134** | **30** | **12** | **33** | **3** | **9** | **47** | **41** |
 
-S5: 22 pages, 136 FAILED, **11 with nothing BUILT**.
+S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 
-**Totals: 67 pages, 634 FAILED**, of which 140 are parse, 36 built-by-using, 93 defect,
-14 same-page, 75 values and 276 page-type. **37** pages have nothing BUILT.
+**Totals: 67 pages, 632 FAILED**, of which 140 are parse, 36 built-by-using, 88 defect,
+14 same-page, 75 values and 279 page-type. **36** pages have nothing BUILT.
 
 **Two methods agree.**
-- `groups.py`'s FAILED column gives **634**, the same as `--report`'s FAILED on those 67 pages.
-- `awk` over `--report` and the tranche list alone gives **630** FAILED on **64** off-tranche pages.
+- `groups.py`'s FAILED column gives **632**, the same as `--report`'s FAILED on those 67 pages.
+- `awk` over `--report` and the tranche list alone gives **628** FAILED on **64** off-tranche pages.
   Adding the **4** V4 blocks (`S3LuggageStore.md` #1, `DistributedLock.md` #2,
-  `DynamoDbDistributedLock.md` #1, #2) gives 634.
-- The other **36** FAILED blocks on tranche pages are not in any group.
+  `DynamoDbDistributedLock.md` #1, #2) gives 632.
+- The other **39** FAILED blocks on tranche pages are not in any group.
 
 **Against the design's working figures:**
 - **S1–S3 are identical** in pages and FAILED: 8 / 129, 10 / 107 and 10 / 137.
-- **S4 is 16 / 124 → 17 / 125, and S5 is 20 / 133 → 22 / 136.** The only difference is the three
-  (V4) tranche pages, which the task puts in S4 and S5, adding 1 and 3 FAILED blocks.
-- **Nothing BUILT is 36 → 37**, again only `DynamoDbDistributedLock.md`. That is the design's 36
-  off-tranche pages, and the 39 in § *The targets* is still 36 + 3.
+- **S4 is 16 / 124 → 17 / 125, and S5 is 20 / 133 → 22 / 134.** The three (V4) tranche pages,
+  which the task puts in S4 and S5, add 1 and 3 FAILED blocks. S5 also lost 2 at 10.8.0
+  (§ *Phase 3 as executed*).
+- **Nothing BUILT is 36**: the design's 36 off-tranche pages, less `CausationTrackingStores.md`,
+  which gained a BUILT block at 10.8.0, plus `DynamoDbDistributedLock.md`.
 - Phase 2's four new BUILT blocks are all on tranche pages, which is why no off-tranche figure moved.
 - The design's *Reachable* and *Hard* columns came from the probe. They are replaced by the six
   classes, and nothing here is carried from them.
@@ -1387,6 +1462,10 @@ design, and their greps were run there.*
 | 1 | `AddServiceActivator` called as current code; dead at `10.7.0` and `master` (doc comments only) | `AwsScheduler.md`, `AzureScheduler.md` | `grep -rn 'Services.AddServiceActivator(' contents/` | **2** | | re-derivation (design E2); the watchlist missed it | 3 |
 | 2 | Shouldly assertions with the package never named and no `using` | `TestDoubleOptions.md` | `grep -c Shouldly contents/TestDoubleOptions.md` | **0** | | the second compile (design E2, *pin-gap*) | 7 |
 | 3 | Package spelt `Paramore.Brighter.Inbox.DynamoDb.V4`; the project is `…DynamoDB.V4` | `DynamoInbox.md` (a 017 tranche page; repaired under obligation 21) | `grep -rn 'Inbox.DynamoDb.V4' contents/` | **1** | | re-derivation (requirements, the V4 pin) | 7 |
+| 4 | `UseExternalBus` called as current code; dead at `10.8.0` and `master` (one doc comment) | `AwsScheduler.md`, `AzureScheduler.md` | `grep -rn '^\.UseExternalBus(' contents/` | **2** | | task 3.1, chained after defect 1 | 3 |
+| 5 | `AzureServiceBusSubscription<T>` given `deadLetterQueueHandling:`, a parameter no overload has at 10.8.0 | `AzureScheduler.md` | `grep -rn 'deadLetterQueueHandling' contents/` | **1** | | task 3.1, the second compile (`probe/second.py`) | 3 |
+| 6 | A scheduler class implementing `IAmA(Message\|Request)Scheduler(Async\|Sync)` with two of each interface's five members, and no `CancellationToken` | `CustomScheduler.md` | `grep -rnE 'class \w+ : IAmA(Message\|Request)SchedulerAsync' contents/` | **2** | | task 3.1, the second compile | 3 |
+| 7 | `SqsSubscription<T>` given `SubscriptionName`, `ChannelName`, `RoutingKey` positionally, which no overload takes in that order | `AwsScheduler.md` | `grep -rn -A1 'new SqsSubscription<' contents/ \| grep -E '^\S+-\s+new SubscriptionName\('` | **1** | | task 3.1, the second compile, V4 pin | 3 |
 
 ## Friction ledger
 
