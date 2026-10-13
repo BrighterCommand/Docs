@@ -116,3 +116,4 @@ contents/DynamoDbDistributedLock.md	-	-	v4
 contents/CustomScheduler.md	CustomSchedulerContext	-	-
 contents/BrighterSchedulerSupport.md	BrighterSchedulerSupportContext	-	-
 contents/SwitchingSchedulers.md	SwitchingSchedulersContext	-	-
+contents/InMemoryScheduler.md	InMemorySchedulerContext	-	-
