@@ -1036,13 +1036,13 @@ at 2.14 and not before. **Every phase changes the site.**
     bands, the off-group term listed by page and block, and `symbolcheck` **22 → 24 entries, 3 → 14
     silenced** (design E6, D10)
 
-- [ ] **Task 3.2:** Repair S1's reachable blocks
+- [x] **Task 3.2:** Repair S1's reachable blocks
   - Input: S1's table, the `built-by-using`, `values` and `page-type` rows; 017 § *Scaffold Stub
     Rules*
   - Output: each block given its `using`s in the block, or a stub in a scaffold unit. Each leaves
     BUILT, or listed in § *Blocks that stay FAILED* with its diagnostic
 
-- [ ] **Task 3.3:** Repair S1's hard blocks
+- [x] **Task 3.3:** Repair S1's hard blocks
   - Input: S1's table, the `parse` and `defect` rows; design E2's buckets; 10.8.0 source for each
     defect, the pinned release
   - Output: each block in one of the four states. Literal `...` rewritten as `// ...`. The three
@@ -1482,6 +1482,10 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 
 | Page | # | Diagnostic | Why it stays | Phase |
 |---|---:|---|---|---:|
+| `HangfireScheduler.md` | 12 | `CS0246` `HangfireAuthorizationFilter` | *same-page*: block 11 declares it, and the sentence before block 12 says so | 3 |
+| `HangfireScheduler.md` | 20 | `CS0246` `HangfireAuthorizationFilter` | *same-page*, as block 12 | 3 |
+| `InMemoryScheduler.md` | 14 | `CS0103` `_handlerRegistry` | *same-page*: a test method of block 9's `SchedulingTests`, which declares the field; the sentence before it says so | 3 |
+| `QuartzScheduler.md` | 22 | `CS0246` `BrighterJobListener`, `BrighterTriggerListener` | *same-page*: block 15 declares `BrighterJobListener`; the trigger listener is the reader's, "written the same way", as the sentence before it says | 3 |
 
 ## Splits
 
@@ -1489,6 +1493,10 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 
 | Page | Old # | New # | Phase |
 |---|---:|---|---:|
+| `BrighterSchedulerSupport.md` | 2 | 2, 3 | 3 |
+| `BrighterSchedulerSupport.md` | 3 | 4, 5 | 3 |
+| `HangfireScheduler.md` | 25 | 25, 26 | 3 |
+| `QuartzScheduler.md` | 23 | 23, 24 | 3 |
 
 ## Defect ledger
 
@@ -1497,13 +1505,25 @@ design, and their greps were run there.*
 
 | # | Defect | Page(s) | Recurrence grep | Before | After | Found by | Phase |
 |---:|---|---|---|---:|---:|---|---:|
-| 1 | `AddServiceActivator` called as current code; dead at `10.7.0` and `master` (doc comments only) | `AwsScheduler.md`, `AzureScheduler.md` | `grep -rn 'Services.AddServiceActivator(' contents/` | **2** | | re-derivation (design E2); the watchlist missed it | 3 |
+| 1 | `AddServiceActivator` called as current code; dead at `10.7.0` and `master` (doc comments only) | `AwsScheduler.md`, `AzureScheduler.md` | `grep -rn 'Services.AddServiceActivator(' contents/` | **2** | **0** | re-derivation (design E2); the watchlist missed it | 3 |
 | 2 | Shouldly assertions with the package never named and no `using` | `TestDoubleOptions.md` | `grep -c Shouldly contents/TestDoubleOptions.md` | **0** | | the second compile (design E2, *pin-gap*) | 7 |
 | 3 | Package spelt `Paramore.Brighter.Inbox.DynamoDb.V4`; the project is `…DynamoDB.V4` | `DynamoInbox.md` (a 017 tranche page; repaired under obligation 21) | `grep -rn 'Inbox.DynamoDb.V4' contents/` | **1** | | re-derivation (requirements, the V4 pin) | 7 |
-| 4 | `UseExternalBus` called as current code; dead at `10.8.0` and `master` (one doc comment) | `AwsScheduler.md`, `AzureScheduler.md` | `grep -rn '^\.UseExternalBus(' contents/` | **2** | | task 3.1, chained after defect 1 | 3 |
-| 5 | `AzureServiceBusSubscription<T>` given `deadLetterQueueHandling:`, a parameter no overload has at 10.8.0 | `AzureScheduler.md` | `grep -rn 'deadLetterQueueHandling' contents/` | **1** | | task 3.1, the second compile (`probe/second.py`) | 3 |
-| 6 | A scheduler class implementing `IAmA(Message\|Request)Scheduler(Async\|Sync)` with two of each interface's five members, and no `CancellationToken` | `CustomScheduler.md` | `grep -rnE 'class \w+ : IAmA(Message\|Request)SchedulerAsync' contents/` | **2** | | task 3.1, the second compile | 3 |
-| 7 | `SqsSubscription<T>` given `SubscriptionName`, `ChannelName`, `RoutingKey` positionally, which no overload takes in that order | `AwsScheduler.md` | `grep -rn -A1 'new SqsSubscription<' contents/ \| grep -E '^\S+-\s+new SubscriptionName\('` | **1** | | task 3.1, the second compile, V4 pin | 3 |
+| 4 | `UseExternalBus` called as current code; dead at `10.8.0` and `master` (one doc comment) | `AwsScheduler.md`, `AzureScheduler.md` | `grep -rn '^\.UseExternalBus(' contents/` | **2** | **0** | task 3.1, chained after defect 1 | 3 |
+| 5 | `AzureServiceBusSubscription<T>` given `deadLetterQueueHandling:` and `lockTimeout:`, parameters no overload has at 10.8.0; both settings live on `AzureServiceBusSubscriptionConfiguration` | `AzureScheduler.md` | `grep -rnE 'deadLetterQueueHandling\|lockTimeout: 60' contents/` | **2** | **0** | task 3.1, the second compile (`probe/second.py`) | 3 |
+| 6 | A scheduler class implementing `IAmA(Message\|Request)Scheduler(Async\|Sync)` with two of each interface's five members, and no `CancellationToken` | `CustomScheduler.md` | `grep -rnE 'class \w+ : IAmA(Message\|Request)SchedulerAsync' contents/` | **2** | **2**, both whole: each class implements all five members of each interface, and both blocks build | task 3.1, the second compile | 3 |
+| 7 | `SqsSubscription<T>` given `SubscriptionName`, `ChannelName`, `RoutingKey` positionally, which no overload takes in that order | `AwsScheduler.md` | `grep -rn -A1 'new SqsSubscription<' contents/ \| grep -E '^\S+-\s+new SubscriptionName\('` | **1** | **0** | task 3.1, the second compile, V4 pin | 3 |
+| 8 | `UseScheduler(provider => …)` whose lambda returns a `QuartzSchedulerFactory` on one branch and a `HangfireMessageSchedulerFactory` on the other; `UseScheduler<T>` cannot infer one `T` | `SwitchingSchedulers.md` | `git grep -n -A12 'UseScheduler(provider =>' <ref> -- contents/ \| grep -c 'return new HangfireMessageSchedulerFactory'` | **1** | **0** | task 3.3, hidden behind *parse* | 3 |
+| 9 | `UseScheduler` called on `IServiceCollection`; it extends `IBrighterBuilder` | `InMemoryScheduler.md`, `QuartzScheduler.md` | `grep -rnE '[Ss]ervices\.UseScheduler\(' contents/` | **4** | **0** | task 3.2, hidden behind *values* | 3 |
+| 10 | `ServiceBusDefaultAzureCredentialClientProvider`; the class is `ServiceBusDefaultAzureClientProvider` | `AzureScheduler.md` | `grep -rn ServiceBusDefaultAzureCredentialClientProvider contents/` | **1** | **0** | task 3.2 | 3 |
+| 11 | Quartz `UseClustering` called on the configurator `q`; at 3.22.4 it is on the persistent store's options | `QuartzScheduler.md` | `grep -rnE 'q\.UseClustering' contents/` | **5** | **0** | task 3.3 | 3 |
+| 12 | `store.UseJsonSerializer()`, `[Obsolete]` at Quartz.Serialization.Json 3.22.4 for `UseNewtonsoftJsonSerializer()`; the package was also unpinned (D12) | `QuartzScheduler.md` | `grep -rn UseJsonSerializer contents/` | **7** | **0** | task 3.3 | 3 |
+| 13 | `q.UseMisfireHandler(…)` and `q.UseProperties`, neither of which the Quartz configurator has; `MisfireThreshold` is a property of `q`, and `UseProperties` one of the store's | `QuartzScheduler.md` | `grep -rnE 'UseMisfire.?Handler\|q\.UseProperties' contents/` | **2** | **0** | task 3.3 | 3 |
+| 14 | `GetOrCreateMessageSchedulerId` set on `QuartzSchedulerFactory`, whose message hook is `GetOrCreateSchedulerId` (as the page's own table says) | `QuartzScheduler.md` | `grep -n 'GetOrCreateMessageSchedulerId =' contents/QuartzScheduler.md` | **1** | **0** | task 3.3 | 3 |
+| 15 | Hangfire.PostgreSql's `SchemaName` set on the bootstrapper options; it is on `PostgreSqlStorageOptions` | `HangfireScheduler.md` | `grep -rnE 'options\.SchemaName' contents/` | **1** | **0** | task 3.2 | 3 |
+| 16 | `AllowAllDashboardAuthorizationFilter` used as if Hangfire shipped it; no pinned package declares it | `HangfireScheduler.md` | `grep -rn AllowAllDashboardAuthorizationFilter contents/` against `grep -rn 'class AllowAllDashboardAuthorizationFilter' contents/` | **1 / 0** | **2 / 1**: used once, declared once | task 3.2 | 3 |
+| 17 | A test fixture passing an object to `.Handlers(…)`, which takes an `Action<IAmASubscriberRegistry>`, and setting a request's `Id` from a `Guid`; `Id` converts only from `string` | `InMemoryScheduler.md` | `grep -rnF '.Handlers(_' contents/`; `grep -rnF 'new TestCommand { Id = Guid.NewGuid() }' contents/` | **1**; **2** | **0**; **0** | task 3.3 | 3 |
+| 18 | `HandleAsync(FireAzureScheduler …)` shown as the reader's handler; Brighter's `AzureSchedulerFiredHandler` handles it | `AzureScheduler.md` | `grep -rnF 'Task<FireAzureScheduler> HandleAsync' contents/` | **1** | **0** | task 3.3 | 3 |
+| 19 | `SchedulerType` and `FireRequestMessage`, neither in Brighter 10.8.0; they are `RequestSchedulerType` and `FireSchedulerRequest` | `CustomScheduler.md` | `grep -rnE '[^t]SchedulerType type\|FireRequestMessage' contents/` | **4** | **0** | task 3.3, with ledger 6 | 3 |
 
 ## Friction ledger
 

@@ -535,7 +535,7 @@ cited from its rows, not restated.
 
 ## Design Decisions
 
-D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and D7 needed no ruling. D8 and D9 were ruled at phase 2, on 2026-10-05 and 2026-10-09. D10 and D11 were ruled at phase 3, on 2026-10-13.
+D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and D7 needed no ruling. D8 and D9 were ruled at phase 2, on 2026-10-05 and 2026-10-09. D10–D12 were ruled at phase 3, on 2026-10-13.
 
 | # | Question | Decision | Ruled |
 |---|---|---|---|
@@ -550,6 +550,7 @@ D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and 
 | **D9** | **Wrap handlers shown by their `Fallback` alone?** Task 2.5 found five `members` blocks (`PolicyFallback.md` #6, #7, #9; `QueryPipeline.md` #24, #25) overriding only `Fallback` or `FallbackAsync`, outside D2's four methods, each carrying `wrapper:Context` | **Yes.** The return type picks the product: the request type, or a `Task` of it, means Brighter; anything else means Darker. The Holder is abstract, so a Darker `Fallback` shown alone is not failed for the `Execute` it does not show | **Yes**, the maintainer, 2026-10-09 |
 | **D10** | **Watch `UseExternalBus` as well?** Task 3.1 found it chained after `AddServiceActivator` at both of D5's sites, and dead the same way at 10.8.0 (`git -C ../Brighter grep -lw UseExternalBus 10.8.0 -- 'src/*.cs'` → one file, a doc comment). Repairing the sites to `AddProducers` is obligation 21 and needs no ruling; the watchlist row is scope | **Yes.** Same evidence, same two sites, same two V9 discussion pages. A trial run with both rows: **24 entries**, `UseExternalBus` at **8 sites on 4 pages**, of which 6 are discussion lines on `FAQ.md` and `V10MigrationGuide.md`. With both opt-outs, **14 silenced** | **Yes**, the maintainer, 2026-10-13 |
 | **D11** | **`symbolcheck --verify-list` counts a doc comment as a use.** Task 3.4 found both new rows LIVE: `AddServiceActivator` in 2 files and `UseExternalBus` in 1 at both refs, every hit a `///`. CI runs `--verify-list`, so the rows would fail the build. E6 ran only the plain gate | **Strip comments and strings in `resolve()`**: `git grep -l` still finds the candidates, and each is re-read at its ref through `strip_noncode`, the census's rule. Stripping can only lower a count, so no DEAD row can flip, and a live API keeps its declaration outside any comment. Red-proof in `tasks.md` § *Phase 3 as executed* | **Yes**, the maintainer, 2026-10-13 |
+| **D12** | **Pin `Quartz.Serialization.Json`?** `QuartzScheduler.md` tells its reader to `dotnet add package Quartz.Serialization.Json` and calls the job store's JSON serializer in 7 blocks; the pin lacked the package, so all 7 failed on it. At 3.22.4, the version Brighter 10.8.0's Quartz dependency implies, `UseJsonSerializer` is `[Obsolete]` for `UseNewtonsoftJsonSerializer`, so the page is repaired either way (ledger 12) | **Yes**, as D4 pinned Shouldly: one package the page's reader installs. `Quartz.Serialization.Json` **3.22.4** in `refs.csproj` and `refs-v4.csproj`; each pin 551 → **553** reference assemblies | **Yes**, the maintainer, 2026-10-13 |
 
 ## What the Design Review Found — 2026-10-05
 

@@ -533,7 +533,7 @@ public async Task Should_Handle_Concurrent_Scheduled_Commands()
     {
         ids.Add(await _commandProcessor.SendAsync(
             TimeSpan.FromMilliseconds(50 + i * 10),
-            new TestCommand { Number = i }
+            new TestCommand()
         ));
     }
 
