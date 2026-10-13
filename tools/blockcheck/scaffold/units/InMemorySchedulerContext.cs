@@ -75,11 +75,8 @@ public class GenerateDailyReportCommand() : Command(Id.Random())
     public DateTime Date { get; set; }
 }
 
-// blocks 1, 9, 14: `new TestCommand()`, `new TestCommand { Number = i }`
-public class TestCommand() : Command(Id.Random())
-{
-    public int Number { get; set; }
-}
+// blocks 1, 9: `new TestCommand()`
+public class TestCommand() : Command(Id.Random());
 
 // block 15: `new ProcessPaymentCommand { Amount = 1000.00m }`
 public class ProcessPaymentCommand() : Command(Id.Random())
