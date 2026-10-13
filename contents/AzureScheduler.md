@@ -193,6 +193,7 @@ var app = builder.Build();
 Configure the Dispatcher to handle FireAzureScheduler messages:
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 using Paramore.Brighter.MessagingGateway.AzureServiceBus;
 using Paramore.Brighter.MessagingGateway.AzureServiceBus.ClientProvider;
@@ -228,11 +229,11 @@ var subscriptions = new[]
     )
 };
 
-builder.Services.AddServiceActivator(options =>
+builder.Services.AddConsumers(options =>
 {
     options.Subscriptions = subscriptions;
 })
-.UseExternalBus(configure =>
+.AddProducers(configure =>
 {
     configure.ProducerRegistry = producerRegistry;
 })

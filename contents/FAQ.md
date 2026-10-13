@@ -122,6 +122,9 @@ public class MyHandler : RequestHandlerAsync<MyCommand>
 
 In V10, configuration was simplified:
 
+<!-- symbolcheck: allow AddServiceActivator -->
+<!-- symbolcheck: allow UseExternalBus -->
+
 - **AddProducers()**: Configures message producers (sending messages to external bus). Replaces V9's `UseExternalBus()`
 - **AddConsumers()**: Configures message consumers (receiving messages from external bus). Replaces V9's `AddServiceActivator()`
 

@@ -255,6 +255,7 @@ var app = builder.Build();
 If using `FireAwsScheduler` approach, configure the Dispatcher to handle scheduler messages:
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 using Paramore.Brighter.MessagingGateway.AWSSQS.V4;
 
@@ -278,20 +279,20 @@ var producerRegistry = new SnsProducerRegistryFactory(
 var subscriptions = new[]
 {
     new SqsSubscription<FireAwsScheduler>(
-        new SubscriptionName("scheduler-message-subscription"),
-        new ChannelName("scheduler-message-channel"),
-        new RoutingKey("message-scheduler-topic"),
+        subscriptionName: new SubscriptionName("scheduler-message-subscription"),
+        channelName: new ChannelName("scheduler-message-channel"),
+        routingKey: new RoutingKey("message-scheduler-topic"),
         bufferSize: 10,
         timeOut: TimeSpan.FromSeconds(30),
         messagePumpType: MessagePumpType.Proactor
     )
 };
 
-builder.Services.AddServiceActivator(options =>
+builder.Services.AddConsumers(options =>
 {
     options.Subscriptions = subscriptions;
 })
-.UseExternalBus(configure =>
+.AddProducers(configure =>
 {
     configure.ProducerRegistry = producerRegistry;
 })

@@ -1050,8 +1050,8 @@ at 2.14 and not before. **Every phase changes the site.**
     § *Splits*, defects in § *Defect ledger* with their recurrence greps. `AwsScheduler.md` #2 and
     #3, the V4 blocks, are judged against the V4 pin
 
-- [ ] **Task 3.4:** Repair `AddServiceActivator` and `UseExternalBus`, and watch for both (P0-10)
-  - Input: design E6, D5 and D10; `tools/symbolwatch.tsv`'s row format
+- [x] **Task 3.4:** Repair `AddServiceActivator` and `UseExternalBus`, and watch for both (P0-10)
+  - Input: design E6, D5, D10 and D11; `tools/symbolwatch.tsv`'s row format
   - Output: `AwsScheduler.md` and `AzureScheduler.md` calling `AddConsumers` and `AddProducers`; two
     rows in `tools/symbolwatch.tsv`; `<!-- symbolcheck: allow AddServiceActivator -->` and
     `<!-- symbolcheck: allow UseExternalBus -->` beside the first site on `FAQ.md` and
@@ -1146,6 +1146,44 @@ opt-out comments, outside any fence, so no verdict and no `pagelint` count can m
 | `linkcheck` · shape · redirects · `--verify` | 168 / 0 · 161, widest 12 · 77 · 161 = 161 | **unmoved** | no link or `SUMMARY.md` change; `spec/` is outside the walk |
 | `versioncheck` · `optioncheck` | 0 / 18 · 0 / 59 / 529 | **unmoved** | no tutorial pin and no option table touched |
 | `pagelint --plant` | 5 / 5 | **unmoved** | |
+
+#### `AddServiceActivator` and `UseExternalBus` (3.4, D5, D10, D11)
+
+**The pages.** `AwsScheduler.md` #3 and `AzureScheduler.md` #6 now call `AddConsumers` and chain
+`AddProducers`, each with `using Paramore.Brighter.Extensions.DependencyInjection;` added beside the
+ServiceActivator one, since `AddProducers` lives there at 10.8.0. `AwsScheduler.md` #3 also passes
+its three names to `SqsSubscription<FireAwsScheduler>` by name (ledger 7). At the second compile,
+`AzureScheduler.md` #6 has **no** diagnostic left, and `AwsScheduler.md` #3 has two, `credentials`
+and `RegionEndpoint`: a value and a `using`, both 3.2's.
+
+**The watchlist.** Two rows, `AddServiceActivator` → `AddConsumers` and `UseExternalBus` →
+`AddProducers`. Both opt-outs sit on their own lines at each discussion page's first site: in
+`FAQ.md` above the list that names them, and in `V10MigrationGuide.md` under *Breaking Change*,
+above the V9 block's skip marker and not between it and its fence.
+
+| Run | Exit | Output |
+|---|---:|---|
+| **Red**: the two rows, pages as at `f3f685f` (`git stash push -- contents/`) | **1** | *"15 site(s) across 4 page(s), from 24 watchlist entries"*: `AddServiceActivator` 7, `UseExternalBus` 8 |
+| **Green**: pages repaired, opt-outs in | **0** | *"24 entries, 161 pages checked, 14 silenced"*: `FAQ.md` 2 + 2, `V10MigrationGuide.md` 3 + 4, and the 3 from before |
+
+**`--verify-list` (D11).** Task 3.4 said the new rows would resolve DEAD. They resolved **LIVE**,
+exit 1: `AddServiceActivator` in 2 files and `UseExternalBus` in 1, at 10.8.0 and at
+`origin/master`, every hit a `///` doc comment. `resolve()` now reads each file `git grep -l`
+names, at its ref, through `strip_noncode`.
+
+| Case | Before D11 | After D11 |
+|---|---|---|
+| `AddServiceActivator` (comments only) | LIVE, 2 / 2 | **DEAD**, 0 / 0 |
+| `UseExternalBus` (comments only) | LIVE, 1 / 1 | **DEAD**, 0 / 0 |
+| Control present, `CommandProcessor` | LIVE, 45 / 45 | **LIVE**, 15 / 15 |
+| Control absent, `IAmAnIbox` | DEAD, 0 / 0 | **DEAD**, 0 / 0 |
+| The 22 rows before this phase | DEAD | **DEAD**, all 22 |
+| Every replacement, `AddConsumers` and `AddProducers` included | live | **live** |
+| Exit | **1** | **0**, *"All 24 entries still dead at both refs"* |
+
+**`CommandProcessor` 45 → 15 was read, not trusted.** Each of the 30 files that dropped out was
+re-read at 10.8.0, and every line naming `CommandProcessor` as a word starts `//`, `*` or `/*`.
+None is code, so the strip took nothing a compiler would see.
 
 ### Phase 4 — S2, Commands, Handlers and Pipelines; Get Started *(6 tasks, one PR)*
 

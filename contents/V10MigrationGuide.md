@@ -163,6 +163,9 @@ public class PersonCreatedMapper : IAmAMessageMapper<PersonCreated>
 
 **Breaking Change**: Builder methods renamed for clarity.
 
+<!-- symbolcheck: allow AddServiceActivator -->
+<!-- symbolcheck: allow UseExternalBus -->
+
 **Before (V9)**:
 <!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled Before (V9)) -->
 ```csharp

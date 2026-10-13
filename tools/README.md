@@ -103,7 +103,7 @@ page whose `v4` cell disagrees with its own imports, as findings.
 | 5 | `versioncheck` | `python3 tools/versioncheck.py` | **0 stale pins of 18, across 5 pages** |
 | 6 | `optioncheck` | `dotnet run --project tools/optioncheck` | **0 mismatches across 59 tables, 529 rows** — at bugfix 0002, pinned to Brighter 10.8.0; it read **519 rows** against 10.7.0 |
 | 7 | `--verify` | `python3 tools/urlmap.py --verify` | **161 predicted = 161 published** |
-| 8 | `symbolcheck` | `python3 tools/symbolcheck.py` | **0 findings — 22 entries, 161 pages, 3 silenced** — at `3be2a78`; it read **5 entries, 1 silenced** at `412fd34` |
+| 8 | `symbolcheck` | `python3 tools/symbolcheck.py` | **0 findings — 24 entries, 161 pages, 14 silenced** — at spec 018 phase 3, which listed `AddServiceActivator` and `UseExternalBus` with opt-outs on `FAQ.md` and `V10MigrationGuide.md`; it read **22 entries, 3 silenced** at `3be2a78` and **5 entries, 1 silenced** at `412fd34` |
 | 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **992 blocks: 304 BUILT, 671 FAILED, 17 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 17 skipped**, against **551 reference assemblies** on each pin, **30 blocks on the v4 pin**, with **45 scaffold units checked, 0 violations, 0 compile errors** and **4 pages on the v4 pin, 0 violations** — at bugfix 0002, against Brighter 10.8.0; it read **993 blocks, 303 BUILT, 673 FAILED** against 548 at spec 018 phase 2, merged with #199, whose three `Telemetry.md` blocks are FAILED, and **990 blocks, 299 BUILT, 674 FAILED** against 545 with 45 units at `bd95ee0`, **295 BUILT** at `5981b12`, **983 blocks, 234 BUILT** against 542 with 35 units at `ca6a0b2`, **189 BUILT** against 538 with 30 units at `2223fcb`, **982 blocks, 129 BUILT** with 22 units at `5407298`, **989 blocks, 101 BUILT, 872 FAILED** at `b941837`, unmoved at `23aa74f` with 14 units, and **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
 
 **Four of the nine are not in the `check` job of `.github/workflows/docs.yml`, and each absence
@@ -298,7 +298,9 @@ that file is a diff someone reads, not a command someone reruns until the build 
 - **`urlmap --verify`** — the predicted URLs against the live sitemap.
 - **`symbolcheck`** — no page names a symbol on `tools/symbolwatch.tsv`: a name dead in the
   product at both the pinned release and its `master`. Opt-outs are **per symbol**, written
-  `<!-- symbolcheck: allow SymbolName -->`, and always print a count.
+  `<!-- symbolcheck: allow SymbolName -->`, and always print a count. `--verify-list` reads each
+  file `git grep` names with comments and strings stripped, so a name a release mentions only in a
+  `///` resolves **DEAD** (spec 018 D11).
 
 - **`blockcheck`** — every C# block under `contents/` (and the root `README.md`), enumerated
   through `pagelint`'s parser rather than a grep, **compiled one block per compilation** against
