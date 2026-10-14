@@ -167,7 +167,12 @@ builder.Services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
-.UseScheduler(new HangfireMessageSchedulerFactory())
+.UseScheduler(provider =>
+{
+    // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+    var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+    return new HangfireMessageSchedulerFactory { Client = client };
+})
 .AutoFromAssemblies();
 
 var app = builder.Build();
@@ -204,7 +209,12 @@ builder.Services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
-.UseScheduler(new HangfireMessageSchedulerFactory())
+.UseScheduler(provider =>
+{
+    // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+    var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+    return new HangfireMessageSchedulerFactory { Client = client };
+})
 .AutoFromAssemblies();
 ```
 
@@ -238,7 +248,12 @@ builder.Services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
-.UseScheduler(new HangfireMessageSchedulerFactory())
+.UseScheduler(provider =>
+{
+    // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+    var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+    return new HangfireMessageSchedulerFactory { Client = client };
+})
 .AutoFromAssemblies();
 ```
 
@@ -247,6 +262,7 @@ builder.Services.AddBrighter(options =>
 Organize Brighter jobs into a specific queue:
 
 ```csharp
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessageScheduler.Hangfire;
@@ -255,9 +271,11 @@ builder.Services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
-.UseScheduler(new HangfireMessageSchedulerFactory
+.UseScheduler(provider =>
 {
-    Queue = "brighter-scheduler"  // Custom queue for Brighter jobs
+    // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+    var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+    return new HangfireMessageSchedulerFactory { Client = client, Queue = "brighter-scheduler" };  // Custom queue for Brighter jobs
 })
 .AutoFromAssemblies();
 ```
@@ -711,19 +729,28 @@ app.UseHangfireDashboard();  // No authorization
 ### 3. Use Custom Queues for Organization
 
 ```csharp
+using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessageScheduler.Hangfire;
 
 // brighter is the builder that services.AddBrighter(...) returns
 
 // Good - Separate queue for Brighter jobs
-brighter.UseScheduler(new HangfireMessageSchedulerFactory
+brighter.UseScheduler(provider =>
 {
-    Queue = "brighter-scheduler"
+    // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+    var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+    return new HangfireMessageSchedulerFactory { Client = client, Queue = "brighter-scheduler" };
 });
 
 // Consider - Everything in default queue (harder to manage)
-brighter.UseScheduler(new HangfireMessageSchedulerFactory());
+brighter.UseScheduler(provider =>
+{
+    // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+    var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+    return new HangfireMessageSchedulerFactory { Client = client };
+});
 ```
 
 ### 4. Store Scheduler IDs for Cancellation

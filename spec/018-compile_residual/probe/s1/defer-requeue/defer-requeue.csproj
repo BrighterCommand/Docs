@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 3.5: BrighterSchedulerSupport.md blocks 8 and 9, run over Brighter's in-memory bus. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.0" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection" Version="10.8.0" />
+  </ItemGroup>
+</Project>

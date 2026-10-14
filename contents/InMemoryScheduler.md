@@ -182,6 +182,7 @@ var app = builder.Build();
 Use InMemory for development, production schedulers elsewhere:
 
 ```csharp
+using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -205,7 +206,12 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Te
 else
 {
     // Production - use a durable scheduler; Hangfire's storage is configured with AddHangfire
-    brighter.UseScheduler(new HangfireMessageSchedulerFactory());
+    brighter.UseScheduler(provider =>
+    {
+        // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+        var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+        return new HangfireMessageSchedulerFactory { Client = client };
+    });
 }
 
 brighter.AutoFromAssemblies();

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 3.5: InMemoryScheduler.md block 9, run without a test runner: each [Fact] is
+       called directly, and xunit.assert supplies Assert, so a failed assertion throws. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.8.0" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.0" />
+    <PackageReference Include="xunit.assert" Version="2.9.3" />
+    <PackageReference Include="xunit.extensibility.core" Version="2.9.3" />
+  </ItemGroup>
+</Project>

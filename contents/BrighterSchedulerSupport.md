@@ -171,6 +171,8 @@ Your Handler executes
 To use scheduling, you need to configure a scheduler when setting up Brighter:
 
 ```csharp
+using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessageScheduler.Hangfire;
 
@@ -179,7 +181,12 @@ services.AddBrighter(options =>
         // ...
     })
     // Hangfire's own storage is configured with AddHangfire, not on the factory
-    .UseScheduler(new HangfireMessageSchedulerFactory())
+    .UseScheduler(provider =>
+    {
+        // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+        var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+        return new HangfireMessageSchedulerFactory { Client = client };
+    })
     .AutoFromAssemblies();
 ```
 
@@ -262,7 +269,7 @@ var subscription = new Subscription<ProcessOrderCommand>(
     routingKey: new RoutingKey("order.process"),
     messagePumpType: MessagePumpType.Proactor,
     requeueCount: 3,                        // Handle at most 3 times: 2 requeues
-    requeueDelay: TimeSpan.FromSeconds(5),  // Wait 5 seconds between attempts
+    requeueDelay: TimeSpan.FromSeconds(5),  // Wait at least 5 seconds between attempts
     timeOut: TimeSpan.FromMilliseconds(200)
 );
 ```

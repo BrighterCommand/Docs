@@ -235,6 +235,7 @@ The examples below use `AutoFromAssemblies()`, and they work as shown once you a
 ### Configuring with Hangfire
 
 ```csharp
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessageScheduler.Hangfire;
@@ -244,7 +245,12 @@ services.AddBrighter(options =>
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
 // Hangfire's own storage is configured with AddHangfire, not on the factory
-.UseScheduler(new HangfireMessageSchedulerFactory())
+.UseScheduler(provider =>
+{
+    // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+    var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+    return new HangfireMessageSchedulerFactory { Client = client };
+})
 .AutoFromAssemblies();
 ```
 

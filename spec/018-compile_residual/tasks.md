@@ -1059,7 +1059,7 @@ at 2.14 and not before. **Every phase changes the site.**
     `symbolcheck --verify-list` → the new rows DEAD at both refs. The red run (15 sites, exit 1) is
     recorded, and `tools/README.md` row 8 updated
 
-- [ ] **Task 3.5:** Run S1's behavioural claims (AC10)
+- [x] **Task 3.5:** Run S1's behavioural claims (AC10)
   - Input: every block 3.2–3.4 changed that asserts behaviour
   - Output: § *Phase 3 as executed*, a *Claim / Case / Control* table. Each row names its
     `probe/s1/<name>/Program.cs` (obligation 18)
@@ -1184,6 +1184,88 @@ names, at its ref, through `strip_noncode`.
 **`CommandProcessor` 45 → 15 was read, not trusted.** Each of the 30 files that dropped out was
 re-read at 10.8.0, and every line naming `CommandProcessor` as a word starts `//`, `*` or `/*`.
 None is code, so the strip took nothing a compiler would see.
+
+#### The repairs (3.2, 3.3)
+
+**Every S1 block leaves in one of the four states.** Of the 129 FAILED at `f3f685f`, **122** are BUILT,
+**3** are retagged `json` (`AwsScheduler.md` #13, #14; `AzureScheduler.md` #19), **4** stay FAILED and
+are listed (§ *Blocks that stay FAILED*), all *same-page*, and **none** is SKIPPED. Four fences were
+split (§ *Splits*), so the S1 pages now hold 141 C# blocks and 137 of them build. Eight scaffold
+units are new (`AwsScheduler`, `BrighterSchedulerSupport`, `CustomScheduler`, `HangfireScheduler`,
+`InMemoryScheduler`, `QuartzScheduler`, `SwitchingSchedulers`) or extended (`AzureScheduler`).
+
+**No block was SKIPPED under D3.** Each single option shown alone (`AwsScheduler.md` #15, #16, #21,
+#22 as they now number; `AzureScheduler.md` #15, #16) was made whole inside the call it belongs to,
+which costs a line or two and gives the reader something that runs.
+
+**What the repairs found that the table did not.** The table's 12 *defect* blocks held 5 API defects
+(3.1). The *parse* and *values* rows hid 15 more falsehoods (ledger 8–19), and running the blocks
+found the twentieth (below). The pattern behind them is the same one: a block that does not compile
+has never been checked for anything else.
+
+**Statements before types.** `HangfireScheduler.md` #11, #17, #18 and `QuartzScheduler.md` #15, #16
+declared a type and then wrote statements after it, which C# rejects. Each now registers first and
+declares after, which is the order a `Program.cs` needs.
+
+**A rule the repairs kept: services take their dependencies.** Every *values* block that named a
+`_repository`, `_logger` or `_commandProcessor` it never declared (`OrderService`, `ReportService`,
+`TrialService`, `AnalyticsService` on five pages) now takes them by primary constructor. A field
+stub could not have typed `_repository` without inventing a type the page never names (017
+§ *Scaffold Stub Rules*, rule 1).
+
+#### Behaviour (3.5, AC10)
+
+**Every run is against the released 10.8.0 packages**, as `probe/s1/<name>/` projects, and each
+prints `ok` or `FAIL` per row and exits 1 on any `FAIL`. Each block is copied verbatim, the probe's
+own lines marked `// probe`.
+
+| Claim | Case | Control | Probe | Result |
+|---|---|---|---|---|
+| `CustomScheduler.md` #1, #2: a message scheduled through `CustomMessageScheduler` is produced when its job fires and `CustomSchedulerHandler` sends the payload | schedule, fire | schedule, do not fire | `custom-scheduler` | produced / not produced |
+| `CustomScheduler.md` #3, #4: a request scheduled through `CustomRequestScheduler` reaches its handler when `CustomRequestHandler` sends the payload | schedule, fire | schedule, do not fire | `custom-scheduler` | handled / not handled |
+| `InMemoryScheduler.md` #9: `Should_Execute_Scheduled_Command_After_Delay` and `Should_Cancel_Scheduled_Command` pass | both tests, as written | the cancel test without its `CancelAsync` line, which must fail | `inmemory-tests` | pass, pass / `Assert.False() Failure` |
+| `InMemoryScheduler.md` #1: `SendAsync(delay)` returns an id, and the command runs after the delay | the block, then the count after its `Task.Delay(150)` | the count straight after `SendAsync` | `inmemory-block1` | 1 / 0 |
+| `SwitchingSchedulers.md` #7: a flag chooses the scheduler at startup | `UseQuartz=true` → both factories Quartz's | `UseQuartz=false` → both Hangfire's | `switching-flag` | as claimed, both ways |
+| `AzureScheduler.md` #21: `DeadLetteringOnMessageExpiration = true` and `MaxDeliveryCount = 5` are the defaults | the block's subscription | a subscription with no configuration: the same values | `azure-config` | true, 5 / true, 5 |
+| `AzureScheduler.md` #25: `LockDuration` set on the configuration is the subscription's, and 2 minutes increases it | the block's subscription | no configuration: 1 minute | `azure-config` | 2:00 / 1:00 |
+| `QuartzScheduler.md` #2: `store.UseClustering(…)` turns clustering on | the block's store | the same store without it | `quartz-config` | `clustered = true` / absent |
+| `QuartzScheduler.md` #10: `q.MisfireThreshold` sets the threshold | the block | no setting | `quartz-config` | `60000` / absent |
+| `QuartzScheduler.md` #8: the two hooks decide the scheduler ids | the block's factory | the default factory | `quartz-config` | the message's id and the correlation id / neither |
+| `BrighterSchedulerSupport.md` #8, #9: `DeferMessageAction` requeues after a delay; `requeueCount: 3` handles at most 3 times | block 8's handler always deferring, under block 9's subscription | a service that succeeds | `defer-requeue` | 3 handlings / 1 |
+| `HangfireScheduler.md` #1 and every page registering Hangfire the same way: the application starts and Brighter schedules through Hangfire | the repaired form (below), then `SendAsync(TimeSpan.FromMinutes(5), …)` | the page's form | `hangfire-factory` | 1 job in Hangfire's storage / `InvalidOperationException` at startup |
+
+**The last row overturned the page.** `HangfireMessageSchedulerFactory` initialises `Client = new
+BackgroundJobClient()` as a property default (`HangfireMessageSchedulerFactory.cs:18` at 10.8.0).
+That reads Hangfire's static `JobStorage.Current`, which `services.AddHangfire(…)` leaves unset until
+the provider resolves Hangfire's configuration. So `.UseScheduler(new HangfireMessageSchedulerFactory())`,
+written while services are configured, throws, and an object initializer setting `Client` cannot
+help, because the default runs first: the first attempt at a repair failed for exactly that reason.
+The repair builds the factory in `UseScheduler(provider => …)` after resolving
+`IBackgroundJobClientV2`, which initialises the storage. It is ledger 20, at **12** sites on **6**
+pages, two of them outside S1 (`InMemoryOptions.md`, `SchedulingAMessage.md`). Obligation 21 repairs
+those here. The maintainer ruled that the cause be filed upstream: **BrighterCommand/Brighter#4600**,
+2026-10-14.
+
+**Two readings the runs corrected:**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| This phase's reading of `ServiceCollectionExtensions.cs` at 10.8.0: `UseScheduler(provider => …)` registers only the factory, so a page injecting `IAmAMessageSchedulerAsync` beside it would fail | `scheduler-injection`: both overloads leave `IAmAMessageSchedulerAsync` and `IAmARequestSchedulerAsync` resolvable; `AddBrighter` registers them from whichever factory is present | no page changed on that reading |
+| `BrighterSchedulerSupport.md` #9: *"Wait 5 seconds between attempts"* | `defer-requeue`: each gap is the delay **plus** up to one empty-channel poll, 500 ms by default (500 ms → 1010, 1007 ms; 1500 ms → 2015, 1508 ms) | *"Wait at least 5 seconds between attempts"* |
+
+**At 10.8.0, `AutoFromAssemblies()` with a scheduled request no longer fails.** `inmemory-block1`
+runs `InMemoryScheduler.md` #1 to the handler with no `ArgumentException`. That bears on the
+*"At Brighter 10.7.0"* note at `InMemoryScheduler.md:241`, which is bugfix 0002's follow-up 1 and
+not this phase's to rule on; it is recorded here for that follow-up.
+
+**Read, not run.** Each needs a service the probes do not stand up, and each is read against its
+source:
+- `HangfireScheduler.md` #30, the allow-all filter: Hangfire's `IDashboardAuthorizationFilter`
+  contract, `true` authorises
+- `HangfireScheduler.md` #6, `PostgreSqlStorageOptions.SchemaName`: Hangfire.PostgreSql 1.21.1, a
+  live PostgreSQL to observe the schema
+- `AzureScheduler.md` #25's handler rethrowing, and the message reaching the dead-letter queue after
+  `MaxDeliveryCount`: Azure Service Bus's own delivery-count rule
 
 ### Phase 4 — S2, Commands, Handlers and Pipelines; Get Started *(6 tasks, one PR)*
 
@@ -1524,6 +1606,7 @@ design, and their greps were run there.*
 | 17 | A test fixture passing an object to `.Handlers(…)`, which takes an `Action<IAmASubscriberRegistry>`, and setting a request's `Id` from a `Guid`; `Id` converts only from `string` | `InMemoryScheduler.md` | `grep -rnF '.Handlers(_' contents/`; `grep -rnF 'new TestCommand { Id = Guid.NewGuid() }' contents/` | **1**; **2** | **0**; **0** | task 3.3 | 3 |
 | 18 | `HandleAsync(FireAzureScheduler …)` shown as the reader's handler; Brighter's `AzureSchedulerFiredHandler` handles it | `AzureScheduler.md` | `grep -rnF 'Task<FireAzureScheduler> HandleAsync' contents/` | **1** | **0** | task 3.3 | 3 |
 | 19 | `SchedulerType` and `FireRequestMessage`, neither in Brighter 10.8.0; they are `RequestSchedulerType` and `FireSchedulerRequest` | `CustomScheduler.md` | `grep -rnE '[^t]SchedulerType type\|FireRequestMessage' contents/` | **4** | **0** | task 3.3, with ledger 6 | 3 |
+| 20 | `new HangfireMessageSchedulerFactory()` while services are configured; it throws, since its `Client` default reads Hangfire's `JobStorage.Current` before `AddHangfire` has set it (BrighterCommand/Brighter#4600) | `BrighterSchedulerSupport.md`, `HangfireScheduler.md`, `InMemoryOptions.md`, `InMemoryScheduler.md`, `SchedulingAMessage.md`, `SwitchingSchedulers.md` | `grep -rnE 'new HangfireMessageSchedulerFactory(\(\)\|$)' contents/` | **12** | **0** | task 3.5, `probe/s1/hangfire-factory` | 3 |
 
 ## Friction ledger
 

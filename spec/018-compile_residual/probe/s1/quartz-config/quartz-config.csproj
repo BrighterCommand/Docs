@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 3.5: QuartzScheduler.md blocks 2, 8 and 10, run. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.0" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.Quartz" Version="10.8.0" />
+    <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.22.4" />
+    <PackageReference Include="Quartz.Serialization.Json" Version="3.22.4" />
+  </ItemGroup>
+</Project>

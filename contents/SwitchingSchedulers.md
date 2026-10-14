@@ -82,7 +82,12 @@ services.AddBrighter(options =>
     {
         // ...
     })
-    .UseScheduler(new HangfireMessageSchedulerFactory())
+    .UseScheduler(provider =>
+    {
+        // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+        var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+        return new HangfireMessageSchedulerFactory { Client = client };
+    })
     .AutoFromAssemblies();
 ```
 
@@ -179,6 +184,7 @@ services.AddBrighter(options =>
 You can run both schedulers during transition, choosing between them at startup, so the change can be rolled forward and back without a redeployment:
 
 ```csharp
+using Hangfire;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
@@ -204,7 +210,12 @@ if (configuration.GetValue<bool>("UseQuartz"))
 }
 else
 {
-    brighter.UseScheduler(new HangfireMessageSchedulerFactory());
+    brighter.UseScheduler(provider =>
+    {
+        // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+        var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+        return new HangfireMessageSchedulerFactory { Client = client };
+    });
 }
 ```
 
