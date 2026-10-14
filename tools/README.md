@@ -94,17 +94,24 @@ pages were re-admitted under the new scaffold name. Both pins gained `Shouldly`,
 each, so row 9's assembly count is per pin. `--report` now also counts a scaffold unit that does not compile, and a
 page whose `v4` cell disagrees with its own imports, as findings.
 
+**Rows 2, 8 and 9 moved at spec 018 phase 3**, the Scheduler pages. Their repairs brought **126**
+blocks into the baseline, 304 → **430**, with **52** scaffold units. Three JSON fences were retagged and
+four two-snippet fences split, so the corpus is **993**; the V4 pin's 30 blocks are **28**. Both pins
+gained `Quartz.Serialization.Json` (design D12), **552** assemblies each. `pagelint` fell 512 → **411**,
+on the blocks the repairs gave their `using`s. Row 8's two new entries are design D5 and D10, and
+`--verify-list` now reads a file with its comments and strings stripped (D11).
+
 | # | Gate | Command | Expected at `412fd34` |
 |---:|---|---|---|
 | 1 | `linkcheck` | `python3 tools/linkcheck.py` | **168 files, 0 broken** — at bugfix 0002, whose record and probe note are files it walks; it read **166** at `94ad0ed` and **165** at `bd95ee0` |
-| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 512 warnings, 162 pages**, with **1 block marked `attr-mismatch-intended`** — at `94ad0ed` plus spec 018 phase 1, which moved no warning; it read **524** at `bd95ee0`, **537** at `5981b12`, **616** at `ca6a0b2`, **658** at `2223fcb`, **706** at `5407298`, **743** at `b941837`, **744** at `3be2a78` and **757** at `412fd34` |
+| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 411 warnings, 162 pages**, with **1 block marked `attr-mismatch-intended`** — at spec 018 phase 3; it read **512** at `94ad0ed` plus spec 018 phase 1, which moved no warning, **524** at `bd95ee0`, **537** at `5981b12`, **616** at `ca6a0b2`, **658** at `2223fcb`, **706** at `5407298`, **743** at `b941837`, **744** at `3be2a78` and **757** at `412fd34` |
 | 3 | shape | `python3 tools/urlmap.py --check-shape` | **161 pages, 12 sections, widest 12 of 20, deepest 4 of 4** |
 | 4 | redirects | `python3 tools/urlmap.py --check-redirects` | **77 entries, 7858 bytes** |
 | 5 | `versioncheck` | `python3 tools/versioncheck.py` | **0 stale pins of 18, across 5 pages** |
 | 6 | `optioncheck` | `dotnet run --project tools/optioncheck` | **0 mismatches across 59 tables, 529 rows** — at bugfix 0002, pinned to Brighter 10.8.0; it read **519 rows** against 10.7.0 |
 | 7 | `--verify` | `python3 tools/urlmap.py --verify` | **161 predicted = 161 published** |
 | 8 | `symbolcheck` | `python3 tools/symbolcheck.py` | **0 findings — 24 entries, 161 pages, 14 silenced** — at spec 018 phase 3, which listed `AddServiceActivator` and `UseExternalBus` with opt-outs on `FAQ.md` and `V10MigrationGuide.md`; it read **22 entries, 3 silenced** at `3be2a78` and **5 entries, 1 silenced** at `412fd34` |
-| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **992 blocks: 304 BUILT, 671 FAILED, 17 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 17 skipped**, against **551 reference assemblies** on each pin, **30 blocks on the v4 pin**, with **45 scaffold units checked, 0 violations, 0 compile errors** and **4 pages on the v4 pin, 0 violations** — at bugfix 0002, against Brighter 10.8.0; it read **993 blocks, 303 BUILT, 673 FAILED** against 548 at spec 018 phase 2, merged with #199, whose three `Telemetry.md` blocks are FAILED, and **990 blocks, 299 BUILT, 674 FAILED** against 545 with 45 units at `bd95ee0`, **295 BUILT** at `5981b12`, **983 blocks, 234 BUILT** against 542 with 35 units at `ca6a0b2`, **189 BUILT** against 538 with 30 units at `2223fcb`, **982 blocks, 129 BUILT** with 22 units at `5407298`, **989 blocks, 101 BUILT, 872 FAILED** at `b941837`, unmoved at `23aa74f` with 14 units, and **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
+| 9 | `blockcheck` | `python3 tools/blockcheck.py --report` | **993 blocks: 430 BUILT, 546 FAILED, 17 SKIPPED, 0 NOT_COMPILABLE — 0 findings, 17 skipped**, against **552 reference assemblies** on each pin, **28 blocks on the v4 pin**, with **52 scaffold units checked, 0 violations, 0 compile errors** and **4 pages on the v4 pin, 0 violations** — at spec 018 phase 3, against Brighter 10.8.0; it read **992 blocks, 304 BUILT, 671 FAILED** against 551 with 45 units at bugfix 0002, **993 blocks, 303 BUILT, 673 FAILED** against 548 at spec 018 phase 2, merged with #199, whose three `Telemetry.md` blocks are FAILED, and **990 blocks, 299 BUILT, 674 FAILED** against 545 with 45 units at `bd95ee0`, **295 BUILT** at `5981b12`, **983 blocks, 234 BUILT** against 542 with 35 units at `ca6a0b2`, **189 BUILT** against 538 with 30 units at `2223fcb`, **982 blocks, 129 BUILT** with 22 units at `5407298`, **989 blocks, 101 BUILT, 872 FAILED** at `b941837`, unmoved at `23aa74f` with 14 units, and **985 blocks, 92 BUILT, 12 SKIPPED** at `1e1944d` |
 
 **Four of the nine are not in the `check` job of `.github/workflows/docs.yml`, and each absence
 is a decision rather than an oversight:**

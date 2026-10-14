@@ -1064,12 +1064,12 @@ at 2.14 and not before. **Every phase changes the site.**
   - Output: § *Phase 3 as executed*, a *Claim / Case / Control* table. Each row names its
     `probe/s1/<name>/Program.cs` (obligation 18)
 
-- [ ] **Task 3.6:** Second pass for S1 (obligation 21)
+- [x] **Task 3.6:** Second pass for S1 (obligation 21)
   - Input: the recurrences 3.1 listed; any ruling asked for in 3.2–3.5
   - Output: every recurrence repaired, or its ruling recorded; § *Defect ledger* rows' *After*
     column filled from their greps, run as written
 
-- [ ] **Task 3.7:** Close phase 3
+- [x] **Task 3.7:** Close phase 3
   - Input: § 1 obligations 6, 7, 19
   - Output: baseline rows for every new BUILT block; `--report` exit 0; `pagelint` 0 errors; the
     phase's readings (AC9, AC10) over its diff; gates reconciled against 3.1; the PR, with sign-off
@@ -1266,6 +1266,61 @@ source:
   live PostgreSQL to observe the schema
 - `AzureScheduler.md` #25's handler rethrowing, and the message reaching the dead-letter queue after
   `MaxDeliveryCount`: Azure Service Bus's own delivery-count rule
+
+#### Second pass (3.6)
+
+**Every recurrence is repaired, and no ruling was asked to stop one.** Ledger rows 1 and 4–20 each
+carry their *After*, from their grep run as written: **0** for every row but 6 and 16, whose greps
+count sites that are still there, now whole. The recurrence greps found only one off-group site
+set, ledger 20's (`InMemoryOptions.md`, `SchedulingAMessage.md`), repaired here under obligation 21.
+`SchedulingAMessage.md` #8 is the one baselined off-group block whose text changed, and it still
+builds. The off-group term is therefore four pages: the two opt-out pages of 3.1, and these two.
+
+#### Phase 3 closed (3.7)
+
+**Baselined.** `baseline.tsv` lists every BUILT block on the eight S1 pages, **137** rows,
+replacing their **11** earlier ones (§ the file's own header says how). Five keep their original
+ref: `AzureScheduler.md` #1, #17, #18, and #19, #20, which were #20, #21 before the JSON retag,
+matched by text against `f3f685f`. Every other row is at **`9aafd19`**. `SchedulingAMessage.md` #8
+moves to `9aafd19` too, re-measured after ledger 20's repair. **Two methods agree:** the rows,
+`grep -v '^#' baseline.tsv | grep -vc '^$'` → **430**, and `--report`'s BUILT → **430**.
+
+**Rule 8.** `pagelint` → **0 errors**, so no block this phase admitted carries a handler attribute
+of the wrong kind.
+
+**Readings (obligation 19).** `git diff -U0 f3f685f HEAD -- contents`, hunks against fence ranges:
+- **AC9.** The phase added `// ...` at **12** lines in **12** blocks: `AzureScheduler.md` #25,
+  `BrighterSchedulerSupport.md` #7, `InMemoryScheduler.md` #1, `QuartzScheduler.md` #8, #15, and
+  `SwitchingSchedulers.md` #1–#7. All 12 are BUILT, so `--explain` has nothing to report for any
+  of them: no added omission hides an error. `QuartzScheduler.md` #15's is the page's own, moved
+  with the registration it sits in
+- **AC10.** § *Behaviour (3.5)*: twelve claims run with a control, three read and named
+
+**Gates against 3.1.**
+
+| Gate | Predicted (3.1) | Measured at the close | |
+|---|---|---|---|
+| corpus | 993–1,000 | **993** | in band: −3 retags, +4 splits; no block held types and statements that a split needed, since the five that did were reordered instead |
+| BUILT | 370–425 | **430** | **above the band by 5** (below) |
+| FAILED | 544–580 | **546** | in band |
+| SKIPPED | 17–35 | **17** | the floor (below) |
+| `pagelint` | 0 errors / 400–460 | **0 / 411** | in band |
+| `symbolcheck` | 24 entries, 14 silenced | **24, 14**, exit 0; `--verify-list` all 24 DEAD | as predicted, with D11 |
+| scaffold rule | 46–52 units | **52**, 0 violations, 0 compile errors | the top of the band: seven new units |
+| assemblies | not predicted | 551 → **552** on each pin | D12, ruled at 3.3 after the prediction |
+| `linkcheck` · shape · redirects · `--verify` | unmoved | 168 / 0 · 161, widest 12 of 20 · 77, 7858 bytes · 161 = 161 | as predicted |
+| `versioncheck` · `optioncheck` | unmoved | 0 of 18 · 0 / 59 / 529 | as predicted |
+| `pagelint --plant` | unmoved | 5 / 5 | as predicted |
+
+**Why BUILT came in above the band, and SKIPPED at its floor: the same mechanism.** 3.1 expected D3
+to skip the single options shown alone, named five of them and *"kin"*, and held BUILT's ceiling
+below S1's whole table by that allowance. None was skipped. Each was made whole inside its call
+(§ *The repairs*) and built, nine blocks in all (`AwsScheduler.md` #15, #16, #21, #22;
+`AzureScheduler.md` #15, #16; `HangfireScheduler.md` #21; `QuartzScheduler.md` #25, #28). The
+excess is that allowance, not a new mechanism, and the number is not adopted: the next phase
+predicts knowing that a fragment is made whole before it is skipped.
+
+---
 
 ### Phase 4 — S2, Commands, Handlers and Pipelines; Get Started *(6 tasks, one PR)*
 
