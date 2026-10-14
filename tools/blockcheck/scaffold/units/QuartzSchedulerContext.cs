@@ -18,7 +18,7 @@ public static class QuartzSchedulerContext
 {
     // blocks 2, 3, 8, 10, 14–16: `builder.Services…`, as block 1 declares it
     public static WebApplicationBuilder builder => null!;
-    // blocks 4–7, 17, 22: the configurator `AddQuartz(q => …)` passes
+    // blocks 4–7, 17, 22, 25: the configurator `AddQuartz(q => …)` passes
     public static IServiceCollectionQuartzConfigurator q => null!;
     // blocks 18, 20, 21, 27, 28: the options `UsePersistentStore(store => …)` passes
     public static SchedulerBuilder.PersistentStoreOptions store => null!;

@@ -678,6 +678,8 @@ store.UseClustering(clustering =>
 ### 3. Store Scheduler IDs for Cancellation
 
 ```csharp
+// ... inside a service holding _commandProcessor and _repository, like OrderService above
+
 // Good - Store ID for later cancellation
 var schedulerId = await _commandProcessor.SendAsync(delay, command);
 order.ProcessSchedulerId = schedulerId;
@@ -747,8 +749,10 @@ var scheduledTime = DateTimeOffset.Now.AddHours(1);
 ### 8. Set Appropriate Connection Pool Size
 
 ```csharp
+using Quartz;
+
 // For high-volume systems, increase connection pool
-var connectionString = "Server=localhost;Database=Quartz;Max Pool Size=50;...";
+q.UsePersistentStore(store => store.UseSqlServer("Server=localhost;Database=Quartz;Max Pool Size=50;..."));
 ```
 
 ## Quartz Troubleshooting

@@ -756,6 +756,8 @@ brighter.UseScheduler(provider =>
 ### 4. Store Scheduler IDs for Cancellation
 
 ```csharp
+// ... inside a service holding _commandProcessor and _repository, like OrderService above
+
 // Good - Store ID for later cancellation
 var schedulerId = await _commandProcessor.SendAsync(delay, command);
 order.ProcessSchedulerId = schedulerId;

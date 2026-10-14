@@ -1289,10 +1289,12 @@ moves to `9aafd19` too, re-measured after ledger 20's repair. **Two methods agre
 of the wrong kind.
 
 **Readings (obligation 19).** `git diff -U0 f3f685f HEAD -- contents`, hunks against fence ranges:
-- **AC9.** The phase added `// ...` at **12** lines in **12** blocks: `AzureScheduler.md` #25,
-  `BrighterSchedulerSupport.md` #7, `InMemoryScheduler.md` #1, `QuartzScheduler.md` #8, #15, and
-  `SwitchingSchedulers.md` #1–#7. All 12 are BUILT, so `--explain` has nothing to report for any
-  of them: no added omission hides an error. `QuartzScheduler.md` #15's is the page's own, moved
+- **AC9.** The phase added `// ...` at **14** lines in **14** blocks: `AzureScheduler.md` #25,
+  `BrighterSchedulerSupport.md` #7, `HangfireScheduler.md` #22, `InMemoryScheduler.md` #1,
+  `QuartzScheduler.md` #8, #15, #19, and `SwitchingSchedulers.md` #1–#7. All 14 are BUILT, so
+  `--explain` has nothing to report for any of them: no added omission hides an error.
+  `HangfireScheduler.md` #22 and `QuartzScheduler.md` #19 are a service method's body shown alone;
+  their `// ...` names the service, and CI's strict `pagelint --changed` asked for it. `QuartzScheduler.md` #15's is the page's own, moved
   with the registration it sits in
 - **AC10.** § *Behaviour (3.5)*: twelve claims run with a control, three read and named
 
@@ -1304,7 +1306,7 @@ of the wrong kind.
 | BUILT | 370–425 | **430** | **above the band by 5** (below) |
 | FAILED | 544–580 | **546** | in band |
 | SKIPPED | 17–35 | **17** | the floor (below) |
-| `pagelint` | 0 errors / 400–460 | **0 / 411** | in band |
+| `pagelint` | 0 errors / 400–460 | **0 / 410** | in band |
 | `symbolcheck` | 24 entries, 14 silenced | **24, 14**, exit 0; `--verify-list` all 24 DEAD | as predicted, with D11 |
 | scaffold rule | 46–52 units | **52**, 0 violations, 0 compile errors | the top of the band: seven new units |
 | assemblies | not predicted | 551 → **552** on each pin | D12, ruled at 3.3 after the prediction |

@@ -97,14 +97,14 @@ page whose `v4` cell disagrees with its own imports, as findings.
 **Rows 2, 8 and 9 moved at spec 018 phase 3**, the Scheduler pages. Their repairs brought **126**
 blocks into the baseline, 304 → **430**, with **52** scaffold units. Three JSON fences were retagged and
 four two-snippet fences split, so the corpus is **993**; the V4 pin's 30 blocks are **28**. Both pins
-gained `Quartz.Serialization.Json` (design D12), **552** assemblies each. `pagelint` fell 512 → **411**,
+gained `Quartz.Serialization.Json` (design D12), **552** assemblies each. `pagelint` fell 512 → **410**,
 on the blocks the repairs gave their `using`s. Row 8's two new entries are design D5 and D10, and
 `--verify-list` now reads a file with its comments and strings stripped (D11).
 
 | # | Gate | Command | Expected at `412fd34` |
 |---:|---|---|---|
 | 1 | `linkcheck` | `python3 tools/linkcheck.py` | **168 files, 0 broken** — at bugfix 0002, whose record and probe note are files it walks; it read **166** at `94ad0ed` and **165** at `bd95ee0` |
-| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 411 warnings, 162 pages**, with **1 block marked `attr-mismatch-intended`** — at spec 018 phase 3; it read **512** at `94ad0ed` plus spec 018 phase 1, which moved no warning, **524** at `bd95ee0`, **537** at `5981b12`, **616** at `ca6a0b2`, **658** at `2223fcb`, **706** at `5407298`, **743** at `b941837`, **744** at `3be2a78` and **757** at `412fd34` |
+| 2 | `pagelint` | `python3 tools/pagelint.py` | **0 errors, 410 warnings, 162 pages**, with **1 block marked `attr-mismatch-intended`** — at spec 018 phase 3; it read **512** at `94ad0ed` plus spec 018 phase 1, which moved no warning, **524** at `bd95ee0`, **537** at `5981b12`, **616** at `ca6a0b2`, **658** at `2223fcb`, **706** at `5407298`, **743** at `b941837`, **744** at `3be2a78` and **757** at `412fd34` |
 | 3 | shape | `python3 tools/urlmap.py --check-shape` | **161 pages, 12 sections, widest 12 of 20, deepest 4 of 4** |
 | 4 | redirects | `python3 tools/urlmap.py --check-redirects` | **77 entries, 7858 bytes** |
 | 5 | `versioncheck` | `python3 tools/versioncheck.py` | **0 stale pins of 18, across 5 pages** |
