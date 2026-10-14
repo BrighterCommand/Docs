@@ -135,6 +135,8 @@ The role must have permissions to publish messages:
 Brighter can create the role automatically if it doesn't exist:
 
 ```csharp
+using Paramore.Brighter.MessageScheduler.AWS.V4;
+
 var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-scheduler-role")
 {
     MakeRole = OnMissingRole.Create  // Brighter will create role if missing
@@ -221,7 +223,11 @@ last of them.
 Configure AWS Scheduler with minimal settings:
 
 ```csharp
+using Amazon;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessageScheduler.AWS.V4;
 using Paramore.Brighter.MessagingGateway.AWSSQS.V4;
@@ -255,6 +261,12 @@ var app = builder.Build();
 If using `FireAwsScheduler` approach, configure the Dispatcher to handle scheduler messages:
 
 ```csharp
+using System;
+using Amazon;
+using Microsoft.AspNetCore.Builder;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.AWS.V4;
 using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 using Paramore.Brighter.MessagingGateway.AWSSQS.V4;
 
@@ -278,20 +290,20 @@ var producerRegistry = new SnsProducerRegistryFactory(
 var subscriptions = new[]
 {
     new SqsSubscription<FireAwsScheduler>(
-        new SubscriptionName("scheduler-message-subscription"),
-        new ChannelName("scheduler-message-channel"),
-        new RoutingKey("message-scheduler-topic"),
+        subscriptionName: new SubscriptionName("scheduler-message-subscription"),
+        channelName: new ChannelName("scheduler-message-channel"),
+        routingKey: new RoutingKey("message-scheduler-topic"),
         bufferSize: 10,
         timeOut: TimeSpan.FromSeconds(30),
         messagePumpType: MessagePumpType.Proactor
     )
 };
 
-builder.Services.AddServiceActivator(options =>
+builder.Services.AddConsumers(options =>
 {
     options.Subscriptions = subscriptions;
 })
-.UseExternalBus(configure =>
+.AddProducers(configure =>
 {
     configure.ProducerRegistry = producerRegistry;
 })
@@ -311,6 +323,10 @@ var app = builder.Build();
 AWS EventBridge Scheduler supports organizing schedules into groups:
 
 ```csharp
+using System.Collections.Generic;
+using Amazon.Scheduler.Model;
+using Paramore.Brighter.MessageScheduler.AWS.V4;
+
 var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-scheduler-role")
 {
     Group = new SchedulerGroup
@@ -336,6 +352,8 @@ var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-scheduler-role
 EventBridge Scheduler supports flexible time windows for cost optimization:
 
 ```csharp
+using Paramore.Brighter.MessageScheduler.AWS.V4;
+
 var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-scheduler-role")
 {
     FlexibleTimeWindowMinutes = 5  // Execute within 5-minute window
@@ -349,6 +367,8 @@ A flexible time window allows AWS to batch executions for better efficiency. The
 Customize how Brighter generates scheduler IDs for messages and requests:
 
 ```csharp
+using Paramore.Brighter.MessageScheduler.AWS.V4;
+
 var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-scheduler-role")
 {
     // Custom scheduler ID for messages
@@ -379,21 +399,25 @@ var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-scheduler-role
 Schedule a command to execute after a delay:
 
 ```csharp
-public class OrderService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
 
+public class OrderService(
+    IAmACommandProcessor commandProcessor, IOrderRepository repository, ILogger<OrderService> logger)
+{
     public async Task CreateOrder(Order order)
     {
-        await _repository.SaveAsync(order);
+        await repository.SaveAsync(order);
 
         // Schedule payment processing for 30 minutes later
-        var schedulerId = await _commandProcessor.SendAsync(
+        var schedulerId = await commandProcessor.SendAsync(
             TimeSpan.FromMinutes(30),
             new ProcessPaymentCommand { OrderId = order.Id, Amount = order.Total }
         );
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "Scheduled payment processing for order {OrderId}: {SchedulerId}",
             order.Id,
             schedulerId
@@ -407,21 +431,24 @@ public class OrderService
 Schedule for a specific time:
 
 ```csharp
-public class ReportService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
 
+public class ReportService(IAmACommandProcessor commandProcessor, ILogger<ReportService> logger)
+{
     public async Task ScheduleDailyReport()
     {
         // Schedule for tomorrow at 9 AM UTC
         var tomorrow9AM = DateTimeOffset.UtcNow.Date.AddDays(1).AddHours(9);
 
-        var schedulerId = await _commandProcessor.SendAsync(
+        var schedulerId = await commandProcessor.SendAsync(
             tomorrow9AM,
             new GenerateDailyReportCommand { Date = DateTime.UtcNow.Date }
         );
 
-        _logger.LogInformation("Scheduled daily report: {SchedulerId}", schedulerId);
+        logger.LogInformation("Scheduled daily report: {SchedulerId}", schedulerId);
     }
 }
 ```
@@ -436,28 +463,25 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Brighter;
 
-public class OrderService
+public class OrderService(
+    IAmAMessageSchedulerAsync scheduler, IOrderRepository repository, ILogger<OrderService> logger)
 {
-    // ... _repository and _logger, injected as your application supplies them
-    private readonly IAmACommandProcessor _commandProcessor;
-    private readonly IAmAMessageSchedulerAsync _scheduler;
-
     public async Task CancelOrder(Guid orderId)
     {
-        var order = await _repository.GetAsync(orderId);
+        var order = await repository.GetAsync(orderId);
 
         // Cancel scheduled payment
         if (!string.IsNullOrEmpty(order.PaymentSchedulerId))
         {
-            await _scheduler.CancelAsync(order.PaymentSchedulerId);
-            _logger.LogInformation(
+            await scheduler.CancelAsync(order.PaymentSchedulerId);
+            logger.LogInformation(
                 "Cancelled scheduled payment for order {OrderId}",
                 orderId
             );
         }
 
         order.Status = OrderStatus.Cancelled;
-        await _repository.UpdateAsync(order);
+        await repository.UpdateAsync(order);
     }
 }
 ```
@@ -467,24 +491,28 @@ public class OrderService
 Schedule an event to be published:
 
 ```csharp
-public class TrialService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
 
+public class TrialService(
+    IAmACommandProcessor commandProcessor, IUserRepository repository, ILogger<TrialService> logger)
+{
     public async Task StartTrial(User user)
     {
         user.TrialStartDate = DateTime.UtcNow;
         user.TrialEndDate = DateTime.UtcNow.AddDays(30);
-        await _repository.SaveAsync(user);
+        await repository.SaveAsync(user);
 
         // Schedule trial expiry reminder for 7 days before end
         var reminderDate = user.TrialEndDate.AddDays(-7);
-        var schedulerId = await _commandProcessor.PublishAsync(
+        var schedulerId = await commandProcessor.PublishAsync(
             reminderDate,
             new TrialExpiringEvent { UserId = user.Id, DaysRemaining = 7 }
         );
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "Scheduled trial expiry reminder for user {UserId}: {SchedulerId}",
             user.Id,
             schedulerId
@@ -512,6 +540,8 @@ you say otherwise — see [AWS Scheduler Factory Options](#aws-scheduler-factory
 ### 1. Use Direct to Target for Messages
 
 ```csharp
+using Paramore.Brighter.MessageScheduler.AWS.V4;
+
 // Good - Direct scheduling (default)
 var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-role")
 {
@@ -520,6 +550,8 @@ var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-role")
 ```
 
 ```csharp
+using Paramore.Brighter.MessageScheduler.AWS.V4;
+
 // Bad - Unnecessary indirection for messages
 var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-role")
 {
@@ -529,7 +561,7 @@ var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-role")
 
 ### 2. Limit IAM Role Permissions
 
-```csharp
+```json
 // Good - Specific resource ARNs
 {
     "Effect": "Allow",
@@ -541,7 +573,7 @@ var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-role")
 }
 ```
 
-```csharp
+```json
 // Bad - Overly permissive
 {
     "Effect": "Allow",
@@ -553,6 +585,10 @@ var schedulerFactory = new AwsSchedulerFactory(awsConnection, "my-role")
 ### 3. Use Scheduler Groups for Organization
 
 ```csharp
+using System.Collections.Generic;
+using Amazon.Scheduler.Model;
+using Paramore.Brighter.MessageScheduler.AWS.V4;
+
 // Good - Organized by feature/team
 var schedulerFactory = new AwsSchedulerFactory(awsConnection, "role")
 {
@@ -571,6 +607,9 @@ var schedulerFactory = new AwsSchedulerFactory(awsConnection, "role")
 ### 4. Handle OnConflict Appropriately
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessageScheduler.AWS.V4;
+
 // Good - Explicit conflict handling
 var schedulerFactory = new AwsSchedulerFactory(awsConnection, "role")
 {
@@ -582,20 +621,31 @@ var schedulerFactory = new AwsSchedulerFactory(awsConnection, "role")
 ### 5. Use Custom Scheduler IDs for Idempotency
 
 ```csharp
-// Good - Idempotent based on business key
-GetOrCreateRequestSchedulerId = request =>
+using Paramore.Brighter.MessageScheduler.AWS.V4;
+
+var schedulerFactory = new AwsSchedulerFactory(awsConnection, "role")
 {
-    if (request is ProcessPaymentCommand cmd)
+    // Good - Idempotent based on business key
+    GetOrCreateRequestSchedulerId = request =>
     {
-        return $"payment-{cmd.TransactionId}";  // One schedule per transaction
+        if (request is ProcessPaymentCommand cmd)
+        {
+            return $"payment-{cmd.TransactionId}";  // One schedule per transaction
+        }
+        return request.Id.ToString();
     }
-    return request.Id.ToString();
-}
+};
 ```
 
 ```csharp
-// Bad - Always creates new schedule
-GetOrCreateRequestSchedulerId = request => Guid.NewGuid().ToString();
+using System;
+using Paramore.Brighter.MessageScheduler.AWS.V4;
+
+var schedulerFactory = new AwsSchedulerFactory(awsConnection, "role")
+{
+    // Bad - Always creates new schedule
+    GetOrCreateRequestSchedulerId = request => Guid.NewGuid().ToString()
+};
 ```
 
 ### 6. Monitor AWS Scheduler Metrics
@@ -613,6 +663,8 @@ GetOrCreateRequestSchedulerId = request => Guid.NewGuid().ToString();
 ### 7. Use Flexible Time Windows for Cost Optimization
 
 ```csharp
+using Paramore.Brighter.MessageScheduler.AWS.V4;
+
 // Good - Allow flexibility for non-critical schedules
 var schedulerFactory = new AwsSchedulerFactory(awsConnection, "role")
 {
@@ -623,6 +675,10 @@ var schedulerFactory = new AwsSchedulerFactory(awsConnection, "role")
 ### 8. Test with LocalStack
 
 ```csharp
+using Amazon;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter.MessagingGateway.AWSSQS.V4;
+
 // Good - Test AWS Scheduler locally with LocalStack
 var awsConnection = new AWSMessagingGatewayConnection(
     credentials,
@@ -653,18 +709,22 @@ var awsConnection = new AWSMessagingGatewayConnection(
 **Solutions**:
 
 ```csharp
-// 1. Verify IAM role permissions in AWS Console
-// 2. Ensure target exists before scheduling
-var schedulerFactory = new AwsSchedulerFactory(awsConnection, "role")
-{
-    MakeRole = OnMissingRole.Create  // Auto-create role
-};
+using Amazon;
+using Paramore.Brighter.MessageScheduler.AWS.V4;
+using Paramore.Brighter.MessagingGateway.AWSSQS.V4;
 
-// 3. Verify region matches your resources
+// 1. Verify IAM role permissions in AWS Console
+// 2. Verify region matches your resources
 var awsConnection = new AWSMessagingGatewayConnection(
     credentials,
     RegionEndpoint.USEast1  // Match your SNS/SQS region
 );
+
+// 3. Ensure target exists before scheduling
+var schedulerFactory = new AwsSchedulerFactory(awsConnection, "role")
+{
+    MakeRole = OnMissingRole.Create  // Auto-create role
+};
 
 // 4. Configure FireAwsScheduler subscription if needed
 ```
@@ -700,11 +760,17 @@ var awsConnection = new AWSMessagingGatewayConnection(
 **Solutions**:
 
 ```csharp
-// Option 1: Overwrite existing schedule
-OnConflict = OnSchedulerConflict.Overwrite
+using Paramore.Brighter;
+using Paramore.Brighter.MessageScheduler.AWS.V4;
 
-// Option 2: Throw exception and handle in code
-OnConflict = OnSchedulerConflict.Throw
+var schedulerFactory = new AwsSchedulerFactory(awsConnection, "role")
+{
+    // Option 1: Overwrite existing schedule
+    OnConflict = OnSchedulerConflict.Overwrite
+
+    // Option 2: Throw exception and handle in code
+    // OnConflict = OnSchedulerConflict.Throw
+};
 ```
 
 ### High Costs
@@ -718,8 +784,13 @@ OnConflict = OnSchedulerConflict.Throw
 **Solutions**:
 
 ```csharp
+using Paramore.Brighter.MessageScheduler.AWS.V4;
+
 // 1. Use flexible time windows
-FlexibleTimeWindowMinutes = 5
+var schedulerFactory = new AwsSchedulerFactory(awsConnection, "role")
+{
+    FlexibleTimeWindowMinutes = 5
+};
 
 // 2. Clean up old schedules
 await _scheduler.CancelAsync(oldSchedulerId);

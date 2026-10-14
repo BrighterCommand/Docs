@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 3.5: CustomScheduler.md blocks 1-4, run. The page's four classes are copied verbatim
+       below Program; CustomSchedulerAPI is a fake that holds each job until it is fired. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.8.0" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.0" />
+  </ItemGroup>
+</Project>

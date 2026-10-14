@@ -76,6 +76,8 @@ var clientProvider = new ServiceBusManagedIdentityClientProvider(
 ### Visual Studio Credentials (Development)
 
 ```csharp
+using Paramore.Brighter.MessagingGateway.AzureServiceBus.ClientProvider;
+
 var clientProvider = new ServiceBusVisualStudioCredentialClientProvider(
     "myservicebus.servicebus.windows.net"
 );
@@ -84,6 +86,8 @@ var clientProvider = new ServiceBusVisualStudioCredentialClientProvider(
 ### Connection String (Simple, Less Secure)
 
 ```csharp
+using Paramore.Brighter.MessagingGateway.AzureServiceBus.ClientProvider;
+
 var clientProvider = new ServiceBusConnectionStringClientProvider(
     "Endpoint=sb://myservicebus.servicebus.windows.net/;SharedAccessKeyName=..."
 );
@@ -92,7 +96,9 @@ var clientProvider = new ServiceBusConnectionStringClientProvider(
 ### Default Azure Credentials (Flexible)
 
 ```csharp
-var clientProvider = new ServiceBusDefaultAzureCredentialClientProvider(
+using Paramore.Brighter.MessagingGateway.AzureServiceBus.ClientProvider;
+
+var clientProvider = new ServiceBusDefaultAzureClientProvider(
     "myservicebus.servicebus.windows.net"
 );
 ```
@@ -162,7 +168,10 @@ neither can be left out.
 Configure Azure Service Bus Scheduler with minimal settings:
 
 ```csharp
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessageScheduler.Azure;
 using Paramore.Brighter.MessagingGateway.AzureServiceBus.ClientProvider;
@@ -193,6 +202,11 @@ var app = builder.Build();
 Configure the Dispatcher to handle FireAzureScheduler messages:
 
 ```csharp
+using System;
+using Microsoft.AspNetCore.Builder;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Azure;
 using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 using Paramore.Brighter.MessagingGateway.AzureServiceBus;
 using Paramore.Brighter.MessagingGateway.AzureServiceBus.ClientProvider;
@@ -228,11 +242,11 @@ var subscriptions = new[]
     )
 };
 
-builder.Services.AddServiceActivator(options =>
+builder.Services.AddConsumers(options =>
 {
     options.Subscriptions = subscriptions;
 })
-.UseExternalBus(configure =>
+.AddProducers(configure =>
 {
     configure.ProducerRegistry = producerRegistry;
 })
@@ -251,6 +265,8 @@ Customize Azure Service Bus sender behavior:
 
 ```csharp
 using Azure.Messaging.ServiceBus;
+using Paramore.Brighter;
+using Paramore.Brighter.MessageScheduler.Azure;
 
 var schedulerFactory = new AzureServiceBusSchedulerFactory(
     clientProvider,
@@ -270,6 +286,10 @@ var schedulerFactory = new AzureServiceBusSchedulerFactory(
 Use a custom time provider for testing:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessageScheduler.Azure;
+
 var schedulerFactory = new AzureServiceBusSchedulerFactory(
     clientProvider,
     new RoutingKey("brighter-scheduler-topic")
@@ -286,21 +306,25 @@ var schedulerFactory = new AzureServiceBusSchedulerFactory(
 Schedule a command to execute after a delay:
 
 ```csharp
-public class OrderService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
 
+public class OrderService(
+    IAmACommandProcessor commandProcessor, IOrderRepository repository, ILogger<OrderService> logger)
+{
     public async Task CreateOrder(Order order)
     {
-        await _repository.SaveAsync(order);
+        await repository.SaveAsync(order);
 
         // Schedule payment processing for 30 minutes later
-        var schedulerId = await _commandProcessor.SendAsync(
+        var schedulerId = await commandProcessor.SendAsync(
             TimeSpan.FromMinutes(30),
             new ProcessPaymentCommand { OrderId = order.Id, Amount = order.Total }
         );
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "Scheduled payment processing for order {OrderId}: {SchedulerId}",
             order.Id,
             schedulerId
@@ -314,21 +338,24 @@ public class OrderService
 Schedule for a specific time:
 
 ```csharp
-public class ReportService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
 
+public class ReportService(IAmACommandProcessor commandProcessor, ILogger<ReportService> logger)
+{
     public async Task ScheduleDailyReport()
     {
         // Schedule for tomorrow at 9 AM UTC
         var tomorrow9AM = DateTimeOffset.UtcNow.Date.AddDays(1).AddHours(9);
 
-        var schedulerId = await _commandProcessor.SendAsync(
+        var schedulerId = await commandProcessor.SendAsync(
             tomorrow9AM,
             new GenerateDailyReportCommand { Date = DateTime.UtcNow.Date }
         );
 
-        _logger.LogInformation("Scheduled daily report: {SchedulerId}", schedulerId);
+        logger.LogInformation("Scheduled daily report: {SchedulerId}", schedulerId);
     }
 }
 ```
@@ -343,28 +370,25 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Brighter;
 
-public class OrderService
+public class OrderService(
+    IAmAMessageSchedulerAsync scheduler, IOrderRepository repository, ILogger<OrderService> logger)
 {
-    // ... _repository and _logger, injected as your application supplies them
-    private readonly IAmACommandProcessor _commandProcessor;
-    private readonly IAmAMessageSchedulerAsync _scheduler;
-
     public async Task CancelOrder(Guid orderId)
     {
-        var order = await _repository.GetAsync(orderId);
+        var order = await repository.GetAsync(orderId);
 
         // Cancel scheduled payment
         if (!string.IsNullOrEmpty(order.PaymentSchedulerId))
         {
-            await _scheduler.CancelAsync(order.PaymentSchedulerId);
-            _logger.LogInformation(
+            await scheduler.CancelAsync(order.PaymentSchedulerId);
+            logger.LogInformation(
                 "Cancelled scheduled payment for order {OrderId}",
                 orderId
             );
         }
 
         order.Status = OrderStatus.Cancelled;
-        await _repository.UpdateAsync(order);
+        await repository.UpdateAsync(order);
     }
 }
 ```
@@ -379,33 +403,33 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Brighter;
 
-public class OrderService
+public class OrderService(
+    IAmACommandProcessor commandProcessor,
+    IAmAMessageSchedulerAsync scheduler,
+    IOrderRepository repository,
+    ILogger<OrderService> logger)
 {
-    // ... _repository and _logger, injected as your application supplies them
-    private readonly IAmACommandProcessor _commandProcessor;
-    private readonly IAmAMessageSchedulerAsync _scheduler;
-
     public async Task ReschedulePayment(Guid orderId, TimeSpan newDelay)
     {
-        var order = await _repository.GetAsync(orderId);
+        var order = await repository.GetAsync(orderId);
 
         // Azure Service Bus doesn't support rescheduling
         // Must cancel existing schedule and create a new one
         if (!string.IsNullOrEmpty(order.PaymentSchedulerId))
         {
-            await _scheduler.CancelAsync(order.PaymentSchedulerId);
+            await scheduler.CancelAsync(order.PaymentSchedulerId);
         }
 
         // Create new schedule
-        var newSchedulerId = await _commandProcessor.SendAsync(
+        var newSchedulerId = await commandProcessor.SendAsync(
             newDelay,
             new ProcessPaymentCommand { OrderId = order.Id, Amount = order.Total }
         );
 
         order.PaymentSchedulerId = newSchedulerId;
-        await _repository.UpdateAsync(order);
+        await repository.UpdateAsync(order);
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "Rescheduled payment for order {OrderId}: {NewSchedulerId}",
             orderId,
             newSchedulerId
@@ -419,6 +443,8 @@ public class OrderService
 ### 1. Use Managed Identity in Production
 
 ```csharp
+using Paramore.Brighter.MessagingGateway.AzureServiceBus.ClientProvider;
+
 // Good - Managed Identity (no credentials in code)
 var clientProvider = new ServiceBusManagedIdentityClientProvider(
     "myservicebus.servicebus.windows.net"
@@ -426,6 +452,8 @@ var clientProvider = new ServiceBusManagedIdentityClientProvider(
 ```
 
 ```csharp
+using Paramore.Brighter.MessagingGateway.AzureServiceBus.ClientProvider;
+
 // Bad - Connection string in code (security risk)
 var clientProvider = new ServiceBusConnectionStringClientProvider(
     "Endpoint=sb://...;SharedAccessKeyName=...;SharedAccessKey=..."
@@ -435,13 +463,17 @@ var clientProvider = new ServiceBusConnectionStringClientProvider(
 ### 2. Use Separate Scheduler Topic
 
 ```csharp
+using Paramore.Brighter;
+
 // Good - Dedicated scheduler topic
-new RoutingKey("brighter-scheduler-topic")
+var schedulerTopic = new RoutingKey("brighter-scheduler-topic");
 ```
 
 ```csharp
+using Paramore.Brighter;
+
 // Bad - Mixing business messages with scheduler messages
-new RoutingKey("orders-topic")  // Don't use business topics for scheduling
+var schedulerTopic = new RoutingKey("orders-topic");  // Don't use business topics for scheduling
 ```
 
 ### 3. Handle Reschedule as Cancel + Schedule
@@ -463,7 +495,7 @@ var rescheduled = await _scheduler.ReSchedulerAsync(existingSchedulerId, newDela
 
 ### 4. Set Appropriate Message TTL
 
-```csharp
+```json
 // Good - Configure topic with appropriate message TTL
 // In Azure Portal or via ARM template
 {
@@ -498,18 +530,29 @@ var rescheduled = await _scheduler.ReSchedulerAsync(existingSchedulerId, newDela
 ### 7. Configure Dead-Letter Queue
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessageScheduler.Azure;
+using Paramore.Brighter.MessagingGateway.AzureServiceBus;
+
 // Ensure dead-letter queue is monitored
 var subscription = new AzureServiceBusSubscription<FireAzureScheduler>(
     new SubscriptionName("scheduler-subscription"),
     new ChannelName("scheduler-channel"),
     new RoutingKey("brighter-scheduler-topic"),
-    deadLetterQueueHandling: true  // Enable DLQ handling
+    subscriptionConfiguration: new AzureServiceBusSubscriptionConfiguration
+    {
+        DeadLetteringOnMessageExpiration = true,  // Expired messages go to the DLQ (the default)
+        MaxDeliveryCount = 5                      // Dead-lettered after 5 failed deliveries (the default)
+    }
 );
 ```
 
 ### 8. Test Locally with Azurite
 
 ```csharp
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter.MessagingGateway.AzureServiceBus.ClientProvider;
+
 // Good - Test with Azurite (Azure Storage Emulator)
 if (environment.IsDevelopment())
 {
@@ -536,6 +579,10 @@ if (environment.IsDevelopment())
 **Solutions**:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessageScheduler.Azure;
+using Paramore.Brighter.MessagingGateway.AzureServiceBus;
+
 // 1. Verify subscription is configured
 var subscriptions = new[]
 {
@@ -547,7 +594,7 @@ var subscriptions = new[]
 };
 
 // 2. Ensure topic name matches in factory and subscription
-new AzureServiceBusSchedulerFactory(clientProvider, new RoutingKey("brighter-scheduler-topic"))
+var schedulerFactory = new AzureServiceBusSchedulerFactory(clientProvider, new RoutingKey("brighter-scheduler-topic"));
 
 // 3. Check message TTL in Azure Portal
 // 4. Verify Service Bus connection
@@ -584,6 +631,10 @@ az role assignment create \
 **Solution**:
 
 ```csharp
+using System;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 // Azure doesn't support reschedule - use cancel + schedule pattern
 public async Task<string> RescheduleAsync(string oldSchedulerId, TimeSpan newDelay, Command command)
 {
@@ -611,26 +662,42 @@ public async Task<string> RescheduleAsync(string oldSchedulerId, TimeSpan newDel
 **Solutions**:
 
 ```csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+using Paramore.Brighter.MessageScheduler.Azure;
+using Paramore.Brighter.MessagingGateway.AzureServiceBus;
+
 // 1. Check dead-letter queue for error details
-// 2. Increase lock timeout
+// 2. Increase lock duration
 var subscription = new AzureServiceBusSubscription<FireAzureScheduler>(
-    ...
-    lockTimeout: 60  // Increase if processing takes longer
+    // ...
+    subscriptionConfiguration: new AzureServiceBusSubscriptionConfiguration
+    {
+        LockDuration = TimeSpan.FromMinutes(2)  // Increase if processing takes longer
+    }
 );
 
-// 3. Add proper exception handling in handlers
-public override async Task<FireAzureScheduler> HandleAsync(
-    FireAzureScheduler command,
-    CancellationToken cancellationToken = default)
+// 3. Add proper exception handling in the handler of the request you scheduled
+public class ProcessPaymentHandlerAsync(ILogger<ProcessPaymentHandlerAsync> logger)
+    : RequestHandlerAsync<ProcessPaymentCommand>
 {
-    try
+    public override async Task<ProcessPaymentCommand> HandleAsync(
+        ProcessPaymentCommand command,
+        CancellationToken cancellationToken = default)
     {
-        // Your logic
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Error processing scheduled message");
-        throw;  // Or handle appropriately
+        try
+        {
+            // Your logic
+            return await base.HandleAsync(command, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error processing scheduled message");
+            throw;  // Or handle appropriately
+        }
     }
 }
 ```

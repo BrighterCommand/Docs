@@ -101,7 +101,7 @@ and AC7 reconciles the two.
 | **fragment**: `CS0161`, `CS0825`, `CS0116` and kin | **14** | 017: make whole, or skip with an accepted reason |
 | **collision?**: `Task`, `Tag`, `User`, `Activity` and kin, a page type named like a pinned one | **7** | a page type, read by the receiver-aware resolution (D1) |
 | **pin-gap**: Shouldly's `ShouldBe…`, not pinned | **6** | all on `TestDoubleOptions.md`; `Shouldly` is pinned (D4) |
-| **forthcoming**: `OnceOnlyAction.Replay`, on `master` and not in 10.7.0 | **4** | SKIPPED, *forthcoming* (D3) |
+| **forthcoming**: `OnceOnlyAction.Replay`, on `master` and not in 10.7.0 | **4** | SKIPPED, *forthcoming* (D3). It shipped in **10.8.0**, so at that pin the four are *page-type* and repaired as such (`tasks.md` § *Phase 3 as executed*) |
 | unexplained | **1** | read at the phase |
 
 | PARSE (145) | Blocks | Repair rule |
@@ -439,7 +439,7 @@ runs in every tranche PR"*, is replaced by rule 8 the gate, which now runs on ev
 
 | Case | Blocks (E2/E5) | Rule | Ruling |
 |---|---:|---|---|
-| A forthcoming API, which the page already says ships after the pinned release | 4 | SKIPPED, reason *"forthcoming: ships after Brighter 10.7.0, as the page says at line N"* | **D3** |
+| A forthcoming API, which the page already says ships after the pinned release | 4 at 10.7.0; **0** at 10.8.0 | SKIPPED, reason *"forthcoming: ships after Brighter 10.7.0, as the page says at line N"* | **D3** |
 | A single option, argument or expression shown alone, with no enclosing call on the page | ≤ 64 | SKIPPED, reason *"a single option shown alone; its type is named in the sentence before it"*, where that type resolves in the pin | **D3** |
 | A handler method shown without its class | 32 | built by the handler wrapper | **D2** |
 | Shouldly assertions | 6 | `Shouldly` **4.3.0** pinned in `refs.csproj`, the version Brighter's own tests use (`Directory.Packages.props:150` at 10.7.0). The page calls `ShouldBe…` and never names the package (`grep -c Shouldly contents/TestDoubleOptions.md` → **0**), so its repair adds `using Shouldly;` to each block and one sentence naming the package | **D4** |
@@ -477,7 +477,7 @@ with the command beside it.
   same way and beat it, because hard repairs and recurrences added blocks a reachable count cannot
   see
 - **Pages with nothing BUILT: 39 → ≤ 14.** Three of the 39 are tranche pages:
-  `ReturningResultsFromAHandler.md`, `ReplayOnSeenReference.md` (forthcoming, D3) and
+  `ReturningResultsFromAHandler.md`, `ReplayOnSeenReference.md` (forthcoming at 10.7.0, D3; shipped in 10.8.0) and
   `DynamoDbDistributedLock.md`, which the V4 pin can reach (below). None is counted on. Of the 36
   off-tranche pages, 28 have a reachable block. 39 − 25 = 14, so **25 of those 28** must gain a BUILT
   block. The eight with nothing reachable are not counted on
@@ -528,14 +528,14 @@ cited from its rows, not restated.
 | shape / redirects / `--verify` | **unmoved** | **unmoved** | **unmoved** | no `SUMMARY.md` change |
 | `versioncheck` | **unmoved** | **unmoved** | **unmoved** | no tutorial pin touched. A repair that adds one is predicted in its phase |
 | `optioncheck` | **unmoved** | **unmoved** | **unmoved** | no option table touched |
-| `symbolcheck` | **unmoved** | **unmoved** | phase 3: **22 → 23 entries, 3 → 8 silenced** (E6, D5); otherwise unmoved | the `AddServiceActivator` row and its opt-outs |
+| `symbolcheck` | **unmoved** | **unmoved** | phase 3: **22 → 24 entries, 3 → 14 silenced** (E6, D5, D10); otherwise unmoved | the `AddServiceActivator` and `UseExternalBus` rows and their opt-outs |
 | `blockcheck` corpus | **unmoved, 990** | **unmoved** | **moves both ways**: retags (−3 for E2's JSON) and fence splits (+ for E2's 15 two-snippet and 7 mixed blocks); predicted per phase | a split adds a block |
 | `blockcheck` BUILT | **unmoved, 299** | **rises by the blocks the handler wrapper (D2), the `Program` fix (#75) and the Shouldly pin (D4) make build**, measured by phase 2's first task before any row is written: **+4**, all from the `Program` fix; the wrapper and Shouldly make none build alone (`tasks.md` § *Phase 2 as executed*) | **rises**, to ≥ 560 by the close | |
 | `blockcheck` scope lines | unmoved | **+1 line**, the V4 pin's assemblies; the main pin's assemblies **rise** by Shouldly's (D4); the scaffold rule also checks the `v4` column | units rise with each phase's stubs | |
 
 ## Design Decisions
 
-D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and D7 needed no ruling. D8 and D9 were ruled at phase 2, on 2026-10-05 and 2026-10-09.
+D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and D7 needed no ruling. D8 and D9 were ruled at phase 2, on 2026-10-05 and 2026-10-09. D10–D12 were ruled at phase 3, on 2026-10-13.
 
 | # | Question | Decision | Ruled |
 |---|---|---|---|
@@ -548,6 +548,9 @@ D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and 
 | **D7** | **Raise P1-3, the `net10.0` measurement, to P0?** | **No, but run it in phase 2 before the tables are drawn**, as friction #76 asks. Raise it if it moves a verdict | — |
 | **D8** | **Tiered resolution and page evidence?** Task 2.3's red-proof found D1's two checks let `Order` resolve to `StackExchange.Redis` on 20 rows (pages that use `Order` without declaring it), and `Context` to `Polly` on 11 | **Yes, both.** Tiered alone moves Polly 17 → 10 and Redis not at all. With page evidence, Redis → **0**, Polly → 6 (all on pages that import Polly), `built-by-using` unmoved at 32 | **Yes**, the maintainer, 2026-10-05 |
 | **D9** | **Wrap handlers shown by their `Fallback` alone?** Task 2.5 found five `members` blocks (`PolicyFallback.md` #6, #7, #9; `QueryPipeline.md` #24, #25) overriding only `Fallback` or `FallbackAsync`, outside D2's four methods, each carrying `wrapper:Context` | **Yes.** The return type picks the product: the request type, or a `Task` of it, means Brighter; anything else means Darker. The Holder is abstract, so a Darker `Fallback` shown alone is not failed for the `Execute` it does not show | **Yes**, the maintainer, 2026-10-09 |
+| **D10** | **Watch `UseExternalBus` as well?** Task 3.1 found it chained after `AddServiceActivator` at both of D5's sites, and dead the same way at 10.8.0 (`git -C ../Brighter grep -lw UseExternalBus 10.8.0 -- 'src/*.cs'` → one file, a doc comment). Repairing the sites to `AddProducers` is obligation 21 and needs no ruling; the watchlist row is scope | **Yes.** Same evidence, same two sites, same two V9 discussion pages. A trial run with both rows: **24 entries**, `UseExternalBus` at **8 sites on 4 pages**, of which 6 are discussion lines on `FAQ.md` and `V10MigrationGuide.md`. With both opt-outs, **14 silenced** | **Yes**, the maintainer, 2026-10-13 |
+| **D11** | **`symbolcheck --verify-list` counts a doc comment as a use.** Task 3.4 found both new rows LIVE: `AddServiceActivator` in 2 files and `UseExternalBus` in 1 at both refs, every hit a `///`. CI runs `--verify-list`, so the rows would fail the build. E6 ran only the plain gate | **Strip comments and strings in `resolve()`**: `git grep -l` still finds the candidates, and each is re-read at its ref through `strip_noncode`, the census's rule. Stripping can only lower a count, so no DEAD row can flip, and a live API keeps its declaration outside any comment. Red-proof in `tasks.md` § *Phase 3 as executed* | **Yes**, the maintainer, 2026-10-13 |
+| **D12** | **Pin `Quartz.Serialization.Json`?** `QuartzScheduler.md` tells its reader to `dotnet add package Quartz.Serialization.Json` and calls the job store's JSON serializer in 7 blocks; the pin lacked the package, so all 7 failed on it. At 3.22.4, the version Brighter 10.8.0's Quartz dependency implies, `UseJsonSerializer` is `[Obsolete]` for `UseNewtonsoftJsonSerializer`, so the page is repaired either way (ledger 12) | **Yes**, as D4 pinned Shouldly: one package the page's reader installs. `Quartz.Serialization.Json` **3.22.4** in `refs.csproj` and `refs-v4.csproj`; each pin 551 → **553** reference assemblies | **Yes**, the maintainer, 2026-10-13 |
 
 ## What the Design Review Found — 2026-10-05
 

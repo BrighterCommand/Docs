@@ -660,7 +660,26 @@ def resolve(repo, ref, symbol):
     if proc.returncode > 1:
         raise CensusError(
             f'{repo}@{ref}: {proc.stderr.strip()[:160] or "git grep failed"}')
-    return len([line for line in proc.stdout.splitlines() if line.strip()])
+    # git grep cannot tell code from a comment, so each file it names is read
+    # again with comments and strings out (strip_noncode, as the census reads
+    # pages). A name a release mentions only in a `///` is not one it ships:
+    # spec 018 D11, after `AddServiceActivator` resolved LIVE at 10.8.0 on two
+    # doc comments alone. Stripping can only lower a count, and a live API
+    # still has its declaration outside any comment.
+    word = flags[-1] == '-w'
+    pattern = re.compile(('(?<![A-Za-z0-9_])' if word else '') + re.escape(symbol)
+                         + ('(?![A-Za-z0-9_])' if word else ''))
+    found = 0
+    for name in (line for line in proc.stdout.splitlines() if line.strip()):
+        # -l with a ref prints `ref:path`, which is what `git show` takes.
+        show = subprocess.run(['git', '-C', path, 'show', name],
+                              capture_output=True, text=True)
+        if show.returncode != 0:
+            raise CensusError(f'{repo}: cannot read {name}: '
+                              f'{show.stderr.strip()[:160]}')
+        if pattern.search(strip_noncode(show.stdout)):
+            found += 1
+    return found
 
 
 def verdict(pin_files, master_files):

@@ -201,6 +201,9 @@
     <PackageReference Include="Hangfire.SqlServer" Version="1.8.25" />
     <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.22.4" />
     <PackageReference Include="Quartz.Extensions.Hosting" Version="3.22.4" />
+    <!-- QuartzScheduler.md tells its reader to install this, for the job
+         store's JSON serializer (spec 018 D12). Same version as Quartz. -->
+    <PackageReference Include="Quartz.Serialization.Json" Version="3.22.4" />
 
     <!-- The floor Paramore.Brighter.MsSql.EntityFrameworkCore 10.8.0 sets for
          net9.0. Below it the restore fails NU1605, a package downgrade. -->

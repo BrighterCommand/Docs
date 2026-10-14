@@ -129,6 +129,10 @@ factory is constructed, as the complete examples below do.
 Configure Brighter with Hangfire scheduler:
 
 ```csharp
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessageScheduler.Hangfire;
 using Hangfire;
@@ -163,7 +167,12 @@ builder.Services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
-.UseScheduler(new HangfireMessageSchedulerFactory())
+.UseScheduler(provider =>
+{
+    // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+    var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+    return new HangfireMessageSchedulerFactory { Client = client };
+})
 .AutoFromAssemblies();
 
 var app = builder.Build();
@@ -177,6 +186,11 @@ app.Run();
 ### Configuration with PostgreSQL
 
 ```csharp
+using Hangfire;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Hangfire;
 using Hangfire.PostgreSql;
 
 builder.Services.AddHangfire(configuration => configuration
@@ -195,13 +209,24 @@ builder.Services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
-.UseScheduler(new HangfireMessageSchedulerFactory())
+.UseScheduler(provider =>
+{
+    // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+    var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+    return new HangfireMessageSchedulerFactory { Client = client };
+})
 .AutoFromAssemblies();
 ```
 
 ### Configuration with Redis
 
 ```csharp
+using System;
+using Hangfire;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Hangfire;
 using Hangfire.Redis.StackExchange;
 
 builder.Services.AddHangfire(configuration => configuration
@@ -223,7 +248,12 @@ builder.Services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
-.UseScheduler(new HangfireMessageSchedulerFactory())
+.UseScheduler(provider =>
+{
+    // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+    var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+    return new HangfireMessageSchedulerFactory { Client = client };
+})
 .AutoFromAssemblies();
 ```
 
@@ -232,13 +262,20 @@ builder.Services.AddBrighter(options =>
 Organize Brighter jobs into a specific queue:
 
 ```csharp
+using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Hangfire;
+
 builder.Services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
-.UseScheduler(new HangfireMessageSchedulerFactory
+.UseScheduler(provider =>
 {
-    Queue = "brighter-scheduler"  // Custom queue for Brighter jobs
+    // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+    var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+    return new HangfireMessageSchedulerFactory { Client = client, Queue = "brighter-scheduler" };  // Custom queue for Brighter jobs
 })
 .AutoFromAssemblies();
 ```
@@ -255,6 +292,8 @@ Hangfire supports multiple persistent storage backends:
 ### SQL Server
 
 ```csharp
+using System;
+using Hangfire;
 using Hangfire.SqlServer;
 
 configuration.UseSqlServerStorage(
@@ -273,18 +312,23 @@ configuration.UseSqlServerStorage(
 ### PostgreSQL
 
 ```csharp
+using Hangfire;
 using Hangfire.PostgreSql;
 
-configuration.UsePostgreSqlStorage(options =>
-{
-    options.UseNpgsqlConnection(connectionString);
-    options.SchemaName = "hangfire";  // Optional custom schema
-});
+configuration.UsePostgreSqlStorage(
+    options => options.UseNpgsqlConnection(connectionString),
+    new PostgreSqlStorageOptions
+    {
+        SchemaName = "hangfire"  // Optional custom schema
+    });
 ```
 
 ### MySQL
 
 ```csharp
+using System;
+using System.Transactions;
+using Hangfire;
 using Hangfire.MySql;
 
 configuration.UseStorage(new MySqlStorage(
@@ -305,6 +349,8 @@ configuration.UseStorage(new MySqlStorage(
 ### Redis
 
 ```csharp
+using System;
+using Hangfire;
 using Hangfire.Redis.StackExchange;
 
 configuration.UseRedisStorage(
@@ -320,6 +366,7 @@ configuration.UseRedisStorage(
 ### In-Memory (Development Only)
 
 ```csharp
+using Hangfire;
 using Hangfire.MemoryStorage;
 
 configuration.UseMemoryStorage();
@@ -334,6 +381,8 @@ Hangfire includes a powerful web-based dashboard for monitoring jobs.
 ### Basic Dashboard Setup
 
 ```csharp
+using Hangfire;
+
 var app = builder.Build();
 
 // Add dashboard at /hangfire
@@ -347,7 +396,15 @@ app.Run();
 Secure the dashboard with authorization:
 
 ```csharp
+using Hangfire;
 using Hangfire.Dashboard;
+
+// Apply filter
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() },
+    DashboardTitle = "Brighter Scheduler Jobs"
+});
 
 public class HangfireAuthorizationFilter : IDashboardAuthorizationFilter
 {
@@ -359,18 +416,15 @@ public class HangfireAuthorizationFilter : IDashboardAuthorizationFilter
         return httpContext.User.Identity?.IsAuthenticated ?? false;
     }
 }
-
-// Apply filter
-app.UseHangfireDashboard("/hangfire", new DashboardOptions
-{
-    Authorization = new[] { new HangfireAuthorizationFilter() },
-    DashboardTitle = "Brighter Scheduler Jobs"
-});
 ```
 
 ### Dashboard with Custom Path and Options
 
+This uses the `HangfireAuthorizationFilter` from the example above:
+
 ```csharp
+using Hangfire;
+
 app.UseHangfireDashboard("/admin/jobs", new DashboardOptions
 {
     Authorization = new[] { new HangfireAuthorizationFilter() },
@@ -398,23 +452,25 @@ The Hangfire dashboard provides:
 ### Basic Scheduling
 
 ```csharp
-public class OrderService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
+using System;
+using System.Threading.Tasks;
+using Paramore.Brighter;
 
+public class OrderService(IAmACommandProcessor commandProcessor, IOrderRepository repository)
+{
     public async Task CreateOrder(Order order)
     {
-        await _repository.SaveAsync(order);
+        await repository.SaveAsync(order);
 
         // Schedule order processing for 1 hour later
-        var schedulerId = await _commandProcessor.SendAsync(
+        var schedulerId = await commandProcessor.SendAsync(
             TimeSpan.FromHours(1),
             new ProcessOrderCommand { OrderId = order.Id }
         );
 
         // Store scheduler ID for potential cancellation
         order.ProcessSchedulerId = schedulerId;
-        await _repository.UpdateAsync(order);
+        await repository.UpdateAsync(order);
 
         // Job will appear in Hangfire dashboard
     }
@@ -429,26 +485,24 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Brighter;
 
-public class OrderService
+public class OrderService(
+    IAmAMessageSchedulerAsync scheduler, IOrderRepository repository, ILogger<OrderService> logger)
 {
-    // ... _repository and _logger, injected as your application supplies them
-    private readonly IAmAMessageSchedulerAsync _scheduler;
-
     public async Task CancelOrder(Guid orderId)
     {
-        var order = await _repository.GetAsync(orderId);
+        var order = await repository.GetAsync(orderId);
 
         // Cancel the scheduled processing
         if (!string.IsNullOrEmpty(order.ProcessSchedulerId))
         {
-            await _scheduler.CancelAsync(order.ProcessSchedulerId);
-            _logger.LogInformation("Cancelled scheduled processing for order {OrderId}", orderId);
+            await scheduler.CancelAsync(order.ProcessSchedulerId);
+            logger.LogInformation("Cancelled scheduled processing for order {OrderId}", orderId);
 
             // Job will be removed from Hangfire dashboard
         }
 
         order.Status = OrderStatus.Cancelled;
-        await _repository.UpdateAsync(order);
+        await repository.UpdateAsync(order);
     }
 }
 ```
@@ -456,21 +510,24 @@ public class OrderService
 ### Scheduling with Absolute Time
 
 ```csharp
-public class ReportService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
 
+public class ReportService(IAmACommandProcessor commandProcessor, ILogger<ReportService> logger)
+{
     public async Task ScheduleDailyReport()
     {
         // Schedule for tomorrow at 9 AM
         var tomorrow9AM = DateTimeOffset.UtcNow.Date.AddDays(1).AddHours(9);
 
-        var schedulerId = await _commandProcessor.SendAsync(
+        var schedulerId = await commandProcessor.SendAsync(
             tomorrow9AM,
             new GenerateDailyReportCommand { Date = DateTime.UtcNow.Date }
         );
 
-        _logger.LogInformation("Scheduled daily report: {SchedulerId}", schedulerId);
+        logger.LogInformation("Scheduled daily report: {SchedulerId}", schedulerId);
 
         // View in dashboard: Jobs -> Scheduled
     }
@@ -482,6 +539,10 @@ public class ReportService
 Hangfire supports multiple server instances for high availability:
 
 ```csharp
+using System;
+using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
+
 // Server 1, 2, 3... all with same configuration
 builder.Services.AddHangfire(configuration => configuration
     .UseSqlServerStorage(sharedConnectionString)  // Shared database
@@ -489,9 +550,9 @@ builder.Services.AddHangfire(configuration => configuration
 
 builder.Services.AddHangfireServer(options =>
 {
-    options.ServerName = Environment.MachineName,  // Unique server name
-    options.WorkerCount = Environment.ProcessorCount * 5,  // Worker threads
-    options.Queues = new[] { "default", "brighter-scheduler" }  // Process these queues
+    options.ServerName = Environment.MachineName;  // Unique server name
+    options.WorkerCount = Environment.ProcessorCount * 5;  // Worker threads
+    options.Queues = new[] { "default", "brighter-scheduler" };  // Process these queues
 });
 ```
 
@@ -516,9 +577,15 @@ builder.Services.AddHangfireServer(options =>
 Monitor job execution with filters:
 
 ```csharp
+using Hangfire;
 using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.States;
+using Hangfire.Storage;
+using Microsoft.Extensions.Logging;
+
+// Register filter
+GlobalJobFilters.Filters.Add(new BrighterJobLogFilter(loggerFactory.CreateLogger<BrighterJobLogFilter>()));
 
 public class BrighterJobLogFilter : IServerFilter, IApplyStateFilter
 {
@@ -563,9 +630,6 @@ public class BrighterJobLogFilter : IServerFilter, IApplyStateFilter
         // Optional: log state changes
     }
 }
-
-// Register filter
-GlobalJobFilters.Filters.Add(new BrighterJobLogFilter(loggerFactory.CreateLogger<BrighterJobLogFilter>()));
 ```
 
 ### Health Checks
@@ -573,6 +637,19 @@ GlobalJobFilters.Filters.Add(new BrighterJobLogFilter(loggerFactory.CreateLogger
 Monitor Hangfire health:
 
 ```csharp
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
+// Register health check
+builder.Services.AddHealthChecks()
+    .AddCheck<HangfireHealthCheck>("hangfire");
+
 public class HangfireHealthCheck : IHealthCheck
 {
     private readonly JobStorage _storage;
@@ -615,10 +692,6 @@ public class HangfireHealthCheck : IHealthCheck
         }
     }
 }
-
-// Register health check
-builder.Services.AddHealthChecks()
-    .AddCheck<HangfireHealthCheck>("hangfire");
 ```
 
 ## Hangfire Best Practices
@@ -626,6 +699,9 @@ builder.Services.AddHealthChecks()
 ### 1. Always Use Persistent Storage in Production
 
 ```csharp
+using Hangfire;
+using Hangfire.MemoryStorage;
+
 // Good - Persistent storage
 configuration.UseSqlServerStorage(connectionString);
 
@@ -635,7 +711,11 @@ configuration.UseMemoryStorage();
 
 ### 2. Secure the Dashboard
 
+Protect it with an authorization filter, such as the `HangfireAuthorizationFilter` shown under the dashboard's configuration:
+
 ```csharp
+using Hangfire;
+
 // Good - Require authentication
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
@@ -649,23 +729,39 @@ app.UseHangfireDashboard();  // No authorization
 ### 3. Use Custom Queues for Organization
 
 ```csharp
+using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Hangfire;
+
+// brighter is the builder that services.AddBrighter(...) returns
+
 // Good - Separate queue for Brighter jobs
-.UseScheduler(new HangfireMessageSchedulerFactory
+brighter.UseScheduler(provider =>
 {
-    Queue = "brighter-scheduler"
-})
+    // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+    var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+    return new HangfireMessageSchedulerFactory { Client = client, Queue = "brighter-scheduler" };
+});
 
 // Consider - Everything in default queue (harder to manage)
-.UseScheduler(new HangfireMessageSchedulerFactory())
+brighter.UseScheduler(provider =>
+{
+    // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+    var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+    return new HangfireMessageSchedulerFactory { Client = client };
+});
 ```
 
 ### 4. Store Scheduler IDs for Cancellation
 
 ```csharp
+// ... inside a service holding _commandProcessor and _repository, like OrderService above
+
 // Good - Store ID for later cancellation
 var schedulerId = await _commandProcessor.SendAsync(delay, command);
-entity.SchedulerId = schedulerId;
-await _repository.SaveAsync(entity);
+order.ProcessSchedulerId = schedulerId;
+await _repository.SaveAsync(order);
 
 // Bad - Lost ability to cancel
 await _commandProcessor.SendAsync(delay, command);  // ID discarded
@@ -674,17 +770,18 @@ await _commandProcessor.SendAsync(delay, command);  // ID discarded
 ### 5. Configure Appropriate Worker Counts
 
 ```csharp
+using System;
+using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
+
 // Good - Based on workload
 builder.Services.AddHangfireServer(options =>
 {
     options.WorkerCount = Environment.ProcessorCount * 5;  // Adjust based on I/O vs CPU
+
+    // Avoid - Too many workers (resource exhaustion): options.WorkerCount = 1000;
+    // Avoid - Too few workers (slow processing):      options.WorkerCount = 1;
 });
-
-// Avoid - Too many workers (resource exhaustion)
-options.WorkerCount = 1000;
-
-// Avoid - Too few workers (slow processing)
-options.WorkerCount = 1;
 ```
 
 ### 6. Monitor the Dashboard Regularly
@@ -700,8 +797,14 @@ options.WorkerCount = 1;
 ### 7. Handle Timezone Correctly
 
 ```csharp
+using System;
+
 // Good - Use UTC for consistency
 var scheduledTime = DateTimeOffset.UtcNow.AddHours(1);
+```
+
+```csharp
+using System;
 
 // Bad - Local time (ambiguous across servers)
 var scheduledTime = DateTimeOffset.Now.AddHours(1);
@@ -710,6 +813,10 @@ var scheduledTime = DateTimeOffset.Now.AddHours(1);
 ### 8. Configure Automatic Retry Policies
 
 ```csharp
+using System;
+using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
+
 // Good - Automatic retry for transient failures
 builder.Services.AddHangfireServer(options =>
 {
@@ -734,6 +841,10 @@ builder.Services.AddHangfireServer(options =>
 
 **Solutions:**
 ```csharp
+using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageScheduler.Hangfire;
+
 // Verify Hangfire server is started
 builder.Services.AddHangfireServer();
 
@@ -771,6 +882,9 @@ builder.Services.AddSingleton<BrighterHangfireSchedulerJob>();
 
 **Solutions:**
 ```csharp
+using Hangfire;
+using Hangfire.Dashboard;
+
 // Ensure UseHangfireDashboard is called
 app.UseHangfireDashboard("/hangfire");
 
@@ -783,6 +897,12 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
     Authorization = new[] { new AllowAllDashboardAuthorizationFilter() }
 });
+
+// Hangfire ships no allow-all filter; this is the whole of one
+public class AllowAllDashboardAuthorizationFilter : IDashboardAuthorizationFilter
+{
+    public bool Authorize(DashboardContext context) => true;
+}
 ```
 
 ## Related Documentation

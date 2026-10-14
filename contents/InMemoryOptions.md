@@ -192,6 +192,7 @@ public class IntegrationTests : IDisposable
 Use InMemory components for development/testing, production components elsewhere:
 
 ```csharp
+using Hangfire;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -262,7 +263,12 @@ public static class BrighterConfiguration
         }
 
         // Production: Quartz, Hangfire, AWS Scheduler, etc.; Hangfire's storage is configured with AddHangfire
-        return brighter.UseScheduler(new HangfireMessageSchedulerFactory());
+        return brighter.UseScheduler(provider =>
+        {
+            // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+            var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+            return new HangfireMessageSchedulerFactory { Client = client };
+        });
     }
 
     private static IAmAnOutbox GetOutbox(

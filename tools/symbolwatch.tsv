@@ -36,3 +36,5 @@ UnitOfWork	brighter	IAmATransactionConnectionProvider	015 triage §5.2	2026-09-1
 BeginOrGetTransaction	brighter	GetTransaction	015 triage §5.2	2026-09-19
 BeginOrGetTransactionAsync	brighter	GetTransactionAsync	015 triage §5.2	2026-09-19
 ApplicationJson	brighter	(removed at V10 — MessageBody takes a System.Net.Mime.ContentType, defaulting to application/json)	015 triage §5.2	2026-09-19
+AddServiceActivator	brighter	AddConsumers	018 design D5, E6	2026-10-13
+UseExternalBus	brighter	AddProducers	018 design D10	2026-10-13

@@ -65,12 +65,22 @@ Your Handler executes
 **Unit Testing:**
 
 ```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Xunit;
+
 [Fact]
 public async Task Should_Schedule_Command_For_Later_Execution()
 {
     // Arrange
     var services = new ServiceCollection();
-    services.AddBrighter(options => { ... })
+    services.AddBrighter(options =>
+        {
+            // ...
+        })
         .UseScheduler(new InMemorySchedulerFactory())  // Perfect for tests
         .AutoFromAssemblies();
 
@@ -80,7 +90,7 @@ public async Task Should_Schedule_Command_For_Later_Execution()
     // Act
     var schedulerId = await commandProcessor.SendAsync(
         TimeSpan.FromMilliseconds(100),
-        new TestCommand(),
+        new TestCommand()
     );
 
     // Assert
@@ -102,19 +112,21 @@ The InMemory Scheduler might be acceptable in production **only if**:
 **Example - Acceptable Production Use:**
 
 ```csharp
-// Low-priority analytics events that can be lost
-public class AnalyticsService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
+using System;
+using System.Threading.Tasks;
+using Paramore.Brighter;
 
+// Low-priority analytics events that can be lost
+public class AnalyticsService(IAmACommandProcessor commandProcessor, IAnalyticsRepository repository)
+{
     public async Task TrackUserAction(string userId, string action)
     {
         // Track immediately
-        await _repository.SaveActionAsync(userId, action);
+        await repository.SaveActionAsync(userId, action);
 
         // Schedule low-priority aggregation (acceptable to lose)
-        await _commandProcessor.SendAsync(
-             TimeSpan.FromMinutes(5),
+        await commandProcessor.SendAsync(
+            TimeSpan.FromMinutes(5),
             new AggregateAnalyticsCommand { UserId = userId }
         );
     }
@@ -148,6 +160,8 @@ is a complete configuration; these four properties are what you can change about
 Configure the InMemory Scheduler with `InMemorySchedulerFactory`:
 
 ```csharp
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter;
 
@@ -168,6 +182,7 @@ var app = builder.Build();
 Use InMemory for development, production schedulers elsewhere:
 
 ```csharp
+using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -191,7 +206,12 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Te
 else
 {
     // Production - use a durable scheduler; Hangfire's storage is configured with AddHangfire
-    brighter.UseScheduler(new HangfireMessageSchedulerFactory());
+    brighter.UseScheduler(provider =>
+    {
+        // Resolve Hangfire's client first: that initialises its storage (Brighter#4600)
+        var client = provider.GetRequiredService<IBackgroundJobClientV2>();
+        return new HangfireMessageSchedulerFactory { Client = client };
+    });
 }
 
 brighter.AutoFromAssemblies();
@@ -255,21 +275,25 @@ dotnet add package Paramore.Brighter.Extensions.DependencyInjection
 Schedule a command with a delay:
 
 ```csharp
-public class OrderService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
 
+public class OrderService(
+    IAmACommandProcessor commandProcessor, IOrderRepository repository, ILogger<OrderService> logger)
+{
     public async Task CreateOrder(Order order)
     {
-        await _repository.SaveAsync(order);
+        await repository.SaveAsync(order);
 
         // Schedule order confirmation email for 5 minutes later
-        var schedulerId = await _commandProcessor.SendAsync(
+        var schedulerId = await commandProcessor.SendAsync(
             TimeSpan.FromMinutes(5),
             new SendOrderConfirmationCommand { OrderId = order.Id }
         );
 
-        _logger.LogInformation("Scheduled confirmation email: {SchedulerId}", schedulerId);
+        logger.LogInformation("Scheduled confirmation email: {SchedulerId}", schedulerId);
     }
 }
 ```
@@ -279,21 +303,24 @@ public class OrderService
 Schedule for a specific time:
 
 ```csharp
-public class ReportService
-{
-    private readonly IAmACommandProcessor _commandProcessor;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
 
+public class ReportService(IAmACommandProcessor commandProcessor, ILogger<ReportService> logger)
+{
     public async Task ScheduleDailyReport()
     {
         // Schedule for tomorrow at 9 AM
         var tomorrow9AM = DateTimeOffset.UtcNow.Date.AddDays(1).AddHours(9);
 
-        var schedulerId = await _commandProcessor.SendAsync(
+        var schedulerId = await commandProcessor.SendAsync(
             tomorrow9AM, 
             new GenerateDailyReportCommand { Date = DateTime.UtcNow.Date }
         );
 
-        _logger.LogInformation("Scheduled daily report: {SchedulerId}", schedulerId);
+        logger.LogInformation("Scheduled daily report: {SchedulerId}", schedulerId);
     }
 }
 ```
@@ -308,45 +335,45 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Paramore.Brighter;
 
-public class OrderService
+public class OrderService(
+    IAmARequestSchedulerAsync scheduler, IOrderRepository repository, ILogger<OrderService> logger)
 {
-    // ... _repository and _logger, injected as your application supplies them
-    private readonly IAmARequestSchedulerAsync _scheduler;
-
     public async Task CreateOrder(Order order)
     {
         // Schedule through the scheduler, so that it can cancel the request later
-        order.ConfirmationSchedulerId = await _scheduler.ScheduleAsync(
+        order.ConfirmationSchedulerId = await scheduler.ScheduleAsync(
             new SendOrderConfirmationCommand { OrderId = order.Id },
             RequestSchedulerType.Send,
             TimeSpan.FromMinutes(5));
 
-        await _repository.SaveAsync(order);
+        await repository.SaveAsync(order);
     }
 
     public async Task CancelOrder(Guid orderId)
     {
-        var order = await _repository.GetAsync(orderId);
+        var order = await repository.GetAsync(orderId);
 
         // Cancel the scheduled confirmation email
         if (!string.IsNullOrEmpty(order.ConfirmationSchedulerId))
         {
-            await _scheduler.CancelAsync(order.ConfirmationSchedulerId);
-            _logger.LogInformation("Cancelled scheduled email for order {OrderId}", orderId);
+            await scheduler.CancelAsync(order.ConfirmationSchedulerId);
+            logger.LogInformation("Cancelled scheduled email for order {OrderId}", orderId);
         }
 
         order.Status = OrderStatus.Cancelled;
-        await _repository.UpdateAsync(order);
+        await repository.UpdateAsync(order);
     }
 }
 ```
 
 ### Testing with InMemory Scheduler
 
-Example unit test using InMemory Scheduler:
+Example unit test using InMemory Scheduler. `TestCommandHandler` records each command it handles in a `TestHandlerRegistry`, which the test registers as a singleton and then asks:
 
 ```csharp
 using System;
+using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
@@ -364,13 +391,14 @@ public class SchedulingTests : IDisposable
         var services = new ServiceCollection();
         _handlerRegistry = new TestHandlerRegistry();
 
+        services.AddSingleton(_handlerRegistry);
+
         services.AddBrighter(options =>
         {
             options.HandlerLifetime = ServiceLifetime.Scoped;
         })
         .UseScheduler(new InMemorySchedulerFactory())  // InMemory for tests
-        .Handlers(_handlerRegistry)
-        .AutoFromAssemblies();
+        .AsyncHandlers(registry => registry.RegisterAsync<TestCommand, TestCommandHandler>());
 
         _serviceProvider = services.BuildServiceProvider();
         _commandProcessor = _serviceProvider.GetRequiredService<IAmACommandProcessor>();
@@ -380,7 +408,7 @@ public class SchedulingTests : IDisposable
     public async Task Should_Execute_Scheduled_Command_After_Delay()
     {
         // Arrange
-        var command = new TestCommand { Id = Guid.NewGuid() };
+        var command = new TestCommand();
         var delay = TimeSpan.FromMilliseconds(100);
 
         // Act
@@ -400,7 +428,7 @@ public class SchedulingTests : IDisposable
     public async Task Should_Cancel_Scheduled_Command()
     {
         // Arrange
-        var command = new TestCommand { Id = Guid.NewGuid() };
+        var command = new TestCommand();
         var delay = TimeSpan.FromSeconds(10);  // Long delay
         var scheduler = _serviceProvider.GetRequiredService<IAmARequestSchedulerAsync>();
 
@@ -420,6 +448,24 @@ public class SchedulingTests : IDisposable
         _serviceProvider?.Dispose();
     }
 }
+
+public class TestHandlerRegistry
+{
+    private readonly ConcurrentDictionary<Id, bool> _handled = new();
+
+    public void Record(Id id) => _handled[id] = true;
+    public bool WasHandled(Id id) => _handled.ContainsKey(id);
+    public int HandledCount => _handled.Count;
+}
+
+public class TestCommandHandler(TestHandlerRegistry registry) : RequestHandlerAsync<TestCommand>
+{
+    public override Task<TestCommand> HandleAsync(TestCommand command, CancellationToken cancellationToken = default)
+    {
+        registry.Record(command.Id);
+        return base.HandleAsync(command, cancellationToken);
+    }
+}
 ```
 
 ## InMemory Scheduler Best Practices
@@ -427,16 +473,23 @@ public class SchedulingTests : IDisposable
 ### 1. Use for Testing Only
 
 ```csharp
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // Good - Environment-specific
 if (environment.IsDevelopment() || environment.IsEnvironment("Testing"))
 {
-    services.UseScheduler(new InMemorySchedulerFactory());
+    brighter.UseScheduler(new InMemorySchedulerFactory());
 }
 ```
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // Bad - Always using InMemory in production
-services.UseScheduler(new InMemorySchedulerFactory());
+brighter.UseScheduler(new InMemorySchedulerFactory());
 ```
 
 ### 2. Document Production Limitations
@@ -444,10 +497,13 @@ services.UseScheduler(new InMemorySchedulerFactory());
 If you use InMemory in production, document why:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // PRODUCTION NOTE: Using InMemory scheduler because loss of
 // scheduled analytics aggregations is acceptable. These are
 // non-critical and will be regenerated on next sync.
-services.UseScheduler(new InMemorySchedulerFactory());
+brighter.UseScheduler(new InMemorySchedulerFactory());
 ```
 
 ### 3. Keep Delays Short
@@ -455,6 +511,8 @@ services.UseScheduler(new InMemorySchedulerFactory());
 If using in production, keep delays under a few minutes:
 
 ```csharp
+using System;
+
 // Good - Short delay acceptable to lose
 await _commandProcessor.SendAsync(TimeSpan.FromMinutes(2), command);
 
@@ -464,9 +522,14 @@ await _commandProcessor.SendAsync(TimeSpan.FromHours(24), command);
 
 ### 4. Test Scheduler Behavior
 
-Write tests that verify scheduled behavior:
+Write tests that verify scheduled behavior. This one is another test method for the `SchedulingTests` class above, and uses its fields:
 
 ```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Xunit;
+
 [Fact]
 public async Task Should_Handle_Concurrent_Scheduled_Commands()
 {
@@ -476,7 +539,7 @@ public async Task Should_Handle_Concurrent_Scheduled_Commands()
     {
         ids.Add(await _commandProcessor.SendAsync(
             TimeSpan.FromMilliseconds(50 + i * 10),
-            new TestCommand { Number = i }
+            new TestCommand()
         ));
     }
 
@@ -491,6 +554,8 @@ public async Task Should_Handle_Concurrent_Scheduled_Commands()
 ### 5. Don't Rely on It for Critical Work
 
 ```csharp
+using System;
+
 // Bad - Critical payment processing
 await _commandProcessor.SendAsync(
     TimeSpan.FromMinutes(5),
@@ -519,6 +584,11 @@ await _commandProcessor.SendAsync(
 **Solution**:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+using Xunit;
+
 // Add logging to verify scheduling
 var schedulerId = await _commandProcessor.SendAsync(delay, command);
 _logger.LogInformation("Scheduled job {SchedulerId} for {Delay}", schedulerId, delay);
