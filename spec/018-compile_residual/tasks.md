@@ -1528,7 +1528,8 @@ Brighter takes the transaction type from the *last* generic `IAmABoxTransactionP
 registered type (`CommandProcessor.cs:286`), which for `MongoDbUnitOfWork` is
 `IClientSessionHandle`, the type `MongoDbOutbox` writes in. `IAmAMongoDbTransactionProvider` is
 the `IClientSession` form, so it never matches, and its session cannot be handed to the driver's
-collection methods either. D17 records the amendment. B′ is the page's block verbatim but for the
+collection methods either. D17 records the amendment, and D18 files it upstream as
+**BrighterCommand/Brighter#4616**. B′ is the page's block verbatim but for the
 planted line, and C′ is the control that shows the two writes share one transaction.
 `BrighterOutboxSupport.md`'s sentence that every handler takes an `IAmATransactionConnectionProvider`
 now says relational, and links the DynamoDB and MongoDB pages. The block stays FAILED on page-type
