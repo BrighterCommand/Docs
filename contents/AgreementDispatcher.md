@@ -20,15 +20,17 @@ Brighter supports an Agreement Dispatcher, allowing you to register a lambda fun
 ### Basic Registration
 
 ```csharp
-registry.Register<TRequest>(
-    routingFunc: (request, context) => { /* return handler types */ },
-    handlerTypes: [typeof(Handler1), typeof(Handler2), ...]
+using Paramore.Brighter;
+
+registry.Register<MyCommand>(
+    router: (request, context) => [typeof(Handler1)],  // return the handler types for this request
+    handlerTypes: [typeof(Handler1), typeof(Handler2)]
 );
 ```
 
 **Parameters:**
 
-- **routingFunc**: Lambda that takes `IRequest` and `IRequestContext`, returns `List<Type>` of handlers
+- **router**: Lambda that takes `IRequest` and `IRequestContext`, returns `List<Type>` of handlers
 - **handlerTypes**: Array of all possible handler types (for DI registration)
 
 ### Accessing Request Content

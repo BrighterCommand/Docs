@@ -14,5 +14,5 @@ public static class AsyncDispatchARequestContext
     public static IAmACommandProcessor commandProcessor => null!;
 }
 
-// blocks 2, 3: `new GreetingCommand("Ian")`
+// blocks 1–4: `new GreetingCommand("Ian")`, `RequestHandlerAsync<GreetingCommand>`
 public class GreetingCommand(string name) : Command(Id.Random());

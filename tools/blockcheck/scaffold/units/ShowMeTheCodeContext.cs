@@ -7,8 +7,10 @@
 //
 // blockcheck: using static ShowMeTheCodeContext;
 
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
+using Paramore.Darker;
 
 public static class ShowMeTheCodeContext
 {
@@ -20,7 +22,7 @@ public static class ShowMeTheCodeContext
     public static IServiceCollection services => null!;
 }
 
-// blocks 4, 5: `Retry.EXPONENTIAL_RETRYPOLICYASYNC`, the sample's policy names
+// blocks 3–5: `Retry.EXPONENTIAL_RETRYPOLICYASYNC`, the sample's policy names
 public static class Retry
 {
     public const string EXPONENTIAL_RETRYPOLICYASYNC = "GreetingsApp.Policies.ExponentialRetryPolicyAsync";
@@ -41,11 +43,60 @@ public class AddPerson() : Command(Id.Random())
     public string Name { get; set; } = string.Empty;
 }
 
-// block 4: `addGreeting.Greeting`, `addGreeting.PersonId`
-public class AddGreeting() : Command(Id.Random())
+// blocks 1, 4: `new AddGreeting(name, newGreeting.Greeting)`, `addGreeting.Greeting`, `addGreeting.Name`
+public class AddGreeting(string name, string greeting) : Command(Id.Random())
+{
+    public string Name { get; } = name;
+    public string Greeting { get; } = greeting;
+}
+
+// block 1: `Post(string name, NewGreeting newGreeting)`, the sample's request body
+public class NewGreeting
 {
     public string Greeting { get; set; } = string.Empty;
-    public long PersonId { get; set; }
+}
+
+// block 1: `new FindPersonByName(name)`, whose result's `Person` the controller checks
+public class FindPersonByName(string name) : IQuery<FindPersonResult>
+{
+    public string Name { get; } = name;
+}
+
+// block 1: `foundPerson?.Person`
+public class FindPersonResult
+{
+    public Person? Person { get; set; }
+}
+
+// blocks 1, 3: `new FindGreetingsForPerson(name)`, `query.Name`
+public class FindGreetingsForPerson(string name) : IQuery<FindPersonsGreetings>
+{
+    public string Name { get; } = name;
+}
+
+// blocks 1, 3: the query's result, with `Name` and `Greetings`
+public class FindPersonsGreetings
+{
+    public string? Name { get; set; }
+    public IEnumerable<Salutation>? Greetings { get; set; }
+}
+
+// block 3: `new Salutation(g.Greet())`
+public class Salutation(string words);
+
+// block 3: `p.Id`, `person.Name`, `person.Greetings`
+public class Person
+{
+    public int Id { get; set; }
+    public string? Name { get; set; }
+    public IList<Greeting> Greetings { get; set; } = new List<Greeting>();
+}
+
+// block 3: `g.Greet()`
+public class Greeting
+{
+    public string? Message { get; set; }
+    public string Greet() => $"{Message}!";
 }
 
 // blocks 4–6: `new GreetingMade(…)`, `@event.Greeting`

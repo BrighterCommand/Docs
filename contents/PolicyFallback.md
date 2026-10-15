@@ -157,11 +157,14 @@ public override MyCommand Handle(MyCommand command)
 When `circuitBreaker: true` (and `backstop: false`), the Fallback Policy only catches **BrokenCircuitException** exceptions.
 
 ```csharp
+using Paramore.Brighter.Policies.Attributes;
+
 [FallbackPolicy(backstop: false, circuitBreaker: true, step: 1)]
 [UseResiliencePipeline("MyCircuitBreakerPipeline", step: 2)]
 public override MyCommand Handle(MyCommand command)
 {
     // Only BrokenCircuitException will trigger fallback
+    return base.Handle(command);
 }
 ```
 

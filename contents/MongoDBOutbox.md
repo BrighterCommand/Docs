@@ -249,6 +249,15 @@ You call **DepositPostAsync** within that transaction to write the message to th
 > **Running more than one instance?** Configure a [distributed lock](/contents/DistributedLock.md) so only one Sweeper (and Archiver) runs at a time — see [MongoDB Distributed Lock](/contents/MongoDbDistributedLock.md).
 
 ```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
+using Paramore.Brighter;
+using Paramore.Brighter.MongoDb;
+
 public class AddGreetingHandler : RequestHandlerAsync<AddGreeting>
 {
     private readonly IAmATransactionConnectionProvider _connectionProvider;
@@ -267,7 +276,7 @@ public class AddGreetingHandler : RequestHandlerAsync<AddGreeting>
 
     public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default)
     {
-        var posts = new List<Guid>();
+        var posts = new List<Id>();
 
         // We use the unit of work to grab connection and session, because Outbox needs
         // to share them 'behind the scenes'

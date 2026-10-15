@@ -178,14 +178,24 @@ builder.Services.AddBrighter(options =>
     .DescribePipelines();   // enable diagnostic report
 ```
 
-You can enable either one independently:
+You can enable either one independently. Validation only, with no diagnostic report:
 
 ```csharp
-// Validation only, no diagnostic report
-.ValidatePipelines()
+using Paramore.Brighter.Extensions.DependencyInjection;
 
-// Diagnostic report only, no validation
-.DescribePipelines()
+builder.Services.AddBrighter()
+    .AutoFromAssemblies()
+    .ValidatePipelines();
+```
+
+Or the diagnostic report only, with no validation:
+
+```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+
+builder.Services.AddBrighter()
+    .AutoFromAssemblies()
+    .DescribePipelines();
 ```
 
 ### Controlling Error Behavior
@@ -193,7 +203,11 @@ You can enable either one independently:
 By default, validation errors throw a `PipelineValidationException` and prevent the application from starting. You can change this to log errors without stopping startup:
 
 ```csharp
-.ValidatePipelines(throwOnError: false)
+using Paramore.Brighter.Extensions.DependencyInjection;
+
+builder.Services.AddBrighter()
+    .AutoFromAssemblies()
+    .ValidatePipelines(throwOnError: false);
 ```
 
 When `throwOnError` is `false`:
@@ -215,14 +229,24 @@ Warnings never prevent startup regardless of the `throwOnError` setting.
 Both methods accept an `enabled` parameter that controls whether the feature is registered at all. This lets you gate validation on environment or configuration without removing the method call:
 
 ```csharp
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // Only validate in Development
-.ValidatePipelines(enabled: builder.Environment.IsDevelopment())
-.DescribePipelines(enabled: builder.Environment.IsDevelopment())
+builder.Services.AddBrighter()
+    .AutoFromAssemblies()
+    .ValidatePipelines(enabled: builder.Environment.IsDevelopment())
+    .DescribePipelines(enabled: builder.Environment.IsDevelopment());
 ```
 
 ```csharp
+using Microsoft.Extensions.Configuration;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // Gate on a configuration setting
-.ValidatePipelines(enabled: builder.Configuration.GetValue<bool>("Brighter:ValidatePipelines"))
+builder.Services.AddBrighter()
+    .AutoFromAssemblies()
+    .ValidatePipelines(enabled: builder.Configuration.GetValue<bool>("Brighter:ValidatePipelines"));
 ```
 
 When `enabled` is `false`, no services are registered and there is zero overhead at startup.
@@ -250,13 +274,19 @@ An async handler must use async versions of pipeline attributes. The example bel
 
 <!-- pagelint: attr-mismatch-intended the Before (error) example: a sync attribute on HandleAsync is the mistake this section teaches -->
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Reject.Attributes;
+
 public class OrderHandler : RequestHandlerAsync<OrderCreated>
 {
     [RejectMessageOnError(step: 0)]  // wrong: sync attribute on async handler
-    public override async Task<OrderCreated> HandleAsync(OrderCreated command, 
+    public override async Task<OrderCreated> HandleAsync(OrderCreated command,
         CancellationToken cancellationToken = default)
     {
         // ...
+        return await base.HandleAsync(command, cancellationToken);
     }
 }
 ```
@@ -264,13 +294,19 @@ public class OrderHandler : RequestHandlerAsync<OrderCreated>
 **After** (fixed):
 
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Reject.Attributes;
+
 public class OrderHandler : RequestHandlerAsync<OrderCreated>
 {
     [RejectMessageOnErrorAsync(step: 0)]  // correct: async attribute
-    public override async Task<OrderCreated> HandleAsync(OrderCreated command, 
+    public override async Task<OrderCreated> HandleAsync(OrderCreated command,
         CancellationToken cancellationToken = default)
     {
         // ...
+        return await base.HandleAsync(command, cancellationToken);
     }
 }
 ```
@@ -332,44 +368,81 @@ A `Reactor` subscription uses synchronous message pumping and requires a sync ha
 **Before** (error):
 
 ```csharp
-// Handler is async
-public class OrderHandler : RequestHandlerAsync<OrderCreated> { ... }
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
 
-// But subscription uses Reactor (sync)
-new RmqSubscription<OrderCreated>(
-    // ...
-    messagePumpType: MessagePumpType.Reactor  // wrong: sync pump for async handler
-)
+// The subscription uses Reactor (sync)
+var subscription = new RmqSubscription<OrderCreated>(
+    subscriptionName: new SubscriptionName("order-created"),
+    channelName: new ChannelName("order-created-queue"),
+    routingKey: new RoutingKey("order-created"),
+    messagePumpType: MessagePumpType.Reactor);  // wrong: sync pump for async handler
+
+// But its handler is async
+public class OrderHandler : RequestHandlerAsync<OrderCreated>
+{
+    public override async Task<OrderCreated> HandleAsync(OrderCreated command,
+        CancellationToken cancellationToken = default)
+    {
+        // ...
+        return await base.HandleAsync(command, cancellationToken);
+    }
+}
 ```
 
 **After** (fixed):
 
 ```csharp
-new RmqSubscription<OrderCreated>(
-    // ...
-    messagePumpType: MessagePumpType.Proactor  // correct: async pump for async handler
-)
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
+var subscription = new RmqSubscription<OrderCreated>(
+    subscriptionName: new SubscriptionName("order-created"),
+    channelName: new ChannelName("order-created-queue"),
+    routingKey: new RoutingKey("order-created"),
+    messagePumpType: MessagePumpType.Proactor);  // correct: async pump for async handler
 ```
 
 ### Missing Handler for Subscription
 
-Every subscription needs at least one handler registered for its `RequestType`. If you use `AutoFromAssemblies()`, ensure the handler's assembly is included.
+Every subscription needs at least one handler registered for its `RequestType`. `AutoFromAssemblies()` scans the assemblies already loaded when it runs, plus any you pass it, so if your handler lives in an assembly nothing has loaded yet, pass that assembly explicitly.
 
 **Before** (error):
 
 ```csharp
-// Handler exists but its assembly isn't scanned
-.AutoFromAssemblies()  // only scans loaded assemblies
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 
-// Subscription for OrderCreated — but OrderHandler is in a separate assembly
-new RmqSubscription<OrderCreated>(...)
+services.AddConsumers(options =>
+    {
+        // A subscription for OrderCreated, but OrderCreatedHandler is in a separate assembly
+        options.Subscriptions = [
+            new RmqSubscription<OrderCreated>(
+                subscriptionName: new SubscriptionName("order-created"),
+                channelName: new ChannelName("order-created-queue"),
+                routingKey: new RoutingKey("order-created"),
+                messagePumpType: MessagePumpType.Proactor)
+        ];
+        options.DefaultChannelFactory = new ChannelFactory(new RmqMessageConsumerFactory(rmqConnection));
+    })
+    .AutoFromAssemblies();  // scans only the assemblies already loaded, so the handler is never found
 ```
 
 **After** (fixed):
 
 ```csharp
-// Explicitly include the handler's assembly
-.AutoFromAssemblies([typeof(OrderHandler).Assembly])
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
+services.AddConsumers(options =>
+    {
+        // ... the subscription and channel factory, as above
+    })
+    .AutoFromAssemblies([typeof(OrderCreatedHandler).Assembly]);  // explicitly include the handler's assembly
 ```
 
 ### Replay Without Causation Tracking
@@ -384,17 +457,32 @@ The usual cause is provisioning one box and forgetting the other.
 **Before** (warning):
 
 ```csharp
-[UseInbox(step: 1, contextKey: typeof(ProcessPaymentHandler), onceOnly: true,
-    onceOnlyAction: OnceOnlyAction.Replay)]
-public override ProcessPayment Handle(ProcessPayment command) { ... }
+using Paramore.Brighter;
+using Paramore.Brighter.BoxProvisioning;
+using Paramore.Brighter.BoxProvisioning.MsSql;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Inbox.Attributes;
 
-// ... but only the Outbox is provisioned, so the Inbox has no CausationId column
+// Only the Outbox is provisioned, so the Inbox has no CausationId column
 services.AddBrighter()
     .AddProducers(producers => { /* ... */ })
     .UseBoxProvisioning(opts =>
     {
         opts.AddMsSqlOutbox(outboxConfig);
     });
+
+// ... but the handler asks for Replay
+public class ProcessPaymentHandler : RequestHandler<ProcessPayment>
+{
+    [UseInbox(step: 1, contextKey: typeof(ProcessPaymentHandler), onceOnly: true,
+        onceOnlyAction: OnceOnlyAction.Replay)]
+    public override ProcessPayment Handle(ProcessPayment command)
+    {
+        // ...
+        return base.Handle(command);
+    }
+}
 ```
 
 **After** (fixed):

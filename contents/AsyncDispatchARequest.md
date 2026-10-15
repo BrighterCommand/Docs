@@ -16,28 +16,33 @@ Once you have [implemented your async Request Handler](/contents/ImplementingAsy
 In the following example code we register a handler, create a command processor, and then use that command processor to send a command to the handler asynchronously.
 
 
-``` csharp
-    public class Program
+```csharp
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
+public class Program
+{
+    private static async Task Main(string[] args)
     {
-        private static async Task Main(string[] args)
-        {
-            var host = Host.CreateDefaultBuilder()
-                .ConfigureServices((hostContext, services) =>
+        var host = Host.CreateDefaultBuilder(args)
+            .ConfigureServices((hostContext, services) =>
+            {
+                services.AddBrighter()
+                    .AutoFromAssemblies();
+            })
+            .UseConsoleLifetime()
+            .Build();
 
-                    {
-                        services.AddBrighter()
-                            .AutoFromAssemblies();
-                    }
-                )
-                .UseConsoleLifetime()
-                .Build();
-            
-            var commandProcessor = host.Services.GetService<IAmACommandProcessor>();
-            
-            await commandProcessor.SendAsync(new GreetingCommand("Ian"));
+        var commandProcessor = host.Services.GetRequiredService<IAmACommandProcessor>();
 
-            await host.RunAsync();
-        }
+        await commandProcessor.SendAsync(new GreetingCommand("Ian"));
+
+        await host.RunAsync();
+    }
+}
 ```
 
 ## Registering an Async Handler
@@ -98,8 +103,21 @@ A handler exposes the parameter you supply via  the property **ContinueOnCapture
 
 You should pass this value via **ConfigureAwait** if you need to be able to support making this choice at the call site. For example, when you call the base handler in your return statement, to ensure that the decision as to whether to use the scheduler or the context flows down the pipeline.
 
-``` csharp
-return await base.HandleAsync(command, ct).ConfigureAwait(ContinueOnCapturedContext);
+```csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
+public class GreetingCommandHandlerAsync : RequestHandlerAsync<GreetingCommand>
+{
+    public override async Task<GreetingCommand> HandleAsync(GreetingCommand command, CancellationToken ct = default)
+    {
+        Console.WriteLine("Hello from the handler");
+
+        return await base.HandleAsync(command, ct).ConfigureAwait(ContinueOnCapturedContext);
+    }
+}
 ```
 
 You can ignore this, if you want to default to using the Task Scheduler.

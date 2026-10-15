@@ -219,10 +219,13 @@ CloudEvents includes extensions for distributed tracing that integrate with Open
 Brighter automatically propagates OpenTelemetry trace context using CloudEvents distributed tracing extensions. See [OpenTelemetry Integration](Telemetry.md) for details.
 
 ```csharp
+using Paramore.Brighter;
+
 public override MyCommand Handle(MyCommand command)
 {
-    // Access the current span from context
-    Context.Span.SetAttribute("custom.attribute", "value");
+    // Access the current span, a System.Diagnostics.Activity, from context;
+    // OpenTelemetry exports its tags as span attributes
+    Context?.Span?.SetTag("custom.attribute", "value");
 
     // Trace context is automatically propagated via CloudEvents headers
     // when you publish/post messages

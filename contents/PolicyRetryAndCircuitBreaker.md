@@ -333,9 +333,15 @@ Polly v8 provides the following resilience strategies, all of which can be used 
 
 ### Rate Limiter Example
 
+The rate limiter strategies ship in their own package, `Polly.RateLimiting`, which Brighter does not reference. Add it to your project before you use them:
+
+```bash
+dotnet add package Polly.RateLimiting
+```
+
 ```csharp
+using System.Threading.RateLimiting;
 using Polly;
-using Polly.RateLimiting;
 
 resiliencePipelineRegistry.TryAddBuilder("MyRateLimiterPipeline",
     (builder, context) => builder.AddConcurrencyLimiter(new ConcurrencyLimiterOptions

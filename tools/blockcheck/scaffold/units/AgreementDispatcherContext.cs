@@ -14,7 +14,7 @@ using Paramore.Brighter.Extensions.DependencyInjection;
 
 public static class AgreementDispatcherContext
 {
-    // blocks 2–5, 8–13: `registry.Register<…>(…)`, `registry.RegisterAsync<…>(…)`
+    // blocks 1–5, 8–13: `registry.Register<…>(…)`, `registry.RegisterAsync<…>(…)`
     public static ServiceCollectionSubscriberRegistry registry => null!;
     // blocks 6, 14: `services.AddConsumers(…)`, `services.AddBrighter(…)`
     public static IServiceCollection services => null!;

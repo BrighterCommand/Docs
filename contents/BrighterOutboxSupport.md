@@ -83,7 +83,7 @@ public AddGreetingHandlerAsync(IAmATransactionConnectionProvider transactionProv
 
 public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default)
 {
-    var posts = new List<Guid>();
+    var posts = new List<Id>();
     
     // The transaction provider (unit of work) gives us a connection and transaction
     // that the Outbox can share 'behind the scenes'.

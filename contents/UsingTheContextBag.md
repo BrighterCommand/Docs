@@ -252,34 +252,34 @@ public class MessageConsumerHandler(IMyService service, ILogger<MessageConsumerH
 
 ### OpenTelemetry Span
 
-The Request Context provides access to the current **Span (Activity)** for adding custom OpenTelemetry attributes, events, and tags.
+The Request Context provides access to the current **Span**, a `System.Diagnostics.Activity`, for adding custom tags and events. OpenTelemetry exports an `Activity`'s tags as span attributes, so you use `SetTag` here; `SetAttribute` belongs to OpenTelemetry's own `TelemetrySpan` API, which the context does not expose.
 
 ```csharp
-public class TracingHandler : RequestHandler<MyCommand>
+using System.Diagnostics;
+using Paramore.Brighter;
+
+public class TracingHandler(IMyService service) : RequestHandler<MyCommand>
 {
     public override MyCommand Handle(MyCommand command)
     {
-        // Add custom attributes to current span
-        if (Context.Span != null)
+        var span = Context?.Span;
+
+        // Add custom tags to the current span; OpenTelemetry exports them as attributes
+        if (span != null)
         {
-            Context.Span.SetAttribute("custom.business.id", command.BusinessId);
-            Context.Span.SetAttribute("custom.tenant.id", command.TenantId);
-            Context.Span.SetAttribute("custom.operation.type", "order-processing");
+            span.SetTag("custom.business.id", command.BusinessId);
+            span.SetTag("custom.tenant.id", command.TenantId);
+            span.SetTag("custom.operation.type", "order-processing");
+            span.SetTag("order.value", command.OrderValue);
 
             // Add events
-            Context.Span.AddEvent("Order validation started");
-
-            // Add tags
-            Context.Span.SetTag("order.value", command.OrderValue);
+            span.AddEvent(new ActivityEvent("Order validation started"));
         }
 
         // Process command...
-        _service.Process(command);
+        service.Process(command);
 
-        if (Context.Span != null)
-        {
-            Context.Span.AddEvent("Order validation completed");
-        }
+        span?.AddEvent(new ActivityEvent("Order validation completed"));
 
         return base.Handle(command);
     }
@@ -475,6 +475,11 @@ public class ResourceAwareHandler : RequestHandler<MyCommand>
 If you use custom context bag keys, document them clearly:
 
 ```csharp
+using Paramore.Brighter;
+
+// Usage
+Context.Bag[MyAppContextKeys.UserId] = userId;
+
 // Document your custom keys
 public static class MyAppContextKeys
 {
@@ -484,22 +489,21 @@ public static class MyAppContextKeys
     // Tenant identifier for multi-tenancy
     public const string TenantId = "MyApp-TenantId";
 }
-
-// Usage
-Context.Bag[MyAppContextKeys.UserId] = userId;
 ```
 
 ### 4. Check for Null Before Accessing Properties
 
 ```csharp
+using Paramore.Brighter;
+
 // Good - defensive check
 if (Context.Span != null)
 {
-    Context.Span.SetAttribute("custom.id", id);
+    Context.Span.SetTag("custom.id", id);
 }
 
 // Bad - may throw NullReferenceException
-Context.Span.SetAttribute("custom.id", id);
+Context.Span.SetTag("custom.id", id);
 ```
 
 ### 5. Use Explicit RequestContext for Important Metadata

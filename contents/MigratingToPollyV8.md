@@ -39,7 +39,7 @@ var policyRegistry = new PolicyRegistry();
 
 var retryPolicy = Policy
     .Handle<Exception>()
-    .WaitAndRetry(new[] { 1.Seconds(), 2.Seconds(), 3.Seconds() });
+    .WaitAndRetry(new[] { TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(3) });
 
 policyRegistry.Add("MyRetryPolicy", retryPolicy);
 ```
@@ -184,6 +184,10 @@ public class MyQoSProtectedHandler : RequestHandler<MyCommand>
 To configure the Polly policy you use the PolicyRegistry to register the Polly Policy with a name. At runtime we look up that Policy by name.
 
 ```csharp
+using System;
+using Polly;
+using Polly.Registry;
+
 // ...
 var policyRegistry = new PolicyRegistry();
 
@@ -191,12 +195,12 @@ var policy = Policy
     .Handle<Exception>()
     .WaitAndRetry(new[]
     {
-        1.Seconds(),
-        2.Seconds(),
-        3.Seconds()
+        TimeSpan.FromSeconds(1),
+        TimeSpan.FromSeconds(2),
+        TimeSpan.FromSeconds(3)
     }, (exception, timeSpan) =>
     {
-        s_retryCount++;
+        Console.WriteLine($"Retrying in {timeSpan} after {exception.Message}");
     });
 
 policyRegistry.Add("MyExceptionPolicy", policy);
