@@ -47,6 +47,11 @@ policyRegistry.Add("MyRetryPolicy", retryPolicy);
 **V10**:
 
 ```csharp
+using System;
+using Polly;
+using Polly.Registry;
+using Polly.Retry;
+
 // ...
 var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>();
 
@@ -161,6 +166,9 @@ tell you, because each returns the interface the next call is declared on.
 By adding the **UsePolicy** attribute, you instruct the Command Processor to insert a handler (filter) into the pipeline that runs all later steps using that Polly policy.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
 // ...
 public class MyQoSProtectedHandler : RequestHandler<MyCommand>
 {
@@ -199,16 +207,22 @@ You can use multiple policies with a handler, instead of passing in a single pol
 So if in addition to the above policy we have:
 
 ```csharp
+using System;
+using Polly;
+
 // ...
 var circuitBreakerPolicy = Policy.Handle<Exception>().CircuitBreaker(
 		1, TimeSpan.FromMilliseconds(500));
 
-policyRegistry.Add("MyCircuitBreakerPolicy", policy);
+policyRegistry.Add("MyCircuitBreakerPolicy", circuitBreakerPolicy);
 ```
 
 then you can add them both to your handler as follows:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
 // ...
 public class MyQoSProtectedHandler : RequestHandler<MyCommand>
 {
@@ -240,6 +254,10 @@ In some scenarios the client library does not provide a timeout, so you have no 
 We provide the Timeout attribute for that circumstance. You can apply it to a Handler to force that Handler into a thread which we will timeout, if it does not complete within the required time period.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 // ...
 public class EditTaskCommandHandler : RequestHandler<EditTaskCommand>
 {
@@ -251,8 +269,7 @@ public class EditTaskCommandHandler : RequestHandler<EditTaskCommand>
     }
 
     [RequestLogging(step: 1, timing: HandlerTiming.Before)]
-    [Validation(step: 2, timing: HandlerTiming.Before)]
-    [TimeoutPolicy(step: 3, milliseconds: 300)]  // ⚠️ DEPRECATED
+    [TimeoutPolicy(step: 2, milliseconds: 300)]  // ⚠️ DEPRECATED
     public override EditTaskCommand Handle(EditTaskCommand editTaskCommand)
     {
         using (var scope = _tasksDAO.BeginTransaction())
@@ -275,6 +292,12 @@ public class EditTaskCommandHandler : RequestHandler<EditTaskCommand>
 **V10 Replacement**:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+using Polly;
+
 // ...
 // Configure timeout pipeline
 resiliencePipelineRegistry.TryAddBuilder("EditTaskTimeout",
@@ -291,8 +314,7 @@ public class EditTaskCommandHandler : RequestHandler<EditTaskCommand>
     }
 
     [RequestLogging(step: 1, timing: HandlerTiming.Before)]
-    [Validation(step: 2, timing: HandlerTiming.Before)]
-    [UseResiliencePipeline("EditTaskTimeout", step: 3)]  // ✅ V10 recommended
+    [UseResiliencePipeline("EditTaskTimeout", step: 2)]  // ✅ V10 recommended
     public override EditTaskCommand Handle(EditTaskCommand editTaskCommand)
     {
         using (var scope = _tasksDAO.BeginTransaction())

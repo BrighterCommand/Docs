@@ -16,6 +16,7 @@ Brighter can validate your pipeline configuration at startup, catching common mi
 Add `.ValidatePipelines()` and `.DescribePipelines()` to your Brighter configuration chain:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
 
 builder.Services.AddBrighter(options =>
@@ -165,6 +166,9 @@ Key things to look for in the report:
 Both methods are called on the **IBrighterBuilder** returned by `AddBrighter()`:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 builder.Services.AddBrighter(options =>
     {
         options.HandlerLifetime = ServiceLifetime.Scoped;
@@ -396,6 +400,10 @@ services.AddBrighter()
 **After** (fixed):
 
 ```csharp
+using Paramore.Brighter.BoxProvisioning;
+using Paramore.Brighter.BoxProvisioning.MsSql;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter()
     .AddProducers(producers => { /* ... */ })
     .UseBoxProvisioning(opts =>

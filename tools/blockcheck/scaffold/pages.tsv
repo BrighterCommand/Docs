@@ -119,3 +119,11 @@ contents/SwitchingSchedulers.md	SwitchingSchedulersContext	-	-
 contents/InMemoryScheduler.md	InMemorySchedulerContext	-	-
 contents/HangfireScheduler.md	HangfireSchedulerContext	-	-
 contents/QuartzScheduler.md	QuartzSchedulerContext	-	-
+contents/FeatureSwitches.md	FeatureSwitchesContext	-	-
+contents/AsyncDispatchARequest.md	AsyncDispatchARequestContext	-	-
+contents/DispatchingARequest.md	DispatchingARequestContext	-	-
+contents/PolicyFallback.md	PolicyFallbackContext	-	-
+contents/AgreementDispatcher.md	AgreementDispatcherContext	-	-
+contents/PipelineValidation.md	PipelineValidationContext	-	-
+contents/UsingTheContextBag.md	UsingTheContextBagContext	-	-
+contents/ShowMeTheCode.md	ShowMeTheCodeContext	-	-

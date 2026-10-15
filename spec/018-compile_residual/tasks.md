@@ -1329,7 +1329,7 @@ predicts knowing that a fragment is made whole before it is skipped.
 - [x] **Task 4.1:** Predict phase 4's gate movement
   - Input: § *The groups*, S2; recurrence greps for S2's defects
   - Output: § *Phase 4 as executed*, *Predicted*, as 3.1's
-- [ ] **Task 4.2:** Repair S2's reachable blocks
+- [x] **Task 4.2:** Repair S2's reachable blocks
   - Input: S2's table, reachable rows
   - Output: as 3.2's, for S2. `ShowMeTheCode.md` cites the WebAPI sample, so obligation 17 applies
     to its blocks (017 design rule 9)
@@ -1414,6 +1414,48 @@ on its other diagnostic, so it is **0–1** BUILT.
 | `linkcheck` · shape · redirects · `--verify` | 168 / 0 · 161, widest 12 of 20 · 77 · 161 = 161 | **unmoved** | no link or `SUMMARY.md` change |
 | `versioncheck` · `optioncheck` | 0 of 18 · 0 / 59 / 529 | **unmoved** | no tutorial pin and no option table touched |
 | `pagelint --plant` | 5 / 5 | **unmoved** | rule 8's marker on `PipelineValidation.md` #7 stays, bound to the same block |
+
+#### The repairs (4.2)
+
+**S2's reachable rows, 80 blocks** (2 built-by-using, 11 values, 67 page-type), plus
+`MigratingToPollyV8.md` #11, #12, which 4.1 read as page-type misreads. **77 build**, and three stay
+FAILED: `FeatureSwitches.md` #5 and `PolicyRetryAndCircuitBreaker.md` #17 are *same-page* (§ *Blocks
+that stay FAILED*), and `PolicyRetryAndCircuitBreaker.md` #12 waits on a ruling (below).
+`ShowMeTheCode.md` #1, also read as a misread, waits on a ruling too. `AgreementDispatcher.md` #7's
+defect (4.1) was repaired with its page, since the block was otherwise whole. Nine scaffold units
+are new (`AgreementDispatcher`, `AsyncDispatchARequest`, `DispatchingARequest`, `FeatureSwitches`,
+`PipelineValidation`, `PolicyFallback`, `ShowMeTheCode`, `UsingTheContextBag`) or extended
+(`MigratingToPollyV8`, `PolicyRetryAndCircuitBreaker`), with **0** unit-rule violations.
+
+**Measured after 4.2:** `--report` → **993 / 510 / 466 / 17**; 81 findings, every one a BUILT block not
+yet baselined, or `UsingTheContextBag.md` #12, whose scaffold changed (4.6 writes the rows).
+`pagelint` 0 errors / **372**.
+
+**What the reachable rows hid.** As in phase 3, a block that did not compile had not been checked
+for anything else. Ten falsehoods sat in *page-type* and *values* rows, ledger 21–30, and one of them
+was a behaviour claim the page's own troubleshooting repeated:
+
+- **`UseTypePipeline` (ledger 24).** The page said Brighter looks the pipeline up under
+  `"<handler type full name>.<policy>"`, as the attribute's XML documentation also says.
+  `ResilienceExceptionPolicyHandler.cs:78` at 10.8.0 calls `GetPipeline<TRequest>(policy)`.
+  `probe/s2/type-pipeline` registers each form and sends a command whose handler fails once:
+  the page's key throws `ConfigurationException` ← `KeyNotFoundException` before the handler runs;
+  a pipeline typed for the request, under the plain name, runs it twice; the control (no
+  `UseTypePipeline`, an untyped pipeline) runs it twice. The same probe measured the two
+  *Troubleshooting* symptoms the page gave as `InvalidOperationException` (ledger 26)
+- **Readonly dependencies never assigned.** `DispatchingARequest.md` #2–#4 and `PolicyFallback.md`
+  #1, #8 declared `_commandProcessor`, `_cache` and others as fields no constructor set, or used
+  fields they never declared. Each now takes them by primary constructor (phase 3's rule).
+  `PolicyFallback.md` #9, a `Fallback` using three such fields, is made whole in its class
+
+**Rulings asked** (obligation 21: a change of scope goes to the maintainer):
+
+| # | Block | Question |
+|---:|---|---|
+| R1 | `PolicyRetryAndCircuitBreaker.md` #12 | `AddConcurrencyLimiter` is in `Polly.RateLimiting`, which no pin carries and the page never names. Pin `Polly.RateLimiting` 8.8.0 (Polly's version on the pin), as D12 pinned `Quartz.Serialization.Json`, and name the package on the page? |
+| R2 | `FeatureSwitches.md` #6 | `ConfigurationManager.AppSettings` is .NET Framework's. Rewrite the registry to read `IConfiguration`, or keep it and name `System.Configuration.ConfigurationManager`? |
+| R3 | `ShowMeTheCode.md` #1, #4 | #1 is the sample's `GreetingsController.Post` without its class, so `Ok(…)` cannot resolve; building it means showing the controller (obligation 17). #4 sends `AddGreeting { PersonId }`, which the sample's `AddGreeting(name, greeting)` does not have |
+| R4 | upstream | `UseResiliencePipelineAttribute.UseTypePipeline`'s XML documentation describes the handler-type key the runtime does not use. File it, as Brighter#4600 was filed? |
 
 ### Phase 5 — S3, Darker; Understanding Brighter *(6 tasks, one PR)*
 
@@ -1694,6 +1736,8 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `HangfireScheduler.md` | 20 | `CS0246` `HangfireAuthorizationFilter` | *same-page*, as block 12 | 3 |
 | `InMemoryScheduler.md` | 14 | `CS0103` `_handlerRegistry` | *same-page*: a test method of block 9's `SchedulingTests`, which declares the field; the sentence before it says so | 3 |
 | `QuartzScheduler.md` | 22 | `CS0246` `BrighterJobListener`, `BrighterTriggerListener` | *same-page*: block 15 declares `BrighterJobListener`; the trigger listener is the reader's, "written the same way", as the sentence before it says | 3 |
+| `FeatureSwitches.md` | 5 | `CS0246` `MyFeatureSwitchedHandler`, `MyIncompleteHandlerAsync` | *same-page*: blocks 1 and 2 declare them; the sentence before block 5 says so | 4 |
+| `PolicyRetryAndCircuitBreaker.md` | 17 | `CS0246` `MyQoSProtectedHandler`; `CS0103` `services` | *same-page*: block 1 declares the handler, as the sentence before block 17 now says | 4 |
 
 ## Splits
 
@@ -1733,6 +1777,16 @@ design, and their greps were run there.*
 | 18 | `HandleAsync(FireAzureScheduler …)` shown as the reader's handler; Brighter's `AzureSchedulerFiredHandler` handles it | `AzureScheduler.md` | `grep -rnF 'Task<FireAzureScheduler> HandleAsync' contents/` | **1** | **0** | task 3.3 | 3 |
 | 19 | `SchedulerType` and `FireRequestMessage`, neither in Brighter 10.8.0; they are `RequestSchedulerType` and `FireSchedulerRequest` | `CustomScheduler.md` | `grep -rnE '[^t]SchedulerType type\|FireRequestMessage' contents/` | **4** | **0** | task 3.3, with ledger 6 | 3 |
 | 20 | `new HangfireMessageSchedulerFactory()` while services are configured; it throws, since its `Client` default reads Hangfire's `JobStorage.Current` before `AddHangfire` has set it (BrighterCommand/Brighter#4600) | `BrighterSchedulerSupport.md`, `HangfireScheduler.md`, `InMemoryOptions.md`, `InMemoryScheduler.md`, `SchedulingAMessage.md`, `SwitchingSchedulers.md` | `grep -rnE 'new HangfireMessageSchedulerFactory(\(\)\|$)' contents/` | **12** | **0** | task 3.5, `probe/s1/hangfire-factory` | 3 |
+| 21 | A V9 handler shown as current: `new List<Guid>()` for the ids `DepositPostAsync` returns (`Id` at V10), a `_uow`, DapperExtensions' `Predicates.Field` and `GetListAsync`, which no pinned package has | `DispatchingARequest.md`; recurs on `BrighterOutboxSupport.md`, `EFCoreOutbox.md`, `MongoDBOutbox.md` | `grep -rnF 'new List<Guid>()' contents/` | **4** | | task 4.2, hidden behind *page-type* | 4 |
+| 22 | `policyRegistry.Add("MyCircuitBreakerPolicy", policy)` registers the retry policy of the block before under the circuit breaker's name | `MigratingToPollyV8.md` | `grep -rnF 'CircuitBreakerPolicy", policy)' contents/` | **1** | **0** | task 4.2, hidden behind *values* | 4 |
+| 23 | A Polly property `"BrighterContext"` said to hold the request context; Brighter adds none, and runs the pipeline with `RequestContext.ResilienceContext` | `PolicyRetryAndCircuitBreaker.md` | `grep -rnF '"BrighterContext"' contents/` | **1** | **0** | task 4.2, hidden behind *values* | 4 |
+| 24 | `UseTypePipeline = true` said to look up `"<handler type full name>.<policy>"`; Brighter calls `GetPipeline<TRequest>(policy)` | `PolicyRetryAndCircuitBreaker.md` | `grep -rnF 'handlerTypeName}.' contents/` | **2** | **0** | task 4.2, `probe/s2/type-pipeline` | 4 |
+| 25 | `AddHedging` on an untyped pipeline builder; hedging needs one typed for its result | `PolicyRetryAndCircuitBreaker.md` | `grep -rnF 'TryAddBuilder("MyHedgingPipeline"' contents/` | **1** | **0** | task 4.2, hidden behind *values* | 4 |
+| 26 | A missing pipeline said to throw `InvalidOperationException: Resilience pipeline with key … not found`; `Send` throws `ConfigurationException`, whose inner `KeyNotFoundException` names the key | `PolicyRetryAndCircuitBreaker.md` | `grep -rnF 'InvalidOperationException: Resilience pipeline' contents/` | **2** | **0** | task 4.2, `probe/s2/type-pipeline` | 4 |
+| 27 | `[Validation(step:, timing:)]` shown as an attribute beside Brighter's; no Brighter 10.8.0 package declares one | `MigratingToPollyV8.md` | `grep -rnF '[Validation(' contents/` | **2** | **0** | task 4.1, read; removed at 4.2 | 4 |
+| 28 | `RegisterAsync` called inside `.Handlers(…)`, whose registry has no `RegisterAsync`; it belongs in `.AsyncHandlers(…)` | `AgreementDispatcher.md` | `grep -rn -A30 '\.Handlers(registry' contents/ \| grep -c RegisterAsync` | **1** | **0** | task 4.1, the second compile | 4 |
+| 29 | `StatusOf<MyIncompleteHandler>()`, a handler the page never declares; it declares `MyIncompleteHandlerAsync` | `FeatureSwitches.md` | `grep -rnF 'MyIncompleteHandler>' contents/` | **1** | **0** | task 4.2 | 4 |
+| 30 | `RequestContextBagNames` listed without `CausationId`, which 10.8.0 added | `UsingTheContextBag.md` | `grep -c CausationId contents/UsingTheContextBag.md` | **0** | **1** | task 4.2 | 4 |
 
 ## Friction ledger
 

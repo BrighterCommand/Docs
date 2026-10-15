@@ -55,6 +55,13 @@ public async Task<ActionResult<FindPersonsGreetings>> Post(string name, NewGreet
 Handler code listens for and responds to requests or queries. The handler for the above request and query are:
 
 ``` csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Dapper;
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 [RequestLoggingAsync(0, HandlerTiming.Before)]
 [UsePolicyAsync(step:1, policy: Policies.Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
 public override async Task<AddPerson> HandleAsync(AddPerson addPerson, CancellationToken cancellationToken = default)
@@ -132,6 +139,13 @@ As well as using an Internal Bus, in Brighter you can use an External Bus - midd
 The following code shows the simplest way to send a message to another process using Brighter's external bus:
 
 ``` csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Dapper;
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 [RequestLoggingAsync(0, HandlerTiming.Before)]
 [UsePolicyAsync(step: 1, policy: Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
 public override async Task<AddGreeting> HandleAsync(
@@ -167,6 +181,13 @@ public override async Task<AddGreeting> HandleAsync(
 The following code receives a message sent from another process via a Dispatcher:
 
 ``` csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Dapper;
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 [RequestLoggingAsync(0, HandlerTiming.Before)]
 [UsePolicyAsync(step: 1, policy: Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
 public override async Task<GreetingMade> HandleAsync(

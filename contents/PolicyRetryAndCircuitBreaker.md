@@ -94,6 +94,11 @@ To configure a Polly resilience pipeline, you use the `ResiliencePipelineRegistr
 #### Retry Strategy Example
 
 ```csharp
+using System;
+using Polly;
+using Polly.Registry;
+using Polly.Retry;
+
 var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>();
 
 resiliencePipelineRegistry.TryAddBuilder("MyRetryPipeline",
@@ -114,6 +119,10 @@ resiliencePipelineRegistry.TryAddBuilder("MyRetryPipeline",
 #### Circuit Breaker Strategy Example
 
 ```csharp
+using System;
+using Polly;
+using Polly.CircuitBreaker;
+
 resiliencePipelineRegistry.TryAddBuilder("MyCircuitBreakerPipeline",
     (builder, context) => builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions
     {
@@ -141,6 +150,9 @@ resiliencePipelineRegistry.TryAddBuilder("MyCircuitBreakerPipeline",
 **V10**: Use Polly's Timeout strategy instead of the deprecated `TimeoutPolicyAttribute`:
 
 ```csharp
+using System;
+using Polly;
+
 resiliencePipelineRegistry.TryAddBuilder("MyTimeoutPipeline",
     (builder, context) => builder.AddTimeout(TimeSpan.FromSeconds(5)));
 ```
@@ -148,6 +160,9 @@ resiliencePipelineRegistry.TryAddBuilder("MyTimeoutPipeline",
 **Handler Usage**:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
 public class MyTimedHandler : RequestHandler<MyCommand>
 {
     // V9 (deprecated):
@@ -258,7 +273,7 @@ Other attributes, such as `[FallbackPolicy]` or `[RejectMessageOnError]`, can st
 
 ## Type-Scoped Pipelines
 
-For strategies like Circuit Breaker, you often want a separate instance per handler type (so failures in one handler don't affect others). Use `UseTypePipeline = true` to scope pipelines by handler type.
+For strategies like Circuit Breaker, you often want a separate instance for each kind of request, so that failures handling one don't trip the breaker for the others. Set `UseTypePipeline = true` and Brighter looks up a pipeline typed for the handler's request, a `ResiliencePipeline<TRequest>`, under the policy name.
 
 ```csharp
 using Paramore.Brighter;
@@ -269,7 +284,7 @@ public class OrderServiceHandler : RequestHandler<ProcessOrderCommand>
     [UseResiliencePipeline("SharedCircuitBreaker", step: 1, UseTypePipeline = true)]
     public override ProcessOrderCommand Handle(ProcessOrderCommand command)
     {
-        // Uses circuit breaker scoped to OrderServiceHandler
+        // Uses the circuit breaker typed for ProcessOrderCommand
         return base.Handle(command);
     }
 }
@@ -279,25 +294,26 @@ public class PaymentServiceHandler : RequestHandler<ProcessPaymentCommand>
     [UseResiliencePipeline("SharedCircuitBreaker", step: 1, UseTypePipeline = true)]
     public override ProcessPaymentCommand Handle(ProcessPaymentCommand command)
     {
-        // Uses circuit breaker scoped to PaymentServiceHandler (separate from OrderServiceHandler)
+        // Uses the circuit breaker typed for ProcessPaymentCommand, separate from ProcessOrderCommand's
         return base.Handle(command);
     }
 }
 ```
 
-**How it works**: When `UseTypePipeline = true`, Brighter looks up the pipeline using a key composed of the handler type's full name + the policy name. This allows different instances of the same resilience strategy to be associated uniquely with each handler type.
+**How it works**: When `UseTypePipeline = true`, Brighter calls `GetPipeline<TRequest>(policy)` on the registry. The key is the policy name alone, and the pipeline must be registered typed for the request. Polly keeps typed pipelines apart by their type, so `ProcessOrderCommand` and `ProcessPaymentCommand` each get their own instance under the same name; two handlers of the same request share one. The attribute's XML documentation describes a key built from the handler's type name, but Brighter V10 does not look one up, and a pipeline registered under such a key is never found.
 
 **Configuration**:
 
 ```csharp
-// You need to register pipelines with the type-scoped key format
-var handlerTypeName = typeof(OrderServiceHandler).FullName;
-resiliencePipelineRegistry.TryAddBuilder($"{handlerTypeName}.SharedCircuitBreaker",
-    (builder, context) => builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions { /* ... */ }));
+using Polly;
+using Polly.CircuitBreaker;
 
-var paymentHandlerTypeName = typeof(PaymentServiceHandler).FullName;
-resiliencePipelineRegistry.TryAddBuilder($"{paymentHandlerTypeName}.SharedCircuitBreaker",
-    (builder, context) => builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions { /* ... */ }));
+// Register a pipeline typed for each request, under the policy name
+resiliencePipelineRegistry.TryAddBuilder<ProcessOrderCommand>("SharedCircuitBreaker",
+    (builder, context) => builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions<ProcessOrderCommand>()));
+
+resiliencePipelineRegistry.TryAddBuilder<ProcessPaymentCommand>("SharedCircuitBreaker",
+    (builder, context) => builder.AddCircuitBreaker(new CircuitBreakerStrategyOptions<ProcessPaymentCommand>()));
 ```
 
 ---
@@ -318,6 +334,9 @@ Polly v8 provides the following resilience strategies, all of which can be used 
 ### Rate Limiter Example
 
 ```csharp
+using Polly;
+using Polly.RateLimiting;
+
 resiliencePipelineRegistry.TryAddBuilder("MyRateLimiterPipeline",
     (builder, context) => builder.AddConcurrencyLimiter(new ConcurrencyLimiterOptions
     {
@@ -328,8 +347,15 @@ resiliencePipelineRegistry.TryAddBuilder("MyRateLimiterPipeline",
 
 ### Hedging Example
 
+Hedging produces a result, so it lives in a pipeline typed for that result, as a Polly fallback does. `[UseResiliencePipeline]` cannot attach it to a handler; resolve it with `GetPipeline<HttpResponseMessage>("MyHedgingPipeline")` and run your call through it inside the handler.
+
 ```csharp
-resiliencePipelineRegistry.TryAddBuilder("MyHedgingPipeline",
+using System;
+using System.Net.Http;
+using Polly;
+using Polly.Hedging;
+
+resiliencePipelineRegistry.TryAddBuilder<HttpResponseMessage>("MyHedgingPipeline",
     (builder, context) => builder.AddHedging(new HedgingStrategyOptions<HttpResponseMessage>
     {
         MaxHedgedAttempts = 3,
@@ -372,24 +398,37 @@ public class MyCancellableHandler : RequestHandlerAsync<MyCommand>
 
 ## Request Context Integration
 
-The request context integrates with Polly's resilience context, allowing you to access request metadata within resilience callbacks.
+The request context carries a Polly `ResilienceContext`. When you set `RequestContext.ResilienceContext` before you send, Brighter runs the handler's resilience pipeline with that context, so a callback such as `OnRetry` can read the properties you put in it. Brighter adds no properties of its own.
 
 ```csharp
+using Paramore.Brighter;
+using Polly;
+using Polly.Retry;
+
+var tenantKey = new ResiliencePropertyKey<string>("tenant-id");
+
 resiliencePipelineRegistry.TryAddBuilder("MyContextAwarePipeline",
     (builder, context) => builder.AddRetry(new RetryStrategyOptions
     {
         MaxRetryAttempts = 3,
         OnRetry = args =>
         {
-            // Access Brighter's request context through Polly's resilience context
-            if (args.Context.Properties.TryGetValue("BrighterContext", out var contextObj))
+            // Read what the caller put into Polly's resilience context
+            if (args.Context.Properties.TryGetValue(tenantKey, out var tenantId))
             {
-                var requestContext = contextObj as RequestContext;
-                // Use request context for logging, tracing, etc.
+                // Use the value for logging, tracing, etc.
             }
             return default;
         }
     }));
+
+// When you send, attach the resilience context to the request context
+var resilienceContext = ResilienceContextPool.Shared.Get();
+resilienceContext.Properties.Set(tenantKey, "tenant-42");
+
+commandProcessor.Send(new MyCommand(), new RequestContext { ResilienceContext = resilienceContext });
+
+ResilienceContextPool.Shared.Return(resilienceContext);
 ```
 
 See [Request Context documentation](UsingTheContextBag.md) for more details on accessing the resilience context from handlers.
@@ -439,7 +478,7 @@ second — **one call, not two.** If you have no legacy policies to carry, call
 > **startup**, before any message is sent. Brighter only fills the gap for you when you supply
 > *no* registry at all, because the container does it with `??=`.
 
-Or using dependency injection with ASP.NET Core:
+Or using dependency injection with ASP.NET Core, registering the `MyQoSProtectedHandler` from the first example:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -505,23 +544,30 @@ never calls `AddBrighterDefault` for you, so call it yourself.
 
 ### Pipeline Not Found Exception
 
-**Symptom**: `InvalidOperationException: Resilience pipeline with key 'MyPipeline' not found`
+**Symptom**: `ConfigurationException: Error when building pipeline`, thrown by `Send` before the handler runs. Its inner `KeyNotFoundException` reads *Unable to find a resilience pipeline associated with the key 'MyPipeline'*.
 
 **Solution**: Ensure you've registered the pipeline with the exact name referenced in the attribute:
 
 ```csharp
-resiliencePipelineRegistry.TryAddBuilder("MyPipeline", /* ... */);
+using Polly;
+using Polly.Retry;
+
+resiliencePipelineRegistry.TryAddBuilder("MyPipeline",
+    (builder, context) => builder.AddRetry(new RetryStrategyOptions()));
 ```
 
 ### Type Pipeline Not Found Exception
 
-**Symptom**: `InvalidOperationException: Resilience pipeline with key 'MyNamespace.MyHandler.MyPipeline' not found`
+**Symptom**: the same `ConfigurationException`, whose inner `KeyNotFoundException` reads *Unable to find a generic resilience pipeline of 'MyCommand' associated with the key 'MyPipeline'*.
 
-**Solution**: When using `UseTypePipeline = true`, register the pipeline with the full key:
+**Solution**: When using `UseTypePipeline = true`, register the pipeline typed for the handler's request, under the policy name:
 
 ```csharp
-var handlerTypeName = typeof(MyHandler).FullName;
-resiliencePipelineRegistry.TryAddBuilder($"{handlerTypeName}.MyPipeline", /* ... */);
+using Polly;
+using Polly.Retry;
+
+resiliencePipelineRegistry.TryAddBuilder<MyCommand>("MyPipeline",
+    (builder, context) => builder.AddRetry(new RetryStrategyOptions<MyCommand>()));
 ```
 
 ### TimeoutPolicy Obsolete Warning

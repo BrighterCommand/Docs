@@ -109,13 +109,16 @@ For more on how `DontAckAction` works and how transports handle unacknowledged m
 ## Building a config for Feature Switches with FluentConfigRegistryBuilder
 
 We provide a **FluentConfigRegistryBuilder** to build a mapping of request handlers to **FeatureSwitchStatus**. For each Handler that you wish to feature switch you supply a type and a status using a fluent
-API. The valid statuses used in the builder are **FeatureSwitchStatus.On** and **FeatureSwitchStatus.Off**.
+API. The valid statuses used in the builder are **FeatureSwitchStatus.On** and **FeatureSwitchStatus.Off**. This example switches the two handlers declared in the examples above.
 
 ``` csharp
+using Paramore.Brighter.FeatureSwitch;
+using Paramore.Brighter.FeatureSwitch.Providers;
+
 var featureSwitchRegistry = FluentConfigRegistryBuilder
                             .With()
                             .StatusOf<MyFeatureSwitchedHandler>().Is(FeatureSwitchStatus.On)
-                            .StatusOf<MyIncompleteHandler>().Is(FeatureSwitchStatus.Off)
+                            .StatusOf<MyIncompleteHandlerAsync>().Is(FeatureSwitchStatus.Off)
                             .Build();
 ```
 
@@ -135,7 +138,7 @@ In the following example there are two FeatureSwitches configured in the **AppSe
 ``` xml
 <appSettings>
     <add key="FeatureSwitch::Namespace.MyFeatureSwitchedHandler" value="on"/>
-    <add key="FeatureSwitch::Namespace.MyIncompleteHandler" value="off"/>
+    <add key="FeatureSwitch::Namespace.MyIncompleteHandlerAsync" value="off"/>
 </appSettings>    
 ```
 

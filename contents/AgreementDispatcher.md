@@ -171,6 +171,12 @@ This provides powerful, flexible routing:
 Here's a complete example showing Agreement Dispatcher with multiple routing strategies:
 
 ```csharp
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
@@ -193,26 +199,6 @@ public class Startup
                 return [typeof(TaxCalculator2025)];
             },
             [typeof(TaxCalculator2024), typeof(TaxCalculator2025)]);
-
-            // Country-based routing for payments
-            registry.RegisterAsync<ProcessPayment>((request, context) =>
-            {
-                var payment = request as ProcessPayment;
-
-                return payment?.Country switch
-                {
-                    "US" => [typeof(StripePaymentHandlerAsync)],
-                    "UK" => [typeof(PayPalPaymentHandlerAsync)],
-                    "JP" => [typeof(LocalPaymentHandlerAsync)],
-                    _ => [typeof(InternationalPaymentHandlerAsync)]
-                };
-            },
-            [
-                typeof(StripePaymentHandlerAsync),
-                typeof(PayPalPaymentHandlerAsync),
-                typeof(LocalPaymentHandlerAsync),
-                typeof(InternationalPaymentHandlerAsync)
-            ]);
 
             // Content-based routing with multiple handlers
             registry.Register<ProcessOrder>((request, context) =>
@@ -244,6 +230,28 @@ public class Startup
 
             // Standard routing for simple commands
             registry.Register<SimpleCommand, SimpleCommandHandler>();
+        })
+        .AsyncHandlers(registry =>
+        {
+            // Country-based routing for payments
+            registry.RegisterAsync<ProcessPayment>((request, context) =>
+            {
+                var payment = request as ProcessPayment;
+
+                return payment?.Country switch
+                {
+                    "US" => [typeof(StripePaymentHandlerAsync)],
+                    "UK" => [typeof(PayPalPaymentHandlerAsync)],
+                    "JP" => [typeof(LocalPaymentHandlerAsync)],
+                    _ => [typeof(InternationalPaymentHandlerAsync)]
+                };
+            },
+            [
+                typeof(StripePaymentHandlerAsync),
+                typeof(PayPalPaymentHandlerAsync),
+                typeof(LocalPaymentHandlerAsync),
+                typeof(InternationalPaymentHandlerAsync)
+            ]);
         });
     }
 }
@@ -283,6 +291,8 @@ registry.Register<MyCommand>((request, context) =>
 Handle unexpected cases gracefully:
 
 ```csharp
+using System;
+
 registry.Register<ProcessOrder>((request, context) =>
 {
     var order = request as ProcessOrder;
@@ -317,8 +327,14 @@ registry.RegisterAsync<ProcessPayment>((request, context) =>
 {
     var payment = request as ProcessPayment;
     // ...
+    return [typeof(InternationalPaymentHandlerAsync)];
 },
-[/* handlers */]);
+[
+    typeof(StripePaymentHandlerAsync),
+    typeof(PayPalPaymentHandlerAsync),
+    typeof(LocalPaymentHandlerAsync),
+    typeof(InternationalPaymentHandlerAsync)
+]);
 ```
 
 ### 4. Use Standard Routing When Possible
@@ -333,8 +349,10 @@ registry.Register<SimpleCommand, SimpleCommandHandler>();
 registry.Register<ComplexCommand>((request, context) =>
 {
     // Dynamic routing based on content
+    // ...
+    return [typeof(ComplexCommandHandler)];
 },
-[/* handlers */]);
+[typeof(ComplexCommandHandler)]);
 ```
 
 ### 5. List All Possible Handlers
@@ -343,7 +361,11 @@ Always provide the complete list of handler types:
 
 ```csharp
 // Good - Complete list
-registry.Register<MyCommand>((request, context) => { /* ... */ },
+registry.Register<MyCommand>((request, context) =>
+{
+    // ...
+    return [typeof(Handler1)];
+},
 [
     typeof(Handler1),
     typeof(Handler2),
