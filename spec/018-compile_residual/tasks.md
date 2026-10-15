@@ -1448,7 +1448,7 @@ was a behaviour claim the page's own troubleshooting repeated:
   fields they never declared. Each now takes them by primary constructor (phase 3's rule).
   `PolicyFallback.md` #9, a `Fallback` using three such fields, is made whole in its class
 
-**Rulings asked** (obligation 21: a change of scope goes to the maintainer):
+**Rulings asked** (obligation 21: a change of scope goes to the maintainer), and **ruled 2026-10-15, each as recommended**: R1–R4 are design **D13–D16**. R4 is filed as **BrighterCommand/Brighter#4609**.
 
 | # | Block | Question |
 |---:|---|---|
