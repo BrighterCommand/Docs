@@ -1326,14 +1326,15 @@ predicts knowing that a fragment is made whole before it is skipped.
 
 ### Phase 4 — S2, Commands, Handlers and Pipelines; Get Started *(6 tasks, one PR)*
 
-- [ ] **Task 4.1:** Predict phase 4's gate movement
+- [x] **Task 4.1:** Predict phase 4's gate movement
   - Input: § *The groups*, S2; recurrence greps for S2's defects
   - Output: § *Phase 4 as executed*, *Predicted*, as 3.1's
 - [ ] **Task 4.2:** Repair S2's reachable blocks
   - Input: S2's table, reachable rows
-  - Output: as 3.2's, for S2. `ShowMeTheCode.md` is a tutorial, so obligation 17 applies
+  - Output: as 3.2's, for S2. `ShowMeTheCode.md` cites the WebAPI sample, so obligation 17 applies
+    to its blocks (017 design rule 9)
 - [ ] **Task 4.3:** Repair S2's hard blocks
-  - Input: S2's table, hard rows; 10.7.0 source
+  - Input: S2's table, hard rows; 10.8.0 source, the pinned release
   - Output: as 3.3's, for S2. Each handler block on an S2 page that 2.5 did not wrap or build, as
     named in § *Phase 2 as executed*, is repaired or listed
 - [ ] **Task 4.4:** Run S2's behavioural claims (AC10)
@@ -1345,6 +1346,74 @@ predicts knowing that a fragment is made whole before it is skipped.
 - [ ] **Task 4.6:** Close phase 4
   - Input: § 1 obligations 6, 7, 19
   - Output: as 3.7's
+
+### Phase 4 as executed
+
+**Measured at phase start, `5f2294c`.** `--report` → **993 / 430 / 546 / 17, 0 findings**, exit 0;
+`--classify` → 112 parse, 28 built-by-using, 84 defect, 28 same-page, 36 values, 258 page-type,
+settled in 3 rounds. 552 reference assemblies on each pin; scaffold rule 52 units. `pagelint`
+0 errors / **410** warnings; `symbolcheck` 24 entries, 14 silenced; `linkcheck` 168 / 0;
+`versioncheck` 0 of 18.
+
+#### Predicted (4.1)
+
+**S2 is identical row for row** to § *The groups*: `groups.py` at `5f2294c` gives 10 pages, **107**
+FAILED (15 parse, 2 built-by-using, 11 defect, 1 same-page, 11 values, 67 page-type), 3 BUILT,
+7 with nothing BUILT. Two methods: the FAILED column, 107; `awk` over `--report` on the ten pages,
+107, with 3 BUILT and 4 SKIPPED (`MigratingToPollyV8.md` #1, #3, #5, `PolicyFallback.md` #2, each a
+labelled V9 form). The S2 pages hold **114** C# blocks.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| Task 4.2: *"`ShowMeTheCode.md` is a tutorial, so obligation 17 applies"* | its banner is **How-to**. Obligation 17 still binds, by 017 design rule 9's trigger, the sample a block cites: the page cites `samples/WebAPI` | task 4.2 gives the reason that holds |
+| Task 4.3: *"10.7.0 source"* | the pins are 10.8.0 | the task says 10.8.0 |
+| S2's table: **11 defect** blocks | the second compile's diagnostics (below): **3** are API defects, **1** is an API the pin does not carry, **4** are fragments, and **3** are misreads | the table stands, being the instrument's; the repairs follow the reading |
+
+**Reading S2's 11 defect blocks** with `probe/second.py` over the ten pages (497 diagnostic lines),
+each against the 10.8.0 tag:
+
+| Page | # | Second compile | Reading against 10.8.0 | Repair |
+|---|---:|---|---|---|
+| `AgreementDispatcher.md` | 7 | `CS1061` `RegisterAsync` on `IAmASubscriberRegistry` | **defect.** `.Handlers(…)` takes `Action<IAmASubscriberRegistry>`; `RegisterAsync<TRequest>(router, handlerTypes)` is on `IAmAnAsyncSubcriberRegistry`, which `.AsyncHandlers(…)` takes (`IBrighterBuilder.cs:54`) | 4.3, `.AsyncHandlers` |
+| `UsingTheContextBag.md` | 8 | `CS1061` `Activity.SetAttribute` ×3; `CS1503` `AddEvent(string)` ×2 | **defect.** `IRequestContext.Span` is `System.Diagnostics.Activity?` (`IRequestContext.cs:102`), which has `SetTag` and `AddEvent(ActivityEvent)`; `SetAttribute` is OpenTelemetry's `TelemetrySpan` | 4.3, `SetTag` and `new ActivityEvent(…)` |
+| `MigratingToPollyV8.md` | 8 | `CS1061` `int.Seconds()` ×3 | **defect.** No pinned package declares `Seconds(this int)`, and nothing in Brighter 10.8.0 does; it is a test library's helper the page never names | 4.3, `TimeSpan.FromSeconds` |
+| `FeatureSwitches.md` | 6 | `CS0305` `ConfigurationManager<T>`, `CS0029` ×2 | **an API the pin does not carry.** The classifier supplied a namespace whose `ConfigurationManager` is generic; the page means .NET Framework's `System.Configuration.ConfigurationManager.AppSettings`, which a .NET 9 project has only through a package the page never names | 4.3: the registry read from `IConfiguration`, or the package named; judged at the repair |
+| `AsyncDispatchARequest.md` | 4 | `CS0117` `'object'` has no `HandleAsync` | a fragment: one `return await base.HandleAsync(…)` statement, which the wrapper cannot reach (§ *Phase 2 as executed*) | 4.3, made whole inside its handler |
+| `PipelineValidation.md` | 7, 8 | `CS0161` | a fragment: an `async Task<OrderCreated>` whose body is `// ...` alone. #7 carries rule 8's `attr-mismatch-intended` marker, which a body leaves alone | 4.3, a `return` |
+| `PolicyFallback.md` | 5 | `CS0104` `FallbackPolicy`, `CS0161` | `CS0104` is **a misread**: the classifier supplied Darker's attributes beside Brighter's. `CS0161` is a fragment, as above. `FallbackPolicyAttribute(backstop, circuitBreaker, step)` matches 10.8.0 (`FallbackPolicyAttribute.cs:46`) | 4.3, a `return`; 4.2, Brighter's `using` only |
+| `MigratingToPollyV8.md` | 11, 12 | `CS0653` `ValidationAttribute`; `CS1061` `Task.TaskName` ×3 | **misreads.** `Task` is the page's domain type, not `System.Threading.Tasks.Task`, and `[Validation]` is no Brighter attribute at 10.8.0 (no `Paramore.Brighter.Validation.*` package declares one), so both are the reader's: *page-type*. Whether the page should say so is read at 4.3 | 4.2, stubs |
+| `ShowMeTheCode.md` | 1 | `CS1955` `Ok` | **a misread**: a controller action outside its controller. *page-type* | 4.2, obligation 17 |
+
+**Recurrence greps (obligation 20), run as written at `5f2294c`:**
+
+| Defect | Grep | Hits | Off-group |
+|---|---|---:|---|
+| `RegisterAsync` inside `.Handlers(…)` | `grep -rn -A30 '\.Handlers(registry' contents/ \| grep RegisterAsync` | **1** (`AgreementDispatcher.md` #7) | none. Of the other **8** `\.RegisterAsync<` lines that are not mappers, 3 are already under `.AsyncHandlers(…)` and 5 show the registry alone |
+| `Activity.SetAttribute`, `AddEvent(string)` | `grep -rnE 'Span\??\.(SetAttribute\(\|AddEvent\(")' contents/` | **8** lines in 3 blocks | **`CloudEventsSupport.md` #5** (S4). On-group: `UsingTheContextBag.md` #8, #17 |
+| `int.Seconds()` | `grep -rnE '[0-9]\.Seconds\(\)' contents/` | **4** lines in 2 blocks | none: `MigratingToPollyV8.md` #1 (SKIPPED, V9 form) and #8 |
+| `ConfigurationManager.AppSettings` | `grep -rn 'ConfigurationManager.AppSettings' contents/` | **1** (`FeatureSwitches.md` #6) | none |
+
+**The off-group term is one page and one block**, `CloudEventsSupport.md` #5, FAILED today
+(`CS0246`, `CS1061`). Obligation 21 repairs its `SetAttribute` here; whether it then builds depends
+on its other diagnostic, so it is **0–1** BUILT.
+
+**Predicted:**
+
+| Gate | At `5f2294c` | Predicted at the close | Mechanism |
+|---|---|---|---|
+| corpus | 993 | **993–1,000** | splits only, where a fence holds alternatives: `PipelineValidation.md` #3 and #13 are candidates. No S2 parse block reads as JSON or YAML |
+| BUILT | 430 | **522–537** | S2's 107, less what stays FAILED (at least `PolicyRetryAndCircuitBreaker.md` #11, *same-page*) and any SKIPPED, plus the repaired defects and splits, plus 0–1 off-group. Phase 3 made 122 of 129 build (95%) by making fragments whole rather than skipping them, and this band assumes the same |
+| FAILED | 546 | **438–450** | −107 for S2, −0–1 off-group, plus what stays FAILED and listed |
+| SKIPPED | 17 | **17–21** | a V9 form found unlabelled on an S2 page, labelled as such. D3's single-option skip is not expected: a fragment is made whole first |
+| `pagelint` | 0 errors / 410 | **0 errors / 331–345** | S2's **79** warnings (12 + 4 + 6 + 2 + 10 + 13 + 5 + 10 + 12 + 5, `--per-page`) fall as blocks gain their `using`s; a declared `// ...` keeps its warning. Off-group: `CloudEventsSupport.md` −0–1 |
+| `symbolcheck` | 24 entries, 14 silenced | **unmoved** | none of S2's defects is a Brighter name gone dead; `SetAttribute` and `Seconds` never were Brighter's |
+| scaffold rule | 52 units | **52–62 units**, 0 violations, 0 compile errors | a unit per S2 page that needs a stub |
+| assemblies | 552 | **552–553** | +1 only if `FeatureSwitches.md` #6 keeps `ConfigurationManager.AppSettings` and its package is pinned |
+| `linkcheck` · shape · redirects · `--verify` | 168 / 0 · 161, widest 12 of 20 · 77 · 161 = 161 | **unmoved** | no link or `SUMMARY.md` change |
+| `versioncheck` · `optioncheck` | 0 of 18 · 0 / 59 / 529 | **unmoved** | no tutorial pin and no option table touched |
+| `pagelint --plant` | 5 / 5 | **unmoved** | rule 8's marker on `PipelineValidation.md` #7 stays, bound to the same block |
 
 ### Phase 5 — S3, Darker; Understanding Brighter *(6 tasks, one PR)*
 
