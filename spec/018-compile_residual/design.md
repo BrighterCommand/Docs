@@ -535,7 +535,7 @@ cited from its rows, not restated.
 
 ## Design Decisions
 
-D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and D7 needed no ruling. D8 and D9 were ruled at phase 2, on 2026-10-05 and 2026-10-09. D10–D12 were ruled at phase 3, on 2026-10-13. D13–D16 were ruled at phase 4, on 2026-10-15.
+D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and D7 needed no ruling. D8 and D9 were ruled at phase 2, on 2026-10-05 and 2026-10-09. D10–D12 were ruled at phase 3, on 2026-10-13. D13–D17 were ruled at phase 4, on 2026-10-15.
 
 | # | Question | Decision | Ruled |
 |---|---|---|---|
@@ -555,6 +555,7 @@ D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and 
 | **D14** | **`FeatureSwitches.md` #6 reads .NET Framework's `ConfigurationManager.AppSettings`.** Keep it and pin `System.Configuration.ConfigurationManager`, or rewrite? | **Rewrite** the registry to read `IConfiguration`, and its `app.config` XML as `appsettings.json` | **Yes**, the maintainer, 2026-10-15 |
 | **D15** | **`ShowMeTheCode.md` #1 and #4 diverge from the WebAPI sample they cite** (obligation 17). #1 is `GreetingsController.Post` without its class; #4 sends an `AddGreeting { PersonId }` the sample does not have | **Follow the sample**: #1 shown in its controller, #4 using `AddGreeting(name, greeting)` | **Yes**, the maintainer, 2026-10-15 |
 | **D16** | **File `UseTypePipeline`'s XML documentation upstream?** It describes a `"<handler type full name>.<policy>"` key; the runtime calls `GetPipeline<TRequest>(policy)` (ledger 24) | **Yes**, as Brighter#4600 was filed: **BrighterCommand/Brighter#4609** | **Yes**, the maintainer, 2026-10-15 |
+| **D17** | **`MongoDBOutbox.md`'s handler cannot run** (R5, ledger 36): it asks for an `IAmATransactionConnectionProvider` nothing registers, casts it to `MongoDbUnitOfWork`, and reads members that type does not have | **Rewrite** on `IAmAMongoDbTransactionProvider`, with a behaviour probe against MongoDB. Carried out at 4.3, when ruled, rather than phase 7. The probe amended the recommendation: that interface cannot be passed to `DepositPostAsync`, so the page uses the provider as `IAmABoxTransactionProvider<IClientSessionHandle>` (`probe/s5/mongo-outbox`) | **Yes**, the maintainer, 2026-10-15 |
 
 ## What the Design Review Found — 2026-10-05
 

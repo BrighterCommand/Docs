@@ -67,7 +67,7 @@ When creating your **CommandProcessor** you can set an outbox bulk chunk size, i
 
 Brighter has the functionality to allow the  **Outbox** to participate in the database transactions of your application so that you can ensure that distributed requests will be persisted (or fail to persist) inline with application changes.
 
-To have the Brighter **Outbox** participate in Database transactions your command handler must take a dependency on an  **IAmATransactionConnectionProvider**. The provider will be used when **CommandProcessor.DepositPost** is called and if there is an active transaction the **Outbox** will participate in that transaction. You use the **IAmATransactionConnectionProvider** to create the transaction that you use to interact with the Db; you also use it to grab any connection to the Db that you need.  
+To have the Brighter **Outbox** participate in a relational database's transactions your command handler takes a dependency on an **IAmATransactionConnectionProvider**. (The non-relational stores have their own: see [DynamoDB Outbox](/contents/DynamoOutbox.md) and [MongoDB Outbox](/contents/MongoDBOutbox.md#using-the-outbox-in-handlers).) The provider will be used when **CommandProcessor.DepositPost** is called and if there is an active transaction the **Outbox** will participate in that transaction. You use the **IAmATransactionConnectionProvider** to create the transaction that you use to interact with the Db; you also use it to grab any connection to the Db that you need.  
 
 Below is an fragment using Dapper
 

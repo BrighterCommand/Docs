@@ -242,9 +242,11 @@ When TTL is configured, MongoDB will automatically create a TTL index on the `Ti
 
 ## Using the Outbox in Handlers
 
-In your handler, you take a dependency on Brighter's **IAmATransactionConnectionProvider** interface and convert it to a **MongoDbUnitOfWork**. You explicitly start a transaction within the handler and use MongoDB sessions for transactional consistency.
+In your handler, take a dependency on **IAmAMongoDbTransactionProvider**, which Brighter registers for the `MongoDbUnitOfWork` you set as the `TransactionProvider`, and on the `IAmAMongoDbConfiguration` you registered beside it. Brighter does not register `IAmATransactionConnectionProvider` for MongoDB; that interface is for relational databases, and a handler that asks for it cannot be created.
 
-You call **DepositPostAsync** within that transaction to write the message to the Outbox. Once the transaction has closed, you can call **ClearOutboxAsync** to immediately clear, or you can rely on the Outbox Sweeper to clear for you.
+Use the provider as an `IAmABoxTransactionProvider<IClientSessionHandle>`. The `MongoDbOutbox` writes in an `IClientSessionHandle`, so that is the transaction type Brighter configures, and `DepositPostAsync` checks the provider you pass against it: passing the `IAmAMongoDbTransactionProvider` itself throws `InvalidOperationException: Supplied transaction provider doesn't match configured transaction type.` It is also the session type the MongoDB driver's collection methods take.
+
+Start the transaction through the provider, write your documents in its session, and call **DepositPostAsync** with the provider so the message is written to the Outbox in the same transaction. Commit through the provider; if anything fails, roll back and neither your change nor the message is written. Once the transaction has committed, you can call **ClearOutboxAsync** to dispatch the message immediately, or you can rely on the Outbox Sweeper to dispatch it for you.
 
 > **Running more than one instance?** Configure a [distributed lock](/contents/DistributedLock.md) so only one Sweeper (and Archiver) runs at a time — see [MongoDB Distributed Lock](/contents/MongoDbDistributedLock.md).
 
@@ -258,72 +260,56 @@ using MongoDB.Driver;
 using Paramore.Brighter;
 using Paramore.Brighter.MongoDb;
 
-public class AddGreetingHandler : RequestHandlerAsync<AddGreeting>
+public class AddGreetingHandler(
+    IAmAMongoDbTransactionProvider transactionProvider,
+    IAmAMongoDbConfiguration configuration,
+    IAmACommandProcessor postBox,
+    ILogger<AddGreetingHandler> logger) : RequestHandlerAsync<AddGreeting>
 {
-    private readonly IAmATransactionConnectionProvider _connectionProvider;
-    private readonly IAmACommandProcessor _postBox;
-    private readonly ILogger<AddGreetingHandler> _logger;
-
-    public AddGreetingHandler(
-        IAmATransactionConnectionProvider connectionProvider,
-        IAmACommandProcessor postBox,
-        ILogger<AddGreetingHandler> logger)
-    {
-        _connectionProvider = connectionProvider;
-        _postBox = postBox;
-        _logger = logger;
-    }
-
     public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default)
     {
         var posts = new List<Id>();
 
-        // We use the unit of work to grab connection and session, because Outbox needs
-        // to share them 'behind the scenes'
-        var unitOfWork = _connectionProvider as MongoDbUnitOfWork;
-        var database = unitOfWork.Database;
-        var session = unitOfWork.Session;
-        
+        // The MongoDB Outbox writes in an IClientSessionHandle, so use the provider as one
+        var unitOfWork = (IAmABoxTransactionProvider<IClientSessionHandle>)transactionProvider;
+        var session = await unitOfWork.GetTransactionAsync(cancellationToken);
+
         try
         {
-            session.StartTransaction();
-            
-            var collection = database.GetCollection<Person>("People");
-            
-            // Find and update the person within the transaction
-            var person = await collection.Find(session, p => p.Name == addGreeting.Name)
-                .FirstOrDefaultAsync(cancellationToken);
-            
-            if (person != null)
-            {
-                person.Greetings.Add(addGreeting.Greeting);
-                
-                // Update the person document within the transaction
-                await collection.ReplaceOneAsync(session, 
-                    p => p.Id == person.Id, 
-                    person, 
-                    cancellationToken: cancellationToken);
-            }
+            var people = transactionProvider.Client
+                .GetDatabase(configuration.DatabaseName)
+                .GetCollection<Person>("People");
+
+            // Update the person document within the transaction
+            await people.UpdateOneAsync(session,
+                Builders<Person>.Filter.Eq(p => p.Name, addGreeting.Name),
+                Builders<Person>.Update.Push(p => p.Greetings, addGreeting.Greeting),
+                cancellationToken: cancellationToken);
 
             // Now write the message we want to send to the Outbox in the same transaction
-            posts.Add(await _postBox.DepositPostAsync(
-                new GreetingMade(addGreeting.Greeting), 
+            posts.Add(await postBox.DepositPostAsync(
+                new GreetingMade(addGreeting.Greeting),
+                unitOfWork,
                 cancellationToken: cancellationToken));
 
             // Commit both the entity change and the outgoing message
-            await session.CommitTransactionAsync(cancellationToken);
+            await unitOfWork.CommitAsync(cancellationToken);
         }
         catch (Exception e)
-        {   
-            _logger.LogError(e, "Exception thrown handling Add Greeting request");
+        {
+            logger.LogError(e, "Exception thrown handling Add Greeting request");
             // It went wrong, rollback the entity change and the downstream message
-            await session.AbortTransactionAsync(cancellationToken);
+            await unitOfWork.RollbackAsync(cancellationToken);
             return await base.HandleAsync(addGreeting, cancellationToken);
+        }
+        finally
+        {
+            unitOfWork.Close();
         }
 
         // Send this message via a transport. We need the ids to send just the messages here, not all outstanding ones.
         // Alternatively, you can let the Sweeper do this, but at the cost of increased latency
-        await _postBox.ClearOutboxAsync(posts, cancellationToken: cancellationToken);
+        await postBox.ClearOutboxAsync(posts, cancellationToken: cancellationToken);
 
         return await base.HandleAsync(addGreeting, cancellationToken);
     }

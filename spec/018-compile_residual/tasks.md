@@ -1511,11 +1511,34 @@ loaded (`ServiceCollectionBrighterBuilder.cs:120` reads `AppDomain.CurrentDomain
 and `ValidatePipelines()` then reports the subscription; `EFCoreOutbox.md`, the EF Core provider is
 resolvable as `IAmATransactionConnectionProvider` from the `AddProducers` registration.
 
-**Ruling asked** (obligation 21, a change of scope):
+**D17, carried out.** `MongoDBOutbox.md` § *Using the Outbox in Handlers* is rewritten and run.
+`probe/s5/mongo-outbox` registers the page's configuration over a single-node replica set
+(`mongo:7`), and its output, at 10.8.0:
+
+| Case | Handler | Outcome | Greeting | Outbox | Bus |
+|---|---|---|---:|---:|---:|
+| A | the page as it was: `IAmATransactionConnectionProvider`, cast to `MongoDbUnitOfWork` | `Send` throws `ConfigurationException` ← *Unable to resolve service for type `IAmATransactionConnectionProvider`* | 0 | 0 | 0 |
+| B | R5's first form: `IAmAMongoDbTransactionProvider` passed to `DepositPostAsync` | throws *Supplied transaction provider doesn't match configured transaction type* | 0 | 0 | 0 |
+| C | B's control, failing after the deposit | the same throw, before the failure is reached | 0 | 0 | 0 |
+| B′ | the page now: the provider as `IAmABoxTransactionProvider<IClientSessionHandle>` | returns | 1 | 1 | 1 |
+| C′ | B′'s control, the page's block with a failure planted after the deposit | catches, rolls back, returns | 0 | 0 | 0 |
+
+**Said and measured.** R5 recommended passing `IAmAMongoDbTransactionProvider`; case B throws.
+Brighter takes the transaction type from the *last* generic `IAmABoxTransactionProvider<>` on the
+registered type (`CommandProcessor.cs:286`), which for `MongoDbUnitOfWork` is
+`IClientSessionHandle`, the type `MongoDbOutbox` writes in. `IAmAMongoDbTransactionProvider` is
+the `IClientSession` form, so it never matches, and its session cannot be handed to the driver's
+collection methods either. D17 records the amendment. B′ is the page's block verbatim but for the
+planted line, and C′ is the control that shows the two writes share one transaction.
+`BrighterOutboxSupport.md`'s sentence that every handler takes an `IAmATransactionConnectionProvider`
+now says relational, and links the DynamoDB and MongoDB pages. The block stays FAILED on page-type
+stubs (`AddGreeting`, `Person`, `GreetingMade`), phase 7's unit.
+
+**Ruling asked** (obligation 21, a change of scope), and **ruled 2026-10-15**: R5 is design **D17**, carried out at 4.3 rather than phase 7 (*D17, carried out*, above).
 
 | # | Block | Question |
 |---:|---|---|
-| R5 | `MongoDBOutbox.md` #4 | The handler casts an `IAmATransactionConnectionProvider` to `MongoDbUnitOfWork`, which does not implement it, so the cast is always null; and it reads `unitOfWork.Database` and `.Session`, which `MongoDbUnitOfWork` does not have at 10.8.0 (ledger 36). No sample covers MongoDB. Rewrite the handler on `IAmAMongoDbTransactionProvider` (`GetTransactionAsync`, `Client.GetDatabase`, `DepositPostAsync(…, provider)`) with a behaviour probe against MongoDB, in phase 7 where the page's units are written? |
+| R5 | `MongoDBOutbox.md` #5 | The handler casts an `IAmATransactionConnectionProvider` to `MongoDbUnitOfWork`, which does not implement it, so the cast is always null; and it reads `unitOfWork.Database` and `.Session`, which `MongoDbUnitOfWork` does not have at 10.8.0 (ledger 36). No sample covers MongoDB. Rewrite the handler on `IAmAMongoDbTransactionProvider` (`GetTransactionAsync`, `Client.GetDatabase`, `DepositPostAsync(…, provider)`) with a behaviour probe against MongoDB, in phase 7 where the page's units are written? |
 
 ### Phase 5 — S3, Darker; Understanding Brighter *(6 tasks, one PR)*
 
@@ -1853,7 +1876,7 @@ design, and their greps were run there.*
 | 33 | `int.Seconds()`, a test library's extension no pinned package declares | `MigratingToPollyV8.md` | `grep -rnE '[0-9]\.Seconds\(\)' contents/` | **4** | **0** | task 4.1, the second compile | 4 |
 | 34 | .NET Framework's `ConfigurationManager.AppSettings` in a V10 registry, which also called `.ToLower()` on a missing key (D14) | `FeatureSwitches.md` | `grep -rn 'ConfigurationManager.AppSettings' contents/` | **1** | **0** | task 4.1, the second compile | 4 |
 | 35 | A query handler without the sample's `where p.Name = @name`, returning every person's greetings, then `Single()`; and an `AddGreeting { PersonId }` the sample does not have (D15) | `ShowMeTheCode.md` | `grep -c 'where p.Name = @name' contents/ShowMeTheCode.md`; `grep -rn 'addGreeting.PersonId' contents/` | **0**; **1** | **1**; **0** | task 4.3, read against `samples/WebAPI/WebAPI_Dapper` at 10.8.0 | 4 |
-| 36 | `_connectionProvider as MongoDbUnitOfWork`, a cast that is always null, then `unitOfWork.Database` and `.Session`, which `MongoDbUnitOfWork` does not have at 10.8.0 | `MongoDBOutbox.md` | `grep -rnE 'unitOfWork\.(Database\|Session)' contents/` | **2** | | task 4.3, read beside ledger 21; R5 | 4 |
+| 36 | A MongoDB handler taking `IAmATransactionConnectionProvider`, which nothing registers for MongoDB, casting it to `MongoDbUnitOfWork`, then reading `unitOfWork.Database` and `.Session`, which that type does not have at 10.8.0 | `MongoDBOutbox.md`; the claim recurs on `BrighterOutboxSupport.md` | `grep -rnE 'unitOfWork\.(Database\|Session)\|as MongoDbUnitOfWork' contents/` | **3** | **0** | task 4.3, read beside ledger 21; `probe/s5/mongo-outbox` (D17) | 4 |
 
 ## Friction ledger
 
