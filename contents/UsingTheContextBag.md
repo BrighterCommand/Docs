@@ -326,6 +326,8 @@ This allows runtime routing decisions based on command content or business rules
 
 The Request Context integrates with Polly's **ResiliencePipeline** (V8+) for resilience operations. The **ResilienceContext** can be used to share data across different resilience policies during execution.
 
+`Context.ResilienceContext` is `null` unless the caller attaches one to the `RequestContext` it sends with, as [Request Context Integration](/contents/PolicyRetryAndCircuitBreaker.md#request-context-integration) shows. When it is attached, Brighter runs the handler's pipeline with it, so a property the handler sets is visible to a callback such as `OnRetry`. When it is not, the handler below sets nothing.
+
 ```csharp
 using Paramore.Brighter;
 using Polly;

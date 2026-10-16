@@ -77,7 +77,9 @@ registry.Register<ProcessOrder>((request, context) =>
 
 ### Returning Multiple Handlers
 
-Agreement Dispatcher can return multiple handlers, but it must still obey the rule that `Send` expects a single handler and `Publish` can have zero-to-many handlers. If you return multiple handlers in a `Send` request pipeline, Brighter will throw an exception.
+Agreement Dispatcher can return multiple handlers, but it must still obey the rule that `Send` expects a single handler and `Publish` can have zero-to-many handlers. If you return multiple handlers in a `Send` request pipeline, Brighter throws an `ArgumentException`, so a route that returns more than one handler belongs to an event.
+
+`Publish` runs the handlers you return concurrently, in no particular order, and one handler failing does not stop the others. Return handlers that are independent of each other; the list is not a sequence, so it cannot express "validate, then finalize". For steps that must run in order, use one handler and its [pipeline](/contents/BuildingAPipeline.md).
 
 ## Synchronous and Asynchronous Registration
 
@@ -202,32 +204,30 @@ public class Startup
             },
             [typeof(TaxCalculator2024), typeof(TaxCalculator2025)]);
 
-            // Content-based routing with multiple handlers
-            registry.Register<ProcessOrder>((request, context) =>
+            // Content-based routing to several handlers: OrderPlaced is an event, so you Publish it,
+            // and each handler runs on its own, in no particular order
+            registry.Register<OrderPlaced>((request, context) =>
             {
-                var order = request as ProcessOrder;
+                var order = request as OrderPlaced;
                 var handlers = new List<Type>
                 {
-                    typeof(ValidateOrderHandler)  // Always validate
+                    typeof(OrderConfirmationHandler)  // Every order is confirmed
                 };
 
-                // High-value orders get fraud check
+                // High-value orders get a fraud check
                 if (order?.Total > 10000m)
                     handlers.Add(typeof(FraudCheckHandler));
 
-                // International orders need approval
+                // International orders need a customs declaration
                 if (order?.IsInternational == true)
-                    handlers.Add(typeof(ApprovalHandler));
-
-                handlers.Add(typeof(FinalizeOrderHandler));  // Always finalize
+                    handlers.Add(typeof(CustomsDeclarationHandler));
 
                 return handlers;
             },
             [
-                typeof(ValidateOrderHandler),
+                typeof(OrderConfirmationHandler),
                 typeof(FraudCheckHandler),
-                typeof(ApprovalHandler),
-                typeof(FinalizeOrderHandler)
+                typeof(CustomsDeclarationHandler)
             ]);
 
             // Standard routing for simple commands

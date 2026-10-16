@@ -1337,7 +1337,7 @@ predicts knowing that a fragment is made whole before it is skipped.
   - Input: S2's table, hard rows; 10.8.0 source, the pinned release
   - Output: as 3.3's, for S2. Each handler block on an S2 page that 2.5 did not wrap or build, as
     named in § *Phase 2 as executed*, is repaired or listed
-- [ ] **Task 4.4:** Run S2's behavioural claims (AC10)
+- [x] **Task 4.4:** Run S2's behavioural claims (AC10)
   - Input: S2's changed blocks
   - Output: a *Claim / Case / Control* table, each row naming `probe/s2/<name>/Program.cs`
 - [ ] **Task 4.5:** Second pass for S2
@@ -1540,6 +1540,53 @@ stubs (`AddGreeting`, `Person`, `GreetingMade`), phase 7's unit.
 | # | Block | Question |
 |---:|---|---|
 | R5 | `MongoDBOutbox.md` #5 | The handler casts an `IAmATransactionConnectionProvider` to `MongoDbUnitOfWork`, which does not implement it, so the cast is always null; and it reads `unitOfWork.Database` and `.Session`, which `MongoDbUnitOfWork` does not have at 10.8.0 (ledger 36). No sample covers MongoDB. Rewrite the handler on `IAmAMongoDbTransactionProvider` (`GetTransactionAsync`, `Client.GetDatabase`, `DepositPostAsync(…, provider)`) with a behaviour probe against MongoDB, in phase 7 where the page's units are written? |
+
+#### Behaviour (4.4, AC10)
+
+**Every run is against the released 10.8.0 packages**, as `probe/s2/<name>/` projects, and each
+prints `ok` or `FAIL` per row and exits 1 on any `FAIL`. Each block is copied verbatim, the probe's
+own lines marked `// probe`. Two are cited, not rerun: `type-pipeline` (4.2, ledger 24, 26) and
+`probe/s5/mongo-outbox` (4.3, D17's table).
+
+| Claim | Case | Control | Probe | Result |
+|---|---|---|---|---|
+| `AgreementDispatcher.md` #7, as it was: a route returning several handlers for `ProcessOrder`, a *Command* | `Send` a domestic, low-value order (two handlers, the fewest the route returns) | the same route on an *Event*, published; a route returning one handler, sent | `agreement-dispatcher` | `ArgumentException`, *"More than one handler was found"* / all four run; one runs. **Overturned** (ledger 37) |
+| `AgreementDispatcher.md` #7, as repaired: the route on `OrderPlaced`, published | a high-value international order | a domestic, low-value order | `agreement-dispatcher` | all three run / `OrderConfirmationHandler` alone |
+| `AgreementDispatcher.md` § *Returning Multiple Handlers*, written at this task: `Publish` runs the handlers concurrently, in no order, and one failing does not stop the others | three runs of the four-handler `Publish` | `FraudCheckHandler` throws | `agreement-dispatcher` | three different orders, `ValidateOrderPlacedHandler` first in one, last in another (`Parallel.ForEach`, `CommandProcessor.cs:499`) / the other two run, `Publish` throws `AggregateException` |
+| `AgreementDispatcher.md` #12: a returned handler missing from the list *"will fail at runtime"* | the page's *Bad* registration | the *Good* one; the *Good* list with `Handler3` returned | `agreement-dispatcher` | `ConfigurationException`, *"Handler Factory could not construct handler of type Handler3"* / runs; runs |
+| `AgreementDispatcher.md` #14: `AutoFromAssemblies()` beside an agreement throws *"More than one handler"*, and `excludeDynamicHandlerTypes` cures it | the page's *Solution* | the *Problem*, no exclusion; the *Solution* routing to the other excluded handler | `agreement-autoscan` | `MyHandler` runs / `ArgumentException` as quoted; `MyOtherHandler` runs |
+| `MigratingToPollyV8.md` § *Legacy*: several policies *"are evaluated left to right, so … 'MyCircuitBreakerPolicy' wraps 'MyExceptionPolicy'"* | the page's `[UsePolicy(new [] {CB, Exception})]`, a handler that always throws, sent twice | the array reversed | `legacy-policy-order` | 4 attempts, then `BrokenCircuitException` / 1 attempt |
+| `MigratingToPollyV8.md` § *Legacy*: *"put a Circuit Breaker UsePolicy attribute as an earlier step than the Retry UsePolicy attribute"* | the two attributes on one method, `-p:DefineConstants=TWO_ATTRIBUTES` | the one-attribute array, above | `legacy-policy-order` | `CS0579` *Duplicate 'UsePolicy' attribute* / builds and wraps. **Overturned** (ledger 38) |
+| `MigratingToPollyV8.md` § *Legacy*, unstated: `new PolicyRegistry()` is a registry Brighter takes | the page's registry and policies | `new DefaultPolicy()` with the same | `legacy-policy-order` | `ConfigurationException`, *"missing the CommandProcessor.RETRYPOLICY policy"* / resolves. **Overturned** (ledger 39) |
+| `PolicyRetryAndCircuitBreaker.md` #15: a `ResilienceContext` set on `RequestContext` reaches `OnRetry` | the page's send, `tenant-42` attached; the handler fails once | the same send with no `RequestContext` | `resilience-context` | `OnRetry` reads `tenant-42` / nothing |
+| `UsingTheContextBag.md` #10: the `ResilienceContext` shares data across policies | the caller attaches an empty context; the page's handler sets `tenant-id` | no context attached | `resilience-context` | `OnRetry` reads the handler's value / nothing: `Context.ResilienceContext` is null, so the handler's `if` skips. The page now says so |
+| `FeatureSwitches.md` #6: a dotted handler name resolves under `FeatureSwitches:`; a missing key falls back to `MissingConfigStrategy` | `"on"` in `appsettings.json`; no key under `SilentOff`; no key under the default | `"off"`; no key under `SilentOn` | `feature-switch-config` | runs, skipped, `InvalidOperationException` / skipped, runs |
+| `FeatureSwitches.md` § opening: no registry makes `Config` behave as `On`; the fluent registry's default throws `ConfigurationException` for a handler it lacks | no registry; a fluent registry without the handler | a fluent registry with it `On` | `feature-switch-config` | runs, `ConfigurationException` / runs |
+| `PipelineValidation.md` § *Missing Handler*: `AutoFromAssemblies()` scans only loaded assemblies, and `ValidatePipelines()` reports the subscription | the page's *Before* block, `Handlers.dll` never touched | the *After* block; the *Before* block after `Handlers.dll` is loaded | `missing-handler` (one process per case) | *"No handler registered for 'OrderCreated'"*, not loaded / no error, loaded; no error, loaded |
+| `EFCoreOutbox.md`: the EF Core provider resolves as `IAmATransactionConnectionProvider` from `AddProducers`, and its transaction is the context's | resolve it in a scope and begin | — (read, not compared) | `efcore-outbox` | `MySqlEntityFrameworkTransactionProvider<GreetingsEntityGateway>`; `CurrentTransaction` set |
+| `EFCoreOutbox.md`: `SaveChangesAsync` and the Outbox write share the transaction | the page's handler, against `mysql:8` | a failure after `SaveChangesAsync`, before the commit; the same with the message deposited without the provider | `efcore-outbox` | greeting 1, Outbox 1, bus 1 / 0, 0, 0; 0, **1**, 0. The second control is what tells one transaction from two writes that both failed |
+
+**Three claims overturned, each repaired at every recurrence (obligation 21):**
+
+- **Ledger 37.** `AgreementDispatcher.md` #7 is now a route on an *Event*, `OrderPlaced`, whose three
+  handlers are independent of each other. The page's own § *Returning Multiple Handlers* said `Send`
+  throws on several handlers, and now also says the list is not a sequence, since a probe found
+  `Publish` running handlers in parallel. The scaffold unit lost `ProcessOrder.Total`,
+  `IsInternational` and the four `ProcessOrder` handlers, and gained `OrderPlaced` and its three
+- **Ledger 38.** The two-attribute advice is the array, circuit breaker first, which the run above
+  shows wrapping the retry
+- **Ledger 39.** Brighter 10.8.0 and 9.33 both refuse a policy registry without
+  `CommandProcessor.RETRYPOLICY` and `CIRCUITBREAKER` (`CommandProcessorBuilder.cs:168` at 10.8.0,
+  `:136` at 9.33; `ServiceCollectionExtensions.cs:762`). `DefaultPolicy` holds both and exists at
+  both versions. Three sites: `MigratingToPollyV8.md` #1 (the V9 form, wrong at V9 too) and #8, and
+  off-group `HowConfiguringTheCommandProcessorWorks.md` #7, an S3 page, whose sentence that the keys
+  *"can be overridden"* now also says Brighter requires them. That block gained its `using`s, since
+  `--changed` made it strict, and stays FAILED on the page's `Globals` (phase 5)
+
+**Measured after 4.4:** `--report` → **994 / 536 / 441 / 17**, 107 findings, unmoved: every changed
+S2 block stays BUILT, and the off-group block stays FAILED. Scaffold 60 units, 0 violations.
+`pagelint` 0 errors / **346** (−1, the off-group block's `using`s); `--changed origin/master` 0
+errors. `linkcheck` 168 / 0; `symbolcheck` 24 entries, 0 hits on the four pages.
 
 ### Phase 5 — S3, Darker; Understanding Brighter *(6 tasks, one PR)*
 
@@ -1878,6 +1925,9 @@ design, and their greps were run there.*
 | 34 | .NET Framework's `ConfigurationManager.AppSettings` in a V10 registry, which also called `.ToLower()` on a missing key (D14) | `FeatureSwitches.md` | `grep -rn 'ConfigurationManager.AppSettings' contents/` | **1** | **0** | task 4.1, the second compile | 4 |
 | 35 | A query handler without the sample's `where p.Name = @name`, returning every person's greetings, then `Single()`; and an `AddGreeting { PersonId }` the sample does not have (D15) | `ShowMeTheCode.md` | `grep -c 'where p.Name = @name' contents/ShowMeTheCode.md`; `grep -rn 'addGreeting.PersonId' contents/` | **0**; **1** | **1**; **0** | task 4.3, read against `samples/WebAPI/WebAPI_Dapper` at 10.8.0 | 4 |
 | 36 | A MongoDB handler taking `IAmATransactionConnectionProvider`, which nothing registers for MongoDB, casting it to `MongoDbUnitOfWork`, then reading `unitOfWork.Database` and `.Session`, which that type does not have at 10.8.0 | `MongoDBOutbox.md`; the claim recurs on `BrighterOutboxSupport.md` | `grep -rnE 'unitOfWork\.(Database\|Session)\|as MongoDbUnitOfWork' contents/` | **3** | **0** | task 4.3, read beside ledger 21; `probe/s5/mongo-outbox` (D17) | 4 |
+| 37 | A route returning several handlers for a *Command*, which `Send` refuses; and a handler list written as a sequence ("Always validate", "Always finalize"), which `Publish` runs in parallel | `AgreementDispatcher.md` | `grep -rnF 'Always validate' contents/` | **1** | **0** | task 4.4, `probe/s2/agreement-dispatcher` | 4 |
+| 38 | Two `[UsePolicy]` attributes on one method advised; `UsePolicyAttribute` has no `AllowMultiple`, so it is `CS0579` | `MigratingToPollyV8.md` | `grep -rn 'earlier step than' contents/` | **1** | **0** | task 4.4, `probe/s2/legacy-policy-order` | 4 |
+| 39 | `new PolicyRegistry()` handed to Brighter, which throws `ConfigurationException` without `CommandProcessor.RETRYPOLICY` and `CIRCUITBREAKER`; `DefaultPolicy` holds both | `MigratingToPollyV8.md`; recurs on `HowConfiguringTheCommandProcessorWorks.md` | `grep -rnF 'new PolicyRegistry()' contents/` | **3** | **0** | task 4.4, `probe/s2/legacy-policy-order` | 4 |
 
 ## Friction ledger
 

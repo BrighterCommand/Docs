@@ -35,7 +35,7 @@ current reference.
 <!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled V9) -->
 ```csharp
 // ...
-var policyRegistry = new PolicyRegistry();
+var policyRegistry = new DefaultPolicy();
 
 var retryPolicy = Policy
     .Handle<Exception>()
@@ -183,13 +183,15 @@ public class MyQoSProtectedHandler : RequestHandler<MyCommand>
 
 To configure the Polly policy you use the PolicyRegistry to register the Polly Policy with a name. At runtime we look up that Policy by name.
 
+Start from Brighter's `DefaultPolicy`, a `PolicyRegistry` that already holds the `CommandProcessor.RETRYPOLICY` and `CommandProcessor.CIRCUITBREAKER` policies Brighter requires. Hand Brighter an empty `PolicyRegistry` and it throws `ConfigurationException` at startup.
+
 ```csharp
 using System;
+using Paramore.Brighter;
 using Polly;
-using Polly.Registry;
 
 // ...
-var policyRegistry = new PolicyRegistry();
+var policyRegistry = new DefaultPolicy();
 
 var policy = Policy
     .Handle<Exception>()
@@ -243,7 +245,7 @@ Where we have multiple policies they are evaluated left to right, so in this cas
 
 When creating policies, refer to the [Polly](https://github.com/App-vNext/Polly) documentation.
 
-Whilst [Polly](https://github.com/App-vNext/Polly) does not support a Policy that is both Circuit Breaker and Retry i.e. retry n times with an interval between each retry, and then break circuit, to implement that simply put a Circuit Breaker UsePolicy attribute as an earlier step than the Retry UsePolicy attribute. If retries expire, the exception will bubble out to the Circuit Breaker.
+Whilst [Polly](https://github.com/App-vNext/Polly) does not support a Policy that is both Circuit Breaker and Retry i.e. retry n times with an interval between each retry, and then break circuit, to implement that put the Circuit Breaker first in the array, as above, so that it wraps the Retry. If retries expire, the exception bubbles out to the Circuit Breaker. A handler method takes one `[UsePolicy]` attribute, so the array is the only way to combine them.
 
 ### Timeout (Legacy - Deprecated)
 

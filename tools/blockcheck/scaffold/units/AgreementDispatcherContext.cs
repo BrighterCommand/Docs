@@ -42,12 +42,10 @@ public class Handler3 : RequestHandler<MyCommand>;
 public class MyHandler : RequestHandler<MyCommand>;
 public class MyOtherHandler : RequestHandler<MyCommand>;
 
-// blocks 3, 7, 9: `order?.Country`, `order?.Total`, `order?.IsInternational`
+// blocks 3, 9: `order?.Country`
 public class ProcessOrder() : Command(Id.Random())
 {
     public string? Country { get; set; }
-    public decimal Total { get; set; }
-    public bool IsInternational { get; set; }
 }
 
 public class PremiumOrderHandler : RequestHandler<ProcessOrder>;
@@ -55,10 +53,17 @@ public class StandardOrderHandler : RequestHandler<ProcessOrder>;
 public class USOrderHandler : RequestHandler<ProcessOrder>;
 public class UKOrderHandler : RequestHandler<ProcessOrder>;
 public class EUOrderHandler : RequestHandler<ProcessOrder>;
-public class ValidateOrderHandler : RequestHandler<ProcessOrder>;
-public class FraudCheckHandler : RequestHandler<ProcessOrder>;
-public class ApprovalHandler : RequestHandler<ProcessOrder>;
-public class FinalizeOrderHandler : RequestHandler<ProcessOrder>;
+
+// block 7: `order?.Total`, `order?.IsInternational`
+public class OrderPlaced() : Event(Id.Random())
+{
+    public decimal Total { get; set; }
+    public bool IsInternational { get; set; }
+}
+
+public class OrderConfirmationHandler : RequestHandler<OrderPlaced>;
+public class FraudCheckHandler : RequestHandler<OrderPlaced>;
+public class CustomsDeclarationHandler : RequestHandler<OrderPlaced>;
 
 // block 6: `order?.Country`
 public class OrderCreated() : Event(Id.Random())
