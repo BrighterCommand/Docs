@@ -1351,7 +1351,7 @@ predicts knowing that a fragment is made whole before it is skipped.
   - Input: R7's seven blocks; each builder's `GetDDL` at 10.7.0 and 10.8.0
   - Output: each block regenerated from 10.8.0 and run against its database, under
     `probe/s5/<name>/`; the page says Replay needs `CausationId`; one ledger row
-- [ ] **Task 4.6:** Close phase 4
+- [x] **Task 4.6:** Close phase 4
   - Input: § 1 obligations 6, 7, 19
   - Output: as 3.7's
 
@@ -1722,6 +1722,68 @@ throws at `Read()`, not `ExecuteReader()`. Fixed, it reads; the control then fai
 the column only on a fresh install, as `ReplayOnSeenReference.md` already did. `TutorialDurableOutbox.md`
 was not a site: its *CREATE TABLE* is a comment, and the tutorial provisions the table.
 SQL blocks, so `blockcheck` does not move. `pagelint` 0 errors on the six; `linkcheck` 0.
+
+#### Phase 4 closed (4.6)
+
+**Baselined.** `baseline.tsv` lists every BUILT block on the ten S2 pages, **109** rows, replacing
+their **3** earlier ones (§ the file's own header says how). None keeps its ref: the three kept their
+text, but each one's scaffold unit changed in the phase (`MigratingToPollyV8Context.cs`,
+`PolicyRetryAndCircuitBreakerContext.cs`; `UsingTheContextBag.md` #12 gained its page's unit). Every
+row is at **`6ad8b0a`**. Off-group, `Monitoring.md` #1 moves there too, re-measured after ledger 47;
+#2, unchanged, keeps `f2ce226`. **Two methods agree:** the rows, `grep -v '^#' baseline.tsv | grep
+-vc '^$'` → **536**, and `--report`'s BUILT → **536**. `--report` exit **0**, **0 findings**.
+
+**Rule 8.** `pagelint` → **0 errors**; the one `attr-mismatch-intended` marker stays on
+`PipelineValidation.md` #7, and `--plant` → 5 / 5.
+
+**Readings (obligation 19).** `git diff -U0 5f2294c HEAD -- contents`, hunks against fence ranges:
+42 pages, **79** changed C# blocks on 16 of them.
+- **AC9.** The phase added `// ...` at **8** lines in **7** blocks: `AgreementDispatcher.md` #11,
+  #12; `PipelineValidation.md` #12, #15, #16 (two); `PolicyFallback.md` #9; `UsingTheContextBag.md`
+  #12. All 7 are BUILT, so `--explain` has nothing to report for any of them: no added omission
+  hides an error
+- **AC10.** § *Behaviour (4.4)*: fifteen claims run with a control, two cited. § *Second pass
+  (4.5)*, *Sweep (4.5a)* and *The relational DDL (4.5b)*: ten more, each at 10.7.0 and 10.8.0. The
+  six changed C# blocks off S2 are each run or assert no behaviour: `EFCoreOutbox.md` #2
+  (`efcore-outbox`), `MongoDBOutbox.md` #5 (`s5/mongo-outbox`),
+  `HowConfiguringTheCommandProcessorWorks.md` #7 (`legacy-policy-order`), `Monitoring.md` #1
+  (`s5/monitor-defects`); `BrighterOutboxSupport.md` #1 and `CloudEventsSupport.md` #5 are API
+  repairs (ledger 21, 32). Read and named, not run: `Telemetry.md`'s `CircuitBreaker` row (ledger 48)
+
+**Gates against 4.1.**
+
+| Gate | Predicted (4.1) | Measured at the close | |
+|---|---|---|---|
+| corpus | 993–1,000 | **994** | in band: one split, `PipelineValidation.md` #3; #13 needed none |
+| BUILT | 522–537 | **536** | in band |
+| FAILED | 438–450 | **441** | in band |
+| SKIPPED | 17–21 | **17** | the floor: no unlabelled V9 form was found |
+| `pagelint` | 0 errors / 331–345 | **0 / 346** | **above the band by 1** (below) |
+| `symbolcheck` | unmoved | **24, 14**, exit 0 | as predicted |
+| scaffold rule | 52–62 units | **60**, 0 violations, 0 compile errors | in band |
+| assemblies | 552–553 | **553** on each pin | in band, by D13 rather than the mechanism named (§ *The repairs (4.3)*) |
+| `linkcheck` · shape · redirects · `--verify` | unmoved | 168 / 0 · 161, widest 12 of 20 · 77, 7858 bytes · 161 = 161 | as predicted |
+| `versioncheck` · `optioncheck` | unmoved | 0 of 18 · 0 / 59 / 529 | as predicted |
+| `pagelint --plant` | unmoved | 5 / 5 | as predicted |
+
+**Why `pagelint` came in above the band.** 4.1 expected S2's **79** warnings to fall as blocks gained
+their `using`s, less the declared omissions. They fell to **19**, read block by block against the diff:
+- **7 declared `// ...`**, as predicted: `AgreementDispatcher.md` #10–#12, `UsingTheContextBag.md`
+  #12, and `MigratingToPollyV8.md` #1, #3, #5, SKIPPED V9 forms
+- **11 BUILT blocks no repair touched**, which build on their page's scaffold alone and so never
+  gained a `using`: `AgreementDispatcher.md` #2–#5, #8, #13; `AsyncDispatchARequest.md` #2, #3;
+  `DispatchingARequest.md` #5–#7
+- **1 SKIPPED V9 form, untouched**: `PolicyFallback.md` #2
+
+The band assumed every S2 block would be edited. Off-group, −4 rather than −0–1, from 4.3's and 4.4's
+off-group repairs (`CloudEventsSupport.md`, `EFCoreOutbox.md`,
+`HowConfiguringTheCommandProcessorWorks.md`, `MongoDBOutbox.md`). 79 − 19 + 4 = **64**, and 410 − 64 =
+**346**. The number is not adopted: the next phase predicts a block's `using`s only for the blocks its
+repairs touch.
+
+**Off the prediction.** 4.5a and 4.5b were added by D19 and D20 after 4.1 and moved no gate: prose and
+SQL, and one C# block that was already BUILT. `tools/README.md` rows 2 and 9 now give the close's
+figures, and its 552 is 553 (D13).
 
 ### Phase 5 — S3, Darker; Understanding Brighter *(6 tasks, one PR)*
 
