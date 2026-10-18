@@ -1787,14 +1787,14 @@ figures, and its 552 is 553 (D13).
 
 ### Phase 5 — S3, Darker; Understanding Brighter *(6 tasks, one PR)*
 
-- [ ] **Task 5.1:** Predict phase 5's gate movement
+- [x] **Task 5.1:** Predict phase 5's gate movement
   - Input: § *The groups*, S3; recurrence greps for S3's defects
   - Output: § *Phase 5 as executed*, *Predicted*, as 3.1's
 - [ ] **Task 5.2:** Repair S3's reachable blocks
   - Input: S3's table, reachable rows
   - Output: as 3.2's, for S3
 - [ ] **Task 5.3:** Repair S3's hard blocks
-  - Input: S3's table, hard rows; Darker `4.1.1` and Brighter `10.7.0` source
+  - Input: S3's table, hard rows; Darker `4.1.1` and Brighter `10.8.0` source, the pinned releases
   - Output: as 3.3's, for S3. `QueryPipeline.md`'s 12 *parse* blocks are each made whole, skipped
     with an accepted reason, or listed
 - [ ] **Task 5.4:** Run S3's behavioural claims (AC10)
@@ -1806,6 +1806,90 @@ figures, and its 552 is 553 (D13).
 - [ ] **Task 5.6:** Close phase 5
   - Input: § 1 obligations 6, 7, 19
   - Output: as 3.7's
+
+### Phase 5 as executed
+
+**Measured at phase start, `0fc79a3`** (#203's merge). `--report` → **994 / 536 / 441 / 17, 0 findings**,
+exit 0; `--classify` → 97 parse, 26 built-by-using, 71 defect, 29 same-page, 25 values, 193 page-type,
+settled in 3 rounds. 553 reference assemblies on each pin (`--report`'s own scope lines); scaffold rule
+60 units. `pagelint` 0 errors / **346** warnings; `symbolcheck` 24 entries, 14 silenced; `linkcheck`
+168 / 0; `versioncheck` 0 of 18.
+
+#### Predicted (5.1)
+
+**S3 is identical row for row** to § *The groups*: `groups.py` at `0fc79a3` gives 10 pages, **137**
+FAILED (31 parse, 7 built-by-using, 16 defect, 5 same-page, 7 values, 71 page-type), 8 BUILT,
+6 with nothing BUILT. Two methods: the FAILED column, 137; `grep` over `--report` on the ten pages,
+137, with 8 BUILT and 1 SKIPPED (`ReactorAndProactor.md` #11). The S3 pages hold **146** C# blocks.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| Task 5.3: *"Brighter `10.7.0` source"* | the pins are 10.8.0 | the task says 10.8.0 |
+| S3's table: **16 defect** blocks | the second compile's diagnostics (below): **5** are API defects, **2** are a missing `using` the classifier misread, **6** are fragments or alternatives in one fence, and **3** are misreads | the table stands, being the instrument's; the repairs follow the reading |
+
+**Reading S3's 16 defect blocks** with `probe/second.py` over the ten pages (600 diagnostic lines),
+each against the 10.8.0 and 4.1.1 tags:
+
+| Page | # | Second compile | Reading against the pins | Repair |
+|---|---:|---|---|---|
+| `HowConfiguringTheCommandProcessorWorks.md` | 3 | `CS0535` `CreatePipelineScope()`; `CS0246` `TinyIoCContainer` | **defect.** A V9 handler factory: `Create(Type)` and `Release(IHandleRequests)`. At 10.8.0 `IAmAHandlerFactory` declares only `CreatePipelineScope()`, and `IAmAHandlerFactorySync` adds `Create(Type, IAmALifetime)` and `Release(IHandleRequests, IAmALifetime)`. The prose before it names `IAmAHandlerFactory` | 5.3, the V10 interface, in the block and the prose |
+| `HowServiceActivatorWorks.md` | 7 | `CS1739` `deadLetterChannelName` on `Subscription` | **defect.** `Subscription<T>` has no dead-letter parameters at 10.8.0; only `RmqSubscription` (both RMQ packages) takes `deadLetterChannelName` and `deadLetterRoutingKey`, as `ErrorHandlingOptions.md` already says | 5.3, `RmqSubscription<T>`, saying dead letters are set per transport |
+| `HowServiceActivatorWorks.md` | 13 | `CS0117` `StopChannel`, `StartChannel`; `CS7036` `subscriptionName` | **defect.** `ConfigurationCommandType` is `CM_STOPALL`, `CM_STARTALL`, `CM_STOPCHANNEL`, `CM_STARTCHANNEL` (`ConfigurationCommand.cs:30`), and the constructor takes `(ConfigurationCommandType, SubscriptionName)` (`:63`) | 5.3 |
+| `ImplementAQueryHandler.md` | 13 | `CS0535` `IQueryHandler.Context`, `Fallback`, `FallbackAsync` | **defect.** At Darker 4.1.1 `IQueryHandler<TQuery, TResult>` declares `Execute`, `Fallback`, `ExecuteAsync` and `FallbackAsync`, and `IQueryHandler` a `Context`; the class implements two of the five | 5.3, every member, or the page's advice changed; judged at the repair |
+| `DarkerBasicConfiguration.md` | 9 | `CS1061` `AddSwaggerGen`, `UseSwagger`, `UseSwaggerUI`; `CS1929` `IsDevelopment` | **an API the pin does not carry**: Swashbuckle, which the page never names and which has nothing to do with Darker. `CS1929` is a misread: without `Microsoft.Extensions.Hosting` the classifier found the obsolete `IHostingEnvironment` overload | 5.3: the Swagger lines removed, or the package named and pinned; judged at the repair |
+| `CQRSWithBrighterAndDarker.md` | 4 | `CS1501` `GetConnectionString` takes 1 argument | **a missing `using`**, misread as a defect. Without `Microsoft.Extensions.Configuration`, the only `GetConnectionString` in scope is EF Core's `RelationalDatabaseFacadeExtensions.GetConnectionString(this DatabaseFacade)` | 5.2, the `using` |
+| `DarkerBasicConfiguration.md` | 10 | `CS1501`, as above | as above | 5.2, the `using` |
+| `CQRSWithBrighterAndDarker.md` | 1 | `CS0111` `GetCustomer` | **alternatives** in one fence: a *Bad* and a *Good* `GetCustomer`, as members with no class | 5.3, split or made whole |
+| `HowServiceActivatorWorks.md` | 1 | `CS0128` `message`; `CS0103` `channel`, `timeOut` | **alternatives**: a Reactor and a Proactor receive, each declaring `message`. `Receive(TimeSpan?)` and `ReceiveAsync(TimeSpan?, CancellationToken)` match 10.8.0 (`IAmAChannelSync.cs:55`, `IAmAChannelAsync.cs:59`) | 5.3, split or made whole |
+| `QueryPatterns.md` | 2 | `CS0128` `orders` ×2 | **alternatives**: one *Bad* and two *Good* queries, each declaring `orders` | 5.3, split or made whole |
+| `QueryPatterns.md` | 3 | `CS0111` `ExecuteAsync` | **alternatives**: a *Good* and a *Bad* `ExecuteAsync` | 5.3, split or made whole |
+| `QueriesAndQueryObjects.md` | 8 | `CS0116`, `CS0825` | a fragment: a type declaration followed by its *Usage* statements | 5.3, made whole |
+| `QueryPipeline.md` | 8 | `CS0161` | a fragment: a method whose body is a comment. `RetryableQuery(int step, string policyName)` matches 4.1.1 (`RetryableQueryAttribute.cs:11`) | 5.3, a body |
+| `CQRSWithBrighterAndDarker.md` | 10 | `CS1061` `'TEntity'` has no `Id` | **a misread**: `ApplicationDbContext` and the DTOs are the reader's, so `Orders` resolved to nothing. *page-type* | 5.2, stubs |
+| `DarkerBasicConfiguration.md` | 5 | `CS0029` `TResult` to `int` | **a misread**: with `GetCountQuery` undeclared, `Execute` cannot infer its result. *page-type* | 5.2, a stub `GetCountQuery : IQuery<int>` |
+| `QueryPatterns.md` | 5 | `CS1955` `Ok` | **a misread**: a controller action outside its controller, as `ShowMeTheCode.md` #1 was. *page-type* | 5.2 |
+
+**Recurrence greps (obligation 20), run as written at `0fc79a3`:**
+
+| Defect | Grep | Hits | Off-group |
+|---|---|---:|---|
+| V9 handler factory | `grep -rnE 'IHandleRequests\??\s+Create\(Type \w+\)\|void Release\(IHandleRequests \w+\)\|: IAmAHandlerFactory(\s\|$\|,\|\{)' contents/` | **3** lines in 1 block (`HowConfiguringTheCommandProcessorWorks.md` #3) | none |
+| `deadLetterChannelName` off `RmqSubscription` | `grep -rn deadLetterChannelName contents/` | **4**: 2 are `ErrorHandlingOptions.md` and `RabbitMQConfiguration.md` prose on `RmqSubscription`, which is right | none. On-group: `HowServiceActivatorWorks.md` #7, and **#15**, a lone argument under *Use Dead Letter Queues* (*parse*) |
+| `ConfigurationCommandType` members | `grep -rnE 'ConfigurationCommandType\.\w+' contents/`; `grep -rn 'new ConfigurationCommand(' contents/` | **2**; **2**, all `HowServiceActivatorWorks.md` #13 | none |
+| `IQueryHandler<,>` implemented directly | `grep -rnE ': IQueryHandler<' contents/` | **1** (`ImplementAQueryHandler.md` #13) | none |
+| Swashbuckle unpinned | `grep -rnE 'AddSwaggerGen\|UseSwagger' contents/` | **3** lines in 1 block (`DarkerBasicConfiguration.md` #9) | none |
+
+**The off-group term is zero.** No S3 defect recurs on a page outside S3.
+
+**`pagelint`, block by block** (phase 4's lesson: predict a block's `using`s only where a repair
+touches it). S3's **87** warnings (4 + 2 + 5 + 16 + 12 + 19 + 4 + 14 + 11 on nine pages, `--per-page`;
+`DarkerBasicConfiguration.md` has none), read against `--report` and `--classify`:
+- **2 on blocks no repair touches**: `QueriesAndQueryObjects.md` #1 (BUILT) and `ReactorAndProactor.md`
+  #11 (SKIPPED). They stay
+- **10 on FAILED blocks that already declare `// ...`**: `EFCoreQueryIntegration.md` #1, #3;
+  `HowServiceActivatorWorks.md` #7, #10; `QueryPipeline.md` #12, #16, #17, #22, #23;
+  `ReactorAndProactor.md` #12. Each keeps its warning unless its repair gives it `using`s
+- **7 on FAILED blocks whose first compile needed no `using`** (`page-type` or `values` at both
+  compiles): `HowServiceActivatorWorks.md` #2, #3, #6, #9; `ImplementAQueryHandler.md` #15;
+  `QueryPipeline.md` #18, #19. A stub alone may build them, and they then keep their warning, as
+  phase 4's eleven did
+- **68 on the other FAILED blocks** (23 *parse*, 45 needing a `using`), which their repairs edit
+
+**Predicted:**
+
+| Gate | At `0fc79a3` | Predicted at the close | Mechanism |
+|---|---|---|---|
+| corpus | 994 | **994–1,000** | splits only, where a fence holds alternatives: `CQRSWithBrighterAndDarker.md` #1, `HowServiceActivatorWorks.md` #1, `QueryPatterns.md` #2 (three) and #3, `QueriesAndQueryObjects.md` #8, up to +6. Each may instead be made whole in one fence |
+| BUILT | 536 | **662–676** | 673, plus splits (0–6), less what stays FAILED (3–8) and any SKIPPED (0–3). S3's 146 blocks less the SKIPPED one, all BUILT, would be 673. The 5 *same-page* blocks (`CQRSWithBrighterAndDarker.md` #2, #8; `ImplementAQueryHandler.md` #14; `QueriesAndQueryObjects.md` #22, #23) are the likely stays; phases 3 and 4 kept 6 of their 236 FAILED (§ *Blocks that stay FAILED*) |
+| FAILED | 441 | **307–312** | 304 (−137 for S3) plus what stays FAILED and listed; off-group 0 |
+| SKIPPED | 17 | **17–20** | a V9 form found unlabelled on an S3 page, labelled as such; `HowConfiguringTheCommandProcessorWorks.md` is the page that shows V9-era code |
+| `pagelint` | 0 errors / 346 | **0 errors / 266–281** | 346 less 65–80: of the 85 warnings on FAILED blocks, 5–20 stay (the 10 declared `// ...`, the 7 a stub may build untouched, and any repaired fragment that keeps an omission without `using`s). Off-group 0 |
+| `symbolcheck` | 24 entries, 14 silenced | **unmoved** | no S3 page holds a watchlisted name; whether `IHandleRequests Create(Type)` or `ConfigurationCommandType.StopChannel` earn a row is read at 5.5 |
+| scaffold rule | 60 units | **60–69 units**, 0 violations, 0 compile errors | a unit per S3 page that needs a stub; `HowConfiguringTheCommandProcessorWorks.md` has one, and `QueryPatterns.md` may share `DarkerQueryPatternsContext` |
+| assemblies | 553 | **553–554** | unmoved, unless `DarkerBasicConfiguration.md` #9's repair pins Swashbuckle |
+| `linkcheck` · `versioncheck` · `pagelint --plant` | 168 / 0 · 0 of 18 · 5 / 5 | **unmoved** | |
 
 ### Phase 6 — S4, Using an External Bus; Transports *(6 tasks, one PR)*
 
