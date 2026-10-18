@@ -70,20 +70,22 @@ string binaryDdl = SqlOutboxBuilder.GetDDL(tableName, hasBinaryMessagePayload: t
 Running `SqlOutboxBuilder.GetDDL("Outbox")` will generate the following SQL script:
 
 ```sql
-CREATE TABLE Outbox (
-    [MessageId] UNIQUEIDENTIFIER NOT NULL,
-    [Topic] NVARCHAR(255) NOT NULL,
-    [MessageType] NVARCHAR(32) NOT NULL,
-    [Timestamp] DATETIME2 NOT NULL,
-    [CorrelationId] UNIQUEIDENTIFIER NULL,
+CREATE TABLE Outbox
+(
+    [Id] [BIGINT] NOT NULL IDENTITY ,
+    [MessageId] NVARCHAR(255) NOT NULL,
+    [Topic] NVARCHAR(255) NULL,
+    [MessageType] NVARCHAR(32) NULL,
+    [Timestamp] DATETIME NULL,
+    [CorrelationId] NVARCHAR(255) NULL,
     [ReplyTo] NVARCHAR(255) NULL,
     [ContentType] NVARCHAR(128) NULL,
     [PartitionKey] NVARCHAR(255) NULL,
     [WorkflowId] NVARCHAR(255) NULL,
     [JobId] NVARCHAR(255) NULL,
-    [Dispatched] DATETIME2 NULL,
-    [HeaderBag] NVARCHAR(MAX) NOT NULL,
-    [Body] NVARCHAR(MAX) NOT NULL,
+    [Dispatched] DATETIME NULL,
+    [HeaderBag] NVARCHAR(MAX) NULL,
+    [Body] NVARCHAR(MAX) NULL,
     [Source] NVARCHAR(255) NULL,
     [Type] NVARCHAR(255) NULL,
     [DataSchema] NVARCHAR(255) NULL,
@@ -91,11 +93,16 @@ CREATE TABLE Outbox (
     [TraceParent] NVARCHAR(255) NULL,
     [TraceState] NVARCHAR(255) NULL,
     [Baggage] NVARCHAR(MAX) NULL,
-    [Created] DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-    [CreatedID] INT IDENTITY(1,1) NOT NULL,
-    CONSTRAINT [PK_Outbox] PRIMARY KEY CLUSTERED ([MessageId] ASC)
+    [DataRef] NVARCHAR(255) NULL,
+    [CausationId] NVARCHAR(255) NULL,
+    [SpecVersion] NVARCHAR(255) NULL
+    PRIMARY KEY ( [Id] )
 );
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'idx_Outbox_CausationId' AND [object_id] = OBJECT_ID(N'[Outbox]'))
+    EXEC('CREATE INDEX [idx_Outbox_CausationId] ON Outbox ([CausationId]);');
 ```
+
+`CausationId` and its index arrive at Brighter 10.8.0. A table an earlier release created still takes deposits without them, but [Replay On Seen](/contents/ReplayOnSeenReference.md#store-support) needs both; [Database Provisioning](/contents/BoxProvisioning.md) adds them as the Outbox **V8** migration.
 
 ## MSSQL Outbox Configuration
 

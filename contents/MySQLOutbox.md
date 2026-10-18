@@ -68,20 +68,20 @@ string binaryDdl = MySqlOutboxBuilder.GetDDL(tableName, hasBinaryMessagePayload:
 Running `MySqlOutboxBuilder.GetDDL("Outbox")` will generate the following SQL script:
 
 ```sql
-CREATE TABLE Outbox ( 
-    `MessageId`VARCHAR(255) NOT NULL, 
-    `Topic` VARCHAR(255) NOT NULL, 
-    `MessageType` VARCHAR(32) NOT NULL, 
-    `Timestamp` TIMESTAMP(3) NOT NULL, 
+CREATE TABLE IF NOT EXISTS Outbox (
+    `MessageId`VARCHAR(255) NOT NULL,
+    `Topic` VARCHAR(255) NOT NULL,
+    `MessageType` VARCHAR(32) NOT NULL,
+    `Timestamp` TIMESTAMP(3) NOT NULL,
     `CorrelationId`VARCHAR(255) NULL,
     `ReplyTo` VARCHAR(255) NULL,
-    `ContentType` VARCHAR(128) NULL, 
-    `PartitionKey` VARCHAR(255) NULL, 
+    `ContentType` VARCHAR(128) NULL,
+    `PartitionKey` VARCHAR(128) NULL,
     `WorkflowId` VARCHAR(255) NULL,
     `JobId` VARCHAR(255) NULL,
-    `Dispatched` TIMESTAMP(3) NULL, 
-    `HeaderBag` TEXT NOT NULL, 
-    `Body` TEXT NOT NULL , 
+    `Dispatched` TIMESTAMP(3) NULL,
+    `HeaderBag` TEXT NOT NULL,
+    `Body` TEXT NOT NULL,
     `Source`  VARCHAR(255) NULL,
     `Type`  VARCHAR(255) NULL,
     `DataSchema`  VARCHAR(255) NULL,
@@ -89,12 +89,18 @@ CREATE TABLE Outbox (
     `TraceParent`  VARCHAR(255) NULL,
     `TraceState`  VARCHAR(255) NULL,
     `Baggage`  TEXT NULL,
+    `DataRef` VARCHAR(255) NULL,
+    `SpecVersion` VARCHAR(255) NULL,
+    `CausationId` VARCHAR(255) NULL,
     `Created` TIMESTAMP(3) NOT NULL DEFAULT NOW(3),
-    `CreatedID` INT(11) NOT NULL AUTO_INCREMENT, 
+    `CreatedID` INT(11) NOT NULL AUTO_INCREMENT,
     UNIQUE(`CreatedID`),
+    KEY `idx_CausationId` (`CausationId`),
     PRIMARY KEY (`MessageId`)
 ) ENGINE = InnoDB;
 ```
+
+`CausationId` and its index arrive at Brighter 10.8.0. A table an earlier release created still takes deposits without them, but [Replay On Seen](/contents/ReplayOnSeenReference.md#store-support) needs both; [Database Provisioning](/contents/BoxProvisioning.md) adds them as the Outbox **V8** migration.
 
 ## MySQL Outbox Configuration
 

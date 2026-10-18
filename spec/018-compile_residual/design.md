@@ -535,7 +535,7 @@ cited from its rows, not restated.
 
 ## Design Decisions
 
-D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and D7 needed no ruling. D8 and D9 were ruled at phase 2, on 2026-10-05 and 2026-10-09. D10–D12 were ruled at phase 3, on 2026-10-13. D13–D18 were ruled at phase 4, on 2026-10-15, and D19 on 2026-10-18.
+D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and D7 needed no ruling. D8 and D9 were ruled at phase 2, on 2026-10-05 and 2026-10-09. D10–D12 were ruled at phase 3, on 2026-10-13. D13–D18 were ruled at phase 4, on 2026-10-15, and D19 and D20 on 2026-10-18.
 
 | # | Question | Decision | Ruled |
 |---|---|---|---|
@@ -558,6 +558,7 @@ D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and 
 | **D17** | **`MongoDBOutbox.md`'s handler cannot run** (R5, ledger 36): it asks for an `IAmATransactionConnectionProvider` nothing registers, casts it to `MongoDbUnitOfWork`, and reads members that type does not have | **Rewrite** on `IAmAMongoDbTransactionProvider`, with a behaviour probe against MongoDB. Carried out at 4.3, when ruled, rather than phase 7. The probe amended the recommendation: that interface cannot be passed to `DepositPostAsync`, so the page uses the provider as `IAmABoxTransactionProvider<IClientSessionHandle>` (`probe/s5/mongo-outbox`) | **Yes**, the maintainer, 2026-10-15 |
 | **D18** | **File the `IAmAMongoDbTransactionProvider` mismatch upstream?** It is an `IAmABoxTransactionProvider<IClientSession>`; `MongoDbOutbox` and the transaction type Brighter configures are `IClientSessionHandle`, so `DepositPostAsync` rejects it (D17, `probe/s5/mongo-outbox`) | **Yes**, as D16: **BrighterCommand/Brighter#4616** | **Yes**, the maintainer, 2026-10-15 |
 | **D19** | **Sweep the prose that dates a defect to 10.7.0?** The pins moved to 10.8.0 at phase 3; the prose did not. Task 4.5 found **29** lines on **22** pages saying *"at 10.7.0"*, and five defects they describe have fixes in the 10.8.0 tag (#4414, #4335, #4437, #4432, #4510), with `OnceOnlyAction.Replay` still called unreleased. #4414's was probed and repaired at 4.5 (`probe/s1/scheduler-autoscan`, ledger 40); the rest are behavioural claims not yet run | **A new task in phase 4, 4.5a**: each defect probed at 10.7.0 (the control) and 10.8.0, every site repaired, one ledger row per defect, before 4.6 closes | **Yes**, the maintainer, 2026-10-18 |
+| **D20** | **Refresh the relational DDL the pages show?** (R7) Seven blocks show their builder's 10.7.0 output; at 10.8.0 every relational builder adds `CausationId`, and the Outbox builders a causation index. A 10.7.0 table still deposits, but Replay needs the column | **A new task in phase 4, 4.5b**: each block regenerated from 10.8.0's `GetDDL`, run against its database, the page saying Replay needs the column; the tutorial's step replayed | **Yes**, the maintainer, 2026-10-18 |
 
 ## What the Design Review Found — 2026-10-05
 

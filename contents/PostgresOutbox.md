@@ -67,7 +67,7 @@ string binaryDdl = PostgreSqlOutboxBuilder.GetDDL(tableName, binaryMessagePayloa
 
 ### **Example SQL Script**
 
-Running `PostgreSqlOutboxBuilder.GetDDL("Outbox")` against **Brighter V10 (10.7.0)** generates the following SQL script:
+Running `PostgreSqlOutboxBuilder.GetDDL("Outbox")` against **Brighter V10 (10.8.0)** generates the following SQL script:
 
 ```sql
 CREATE TABLE IF NOT EXISTS "outbox"
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS "outbox"
     CorrelationId character varying(255) NULL,
     ReplyTo character varying(255) NULL,
     ContentType character varying(128) NULL,
-    PartitionKey character varying(128) NULL,  
+    PartitionKey character varying(128) NULL,
     WorkflowId character varying(255) NULL,
     JobId character varying(255) NULL,
     Dispatched timestamptz NULL,
@@ -94,9 +94,13 @@ CREATE TABLE IF NOT EXISTS "outbox"
     TraceState character varying (255) NULL,
     Baggage text NULL,
     DataRef character varying (255) NULL,
+    CausationId character varying (255) NULL,
     SpecVersion character varying (255) NULL
 );
+CREATE INDEX IF NOT EXISTS idx_outbox_causationid ON "outbox" (causationid);
 ```
+
+`CausationId` and its index arrive at Brighter 10.8.0. A table an earlier release created still takes deposits without them, but [Replay On Seen](/contents/ReplayOnSeenReference.md#store-support) needs both; [Database Provisioning](/contents/BoxProvisioning.md) adds them as the Outbox **V8** migration.
 
 **Note the table name.** You configured `"Outbox"` and the DDL emits `"outbox"`: Brighter lowercases the identifier and then quotes it, so that a configured mixed-case name still resolves to the table that older, unquoted DDL created. A `select` against `"Outbox"` therefore fails with `relation "Outbox" does not exist` while `select * from outbox` succeeds.
 

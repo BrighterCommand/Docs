@@ -108,9 +108,12 @@ CREATE TABLE IF NOT EXISTS `Inbox`(
     `CommandType` STRING(256),
     `CommandBody` JSON,
     `Timestamp` TIMESTAMP,
-    `ContextKey` STRING(256)
+    `ContextKey` STRING(256),
+    `CausationId` STRING(256)
 ) PRIMARY KEY (`CommandId`, `ContextKey`)
 ```
+
+`CausationId` arrives at Brighter 10.8.0. A table an earlier release created still records commands without it, but [Replay On Seen](/contents/ReplayOnSeenReference.md#store-support) needs it, and the Spanner provisioner adds it only on a fresh install, so add it by hand to an existing table.
 
 Duplicate inserts surface as a `SpannerException` carrying an `AlreadyExists` status, which the
 Inbox translates into the `OnceOnlyAction` you configured.

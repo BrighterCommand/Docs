@@ -68,32 +68,36 @@ string binaryDdl = SqliteOutboxBuilder.GetDDL(tableName, hasBinaryMessagePayload
 Running `SqliteOutboxBuilder.GetDDL("Outbox")` will generate the following SQL script:
 
 ```sql
-CREATE TABLE Outbox (
-    "MessageId" TEXT NOT NULL,
-    "Topic" TEXT NOT NULL,
-    "MessageType" TEXT NOT NULL,
-    "Timestamp" TEXT NOT NULL,
-    "CorrelationId" TEXT NULL,
-    "ReplyTo" TEXT NULL,
-    "ContentType" TEXT NULL,
-    "PartitionKey" TEXT NULL,
-    "WorkflowId" TEXT NULL,
-    "JobId" TEXT NULL,
-    "Dispatched" TEXT NULL,
-    "HeaderBag" TEXT NOT NULL,
-    "Body" TEXT NOT NULL,
-    "Source" TEXT NULL,
-    "Type" TEXT NULL,
-    "DataSchema" TEXT NULL,
-    "Subject" TEXT NULL,
-    "TraceParent" TEXT NULL,
-    "TraceState" TEXT NULL,
-    "Baggage" TEXT NULL,
-    "Created" TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f', 'now')),
-    "CreatedID" INTEGER PRIMARY KEY AUTOINCREMENT,
-    CONSTRAINT "PK_Outbox" PRIMARY KEY ("MessageId")
+CREATE TABLE IF NOT EXISTS Outbox
+(
+    [MessageId] TEXT NOT NULL COLLATE NOCASE,
+    [MessageType] TEXT NULL,
+    [Topic] TEXT NULL,
+    [Timestamp] TEXT NULL,
+    [CorrelationId] TEXT NULL,
+    [ReplyTo] TEXT NULL,
+    [ContentType] TEXT NULL,
+    [PartitionKey] TEXT NULL,
+    [WorkflowId] TEXT NULL,
+    [JobId] TEXT NULL,
+    [Dispatched] TEXT NULL,
+    [HeaderBag] TEXT NULL,
+    [Body] TEXT NULL,
+    [Source] TEXT NULL,
+    [Type] TEXT NULL,
+    [DataSchema] TEXT NULL,
+    [Subject] TEXT NULL,
+    [TraceParent] TEXT NULL,
+    [TraceState] TEXT NULL,
+    [Baggage] TEXT NULL,
+    [DataRef] TEXT NULL,
+    [CausationId] TEXT NULL,
+    [SpecVersion] TEXT NULL
 );
+CREATE INDEX IF NOT EXISTS [idx_Outbox_CausationId] ON [Outbox] ([CausationId]);
 ```
+
+`CausationId` and its index arrive at Brighter 10.8.0. A table an earlier release created still takes deposits without them, but [Replay On Seen](/contents/ReplayOnSeenReference.md#store-support) needs both; [Database Provisioning](/contents/BoxProvisioning.md) adds them as the Outbox **V8** migration.
 
 ## SQLite Outbox Configuration
 

@@ -1347,6 +1347,10 @@ predicts knowing that a fragment is made whole before it is skipped.
   - Input: `grep -rn '10\.7\.0' contents/`; the five defects D19 names, and `OnceOnlyAction.Replay`
   - Output: each defect run at 10.7.0 (the control) and 10.8.0 under `probe/<group>/<name>/`, a
     *Claim / Case / Control* table; every site repaired; one § *Defect ledger* row per defect
+- [x] **Task 4.5b:** Refresh the relational DDL (D20)
+  - Input: R7's seven blocks; each builder's `GetDDL` at 10.7.0 and 10.8.0
+  - Output: each block regenerated from 10.8.0 and run against its database, under
+    `probe/s5/<name>/`; the page says Replay needs `CausationId`; one ledger row
 - [ ] **Task 4.6:** Close phase 4
   - Input: § 1 obligations 6, 7, 19
   - Output: as 3.7's
@@ -1685,10 +1689,39 @@ inbox pages that link to it; `SchedulingAMessage.md`, `FAQ.md`, `InMemorySchedul
 |---:|---|---|
 | R7 | the Outbox DDL on `MSSQLOutbox.md`, `MySQLOutbox.md`, `PostgresOutbox.md`, `SpannerOutbox.md`, `SqliteOutbox.md`, the Inbox DDL on `SpannerInbox.md`, and `TutorialDurableOutbox.md`'s table (7 blocks) | Each shows its builder's 10.7.0 output. At 10.8.0 every relational builder adds `CausationId`, and the Outbox builders a causation index. A 10.7.0 table still deposits (the stores probe for the column), but Replay needs it. Regenerate each from 10.8.0's `GetDDL`, run against its database, and say on each page that Replay needs the column? |
 
+**Ruled 2026-10-18, as recommended:** R7 is design **D20**, task 4.5b.
+
 **Measured after 4.5a:** `--report` → **994 / 536 / 441 / 17**, 107 findings, unmoved: the one block
 changed, `Monitoring.md` #1, stays BUILT. `pagelint` 0 errors / **346**; `--changed origin/master`
 0 errors. `linkcheck` 168 / 0. `grep -rn '10\.7\.0' contents/` → **15**, every one a 10.7.0 workaround
 or history beside the 10.8.0 statement, the captured response, or R7's DDL.
+
+#### The relational DDL (4.5b, D20)
+
+**Each block against its builder**, `probe/s5/ddl-refresh` (`gen DIR` writes each `GetDDL` the page
+names; `run` creates each table under a unique name on its database, probes the column, drops it):
+
+| Page | The block against 10.7.0's `GetDDL` | Created at 10.8.0 / 10.7.0 (the control) |
+|---|---|---|
+| `PostgresOutbox.md` | identical, but for whitespace | `CausationId` present / absent |
+| `SpannerOutbox.md` | identical, but for whitespace | present / absent; `GetCausationIndexDDL` exists / does not |
+| `SpannerInbox.md` | identical, but for whitespace | present / absent |
+| `MSSQLOutbox.md` | **not the builder's**: `UNIQUEIDENTIFIER` ids, `DATETIME2`, a `CreatedID` identity and `PK_Outbox`, none of which any 10.x `SqlOutboxBuilder` writes | present / absent |
+| `MySQLOutbox.md` | **not the builder's**: no `IF NOT EXISTS`, `PartitionKey` 255 not 128, no `DataRef` or `SpecVersion` | present / absent |
+| `SqliteOutbox.md` | **not the builder's**, and not valid SQLite: a `PRIMARY KEY AUTOINCREMENT` column beside a `PRIMARY KEY` constraint | present / absent |
+
+**Said and measured.** Three pages said *"Running `…GetDDL("Outbox")` will generate the following"*
+over DDL no release generates; the other three were 10.7.0's output. The Spanner probe first
+reported the column present at **both** versions: Spanner's reader is lazy, so a missing column
+throws at `Read()`, not `ExecuteReader()`. Fixed, it reads; the control then failed as it should.
+
+**Repaired:** each block is 10.8.0's output, verbatim, and each page says `CausationId` arrived at
+10.8.0, that an older table still deposits, and that Replay needs it, linking
+`ReplayOnSeenReference.md` § *Store Support*. `SpannerOutbox.md` gains
+`GetCausationIndexDDL`'s statement, which `run` creates; the Spanner pages say the provisioner adds
+the column only on a fresh install, as `ReplayOnSeenReference.md` already did. `TutorialDurableOutbox.md`
+was not a site: its *CREATE TABLE* is a comment, and the tutorial provisions the table.
+SQL blocks, so `blockcheck` does not move. `pagelint` 0 errors on the six; `linkcheck` 0.
 
 ### Phase 5 — S3, Darker; Understanding Brighter *(6 tasks, one PR)*
 
@@ -2041,6 +2074,7 @@ design, and their greps were run there.*
 | 48 | `InstrumentationOptions` listed without `CircuitBreaker`, which 10.8.0 added to `All` | `Telemetry.md` | `grep -cE '^\| `CircuitBreaker` \|' contents/Telemetry.md` | **0** | **1** | task 4.5a, read | 4 |
 | 49 | #4443 and #4444 stated as current: the DynamoDB and Spanner Outboxes ignore `TrippedTopics`; 10.8.0 fixes both | `SweeperCircuitBreaking.md` | `grep -rnF 'it accepts the list and ignores it' contents/` | **1** | **0** | task 4.5a, `probe/s5/tripped-topics` | 4 |
 | 50 | `messaging.system` said to be always `internal_bus` on pump spans; at 10.8.0 it is the transport's | `Telemetry.md` | `grep -rnF 'Always `internal_bus` on pump spans' contents/` | **1** | **0** | task 4.5a, `probe/s5/messaging-system` | 4 |
+| 51 | Relational DDL that is not 10.8.0's `GetDDL`: three blocks 10.7.0's output, without `CausationId`, and three no release generates, one of them invalid SQLite | `MSSQLOutbox.md`, `MySQLOutbox.md`, `PostgresOutbox.md`, `SqliteOutbox.md`, `SpannerOutbox.md`, `SpannerInbox.md` | `grep -LiE causationid` on the six pages | **6** | **0** | task 4.5b, `probe/s5/ddl-refresh` | 4 |
 
 ## Friction ledger
 
