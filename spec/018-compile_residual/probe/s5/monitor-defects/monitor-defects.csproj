@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 4.5a (D19): Monitoring.md § Monitoring Limitations names two 10.7.0 defects, #4453 (a
+       throwing monitored handler's exception replaced by NotSupportedException) and #4454
+       ([MonitorAsync] has no async mapper for MonitorEvent). Run once per version:
+       dotnet run -p:BV=10.7.0 (the control) and the default 10.8.0 (the case). -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable><BV Condition="'$(BV)'==''">10.8.0</BV></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="$(BV)" />
+  </ItemGroup>
+</Project>

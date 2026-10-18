@@ -17,7 +17,7 @@ Each event names the handler, carries the request it handled, and records how lo
 
 Monitoring needs two things in your container besides Brighter itself:
 
-- An `IAmAControlBusSender`, which sends each `MonitorEvent` to your broker
+- An `IAmAControlBusSender`, which sends each `MonitorEvent` to your broker, registered also as `IAmAControlBusSenderAsync` if you use `[MonitorAsync]`
 - A `MonitorConfiguration`, which turns monitoring on and names this instance in every event
 
 `ControlBusSenderFactory` builds a sender from an Outbox and a producer registry. The registry needs a publication whose `RequestType` is `MonitorEvent`; its `Topic` is where the events go. This example uses the in-memory bus; in an application, use your transport's producer registry factory, such as `RmqProducerRegistryFactory`, with the same publication:
@@ -45,6 +45,8 @@ var controlBusSender = new ControlBusSenderFactory().Create<Message, Committable
 
 var services = new ServiceCollection();
 services.AddSingleton(controlBusSender);
+// [MonitorAsync] resolves the async interface, which the same sender implements
+services.AddSingleton((IAmAControlBusSenderAsync)controlBusSender);
 services.AddSingleton(new MonitorConfiguration
 {
     IsMonitoringEnabled = true,
@@ -86,7 +88,7 @@ public class GreetingCommandHandler : RequestHandler<GreetingCommand>
 
 The `step` and `timing` place the monitor in the pipeline like any other attribute. With `step: 1`, the time an event records includes every later step in the pipeline, not only your handler. `handlerType` is what the event reports as the handler's name.
 
-`[MonitorAsync]` is the attribute for a `RequestHandlerAsync<T>`; see [Monitoring Limitations](#monitoring-limitations) before you use it.
+`[MonitorAsync]` is the attribute for a `RequestHandlerAsync<T>`. It needs the sender registered as `IAmAControlBusSenderAsync`, as the configuration above does; without it, Brighter cannot build the pipeline and `Send` throws `ConfigurationException`.
 
 ## Turning Monitoring On and Off
 
@@ -119,9 +121,9 @@ A consumer on that topic can forward the events to your monitoring tool, for exa
 
 ## Monitoring Limitations
 
-Two defects in Brighter 10.7.0 limit what monitoring can do:
+Brighter 10.8.0 fixes two defects that limited monitoring at 10.7.0. If you are on 10.7.0:
 
-- **A monitored handler that throws loses its exception.** The monitor tries to send an `ExceptionThrown` event carrying the exception, and serializing an `Exception` fails, so the caller receives a `NotSupportedException` (*"Serialization and deserialization of 'System.Reflection.MethodBase' instances is not supported"*) instead of the exception your handler threw. Monitor only handlers whose exceptions you do not need to see, until this is fixed ([Brighter#4453](https://github.com/BrighterCommand/Brighter/issues/4453))
+- **A monitored handler that throws loses its exception.** The monitor tries to send an `ExceptionThrown` event carrying the exception, and serializing an `Exception` fails, so the caller receives a `NotSupportedException` (*"Serialization and deserialization of 'System.Reflection.MethodBase' instances is not supported"*) instead of the exception your handler threw ([Brighter#4453](https://github.com/BrighterCommand/Brighter/issues/4453))
 - **`[MonitorAsync]` cannot send through the sender `ControlBusSenderFactory` builds.** That sender has no async message mapper for `MonitorEvent`, so an async monitored handler fails with *"No message mapper defined for request"* ([Brighter#4454](https://github.com/BrighterCommand/Brighter/issues/4454))
 
 ## Further Reading

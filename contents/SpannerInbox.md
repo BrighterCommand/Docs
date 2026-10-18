@@ -52,7 +52,7 @@ public static class SpannerInboxRegistration
 }
 ```
 
-In Brighter 10.7.0 this configuration takes effect only in an application that also calls `AddProducers`; see [Global Inbox Configuration in a Consumer-Only Application](/contents/BrighterInboxSupport.md#global-inbox-configuration-in-a-consumer-only-application).
+Before Brighter 10.8.0 this configuration took effect only in an application that also called `AddProducers`; see [Global Inbox Configuration in a Consumer-Only Application](/contents/BrighterInboxSupport.md#global-inbox-configuration-in-a-consumer-only-application).
 
 Constructed with the configuration alone, `SpannerInboxAsync` builds its own
 `SpannerConnectionProvider`; a second constructor takes an `IAmARelationalDbConnectionProvider`

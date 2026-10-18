@@ -137,7 +137,7 @@ public class OrderService
 }
 ```
 
-**Note:** Every scheduler but one supports cancellation. At Brighter 10.7.0 the InMemory scheduler cannot cancel or reschedule a request you scheduled through the command processor: `CancelAsync` returns, and the request still runs when it falls due ([#4437](https://github.com/BrighterCommand/Brighter/issues/4437)). Among the others, rescheduling is the operation that varies: the Azure Service Bus scheduler does not reschedule, so cancel the message and schedule it again instead. See [Choosing a Scheduler](/contents/BrighterSchedulerSupport.md#choosing-a-scheduler).
+**Note:** Every scheduler supports cancellation. Before Brighter 10.8.0 the InMemory scheduler could not cancel or reschedule a request scheduled through the command processor: `CancelAsync` returned, and the request still ran when it fell due ([#4437](https://github.com/BrighterCommand/Brighter/issues/4437)). Among the schedulers, rescheduling is the operation that varies: the Azure Service Bus scheduler does not reschedule, so cancel the message and schedule it again instead. See [Choosing a Scheduler](/contents/BrighterSchedulerSupport.md#choosing-a-scheduler).
 
 ### Retry with Exponential Backoff
 

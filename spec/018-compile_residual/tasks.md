@@ -1343,7 +1343,7 @@ predicts knowing that a fragment is made whole before it is skipped.
 - [x] **Task 4.5:** Second pass for S2
   - Input: 4.1's recurrences; rulings asked
   - Output: as 3.6's
-- [ ] **Task 4.5a:** Sweep the prose that dates a defect to 10.7.0 (D19)
+- [x] **Task 4.5a:** Sweep the prose that dates a defect to 10.7.0 (D19)
   - Input: `grep -rn '10\.7\.0' contents/`; the five defects D19 names, and `OnceOnlyAction.Replay`
   - Output: each defect run at 10.7.0 (the control) and 10.8.0 under `probe/<group>/<name>/`, a
     *Claim / Case / Control* table; every site repaired; one § *Defect ledger* row per defect
@@ -1627,6 +1627,68 @@ ruled **D19**: task 4.5a.
 **Off-group term:** `AgreementDispatcherRouting.md`, `SchedulingAMessage.md`, `InMemoryScheduler.md`,
 `PostgreSQLMessageBroker.md`, all prose. `pagelint` 0 errors / **346**; `--changed origin/master`
 0 errors; `linkcheck` 0 on the four pages.
+
+#### Sweep (4.5a, D19)
+
+**Measured at `5347f53`:** `grep -rn '10\.7\.0' contents/` → **29** lines on **22** pages. Each line is
+either a defect dated to 10.7.0, or a measurement labelled with it. **Two methods agree** on the
+defect sites: the grep, and `grep -rl 'issues/<n>' contents/` for each issue the lines cite.
+
+**Every defect was run at both versions**, each probe a `-p:BV=` project defaulting to 10.8.0, so
+10.7.0 is the control that reproduces the page. The pin is the case:
+
+| Claim (as the page said it at 10.7.0) | Case, 10.8.0 | Control, 10.7.0 | Probe | Result |
+|---|---|---|---|---|
+| #4335: a consumer-only application gets no global Inbox, so a duplicate is handled again | `AddConsumers` + `InboxConfiguration`, no `AddProducers`, the same command twice | the same; with `AddProducers`; `[UseInbox]` alone | `s5/inbox-no-producers` (`-- consumer\|producers\|attribute`) | handled 1, `OnceOnlyException` / **handled 2, no error**; handled 1; handled 1. **Fixed** (ledger 41) |
+| #4437: the InMemory scheduler cannot cancel or reschedule a request the command processor scheduled | cancel and reschedule by the id `SendAsync` returns | the same; an uncancelled schedule; `scheduler.ScheduleAsync` then cancel | `s1/inmemory-cancel` | cancelled; rescheduled to the new time / **runs anyway; `ReSchedulerAsync` false**; runs; cancelled at both. **Fixed** (ledger 42) |
+| `OnceOnlyAction.Replay` is *"not in a released package yet"* | a one-line use of `OnceOnlyAction.Replay` | the same | `s5/replay-released` | builds, prints `Replay` / `CS0117`. **Released** (ledger 43) |
+| #4432: Decompress misses a body compressed by `WrapAsync` | GZip, Zlib, Brotli, async wrap then unwrap | the same; the sync path | `s5/compress-async` | all decompress / **all three stay compressed**; sync decompresses. **Fixed** (ledger 44) |
+| #4510: no external bus, no Command Processor span | a `Send` with the tracer and no producers | the same; with `AddProducers` | `s5/tracer-no-bus` | 1 span / **0 spans**; 1 span. **Fixed** (ledger 45) |
+| #4453, #4454: a monitored handler that throws loses its exception; `[MonitorAsync]` has no mapper | `Monitoring.md` #1 verbatim, a throwing handler; an async handler | the same; a handler that returns | `s5/monitor-defects` | the handler's exception; returns / **`NotSupportedException`; *"No message mapper"***; returns. **Fixed** (ledger 46) |
+| #4443, #4444: the DynamoDB and Spanner Outboxes ignore `TrippedTopics` | two topics outstanding, one tripped | the same; nothing tripped | `s5/tripped-topics` (`-- dynamo\|spanner`; DynamoDB V3 package run, V4 read) | the tripped topic left out / **both returned**; both returned. **Fixed** (ledger 49) |
+| `messaging.system` is always `internal_bus` on pump spans | a Reactor over Postgres | the same; the in-memory bus | `s5/messaging-system` (`-- postgres\|inmemory`) | `postgres` / **`internal_bus`**; `internal_bus` at both. **Fixed** (ledger 50) |
+
+**Every 10.7.0 claim held at 10.7.0, and every one is false at the pin.** The pages now state the
+10.8.0 behaviour and keep each 10.7.0 workaround as such: `BrighterInboxSupport.md` and the nine
+inbox pages that link to it; `SchedulingAMessage.md`, `FAQ.md`, `InMemoryScheduler.md`;
+`DispatcherConfigurationReference.md`; `Compression.md`; `Telemetry.md`,
+`ConfiguringOpenTelemetry.md`; `Monitoring.md`; `SweeperCircuitBreaking.md`. Task 4.5's
+`TutorialFirstMessage.md` was not a site: its *4437* is inside a log event id.
+
+**What the runs hid** (as phase 3's hard rows hid falsehoods behind a compile):
+- **Ledger 47.** `Monitoring.md` #1 registered the control-bus sender as `IAmAControlBusSender`
+  only, and `MonitorHandlerAsync` takes `IAmAControlBusSenderAsync`, so `[MonitorAsync]` fails at
+  **both** versions with `ConfigurationException` ← *"Unable to resolve service for type
+  'Paramore.Brighter.IAmAControlBusSenderAsync'"*. The block registers both, which
+  `s5/monitor-defects`'s registered row runs; it stays BUILT
+- **Ledger 48.** 10.8.0 added `InstrumentationOptions.CircuitBreaker` and put it in `All`
+  (`InstrumentationOptions.cs:43–44`), so `Telemetry.md`'s *"`All` | Every flag above"* was short a
+  flag. The table gains its row, read from `BrighterTracer.CreateCircuitBreakerSpan`; not run
+
+**Measurements, re-derived rather than relabelled:**
+- `Telemetry.md`'s `RequestContext` row and § *Adding Custom Span Attributes*: still true at 10.8.0.
+  `InstrumentationOptions.RequestContext` appears only in `///` comments at both tags, and
+  `BrighterTracer.cs` reads no request context at either. Both relabelled 10.8.0
+- `ConfiguringOpenTelemetry.md`: the assembly version is `10.0.0.0` at 10.8.0, printed by every
+  probe above. Relabelled
+- `RelationalDatabaseConfigurationReference.md`'s seventeen components: the 10.8.0 tag adds two
+  packages that name the type, `Extensions.DependencyInjection` (the hosted services that resolve
+  it) and `MessagingGateway.MsSql` (already a row). Seventeen, relabelled
+- `BrighterControlAPI.md`'s sample response carries `"executingAssemblyVersion": "10.7.0+…"`: a
+  captured response, true as captured. Unchanged
+- `PostgresOutbox.md`'s DDL, *"against Brighter V10 (10.7.0)"*: **not true at 10.8.0**, whose
+  relational builders all add `CausationId` (and the Outboxes an index). Put as R7, below
+
+**Ruling asked** (obligation 21, a change of scope):
+
+| # | Block | Question |
+|---:|---|---|
+| R7 | the Outbox DDL on `MSSQLOutbox.md`, `MySQLOutbox.md`, `PostgresOutbox.md`, `SpannerOutbox.md`, `SqliteOutbox.md`, the Inbox DDL on `SpannerInbox.md`, and `TutorialDurableOutbox.md`'s table (7 blocks) | Each shows its builder's 10.7.0 output. At 10.8.0 every relational builder adds `CausationId`, and the Outbox builders a causation index. A 10.7.0 table still deposits (the stores probe for the column), but Replay needs it. Regenerate each from 10.8.0's `GetDDL`, run against its database, and say on each page that Replay needs the column? |
+
+**Measured after 4.5a:** `--report` → **994 / 536 / 441 / 17**, 107 findings, unmoved: the one block
+changed, `Monitoring.md` #1, stays BUILT. `pagelint` 0 errors / **346**; `--changed origin/master`
+0 errors. `linkcheck` 168 / 0. `grep -rn '10\.7\.0' contents/` → **15**, every one a 10.7.0 workaround
+or history beside the 10.8.0 statement, the captured response, or R7's DDL.
 
 ### Phase 5 — S3, Darker; Understanding Brighter *(6 tasks, one PR)*
 
@@ -1969,6 +2031,16 @@ design, and their greps were run there.*
 | 38 | Two `[UsePolicy]` attributes on one method advised; `UsePolicyAttribute` has no `AllowMultiple`, so it is `CS0579` | `MigratingToPollyV8.md` | `grep -rn 'earlier step than' contents/` | **1** | **0** | task 4.4, `probe/s2/legacy-policy-order` | 4 |
 | 39 | `new PolicyRegistry()` handed to Brighter, which throws `ConfigurationException` without `CommandProcessor.RETRYPOLICY` and `CIRCUITBREAKER`; `DefaultPolicy` holds both | `MigratingToPollyV8.md`; recurs on `HowConfiguringTheCommandProcessorWorks.md` | `grep -rnF 'new PolicyRegistry()' contents/` | **3** | **0** | task 4.4, `probe/s2/legacy-policy-order` | 4 |
 | 40 | #4414's fix said to be *"merged and not yet released"*, with a workaround *"until it is"*; it is in 10.8.0, the pinned release | `SchedulingAMessage.md`; the framing recurs on `InMemoryScheduler.md`, `PostgreSQLMessageBroker.md` | `grep -rnF 'merged and not yet released' contents/` | **1** | **0** | task 4.5, `probe/s1/scheduler-autoscan` | 4 |
+| 41 | #4335 said unfixed: a consumer-only application gets no global Inbox, *"in no release yet"*; 10.8.0 fixes it | `BrighterInboxSupport.md`; recurs on `DynamoInbox.md`, `FirestoreInbox.md`, `InMemoryInbox.md`, `MongoDBInbox.md`, `MSSQLInbox.md`, `MySQLInbox.md`, `PostgresInbox.md`, `SpannerInbox.md`, `SqliteInbox.md` | `grep -rnE 'In Brighter 10\.7\.0 this configuration\|in no release yet' contents/` | **10** | **0** | task 4.5a, `probe/s5/inbox-no-producers` | 4 |
+| 42 | #4437 stated as current: the InMemory scheduler cannot cancel or reschedule a command processor's request; 10.8.0 fixes it | `SchedulingAMessage.md`, `FAQ.md`, `InMemoryScheduler.md` | `grep -rnE 'At Brighter 10\.7\.0 the InMemory scheduler' contents/` | **3** | **0** | task 4.5a, `probe/s1/inmemory-cancel` | 4 |
+| 43 | `OnceOnlyAction.Replay` said to be *"not in a released package yet"*; it is in 10.8.0 | `DispatcherConfigurationReference.md` | `grep -rnF 'not in a released package yet' contents/` | **1** | **0** | task 4.5a, `probe/s5/replay-released` | 4 |
+| 44 | #4432 stated as current: Decompress misses a body `WrapAsync` compressed; 10.8.0 fixes it | `Compression.md` | `grep -rnF 'At 10.7.0, Decompress does not' contents/` | **1** | **0** | task 4.5a, `probe/s5/compress-async` | 4 |
+| 45 | #4510 stated as current: no Command Processor span without an external bus; 10.8.0 fixes it | `Telemetry.md`, `ConfiguringOpenTelemetry.md` | `grep -rnE 'is given the tracer only when\|Command Processor takes that tracer only when' contents/` | **2** | **0** | task 4.5a, `probe/s5/tracer-no-bus` | 4 |
+| 46 | #4453 and #4454 stated as current monitoring limits; 10.8.0 fixes both | `Monitoring.md` | `grep -rnF 'Two defects in Brighter 10.7.0' contents/` | **1** | **0** | task 4.5a, `probe/s5/monitor-defects` | 4 |
+| 47 | The control-bus sender registered only as `IAmAControlBusSender`; `[MonitorAsync]` resolves `IAmAControlBusSenderAsync`, so it fails at 10.7.0 and 10.8.0 | `Monitoring.md` | `grep -c 'IAmAControlBusSenderAsync)controlBusSender' contents/Monitoring.md` | **0** | **1** | task 4.5a, `probe/s5/monitor-defects` | 4 |
+| 48 | `InstrumentationOptions` listed without `CircuitBreaker`, which 10.8.0 added to `All` | `Telemetry.md` | `grep -cE '^\| `CircuitBreaker` \|' contents/Telemetry.md` | **0** | **1** | task 4.5a, read | 4 |
+| 49 | #4443 and #4444 stated as current: the DynamoDB and Spanner Outboxes ignore `TrippedTopics`; 10.8.0 fixes both | `SweeperCircuitBreaking.md` | `grep -rnF 'it accepts the list and ignores it' contents/` | **1** | **0** | task 4.5a, `probe/s5/tripped-topics` | 4 |
+| 50 | `messaging.system` said to be always `internal_bus` on pump spans; at 10.8.0 it is the transport's | `Telemetry.md` | `grep -rnF 'Always `internal_bus` on pump spans' contents/` | **1** | **0** | task 4.5a, `probe/s5/messaging-system` | 4 |
 
 ## Friction ledger
 

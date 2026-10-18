@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 4.5a (D19): DispatcherConfigurationReference.md says OnceOnlyAction.Replay "is not in a
+       released package yet: it ships after Brighter 10.7.0". A compile, not a run: dotnet build
+       -p:BV=10.7.0 (the control, expected CS0117) and the default 10.8.0. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable><BV Condition="'$(BV)'==''">10.8.0</BV></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="$(BV)" />
+  </ItemGroup>
+</Project>

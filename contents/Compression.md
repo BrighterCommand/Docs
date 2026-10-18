@@ -43,7 +43,7 @@ We provide a matching **UnwrapWithAttribute** of **Decompress** that will use th
 
 In this example, we look for a GZip compressed body and if we find it, decompress the body.
 
-**At 10.7.0, Decompress does not recognise a body compressed on the async path.** `WrapAsync` — which `PostAsync` and `DepositPostAsync` use — sets the *Content Type* to `application/gzip; charset=utf-8`, and **Decompress** compares the whole *Content Type* with `application/gzip`, so the message reaches your mapper still compressed. The same holds for Zlib and Brotli. A body compressed by the synchronous `Post` path round-trips. This is [BrighterCommand/Brighter#4432](https://github.com/BrighterCommand/Brighter/issues/4432).
+**Before Brighter 10.8.0, Decompress did not recognise a body compressed on the async path.** `WrapAsync` — which `PostAsync` and `DepositPostAsync` use — sets the *Content Type* to `application/gzip; charset=utf-8`, and at 10.7.0 **Decompress** compared the whole *Content Type* with `application/gzip`, so the message reached your mapper still compressed. The same held for Zlib and Brotli. From 10.8.0 it compares the media type alone, and both paths round-trip ([BrighterCommand/Brighter#4432](https://github.com/BrighterCommand/Brighter/issues/4432)). On 10.7.0, compress on the synchronous `Post` path.
 
 ```csharp
 using System.Text.Json;

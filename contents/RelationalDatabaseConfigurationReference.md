@@ -44,7 +44,7 @@ so **changing either against an existing table is a migration, not a setting**. 
 
 ## Which Components Take the Relational Configuration
 
-Seventeen, across four families, measured at `10.7.0` by looking for
+Seventeen, across four families, measured at `10.8.0` by looking for
 `IAmARelationalDatabaseConfiguration` in each package.
 
 | Family | Provider | Page |

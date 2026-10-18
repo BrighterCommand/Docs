@@ -327,7 +327,7 @@ public class ReportService(IAmACommandProcessor commandProcessor, ILogger<Report
 
 ### Cancelling a Scheduled Job
 
-At Brighter 10.7.0 the InMemory scheduler can cancel or reschedule only a request it scheduled itself, through `IAmARequestSchedulerAsync`. The command processor creates a new scheduler for each `SendAsync`, `PublishAsync` or `PostAsync` with a delay, so an id returned by one of those, like `schedulerId` in the examples above, cannot be cancelled: `CancelAsync` returns and the request still runs ([#4437](https://github.com/BrighterCommand/Brighter/issues/4437)). When you need to cancel, schedule through the scheduler:
+From Brighter 10.8.0 an id returned by `SendAsync`, `PublishAsync` or `PostAsync` with a delay, like `schedulerId` in the examples above, can be cancelled or rescheduled through `IAmARequestSchedulerAsync`. At 10.7.0 it could not: the command processor created a new scheduler for each call, so `CancelAsync` returned and the request still ran ([#4437](https://github.com/BrighterCommand/Brighter/issues/4437)). On 10.7.0, schedule through the scheduler when you need to cancel; this works at 10.8.0 too:
 
 ```csharp
 using System;

@@ -211,7 +211,7 @@ services.AddHealthChecks()
 
 ## Sweeper Circuit Breaking Outbox Support
 
-The sweeper does not filter tripped topics itself. It passes `TrippedTopics` to the Outbox when it asks for outstanding messages, and the Outbox leaves those topics out of its query — so circuit breaking works only where the Outbox honours that list. At Brighter 10.7.0:
+The sweeper does not filter tripped topics itself. It passes `TrippedTopics` to the Outbox when it asks for outstanding messages, and the Outbox leaves those topics out of its query — so circuit breaking works only where the Outbox honours that list. At Brighter 10.8.0 every Outbox does:
 
 | Outbox | Leaves tripped topics out |
 |---|---|
@@ -219,10 +219,10 @@ The sweeper does not filter tripped topics itself. It passes `TrippedTopics` to 
 | MongoDB | Yes |
 | Firestore | Yes |
 | InMemory | Yes |
-| DynamoDB, both the V3 and V4 packages | **No** — it accepts the list and ignores it ([#4443](https://github.com/BrighterCommand/Brighter/issues/4443)) |
-| Spanner | **No** — its query has no place for the filter, so the filter is dropped ([#4444](https://github.com/BrighterCommand/Brighter/issues/4444)) |
+| DynamoDB, both the V3 and V4 packages | Yes, from 10.8.0 |
+| Spanner | Yes, from 10.8.0 |
 
-With DynamoDB or Spanner, a registered breaker still records trips, and `TrippedTopics` still reports them, so the monitoring above works. But every sweep reads and sends a tripped topic's messages as though nothing had tripped.
+At 10.7.0 the DynamoDB Outbox accepted the list and ignored it ([#4443](https://github.com/BrighterCommand/Brighter/issues/4443)), and the Spanner Outbox's query had no place for the filter ([#4444](https://github.com/BrighterCommand/Brighter/issues/4444)). With either, a breaker still recorded trips, but every sweep sent a tripped topic's messages as though nothing had tripped.
 
 An Outbox that honours the list needs nothing extra: register the breaker and the sweeper beside it as usual. With MongoDB, for example:
 

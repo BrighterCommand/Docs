@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 4.5a (D19): Telemetry.md and ConfiguringOpenTelemetry.md say that at 10.7.0 the Command
+       Processor is given the tracer only with AddProducers, so with no producers Send records no
+       span (#4510). Run once per version: dotnet run -p:BV=10.7.0 (the control) and the default
+       10.8.0 (the case), each with "nobus" and "bus". -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable><BV Condition="'$(BV)'==''">10.8.0</BV></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="$(BV)" />
+  </ItemGroup>
+</Project>

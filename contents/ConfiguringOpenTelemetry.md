@@ -18,7 +18,7 @@ The OpenTelemetry SDK can be configured to listen to Activities emitted by Brigh
 Brighter emits traces using the following Activity Source:
 
 - **Source Name**: `Paramore.Brighter`. OpenTelemetry matches source names without regard to case, so `paramore.brighter` also works
-- **Version**: The `Paramore.Brighter` assembly's version, which is `10.0.0.0` at package version 10.7.0
+- **Version**: The `Paramore.Brighter` assembly's version, which is `10.0.0.0` at package version 10.8.0
 
 ### Registering Brighter's Tracer
 
@@ -26,9 +26,9 @@ Brighter writes to that source only through a tracer, an `IAmABrighterTracer`, r
 container. `AddBrighter()` does not register one, so listening to the source is not enough:
 `AddSource("paramore.brighter")` on its own records no Brighter span.
 `AddBrighterInstrumentation()`, from the `Paramore.Brighter.Extensions.Diagnostics` package, does
-both: it registers the tracer and adds the source. The Command Processor takes that tracer only when
-it has an external bus, configured with `AddProducers`; with no producers, its requests record no
-span at 10.7.0. This is reported as [#4510](https://github.com/BrighterCommand/Brighter/issues/4510).
+both: it registers the tracer and adds the source. From Brighter 10.8.0 the Command Processor takes
+that tracer whether or not it has an external bus; at 10.7.0 it took it only with `AddProducers`, so
+with no producers its requests recorded no span ([#4510](https://github.com/BrighterCommand/Brighter/issues/4510)).
 
 Use it on the tracer provider that `AddOpenTelemetry()` builds, which shares your application's
 container. A provider built with `Sdk.CreateTracerProviderBuilder()` keeps its own services, so the

@@ -49,9 +49,10 @@ services.AddOpenTelemetry()
 appears. [Configuring OpenTelemetry](/contents/ConfiguringOpenTelemetry.md) shows the setup for a
 producer and a consumer.
 
-**The Command Processor also needs an external bus.** At 10.7.0 it is given the tracer only when
-you configure producers with `AddProducers`; with none, `Send`, `Publish` and their async forms
-record no span, even with the tracer registered. This is reported as [#4510](https://github.com/BrighterCommand/Brighter/issues/4510).
+**From Brighter 10.8.0 the Command Processor records spans with or without an external bus.** At
+10.7.0 it was given the tracer only when you configured producers with `AddProducers`; with none,
+`Send`, `Publish` and their async forms recorded no span, even with the tracer registered
+([#4510](https://github.com/BrighterCommand/Brighter/issues/4510)).
 
 ---
 
@@ -67,11 +68,12 @@ V10 provides fine-grained control over which attributes are recorded to optimize
 |---|---|
 | `RequestInformation` | Request ID, type and operation; on messages, the CloudEvents ID, type, source and subject |
 | `RequestBody` | The request body as JSON; on messages, the message body (expensive) |
-| `RequestContext` | Nothing at 10.7.0: no span reads this flag |
+| `RequestContext` | Nothing at 10.8.0: no span reads this flag |
 | `Messaging` | Messaging attributes: destination, partition, message ID and type, body size, headers |
 | `DatabaseInformation` | Database attributes for Outbox and Inbox operations |
 | `ClamCheck` | Claim check operations (the member is spelled `ClamCheck`) |
 | `Brighter` | Brighter's handler instrumentation |
+| `CircuitBreaker` | On the Outbox circuit breaker's spans, `circuit_breaker.topic` and `circuit_breaker.cooldown_count`; added at 10.8.0 |
 | `All` | Every flag above |
 | `None` | Nothing |
 
@@ -137,7 +139,7 @@ await commandProcessor.SendAsync(new ProcessOrderCommand { OrderId = 123 });
 
 ### Adding Custom Span Attributes
 
-At 10.7.0 Brighter copies nothing from the request context onto a span. To record an attribute of
+At 10.8.0 Brighter copies nothing from the request context onto a span. To record an attribute of
 your own, set it on `Activity.Current` in your handler: while the handler runs, that is the Command
 Processor's span for the request.
 
@@ -203,7 +205,7 @@ order.placed publish (Producer, the sending service)
 
 | Attribute | Type | Description | Example |
 |-----------|------|-------------|---------|
-| `messaging.system` | string | Always `internal_bus` on pump spans at 10.7.0, whichever transport the pump reads | `"internal_bus"` |
+| `messaging.system` | string | The transport the pump reads, such as `postgres`, or `internal_bus` for the in-memory bus. At 10.7.0 it was always `internal_bus` on pump spans | `"postgres"` |
 | `messaging.destination.name` | string | Routing key | `"order.placed"` |
 | `messaging.operation.type` | string | Operation type | `"receive"`, `"process"` |
 | `messaging.message.id` | string | Message ID | `"01a0e7cf-3c70-7089-9e82-425719101515"` |
