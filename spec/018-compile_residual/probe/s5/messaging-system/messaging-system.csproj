@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 4.5a (D19): Telemetry.md says messaging.system is always internal_bus on pump spans at
+       10.7.0, whichever transport the pump reads. Run once per version: dotnet run -p:BV=10.7.0 (the
+       control) and the default 10.8.0, each with the argument postgres (a Reactor over the Postgres
+       transport; the brighter-postgres-1 container on 5432) or inmemory (the internal bus, which
+       reports internal_bus at every version). -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable><BV Condition="'$(BV)'==''">10.8.0</BV></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.Hosting" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.Postgres" Version="$(BV)" />
+  </ItemGroup>
+</Project>

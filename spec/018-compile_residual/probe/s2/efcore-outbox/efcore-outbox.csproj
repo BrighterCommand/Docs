@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 4.4: EFCoreOutbox.md, the registration and the handler, run against 10.8.0 and MySQL 8.
+       See Program.cs for the docker command. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.8.0" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.0" />
+    <PackageReference Include="Paramore.Brighter.MySql.EntityFrameworkCore" Version="10.8.0" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MySql" Version="10.8.0" />
+  </ItemGroup>
+</Project>

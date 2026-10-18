@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 4.5a (D19): SweeperCircuitBreaking.md § Sweeper Circuit Breaking Outbox Support says that
+       at 10.7.0 the DynamoDB Outbox ignores TrippedTopics (#4443) and the Spanner Outbox drops the
+       filter (#4444). Run once per version and Outbox: dotnet run -p:BV=10.7.0 (the control, the
+       defects present) and the default 10.8.0, each with the argument dynamo or spanner.
+       DynamoDB: amazon/dynamodb-local on port 8000 (the probe-dynamo container).
+       Spanner: the emulator on localhost:9010, instance brighter-spanner, database brightertests,
+       project brighter-tests. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable><BV Condition="'$(BV)'==''">10.8.0</BV></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.Outbox.DynamoDB" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Spanner" Version="$(BV)" />
+  </ItemGroup>
+</Project>

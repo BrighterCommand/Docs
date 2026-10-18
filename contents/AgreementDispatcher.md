@@ -20,15 +20,17 @@ Brighter supports an Agreement Dispatcher, allowing you to register a lambda fun
 ### Basic Registration
 
 ```csharp
-registry.Register<TRequest>(
-    routingFunc: (request, context) => { /* return handler types */ },
-    handlerTypes: [typeof(Handler1), typeof(Handler2), ...]
+using Paramore.Brighter;
+
+registry.Register<MyCommand>(
+    router: (request, context) => [typeof(Handler1)],  // return the handler types for this request
+    handlerTypes: [typeof(Handler1), typeof(Handler2)]
 );
 ```
 
 **Parameters:**
 
-- **routingFunc**: Lambda that takes `IRequest` and `IRequestContext`, returns `List<Type>` of handlers
+- **router**: Lambda that takes `IRequest` and `IRequestContext`, returns `List<Type>` of handlers
 - **handlerTypes**: Array of all possible handler types (for DI registration)
 
 ### Accessing Request Content
@@ -75,7 +77,9 @@ registry.Register<ProcessOrder>((request, context) =>
 
 ### Returning Multiple Handlers
 
-Agreement Dispatcher can return multiple handlers, but it must still obey the rule that `Send` expects a single handler and `Publish` can have zero-to-many handlers. If you return multiple handlers in a `Send` request pipeline, Brighter will throw an exception.
+Agreement Dispatcher can return multiple handlers, but it must still obey the rule that `Send` expects a single handler and `Publish` can have zero-to-many handlers. If you return multiple handlers in a `Send` request pipeline, Brighter throws an `ArgumentException`, so a route that returns more than one handler belongs to an event.
+
+`Publish` runs the handlers you return concurrently, in no particular order, and one handler failing does not stop the others. Return handlers that are independent of each other; the list is not a sequence, so it cannot express "validate, then finalize". For steps that must run in order, use one handler and its [pipeline](/contents/BuildingAPipeline.md).
 
 ## Synchronous and Asynchronous Registration
 
@@ -171,6 +175,12 @@ This provides powerful, flexible routing:
 Here's a complete example showing Agreement Dispatcher with multiple routing strategies:
 
 ```csharp
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
@@ -194,6 +204,37 @@ public class Startup
             },
             [typeof(TaxCalculator2024), typeof(TaxCalculator2025)]);
 
+            // Content-based routing to several handlers: OrderPlaced is an event, so you Publish it,
+            // and each handler runs on its own, in no particular order
+            registry.Register<OrderPlaced>((request, context) =>
+            {
+                var order = request as OrderPlaced;
+                var handlers = new List<Type>
+                {
+                    typeof(OrderConfirmationHandler)  // Every order is confirmed
+                };
+
+                // High-value orders get a fraud check
+                if (order?.Total > 10000m)
+                    handlers.Add(typeof(FraudCheckHandler));
+
+                // International orders need a customs declaration
+                if (order?.IsInternational == true)
+                    handlers.Add(typeof(CustomsDeclarationHandler));
+
+                return handlers;
+            },
+            [
+                typeof(OrderConfirmationHandler),
+                typeof(FraudCheckHandler),
+                typeof(CustomsDeclarationHandler)
+            ]);
+
+            // Standard routing for simple commands
+            registry.Register<SimpleCommand, SimpleCommandHandler>();
+        })
+        .AsyncHandlers(registry =>
+        {
             // Country-based routing for payments
             registry.RegisterAsync<ProcessPayment>((request, context) =>
             {
@@ -213,37 +254,6 @@ public class Startup
                 typeof(LocalPaymentHandlerAsync),
                 typeof(InternationalPaymentHandlerAsync)
             ]);
-
-            // Content-based routing with multiple handlers
-            registry.Register<ProcessOrder>((request, context) =>
-            {
-                var order = request as ProcessOrder;
-                var handlers = new List<Type>
-                {
-                    typeof(ValidateOrderHandler)  // Always validate
-                };
-
-                // High-value orders get fraud check
-                if (order?.Total > 10000m)
-                    handlers.Add(typeof(FraudCheckHandler));
-
-                // International orders need approval
-                if (order?.IsInternational == true)
-                    handlers.Add(typeof(ApprovalHandler));
-
-                handlers.Add(typeof(FinalizeOrderHandler));  // Always finalize
-
-                return handlers;
-            },
-            [
-                typeof(ValidateOrderHandler),
-                typeof(FraudCheckHandler),
-                typeof(ApprovalHandler),
-                typeof(FinalizeOrderHandler)
-            ]);
-
-            // Standard routing for simple commands
-            registry.Register<SimpleCommand, SimpleCommandHandler>();
         });
     }
 }
@@ -283,6 +293,8 @@ registry.Register<MyCommand>((request, context) =>
 Handle unexpected cases gracefully:
 
 ```csharp
+using System;
+
 registry.Register<ProcessOrder>((request, context) =>
 {
     var order = request as ProcessOrder;
@@ -317,8 +329,14 @@ registry.RegisterAsync<ProcessPayment>((request, context) =>
 {
     var payment = request as ProcessPayment;
     // ...
+    return [typeof(InternationalPaymentHandlerAsync)];
 },
-[/* handlers */]);
+[
+    typeof(StripePaymentHandlerAsync),
+    typeof(PayPalPaymentHandlerAsync),
+    typeof(LocalPaymentHandlerAsync),
+    typeof(InternationalPaymentHandlerAsync)
+]);
 ```
 
 ### 4. Use Standard Routing When Possible
@@ -333,8 +351,10 @@ registry.Register<SimpleCommand, SimpleCommandHandler>();
 registry.Register<ComplexCommand>((request, context) =>
 {
     // Dynamic routing based on content
+    // ...
+    return [typeof(ComplexCommandHandler)];
 },
-[/* handlers */]);
+[typeof(ComplexCommandHandler)]);
 ```
 
 ### 5. List All Possible Handlers
@@ -343,7 +363,11 @@ Always provide the complete list of handler types:
 
 ```csharp
 // Good - Complete list
-registry.Register<MyCommand>((request, context) => { /* ... */ },
+registry.Register<MyCommand>((request, context) =>
+{
+    // ...
+    return [typeof(Handler1)];
+},
 [
     typeof(Handler1),
     typeof(Handler2),

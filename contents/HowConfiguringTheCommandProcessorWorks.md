@@ -176,13 +176,17 @@ This is just the Polly **PolicyRegistry**.
 
 Registration requires a string as a key, that you will use in your [UsePolicy] attribute to choose the policy.
 
-The two keys: CommandProcessor.RETRYPOLICY and CommandProcessor.CIRCUITBREAKER are used within Brighter to control our response to broker issues. You can override them if you wish to change our behavior from the default.
+The two keys: CommandProcessor.RETRYPOLICY and CommandProcessor.CIRCUITBREAKER are used within Brighter to control our response to broker issues. Brighter requires both in the registry you give it, and throws `ConfigurationException` at startup without them, so start from `DefaultPolicy`, a **PolicyRegistry** that holds them. You can override them if you wish to change our behavior from the default.
 
 You can also use them for a generic retry policy, though we recommend building retry policies that handle the kind of exceptions that will be thrown from your handlers.
 
 In this example, we set up a policy. To make it easy to reference the string, instead of adding it everywhere, we use a global readonly reference, not shown here.
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+using Polly;
+
 var retryPolicy =
 	Policy.Handle<Exception>().WaitAndRetry(
 		new[] {
@@ -193,7 +197,7 @@ var retryPolicy =
 var circuitBreakerPolicy = Policy.Handle<Exception>().CircuitBreaker(
 		1, TimeSpan.FromMilliseconds(500));
 
-var policyRegistry = new PolicyRegistry() {
+var policyRegistry = new DefaultPolicy() {
 		{ Globals.MYRETRYPOLICY, retryPolicy },
 		{ Globals.MYCIRCUITBREAKER, circuitBreakerPolicy }
 	};

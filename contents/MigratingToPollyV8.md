@@ -35,11 +35,11 @@ current reference.
 <!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled V9) -->
 ```csharp
 // ...
-var policyRegistry = new PolicyRegistry();
+var policyRegistry = new DefaultPolicy();
 
 var retryPolicy = Policy
     .Handle<Exception>()
-    .WaitAndRetry(new[] { 1.Seconds(), 2.Seconds(), 3.Seconds() });
+    .WaitAndRetry(new[] { TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(3) });
 
 policyRegistry.Add("MyRetryPolicy", retryPolicy);
 ```
@@ -47,6 +47,11 @@ policyRegistry.Add("MyRetryPolicy", retryPolicy);
 **V10**:
 
 ```csharp
+using System;
+using Polly;
+using Polly.Registry;
+using Polly.Retry;
+
 // ...
 var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>();
 
@@ -161,6 +166,9 @@ tell you, because each returns the interface the next call is declared on.
 By adding the **UsePolicy** attribute, you instruct the Command Processor to insert a handler (filter) into the pipeline that runs all later steps using that Polly policy.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
 // ...
 public class MyQoSProtectedHandler : RequestHandler<MyCommand>
 {
@@ -175,20 +183,26 @@ public class MyQoSProtectedHandler : RequestHandler<MyCommand>
 
 To configure the Polly policy you use the PolicyRegistry to register the Polly Policy with a name. At runtime we look up that Policy by name.
 
+Start from Brighter's `DefaultPolicy`, a `PolicyRegistry` that already holds the `CommandProcessor.RETRYPOLICY` and `CommandProcessor.CIRCUITBREAKER` policies Brighter requires. Hand Brighter an empty `PolicyRegistry` and it throws `ConfigurationException` at startup.
+
 ```csharp
+using System;
+using Paramore.Brighter;
+using Polly;
+
 // ...
-var policyRegistry = new PolicyRegistry();
+var policyRegistry = new DefaultPolicy();
 
 var policy = Policy
     .Handle<Exception>()
     .WaitAndRetry(new[]
     {
-        1.Seconds(),
-        2.Seconds(),
-        3.Seconds()
+        TimeSpan.FromSeconds(1),
+        TimeSpan.FromSeconds(2),
+        TimeSpan.FromSeconds(3)
     }, (exception, timeSpan) =>
     {
-        s_retryCount++;
+        Console.WriteLine($"Retrying in {timeSpan} after {exception.Message}");
     });
 
 policyRegistry.Add("MyExceptionPolicy", policy);
@@ -199,16 +213,22 @@ You can use multiple policies with a handler, instead of passing in a single pol
 So if in addition to the above policy we have:
 
 ```csharp
+using System;
+using Polly;
+
 // ...
 var circuitBreakerPolicy = Policy.Handle<Exception>().CircuitBreaker(
 		1, TimeSpan.FromMilliseconds(500));
 
-policyRegistry.Add("MyCircuitBreakerPolicy", policy);
+policyRegistry.Add("MyCircuitBreakerPolicy", circuitBreakerPolicy);
 ```
 
 then you can add them both to your handler as follows:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
 // ...
 public class MyQoSProtectedHandler : RequestHandler<MyCommand>
 {
@@ -225,7 +245,7 @@ Where we have multiple policies they are evaluated left to right, so in this cas
 
 When creating policies, refer to the [Polly](https://github.com/App-vNext/Polly) documentation.
 
-Whilst [Polly](https://github.com/App-vNext/Polly) does not support a Policy that is both Circuit Breaker and Retry i.e. retry n times with an interval between each retry, and then break circuit, to implement that simply put a Circuit Breaker UsePolicy attribute as an earlier step than the Retry UsePolicy attribute. If retries expire, the exception will bubble out to the Circuit Breaker.
+Whilst [Polly](https://github.com/App-vNext/Polly) does not support a Policy that is both Circuit Breaker and Retry i.e. retry n times with an interval between each retry, and then break circuit, to implement that put the Circuit Breaker first in the array, as above, so that it wraps the Retry. If retries expire, the exception bubbles out to the Circuit Breaker. A handler method takes one `[UsePolicy]` attribute, so the array is the only way to combine them.
 
 ### Timeout (Legacy - Deprecated)
 
@@ -240,6 +260,10 @@ In some scenarios the client library does not provide a timeout, so you have no 
 We provide the Timeout attribute for that circumstance. You can apply it to a Handler to force that Handler into a thread which we will timeout, if it does not complete within the required time period.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 // ...
 public class EditTaskCommandHandler : RequestHandler<EditTaskCommand>
 {
@@ -251,8 +275,7 @@ public class EditTaskCommandHandler : RequestHandler<EditTaskCommand>
     }
 
     [RequestLogging(step: 1, timing: HandlerTiming.Before)]
-    [Validation(step: 2, timing: HandlerTiming.Before)]
-    [TimeoutPolicy(step: 3, milliseconds: 300)]  // ⚠️ DEPRECATED
+    [TimeoutPolicy(step: 2, milliseconds: 300)]  // ⚠️ DEPRECATED
     public override EditTaskCommand Handle(EditTaskCommand editTaskCommand)
     {
         using (var scope = _tasksDAO.BeginTransaction())
@@ -275,6 +298,12 @@ public class EditTaskCommandHandler : RequestHandler<EditTaskCommand>
 **V10 Replacement**:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+using Polly;
+
 // ...
 // Configure timeout pipeline
 resiliencePipelineRegistry.TryAddBuilder("EditTaskTimeout",
@@ -291,8 +320,7 @@ public class EditTaskCommandHandler : RequestHandler<EditTaskCommand>
     }
 
     [RequestLogging(step: 1, timing: HandlerTiming.Before)]
-    [Validation(step: 2, timing: HandlerTiming.Before)]
-    [UseResiliencePipeline("EditTaskTimeout", step: 3)]  // ✅ V10 recommended
+    [UseResiliencePipeline("EditTaskTimeout", step: 2)]  // ✅ V10 recommended
     public override EditTaskCommand Handle(EditTaskCommand editTaskCommand)
     {
         using (var scope = _tasksDAO.BeginTransaction())

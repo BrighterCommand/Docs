@@ -33,28 +33,49 @@ Both Brighter and Darker allow you to provide middleware that runs between a req
 
 ### Sending and Querying Example
 
-In this example, we show sending a command, and querying for the results of issuing it, from within an ASP.NET WebAPI controller method.
+In this example, we show sending a command, and querying for the results of issuing it, from within an ASP.NET WebAPI controller. The controller takes the *Command Processor* and the *Query Processor* from dependency injection.
 
-``` csharp
-[Route("{name}/new")]
-[HttpPost]
-public async Task<ActionResult<FindPersonsGreetings>> Post(string name, NewGreeting newGreeting)
+```csharp
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Paramore.Brighter;
+using Paramore.Darker;
+
+[ApiController]
+[Route("[controller]")]
+public class GreetingsController(IAmACommandProcessor commandProcessor, IQueryProcessor queryProcessor) : Controller
 {
-	await _commandProcessor.SendAsync(new AddGreeting(name, newGreeting.Greeting));
+    [Route("{name}/new")]
+    [HttpPost]
+    public async Task<ActionResult<FindPersonsGreetings>> Post(string name, NewGreeting newGreeting)
+    {
+        FindPersonResult foundPerson = await queryProcessor.ExecuteAsync(new FindPersonByName(name));
 
-	var personsGreetings = await _queryProcessor.ExecuteAsync(new FindGreetingsForPerson(name));
+        if (foundPerson?.Person == null) return new NotFoundResult();
 
-	if (personsGreetings == null) return new NotFoundResult();
+        await commandProcessor.SendAsync(new AddGreeting(name, newGreeting.Greeting));
 
-	return Ok(personsGreetings);
+        FindPersonsGreetings personsGreetings = await queryProcessor.ExecuteAsync(new FindGreetingsForPerson(name));
+
+        if (personsGreetings == null) return new NotFoundResult();
+
+        return Ok(personsGreetings);
+    }
 }
 ```
 
 ### Handling Examples
 
-Handler code listens for and responds to requests or queries. The handler for the above request and query are:
+Handler code listens for and responds to requests or queries. The first handler below adds a person, and the second answers the query the controller above sends:
 
 ``` csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Dapper;
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 [RequestLoggingAsync(0, HandlerTiming.Before)]
 [UsePolicyAsync(step:1, policy: Policies.Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
 public override async Task<AddPerson> HandleAsync(AddPerson addPerson, CancellationToken cancellationToken = default)
@@ -65,46 +86,61 @@ public override async Task<AddPerson> HandleAsync(AddPerson addPerson, Cancellat
 }
 ```
 
-``` csharp
-[QueryLogging(0)]
-[RetryableQuery(1, Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
-public override async Task<FindPersonsGreetings> ExecuteAsync(FindGreetingsForPerson query, CancellationToken cancellationToken = new CancellationToken())
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Dapper;
+using Paramore.Brighter;
+using Paramore.Darker;
+using Paramore.Darker.Policies;
+using Paramore.Darker.QueryLogging;
+
+public class FindGreetingsForPersonHandlerAsync(IAmARelationalDbConnectionProvider relationalDbConnectionProvider)
+    : QueryHandlerAsync<FindGreetingsForPerson, FindPersonsGreetings>
 {
-	//Retrieving parent and child is a bit tricky with Dapper. From raw SQL We wget back a set that has a row-per-child. We need to turn that
-	//into one entity per parent, with a collection of children. To do that we bring everything back into memory, group by parent id and collate all
-	//the children for that group.
+    [QueryLogging(0)]
+    [RetryableQuery(1, Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
+    public override async Task<FindPersonsGreetings> ExecuteAsync(FindGreetingsForPerson query,
+        CancellationToken cancellationToken = new())
+    {
+        //Retrieving parent and child is a bit tricky with Dapper. From raw SQL we get back a set that has a row-per-child. We need to turn that
+        //into one entity per parent, with a collection of children. To do that we bring everything back into memory, group by parent id and collate all
+        //the children for that group.
 
-	var sql = @"select p.Id, p.Name, g.Id, g.Message 
-		from Person p
-		inner join Greeting g on g.Recipient_Id = p.Id";
-	await using var connection = await _relationalDbConnectionProvider.GetConnectionAsync(cancellationToken);
-	var people = await connection.QueryAsync<Person, Greeting, Person>(sql, (person, greeting) =>
-	{
-		person.Greetings.Add(greeting);
+        string sql = @"select p.Id, p.Name, g.Id, g.Message
+                        from Person p
+                        inner join Greeting g on g.Recipient_Id = p.Id
+                        where p.Name = @name";
+        await using DbConnection connection =
+            await relationalDbConnectionProvider.GetConnectionAsync(cancellationToken);
+        IEnumerable<Person> people = await connection.QueryAsync<Person, Greeting, Person>(sql, (person, greeting) =>
+            {
+                person.Greetings.Add(greeting);
+                return person;
+            },
+            new { name = query.Name },
+            splitOn: "Id");
 
-		return person;
-	}, splitOn: "Id");
-	
-	if (!people.Any())
-	{
-		return new FindPersonsGreetings(){Name = query.Name, Greetings = Array.Empty<Salutation>()};
-	}
+        if (!people.Any()) return new FindPersonsGreetings { Name = String.Empty, Greetings = Array.Empty<Salutation>() };
 
-	var peopleGreetings = people.GroupBy(p => p.Id).Select(grp =>
-	{
-		var groupedPerson = grp.First();
-		groupedPerson.Greetings = grp.Select(p => p.Greetings.Single()).ToList();
-		return groupedPerson;
-	});
+        IEnumerable<Person> peopleGreetings = people.GroupBy(p => p.Id).Select(grp =>
+        {
+            Person groupedPerson = grp.First();
+            groupedPerson.Greetings = grp.Select(p => p.Greetings.Single()).ToList();
+            return groupedPerson;
+        });
 
-	var person = peopleGreetings.Single();
+        Person person = peopleGreetings.First();
 
-	return new FindPersonsGreetings
-	{
-		Name = person.Name, Greetings = person.Greetings.Select(g => new Salutation(g.Greet()))
-	};
-}
-
+        return new FindPersonsGreetings
+        {
+            Name = person.Name, Greetings = person.Greetings.Select(g => new Salutation(g.Greet()))
+        };
+    }
 }
 ```
 
@@ -132,6 +168,13 @@ As well as using an Internal Bus, in Brighter you can use an External Bus - midd
 The following code shows the simplest way to send a message to another process using Brighter's external bus:
 
 ``` csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Dapper;
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 [RequestLoggingAsync(0, HandlerTiming.Before)]
 [UsePolicyAsync(step: 1, policy: Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
 public override async Task<AddGreeting> HandleAsync(
@@ -140,10 +183,10 @@ public override async Task<AddGreeting> HandleAsync(
 {
     await using var connection = await _relationalDbConnectionProvider.GetConnectionAsync(cancellationToken);
 
-    // Write to database
+    // Write to database, for the person the greeting names
     await connection.ExecuteAsync(
-        "insert into Greeting (Message, Recipient_Id) values (@Message, @RecipientId)",
-        new { Message = addGreeting.Greeting, RecipientId = addGreeting.PersonId });
+        "insert into Greeting (Message, Recipient_Id) select @Message, Id from Person where Name = @Name",
+        new { Message = addGreeting.Greeting, addGreeting.Name });
 
     // Send message to external bus
     await _commandProcessor.PostAsync(
@@ -167,6 +210,13 @@ public override async Task<AddGreeting> HandleAsync(
 The following code receives a message sent from another process via a Dispatcher:
 
 ``` csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Dapper;
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 [RequestLoggingAsync(0, HandlerTiming.Before)]
 [UsePolicyAsync(step: 1, policy: Retry.EXPONENTIAL_RETRYPOLICYASYNC)]
 public override async Task<GreetingMade> HandleAsync(

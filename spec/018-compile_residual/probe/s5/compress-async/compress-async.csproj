@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 4.5a (D19): Compression.md says that at 10.7.0 Decompress does not recognise a body
+       compressed on the async path (#4432). Run once per version: dotnet run -p:BV=10.7.0 (the
+       control, the defect present) and the default 10.8.0 (the case). -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable><BV Condition="'$(BV)'==''">10.8.0</BV></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="$(BV)" />
+  </ItemGroup>
+</Project>

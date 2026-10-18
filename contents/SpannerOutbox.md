@@ -127,9 +127,18 @@ CREATE TABLE IF NOT EXISTS `Outbox`
   `WorkflowId` STRING(255),
   `JobId` STRING(255),
   `DataRef` STRING(255),
+  `CausationId` STRING(255),
   `SpecVersion` STRING(10)
 ) PRIMARY KEY (`MessageId`)
 ```
+
+`CausationId` arrives at Brighter 10.8.0, and its index is a separate statement, since Spanner has no inline index syntax: `SpannerOutboxBuilder.GetCausationIndexDDL("Outbox")` returns
+
+```sql
+CREATE INDEX IF NOT EXISTS `idx_Outbox_CausationId` ON `Outbox` (`CausationId`)
+```
+
+A table an earlier release created still takes deposits without them, but [Replay On Seen](/contents/ReplayOnSeenReference.md#store-support) needs both. The Spanner provisioner creates them only on a fresh install, so add them by hand to an existing table.
 
 ## Spanner Connection Provider
 

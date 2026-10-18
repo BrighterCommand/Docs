@@ -137,7 +137,7 @@ public class OrderService
 }
 ```
 
-**Note:** Every scheduler but one supports cancellation. At Brighter 10.7.0 the InMemory scheduler cannot cancel or reschedule a request you scheduled through the command processor: `CancelAsync` returns, and the request still runs when it falls due ([#4437](https://github.com/BrighterCommand/Brighter/issues/4437)). Among the others, rescheduling is the operation that varies: the Azure Service Bus scheduler does not reschedule, so cancel the message and schedule it again instead. See [Choosing a Scheduler](/contents/BrighterSchedulerSupport.md#choosing-a-scheduler).
+**Note:** Every scheduler supports cancellation. Before Brighter 10.8.0 the InMemory scheduler could not cancel or reschedule a request scheduled through the command processor: `CancelAsync` returned, and the request still ran when it fell due ([#4437](https://github.com/BrighterCommand/Brighter/issues/4437)). Among the schedulers, rescheduling is the operation that varies: the Azure Service Bus scheduler does not reschedule, so cancel the message and schedule it again instead. See [Choosing a Scheduler](/contents/BrighterSchedulerSupport.md#choosing-a-scheduler).
 
 ### Retry with Exponential Backoff
 
@@ -210,9 +210,9 @@ public class ProcessPaymentHandlerAsync : RequestHandlerAsync<ProcessPaymentComm
 
 ### Registering Handlers When You Schedule Requests
 
-At Brighter 10.7.0, `AutoFromAssemblies()` and `AsyncHandlersFromAssemblies` register the scheduler's own handlers twice. When a request you scheduled with `SendAsync`, `PublishAsync` or `PostAsync` falls due, the command processor then throws `ArgumentException` (*"More than one handler was found for the typeof command Paramore.Brighter.Scheduler.Events.FireSchedulerRequest"*). With the InMemory scheduler that exception is unhandled, and it ends the process. The fix, [#4414](https://github.com/BrighterCommand/Brighter/issues/4414), is merged and not yet released.
+At Brighter 10.7.0, `AutoFromAssemblies()` and `AsyncHandlersFromAssemblies` register the scheduler's own handlers twice. When a request you scheduled with `SendAsync`, `PublishAsync` or `PostAsync` falls due, the command processor then throws `ArgumentException` (*"More than one handler was found for the typeof command Paramore.Brighter.Scheduler.Events.FireSchedulerRequest"*). With the InMemory scheduler that exception is unhandled, and it ends the process. Brighter 10.8.0 fixes this ([#4414](https://github.com/BrighterCommand/Brighter/issues/4414)), and the examples below, which use `AutoFromAssemblies()`, need that release.
 
-Until it is, register your async handlers explicitly if you schedule requests:
+On 10.7.0, register your async handlers explicitly if you schedule requests:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -229,8 +229,6 @@ services.AddBrighter(options =>
     registry.RegisterAsync<ProcessOrderCommand, ProcessOrderHandlerAsync>();
 });
 ```
-
-The examples below use `AutoFromAssemblies()`, and they work as shown once you are on a release that carries the fix.
 
 ### Configuring with Hangfire
 

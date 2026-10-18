@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 4.5: SchedulingAMessage.md § Registering Handlers When You Schedule Requests says #4414
+       (scheduler handlers registered twice by AutoFromAssemblies) is "merged and not yet released".
+       Run once per version: dotnet run -p:BV=10.7.0 (the control, the bug present) and the default
+       10.8.0 (the case). Each process schedules one SendAsync with AutoFromAssemblies() and waits. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable><BV Condition="'$(BV)'==''">10.8.0</BV></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="$(BV)" />
+  </ItemGroup>
+</Project>

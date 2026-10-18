@@ -22,6 +22,8 @@ Instead we provide a **Request Context** and **Context Bag** as part of the Comm
 The **Context Bag** is a `ConcurrentDictionary<string, object>` that allows you to pass arbitrary data between handlers in the pipeline.
 
 ```csharp
+using Paramore.Brighter;
+
 public class MyContextAwareCommandHandler : RequestHandler<MyCommand>
 {
     public static string TestString { get; set; }
@@ -201,7 +203,13 @@ These properties are serialized as CloudEvents extensions when the message is ma
 For consumers (subscribers to queues or streams), the Request Context now provides access to the **OriginatingMessage**. This allows you to examine properties of the message that was received, which is useful for debugging and accessing message metadata.
 
 ```csharp
-public class MessageConsumerHandler : RequestHandlerAsync<MyCommand>
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+
+public class MessageConsumerHandler(IMyService service, ILogger<MessageConsumerHandler> logger)
+    : RequestHandlerAsync<MyCommand>
 {
     public override async Task<MyCommand> HandleAsync(
         MyCommand command,
@@ -210,7 +218,7 @@ public class MessageConsumerHandler : RequestHandlerAsync<MyCommand>
         // Access the original message that started this pipeline
         if (Context.OriginatingMessage != null)
         {
-            _logger.LogInformation(
+            logger.LogInformation(
                 "Processing message {MessageId} from topic {Topic} with correlation {CorrelationId}",
                 Context.OriginatingMessage.Id,
                 Context.OriginatingMessage.Header.Topic,
@@ -226,7 +234,7 @@ public class MessageConsumerHandler : RequestHandlerAsync<MyCommand>
         }
 
         // Process command...
-        await _service.ProcessAsync(command, cancellationToken);
+        await service.ProcessAsync(command, cancellationToken);
 
         return await base.HandleAsync(command, cancellationToken);
     }
@@ -244,34 +252,34 @@ public class MessageConsumerHandler : RequestHandlerAsync<MyCommand>
 
 ### OpenTelemetry Span
 
-The Request Context provides access to the current **Span (Activity)** for adding custom OpenTelemetry attributes, events, and tags.
+The Request Context provides access to the current **Span**, a `System.Diagnostics.Activity`, for adding custom tags and events. OpenTelemetry exports an `Activity`'s tags as span attributes, so you use `SetTag` here; `SetAttribute` belongs to OpenTelemetry's own `TelemetrySpan` API, which the context does not expose.
 
 ```csharp
-public class TracingHandler : RequestHandler<MyCommand>
+using System.Diagnostics;
+using Paramore.Brighter;
+
+public class TracingHandler(IMyService service) : RequestHandler<MyCommand>
 {
     public override MyCommand Handle(MyCommand command)
     {
-        // Add custom attributes to current span
-        if (Context.Span != null)
+        var span = Context?.Span;
+
+        // Add custom tags to the current span; OpenTelemetry exports them as attributes
+        if (span != null)
         {
-            Context.Span.SetAttribute("custom.business.id", command.BusinessId);
-            Context.Span.SetAttribute("custom.tenant.id", command.TenantId);
-            Context.Span.SetAttribute("custom.operation.type", "order-processing");
+            span.SetTag("custom.business.id", command.BusinessId);
+            span.SetTag("custom.tenant.id", command.TenantId);
+            span.SetTag("custom.operation.type", "order-processing");
+            span.SetTag("order.value", command.OrderValue);
 
             // Add events
-            Context.Span.AddEvent("Order validation started");
-
-            // Add tags
-            Context.Span.SetTag("order.value", command.OrderValue);
+            span.AddEvent(new ActivityEvent("Order validation started"));
         }
 
         // Process command...
-        _service.Process(command);
+        service.Process(command);
 
-        if (Context.Span != null)
-        {
-            Context.Span.AddEvent("Order validation completed");
-        }
+        span?.AddEvent(new ActivityEvent("Order validation completed"));
 
         return base.Handle(command);
     }
@@ -285,6 +293,8 @@ See [Telemetry](Telemetry.md) for more information on OpenTelemetry integration.
 You can override the destination topic and CloudEvents type for a message using the **Destination** property.
 
 ```csharp
+using Paramore.Brighter;
+
 public class DynamicRoutingHandler : RequestHandler<MyCommand>
 {
     public override MyCommand Handle(MyCommand command)
@@ -316,7 +326,12 @@ This allows runtime routing decisions based on command content or business rules
 
 The Request Context integrates with Polly's **ResiliencePipeline** (V8+) for resilience operations. The **ResilienceContext** can be used to share data across different resilience policies during execution.
 
+`Context.ResilienceContext` is `null` unless the caller attaches one to the `RequestContext` it sends with, as [Request Context Integration](/contents/PolicyRetryAndCircuitBreaker.md#request-context-integration) shows. When it is attached, Brighter runs the handler's pipeline with it, so a property the handler sets is visible to a callback such as `OnRetry`. When it is not, the handler below sets nothing.
+
 ```csharp
+using Paramore.Brighter;
+using Polly;
+
 public class ResilientHandler : RequestHandler<MyCommand>
 {
     public override MyCommand Handle(MyCommand command)
@@ -347,6 +362,8 @@ See [Polly Resilience Pipeline](PolicyRetryAndCircuitBreaker.md) for more inform
 Access pre-configured resilience pipelines by name:
 
 ```csharp
+using Paramore.Brighter;
+
 public class PipelineAwareHandler : RequestHandler<MyCommand>
 {
     public override MyCommand Handle(MyCommand command)
@@ -389,12 +406,19 @@ public static class RequestContextBagNames
 
     // Job instance identifier (reserved for future use)
     public const string JobId = "Brighter-JobId";
+
+    // Causation id: links an inbox entry to the outbox messages its handling produced (Replay)
+    public const string CausationId = "Brighter-CausationId";
+
+    // ... XML documentation omitted
 }
 ```
 
 Using these constants ensures consistency and avoids magic strings:
 
 ```csharp
+using Paramore.Brighter;
+
 // Good - using constants
 Context.Bag[RequestContextBagNames.PartitionKey] = tenantId;
 
@@ -407,6 +431,8 @@ Context.Bag["Brighter-PartitionKey"] = tenantId;
 ### 1. Use Well-Known Keys
 
 ```csharp
+using Paramore.Brighter;
+
 // Good - Type-safe and discoverable
 Context.Bag[RequestContextBagNames.Headers] = headers;
 
@@ -419,6 +445,9 @@ Context.Bag["my-headers"] = headers;
 If you place unmanaged resources in the Context Bag, ensure they are properly disposed:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 public class ResourceAwareHandler : RequestHandler<MyCommand>
 {
     public override MyCommand Handle(MyCommand command)
@@ -448,6 +477,11 @@ public class ResourceAwareHandler : RequestHandler<MyCommand>
 If you use custom context bag keys, document them clearly:
 
 ```csharp
+using Paramore.Brighter;
+
+// Usage
+Context.Bag[MyAppContextKeys.UserId] = userId;
+
 // Document your custom keys
 public static class MyAppContextKeys
 {
@@ -457,22 +491,21 @@ public static class MyAppContextKeys
     // Tenant identifier for multi-tenancy
     public const string TenantId = "MyApp-TenantId";
 }
-
-// Usage
-Context.Bag[MyAppContextKeys.UserId] = userId;
 ```
 
 ### 4. Check for Null Before Accessing Properties
 
 ```csharp
+using Paramore.Brighter;
+
 // Good - defensive check
 if (Context.Span != null)
 {
-    Context.Span.SetAttribute("custom.id", id);
+    Context.Span.SetTag("custom.id", id);
 }
 
 // Bad - may throw NullReferenceException
-Context.Span.SetAttribute("custom.id", id);
+Context.Span.SetTag("custom.id", id);
 ```
 
 ### 5. Use Explicit RequestContext for Important Metadata

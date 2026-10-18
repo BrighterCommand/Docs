@@ -31,19 +31,24 @@ The following example shows a Handler with **Request Handler Attributes** for [R
 
 ```csharp
 using System;
+using Microsoft.Extensions.Logging;
 using Paramore.Brighter;
 using Paramore.Brighter.Policies.Attributes;
 using Paramore.Brighter.Policies.Handlers;
 using Polly.CircuitBreaker;
 
-public class MyFallbackProtectedHandler: RequestHandler<MyCommand>
+public class MyFallbackProtectedHandler(
+    IExternalService externalService,
+    IRetryQueue retryQueue,
+    IAmACommandProcessor commandProcessor,
+    ILogger<MyFallbackProtectedHandler> logger) : RequestHandler<MyCommand>
 {
     [FallbackPolicy(backstop: false, circuitBreaker: true, step: 1)]
     [UseResiliencePipeline("MyCircuitBreakerAndRetryPipeline", step: 2)]
     public override MyCommand Handle(MyCommand command)
     {
         // Do some work that can fail
-        var result = CallExternalService();
+        externalService.Call(command);
         return base.Handle(command);
     }
 
@@ -54,18 +59,18 @@ public class MyFallbackProtectedHandler: RequestHandler<MyCommand>
             var exception = Context.Bag[FallbackPolicyHandler<MyCommand>.CAUSE_OF_FALLBACK_EXCEPTION] as Exception;
 
             // Log the failure
-            _logger.LogError(exception, "Handler failed, executing fallback");
+            logger.LogError(exception, "Handler failed, executing fallback");
 
             // Take compensating action
             if (exception is BrokenCircuitException)
             {
                 // Circuit breaker is open, queue for later retry
-                _messageQueue.QueueForRetry(command);
+                retryQueue.QueueForRetry(command);
             }
             else
             {
                 // Other failure, send compensating transaction
-                _commandProcessor.Send(new UndoCommand { OriginalCommandId = command.Id });
+                commandProcessor.Send(new UndoCommand { OriginalCommandId = command.Id });
             }
         }
         return base.Fallback(command);
@@ -152,11 +157,14 @@ public override MyCommand Handle(MyCommand command)
 When `circuitBreaker: true` (and `backstop: false`), the Fallback Policy only catches **BrokenCircuitException** exceptions.
 
 ```csharp
+using Paramore.Brighter.Policies.Attributes;
+
 [FallbackPolicy(backstop: false, circuitBreaker: true, step: 1)]
 [UseResiliencePipeline("MyCircuitBreakerPipeline", step: 2)]
 public override MyCommand Handle(MyCommand command)
 {
     // Only BrokenCircuitException will trigger fallback
+    return base.Handle(command);
 }
 ```
 
@@ -167,6 +175,11 @@ public override MyCommand Handle(MyCommand command)
 When a handler fails, issue a compensating transaction to undo any partially committed work.
 
 ```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Handlers;
+
 public override MyCommand Fallback(MyCommand command)
 {
     if (Context.Bag.ContainsKey(FallbackPolicyHandler<MyCommand>.CAUSE_OF_FALLBACK_EXCEPTION))
@@ -190,6 +203,12 @@ public override MyCommand Fallback(MyCommand command)
 When a circuit breaker opens (service is down), queue the message for later retry using the [External Bus](ImplementingExternalBus.md).
 
 ```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Handlers;
+using Polly.CircuitBreaker;
+
 public override MyCommand Fallback(MyCommand command)
 {
     if (Context.Bag.ContainsKey(FallbackPolicyHandler<MyCommand>.CAUSE_OF_FALLBACK_EXCEPTION))
@@ -218,16 +237,17 @@ using Paramore.Brighter;
 using Paramore.Brighter.Policies.Attributes;
 using Paramore.Brighter.Policies.Handlers;
 
-public class GetProductHandler : RequestHandler<GetProductQuery>
+public class GetProductHandler(
+    IProductService productService,
+    IProductCache cache,
+    ILogger<GetProductHandler> logger) : RequestHandler<GetProductQuery>
 {
-    private readonly IProductCache _cache;
-
     [FallbackPolicy(backstop: true, circuitBreaker: false, step: 1)]
     [UseResiliencePipeline("ProductServicePipeline", step: 2)]
     public override GetProductQuery Handle(GetProductQuery query)
     {
         // Call external product service
-        query.Product = _productService.GetProduct(query.ProductId);
+        query.Product = productService.GetProduct(query.ProductId);
         return base.Handle(query);
     }
 
@@ -235,10 +255,10 @@ public class GetProductHandler : RequestHandler<GetProductQuery>
     {
         if (Context.Bag.ContainsKey(FallbackPolicyHandler<GetProductQuery>.CAUSE_OF_FALLBACK_EXCEPTION))
         {
-            _logger.LogWarning("Product service failed, returning cached value");
+            logger.LogWarning("Product service failed, returning cached value");
 
             // Return cached product or default
-            query.Product = _cache.GetProduct(query.ProductId) ?? Product.Default;
+            query.Product = cache.GetProduct(query.ProductId) ?? Product.Default;
         }
         return base.Fallback(query);
     }
@@ -250,32 +270,45 @@ public class GetProductHandler : RequestHandler<GetProductQuery>
 Log critical errors and alert operations team, then fail gracefully.
 
 ```csharp
-public override MyCommand Fallback(MyCommand command)
+using System;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Handlers;
+
+public class MyAlertingHandler(
+    IAlertService alertService,
+    IFailedCommandRepository failedCommandRepository,
+    ILogger<MyAlertingHandler> logger) : RequestHandler<MyCommand>
 {
-    if (Context.Bag.ContainsKey(FallbackPolicyHandler<MyCommand>.CAUSE_OF_FALLBACK_EXCEPTION))
+    // ... Handle, with its FallbackPolicy attribute
+
+    public override MyCommand Fallback(MyCommand command)
     {
-        var exception = Context.Bag[FallbackPolicyHandler<MyCommand>.CAUSE_OF_FALLBACK_EXCEPTION] as Exception;
-
-        // Log critical error
-        _logger.LogCritical(exception, "Critical handler failure for command {CommandId}", command.Id);
-
-        // Alert operations team (e.g., PagerDuty, Slack, etc.)
-        _alertService.SendAlert(new Alert
+        if (Context.Bag.ContainsKey(FallbackPolicyHandler<MyCommand>.CAUSE_OF_FALLBACK_EXCEPTION))
         {
-            Severity = AlertSeverity.Critical,
-            Message = $"Handler failed: {exception.Message}",
-            Context = command
-        });
+            var exception = Context.Bag[FallbackPolicyHandler<MyCommand>.CAUSE_OF_FALLBACK_EXCEPTION] as Exception;
 
-        // Mark command as failed for later investigation
-        _failedCommandRepository.Add(new FailedCommand
-        {
-            CommandId = command.Id,
-            Exception = exception,
-            Timestamp = DateTime.UtcNow
-        });
+            // Log critical error
+            logger.LogCritical(exception, "Critical handler failure for command {CommandId}", command.Id);
+
+            // Alert operations team (e.g., PagerDuty, Slack, etc.)
+            alertService.SendAlert(new Alert
+            {
+                Severity = AlertSeverity.Critical,
+                Message = $"Handler failed: {exception.Message}",
+                Context = command
+            });
+
+            // Mark command as failed for later investigation
+            failedCommandRepository.Add(new FailedCommand
+            {
+                CommandId = command.Id,
+                Exception = exception,
+                Timestamp = DateTime.UtcNow
+            });
+        }
+        return base.Fallback(command);
     }
-    return base.Fallback(command);
 }
 ```
 
@@ -293,6 +326,7 @@ public override MyCommand Fallback(MyCommand command)
 You can use both together. A Polly fallback in a pipeline that `[UseResiliencePipeline]` attaches can only substitute the request, so it cannot hand your handler a value. To get a default `Product`, run the service call through a pipeline typed for `Product`, inside the handler, and keep Brighter's `FallbackPolicy` for the order-level recovery:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
 using Paramore.Brighter.Policies.Attributes;
 using Paramore.Brighter.Policies.Handlers;

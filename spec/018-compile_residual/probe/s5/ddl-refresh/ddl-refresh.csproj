@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 4.5b (D20): the relational DDL six pages show. Run once per version, -p:BV=10.7.0 the
+       control: `gen DIR` writes each builder's GetDDL("Outbox"/"Inbox") text, as the pages
+       call it; `run` creates each table under a unique name on its database, probes the
+       CausationId column, and drops it. Needs the Brighter test containers (Postgres 5432,
+       MySQL 3306, SQL Server 11433, Spanner emulator 9010); SQLite is a scratch file. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable><BV Condition="'$(BV)'==''">10.8.0</BV></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter.Outbox.MsSql" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MySql" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.Outbox.PostgreSql" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Sqlite" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Spanner" Version="$(BV)" />
+    <PackageReference Include="Paramore.Brighter.Inbox.Spanner" Version="$(BV)" />
+  </ItemGroup>
+</Project>

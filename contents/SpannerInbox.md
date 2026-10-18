@@ -52,7 +52,7 @@ public static class SpannerInboxRegistration
 }
 ```
 
-In Brighter 10.7.0 this configuration takes effect only in an application that also calls `AddProducers`; see [Global Inbox Configuration in a Consumer-Only Application](/contents/BrighterInboxSupport.md#global-inbox-configuration-in-a-consumer-only-application).
+Before Brighter 10.8.0 this configuration took effect only in an application that also called `AddProducers`; see [Global Inbox Configuration in a Consumer-Only Application](/contents/BrighterInboxSupport.md#global-inbox-configuration-in-a-consumer-only-application).
 
 Constructed with the configuration alone, `SpannerInboxAsync` builds its own
 `SpannerConnectionProvider`; a second constructor takes an `IAmARelationalDbConnectionProvider`
@@ -108,9 +108,12 @@ CREATE TABLE IF NOT EXISTS `Inbox`(
     `CommandType` STRING(256),
     `CommandBody` JSON,
     `Timestamp` TIMESTAMP,
-    `ContextKey` STRING(256)
+    `ContextKey` STRING(256),
+    `CausationId` STRING(256)
 ) PRIMARY KEY (`CommandId`, `ContextKey`)
 ```
+
+`CausationId` arrives at Brighter 10.8.0. A table an earlier release created still records commands without it, but [Replay On Seen](/contents/ReplayOnSeenReference.md#store-support) needs it, and the Spanner provisioner adds it only on a fresh install, so add it by hand to an existing table.
 
 Duplicate inserts surface as a `SpannerException` carrying an `AlreadyExists` status, which the
 Inbox translates into the `OnceOnlyAction` you configured.

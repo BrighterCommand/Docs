@@ -109,13 +109,16 @@ For more on how `DontAckAction` works and how transports handle unacknowledged m
 ## Building a config for Feature Switches with FluentConfigRegistryBuilder
 
 We provide a **FluentConfigRegistryBuilder** to build a mapping of request handlers to **FeatureSwitchStatus**. For each Handler that you wish to feature switch you supply a type and a status using a fluent
-API. The valid statuses used in the builder are **FeatureSwitchStatus.On** and **FeatureSwitchStatus.Off**.
+API. The valid statuses used in the builder are **FeatureSwitchStatus.On** and **FeatureSwitchStatus.Off**. This example switches the two handlers declared in the examples above.
 
 ``` csharp
+using Paramore.Brighter.FeatureSwitch;
+using Paramore.Brighter.FeatureSwitch.Providers;
+
 var featureSwitchRegistry = FluentConfigRegistryBuilder
                             .With()
                             .StatusOf<MyFeatureSwitchedHandler>().Is(FeatureSwitchStatus.On)
-                            .StatusOf<MyIncompleteHandler>().Is(FeatureSwitchStatus.Off)
+                            .StatusOf<MyIncompleteHandlerAsync>().Is(FeatureSwitchStatus.Off)
                             .Build();
 ```
 
@@ -130,37 +133,41 @@ in the registry.
 Your implementation of the **StatusOf** method is used to determine the **FeatureSwitchStatus** of the Handler type that is passed in as a parameter. How you store and retrieve these configurations is then up to
 you.
 
-In the following example there are two FeatureSwitches configured in the **AppSettings.config**. We then build an **AppSettingsConfigRegistry**. The **StatusOf** method is implemetned to read the config from the App Settings and return the status for the given type.
+In the following example there are two Feature Switches configured in **appsettings.json**, under a `FeatureSwitches` section keyed by each handler's full type name. We then build a **ConfigurationFeatureSwitchRegistry** that takes the application's `IConfiguration`. Its **StatusOf** method reads the handler's entry and returns its status, falling back to the **MissingConfigStrategy** when there is none.
 
-``` xml
-<appSettings>
-    <add key="FeatureSwitch::Namespace.MyFeatureSwitchedHandler" value="on"/>
-    <add key="FeatureSwitch::Namespace.MyIncompleteHandler" value="off"/>
-</appSettings>    
+```json
+{
+  "FeatureSwitches": {
+    "MyNamespace.MyFeatureSwitchedHandler": "on",
+    "MyNamespace.MyIncompleteHandlerAsync": "off"
+  }
+}
 ```
 
-``` csharp
-class AppSettingsConfigRegistry : IAmAFeatureSwitchRegistry
+```csharp
+using System;
+using Microsoft.Extensions.Configuration;
+using Paramore.Brighter.FeatureSwitch;
+
+public class ConfigurationFeatureSwitchRegistry(IConfiguration configuration) : IAmAFeatureSwitchRegistry
 {
-    public MissingConfigStrategy MissingConfigStrategy { get; set; }
+    public MissingConfigStrategy MissingConfigStrategy { get; set; } = MissingConfigStrategy.Exception;
 
     public FeatureSwitchStatus StatusOf(Type handler)
-    {            
-        var configStatus = ConfigurationManager.AppSettings[$"FeatureSwitch::{handler}"].ToLower();
+    {
+        var configStatus = configuration[$"FeatureSwitches:{handler.FullName}"]?.ToLowerInvariant();
 
-        switch (configStatus)
+        return configStatus switch
         {
-            case "on":
-                return FeatureSwitchStatus.On;
-            case "off":
-                return FeatureSwitchStatus.Off;
-            default:
-                return MissingConfigStrategy is MissingConfigStrategy.SilentOn 
-                            ? FeatureSwitchStatus.On 
-                            : MissingConfigStrategy is MissingConfigStrategy.SilentOff 
-                                ? FeatureSwitchStatus.Off 
-                                : throw new InvalidOperationException($"No Feature Switch configuration for {handler} specified");                    
-        }
+            "on" => FeatureSwitchStatus.On,
+            "off" => FeatureSwitchStatus.Off,
+            _ => MissingConfigStrategy switch
+            {
+                MissingConfigStrategy.SilentOn => FeatureSwitchStatus.On,
+                MissingConfigStrategy.SilentOff => FeatureSwitchStatus.Off,
+                _ => throw new InvalidOperationException($"No Feature Switch configuration for {handler} specified")
+            }
+        };
     }
 }
 ```
