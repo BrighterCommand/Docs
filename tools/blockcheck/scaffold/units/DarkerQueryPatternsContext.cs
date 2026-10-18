@@ -1,6 +1,6 @@
-// Types DarkerQueryPatternsContext's four pages name in their blocks and never declare:
-// AggregationQueryPatterns.md, ProjectionQueryPatterns.md, ParameterizedQueryPatterns.md and
-// QueryHandlerDependencies.md.
+// Types DarkerQueryPatternsContext's five pages name in their blocks and never declare:
+// AggregationQueryPatterns.md, ProjectionQueryPatterns.md, ParameterizedQueryPatterns.md,
+// QueryHandlerDependencies.md and QueryPatterns.md.
 //
 // Their handlers query one EF Core model the pages never show — customers, orders, their items and
 // products, categories — through an `ApplicationDbContext`, or through repositories and services
@@ -20,6 +20,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Category> Categories { get; set; } = null!;
     public DbSet<Order> Orders { get; set; } = null!;
     public DbSet<Customer> Customers { get; set; } = null!;
+    // QueryPatterns 4: `_dbContext.Products`
+    public DbSet<Product> Products { get; set; } = null!;
 }
 
 // Aggregation 1: `ToDictionaryAsync(c => c.Id, c => c.Name, …)` into `IReadOnlyDictionary<int, string>`
@@ -47,11 +49,23 @@ public class Order
 // Aggregation 2: `OrderStatus.Pending`
 public enum OrderStatus { Pending }
 
-// Projection 2: `.ThenInclude(i => i.Product)`, `i.Product.Name`
+// Projection 2: `.ThenInclude(i => i.Product)`, `i.Product.Name`; QueryPatterns 4: `p.Id`, `p.Description`,
+// `p.CategoryId`, `p.Price`, `p.StockQuantity`, `p.Category.Name`, `p.ImageUrl`, `p.DiscountPercent`
 public class Product
 {
+    public int Id { get; set; }
     public string Name { get; set; } = "";
+    public string Description { get; set; } = "";
+    public int CategoryId { get; set; }
+    public Category Category { get; set; } = null!;
+    public decimal Price { get; set; }
+    public int StockQuantity { get; set; }
+    public string ImageUrl { get; set; } = "";
+    public decimal? DiscountPercent { get; set; }
 }
+
+// QueryPatterns 4: `new PagedResult<ProductCatalogItemDto>(products, totalCount, query.PageNumber, query.PageSize)`
+public class PagedResult<T>(IReadOnlyList<T> items, int totalCount, int pageNumber, int pageSize);
 
 // Projection 1, 2, QueryHandlerDependencies 2: `c.Id`, `c.Name`, `c.Email`, `c.Orders.Count`
 public class Customer

@@ -80,12 +80,14 @@ When using `MessagePumpType.Reactor`, you must use **synchronous** implementatio
 Implement `IHandleRequests<T>` (not `IHandleRequestsAsync<T>`):
 
 ```csharp
-public class MyCommandHandler : RequestHandler<MyCommand>
+using Paramore.Brighter;
+
+public class MyCommandHandler(IRepository repository) : RequestHandler<MyCommand>
 {
     public override MyCommand Handle(MyCommand command)
     {
         // Synchronous business logic
-        _repository.Save(command.Data);
+        repository.Save(command.Data);
 
         return base.Handle(command);
     }
@@ -125,6 +127,10 @@ public class MyCommandMessageMapper : IAmAMessageMapper<MyCommand>
 Use synchronous handler attributes and middleware:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 public class MyCommandHandler : RequestHandler<MyCommand>
 {
     [UsePolicy("RetryPolicy", step: 1)]  // Synchronous policy
@@ -145,14 +151,18 @@ When using `MessagePumpType.Proactor`, you must use **asynchronous** implementat
 Implement `IHandleRequestsAsync<T>` (not `IHandleRequests<T>`):
 
 ```csharp
-public class MyCommandHandlerAsync : RequestHandlerAsync<MyCommand>
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
+public class MyCommandHandlerAsync(IRepository repository) : RequestHandlerAsync<MyCommand>
 {
     public override async Task<MyCommand> HandleAsync(
         MyCommand command,
         CancellationToken cancellationToken = default)
     {
         // Asynchronous business logic
-        await _repository.SaveAsync(command.Data, cancellationToken);
+        await repository.SaveAsync(command.Data, cancellationToken);
 
         return await base.HandleAsync(command, cancellationToken);
     }
@@ -241,6 +251,10 @@ Mixing sync and async implementations causes runtime errors:
 To verify your handlers match your pump type:
 
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 // Reactor - Check for IHandleRequests<T>
 public class MyHandler : RequestHandler<MyCommand>  // Correct base class
 {
@@ -269,6 +283,9 @@ public class MyHandlerAsync : RequestHandlerAsync<MyCommand>  // Correct base cl
 Configure a subscription to use the Reactor pattern with `MessagePumpType.Reactor`:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 var subscription = new Subscription<MyCommand>(
     new SubscriptionName("my.subscription"),
     channelName: new ChannelName("my.channel"),
@@ -284,6 +301,9 @@ var subscription = new Subscription<MyCommand>(
 Configure a subscription to use the Proactor pattern with `MessagePumpType.Proactor`:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 var subscription = new Subscription<MyCommand>(
     new SubscriptionName("my.subscription"),
     channelName: new ChannelName("my.channel"),
@@ -332,6 +352,10 @@ The `Performer` is an instance of Brighter's `MessagePump` implementation that r
 If you use `ConfigureAwait(false)` in your handler code when using the Proactor pattern, you will bypass Brighter's synchronization context and resume on a thread pool thread:
 
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 public class MyCommandHandlerAsync : RequestHandlerAsync<MyCommand>
 {
     public override async Task<MyCommand> HandleAsync(MyCommand command, CancellationToken cancellationToken = default)
@@ -371,6 +395,8 @@ var subscription = new Subscription<MyCommand>(
 ### V10 Configuration (Current)
 
 ```csharp
+using Paramore.Brighter;
+
 // V10 - Use MessagePumpType
 var subscription = new Subscription<MyCommand>(
     // ... other parameters
@@ -407,6 +433,9 @@ Use this decision guide to choose the right pattern:
 
 **Low-Latency Trading System (Reactor):**
 ```csharp
+using System;
+using Paramore.Brighter;
+
 // Need fastest possible response time per trade
 var subscription = new Subscription<TradeCommand>(
     new SubscriptionName("trade.processor"),
@@ -419,6 +448,9 @@ var subscription = new Subscription<TradeCommand>(
 
 **High-Volume Order Processing (Proactor):**
 ```csharp
+using System;
+using Paramore.Brighter;
+
 // Need to process thousands of orders per second
 var subscription = new Subscription<OrderCommand>(
     new SubscriptionName("order.processor"),

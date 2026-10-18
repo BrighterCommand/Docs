@@ -229,14 +229,16 @@ For more information on Brighter, see [Brighter Basic Configuration](/contents/B
 
 ### Query Handler Example
 
-Here's a brief example of a Darker query handler. For complete details, see [Implementing a Query Handler](/contents/ImplementAQueryHandler.md):
+Here's a brief example of a Darker query handler. It projects onto the `OrderItemDto` that the [e-commerce example](#example-e-commerce-order-system) below declares. For complete details, see [Implementing a Query Handler](/contents/ImplementAQueryHandler.md):
 
 ```csharp
+using Microsoft.EntityFrameworkCore;
 using Paramore.Darker;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -364,10 +366,12 @@ Here's how Brighter and Darker fit together in a typical ASP.NET Core applicatio
 
 ### Dependency Injection Setup
 
-Configure both Brighter and Darker in your `Program.cs` or `Startup.cs`:
+Configure both Brighter and Darker in your `Program.cs` or `Startup.cs`. This registers the handlers the examples on this page declare, `PlaceOrderCommandHandler` and `GetOrderDetailsQueryHandler`:
 
 ```csharp
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
 using Paramore.Brighter.Extensions;
@@ -415,7 +419,7 @@ app.Run();
 
 ### Using Both in Controllers
 
-Inject both `IAmACommandProcessor` and `IQueryProcessor` where needed:
+Inject both `IAmACommandProcessor` and `IQueryProcessor` where needed. The controller sends the `PlaceOrderCommand` and executes the `GetOrderDetailsQuery` declared above:
 
 ```csharp
 using Microsoft.AspNetCore.Mvc;
@@ -726,6 +730,9 @@ public class OrderPlacedEvent : Event
 ```
 
 **Command Handler:**
+
+It handles the `PlaceOrderCommand` against the write model declared above:
+
 ```csharp
 using Paramore.Brighter;
 using Paramore.Brighter.Logging.Attributes;
@@ -815,6 +822,8 @@ public class PlaceOrderCommandHandler : RequestHandlerAsync<PlaceOrderCommand>
 
 **Query:**
 ```csharp
+using System;
+using System.Collections.Generic;
 using Paramore.Darker;
 
 public sealed class GetOrderDetailsQuery : IQuery<OrderDetailsDto>
@@ -849,6 +858,9 @@ public class OrderItemDetailsDto
 ```
 
 **Query Handler:**
+
+It handles the query above and projects onto its DTOs:
+
 ```csharp
 using Microsoft.EntityFrameworkCore;
 using Paramore.Darker;

@@ -248,33 +248,46 @@ public sealed class GetProductCatalogQueryHandler :
 ```
 
 **Usage in controller:**
-```csharp
-[HttpGet("products")]
-public async Task<IActionResult> GetProducts(
-    [FromQuery] int page = 1,
-    [FromQuery] int pageSize = 20,
-    [FromQuery] string? search = null,
-    [FromQuery] int? categoryId = null,
-    [FromQuery] decimal? minPrice = null,
-    [FromQuery] decimal? maxPrice = null,
-    [FromQuery] bool inStockOnly = false,
-    [FromQuery] string sortBy = "Name",
-    [FromQuery] bool sortDesc = false,
-    CancellationToken cancellationToken = default)
-{
-    var query = new GetProductCatalogQuery(
-        page,
-        pageSize,
-        search,
-        categoryId,
-        minPrice,
-        maxPrice,
-        inStockOnly,
-        sortBy,
-        sortDesc);
 
-    var result = await _queryProcessor.ExecuteAsync(query, cancellationToken);
-    return Ok(result);
+The controller executes the `GetProductCatalogQuery` declared above:
+
+```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Paramore.Darker;
+
+[ApiController]
+[Route("api/catalog")]
+public class CatalogController(IQueryProcessor queryProcessor) : ControllerBase
+{
+    [HttpGet("products")]
+    public async Task<IActionResult> GetProducts(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? search = null,
+        [FromQuery] int? categoryId = null,
+        [FromQuery] decimal? minPrice = null,
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] bool inStockOnly = false,
+        [FromQuery] string sortBy = "Name",
+        [FromQuery] bool sortDesc = false,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetProductCatalogQuery(
+            page,
+            pageSize,
+            search,
+            categoryId,
+            minPrice,
+            maxPrice,
+            inStockOnly,
+            sortBy,
+            sortDesc);
+
+        var result = await queryProcessor.ExecuteAsync(query, cancellationToken);
+        return Ok(result);
+    }
 }
 ```
 

@@ -114,6 +114,7 @@ For more details, see [Darker Configuration Reference](/contents/DarkerConfigura
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
+using Paramore.Darker;
 using System;
 using System.Linq;
 using System.Threading;

@@ -107,6 +107,7 @@ First, add the query logging decorator to your Darker configuration in `Program.
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 using Paramore.Darker.QueryLogging;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -191,6 +192,7 @@ First, add policies to your Darker configuration:
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Policies;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -266,6 +268,7 @@ The FallbackPolicy decorator is available when you add policies to Darker:
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Policies;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -508,6 +511,7 @@ using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 public sealed class GetCustomerOrderSummaryQueryHandler :
     QueryHandlerAsync<GetCustomerOrderSummaryQuery, CustomerOrderSummary>
@@ -639,6 +643,8 @@ Using `[RetryableQuery]` without calling `AddDefaultPolicies()` or `AddPolicies(
 
 ❌ Bad:
 ```csharp
+using Paramore.Darker.AspNetCore;
+
 builder.Services.AddDarker()
     .AddHandlersFromAssemblies(typeof(Program).Assembly);
     // No policies configured!
@@ -646,6 +652,9 @@ builder.Services.AddDarker()
 
 ✅ Good:
 ```csharp
+using Paramore.Darker.AspNetCore;
+using Paramore.Darker.Policies;
+
 builder.Services.AddDarker()
     .AddHandlersFromAssemblies(typeof(Program).Assembly)
     .AddDefaultPolicies();

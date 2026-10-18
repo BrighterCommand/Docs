@@ -40,6 +40,8 @@ YOu can use our **SubcriberRegistry** regardless of your DI framework.
 Register your handlers with your **Subscriber Registry**
 
 ``` csharp
+using Paramore.Brighter;
+
 var registry = new SubscriberRegistry();
 registry.Register<GreetingCommand, GreetingCommandHandler>();
 ```
@@ -206,6 +208,10 @@ var policyRegistry = new DefaultPolicy() {
 When you attribute your code, you then use the key to attach a specific policy:
 
 ``` csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 [RequestLogging(step: 1, timing: HandlerTiming.Before)]
 [UsePolicy(Globals.MYRETRYPOLICY, step: 2)]
 public override TaskReminderCommand Handle(TaskReminderCommand command)
@@ -224,6 +230,10 @@ public override TaskReminderCommand Handle(TaskReminderCommand command)
 If you need multiple policies then you can pass them as an array. We evaluate them left to right.
 
 ``` csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 [RequestLogging(step: 1, timing: HandlerTiming.Before)]
 [UsePolicy(new [] {Globals.MYRETRYPOLICY, Globals.MYCIRCUITBREAKER}, step: 2)]
 public override TaskReminderCommand Handle(TaskReminderCommand command)

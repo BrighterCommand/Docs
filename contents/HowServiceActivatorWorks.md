@@ -84,25 +84,7 @@ Message message = channel.Receive(timeOut);
 Message message = await channel.ReceiveAsync(timeOut, cancellationToken);
 ```
 
-### 2. Message Deserialization
-
-The Dispatcher uses the registered message mapper to convert the `Message` into a request object:
-
-```csharp
-
-// V10: Default mapper used automatically if no custom mapper registered
-// Reactor (blocking)
-var request = TranslateMessage(message, context);
-```
-
-```csharp
-
-// V10: Default mapper used automatically if no custom mapper registered
-// Reactor (blocking)
-var request = await TranslateMessage(message, context);
-```
-
-### 3. Request Context Creation
+### 2. Request Context Creation
 
 The Message Pump creates a `RequestContext` that includes:
 
@@ -111,10 +93,30 @@ The Message Pump creates a `RequestContext` that includes:
 - Channel Name
 - When the request started
 
+Both pumps make the same call inside their message loop (`Reactor.cs:208`, `Proactor.cs:247` at 10.8.0):
+
 ```csharp
+// ...
+RequestContext context = InitRequestContext(processSpan, message);
+// ...
+```
 
-RequestContext context = InitRequestContext(span, message);
+### 3. Message Deserialization
 
+The Dispatcher uses the registered message mapper to convert the `Message` into a request object, passing the context it has just created. If you register no custom mapper, V10 uses the default mapper. The callback hands back the transform pipeline the mapper ran, so the pump can release it: straight away, or after the handler has run if a transform left cleanup pending.
+
+```csharp
+// Reactor (blocking), Reactor.cs:211
+// ...
+var request = TranslateMessage(message, context, pipeline => unwrapPipeline = pipeline);
+// ...
+```
+
+```csharp
+// Proactor (non-blocking), Proactor.cs:250
+// ...
+var request = await TranslateMessage(message, context, pipeline => unwrapPipeline = pipeline);
+// ...
 ```
 
 ### 4. Handler Dispatch
@@ -122,13 +124,17 @@ RequestContext context = InitRequestContext(span, message);
 The request is dispatched to the Command Processor, which executes the handler pipeline:
 
 ```csharp
-// Reactor
-RequestContext context = InitRequestContext(span, message);
+// Reactor, Reactor.cs:219
+// ...
+InvokeDispatchRequest(request, context);
+// ...
 ```
 
 ```csharp
-// Proactor
-await InvokeDispatchRequest(request, message, context);
+// Proactor, Proactor.cs:258
+// ...
+await InvokeDispatchRequest(request, context);
+// ...
 ```
 
 ### 5. Message Acknowledgment, Rejection, Requeue and Fallback
@@ -227,6 +233,10 @@ The message is acknowledged, to prevent a poison pill message from blocking furt
 Use `getRequestType` callback for content-based routing:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription(
     new SubscriptionName("task.processor"),
     channelName: new ChannelName("tasks"),
@@ -248,16 +258,18 @@ var subscription = new KafkaSubscription(
 Use Agreement Dispatcher for dynamic handler selection:
 
 ```csharp
+using Paramore.Brighter;
+
 registry.RegisterAsync<MyCommand>(
     (request, context) =>
     {
         var myCommand = request as MyCommand;
         if (myCommand?.Priority == "high")
-            return new[] { typeof(HighPriorityHandlerAsync) };
+            return [typeof(HighPriorityHandlerAsync)];
 
-        return new[] { typeof(StandardHandlerAsync) };
+        return [typeof(StandardHandlerAsync)];
     },
-    new[] { typeof(HighPriorityHandlerAsync), typeof(StandardHandlerAsync) }
+    [typeof(HighPriorityHandlerAsync), typeof(StandardHandlerAsync)]
 );
 ```
 
@@ -268,6 +280,8 @@ registry.RegisterAsync<MyCommand>(
 Scale message processing with multiple Performers:
 
 ```csharp
+using Paramore.Brighter;
+
 var subscription = new Subscription<MyCommand>(
     // ... other config
     noOfPerformers: 5,  // Five concurrent consumers
@@ -308,6 +322,9 @@ services.AddBrighter(options =>
 Monitor Dispatcher health:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.ServiceActivator.Extensions.Diagnostics.HealthChecks;
+
 services.AddHealthChecks()
     .AddCheck<BrighterServiceActivatorHealthCheck>("brighter-dispatcher");
 ```

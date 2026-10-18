@@ -124,6 +124,10 @@ public override async Task<TResult> ExecuteAsync(
 Always accept and use the `CancellationToken` parameter:
 
 ```csharp
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
 public override async Task<IReadOnlyDictionary<int, string>> ExecuteAsync(
     GetPeopleQuery query,
     CancellationToken cancellationToken = default)
@@ -308,11 +312,11 @@ If you later need to add async operations, you can convert a synchronous handler
 ```csharp
 using Paramore.Darker;
 
-public sealed class GetOrderQueryHandler : QueryHandler<GetOrderQuery, Order>
+public sealed class GetOrderQueryHandler(IOrderRepository repository) : QueryHandler<GetOrderQuery, Order>
 {
     public override Order Execute(GetOrderQuery query)
     {
-        return _repository.GetById(query.OrderId);
+        return repository.GetById(query.OrderId);
     }
 }
 ```
@@ -324,13 +328,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Paramore.Darker;
 
-public sealed class GetOrderQueryHandler : QueryHandlerAsync<GetOrderQuery, Order>
+public sealed class GetOrderQueryHandler(IOrderRepository repository) : QueryHandlerAsync<GetOrderQuery, Order>
 {
     public override async Task<Order> ExecuteAsync(
         GetOrderQuery query,
         CancellationToken cancellationToken = default)
     {
-        return await _repository.GetByIdAsync(query.OrderId, cancellationToken);
+        return await repository.GetByIdAsync(query.OrderId, cancellationToken);
     }
 }
 ```
@@ -341,15 +345,32 @@ For maximum control, you can implement the `IQueryHandler<TQuery, TResult>` inte
 
 ### IQueryHandler<TQuery, TResult> Interface
 
-The interface defines both synchronous and asynchronous execution methods:
+The interface defines synchronous and asynchronous execution methods, each with a fallback, and inherits the query context the pipeline sets on the handler:
 
 ```csharp
-public interface IQueryHandler<in TQuery, TResult> where TQuery : IQuery<TResult>
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker;
+
+public interface IQueryHandler
+{
+    IQueryContext Context { get; set; }
+}
+
+public interface IQueryHandler<in TQuery, TResult> : IQueryHandler
+    where TQuery : IQuery<TResult>
 {
     TResult Execute(TQuery query);
+
+    TResult Fallback(TQuery query);
+
     Task<TResult> ExecuteAsync(TQuery query, CancellationToken cancellationToken = default);
+
+    Task<TResult> FallbackAsync(TQuery query, CancellationToken cancellationToken = default);
 }
 ```
+
+`QueryHandler` and `QueryHandlerAsync` implement all five members for you: their `Fallback` and `FallbackAsync`, which the `[FallbackPolicy]` decorator calls when the query fails, return `default(TResult)`. Implementing the interface directly, you write each one.
 
 ### When to Use Direct Implementation
 
@@ -372,6 +393,8 @@ public sealed class GetOrderQueryHandler : IQueryHandler<GetOrderQuery, Order>
     private readonly IOrderRepository _repository;
     private readonly bool _useAsync;
 
+    public IQueryContext Context { get; set; } = null!;
+
     public GetOrderQueryHandler(IOrderRepository repository, bool useAsync = true)
     {
         _repository = repository;
@@ -391,6 +414,13 @@ public sealed class GetOrderQueryHandler : IQueryHandler<GetOrderQuery, Order>
         // Asynchronous implementation
         return await _repository.GetByIdAsync(query.OrderId, cancellationToken);
     }
+
+    // As the base classes do: called by the [FallbackPolicy] decorator when the query fails
+    public Order Fallback(GetOrderQuery query) => default!;
+
+    public Task<Order> FallbackAsync(
+        GetOrderQuery query,
+        CancellationToken cancellationToken = default) => Task.FromResult<Order>(default!);
 }
 ```
 
@@ -417,6 +447,8 @@ This scans the assembly and registers all classes that inherit from `QueryHandle
 **Multiple assemblies:**
 
 ```csharp
+using Paramore.Darker.AspNetCore;
+
 builder.Services.AddDarker()
     .AddHandlersFromAssemblies(
         typeof(CustomerQuery).Assembly,
@@ -475,13 +507,17 @@ Query handlers should return the type specified in `IQuery<TResult>`. The result
 **Simple results:**
 
 ```csharp
-public sealed class GetCustomerNameQueryHandler : QueryHandlerAsync<GetCustomerNameQuery, string>
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker;
+
+public sealed class GetCustomerNameQueryHandler(ICustomerRepository repository) : QueryHandlerAsync<GetCustomerNameQuery, string>
 {
     public override async Task<string> ExecuteAsync(
         GetCustomerNameQuery query,
         CancellationToken cancellationToken = default)
     {
-        var customer = await _repository.GetByIdAsync(query.CustomerId, cancellationToken);
+        var customer = await repository.GetByIdAsync(query.CustomerId, cancellationToken);
         return customer.Name;
     }
 }
@@ -490,13 +526,18 @@ public sealed class GetCustomerNameQueryHandler : QueryHandlerAsync<GetCustomerN
 **Complex results:**
 
 ```csharp
-public sealed class GetOrderDetailsQueryHandler : QueryHandlerAsync<GetOrderDetailsQuery, OrderDetailsDto>
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker;
+
+public sealed class GetOrderDetailsQueryHandler(IOrderRepository repository) : QueryHandlerAsync<GetOrderDetailsQuery, OrderDetailsDto>
 {
     public override async Task<OrderDetailsDto> ExecuteAsync(
         GetOrderDetailsQuery query,
         CancellationToken cancellationToken = default)
     {
-        var order = await _repository.GetByIdAsync(query.OrderId, cancellationToken);
+        var order = await repository.GetByIdAsync(query.OrderId, cancellationToken);
 
         return new OrderDetailsDto
         {
@@ -517,13 +558,19 @@ public sealed class GetOrderDetailsQueryHandler : QueryHandlerAsync<GetOrderDeta
 **Collection results:**
 
 ```csharp
-public sealed class GetActiveOrdersQueryHandler : QueryHandlerAsync<GetActiveOrdersQuery, IReadOnlyList<OrderSummary>>
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker;
+
+public sealed class GetActiveOrdersQueryHandler(IOrderRepository repository) : QueryHandlerAsync<GetActiveOrdersQuery, IReadOnlyList<OrderSummary>>
 {
     public override async Task<IReadOnlyList<OrderSummary>> ExecuteAsync(
         GetActiveOrdersQuery query,
         CancellationToken cancellationToken = default)
     {
-        var orders = await _repository.GetActiveOrdersAsync(cancellationToken);
+        var orders = await repository.GetActiveOrdersAsync(cancellationToken);
         return orders.ToList().AsReadOnly();
     }
 }
@@ -534,14 +581,18 @@ public sealed class GetActiveOrdersQueryHandler : QueryHandlerAsync<GetActiveOrd
 Use nullable reference types when a query might not return a result:
 
 ```csharp
-public sealed class FindCustomerByEmailQueryHandler : QueryHandlerAsync<FindCustomerByEmailQuery, Customer?>
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker;
+
+public sealed class FindCustomerByEmailQueryHandler(ICustomerRepository repository) : QueryHandlerAsync<FindCustomerByEmailQuery, Customer?>
 {
     public override async Task<Customer?> ExecuteAsync(
         FindCustomerByEmailQuery query,
         CancellationToken cancellationToken = default)
     {
         // May return null if customer not found
-        var customer = await _repository.FindByEmailAsync(query.Email, cancellationToken);
+        var customer = await repository.FindByEmailAsync(query.Email, cancellationToken);
         return customer;
     }
 }
@@ -549,16 +600,20 @@ public sealed class FindCustomerByEmailQueryHandler : QueryHandlerAsync<FindCust
 
 ### Throwing Exceptions
 
-Throw exceptions for exceptional situations:
+Throw exceptions for exceptional situations. `OrderNotFoundException` is declared under [Domain Exceptions](#domain-exceptions) below:
 
 ```csharp
-public sealed class GetOrderQueryHandler : QueryHandlerAsync<GetOrderQuery, Order>
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker;
+
+public sealed class GetOrderQueryHandler(IOrderRepository repository) : QueryHandlerAsync<GetOrderQuery, Order>
 {
     public override async Task<Order> ExecuteAsync(
         GetOrderQuery query,
         CancellationToken cancellationToken = default)
     {
-        var order = await _repository.GetByIdAsync(query.OrderId, cancellationToken);
+        var order = await repository.GetByIdAsync(query.OrderId, cancellationToken);
 
         if (order == null)
         {
@@ -587,6 +642,8 @@ public sealed class GetOrderQueryHandler : QueryHandlerAsync<GetOrderQuery, Orde
 Create custom exception types for domain-specific errors:
 
 ```csharp
+using System;
+
 public class OrderNotFoundException : Exception
 {
     public OrderNotFoundException(string message) : base(message) { }
@@ -600,23 +657,28 @@ public class UnauthorizedAccessException : Exception
 
 ### Validation
 
-Validate complex business rules in the handler:
+Validate complex business rules in the handler, throwing the domain exceptions declared above:
 
 ```csharp
-public sealed class GetOrderQueryHandler : QueryHandlerAsync<GetOrderQuery, Order>
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker;
+
+public sealed class GetOrderQueryHandler(IOrderRepository repository, IAuthService authService) : QueryHandlerAsync<GetOrderQuery, Order>
 {
     public override async Task<Order> ExecuteAsync(
         GetOrderQuery query,
         CancellationToken cancellationToken = default)
     {
         // Authorization check
-        if (!await _authService.CanAccessOrderAsync(query.OrderId, cancellationToken))
+        if (!await authService.CanAccessOrderAsync(query.OrderId, cancellationToken))
         {
             throw new UnauthorizedAccessException($"User cannot access order {query.OrderId}");
         }
 
         // Business rule validation
-        var order = await _repository.GetByIdAsync(query.OrderId, cancellationToken);
+        var order = await repository.GetByIdAsync(query.OrderId, cancellationToken);
 
         if (order == null)
         {

@@ -1790,7 +1790,7 @@ figures, and its 552 is 553 (D13).
 - [x] **Task 5.1:** Predict phase 5's gate movement
   - Input: § *The groups*, S3; recurrence greps for S3's defects
   - Output: § *Phase 5 as executed*, *Predicted*, as 3.1's
-- [ ] **Task 5.2:** Repair S3's reachable blocks
+- [x] **Task 5.2:** Repair S3's reachable blocks
   - Input: S3's table, reachable rows
   - Output: as 3.2's, for S3
 - [ ] **Task 5.3:** Repair S3's hard blocks
@@ -1890,6 +1890,67 @@ touches it). S3's **87** warnings (4 + 2 + 5 + 16 + 12 + 19 + 4 + 14 + 11 on nin
 | scaffold rule | 60 units | **60–69 units**, 0 violations, 0 compile errors | a unit per S3 page that needs a stub; `HowConfiguringTheCommandProcessorWorks.md` has one, and `QueryPatterns.md` may share `DarkerQueryPatternsContext` |
 | assemblies | 553 | **553–554** | unmoved, unless `DarkerBasicConfiguration.md` #9's repair pins Swashbuckle |
 | `linkcheck` · `versioncheck` · `pagelint --plant` | 168 / 0 · 0 of 18 · 5 / 5 | **unmoved** | |
+
+#### The repairs (5.2)
+
+**S3's reachable rows, 85 blocks** (7 built-by-using, 7 values, 71 page-type), plus the five 5.1 read
+as misreads (`CQRSWithBrighterAndDarker.md` #4, #10; `DarkerBasicConfiguration.md` #5, #10;
+`QueryPatterns.md` #5). **72 of the 85 build**, and 13 do not: 8 turned out *same-page* (below) and 5
+wait on a ruling (R8). Of the misreads, `DarkerBasicConfiguration.md` #5 and #10 build; the other three
+are *same-page*. Three blocks whose page was otherwise whole were repaired with it, as 4.2 repaired
+`AgreementDispatcher.md` #7: `DarkerBasicConfiguration.md` #9 (ledger 52) and
+`ImplementAQueryHandler.md` #13 (ledger 55) build, and `QueriesAndQueryObjects.md` #22 and #23, classed
+*same-page* because block 1 lists Darker's `IQuery`, needed only `using Paramore.Darker;` and build.
+Seven scaffold units are new (`DarkerBasicConfiguration`, `EFCoreQueryIntegration`,
+`HowServiceActivatorWorks`, `ImplementAQueryHandler`, `QueriesAndQueryObjects`, `QueryPipeline`,
+`ReactorAndProactor`) and two extended (`HowConfiguringTheCommandProcessorWorks`, and
+`DarkerQueryPatterns`, which now also serves `QueryPatterns.md`), with **0** unit-rule violations.
+
+**Measured after 5.2:** `--report` → **994 / 614 / 363 / 17**; 83 findings, all expected: 78 BUILT
+blocks not yet baselined, and 5 BUILT blocks whose page gained a unit (`ImplementAQueryHandler.md`
+#1, #2; `QueriesAndQueryObjects.md` #1–#3). 67 units. `pagelint` 0 errors / **304**; `--changed
+origin/master` 0 errors. `linkcheck` 168 / 0. `symbolcheck` 24 / 14 silenced.
+
+**Why eight *page-type* rows are *same-page*.** The classifier calls a block *same-page* only when
+every name it lacks is declared on the page. A block lacking one page-declared type and one
+undeclared one is *page-type*, and stays FAILED all the same, since no stub may supply a type
+another block declares (unit rule 2). `ImplementAQueryHandler.md` #3, #5, #6, #16, #21, #23 and
+`CQRSWithBrighterAndDarker.md` #3, #5 are that case. With the three misreads that are *same-page*,
+the three original *same-page* rows still FAILED (`CQRSWithBrighterAndDarker.md` #2, #8;
+`ImplementAQueryHandler.md` #14) and R8's five, **19** S3 blocks now look unlikely to build, against
+5.1's 3–8. 5.6 reconciles it.
+
+**What the reachable rows hid.** As in phases 3 and 4, a block that did not compile had not been
+checked for anything else:
+- **The message pump's own calls (ledger 53).** `HowServiceActivatorWorks.md` § *Message Flow* quotes
+  the pump's private methods. Read against `Reactor.cs` and `Proactor.cs` at 10.8.0, four of five
+  blocks were wrong. The section now quotes each call as the pump makes it, with its file and line, and
+  puts *Request Context Creation* before *Message Deserialization*, the order the pump runs them in.
+  No link named either anchor (`grep -rn 'HowServiceActivatorWorks.md#' contents/ SUMMARY.md` → 0)
+- **A router's return type (ledger 54).** `HowServiceActivatorWorks.md` #9 returned `Type[]`; it now
+  uses collection expressions, as `AgreementDispatcher.md` does
+- **Darker's interfaces (ledger 55).** `ImplementAQueryHandler.md` #12 listed `IQueryHandler<,>` as two
+  methods, and #13 implemented the listing, which is why it failed. Both now follow 4.1.1, and the page
+  says the base classes supply `Fallback` and `FallbackAsync`. `QueriesAndQueryObjects.md` #1, already
+  BUILT, lacked `IQuery<TResult>`'s base
+- **Dependencies never declared.** `ImplementAQueryHandler.md` #10, #11, #17–#21, #23 and
+  `ReactorAndProactor.md` #1, #4 used a `_repository` no block declared. Each now takes its repository
+  by primary constructor (phase 3's rule). One static stub could not have served them: `GetByIdAsync`
+  returns a customer in one block and an order in another
+- `QueryPatterns.md` #5, a controller action shown alone, is made whole in its controller, as
+  `ShowMeTheCode.md` #1 was (D15). It is *same-page* on `GetProductCatalogQuery`
+
+**For 5.3:** `HowServiceActivatorWorks.md` #15 is ledger 53's neighbour, not its recurrence: a lone
+`deadLetterChannelName:` argument, repaired with #7. `ImplementAQueryHandler.md` #22 declares an
+`UnauthorizedAccessException` that shadows the BCL's, and #16 registers a `GetPersonQueryHandler` no
+block declares; both are read at 5.5. **For 5.4:** the page now says the base classes' `Fallback`
+returns `default(TResult)` when the `[FallbackPolicy]` decorator calls it, a claim to run.
+
+**Ruling asked** (obligation 21: no accepted skip reason fits):
+
+| # | Block | Question |
+|---:|---|---|
+| R8 | `HowServiceActivatorWorks.md` #2–#6 | Each quotes one line of the Reactor or Proactor message loop, which call private methods (`InitRequestContext`, `TranslateMessage`, `InvokeDispatchRequest`). The Reactor and Proactor methods take the same parameters and differ only in return type, so no unit can stub both, and no reader can call them. The lines are now 10.8.0's. Accept a fourth skip reason, *"a line quoted from Brighter's source, calling a private member"*, with the file and line cited in the block? Or retag them `text`, or list them as FAILED? |
 
 ### Phase 6 — S4, Using an External Bus; Transports *(6 tasks, one PR)*
 
@@ -2150,6 +2211,16 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `QuartzScheduler.md` | 22 | `CS0246` `BrighterJobListener`, `BrighterTriggerListener` | *same-page*: block 15 declares `BrighterJobListener`; the trigger listener is the reader's, "written the same way", as the sentence before it says | 3 |
 | `FeatureSwitches.md` | 5 | `CS0246` `MyFeatureSwitchedHandler`, `MyIncompleteHandlerAsync` | *same-page*: blocks 1 and 2 declare them; the sentence before block 5 says so | 4 |
 | `PolicyRetryAndCircuitBreaker.md` | 17 | `CS0246` `MyQoSProtectedHandler`; `CS0103` `services` | *same-page*: block 1 declares the handler, as the sentence before block 17 now says | 4 |
+| `CQRSWithBrighterAndDarker.md` | 2 | `CS0246` `Order`, `OrderItem`, `OrderPlacedEvent`, `IOrderRepository`; `CS0103` `OrderStatus` | *same-page*: block 7 declares the write model, as the sentence before block 2 says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 3 | `CS0246` `OrderItemDto`, `ApplicationDbContext` | *same-page*: block 6 declares `OrderItemDto`, as the sentence before block 3 now says; the context's `Orders` are block 7's `Order`, which no stub may supply | 5 |
+| `CQRSWithBrighterAndDarker.md` | 4 | `CS0246` `PlaceOrderCommandHandler`, `GetOrderDetailsQueryHandler`, `ApplicationDbContext` | *same-page*: blocks 2, 3, 8 and 10 declare the handlers, as the sentence before block 4 now says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 5 | `CS0246` `PlaceOrderCommand`, `GetOrderDetailsQuery`, `PlaceOrderRequest` | *same-page*: blocks 3, 6 and 9 declare the command and the query, as the sentence before block 5 now says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 8 | `CS0246` `PlaceOrderCommand`, `Order`, `IOrderRepository`, `IProductRepository` … | *same-page*: blocks 6 and 7, as the sentence before block 8 now says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 10 | `CS0246` `GetOrderDetailsQuery`, `OrderDetailsDto`, `OrderItemDetailsDto`, `ApplicationDbContext` | *same-page*: block 9 declares the query and its DTOs, as the sentence before block 10 now says | 5 |
+| `ImplementAQueryHandler.md` | 3, 5, 6, 14 | `CS0246` `GetPeopleQuery` (and #3, #5 `PersonRepository`; #6 `IPersonRepository`) | *same-page*: block 1 declares the query, which its lead-in says the guide uses throughout | 5 |
+| `ImplementAQueryHandler.md` | 16 | `CS0246` `GetPeopleQuery`, `GetPersonNameQuery`, `GetPeopleQueryHandler`, `GetOrderQueryHandler`, `GetPersonQueryHandler` | *same-page*: blocks 1–3, 10 declare all but `GetPersonQueryHandler`, which no block declares | 5 |
+| `ImplementAQueryHandler.md` | 21, 23 | `CS0246` `OrderNotFoundException` | *same-page*: block 22 declares it, as the sentences before blocks 21 and 23 now say | 5 |
+| `QueryPatterns.md` | 5 | `CS0246` `GetProductCatalogQuery` | *same-page*: block 4 declares it, as the sentence before block 5 now says | 5 |
 
 ## Splits
 
@@ -2221,6 +2292,10 @@ design, and their greps were run there.*
 | 49 | #4443 and #4444 stated as current: the DynamoDB and Spanner Outboxes ignore `TrippedTopics`; 10.8.0 fixes both | `SweeperCircuitBreaking.md` | `grep -rnF 'it accepts the list and ignores it' contents/` | **1** | **0** | task 4.5a, `probe/s5/tripped-topics` | 4 |
 | 50 | `messaging.system` said to be always `internal_bus` on pump spans; at 10.8.0 it is the transport's | `Telemetry.md` | `grep -rnF 'Always `internal_bus` on pump spans' contents/` | **1** | **0** | task 4.5a, `probe/s5/messaging-system` | 4 |
 | 51 | Relational DDL that is not 10.8.0's `GetDDL`: three blocks 10.7.0's output, without `CausationId`, and three no release generates, one of them invalid SQLite | `MSSQLOutbox.md`, `MySQLOutbox.md`, `PostgresOutbox.md`, `SqliteOutbox.md`, `SpannerOutbox.md`, `SpannerInbox.md` | `grep -LiE causationid` on the six pages | **6** | **0** | task 4.5b, `probe/s5/ddl-refresh` | 4 |
+| 52 | Swashbuckle's `AddSwaggerGen`, `UseSwagger` and `UseSwaggerUI` in a Darker setup, from a package the page never names and no pin carries | `DarkerBasicConfiguration.md` | `grep -rnE 'AddSwaggerGen\|UseSwagger' contents/` | **3** | **0** | task 5.1, the second compile; removed at 5.2 | 5 |
+| 53 | The message pump's private calls misquoted: `TranslateMessage` with two arguments (10.8.0 takes three), `InvokeDispatchRequest(request, message, context)` (it takes `request, context`), the Reactor's dispatch shown as `InitRequestContext`, an awaited call labelled Reactor, and translation before the context it uses is created | `HowServiceActivatorWorks.md` | `grep -rnE 'TranslateMessage\(message, context\)\|InvokeDispatchRequest\(request, message' contents/` | **3** | **0** | task 5.2, hidden behind *page-type*; read against `Reactor.cs`, `Proactor.cs` at 10.8.0 | 5 |
+| 54 | A route returning `Type[]`; at 10.8.0 `RegisterAsync<TRequest>`'s router returns `List<Type>` | `HowServiceActivatorWorks.md` | `grep -rnE 'return new( Type)?\[\] ?\{ ?typeof' contents/` | **2** | **0** | task 5.2, hidden behind *page-type* | 5 |
+| 55 | Darker's interfaces listed short of 4.1.1: `IQuery<TResult>` without its `IQuery` base, `IQueryHandler<,>` with two of its four methods and without `IQueryHandler.Context`; and a handler implementing the short listing | `QueriesAndQueryObjects.md`, `ImplementAQueryHandler.md` | `grep -rnE 'interface IQuery<out TResult>$\|interface IQueryHandler<in TQuery, TResult> where' contents/`; `grep -rnE 'public Order Fallback\(GetOrderQuery' contents/` | **2**; **0** | **0**; **1** | task 5.1, the second compile (`ImplementAQueryHandler.md` #13); the listings read at 5.2 | 5 |
 
 ## Friction ledger
 
