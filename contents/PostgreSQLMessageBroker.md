@@ -385,8 +385,8 @@ await commandProcessor.PostAsync(TimeSpan.FromHours(24), reminder);
 Without `UseScheduler()`, the scheduler is the in-memory one, which holds the delay in the
 process — use a durable scheduler for a delay that must outlive it. `PublishAsync` with a delay also
 goes through the scheduler, and when it falls due it dispatches to handlers in this process, so the
-event never reaches the table. At 10.7.0 a scheduled request fails when it falls due if you
-registered handlers with `AutoFromAssemblies()`; see
+event never reaches the table. Before Brighter 10.8.0, a scheduled request failed when it fell due
+if you registered handlers with `AutoFromAssemblies()`; see
 [Registering Handlers When You Schedule Requests](/contents/SchedulingAMessage.md#registering-handlers-when-you-schedule-requests).
 
 The table's `visible_timeout` does delay one thing: a requeue. When a handler defers a message and

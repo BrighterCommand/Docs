@@ -78,7 +78,7 @@ services.AddBrighter(options => { })
 
 - Flexible routing based on content
 - Can change behavior over time
-- Supports multiple handlers
+- Chooses among several handlers: for a `Send` the route returns exactly one, or `Send` throws; for a `Publish` it may return several, and each runs
 - Access to request context
 - Registered explicitly, with `.Handlers()`
 - `AutoFromAssemblies()` must be told to skip the route's handlers

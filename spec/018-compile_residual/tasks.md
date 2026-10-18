@@ -1340,9 +1340,13 @@ predicts knowing that a fragment is made whole before it is skipped.
 - [x] **Task 4.4:** Run S2's behavioural claims (AC10)
   - Input: S2's changed blocks
   - Output: a *Claim / Case / Control* table, each row naming `probe/s2/<name>/Program.cs`
-- [ ] **Task 4.5:** Second pass for S2
+- [x] **Task 4.5:** Second pass for S2
   - Input: 4.1's recurrences; rulings asked
   - Output: as 3.6's
+- [ ] **Task 4.5a:** Sweep the prose that dates a defect to 10.7.0 (D19)
+  - Input: `grep -rn '10\.7\.0' contents/`; the five defects D19 names, and `OnceOnlyAction.Replay`
+  - Output: each defect run at 10.7.0 (the control) and 10.8.0 under `probe/<group>/<name>/`, a
+    *Claim / Case / Control* table; every site repaired; one § *Defect ledger* row per defect
 - [ ] **Task 4.6:** Close phase 4
   - Input: § 1 obligations 6, 7, 19
   - Output: as 3.7's
@@ -1587,6 +1591,42 @@ own lines marked `// probe`. Two are cited, not rerun: `type-pipeline` (4.2, led
 S2 block stays BUILT, and the off-group block stays FAILED. Scaffold 60 units, 0 violations.
 `pagelint` 0 errors / **346** (−1, the off-group block's `using`s); `--changed origin/master` 0
 errors. `linkcheck` 168 / 0; `symbolcheck` 24 entries, 0 hits on the four pages.
+
+#### Second pass (4.5)
+
+**Every phase-4 ledger row holds.** Rows 21–39 each give their *After* from their grep, run as
+written at `0a134b5`: **0** for every row but 30 and 35, whose greps count text that is now there
+(`CausationId`, 1; `where p.Name = @name`, 1). 4.1's four recurrence greps are rows 28, 32, 33 and
+34, so they are among them.
+
+**Widened, because a grep that matches one phrasing finds one instance.** Each phase-4 defect was
+searched again by its shape rather than its words:
+
+| Defect | Widened grep | Hits | Reading |
+|---|---|---:|---|
+| 37, several handlers for a `Send` | `Register(Async)?<\w+>\(` routes outside `AgreementDispatcher.md`, and `multiple handlers` | 14 routes on 4 pages; 1 claim | every route returns one handler. **`AgreementDispatcherRouting.md`**'s *Characteristics* said the dispatcher *"Supports multiple handlers"* of a `MyCommand` route: repaired, ledger 37 |
+| 38, two `[UsePolicy]` on one method | adjacent `[UsePolicy` lines | 0 | |
+| 39, `new PolicyRegistry()` | `new PolicyRegistry\b` | 3 | `QueryPipelinePolicies.md` (2), `DarkerBasicConfiguration.md`: Darker's, and each registers both `Constants` names, which the page says `AddPolicies()` requires. Not recurrences |
+| 21, 23, 25–27, 31–33, 36 | `List<Guid>\|_uow\|Predicates.Field\|GetListAsync`; `BrighterContext`; `AddHedging`; `pipeline with key`; `\[Validation\b`; `routingFunc`; `.SetAttribute(\|AddEvent("`; `[0-9].(Seconds\|Minutes\|Milliseconds\|Hours)()`; `MongoDbUnitOfWork` | 0 beyond the repaired sites | `MongoDbUnitOfWork` remains only as `TransactionProvider = typeof(…)`, which is correct (D17) |
+
+**Found beside them: a fix the prose said was unreleased.** Reading the `More than one handler`
+hits, `SchedulingAMessage.md` § *Registering Handlers When You Schedule Requests* (S1) said #4414
+was *"merged and not yet released"*, and told the reader to register handlers explicitly *"until it
+is"*. Its fix is in the 10.8.0 tag, which the pins have carried since phase 3. Run at both versions:
+
+| Claim | Case | Control | Probe | Result |
+|---|---|---|---|---|
+| `SchedulingAMessage.md`: `AutoFromAssemblies()` and `AsyncHandlersFromAssemblies` register the scheduler's handlers twice, and a scheduled `SendAsync` then ends the process | 10.8.0, each scan, one InMemory-scheduled `SendAsync` | 10.7.0, the same | `probe/s1/scheduler-autoscan` (`-p:BV=`, `-- async`) | handled, exit 0, both scans / *"More than one handler was found … FireSchedulerRequest"*, exit 134, both scans. **The 10.7.0 claim holds; "not yet released" is overturned** (ledger 40) |
+
+Repaired at its three sites: the section says 10.8.0 fixes it and keeps the explicit registration
+for 10.7.0; `InMemoryScheduler.md` and `PostgreSQLMessageBroker.md`, which link to it, say the same.
+Prose only, so no block moves. The same grep found **29** lines on **22** pages dating a defect to
+10.7.0, five of whose defects have fixes in the 10.8.0 tag. That is a change of scope, put as R6 and
+ruled **D19**: task 4.5a.
+
+**Off-group term:** `AgreementDispatcherRouting.md`, `SchedulingAMessage.md`, `InMemoryScheduler.md`,
+`PostgreSQLMessageBroker.md`, all prose. `pagelint` 0 errors / **346**; `--changed origin/master`
+0 errors; `linkcheck` 0 on the four pages.
 
 ### Phase 5 — S3, Darker; Understanding Brighter *(6 tasks, one PR)*
 
@@ -1925,9 +1965,10 @@ design, and their greps were run there.*
 | 34 | .NET Framework's `ConfigurationManager.AppSettings` in a V10 registry, which also called `.ToLower()` on a missing key (D14) | `FeatureSwitches.md` | `grep -rn 'ConfigurationManager.AppSettings' contents/` | **1** | **0** | task 4.1, the second compile | 4 |
 | 35 | A query handler without the sample's `where p.Name = @name`, returning every person's greetings, then `Single()`; and an `AddGreeting { PersonId }` the sample does not have (D15) | `ShowMeTheCode.md` | `grep -c 'where p.Name = @name' contents/ShowMeTheCode.md`; `grep -rn 'addGreeting.PersonId' contents/` | **0**; **1** | **1**; **0** | task 4.3, read against `samples/WebAPI/WebAPI_Dapper` at 10.8.0 | 4 |
 | 36 | A MongoDB handler taking `IAmATransactionConnectionProvider`, which nothing registers for MongoDB, casting it to `MongoDbUnitOfWork`, then reading `unitOfWork.Database` and `.Session`, which that type does not have at 10.8.0 | `MongoDBOutbox.md`; the claim recurs on `BrighterOutboxSupport.md` | `grep -rnE 'unitOfWork\.(Database\|Session)\|as MongoDbUnitOfWork' contents/` | **3** | **0** | task 4.3, read beside ledger 21; `probe/s5/mongo-outbox` (D17) | 4 |
-| 37 | A route returning several handlers for a *Command*, which `Send` refuses; and a handler list written as a sequence ("Always validate", "Always finalize"), which `Publish` runs in parallel | `AgreementDispatcher.md` | `grep -rnF 'Always validate' contents/` | **1** | **0** | task 4.4, `probe/s2/agreement-dispatcher` | 4 |
+| 37 | A route returning several handlers for a *Command*, which `Send` refuses; and a handler list written as a sequence ("Always validate", "Always finalize"), which `Publish` runs in parallel | `AgreementDispatcher.md`; the claim recurs on `AgreementDispatcherRouting.md` | `grep -rnF 'Always validate' contents/`; `grep -rnF 'Supports multiple handlers' contents/` | **1**; **1** | **0**; **0** | task 4.4, `probe/s2/agreement-dispatcher`; the recurrence at 4.5 | 4 |
 | 38 | Two `[UsePolicy]` attributes on one method advised; `UsePolicyAttribute` has no `AllowMultiple`, so it is `CS0579` | `MigratingToPollyV8.md` | `grep -rn 'earlier step than' contents/` | **1** | **0** | task 4.4, `probe/s2/legacy-policy-order` | 4 |
 | 39 | `new PolicyRegistry()` handed to Brighter, which throws `ConfigurationException` without `CommandProcessor.RETRYPOLICY` and `CIRCUITBREAKER`; `DefaultPolicy` holds both | `MigratingToPollyV8.md`; recurs on `HowConfiguringTheCommandProcessorWorks.md` | `grep -rnF 'new PolicyRegistry()' contents/` | **3** | **0** | task 4.4, `probe/s2/legacy-policy-order` | 4 |
+| 40 | #4414's fix said to be *"merged and not yet released"*, with a workaround *"until it is"*; it is in 10.8.0, the pinned release | `SchedulingAMessage.md`; the framing recurs on `InMemoryScheduler.md`, `PostgreSQLMessageBroker.md` | `grep -rnF 'merged and not yet released' contents/` | **1** | **0** | task 4.5, `probe/s1/scheduler-autoscan` | 4 |
 
 ## Friction ledger
 
