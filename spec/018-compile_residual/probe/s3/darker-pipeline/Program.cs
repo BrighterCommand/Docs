@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
+using Paramore.Darker.Builder;
 using Paramore.Darker.Attributes;
 using Paramore.Darker.Exceptions;
 using Paramore.Darker.Policies;
@@ -166,6 +167,38 @@ string Show((OrderData? result, Exception? error) r) =>
     Row("control: the same reflection finds IQueryHandler's member", queryCtl > 0, $"{queryCtl}");
 }
 
+// ---- ImplementAQueryHandler.md #16 (task 5.5): manual registration through Activator.CreateInstance
+{
+    // The block as it was, less the GetPersonQueryHandler no block declares
+    IQueryProcessor Manual(Func<Type, IQueryHandler> factory)
+    {
+        var registry = new QueryHandlerRegistry();
+        registry.Register<GetPeopleQuery, IReadOnlyDictionary<int, string>, GetPeopleQueryHandler>();
+        registry.Register<GetOrderByIdQuery, Order, ManualGetOrderQueryHandler>();
+        return QueryProcessorBuilder.With()
+            .Handlers(registry, factory, t => { }, t => (IQueryHandlerDecorator)Activator.CreateInstance(t)!)
+            .InMemoryQueryContextFactory()
+            .Build();
+    }
+    string Try(Func<object> f) { try { return f().ToString()!; } catch (Exception ex) { return ex.GetType().Name; } }
+
+    var asWritten = Manual(t => (IQueryHandler)Activator.CreateInstance(t)!);
+    var people = Try(() => asWritten.Execute(new GetPeopleQuery()).Count);
+    var order = Try(() => asWritten.Execute(new GetOrderByIdQuery(42)).Id);
+    Row("#16 as written: Activator builds the parameterless handler, not one that takes a repository",
+        people == "1" && order == nameof(MissingMethodException), $"GetPeopleQuery {people}; GetOrderByIdQuery {order}");
+
+    // As repaired: the factory builds the handler that has a dependency itself
+    IOrderRepository orderRepository = new InMemoryOrders();
+    var repaired = Manual(t => t == typeof(ManualGetOrderQueryHandler)
+        ? new ManualGetOrderQueryHandler(orderRepository)
+        : (IQueryHandler)Activator.CreateInstance(t)!);
+    people = Try(() => repaired.Execute(new GetPeopleQuery()).Count);
+    order = Try(() => repaired.Execute(new GetOrderByIdQuery(42)).Id);
+    Row("#16 as repaired, control: the factory constructs GetOrderQueryHandler with its repository", people == "1" && order == "42",
+        $"GetPeopleQuery {people}; GetOrderByIdQuery {order}");
+}
+
 Console.WriteLine(failures == 0 ? "all rows ok" : $"{failures} FAIL");
 return failures == 0 ? 0 : 1;
 
@@ -263,4 +296,19 @@ public sealed class CaptureProvider : ILoggerProvider
             if (category.Contains("QueryLoggingDecorator")) lock (owner._lines) owner._lines.Add(format(state, ex));
         }
     }
+}
+
+// ImplementAQueryHandler.md #16's handlers, in the sync mode the block's Execute calls use
+public sealed class GetPeopleQuery : IQuery<IReadOnlyDictionary<int, string>>;
+public sealed class GetPeopleQueryHandler : QueryHandler<GetPeopleQuery, IReadOnlyDictionary<int, string>>
+{
+    public override IReadOnlyDictionary<int, string> Execute(GetPeopleQuery query) => new Dictionary<int, string> { [1] = "Ada" };
+}
+public sealed record Order(int Id);
+public sealed record GetOrderByIdQuery(int OrderId) : IQuery<Order>;
+public interface IOrderRepository { Order GetById(int id); }
+public sealed class InMemoryOrders : IOrderRepository { public Order GetById(int id) => new(id); }
+public sealed class ManualGetOrderQueryHandler(IOrderRepository repository) : QueryHandler<GetOrderByIdQuery, Order>
+{
+    public override Order Execute(GetOrderByIdQuery query) => repository.GetById(query.OrderId);
 }

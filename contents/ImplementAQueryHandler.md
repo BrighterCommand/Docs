@@ -475,25 +475,30 @@ using System.Collections.Generic;
 using Paramore.Darker;
 using Paramore.Darker.Builder;
 
-var registry = new QueryHandlerRegistry();
+static IQueryProcessor BuildQueryProcessor(IOrderRepository orderRepository)
+{
+    var registry = new QueryHandlerRegistry();
 
-// Register each handler explicitly
-registry.Register<GetPeopleQuery, IReadOnlyDictionary<int, string>, GetPeopleQueryHandler>();
-registry.Register<GetPersonNameQuery, string, GetPersonQueryHandler>();
-registry.Register<GetOrderQuery, Order, GetOrderQueryHandler>();
+    // Register each handler explicitly
+    registry.Register<GetPeopleQuery, IReadOnlyDictionary<int, string>, GetPeopleQueryHandler>();
+    registry.Register<GetOrderQuery, Order, GetOrderQueryHandler>();
 
-// Build the query processor
-IQueryProcessor queryProcessor = QueryProcessorBuilder.With()
-    .Handlers(
-        registry,
-        t => (IQueryHandler)Activator.CreateInstance(t)!,
-        t => { },
-        t => (IQueryHandlerDecorator)Activator.CreateInstance(t)!)
-    .InMemoryQueryContextFactory()
-    .Build();
+    // Build the query processor. The factory constructs the handler that takes a repository;
+    // Activator.CreateInstance builds the ones with a parameterless constructor
+    return QueryProcessorBuilder.With()
+        .Handlers(
+            registry,
+            t => t == typeof(GetOrderQueryHandler)
+                ? new GetOrderQueryHandler(orderRepository)
+                : (IQueryHandler)Activator.CreateInstance(t)!,
+            t => { },
+            t => (IQueryHandlerDecorator)Activator.CreateInstance(t)!)
+        .InMemoryQueryContextFactory()
+        .Build();
+}
 ```
 
-`Activator.CreateInstance` returns `object`, so each factory casts to Darker's interface, and each handler needs a parameterless constructor. Manual registration is useful when:
+`Activator.CreateInstance` returns `object`, so each factory casts to Darker's interface. It also needs a parameterless constructor, and throws `MissingMethodException` the first time a query reaches a handler without one, so the handler factory constructs `GetOrderQueryHandler`, which takes a repository, itself. Manual registration is useful when:
 
 - You need precise control over which handlers are registered
 - You're not using ASP.NET Core's dependency injection
@@ -651,9 +656,9 @@ public class OrderNotFoundException : Exception
     public OrderNotFoundException(string message) : base(message) { }
 }
 
-public class UnauthorizedAccessException : Exception
+public class OrderAccessDeniedException : Exception
 {
-    public UnauthorizedAccessException(string message) : base(message) { }
+    public OrderAccessDeniedException(string message) : base(message) { }
 }
 ```
 
@@ -676,7 +681,7 @@ public sealed class GetOrderQueryHandler(IOrderRepository repository, IAuthServi
         // Authorization check
         if (!await authService.CanAccessOrderAsync(query.OrderId, cancellationToken))
         {
-            throw new UnauthorizedAccessException($"User cannot access order {query.OrderId}");
+            throw new OrderAccessDeniedException($"User cannot access order {query.OrderId}");
         }
 
         // Business rule validation

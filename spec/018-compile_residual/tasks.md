@@ -1800,7 +1800,7 @@ figures, and its 552 is 553 (D13).
 - [x] **Task 5.4:** Run S3's behavioural claims (AC10)
   - Input: S3's changed blocks
   - Output: a *Claim / Case / Control* table, each row naming `probe/s3/<name>/Program.cs`
-- [ ] **Task 5.5:** Second pass for S3
+- [x] **Task 5.5:** Second pass for S3
   - Input: 5.1's recurrences; rulings asked
   - Output: as 3.6's
 - [ ] **Task 5.6:** Close phase 5
@@ -2046,6 +2046,65 @@ diagnostics. `--report` → **992 / 642 / 323 / 27**, 113 findings, as predicted
 blocks moved FAILED → SKIPPED (D21), and 5.4's edits, prose and one registry, moved nothing. Two
 methods: the summary line, and `cut -f1` of the rows. `pagelint` 0 / **271**; `linkcheck` and
 `symbolcheck` clean on the two pages.
+
+#### Second pass (5.5)
+
+**Every phase-5 ledger row holds.** Rows 52–62 each give their *After* from their grep, run as
+written at `fcd6f7b`: **0** for every row but 55's second grep, which counts the repaired
+`Fallback` that is now there (**1**). 5.1's five recurrence greps are rows 52, 56, 58, 59 and 55's
+first, so they are among them. No ruling is open.
+
+**Widened, by shape rather than words:**
+
+| Defect | Widened grep | Hits | Reading |
+|---|---|---:|---|
+| 52, an unpinned package in a setup | `swagger\|swashbuckle`, case-blind | 1 | `AsyncAPISupport.md`: *"OpenAPI (Swagger)"*, an analogy in prose |
+| 53, the pump's private calls | `InitRequestContext\|TranslateMessage\|InvokeDispatchRequest\|ReleasePipeline` outside `HowServiceActivatorWorks.md` | 0 | |
+| 54, a route returning an array | `new\[\] *\{ *typeof\|new Type\[\]` | 1 | `AsyncAPISupport.md`: `AssembliesToScan`, an assembly list, not a route |
+| 55, Darker's interfaces listed short | `interface IQuery(Handler)?\b` | 4 | the four repaired listings, each matching 4.1.1 |
+| 56, a V9 handler factory | `Create\(Type\|Release\(IHandleRequests\|TinyIoC\|IAmAHandlerFactory\b` | 5 | the repaired factory (2); `CommandProcessorConfigurationReference.md`'s `handlerFactory` parameter, an `IAmAHandlerFactory` at 10.8.0 (`CommandProcessor.cs:157`); prose on 2 pages naming the family |
+| 57, 62, the consumer's options | block scan for `AddBrighter(` and `AddConsumers(` in one block, and what chains off `AddConsumers` | 6 blocks | `FAQ.md` #3 and #1 of `GcpPubSubConfiguration.md`, `MQTTConfiguration.md`, `MSSQLMessageBroker.md`, `RedisConfiguration.md`, `RocketMQConfiguration.md`: each registers handlers on `AddBrighter`'s builder, the shape 5.4 ran as `transport-pages`, and chains nothing off `AddConsumers` |
+| 58, the control bus | `ConfigurationCommand\|ControlBus\|controlBus` | 11 | the repaired block; `Monitoring.md`'s `IAmAControlBusSender` and `ControlBusSenderFactory`, live at 10.8.0 (phase 4) |
+| 59, dead letters off `RmqSubscription` | `new \w*Subscription<` within 8 lines before a `deadLetter…` argument, not `Rmq` | 5 | `KafkaSubscription` and `SqsSubscription` on `ErrorHandlingOptions.md` (4) and `HandlingPoisonMessages.md`: both take `deadLetterRoutingKey` at 10.8.0 (`IUseBrighterDeadLetterSupport`) |
+| 60, a fallback's failure mode | `fallback` beside `runtime\|throw\|exception\|error\|default(` on the 20 Darker pages | 10 | each matches `darker-pipeline`'s rows |
+| 61, a registry short of the defaults | `new PolicyRegistry\b` | 4 | each registers both `Constants` names |
+| pitfall 2, policies required | `without … AddDefaultPolicies\|AddPolicies`, and the reverse | 4 | the repaired pitfalls 2 and 3, and `QueryPipelinePolicies.md`, which already says `AddPolicies()` requires both names |
+
+**The two blocks 5.3 left to be read here, both defects:**
+
+| Claim | Case | Control | Probe | Result |
+|---|---|---|---|---|
+| `ImplementAQueryHandler.md` #16: manual registration builds each handler with `Activator.CreateInstance`, and the sentence after it says each handler needs a parameterless constructor | the block, less the `GetPersonQueryHandler` no block declares, executing `GetPeopleQuery` and a `GetOrderQuery` whose handler takes `IOrderRepository`, as every `GetOrderQueryHandler` on the page does | the factory constructing that handler with its repository | `darker-pipeline` | `GetPeopleQuery` answered; `MissingMethodException` on `GetOrderQuery` / both answered. **Overturned** (ledger 63) |
+
+- **Ledger 63.** #16 is now a `BuildQueryProcessor(IOrderRepository)` whose handler factory constructs
+  `GetOrderQueryHandler` itself, and its sentence says `Activator.CreateInstance` throws
+  `MissingMethodException` for a handler with no parameterless constructor. `GetPersonQueryHandler`
+  is gone from the page. `DarkerConfigurationReference.md` #4 registers its own `GetPersonQueryHandler`
+  through `Activator` too, but its handlers are the reader's and its prose states the requirement:
+  not a recurrence
+- **Ledger 64.** #22 declared a `UnauthorizedAccessException` that hides `System.UnauthorizedAccessException`
+  under the section *Domain Exceptions*. It is `OrderAccessDeniedException` now, and #23 throws it. No
+  other page declares a BCL exception's name
+- **Found beside them.** § *Blocks that stay FAILED* gave #23's diagnostic as `OrderNotFoundException`
+  alone; it also fails on `IAuthService` and `Order.IsDeleted`, which the page never declares. A unit
+  stub for them was tried and refused by unit rule 1 (*"named by no BUILT block"*, 3 violations), since
+  #23 stays FAILED on block 22's exceptions; the row now gives all four. #16's row names the three
+  types it still lacks
+
+**`symbolcheck` rows (5.1):** `IHandleRequests Create(Type)` is a signature, not a name the
+watchlist matches, and `ConfigurationCommandType.StopChannel` has **0** sites left and was never on
+more than one block. Neither earns a row, so nothing is put to the maintainer; `symbolcheck` stays
+24 entries.
+
+**Carried, not run:** `ReactorAndProactor.md` § *Handler and Mapper Requirements* says mixing sync
+and async handlers *"will cause runtime errors"*. It predates the phase, no phase-5 block touches it,
+and 017's run covered only the mapper half. Phase 8's reading criteria, or a later spec.
+
+**Off-group term: 0.** Every edit is on `ImplementAQueryHandler.md` and its unit. `blockcheck
+--explain` → #22 builds; #16 fails on `GetPeopleQuery`, `GetPeopleQueryHandler`, `GetOrderQueryHandler`;
+#23 on `OrderAccessDeniedException`, `OrderNotFoundException`, `IAuthService`, `IsDeleted`. `--report` →
+**992 / 642 / 323 / 27**, unmoved, as predicted: #16 and #23 stay FAILED, #22 stays BUILT. Two methods:
+the summary line, and `cut -f1` of the rows. 67 units, 0 violations. `pagelint` 0 / **271**.
 
 ### Phase 6 — S4, Using an External Bus; Transports *(6 tasks, one PR)*
 
@@ -2315,8 +2374,8 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `CQRSWithBrighterAndDarker.md` | 11 | `CS0246` `GetOrderDetailsQuery`, `OrderDetailsDto`, `OrderItemDetailsDto`, `ApplicationDbContext` | *same-page*: block 10 declares the query and its DTOs, as the sentence before block 11 now says | 5 |
 | `CQRSWithBrighterAndDarker.md` | 12–14 | `CS0246` `PlaceOrderCommand` (12, 13), `GetOrderDetailsQuery`, `OrderDetailsDto` (14) | *same-page*: methods of the e-commerce example's handlers, as the sentence under *CQRS Common Pitfalls* now says | 5 |
 | `ImplementAQueryHandler.md` | 3, 5, 6, 14 | `CS0246` `GetPeopleQuery` (and #3, #5 `PersonRepository`; #6 `IPersonRepository`) | *same-page*: block 1 declares the query, which its lead-in says the guide uses throughout | 5 |
-| `ImplementAQueryHandler.md` | 16 | `CS0246` `GetPeopleQuery`, `GetPersonNameQuery`, `GetPeopleQueryHandler`, `GetOrderQueryHandler`, `GetPersonQueryHandler` | *same-page*: blocks 1–3, 10 declare all but `GetPersonQueryHandler`, which no block declares | 5 |
-| `ImplementAQueryHandler.md` | 21, 23 | `CS0246` `OrderNotFoundException` | *same-page*: block 22 declares it, as the sentences before blocks 21 and 23 now say | 5 |
+| `ImplementAQueryHandler.md` | 16 | `CS0246` `GetPeopleQuery`, `GetPeopleQueryHandler`, `GetOrderQueryHandler` | *same-page*: blocks 1, 3 and 10 declare them. At 5.5 it lost `GetPersonQueryHandler`, which no block declared, and gained a factory for the handler that takes a repository | 5 |
+| `ImplementAQueryHandler.md` | 21, 23 | `CS0246` `OrderNotFoundException`; #23 also `OrderAccessDeniedException`, `IAuthService`, and `CS1061` `Order.IsDeleted` | *same-page*: block 22 declares both exceptions, as the sentences before blocks 21 and 23 now say. `IAuthService` and `IsDeleted` are the reader's, and no unit may stub them while no BUILT block names them (unit rule 1) | 5 |
 | `QueryPatterns.md` | 6 | `CS0246` `GetProductCatalogQuery` | *same-page*: block 5 declares it, as the sentence before block 6 now says | 5 |
 
 ## Splits
@@ -2403,6 +2462,8 @@ design, and their greps were run there.*
 | 60 | A `[FallbackPolicy]` handler without `FallbackAsync` said to fail at runtime; `QueryHandlerAsync.FallbackAsync` returns `default(TResult)` (`QueryHandlerAsync.cs` at 4.1.1) | `QueryPipeline.md` | `grep -rnE 'or you.ll get a runtime error' contents/` | **1** | **0** | task 5.3, read against 4.1.1; run at 5.4 (`probe/s3/darker-pipeline`), confirmed | 5 |
 | 61 | A Darker policy registry holding only a custom name, passed to `AddPolicies`, which throws `ConfigurationException` without `Constants.RetryPolicyName` and `Constants.CircuitBreakerPolicyName` (`QueryProcessorBuilderExtensions.cs` at 4.1.1) | `QueryPipeline.md` | `grep -rn -B10 '\.AddPolicies(' contents/ \| grep -c 'new PolicyRegistry()'` | **1** | **0** | task 5.4, read against 4.1.1 and run (`probe/s3/darker-pipeline`) | 5 |
 | 62 | `AddBrighter`'s options said to configure the Command Processor beside `AddConsumers`; with `AddConsumers` alone, its options configure both, `ConsumersOptions` being a `BrighterOptions` | `HowServiceActivatorWorks.md` | `grep -rn 'separately, from `AddBrighter`' contents/` | **1** | **0** | task 5.4, run (`probe/s3/dispatcher-instrumentation`); written at 5.3 with ledger 57 | 5 |
+| 63 | Manual registration building a handler that takes a repository with `Activator.CreateInstance`, which throws `MissingMethodException`; and registering a `GetPersonQueryHandler` no block declares | `ImplementAQueryHandler.md` | `grep -rn 'GetPersonQueryHandler' contents/ImplementAQueryHandler.md` | **1** | **0** | task 5.5, run (`probe/s3/darker-pipeline`) | 5 |
+| 64 | A domain exception named `UnauthorizedAccessException`, hiding `System.UnauthorizedAccessException` | `ImplementAQueryHandler.md` | `grep -rn 'class UnauthorizedAccessException' contents/` | **1** | **0** | task 5.5, read | 5 |
 
 ## Friction ledger
 
