@@ -106,6 +106,7 @@ public sealed class GetPeopleQueryHandler : QueryHandlerAsync<GetPeopleQuery, IR
 
 The `ExecuteAsync` method has the following signature:
 
+<!-- blockcheck: skip a method signature shown for comparison, with no body or class to compile in -->
 ```csharp
 public override async Task<TResult> ExecuteAsync(
     TQuery query,
@@ -227,6 +228,7 @@ public sealed class GetCachedCountQueryHandler : QueryHandler<GetCachedCountQuer
 
 The `Execute` method has the following signature:
 
+<!-- blockcheck: skip a method signature shown for comparison, with no body or class to compile in -->
 ```csharp
 public override TResult Execute(TQuery query)
 ```
@@ -370,7 +372,7 @@ public interface IQueryHandler<in TQuery, TResult> : IQueryHandler
 }
 ```
 
-`QueryHandler` and `QueryHandlerAsync` implement all five members for you: their `Fallback` and `FallbackAsync`, which the `[FallbackPolicy]` decorator calls when the query fails, return `default(TResult)`. Implementing the interface directly, you write each one.
+`QueryHandlerAsync` and `QueryHandler` implement all five members for you. Each base class's fallback for its own mode, which the `[FallbackPolicy]` decorator calls when the query fails, returns `default(TResult)`: `FallbackAsync` on `QueryHandlerAsync`, `Fallback` on `QueryHandler`. The other mode's `Execute` and fallback throw `NotImplementedException`. Implementing the interface directly, you write each one.
 
 ### When to Use Direct Implementation
 

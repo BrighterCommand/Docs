@@ -74,14 +74,18 @@ Let's trace a message from the broker to your handler:
 
 ### 1. Message Pump Retrieves Message
 
-The Performer polls the configured channel for new messages:
+The Performer's message pump polls its channel for new messages (`Reactor.cs:123`, `Proactor.cs:162` at 10.8.0):
 
 ```csharp
-// Reactor (blocking)
-Message message = channel.Receive(timeOut);
+// Reactor (blocking), Reactor.cs:123
+// ...
+message = Channel.Receive(TimeOut);
+// ...
 
-// Proactor (non-blocking)
-Message message = await channel.ReceiveAsync(timeOut, cancellationToken);
+// Proactor (non-blocking), Proactor.cs:162
+// ...
+message = await Channel.ReceiveAsync(TimeOut);
+// ...
 ```
 
 ### 2. Request Context Creation
@@ -202,10 +206,13 @@ When a handler throws a `DeferMessageAction` exception:
 
 ### Dead Letter Queues (DLQ)
 
-Configure a DLQ to capture failed messages:
+Configure a DLQ to capture failed messages. Dead letter queues are set per transport: with RabbitMQ, `RmqSubscription` takes the dead letter channel and its routing key. [Dead Letter Queue Configuration](/contents/ErrorHandlingOptions.md#dead-letter-queue-configuration) covers the other transports:
 
 ```csharp
-var subscription = new Subscription<MyCommand>(
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
+var subscription = new RmqSubscription<MyCommand>(
     // ... other config
     deadLetterChannelName: new ChannelName("my.channel.dlq"),
     deadLetterRoutingKey: new RoutingKey("my.routing.key.dlq")
@@ -306,13 +313,18 @@ The Message Pump automatically creates spans for:
 - Handler dispatch
 - Message acknowledgment
 
-Configure instrumentation:
+Configure the Dispatcher's instrumentation on its consumer options. The Command Processor takes its own, separately, from `AddBrighter`'s options:
 
 ```csharp
-services.AddBrighter(options =>
+using Paramore.Brighter;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+using Paramore.Brighter.Observability;
+
+services.AddConsumers(options =>
 {
+    // ... subscriptions and channel factory
     options.InstrumentationOptions = InstrumentationOptions.All;
-})
+});
 ```
 
 **See [Telemetry](Telemetry.md) for details.**
@@ -336,17 +348,18 @@ services.AddHealthChecks()
 Control the Dispatcher at runtime:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.ServiceActivator.Ports.Commands;
+
 // Stop specific channel
-controlBusSender.Send(new ConfigurationCommand(ConfigurationCommandType.StopChannel)
-{
-    SubscriptionName = "my.subscription"
-});
+controlBusSender.Post(new ConfigurationCommand(
+    ConfigurationCommandType.CM_STOPCHANNEL,
+    new SubscriptionName("my.subscription")));
 
 // Start specific channel
-controlBusSender.Send(new ConfigurationCommand(ConfigurationCommandType.StartChannel)
-{
-    SubscriptionName = "my.subscription"
-});
+controlBusSender.Post(new ConfigurationCommand(
+    ConfigurationCommandType.CM_STARTCHANNEL,
+    new SubscriptionName("my.subscription")));
 ```
 
 **See [Brighter Control API](BrighterControlAPI.md) for details.**
@@ -362,15 +375,22 @@ controlBusSender.Send(new ConfigurationCommand(ConfigurationCommandType.StartCha
 ### 2. Configure Appropriate Timeouts
 
 ```csharp
-timeOut: TimeSpan.FromMilliseconds(200)  // Responsive but not too aggressive
+using System;
+using Paramore.Brighter;
+
+var subscription = new Subscription<MyCommand>(
+    // ... other config
+    timeOut: TimeSpan.FromMilliseconds(200)  // Responsive but not too aggressive
+);
 ```
 
 Balance responsiveness vs. CPU usage.
 
 ### 3. Use Dead Letter Queues
 
-Always configure DLQs for production:
+Always configure DLQs for production, as [Dead Letter Queues](#dead-letter-queues-dlq) shows:
 
+<!-- blockcheck: skip a fragment of the configuration shown whole in block 7 -->
 ```csharp
 deadLetterChannelName: new ChannelName("my.channel.dlq")
 ```
@@ -405,8 +425,9 @@ public class MyCommandHandler : RequestHandlerAsync<MyCommand>
 
 ### 6. Scale with Competing Consumers
 
-For high-volume scenarios:
+For high-volume scenarios, raise `noOfPerformers` on the subscription, as [Competing Consumers](#competing-consumers) shows:
 
+<!-- blockcheck: skip a fragment of the configuration shown whole in block 10 -->
 ```csharp
 noOfPerformers: 5  // Start with multiple performers
 ```

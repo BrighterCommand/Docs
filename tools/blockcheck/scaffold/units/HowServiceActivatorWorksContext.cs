@@ -13,8 +13,10 @@ public static class HowServiceActivatorWorksContext
 {
     // block 9: `registry.RegisterAsync<MyCommand>(…)`
     public static IAmAnAsyncSubcriberRegistry registry => null!;
-    // block 12: `services.AddHealthChecks()`
+    // blocks 11, 12: `services.AddConsumers(…)`, `services.AddHealthChecks()`
     public static IServiceCollection services => null!;
+    // block 13: `controlBusSender.Post(new ConfigurationCommand(…))`
+    public static IAmAControlBusSender controlBusSender => null!;
 }
 
 // blocks 9, 10, 16: `Subscription<MyCommand>`, `RequestHandlerAsync<MyCommand>`; block 9: `myCommand?.Priority`

@@ -16,18 +16,35 @@ How to run Darker queries against Entity Framework Core: tracking, eager loading
 **Always use `AsNoTracking()` for query handlers**. Since queries don't modify data, change tracking is unnecessary overhead.
 
 ```csharp
-// ...
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+
 // ✅ Good: AsNoTracking for read-only queries
-public override async Task<List<ProductDto>> ExecuteAsync(...)
+public override async Task<List<ProductDto>> ExecuteAsync(
+    GetProductsQuery query,
+    CancellationToken cancellationToken = default)
 {
     return await _dbContext.Products
         .AsNoTracking()  // Disables change tracking
-        .Select(p => new ProductDto { /* ... */ })
+        .Select(p => new ProductDto { Id = p.Id, Name = p.Name })
         .ToListAsync(cancellationToken);
 }
+```
+
+```csharp
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 // ❌ Bad: Change tracking enabled (default)
-public override async Task<List<Product>> ExecuteAsync(...)
+public override async Task<List<Product>> ExecuteAsync(
+    GetProductEntitiesQuery query,
+    CancellationToken cancellationToken = default)
 {
     // Change tracking is enabled by default - unnecessary for queries!
     return await _dbContext.Products
@@ -45,9 +62,15 @@ public override async Task<List<Product>> ExecuteAsync(...)
 **Use `Include()` and `ThenInclude()` to load related entities** in a single query, avoiding N+1 query problems.
 
 ```csharp
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-public override async Task<OrderDto> ExecuteAsync(...)
+// Load each Order with its Customer, and each OrderItem with its Product
+public override async Task<OrderDto?> ExecuteAsync(
+    GetOrderQuery query,
+    CancellationToken cancellationToken = default)
 {
     return await _dbContext.Orders
         .Include(o => o.Customer)           // Load related Customer
@@ -72,9 +95,15 @@ public override async Task<OrderDto> ExecuteAsync(...)
 
 **Alternative: Projection without Include:**
 ```csharp
-// ...
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+
 // You don't need Include if you're projecting with Select
-public override async Task<OrderDto> ExecuteAsync(...)
+public override async Task<OrderDto?> ExecuteAsync(
+    GetOrderQuery query,
+    CancellationToken cancellationToken = default)
 {
     return await _dbContext.Orders
         .Where(o => o.Id == query.OrderId)

@@ -15,8 +15,36 @@ using Paramore.Darker;
 
 public static class QueryPipelineContext
 {
-    // blocks 18, 19: `builder.Services.AddDarker()`
+    // blocks 18, 19, 21: `builder.Services.AddDarker()`
     public static WebApplicationBuilder builder => null!;
+    // blocks 8, 12, 13, 16, 17, 20–23: an `ExecuteAsync` shown alone, querying its handler's external API
+    public static IExternalApi _externalApi => null!;
+    // block 24: a `FallbackAsync` shown alone, calling "another external service"
+    public static IExternalApi _alternativeService => null!;
+}
+
+// blocks 8, 12–14, 16, 17, 20–25: `QueryHandlerAsync<GetOrderQuery, OrderData>`, `query.OrderId`
+public class GetOrderQuery : IQuery<OrderData>
+{
+    public int OrderId { get; set; }
+}
+
+// blocks 13, 23, 25: `Task.FromResult(OrderData.Unavailable)`
+public class OrderData
+{
+    public static OrderData Unavailable => new();
+}
+
+// block 14: `externalApi.GetOrderAsync(query.OrderId, cancellationToken)`
+public interface IExternalApi
+{
+    Task<OrderData> GetOrderAsync(int orderId, CancellationToken cancellationToken);
+}
+
+// block 14: `orders.GetAsync(query.OrderId, cancellationToken)`
+public interface IOrderStore
+{
+    Task<OrderData> GetAsync(int orderId, CancellationToken cancellationToken);
 }
 
 // blocks 3, 5, 9: `QueryHandlerAsync<GetPeopleQuery, IReadOnlyDictionary<int, string>>`

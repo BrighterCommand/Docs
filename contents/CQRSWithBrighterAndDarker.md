@@ -33,26 +33,38 @@ In this guide, we'll explore how Brighter and Darker work together, common archi
 
 **Example violations of CQS:**
 ```csharp
+using System;
+
 // ❌ Bad: Query with side effects
-public Customer GetCustomer(int id)
+public class CustomerService(ICustomerRepository repository)
 {
-    var customer = _repository.GetById(id);
-    customer.LastAccessed = DateTime.UtcNow;  // Side effect!
-    _repository.Update(customer);
-    return customer;
+    public Customer GetCustomer(int id)
+    {
+        var customer = repository.GetById(id);
+        customer.LastAccessed = DateTime.UtcNow;  // Side effect!
+        repository.Update(customer);
+        return customer;
+    }
 }
+```
+
+```csharp
+using System;
 
 // ✅ Good: Separate command and query
-public void UpdateLastAccessed(int customerId)  // Command
+public class CustomerService(ICustomerRepository repository)
 {
-    var customer = _repository.GetById(customerId);
-    customer.LastAccessed = DateTime.UtcNow;
-    _repository.Update(customer);
-}
+    public void UpdateLastAccessed(int customerId)  // Command
+    {
+        var customer = repository.GetById(customerId);
+        customer.LastAccessed = DateTime.UtcNow;
+        repository.Update(customer);
+    }
 
-public Customer GetCustomer(int id)  // Query
-{
-    return _repository.GetById(id);  // No side effects
+    public Customer GetCustomer(int id)  // Query
+    {
+        return repository.GetById(id);  // No side effects
+    }
 }
 ```
 
@@ -969,26 +981,48 @@ Design your UI to gracefully handle scenarios where the read model hasn't caught
 
 ## CQRS Common Pitfalls
 
+The examples below are methods of the handlers in the [e-commerce example](#example-e-commerce-order-system), using its command and query.
+
 **1. Querying in command handlers**
 
 ❌ Bad:
 ```csharp
-public override async Task<PlaceOrderCommand> HandleAsync(PlaceOrderCommand command, ...)
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+
+public override async Task<PlaceOrderCommand> HandleAsync(
+    PlaceOrderCommand command,
+    CancellationToken cancellationToken = default)
 {
     // Don't query to display data to user in a command handler
     var customer = await _customerRepository.GetByIdAsync(command.CustomerId);
     _logger.LogInformation($"Order placed by {customer.Name}");  // Avoid!
+
+    return await base.HandleAsync(command, cancellationToken);
 }
 ```
 
 ✅ Good:
 ```csharp
-public override async Task<PlaceOrderCommand> HandleAsync(PlaceOrderCommand command, ...)
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+
+public override async Task<PlaceOrderCommand> HandleAsync(
+    PlaceOrderCommand command,
+    CancellationToken cancellationToken = default)
 {
     // Only query what's necessary for business rules
     var customer = await _customerRepository.GetByIdAsync(command.CustomerId);
     if (!customer.IsActive)
         throw new InvalidOperationException("Customer is inactive");
+
+    return await base.HandleAsync(command, cancellationToken);
 }
 ```
 
@@ -996,7 +1030,13 @@ public override async Task<PlaceOrderCommand> HandleAsync(PlaceOrderCommand comm
 
 ❌ Bad:
 ```csharp
-public override async Task<OrderDetailsDto> ExecuteAsync(GetOrderDetailsQuery query, ...)
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public override async Task<OrderDetailsDto> ExecuteAsync(
+    GetOrderDetailsQuery query,
+    CancellationToken cancellationToken = default)
 {
     var order = await _repository.GetByIdAsync(query.OrderId);
     order.LastViewed = DateTime.UtcNow;  // Don't modify state in queries!

@@ -5,7 +5,10 @@
 // Their handlers query one EF Core model the pages never show — customers, orders, their items and
 // products, categories — through an `ApplicationDbContext`, or through repositories and services
 // over it. Each stub carries only the members a block names. `Order` is read as a type the pages
-// never show (spec 017 task 1.10), never as `StackExchange.Redis.Order`.
+// never show (spec 017 task 1.10), never as `StackExchange.Redis.Order`. QueryPatterns.md's blocks 1–4 read
+// the context a handler is given, as `_dbContext`, outside any handler.
+//
+// blockcheck: using static DarkerQueryPatternsContext;
 
 using System;
 using System.Collections.Generic;
@@ -13,6 +16,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Paramore.Darker;
+
+public static class DarkerQueryPatternsContext
+{
+    // QueryPatterns 1–4: `_dbContext.Orders`, `_dbContext.Customers`, `_dbContext.Products`
+    public static ApplicationDbContext _dbContext => null!;
+}
 
 // Aggregation 1–3, Projection 1, 2, QueryHandlerDependencies 2: `_dbContext.Categories`, `.Orders`, `.Customers`
 public class ApplicationDbContext : DbContext
@@ -132,3 +141,15 @@ public interface IMapper
 {
     TDestination Map<TDestination>(object source);
 }
+
+// QueryPatterns 1, 2: `new OrderDto { Id, OrderDate, CustomerName }`, `new OrderDto { OrderId, CustomerName }`
+public class OrderDto
+{
+    public int Id { get; set; }
+    public int OrderId { get; set; }
+    public DateTime OrderDate { get; set; }
+    public string CustomerName { get; set; } = "";
+}
+
+// QueryPatterns 3, 4: `ExecuteAsync(GetProductsQuery query, …)`
+public class GetProductsQuery : IQuery<List<Product>>;

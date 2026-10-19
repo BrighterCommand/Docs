@@ -1793,7 +1793,7 @@ figures, and its 552 is 553 (D13).
 - [x] **Task 5.2:** Repair S3's reachable blocks
   - Input: S3's table, reachable rows
   - Output: as 3.2's, for S3
-- [ ] **Task 5.3:** Repair S3's hard blocks
+- [x] **Task 5.3:** Repair S3's hard blocks
   - Input: S3's table, hard rows; Darker `4.1.1` and Brighter `10.8.0` source, the pinned releases
   - Output: as 3.3's, for S3. `QueryPipeline.md`'s 12 *parse* blocks are each made whole, skipped
     with an accepted reason, or listed
@@ -1950,7 +1950,54 @@ returns `default(TResult)` when the `[FallbackPolicy]` decorator calls it, a cla
 
 | # | Block | Question |
 |---:|---|---|
-| R8 | `HowServiceActivatorWorks.md` #2–#6 | Each quotes one line of the Reactor or Proactor message loop, which call private methods (`InitRequestContext`, `TranslateMessage`, `InvokeDispatchRequest`). The Reactor and Proactor methods take the same parameters and differ only in return type, so no unit can stub both, and no reader can call them. The lines are now 10.8.0's. Accept a fourth skip reason, *"a line quoted from Brighter's source, calling a private member"*, with the file and line cited in the block? Or retag them `text`, or list them as FAILED? |
+| R8 | `HowServiceActivatorWorks.md` #1–#6 | Each quotes one line of the Reactor or Proactor message loop (#1, added at 5.3, its two `Receive` calls), which call private methods (`InitRequestContext`, `TranslateMessage`, `InvokeDispatchRequest`). The Reactor and Proactor methods take the same parameters and differ only in return type, so no unit can stub both, and no reader can call them. The lines are now 10.8.0's. Accept a fourth skip reason, *"a line quoted from Brighter's source, calling a private member"*, with the file and line cited in the block? Or retag them `text`, or list them as FAILED? |
+
+#### The repairs (5.3)
+
+**S3's hard rows, 40 blocks** (31 *parse* and the 9 *defects* 5.2 left), counted as they stood at
+5.2. Every one is made whole, skipped with an accepted reason, retagged, or listed:
+- **Made whole, BUILT: 26.** `QueryPipeline.md`'s 13 (#8, #12–#17, #20–#25, every *parse* block the
+  task names) now build on one running example, a `GetOrderQuery` answered through an external API:
+  attribute lists gain the method they decorate, #14's two policies their two handlers, #15's delays
+  their policy, #21's registration its registry and `AddPolicies`. `EFCoreQueryIntegration.md` #1–#3,
+  whose `(...)` parameters became the real ones. `HowConfiguringTheCommandProcessorWorks.md` #2 (a
+  missing `;`) and #3 (ledger 56). `HowServiceActivatorWorks.md` #7 (ledger 59), #11 (ledger 57), #13
+  (ledger 58), #14. `QueriesAndQueryObjects.md` #8, its usage moved above the type it creates.
+  `QueryPatterns.md` #1–#3, its alternatives given distinct names
+- **Split: 3**, each a ✅ and ❌ pair that cannot share a wrapper (§ *Splits*):
+  `CQRSWithBrighterAndDarker.md` #1, `EFCoreQueryIntegration.md` #1, `QueryPatterns.md` #3
+- **Skipped: 4**, each with an accepted reason. `ImplementAQueryHandler.md` #4, #8: *a method signature
+  shown for comparison*. `HowServiceActivatorWorks.md` #15, #17: *a fragment of the configuration shown
+  whole in block* 7 and 10, which the prose now links
+- **Retagged `text`: 5.** `QueriesAndQueryObjects.md` #13–#17 were lists of query names
+- **Made whole, still FAILED: 5**, six blocks after the split, each *same-page* or R8's and listed: `CQRSWithBrighterAndDarker.md` #1, #2
+  (old #1) and #12–#14 (old #11–#13, whose bodies lacked a `return`); `HowServiceActivatorWorks.md`
+  #1 joins R8
+
+**Measured after 5.3:** `--report` → **992 / 642 / 329 / 21**; 113 findings, all expected: 107 BUILT
+blocks not yet baselined, 5 whose page gained a unit, and `CQRSWithBrighterAndDarker.md` #6
+*"stopped building"*, which is the split moving old #6 (BUILT, now #7) off its ordinal. 67 units,
+0 violations. S3: **114 BUILT, 25 FAILED** (19 *same-page*, 6 R8), **5 SKIPPED**.
+
+**Said and measured, at 5.2 and corrected here.** 5.2 wrote on `ImplementAQueryHandler.md` that the
+base classes' `Fallback` and `FallbackAsync` return `default(TResult)`. At 4.1.1 each base class
+returns it only for its own mode: `QueryHandler.Fallback` and `QueryHandlerAsync.FallbackAsync`; the
+other mode's members throw `NotImplementedException`. The page now says so, and 5.4 runs it.
+
+**What the hard rows hid**, besides ledger 56–59:
+- **Pitfall 4 (ledger 60).** `QueryPipeline.md` said a `[FallbackPolicy]` handler without
+  `FallbackAsync` fails at runtime. `QueryHandlerAsync`'s own returns `default(TResult)`, so the
+  caller gets `null` and no exception. The pitfall now says that; 5.4 runs it with a control
+- **A unit-rule edge.** `EFCoreQueryIntegration.md` never named the entity behind `Orders`, and a
+  `DbSet<T>` needs a class, so no stub could satisfy rule 1. Block 3 now says what it loads (*"each
+  Order with its Customer, and each OrderItem with its Product"*), which names the entity for the
+  reader and the rule alike. `Customers` keeps 5.2's stand-in, the projection's DTO
+
+**For 5.4:** pitfall 4 and the base classes' fallbacks (above); 5.2's `ImplementAQueryHandler.md`
+interface claims are read, not run; the Dispatcher reading `AddConsumers`' instrumentation (ledger 57)
+is read from source and worth a run; `QueryPipeline.md`'s pitfalls 1 (decorator order), 2 (no
+policies) and 3 (an unknown policy name throws `ConfigurationException`) predate the phase and each
+asserts behaviour.
 
 ### Phase 6 — S4, Using an External Bus; Transports *(6 tasks, one PR)*
 
@@ -2211,16 +2258,18 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `QuartzScheduler.md` | 22 | `CS0246` `BrighterJobListener`, `BrighterTriggerListener` | *same-page*: block 15 declares `BrighterJobListener`; the trigger listener is the reader's, "written the same way", as the sentence before it says | 3 |
 | `FeatureSwitches.md` | 5 | `CS0246` `MyFeatureSwitchedHandler`, `MyIncompleteHandlerAsync` | *same-page*: blocks 1 and 2 declare them; the sentence before block 5 says so | 4 |
 | `PolicyRetryAndCircuitBreaker.md` | 17 | `CS0246` `MyQoSProtectedHandler`; `CS0103` `services` | *same-page*: block 1 declares the handler, as the sentence before block 17 now says | 4 |
-| `CQRSWithBrighterAndDarker.md` | 2 | `CS0246` `Order`, `OrderItem`, `OrderPlacedEvent`, `IOrderRepository`; `CS0103` `OrderStatus` | *same-page*: block 7 declares the write model, as the sentence before block 2 says | 5 |
-| `CQRSWithBrighterAndDarker.md` | 3 | `CS0246` `OrderItemDto`, `ApplicationDbContext` | *same-page*: block 6 declares `OrderItemDto`, as the sentence before block 3 now says; the context's `Orders` are block 7's `Order`, which no stub may supply | 5 |
-| `CQRSWithBrighterAndDarker.md` | 4 | `CS0246` `PlaceOrderCommandHandler`, `GetOrderDetailsQueryHandler`, `ApplicationDbContext` | *same-page*: blocks 2, 3, 8 and 10 declare the handlers, as the sentence before block 4 now says | 5 |
-| `CQRSWithBrighterAndDarker.md` | 5 | `CS0246` `PlaceOrderCommand`, `GetOrderDetailsQuery`, `PlaceOrderRequest` | *same-page*: blocks 3, 6 and 9 declare the command and the query, as the sentence before block 5 now says | 5 |
-| `CQRSWithBrighterAndDarker.md` | 8 | `CS0246` `PlaceOrderCommand`, `Order`, `IOrderRepository`, `IProductRepository` … | *same-page*: blocks 6 and 7, as the sentence before block 8 now says | 5 |
-| `CQRSWithBrighterAndDarker.md` | 10 | `CS0246` `GetOrderDetailsQuery`, `OrderDetailsDto`, `OrderItemDetailsDto`, `ApplicationDbContext` | *same-page*: block 9 declares the query and its DTOs, as the sentence before block 10 now says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 1, 2 | `CS0246` `Customer`, `ICustomerRepository` | *same-page*: block 8 declares `Customer`, which no stub may supply; split from old #1 at 5.3 | 5 |
+| `CQRSWithBrighterAndDarker.md` | 3 | `CS0246` `Order`, `OrderItem`, `OrderPlacedEvent`, `IOrderRepository`; `CS0103` `OrderStatus` | *same-page*: block 8 declares the write model, as the sentence before block 3 says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 4 | `CS0246` `OrderItemDto`, `ApplicationDbContext` | *same-page*: block 7 declares `OrderItemDto`, as the sentence before block 4 now says; the context's `Orders` are block 8's `Order`, which no stub may supply | 5 |
+| `CQRSWithBrighterAndDarker.md` | 5 | `CS0246` `PlaceOrderCommandHandler`, `GetOrderDetailsQueryHandler`, `ApplicationDbContext` | *same-page*: blocks 3, 4, 9 and 11 declare the handlers, as the sentence before block 5 now says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 6 | `CS0246` `PlaceOrderCommand`, `GetOrderDetailsQuery`, `PlaceOrderRequest` | *same-page*: blocks 4, 7 and 10 declare the command and the query, as the sentence before block 6 now says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 9 | `CS0246` `PlaceOrderCommand`, `Order`, `IOrderRepository`, `IProductRepository` … | *same-page*: blocks 7 and 8, as the sentence before block 9 now says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 11 | `CS0246` `GetOrderDetailsQuery`, `OrderDetailsDto`, `OrderItemDetailsDto`, `ApplicationDbContext` | *same-page*: block 10 declares the query and its DTOs, as the sentence before block 11 now says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 12–14 | `CS0246` `PlaceOrderCommand` (12, 13), `GetOrderDetailsQuery`, `OrderDetailsDto` (14) | *same-page*: methods of the e-commerce example's handlers, as the sentence under *CQRS Common Pitfalls* now says | 5 |
 | `ImplementAQueryHandler.md` | 3, 5, 6, 14 | `CS0246` `GetPeopleQuery` (and #3, #5 `PersonRepository`; #6 `IPersonRepository`) | *same-page*: block 1 declares the query, which its lead-in says the guide uses throughout | 5 |
 | `ImplementAQueryHandler.md` | 16 | `CS0246` `GetPeopleQuery`, `GetPersonNameQuery`, `GetPeopleQueryHandler`, `GetOrderQueryHandler`, `GetPersonQueryHandler` | *same-page*: blocks 1–3, 10 declare all but `GetPersonQueryHandler`, which no block declares | 5 |
 | `ImplementAQueryHandler.md` | 21, 23 | `CS0246` `OrderNotFoundException` | *same-page*: block 22 declares it, as the sentences before blocks 21 and 23 now say | 5 |
-| `QueryPatterns.md` | 5 | `CS0246` `GetProductCatalogQuery` | *same-page*: block 4 declares it, as the sentence before block 5 now says | 5 |
+| `QueryPatterns.md` | 6 | `CS0246` `GetProductCatalogQuery` | *same-page*: block 5 declares it, as the sentence before block 6 now says | 5 |
 
 ## Splits
 
@@ -2233,6 +2282,9 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `HangfireScheduler.md` | 25 | 25, 26 | 3 |
 | `QuartzScheduler.md` | 23 | 23, 24 | 3 |
 | `PipelineValidation.md` | 3 | 3, 4 | 4 |
+| `CQRSWithBrighterAndDarker.md` | 1 | 1, 2 | 5 |
+| `EFCoreQueryIntegration.md` | 1 | 1, 2 | 5 |
+| `QueryPatterns.md` | 3 | 3, 4 | 5 |
 
 ## Defect ledger
 
@@ -2296,6 +2348,11 @@ design, and their greps were run there.*
 | 53 | The message pump's private calls misquoted: `TranslateMessage` with two arguments (10.8.0 takes three), `InvokeDispatchRequest(request, message, context)` (it takes `request, context`), the Reactor's dispatch shown as `InitRequestContext`, an awaited call labelled Reactor, and translation before the context it uses is created | `HowServiceActivatorWorks.md` | `grep -rnE 'TranslateMessage\(message, context\)\|InvokeDispatchRequest\(request, message' contents/` | **3** | **0** | task 5.2, hidden behind *page-type*; read against `Reactor.cs`, `Proactor.cs` at 10.8.0 | 5 |
 | 54 | A route returning `Type[]`; at 10.8.0 `RegisterAsync<TRequest>`'s router returns `List<Type>` | `HowServiceActivatorWorks.md` | `grep -rnE 'return new( Type)?\[\] ?\{ ?typeof' contents/` | **2** | **0** | task 5.2, hidden behind *page-type* | 5 |
 | 55 | Darker's interfaces listed short of 4.1.1: `IQuery<TResult>` without its `IQuery` base, `IQueryHandler<,>` with two of its four methods and without `IQueryHandler.Context`; and a handler implementing the short listing | `QueriesAndQueryObjects.md`, `ImplementAQueryHandler.md` | `grep -rnE 'interface IQuery<out TResult>$\|interface IQueryHandler<in TQuery, TResult> where' contents/`; `grep -rnE 'public Order Fallback\(GetOrderQuery' contents/` | **2**; **0** | **0**; **1** | task 5.1, the second compile (`ImplementAQueryHandler.md` #13); the listings read at 5.2 | 5 |
+| 56 | A V9 handler factory shown as current: `Create(Type)` and `Release(IHandleRequests)` on `IAmAHandlerFactory`, which at 10.8.0 declares only `CreatePipelineScope()`; the members are `IAmAHandlerFactorySync`'s, each with an `IAmALifetime` | `HowConfiguringTheCommandProcessorWorks.md` | `grep -rnE 'IHandleRequests\??\s+Create\(Type \w+\)\|void Release\(IHandleRequests \w+\)\|: IAmAHandlerFactory(\s\|$\|,\|\{)' contents/` | **3** | **0** | task 5.1, the second compile | 5 |
+| 57 | The Dispatcher's instrumentation set on `AddBrighter`'s options, which configure the Command Processor; the Dispatcher reads `AddConsumers`' (`ServiceCollectionExtensions.cs:180`) | `HowServiceActivatorWorks.md` | `grep -rn -B2 'options.InstrumentationOptions = InstrumentationOptions.All;' contents/ \| grep -c AddBrighter` | **1** | **0** | task 5.3, hidden behind *parse*. Not a recurrence: `Telemetry.md` and `ConfiguringOpenTelemetry.md` set the Command Processor's on `AddBrighter` and the Dispatcher's on `AddConsumers` | 5 |
+| 58 | A control-bus sender's `Send`, and `ConfigurationCommandType.StopChannel`, `.StartChannel` with a settable string `SubscriptionName`; at 10.8.0 the sender has `Post`, the members are `CM_STOPCHANNEL`, `CM_STARTCHANNEL`, and the constructor takes a `SubscriptionName` | `HowServiceActivatorWorks.md` | `grep -rnE 'ConfigurationCommandType\.(Stop\|Start)Channel\|controlBusSender\.Send\(' contents/` | **2** | **0** | task 5.1, the second compile | 5 |
+| 59 | Dead-letter parameters on `Subscription<T>`, which has none; at 10.8.0 only `RmqSubscription` takes them | `HowServiceActivatorWorks.md` | `grep -rn -B4 deadLetterChannelName contents/ \| grep -c 'new Subscription<'` | **1** | **0** | task 5.1, the second compile | 5 |
+| 60 | A `[FallbackPolicy]` handler without `FallbackAsync` said to fail at runtime; `QueryHandlerAsync.FallbackAsync` returns `default(TResult)` (`QueryHandlerAsync.cs` at 4.1.1) | `QueryPipeline.md` | `grep -rnE 'or you.ll get a runtime error' contents/` | **1** | **0** | task 5.3, read against 4.1.1; run at 5.4 | 5 |
 
 ## Friction ledger
 

@@ -217,18 +217,21 @@ public sealed class GetOrderQuery : IQuery<Order>
 **Or use init-only setters (C# 9+):**
 
 ```csharp
-public sealed class GetCustomerQuery : IQuery<Customer>
-{
-    public int CustomerId { get; init; }
-    public bool IncludeOrders { get; init; }
-}
+using Paramore.Darker;
 
-// Usage:
+// Usage: create the query with an object initializer
 var query = new GetCustomerQuery
 {
     CustomerId = 123,
     IncludeOrders = true
 };
+
+// The query, with init-only properties
+public sealed class GetCustomerQuery : IQuery<Customer>
+{
+    public int CustomerId { get; init; }
+    public bool IncludeOrders { get; init; }
+}
 ```
 
 **Avoid mutable properties:**
@@ -327,35 +330,35 @@ Consistent naming helps developers understand what a query does at a glance.
 ### Recommended Patterns
 
 **GetXQuery** - Retrieve a single item (expected to exist):
-```csharp
+```text
 GetOrderQuery
 GetCustomerQuery
 GetProductDetailsQuery
 ```
 
 **GetXsQuery or GetXListQuery** - Retrieve a collection:
-```csharp
+```text
 GetOrdersQuery
 GetCustomersQuery
 GetProductListQuery
 ```
 
 **FindXQuery** - Retrieve a single item (may not exist, returns null):
-```csharp
+```text
 FindCustomerByEmailQuery
 FindOrderQuery
 FindUserQuery
 ```
 
 **SearchXQuery** - Search with criteria:
-```csharp
+```text
 SearchProductsQuery
 SearchOrdersQuery
 SearchCustomersQuery
 ```
 
 **ListXQuery** - Retrieve a list (alternative to GetXsQuery):
-```csharp
+```text
 ListActiveOrdersQuery
 ListRecentProductsQuery
 ```
