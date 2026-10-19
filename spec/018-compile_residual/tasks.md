@@ -1797,7 +1797,7 @@ figures, and its 552 is 553 (D13).
   - Input: S3's table, hard rows; Darker `4.1.1` and Brighter `10.8.0` source, the pinned releases
   - Output: as 3.3's, for S3. `QueryPipeline.md`'s 12 *parse* blocks are each made whole, skipped
     with an accepted reason, or listed
-- [ ] **Task 5.4:** Run S3's behavioural claims (AC10)
+- [x] **Task 5.4:** Run S3's behavioural claims (AC10)
   - Input: S3's changed blocks
   - Output: a *Claim / Case / Control* table, each row naming `probe/s3/<name>/Program.cs`
 - [ ] **Task 5.5:** Second pass for S3
@@ -2000,6 +2000,52 @@ interface claims are read, not run; the Dispatcher reading `AddConsumers`' instr
 is read from source and worth a run; `QueryPipeline.md`'s pitfalls 1 (decorator order), 2 (no
 policies) and 3 (an unknown policy name throws `ConfigurationException`) predate the phase and each
 asserts behaviour.
+
+#### Behaviour (5.4, AC10)
+
+**Every run is against the released packages**, Darker **4.1.1** and Brighter **10.8.0**, as
+`probe/s3/<name>/` projects; each prints `ok` or `FAIL` per row and exits 1 on any `FAIL`. Each block
+is copied as the page shows it, the probe's own lines marked `// probe`. `darker-pipeline` runs every
+row in one process, its containers sharing one `ILoggerFactory`, since Darker's decorators cache a
+static logger per generic type. `dispatcher-instrumentation` runs one process per case.
+
+| Claim | Case | Control | Probe | Result |
+|---|---|---|---|---|
+| `QueryPipeline.md` pitfall 1: retry at a lower step than fallback puts the fallback inside it, so nothing is retried | `[RetryableQuery(1)] [FallbackPolicy(2)]`, an API that always fails, the default policies | `[FallbackPolicy(1)] [RetryableQuery(2)]` | `darker-pipeline` | 1 attempt, the fallback's value / 4 attempts, then the fallback's |
+| `QueryPipeline.md` § *Decorator Ordering*: logging at step 1 logs once, the completion marked *(with fallback)*, and no retries | `[QueryLogging(1)] [FallbackPolicy(2)] [RetryableQuery(3)]`, always failing | the same handler succeeding | `darker-pipeline` | 4 attempts, 1 *Executing*, 1 completion *(with fallback)* / 1 completion, unmarked |
+| the same: a query that fails after its last retry logs only its *Executing* line | `[QueryLogging(1)] [RetryableQuery(2)]`, always failing | — (the row above's completion is the control) | `darker-pipeline` | 4 attempts, 1 *Executing*, 0 completions, the exception |
+| the same: logging inside retry logs every attempt, and a completion only for the one that succeeds | `[RetryableQuery(1)] [QueryLogging(2)]`, failing twice | the rows above, logging outside | `darker-pipeline` | 3 attempts, 3 *Executing*, 1 completion |
+| `QueryPipeline.md` pitfall 2: `[RetryableQuery]` with no policies *"will cause runtime errors"* | no `AddDefaultPolicies()` or `AddPolicies()` | `AddDefaultPolicies()` | `darker-pipeline` | the processor builds; the first query throws `MissingHandlerDecoratorException`, *"Handler decorator could not be created for type: …RetryableQueryDecorator…"* / runs. True, and now named |
+| `QueryPipeline.md` pitfall 3: an unknown policy name throws `ConfigurationException` the first time the handler runs | `[RetryableQuery(2, "MyCircuitBreaker")]`, the default registry | the registry holding the name | `darker-pipeline` | the processor builds; the first query throws *"Policy does not exist in policy registry: MyCircuitBreaker"* / runs |
+| `QueryPipeline.md` pitfall 3's ✅ block: a registry holding only `"MyCircuitBreaker"`, passed to `AddPolicies` | the block as it was | the block as repaired, with the two defaults beside the name | `darker-pipeline` | `ConfigurationException` at `AddPolicies`, *"The policy registry is missing the Darker.RetryPolicy policy which is required"* / runs. **Overturned** (ledger 61) |
+| `QueryPipeline.md` pitfall 4 (ledger 60): `[FallbackPolicy]` without `FallbackAsync` answers with `default(TResult)`, no exception | the ❌ handler | `FallbackAsync` overridden; no `[FallbackPolicy]` | `darker-pipeline` | `null` / the override's value; the exception reaches the caller |
+| `ImplementAQueryHandler.md`: each base class's own-mode fallback returns `default(TResult)`; the other mode's `Execute` and fallback throw `NotImplementedException` | `QueryHandler`: `Fallback`, `FallbackAsync`, `ExecuteAsync`; `QueryHandlerAsync`: `FallbackAsync`, `Fallback`, `Execute` | each against the other mode's member | `darker-pipeline` | `default`, `NotImplementedException` ×2, on each base class; and `[FallbackPolicy]` on a throwing `QueryHandler`, through `Execute`, returns `null` |
+| `ImplementAQueryHandler.md` #13: `IQueryHandler<TQuery, TResult>` and `IQueryHandler` have five members; `QueriesAndQueryObjects.md`: `IQuery` and `IQuery<TResult>` have none | reflection over the 4.1.1 assemblies | the same reflection over `IQueryHandler`, which finds its member | `darker-pipeline` | `Context`, `Execute`, `ExecuteAsync`, `Fallback`, `FallbackAsync`; 0 members, `IQuery<T> : IQuery` / 3 |
+| `HowServiceActivatorWorks.md` #11 (ledger 57): the Dispatcher reads its instrumentation from `AddConsumers`' options | `AddConsumers(All)` alone, a message enqueued on the internal bus | `AddConsumers(RequestInformation)` alone | `dispatcher-instrumentation` | the pump's process span carries `messaging.message.body` / it does not |
+| `HowServiceActivatorWorks.md`, the sentence before #11: *"The Command Processor takes its own, separately, from `AddBrighter`'s options"* | `AddConsumers(All)` alone | `AddBrighter(All).Handlers(…)`, then `AddConsumers(RequestInformation)`, the shape of five transport pages' #1 | `dispatcher-instrumentation` | the Command Processor's span under the pump carries `paramore.brighter.request.body`: `AddConsumers`' options configure both / the Command Processor takes `AddBrighter`'s, the pump `AddConsumers`', the handler runs. **Overturned** for an app that calls `AddConsumers` alone (ledger 62) |
+| unstated, found by the control: handlers registered on `AddConsumers`' builder in an app that called `AddBrighter` first | `AddBrighter(All)`, then `AddConsumers(…).Handlers(…)` | the five transport pages' shape, above | `dispatcher-instrumentation` | *"Found 0 pipelines for event: Greeting"*, the message rejected / handled. The page now says to register on `AddBrighter`'s builder; no page shows the failing shape (block scan for both calls: `FAQ.md` #3 and the five transport pages, each registering on `AddBrighter`'s) |
+| `HowServiceActivatorWorks.md` § 3: the pump releases the transform pipeline straight away, or after the handler when a transform left cleanup pending | — | — | read, not run | `Reactor.cs:213–217` at 10.8.0: `if (!delivery.HasPendingCleanup) ReleasePipeline(…)` before `InvokeDispatchRequest` |
+
+**Two claims overturned, each repaired at every recurrence (obligation 21):**
+
+- **Ledger 61.** `QueryPipeline.md` pitfall 3's ✅ block registers `"MyCircuitBreaker"` beside
+  `Constants.RetryPolicyName` and `Constants.CircuitBreakerPolicyName`, and its sentence says
+  `AddPolicies` requires both. Block scan for a block calling `AddPolicies` on a registry with no
+  `RetryPolicyName`: **1** (`QueryPipeline.md` #21) → **0**; `grep -rn -B10 '\.AddPolicies(' contents/ |
+  grep -c 'new PolicyRegistry()'`: **1** → **0**. `DarkerBasicConfiguration.md` #11 and
+  `QueryPipelinePolicies.md` #2 hold both keys already
+- **Ledger 62.** `HowServiceActivatorWorks.md` now says `AddConsumers`' options configure the
+  Command Processor too when it is the only registration, and that an app calling `AddBrighter` first
+  gets two option sets and must register its handlers on `AddBrighter`'s builder
+
+**Pitfall 2 was true and vague**, so it now names the exception and when it is thrown. No ledger
+row: nothing it said was false.
+
+**Measured after 5.4:** `blockcheck --explain QueryPipeline_21 HowServiceActivatorWorks_11` → 0
+diagnostics. `--report` → **992 / 642 / 323 / 27**, 113 findings, as predicted: against 5.3, R8's six
+blocks moved FAILED → SKIPPED (D21), and 5.4's edits, prose and one registry, moved nothing. Two
+methods: the summary line, and `cut -f1` of the rows. `pagelint` 0 / **271**; `linkcheck` and
+`symbolcheck` clean on the two pages.
 
 ### Phase 6 — S4, Using an External Bus; Transports *(6 tasks, one PR)*
 
@@ -2351,10 +2397,12 @@ design, and their greps were run there.*
 | 54 | A route returning `Type[]`; at 10.8.0 `RegisterAsync<TRequest>`'s router returns `List<Type>` | `HowServiceActivatorWorks.md` | `grep -rnE 'return new( Type)?\[\] ?\{ ?typeof' contents/` | **2** | **0** | task 5.2, hidden behind *page-type* | 5 |
 | 55 | Darker's interfaces listed short of 4.1.1: `IQuery<TResult>` without its `IQuery` base, `IQueryHandler<,>` with two of its four methods and without `IQueryHandler.Context`; and a handler implementing the short listing | `QueriesAndQueryObjects.md`, `ImplementAQueryHandler.md` | `grep -rnE 'interface IQuery<out TResult>$\|interface IQueryHandler<in TQuery, TResult> where' contents/`; `grep -rnE 'public Order Fallback\(GetOrderQuery' contents/` | **2**; **0** | **0**; **1** | task 5.1, the second compile (`ImplementAQueryHandler.md` #13); the listings read at 5.2 | 5 |
 | 56 | A V9 handler factory shown as current: `Create(Type)` and `Release(IHandleRequests)` on `IAmAHandlerFactory`, which at 10.8.0 declares only `CreatePipelineScope()`; the members are `IAmAHandlerFactorySync`'s, each with an `IAmALifetime` | `HowConfiguringTheCommandProcessorWorks.md` | `grep -rnE 'IHandleRequests\??\s+Create\(Type \w+\)\|void Release\(IHandleRequests \w+\)\|: IAmAHandlerFactory(\s\|$\|,\|\{)' contents/` | **3** | **0** | task 5.1, the second compile | 5 |
-| 57 | The Dispatcher's instrumentation set on `AddBrighter`'s options, which configure the Command Processor; the Dispatcher reads `AddConsumers`' (`ServiceCollectionExtensions.cs:180`) | `HowServiceActivatorWorks.md` | `grep -rn -B2 'options.InstrumentationOptions = InstrumentationOptions.All;' contents/ \| grep -c AddBrighter` | **1** | **0** | task 5.3, hidden behind *parse*. Not a recurrence: `Telemetry.md` and `ConfiguringOpenTelemetry.md` set the Command Processor's on `AddBrighter` and the Dispatcher's on `AddConsumers` | 5 |
+| 57 | The Dispatcher's instrumentation set on `AddBrighter`'s options, which configure the Command Processor; the Dispatcher reads `AddConsumers`' (`ServiceCollectionExtensions.cs:180`) | `HowServiceActivatorWorks.md` | `grep -rn -B2 'options.InstrumentationOptions = InstrumentationOptions.All;' contents/ \| grep -c AddBrighter` | **1** | **0** | task 5.3, hidden behind *parse*. Not a recurrence: `Telemetry.md` and `ConfiguringOpenTelemetry.md` set the Command Processor's on `AddBrighter` and the Dispatcher's on `AddConsumers`; run at 5.4 (`probe/s3/dispatcher-instrumentation`), confirmed | 5 |
 | 58 | A control-bus sender's `Send`, and `ConfigurationCommandType.StopChannel`, `.StartChannel` with a settable string `SubscriptionName`; at 10.8.0 the sender has `Post`, the members are `CM_STOPCHANNEL`, `CM_STARTCHANNEL`, and the constructor takes a `SubscriptionName` | `HowServiceActivatorWorks.md` | `grep -rnE 'ConfigurationCommandType\.(Stop\|Start)Channel\|controlBusSender\.Send\(' contents/` | **2** | **0** | task 5.1, the second compile | 5 |
 | 59 | Dead-letter parameters on `Subscription<T>`, which has none; at 10.8.0 only `RmqSubscription` takes them | `HowServiceActivatorWorks.md` | `grep -rn -B4 deadLetterChannelName contents/ \| grep -c 'new Subscription<'` | **1** | **0** | task 5.1, the second compile | 5 |
-| 60 | A `[FallbackPolicy]` handler without `FallbackAsync` said to fail at runtime; `QueryHandlerAsync.FallbackAsync` returns `default(TResult)` (`QueryHandlerAsync.cs` at 4.1.1) | `QueryPipeline.md` | `grep -rnE 'or you.ll get a runtime error' contents/` | **1** | **0** | task 5.3, read against 4.1.1; run at 5.4 | 5 |
+| 60 | A `[FallbackPolicy]` handler without `FallbackAsync` said to fail at runtime; `QueryHandlerAsync.FallbackAsync` returns `default(TResult)` (`QueryHandlerAsync.cs` at 4.1.1) | `QueryPipeline.md` | `grep -rnE 'or you.ll get a runtime error' contents/` | **1** | **0** | task 5.3, read against 4.1.1; run at 5.4 (`probe/s3/darker-pipeline`), confirmed | 5 |
+| 61 | A Darker policy registry holding only a custom name, passed to `AddPolicies`, which throws `ConfigurationException` without `Constants.RetryPolicyName` and `Constants.CircuitBreakerPolicyName` (`QueryProcessorBuilderExtensions.cs` at 4.1.1) | `QueryPipeline.md` | `grep -rn -B10 '\.AddPolicies(' contents/ \| grep -c 'new PolicyRegistry()'` | **1** | **0** | task 5.4, read against 4.1.1 and run (`probe/s3/darker-pipeline`) | 5 |
+| 62 | `AddBrighter`'s options said to configure the Command Processor beside `AddConsumers`; with `AddConsumers` alone, its options configure both, `ConsumersOptions` being a `BrighterOptions` | `HowServiceActivatorWorks.md` | `grep -rn 'separately, from `AddBrighter`' contents/` | **1** | **0** | task 5.4, run (`probe/s3/dispatcher-instrumentation`); written at 5.3 with ledger 57 | 5 |
 
 ## Friction ledger
 

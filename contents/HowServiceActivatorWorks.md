@@ -320,7 +320,7 @@ The Message Pump automatically creates spans for:
 - Handler dispatch
 - Message acknowledgment
 
-Configure the Dispatcher's instrumentation on its consumer options. The Command Processor takes its own, separately, from `AddBrighter`'s options:
+Configure the Dispatcher's instrumentation on its consumer options. When `AddConsumers` is the only registration, those options configure the Command Processor too: `ConsumersOptions` is a `BrighterOptions`, so one setting governs the pump's spans and the handler pipeline's. An app that also calls `AddBrighter`, first, gets two: the Command Processor takes `AddBrighter`'s options, and its handler registry, so register handlers on `AddBrighter`'s builder. Handlers registered on `AddConsumers`' builder are then never found, and the pump rejects their messages:
 
 ```csharp
 using Paramore.Brighter;

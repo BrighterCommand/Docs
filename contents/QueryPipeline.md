@@ -715,7 +715,7 @@ public override async Task<OrderData> ExecuteAsync(
 
 **2. Forgetting to configure policies**
 
-Using `[RetryableQuery]` without calling `AddDefaultPolicies()` or `AddPolicies()` will cause runtime errors.
+Using `[RetryableQuery]` without calling `AddDefaultPolicies()` or `AddPolicies()` throws a `MissingHandlerDecoratorException`, *"Handler decorator could not be created for type: …RetryableQueryDecorator…"*, the first time the handler runs. Neither call has registered the decorator the attribute names.
 
 ❌ Bad:
 ```csharp
@@ -738,7 +738,7 @@ builder.Services.AddDarker()
 
 **3. Policy naming mismatches**
 
-Naming a policy that doesn't exist in the policy registry throws a `ConfigurationException`, *"Policy does not exist in policy registry"*, the first time the handler runs.
+Naming a policy that doesn't exist in the policy registry throws a `ConfigurationException`, *"Policy does not exist in policy registry"*, the first time the handler runs. Register yours beside Darker's two defaults, `Constants.RetryPolicyName` and `Constants.CircuitBreakerPolicyName`: `AddPolicies` requires both, and throws a `ConfigurationException` at startup when either is missing.
 
 ❌ Bad:
 ```csharp
@@ -766,13 +766,17 @@ using Paramore.Darker.Policies;
 using Polly;
 using Polly.Registry;
 
-// Define the policy, and register it under the name
+// Define the policy, and register it under the name, beside the two defaults AddPolicies requires
 var circuitBreakerPolicy = Policy
     .Handle<Exception>()
     .CircuitBreakerAsync(1, TimeSpan.FromMilliseconds(500));
 
-var policyRegistry = new PolicyRegistry();
-policyRegistry.Add("MyCircuitBreaker", circuitBreakerPolicy);
+var policyRegistry = new PolicyRegistry
+{
+    { Constants.RetryPolicyName, Policy.Handle<Exception>().WaitAndRetryAsync(3, attempt => TimeSpan.FromMilliseconds(50 * attempt)) },
+    { Constants.CircuitBreakerPolicyName, Policy.Handle<Exception>().CircuitBreakerAsync(1, TimeSpan.FromMilliseconds(500)) },
+    { "MyCircuitBreaker", circuitBreakerPolicy }
+};
 
 builder.Services.AddDarker()
     .AddHandlersFromAssemblies(typeof(Program).Assembly)
