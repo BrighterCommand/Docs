@@ -76,6 +76,7 @@ Let's trace a message from the broker to your handler:
 
 The Performer's message pump polls its channel for new messages (`Reactor.cs:123`, `Proactor.cs:162` at 10.8.0):
 
+<!-- blockcheck: skip a line quoted from Brighter's source, calling a private member or reading the pump's own state: Reactor.cs:123 and Proactor.cs:162, the pump's Channel -->
 ```csharp
 // Reactor (blocking), Reactor.cs:123
 // ...
@@ -99,7 +100,9 @@ The Message Pump creates a `RequestContext` that includes:
 
 Both pumps make the same call inside their message loop (`Reactor.cs:208`, `Proactor.cs:247` at 10.8.0):
 
+<!-- blockcheck: skip a line quoted from Brighter's source, calling a private member or reading the pump's own state: Reactor.cs:208 and Proactor.cs:247, InitRequestContext -->
 ```csharp
+// Reactor.cs:208, Proactor.cs:247
 // ...
 RequestContext context = InitRequestContext(processSpan, message);
 // ...
@@ -109,6 +112,7 @@ RequestContext context = InitRequestContext(processSpan, message);
 
 The Dispatcher uses the registered message mapper to convert the `Message` into a request object, passing the context it has just created. If you register no custom mapper, V10 uses the default mapper. The callback hands back the transform pipeline the mapper ran, so the pump can release it: straight away, or after the handler has run if a transform left cleanup pending.
 
+<!-- blockcheck: skip a line quoted from Brighter's source, calling a private member or reading the pump's own state: Reactor.cs:211, TranslateMessage -->
 ```csharp
 // Reactor (blocking), Reactor.cs:211
 // ...
@@ -116,6 +120,7 @@ var request = TranslateMessage(message, context, pipeline => unwrapPipeline = pi
 // ...
 ```
 
+<!-- blockcheck: skip a line quoted from Brighter's source, calling a private member or reading the pump's own state: Proactor.cs:250, TranslateMessage -->
 ```csharp
 // Proactor (non-blocking), Proactor.cs:250
 // ...
@@ -127,6 +132,7 @@ var request = await TranslateMessage(message, context, pipeline => unwrapPipelin
 
 The request is dispatched to the Command Processor, which executes the handler pipeline:
 
+<!-- blockcheck: skip a line quoted from Brighter's source, calling a private member or reading the pump's own state: Reactor.cs:219, InvokeDispatchRequest -->
 ```csharp
 // Reactor, Reactor.cs:219
 // ...
@@ -134,6 +140,7 @@ InvokeDispatchRequest(request, context);
 // ...
 ```
 
+<!-- blockcheck: skip a line quoted from Brighter's source, calling a private member or reading the pump's own state: Proactor.cs:258, InvokeDispatchRequest -->
 ```csharp
 // Proactor, Proactor.cs:258
 // ...

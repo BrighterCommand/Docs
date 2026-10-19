@@ -1946,11 +1946,13 @@ checked for anything else:
 block declares; both are read at 5.5. **For 5.4:** the page now says the base classes' `Fallback`
 returns `default(TResult)` when the `[FallbackPolicy]` decorator calls it, a claim to run.
 
-**Ruling asked** (obligation 21: no accepted skip reason fits):
+**Ruling asked** (obligation 21: no accepted skip reason fits), and **ruled 2026-10-20 as D21**, below the table:
 
 | # | Block | Question |
 |---:|---|---|
 | R8 | `HowServiceActivatorWorks.md` #1–#6 | Each quotes one line of the Reactor or Proactor message loop (#1, added at 5.3, its two `Receive` calls), which call private methods (`InitRequestContext`, `TranslateMessage`, `InvokeDispatchRequest`). The Reactor and Proactor methods take the same parameters and differ only in return type, so no unit can stub both, and no reader can call them. The lines are now 10.8.0's. Accept a fourth skip reason, *"a line quoted from Brighter's source, calling a private member"*, with the file and line cited in the block? Or retag them `text`, or list them as FAILED? |
+
+**R8 ruled (D21).** A fourth accepted skip reason, widened from the one asked: *"a line quoted from Brighter's source, calling a private member or reading the pump's own state"*, with the file and line cited in the block. The question was wrong about #1: `Channel.Receive` is public, and #1 fails because the pump's `Channel` is an `IAmAChannelSync` in the Reactor and an `IAmAChannelAsync` in the Proactor, so the reason was widened to cover it. All eight cited lines were read at the 10.8.0 tag and match; #2, which cited its lines only in the prose, now cites them in the block. Each block carries its marker. S3 after the ruling: **114 BUILT, 19 FAILED** (all *same-page*), **11 SKIPPED**
 
 #### The repairs (5.3)
 

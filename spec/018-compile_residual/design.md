@@ -435,7 +435,7 @@ rather than restated. Every FAILED block on a reached page leaves in one of four
 SKIPPED with an accepted reason, FAILED and listed, or retagged. Rule 8 of that section, *"`probe/attr_mismatch.py`
 runs in every tranche PR"*, is replaced by rule 8 the gate, which now runs on every push.
 
-**What 018 adds**, ruled 2026-10-04:
+**What 018 adds**, ruled 2026-10-04 (D21 on 2026-10-20):
 
 | Case | Blocks (E2/E5) | Rule | Ruling |
 |---|---:|---|---|
@@ -444,6 +444,7 @@ runs in every tranche PR"*, is replaced by rule 8 the gate, which now runs on ev
 | A handler method shown without its class | 32 | built by the handler wrapper | **D2** |
 | Shouldly assertions | 6 | `Shouldly` **4.3.0** pinned in `refs.csproj`, the version Brighter's own tests use (`Directory.Packages.props:150` at 10.7.0). The page calls `ShouldBe…` and never names the package (`grep -c Shouldly contents/TestDoubleOptions.md` → **0**), so its repair adds `using Shouldly;` to each block and one sentence naming the package | **D4** |
 | `AddServiceActivator` as current code | 2 sites | rewrite to `AddConsumers`, add a `symbolwatch.tsv` row, and opt out the two V9 discussion pages | **D5** |
+| A line quoted from Brighter's source, calling a private member or reading the pump's own state | 6 | SKIPPED, reason *"a line quoted from Brighter's source, calling a private member or reading the pump's own state: File.cs:N"*, allowed only where the block cites the file and line, and that line matches the pinned tag | **D21** |
 
 **And from 017's friction, as standing obligations in `tasks.md` § 1** (P0-6): #68 (both reading
 criteria at every phase close), #69 (probes committed here), #72 (the off-tranche term predicted),
@@ -535,7 +536,7 @@ cited from its rows, not restated.
 
 ## Design Decisions
 
-D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and D7 needed no ruling. D8 and D9 were ruled at phase 2, on 2026-10-05 and 2026-10-09. D10–D12 were ruled at phase 3, on 2026-10-13. D13–D18 were ruled at phase 4, on 2026-10-15, and D19 and D20 on 2026-10-18.
+D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and D7 needed no ruling. D8 and D9 were ruled at phase 2, on 2026-10-05 and 2026-10-09. D10–D12 were ruled at phase 3, on 2026-10-13. D13–D18 were ruled at phase 4, on 2026-10-15, and D19 and D20 on 2026-10-18. D21 was ruled at phase 5, on 2026-10-20.
 
 | # | Question | Decision | Ruled |
 |---|---|---|---|
@@ -559,6 +560,7 @@ D1–D5 were ruled by the maintainer on 2026-10-04, each as recommended. D6 and 
 | **D18** | **File the `IAmAMongoDbTransactionProvider` mismatch upstream?** It is an `IAmABoxTransactionProvider<IClientSession>`; `MongoDbOutbox` and the transaction type Brighter configures are `IClientSessionHandle`, so `DepositPostAsync` rejects it (D17, `probe/s5/mongo-outbox`) | **Yes**, as D16: **BrighterCommand/Brighter#4616** | **Yes**, the maintainer, 2026-10-15 |
 | **D19** | **Sweep the prose that dates a defect to 10.7.0?** The pins moved to 10.8.0 at phase 3; the prose did not. Task 4.5 found **29** lines on **22** pages saying *"at 10.7.0"*, and five defects they describe have fixes in the 10.8.0 tag (#4414, #4335, #4437, #4432, #4510), with `OnceOnlyAction.Replay` still called unreleased. #4414's was probed and repaired at 4.5 (`probe/s1/scheduler-autoscan`, ledger 40); the rest are behavioural claims not yet run | **A new task in phase 4, 4.5a**: each defect probed at 10.7.0 (the control) and 10.8.0, every site repaired, one ledger row per defect, before 4.6 closes | **Yes**, the maintainer, 2026-10-18 |
 | **D20** | **Refresh the relational DDL the pages show?** (R7) Seven blocks show their builder's 10.7.0 output; at 10.8.0 every relational builder adds `CausationId`, and the Outbox builders a causation index. A 10.7.0 table still deposits, but Replay needs the column | **A new task in phase 4, 4.5b**: each block regenerated from 10.8.0's `GetDDL`, run against its database, the page saying Replay needs the column; the tutorial's step replayed | **Yes**, the maintainer, 2026-10-18 |
+| **D21** | **A fourth accepted skip reason?** (R8) `HowServiceActivatorWorks.md` #1–#6 quote lines of the Reactor and Proactor message loop. #2–#6 call private methods (`InitRequestContext`, `TranslateMessage`, `InvokeDispatchRequest`); #1 reads the pump's own `Channel`, an `IAmAChannelSync` in the Reactor and an `IAmAChannelAsync` in the Proactor. The two pumps share names and differ in type, so no unit can stub both, and no reader can call them. Each line matches the 10.8.0 tag | **Yes**: *"a line quoted from Brighter's source, calling a private member or reading the pump's own state"*, allowed only where the block cites the file and line it quotes, so a later reader can check the line against the tag. The question first said all six called private members; #1 does not, and the reason was widened to cover it rather than bent to fit | **Yes**, the maintainer, 2026-10-20 |
 
 ## What the Design Review Found — 2026-10-05
 
