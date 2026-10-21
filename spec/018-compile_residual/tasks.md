@@ -1803,7 +1803,7 @@ figures, and its 552 is 553 (D13).
 - [x] **Task 5.5:** Second pass for S3
   - Input: 5.1's recurrences; rulings asked
   - Output: as 3.6's
-- [ ] **Task 5.6:** Close phase 5
+- [x] **Task 5.6:** Close phase 5
   - Input: § 1 obligations 6, 7, 19
   - Output: as 3.7's
 
@@ -2105,6 +2105,70 @@ and 017's run covered only the mapper half. Phase 8's reading criteria, or a lat
 #23 on `OrderAccessDeniedException`, `OrderNotFoundException`, `IAuthService`, `IsDeleted`. `--report` →
 **992 / 642 / 323 / 27**, unmoved, as predicted: #16 and #23 stay FAILED, #22 stays BUILT. Two methods:
 the summary line, and `cut -f1` of the rows. 67 units, 0 violations. `pagelint` 0 / **271**.
+
+#### Phase 5 closed (5.6)
+
+**Baselined.** `baseline.tsv` lists every BUILT block on the ten S3 pages, **114** rows, replacing
+their **8** earlier ones (§ the file's own header). Three keep their ref, their text and scaffold
+unchanged at their present ordinal: `CQRSWithBrighterAndDarker.md` #7 and #8 (which were #6 and #7,
+before the split of #1) and `HowConfiguringTheCommandProcessorWorks.md` #10. The other five earlier
+rows gained their page's unit; with the rest, they are at **`b9183b0`**, the phase's last page commit.
+The rows were appended as phase 4's were, so the diff is 8 out and 114 in. Text unchanged was judged
+against a `git worktree` at `0fc79a3`, never a stash. **Two methods agree:** `grep -v '^#' baseline.tsv
+| grep -vc '^$'` → **642**, and `--report`'s BUILT → **642**. `--report` exit **0**, **0 findings**.
+
+**Rule 8.** `pagelint` → **0 errors**; the one `attr-mismatch-intended` marker stays on
+`PipelineValidation.md` #7, and `--plant` → 5 / 5.
+
+**Readings (obligation 19).** `git diff -U0 0fc79a3 HEAD -- contents`, hunks against fence ranges:
+10 pages, **100** changed C# blocks, all on S3. Two methods: the hunks, and S3 blocks whose text
+is not on their page at `0fc79a3`, **100**.
+- **AC9.** The phase added `// ...` at **17** lines in **9** blocks. `HowServiceActivatorWorks.md`
+  #11, #14 and `QueriesAndQueryObjects.md` #1 are BUILT, so `--explain` has nothing to report for
+  them. `HowServiceActivatorWorks.md` #1–#6 are R8's SKIPPED quotes (D21), whose `// ...` marks the
+  source elided around the quoted line, and whose markers cite that line
+- **AC10.** § *Behaviour (5.4)*: thirteen claims run with a control, one read from source.
+  § *Second pass (5.5)*: one more run, `ImplementAQueryHandler.md` #16. No changed block lies off
+  S3. Carried, not run: `ReactorAndProactor.md`'s *"will cause runtime errors"*, which no phase-5
+  block touches (§ *Second pass (5.5)*)
+
+**Gates against 5.1.**
+
+| Gate | Predicted (5.1) | Measured at the close | |
+|---|---|---|---|
+| corpus | 994–1,000 | **992** | **below the band by 2** (below) |
+| BUILT | 662–676 | **642** | **below the band by 20** (below) |
+| FAILED | 307–312 | **323** | **above the band by 11** (below) |
+| SKIPPED | 17–20 | **27** | **above the band by 7** (below) |
+| `pagelint` | 0 errors / 266–281 | **0 / 271** | in band |
+| `symbolcheck` | unmoved | **24, 14**, exit 0 | as predicted; 5.5 found neither candidate earns a row |
+| scaffold rule | 60–69 units | **67**, 0 violations, 0 compile errors | in band |
+| assemblies | 553–554 | **553** on each pin | in band: Swashbuckle was removed from `DarkerBasicConfiguration.md` #9, not pinned (ledger 52) |
+| `linkcheck` · shape · redirects · `--verify` | unmoved | 168 / 0 · 161, widest 12 of 20 · 77, 7858 bytes · 161 = 161 | as predicted |
+| `versioncheck` · `optioncheck` | unmoved | 0 of 18 · 0 / 59 / 529 | as predicted |
+| `pagelint --plant` | unmoved | 5 / 5 | as predicted |
+| off-group | **0** | **0** changed blocks off S3 | as predicted |
+
+**Why four verdict gates fell outside their bands.** One account covers all four. 5.1 started from
+*S3's 146 blocks, less the one SKIPPED, all BUILT* (673), and allowed 3–8 to stay FAILED and 0–3 new
+skips:
+- **Five retags, unpredicted.** `QueriesAndQueryObjects.md` #13–#17 were lists of query names, not
+  C#. With three splits, the corpus is 994 + 3 − 5 = **992**, and S3 holds 144 blocks
+- **Nineteen stay FAILED, not 3–8**, every one *same-page* and listed. 5.1 counted the five blocks
+  already *same-page*. 5.3's repairs made fragments whole on one running example per page
+  (`CQRSWithBrighterAndDarker.md`'s e-commerce model, `ImplementAQueryHandler.md`'s domain
+  exceptions), so a block now names types another block on its page declares, which unit rule 1 does
+  not let a stub supply. 304 + 19 = **323**
+- **Ten new skips, not 0–3.** Six are R8's, under a reason that did not exist at 5.1 (D21); four are
+  5.3's signatures and fragments shown whole elsewhere. 17 + 10 = **27**
+- **BUILT follows from the three:** 673 + 3 − 5 − 19 − 10 = **642**
+
+`pagelint` landed in band by the mechanism 5.1 named: S3's 87 warnings fell to **12**, 11 of them
+on SKIPPED blocks and the twelfth on `QueriesAndQueryObjects.md` #1, BUILT and untouched, which 5.1
+said would stay. 346 − 75 = **271**. None of the measured numbers is adopted. The lesson for phase 6:
+a repair that makes blocks whole on a running example moves blocks from *page-type* to *same-page*,
+so predict the stays from how many blocks the example spans, not from the *same-page* count before
+the work. `tools/README.md` rows 2 and 9 now give the close's figures.
 
 ### Phase 6 — S4, Using an External Bus; Transports *(6 tasks, one PR)*
 
