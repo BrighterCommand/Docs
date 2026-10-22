@@ -82,6 +82,7 @@ carries:
 
    ```text
    STATUS: DONE | PAUSE | FAILED
+   COMPLETE: yes | no          (PAUSE only: is the task's Output finished?)
    FILES:
      <one path per line>
    SUMMARY: <one line for the commit subject, after "docs: <spec> task X.Y — ">
@@ -90,14 +91,20 @@ carries:
    PAUSE_REASON: <empty unless PAUSE>
    ```
 
-   **`PAUSE`** is for the two things the batch never decides on its own:
+   **`PAUSE`** is for what the batch never decides on its own, or should not pass unseen:
    - **a scope question** — a ruling the maintainer must make: a page rewritten, a feature removed,
-     a new skip reason, an issue filed upstream, anything the obligations reserve to them
-   - **a new defect** — one the task did not set out to repair and the phase's ledger and
-     prediction do not already name. The sub-agent records it as the obligations require, repairs
-     nothing beyond its task, and returns
+     a new skip reason, a package added to a pin, an issue filed upstream, anything the obligations
+     reserve to them. A change in the world the gates measure against — a new release, a gate gone
+     red that the task did not touch — is one too
+   - **a new defect** — any the phase's prediction and ledger do not already name, **including one
+     found inside a block the task is already repairing**. A defect in the task's own blocks is
+     repaired and recorded as the obligations require, and the task finished (`COMPLETE: yes`); one
+     outside them is recorded and left. Either way the sub-agent returns `PAUSE`, so the maintainer
+     can spot-check it before the batch goes on. It is a checkpoint, not a failure
 
-   A defect the task exists to repair is the task's work, not a pause.
+   A defect the prediction named is the task's work, not a pause. **An earlier task's prediction is
+   never edited** — it is reconciled at the close (obligation 6); a figure that moved is recorded in
+   the task's own output.
 
 ## Step 3: Verify, commit, mark (orchestrator)
 
@@ -123,8 +130,10 @@ carries:
    ```
 
    with the session's attribution lines.
-5. **On `PAUSE`**, commit the task's work so far without flipping its checkbox, and stop with
-   status `PAUSED`, printing `PAUSE_REASON` and the question for the maintainer.
+5. **On `PAUSE`**, verify and review as for `DONE`, then commit the task's work. Flip its checkbox
+   only if `COMPLETE: yes`. Stop with status `PAUSED`, printing `PAUSE_REASON`: the question for the
+   maintainer, or the new defects to spot-check, each by page and block with its ledger row.
+   `/spec:ralph-implement` resumes from the next unchecked task.
 6. **On `FAILED`**, commit nothing for the task, leave its changes in the working tree, and stop
    with status `FAILED`. The next task depends on this one.
 
