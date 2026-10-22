@@ -2172,7 +2172,7 @@ the work. `tools/README.md` rows 2 and 9 now give the close's figures.
 
 ### Phase 6 — S4, Using an External Bus; Transports *(6 tasks, one PR)*
 
-- [ ] **Task 6.1:** Predict phase 6's gate movement
+- [x] **Task 6.1:** Predict phase 6's gate movement
   - Input: § *The groups*, S4; recurrence greps for S4's defects
   - Output: § *Phase 6 as executed*, *Predicted*, as 3.1's
 - [ ] **Task 6.2:** Repair S4's reachable blocks
@@ -2180,7 +2180,7 @@ the work. `tools/README.md` rows 2 and 9 now give the close's figures.
   - Output: as 3.2's, for S4. `S3LuggageStore.md` #1 is BUILT or listed with a diagnostic that is
     not `CS0234 … V4`
 - [ ] **Task 6.3:** Repair S4's hard blocks
-  - Input: S4's table, hard rows; 10.7.0 source
+  - Input: S4's table, hard rows; Brighter `10.8.0` source, the pinned release
   - Output: as 3.3's, for S4. `KafkaConfiguration.md`'s 14 *parse* blocks are each made whole,
     skipped with an accepted reason, or listed
 - [ ] **Task 6.4:** Run S4's behavioural claims (AC10)
@@ -2193,6 +2193,111 @@ the work. `tools/README.md` rows 2 and 9 now give the close's figures.
   - Input: § 1 obligations 6, 7, 19
   - Output: as 3.7's
 
+### Phase 6 as executed
+
+**Measured at phase start, `f4d965f`** (#204's merge). `--report` → **992 / 642 / 323 / 27, 0 findings**,
+exit 0; `--classify` → 66 parse, 19 built-by-using, 57 defect, 33 same-page, 18 values, 130 page-type,
+settled in 3 rounds. 553 reference assemblies on each pin; scaffold rule 67 units, 0 violations; pin
+rule 4 pages. `pagelint` 0 errors / **271** warnings, `--plant` 5 / 5; `symbolcheck` 24 entries, 14
+silenced; `linkcheck` 168 / 0; `versioncheck` 0 of 18 across 5 pages; `optioncheck` 0 / 59 / 529.
+
+#### Predicted (6.1)
+
+**S4 at `f4d965f`**: `groups.py` gives 17 pages, **125** FAILED (35 parse, 7 built-by-using,
+**15** defect, 3 same-page, 6 values, **59** page-type), 14 BUILT, 10 with nothing BUILT. Two methods:
+the FAILED column, 125; `grep` over `--report` on the seventeen pages, 125, with 14 BUILT and 4
+SKIPPED (`CloudEventsSupport.md` #7, #9, #11, #12). The S4 pages hold **143** C# blocks.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| Tasks 6.3 and 7.3: *"10.7.0 source"* | the pins are 10.8.0 | both tasks say 10.8.0 |
+| S4's table: `CloudEventsSupport.md` **1** defect, **6** page-type; S4 **16** defect, **58** page-type | **0** and **7**; S4 **15** and **59**. #5 was repaired off-group at task 4.3 (ledger 32) and now fails only on the reader's `MyCommand` | the table stands, being the instrument's at `f3f685f`; this row is the reading at `f4d965f` |
+| S4's table: **15** defect blocks (as measured) | the second compile's diagnostics (below): **8** are API defects, **1** is a `using` the classifier could not choose, **2** are alternatives in one fence, and **4** are fragments | the table stands; the repairs follow the reading |
+
+**Reading S4's 15 defect blocks** with `probe/second.py` over the seventeen pages (547 diagnostic
+lines), each against the 10.8.0 tag:
+
+| Page | # | Second compile | Reading against the pin | Repair |
+|---|---:|---|---|---|
+| `AWSSQSConfiguration.md` | 7, 8, 9, 10 | `CS1739` `name` on `SqsSubscription` | **defect.** Both `SqsSubscription<T>` constructors take `subscriptionName:` (`SqsSubscription.cs:123`, `:206`); there is no `name` | 6.2 |
+| `MessageTransforms.md` | 7 | `CS1739` `compressionType`; `CS0103` `CompressionType` | **defect.** `CompressAttribute(int step, CompressionMethod compressionMethod = GZip, CompressionLevel compressionLevel = Optimal, int thresholdInKb = 0)` (`CompressAttribute.cs:47`); the enum is `CompressionMethod.GZip`, `Brotli`, `Zlib` (`CompressionMethod.cs:3`) | 6.3 |
+| `MessageTransforms.md` | 8 | as #7; `CS0246` `RemovePII`, `RestorePII` | **defect**, twice: the compression arguments as #7, and two attributes Brighter does not ship and the page never declares. At 10.8.0 the shipped transforms are `ClaimCheck`/`RetrieveClaim`, `Compress`/`Decompress`, `CloudEvents` and the JustSaying pair. The page's earlier blocks teach the reader to write a transform | 6.3: the PII pair declared as the reader's own transform, or replaced by a shipped one; judged at the repair |
+| `RabbitMQConnectionStability.md` | 1 | `CS1739` `circuitBreakerTimeInMilliseconds` | **defect.** `AmqpUriSpecification(Uri uri, int connectionRetryCount = 3, int retryWaitInMilliseconds = 1000, int circuitBreakTimeInMilliseconds = 60000)` (`RmqMessagingGatewayConnection.cs:116`, both RMQ packages) | 6.2 |
+| `ImplementingExternalBus.md` | 3 | `CS0246` `ILog`; `CS0103` `LogProvider`; `CS1729` | **defect.** A V9 handler: LibLog's `ILog` and `LogProvider`, and a `RequestHandler` constructor taking a logger, none of which exist at 10.8.0. `CommandProcessor.CIRCUITBREAKER`/`RETRYPOLICY` (`CommandProcessor.cs:103`, `:111`) and `UsePolicy(string[], int)` (`UsePolicyAtttribute.cs:62`) are live. The page's banner says Brighter V10 and does not label the block V9 | 6.3, the V10 handler |
+| `RabbitMQConfiguration.md` | 5 | `CS0104` `RmqSubscription<>` ambiguous | **a `using` the classifier could not choose**: the pin carries both RMQ packages. The block sets `queueType: QueueType.Quorum`, which only `RMQ.Async`'s `RmqSubscription` takes (`RmqSubscription.cs:135`, `:199`) | 6.2, `using Paramore.Brighter.MessagingGateway.RMQ.Async;` |
+| `AWSSQSMigrateToV10.md` | 5 | `CS0128` `credentials` | **alternatives**: a *Problem* and a *Solution*, each declaring `credentials` | 6.3, split or made whole |
+| `AWSSQSMigrateToV10.md` | 6 | `CS0128` `connection`; `CS0103` `credentials` | **alternatives**, as #5. `AWSMessagingGatewayConnection(AWSCredentials, RegionEndpoint, Action<ClientConfig>?)` matches 10.8.0 (`AWSMessagingGatewayConfiguration.cs:42`) | 6.3, split or made whole |
+| `AsyncAPISupport.md` | 8 | `CS0161` | a fragment: a method whose body is a comment. `IAmASchemaGenerator.GenerateAsync(Type?, CancellationToken)` matches 10.8.0 (`IAmASchemaGenerator.cs:38`) | 6.3, a body |
+| `DefaultMessageMappers.md` | 14 | `CS0161`; `CS0246` `LargeEvent` | a fragment, as #8. `ClaimCheck(int step, int thresholdInKb = 0)` matches (`ClaimCheckAttribute.cs:43`) | 6.3, a body |
+| `HandlerFailure.md` | 9 | `CS0161`; `CS0246` `PlaceOrder` | a fragment: `MapToMessage`'s body is `// ...`. `InvalidMessageAction(string?)` and `(string?, Exception?)` match (`InvalidMessageAction.cs:56`, `:63`) | 6.3, a body |
+| `DynamicMessageDeserialization.md` | 7 | `CS7036` `subscriptionName` | a fragment: `KafkaSubscription`'s required arguments and the `switch`'s arms elided as `// ...` | 6.3, made whole, or skipped as a fragment shown whole elsewhere on the page |
+
+**Recurrence greps (obligation 20), run as written at `f4d965f`:**
+
+| Defect | Grep | Hits | Off-group |
+|---|---|---:|---|
+| `name:` for `subscriptionName:` | `grep -rnE 'name: new SubscriptionName' contents/` | **4**, `AWSSQSConfiguration.md` #7–#10 | none |
+| Compression arguments | `grep -rnE 'compressionType\|CompressionType\.' contents/` | **2**, `MessageTransforms.md` #7, #8 | none |
+| `circuitBreakerTimeInMilliseconds` | `grep -rn circuitBreakerTimeInMilliseconds contents/` | **3**: `RabbitMQConnectionStability.md` #1; on-group and hidden by a *parse* error, `RabbitMQConfiguration.md` **#4** (`= 30000`, an assignment inside an argument list); and `RabbitMQConfiguration.md`'s *Connection Reliability Options* prose | none. The prose is repaired with #4 |
+| LibLog | `grep -rnE 'LogProvider\|\bILog\b\|: base\(logger\)' contents/` | **2** lines in 1 block (`ImplementingExternalBus.md` #3) | none |
+| Unshipped PII transforms | `grep -rnE 'RemovePII\|RestorePII' contents/` | **2** lines in 1 block (`MessageTransforms.md` #8) | none |
+| Quorum on a subscription | `grep -rn 'QueueType\.Quorum' contents/` | **2**: `RabbitMQConfiguration.md` #5 and the prose naming it | none |
+
+**The off-group term is zero.** No S4 defect recurs on a page outside S4.
+
+**The parse blocks** (35) hide what lies behind them, as `RabbitMQConfiguration.md` #4 shows. None of
+them is another language in a C# fence, so no retag is predicted. Read by their first lines, they are:
+- **quotes of Brighter's source**, candidates for D21's skip if their lines match 10.8.0:
+  `MessageMappers.md` #3 and #5 (`MessageBody.cs:126`, `:164`) and `MessageTransforms.md` #4
+  (`TransformAttributeBase.cs:5`)
+- **lone `configHook:` arguments**: `KafkaConfiguration.md` #9–#13 and #18, made whole or skipped as
+  fragments of a configuration shown whole on the page (task 6.3's six of fourteen)
+- **alternatives in one fence**: `CloudEventsSupport.md` #13–#15, `DynamicMessageDeserialization.md`
+  #3 and #5, `DefaultMessageMappers.md` #13, split or made whole
+- **configurations with `...` for arguments**, the rest: made whole
+
+**Where blocks will stay *same-page*** (phase 5's lesson: count from what the running example spans,
+not from the class today). A unit may not stand in for a type the page declares, so the blocks at
+risk name a type another block on their page declares (`probe`'s reading of `second.py`'s `CS0246` and
+`CS0103` names against the page's own `class`/`record`/`interface` declarations):
+- **the 3 already *same-page***: `AsyncAPISupport.md` #4 and #9, `Routing.md` #3
+- **4 more already named by a declaration**: `AsyncAPISupport.md` #11 and #12 (`OrderCreatedEvent`,
+  declared in #5); `DefaultMessageMappers.md` #6 and #10 (`OrderShipped`, declared in #5)
+- **the running examples, undeclared today**, which a repair that makes a fragment whole by declaring
+  them would move: `PlaceOrder` across all 11 of `HandlerFailure.md`'s FAILED blocks, `GreetingEvent`
+  across 11 of `KafkaConfiguration.md`'s, `OrderCreated` across 10 of `DefaultMessageMappers.md`'s and
+  5 of `CloudEventsSupport.md`'s. A stub serves each while no block declares it; the band allows one
+  such example to be declared
+
+**`pagelint`, block by block.** S4's **94** warnings (`--per-page` on the seventeen pages; 16 carry
+one, `S3LuggageStore.md` none), read against `--report` and `--classify`:
+- **5 on blocks no repair touches**: `AWSSQSMigrateToV10.md` #7 (BUILT); `CloudEventsSupport.md` #7,
+  #9, #11, #12 (SKIPPED). They stay
+- **39 on FAILED blocks that already declare `// ...`**, on eleven pages. Each keeps its warning unless
+  its repair gives it `using`s; phase 5's ten such blocks mostly gained them
+- **5 on FAILED blocks whose first compile needed no `using`**: `CloudEventsSupport.md` #16;
+  `DefaultMessageMappers.md` #1, #7, #8, #12. A stub alone may build them, and they keep their warning
+- **45 on the other FAILED blocks** (18 *parse*, 16 *page-type*, 5 *defect*, 3 *values*, 2 *same-page*,
+  1 *built-by-using*), which their repairs edit. A block skipped keeps its warning
+
+**Predicted:**
+
+| Gate | At `f4d965f` | Predicted at the close | Mechanism |
+|---|---|---|---|
+| corpus | 992 | **992–1,000** | splits only, up to +8: `AWSSQSMigrateToV10.md` #5, #6; `CloudEventsSupport.md` #13–#15; `DynamicMessageDeserialization.md` #3, #5; `DefaultMessageMappers.md` #13. Each may instead be made whole in one fence. No retag |
+| BUILT | 642 | **740–770** | 767 (642 + S4's 125, all BUILT), plus splits (0–8), less new skips (2–9) and what stays FAILED (3–18) |
+| FAILED | 323 | **201–216** | 198 (−125 for S4) plus what stays FAILED and listed: 3–18, the three groups above; off-group 0 |
+| SKIPPED | 27 | **29–36** | D21's three source quotes, 2–3 of them as their lines read at 10.8.0; `KafkaConfiguration.md`'s six `configHook:` fragments, 0–6 |
+| `pagelint` | 0 errors / 271 | **0 errors / 185–210** | 271 less 94 plus what of S4's stays: the 5 untouched, 0–5 a stub builds untouched, the 3–9 new skips, 0–10 declared `// ...` that keep their omission, 0–4 on a split's new fence. Off-group 0 |
+| `symbolcheck` | 24 entries, 14 silenced | **unmoved** | the S4 pages carry 2 of the 14 silenced; whether `compressionType:`, `circuitBreakerTimeInMilliseconds` or `LogProvider` earn a row is read at 6.5 |
+| scaffold rule | 67 units | **74–81 units**, 0 violations, 0 compile errors | 3 S4 pages have units (`MessageMappersContext`, `TransportConfigurationContext`, `S3LuggageStoreContext`); 7–14 of the other fourteen need one, fewer where a transport page shares `TransportConfigurationContext` |
+| pin rule | 4 pages | **unmoved**, 0 violations | `S3LuggageStore.md` #1 fails only `CS0103` `credentials` on the V4 pin, the namespace resolving; a unit or a declaration builds it |
+| assemblies | 553 | **unmoved** | every package S4 names is pinned (AsyncAPI, AWSSQS, Azure Service Bus, Kafka, both RMQ, the AWS transformers) |
+| `optioncheck` | 0 / 59 / 529 | **0 mismatches, 59 / 529 unless a repair adds a row** | five S4 pages carry marked tables; the `circuitBreakerTimeInMilliseconds` prose is a list, not a marked table |
+| `linkcheck` · `versioncheck` · `pagelint --plant` | 168 / 0 · 0 of 18 · 5 / 5 | **unmoved** | |
+
 ### Phase 7 — S5, the remaining five sections *(7 tasks, one PR)*
 
 - [ ] **Task 7.1:** Predict phase 7's gate movement
@@ -2204,7 +2309,7 @@ the work. `tools/README.md` rows 2 and 9 now give the close's figures.
   - Output: as 3.2's, for S5. The three V4 blocks are BUILT or listed with a diagnostic that is not
     `CS0234 … V4` (AC11, with 3.3 and 6.2)
 - [ ] **Task 7.3:** Repair S5's hard blocks
-  - Input: S5's table, hard rows; 10.7.0 source
+  - Input: S5's table, hard rows; Brighter `10.8.0` source, the pinned release
   - Output: as 3.3's, for S5
 - [ ] **Task 7.4:** Repair `TestDoubleOptions.md`'s Shouldly blocks (P0-8)
   - Input: design § *Page Repair Rules*, the Shouldly row; 2.7's pin
