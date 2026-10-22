@@ -127,3 +127,11 @@ contents/AgreementDispatcher.md	AgreementDispatcherContext	-	-
 contents/PipelineValidation.md	PipelineValidationContext	-	-
 contents/UsingTheContextBag.md	UsingTheContextBagContext	-	-
 contents/ShowMeTheCode.md	ShowMeTheCodeContext	-	-
+contents/DarkerBasicConfiguration.md	DarkerBasicConfigurationContext	-	-
+contents/EFCoreQueryIntegration.md	EFCoreQueryIntegrationContext	-	-
+contents/QueryPatterns.md	DarkerQueryPatternsContext	-	-
+contents/HowServiceActivatorWorks.md	HowServiceActivatorWorksContext	-	-
+contents/ImplementAQueryHandler.md	ImplementAQueryHandlerContext	-	-
+contents/QueriesAndQueryObjects.md	QueriesAndQueryObjectsContext	-	-
+contents/QueryPipeline.md	QueryPipelineContext	-	-
+contents/ReactorAndProactor.md	ReactorAndProactorContext	-	-

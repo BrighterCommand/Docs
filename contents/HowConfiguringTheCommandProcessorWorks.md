@@ -40,6 +40,8 @@ YOu can use our **SubcriberRegistry** regardless of your DI framework.
 Register your handlers with your **Subscriber Registry**
 
 ``` csharp
+using Paramore.Brighter;
+
 var registry = new SubscriberRegistry();
 registry.Register<GreetingCommand, GreetingCommandHandler>();
 ```
@@ -47,10 +49,12 @@ registry.Register<GreetingCommand, GreetingCommandHandler>();
 We also support an initializer syntax
 
 ``` csharp
+using Paramore.Brighter;
+
 var registry = new SubscriberRegistry()
 {
     {typeof(GreetingCommand), typeof(GreetingCommandHandler)}
-}
+};
 ```
 
 ## Handler Factory
@@ -59,32 +63,31 @@ We don't know how to construct your handler so we call a factory, that you provi
 
 Instead, we take a dependency on an interface for a handler factory, and you implement that. Within the handler factory you need to construct instances of your types in response to our request to create one.
 
-For this you need to implement the interface:  **IAmAHandlerFactory**.
+For this you implement `IAmAHandlerFactorySync` for handlers derived from `RequestHandler<T>`, and `IAmAHandlerFactoryAsync` for those derived from `RequestHandlerAsync<T>`. Both extend `IAmAHandlerFactory`, whose `CreatePipelineScope` offers a DI scope for one pipeline to resolve from.
 
 Brighter manages the lifetimes of handlers, as we consider the request pipeline to be a scope, and we will call your factory again informing that we have terminated the pipeline and finished processing the request. You should take any required action to clear up the handler and its dependencies in response to that call.
 
-You can implement the Handler Factory using an IoC container. This is what Brighter does with .NET Core 
+You can implement the Handler Factory using an IoC container. This is what Brighter does with .NET Core's container, in `ServiceProviderHandlerFactory`. If all you have is a factory method, Brighter's `SimpleHandlerFactorySync` and `SimpleHandlerFactoryAsync` wrap one.
 
-For example using [TinyIoC Container](https://github.com/grumpydev/TinyIoC):
+For example, over a container that resolves a type. Here it is .NET's `IServiceProvider`; substitute your DI framework's equivalent:
 
 ``` csharp
-internal class HandlerFactory : IAmAHandlerFactory
+using System;
+using Paramore.Brighter;
+
+internal class HandlerFactory(IServiceProvider container) : IAmAHandlerFactorySync
 {
-    private readonly TinyIoCContainer _container;
+    // A DI scope for one pipeline to resolve its handlers from, or null when you have none to offer
+    public IAmAScope? CreatePipelineScope() => null;
 
-    public HandlerFactory(TinyIoCContainer container)
+    public IHandleRequests Create(Type handlerType, IAmALifetime lifetime)
     {
-        _container = container;
+        return (IHandleRequests)container.GetService(handlerType)!;
     }
 
-    public IHandleRequests Create(Type handlerType)
+    public void Release(IHandleRequests handler, IAmALifetime lifetime)
     {
-        return (IHandleRequests)_container.GetInstance(handlerType);
-    }
-
-    public void Release(IHandleRequests handler)
-    {
-        _container.Release(handler);
+        (handler as IDisposable)?.Dispose();
     }
 }
 ```
@@ -206,6 +209,10 @@ var policyRegistry = new DefaultPolicy() {
 When you attribute your code, you then use the key to attach a specific policy:
 
 ``` csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 [RequestLogging(step: 1, timing: HandlerTiming.Before)]
 [UsePolicy(Globals.MYRETRYPOLICY, step: 2)]
 public override TaskReminderCommand Handle(TaskReminderCommand command)
@@ -224,6 +231,10 @@ public override TaskReminderCommand Handle(TaskReminderCommand command)
 If you need multiple policies then you can pass them as an array. We evaluate them left to right.
 
 ``` csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 [RequestLogging(step: 1, timing: HandlerTiming.Before)]
 [UsePolicy(new [] {Globals.MYRETRYPOLICY, Globals.MYCIRCUITBREAKER}, step: 2)]
 public override TaskReminderCommand Handle(TaskReminderCommand command)

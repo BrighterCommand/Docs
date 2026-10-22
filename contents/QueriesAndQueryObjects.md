@@ -28,12 +28,21 @@ All queries in Darker implement the `IQuery<TResult>` interface, which is a mark
 ### Interface Definition
 
 ```csharp
-public interface IQuery<out TResult>
+namespace Paramore.Darker
 {
+    // ... XML documentation omitted
+
+    public interface IQuery
+    {
+    }
+
+    public interface IQuery<out TResult> : IQuery
+    {
+    }
 }
 ```
 
-The interface itself has no methods or properties - it simply marks a class as a query and specifies what type of result the query will return.
+Neither interface has methods or properties. `IQuery<TResult>` marks a class as a query and specifies what type of result the query will return; the non-generic `IQuery` is the base every query shares.
 
 ### Type Parameter
 
@@ -135,6 +144,8 @@ This query supports multiple optional filter parameters, allowing flexible searc
 Use nullable types for optional parameters:
 
 ```csharp
+using Paramore.Darker;
+
 public sealed class GetOrdersPageQuery : IQuery<PagedResult<Order>>
 {
     public GetOrdersPageQuery(int pageNumber, int pageSize, string? sortBy = null)
@@ -155,6 +166,10 @@ public sealed class GetOrdersPageQuery : IQuery<PagedResult<Order>>
 For very complex queries, consider using a separate filter object:
 
 ```csharp
+using System;
+using System.Collections.Generic;
+using Paramore.Darker;
+
 public sealed class ProductSearchQuery : IQuery<IReadOnlyList<Product>>
 {
     public ProductSearchQuery(ProductSearchFilter filter)
@@ -186,6 +201,8 @@ Query objects should be immutable - once created, their state cannot be changed.
 **Use read-only properties:**
 
 ```csharp
+using Paramore.Darker;
+
 public sealed class GetOrderQuery : IQuery<Order>
 {
     public GetOrderQuery(int orderId)
@@ -200,23 +217,28 @@ public sealed class GetOrderQuery : IQuery<Order>
 **Or use init-only setters (C# 9+):**
 
 ```csharp
-public sealed class GetCustomerQuery : IQuery<Customer>
-{
-    public int CustomerId { get; init; }
-    public bool IncludeOrders { get; init; }
-}
+using Paramore.Darker;
 
-// Usage:
+// Usage: create the query with an object initializer
 var query = new GetCustomerQuery
 {
     CustomerId = 123,
     IncludeOrders = true
 };
+
+// The query, with init-only properties
+public sealed class GetCustomerQuery : IQuery<Customer>
+{
+    public int CustomerId { get; init; }
+    public bool IncludeOrders { get; init; }
+}
 ```
 
 **Avoid mutable properties:**
 
 ```csharp
+using Paramore.Darker;
+
 // Bad - mutable query
 public class GetProductQuery : IQuery<Product>
 {
@@ -229,6 +251,8 @@ public class GetProductQuery : IQuery<Product>
 Queries behave like value objects - their identity is based on their values, not on object reference. Two query objects with the same parameter values should be considered equal.
 
 ```csharp
+using Paramore.Darker;
+
 public sealed class GetOrderQuery : IQuery<Order>
 {
     public GetOrderQuery(int orderId)
@@ -260,6 +284,9 @@ Keep query internals simple and focused on data. Any computed or derived values 
 **Good encapsulation:**
 
 ```csharp
+using System;
+using Paramore.Darker;
+
 public sealed class GetOrdersPageQuery : IQuery<PagedResult<Order>>
 {
     public GetOrdersPageQuery(int pageNumber, int pageSize)
@@ -281,6 +308,9 @@ public sealed class GetOrdersPageQuery : IQuery<PagedResult<Order>>
 **Avoid business logic in queries:**
 
 ```csharp
+using System.Collections.Generic;
+using Paramore.Darker;
+
 // Bad - business logic in query
 public sealed class GetDiscountedProductsQuery : IQuery<IReadOnlyList<Product>>
 {
@@ -300,35 +330,35 @@ Consistent naming helps developers understand what a query does at a glance.
 ### Recommended Patterns
 
 **GetXQuery** - Retrieve a single item (expected to exist):
-```csharp
+```text
 GetOrderQuery
 GetCustomerQuery
 GetProductDetailsQuery
 ```
 
 **GetXsQuery or GetXListQuery** - Retrieve a collection:
-```csharp
+```text
 GetOrdersQuery
 GetCustomersQuery
 GetProductListQuery
 ```
 
 **FindXQuery** - Retrieve a single item (may not exist, returns null):
-```csharp
+```text
 FindCustomerByEmailQuery
 FindOrderQuery
 FindUserQuery
 ```
 
 **SearchXQuery** - Search with criteria:
-```csharp
+```text
 SearchProductsQuery
 SearchOrdersQuery
 SearchCustomersQuery
 ```
 
 **ListXQuery** - Retrieve a list (alternative to GetXsQuery):
-```csharp
+```text
 ListActiveOrdersQuery
 ListRecentProductsQuery
 ```
@@ -336,6 +366,9 @@ ListRecentProductsQuery
 ### Naming Examples
 
 ```csharp
+using System.Collections.Generic;
+using Paramore.Darker;
+
 // Good query names
 public sealed class GetOrderQuery : IQuery<Order> { }
 public sealed class GetOrdersQuery : IQuery<IReadOnlyList<Order>> { }
@@ -459,6 +492,9 @@ This allows multiple services to reference the same query definitions without du
 Queries for paginated data:
 
 ```csharp
+using System;
+using Paramore.Darker;
+
 public sealed class GetOrdersPageQuery : IQuery<PagedResult<OrderSummary>>
 {
     public GetOrdersPageQuery(int pageNumber, int pageSize = 20)
@@ -482,6 +518,9 @@ public sealed class GetOrdersPageQuery : IQuery<PagedResult<OrderSummary>>
 Queries with filter criteria:
 
 ```csharp
+using System.Collections.Generic;
+using Paramore.Darker;
+
 public sealed class SearchProductsQuery : IQuery<IReadOnlyList<Product>>
 {
     public SearchProductsQuery(
@@ -508,6 +547,8 @@ public sealed class SearchProductsQuery : IQuery<IReadOnlyList<Product>>
 Queries that return specific fields:
 
 ```csharp
+using Paramore.Darker;
+
 public sealed class GetCustomerSummaryQuery : IQuery<CustomerSummary>
 {
     public GetCustomerSummaryQuery(int customerId)
@@ -533,6 +574,9 @@ public class CustomerSummary
 Queries that return calculated or aggregated data:
 
 ```csharp
+using System;
+using Paramore.Darker;
+
 public sealed class GetSalesStatisticsQuery : IQuery<SalesStatistics>
 {
     public GetSalesStatisticsQuery(DateTime startDate, DateTime endDate)

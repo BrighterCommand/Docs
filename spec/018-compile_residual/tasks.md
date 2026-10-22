@@ -1787,25 +1787,388 @@ figures, and its 552 is 553 (D13).
 
 ### Phase 5 — S3, Darker; Understanding Brighter *(6 tasks, one PR)*
 
-- [ ] **Task 5.1:** Predict phase 5's gate movement
+- [x] **Task 5.1:** Predict phase 5's gate movement
   - Input: § *The groups*, S3; recurrence greps for S3's defects
   - Output: § *Phase 5 as executed*, *Predicted*, as 3.1's
-- [ ] **Task 5.2:** Repair S3's reachable blocks
+- [x] **Task 5.2:** Repair S3's reachable blocks
   - Input: S3's table, reachable rows
   - Output: as 3.2's, for S3
-- [ ] **Task 5.3:** Repair S3's hard blocks
-  - Input: S3's table, hard rows; Darker `4.1.1` and Brighter `10.7.0` source
+- [x] **Task 5.3:** Repair S3's hard blocks
+  - Input: S3's table, hard rows; Darker `4.1.1` and Brighter `10.8.0` source, the pinned releases
   - Output: as 3.3's, for S3. `QueryPipeline.md`'s 12 *parse* blocks are each made whole, skipped
     with an accepted reason, or listed
-- [ ] **Task 5.4:** Run S3's behavioural claims (AC10)
+- [x] **Task 5.4:** Run S3's behavioural claims (AC10)
   - Input: S3's changed blocks
   - Output: a *Claim / Case / Control* table, each row naming `probe/s3/<name>/Program.cs`
-- [ ] **Task 5.5:** Second pass for S3
+- [x] **Task 5.5:** Second pass for S3
   - Input: 5.1's recurrences; rulings asked
   - Output: as 3.6's
-- [ ] **Task 5.6:** Close phase 5
+- [x] **Task 5.6:** Close phase 5
   - Input: § 1 obligations 6, 7, 19
   - Output: as 3.7's
+
+### Phase 5 as executed
+
+**Measured at phase start, `0fc79a3`** (#203's merge). `--report` → **994 / 536 / 441 / 17, 0 findings**,
+exit 0; `--classify` → 97 parse, 26 built-by-using, 71 defect, 29 same-page, 25 values, 193 page-type,
+settled in 3 rounds. 553 reference assemblies on each pin (`--report`'s own scope lines); scaffold rule
+60 units. `pagelint` 0 errors / **346** warnings; `symbolcheck` 24 entries, 14 silenced; `linkcheck`
+168 / 0; `versioncheck` 0 of 18.
+
+#### Predicted (5.1)
+
+**S3 is identical row for row** to § *The groups*: `groups.py` at `0fc79a3` gives 10 pages, **137**
+FAILED (31 parse, 7 built-by-using, 16 defect, 5 same-page, 7 values, 71 page-type), 8 BUILT,
+6 with nothing BUILT. Two methods: the FAILED column, 137; `grep` over `--report` on the ten pages,
+137, with 8 BUILT and 1 SKIPPED (`ReactorAndProactor.md` #11). The S3 pages hold **146** C# blocks.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| Task 5.3: *"Brighter `10.7.0` source"* | the pins are 10.8.0 | the task says 10.8.0 |
+| S3's table: **16 defect** blocks | the second compile's diagnostics (below): **5** are API defects, **2** are a missing `using` the classifier misread, **6** are fragments or alternatives in one fence, and **3** are misreads | the table stands, being the instrument's; the repairs follow the reading |
+
+**Reading S3's 16 defect blocks** with `probe/second.py` over the ten pages (600 diagnostic lines),
+each against the 10.8.0 and 4.1.1 tags:
+
+| Page | # | Second compile | Reading against the pins | Repair |
+|---|---:|---|---|---|
+| `HowConfiguringTheCommandProcessorWorks.md` | 3 | `CS0535` `CreatePipelineScope()`; `CS0246` `TinyIoCContainer` | **defect.** A V9 handler factory: `Create(Type)` and `Release(IHandleRequests)`. At 10.8.0 `IAmAHandlerFactory` declares only `CreatePipelineScope()`, and `IAmAHandlerFactorySync` adds `Create(Type, IAmALifetime)` and `Release(IHandleRequests, IAmALifetime)`. The prose before it names `IAmAHandlerFactory` | 5.3, the V10 interface, in the block and the prose |
+| `HowServiceActivatorWorks.md` | 7 | `CS1739` `deadLetterChannelName` on `Subscription` | **defect.** `Subscription<T>` has no dead-letter parameters at 10.8.0; only `RmqSubscription` (both RMQ packages) takes `deadLetterChannelName` and `deadLetterRoutingKey`, as `ErrorHandlingOptions.md` already says | 5.3, `RmqSubscription<T>`, saying dead letters are set per transport |
+| `HowServiceActivatorWorks.md` | 13 | `CS0117` `StopChannel`, `StartChannel`; `CS7036` `subscriptionName` | **defect.** `ConfigurationCommandType` is `CM_STOPALL`, `CM_STARTALL`, `CM_STOPCHANNEL`, `CM_STARTCHANNEL` (`ConfigurationCommand.cs:30`), and the constructor takes `(ConfigurationCommandType, SubscriptionName)` (`:63`) | 5.3 |
+| `ImplementAQueryHandler.md` | 13 | `CS0535` `IQueryHandler.Context`, `Fallback`, `FallbackAsync` | **defect.** At Darker 4.1.1 `IQueryHandler<TQuery, TResult>` declares `Execute`, `Fallback`, `ExecuteAsync` and `FallbackAsync`, and `IQueryHandler` a `Context`; the class implements two of the five | 5.3, every member, or the page's advice changed; judged at the repair |
+| `DarkerBasicConfiguration.md` | 9 | `CS1061` `AddSwaggerGen`, `UseSwagger`, `UseSwaggerUI`; `CS1929` `IsDevelopment` | **an API the pin does not carry**: Swashbuckle, which the page never names and which has nothing to do with Darker. `CS1929` is a misread: without `Microsoft.Extensions.Hosting` the classifier found the obsolete `IHostingEnvironment` overload | 5.3: the Swagger lines removed, or the package named and pinned; judged at the repair |
+| `CQRSWithBrighterAndDarker.md` | 4 | `CS1501` `GetConnectionString` takes 1 argument | **a missing `using`**, misread as a defect. Without `Microsoft.Extensions.Configuration`, the only `GetConnectionString` in scope is EF Core's `RelationalDatabaseFacadeExtensions.GetConnectionString(this DatabaseFacade)` | 5.2, the `using` |
+| `DarkerBasicConfiguration.md` | 10 | `CS1501`, as above | as above | 5.2, the `using` |
+| `CQRSWithBrighterAndDarker.md` | 1 | `CS0111` `GetCustomer` | **alternatives** in one fence: a *Bad* and a *Good* `GetCustomer`, as members with no class | 5.3, split or made whole |
+| `HowServiceActivatorWorks.md` | 1 | `CS0128` `message`; `CS0103` `channel`, `timeOut` | **alternatives**: a Reactor and a Proactor receive, each declaring `message`. `Receive(TimeSpan?)` and `ReceiveAsync(TimeSpan?, CancellationToken)` match 10.8.0 (`IAmAChannelSync.cs:55`, `IAmAChannelAsync.cs:59`) | 5.3, split or made whole |
+| `QueryPatterns.md` | 2 | `CS0128` `orders` ×2 | **alternatives**: one *Bad* and two *Good* queries, each declaring `orders` | 5.3, split or made whole |
+| `QueryPatterns.md` | 3 | `CS0111` `ExecuteAsync` | **alternatives**: a *Good* and a *Bad* `ExecuteAsync` | 5.3, split or made whole |
+| `QueriesAndQueryObjects.md` | 8 | `CS0116`, `CS0825` | a fragment: a type declaration followed by its *Usage* statements | 5.3, made whole |
+| `QueryPipeline.md` | 8 | `CS0161` | a fragment: a method whose body is a comment. `RetryableQuery(int step, string policyName)` matches 4.1.1 (`RetryableQueryAttribute.cs:11`) | 5.3, a body |
+| `CQRSWithBrighterAndDarker.md` | 10 | `CS1061` `'TEntity'` has no `Id` | **a misread**: `ApplicationDbContext` and the DTOs are the reader's, so `Orders` resolved to nothing. *page-type* | 5.2, stubs |
+| `DarkerBasicConfiguration.md` | 5 | `CS0029` `TResult` to `int` | **a misread**: with `GetCountQuery` undeclared, `Execute` cannot infer its result. *page-type* | 5.2, a stub `GetCountQuery : IQuery<int>` |
+| `QueryPatterns.md` | 5 | `CS1955` `Ok` | **a misread**: a controller action outside its controller, as `ShowMeTheCode.md` #1 was. *page-type* | 5.2 |
+
+**Recurrence greps (obligation 20), run as written at `0fc79a3`:**
+
+| Defect | Grep | Hits | Off-group |
+|---|---|---:|---|
+| V9 handler factory | `grep -rnE 'IHandleRequests\??\s+Create\(Type \w+\)\|void Release\(IHandleRequests \w+\)\|: IAmAHandlerFactory(\s\|$\|,\|\{)' contents/` | **3** lines in 1 block (`HowConfiguringTheCommandProcessorWorks.md` #3) | none |
+| `deadLetterChannelName` off `RmqSubscription` | `grep -rn deadLetterChannelName contents/` | **4**: 2 are `ErrorHandlingOptions.md` and `RabbitMQConfiguration.md` prose on `RmqSubscription`, which is right | none. On-group: `HowServiceActivatorWorks.md` #7, and **#15**, a lone argument under *Use Dead Letter Queues* (*parse*) |
+| `ConfigurationCommandType` members | `grep -rnE 'ConfigurationCommandType\.\w+' contents/`; `grep -rn 'new ConfigurationCommand(' contents/` | **2**; **2**, all `HowServiceActivatorWorks.md` #13 | none |
+| `IQueryHandler<,>` implemented directly | `grep -rnE ': IQueryHandler<' contents/` | **1** (`ImplementAQueryHandler.md` #13) | none |
+| Swashbuckle unpinned | `grep -rnE 'AddSwaggerGen\|UseSwagger' contents/` | **3** lines in 1 block (`DarkerBasicConfiguration.md` #9) | none |
+
+**The off-group term is zero.** No S3 defect recurs on a page outside S3.
+
+**`pagelint`, block by block** (phase 4's lesson: predict a block's `using`s only where a repair
+touches it). S3's **87** warnings (4 + 2 + 5 + 16 + 12 + 19 + 4 + 14 + 11 on nine pages, `--per-page`;
+`DarkerBasicConfiguration.md` has none), read against `--report` and `--classify`:
+- **2 on blocks no repair touches**: `QueriesAndQueryObjects.md` #1 (BUILT) and `ReactorAndProactor.md`
+  #11 (SKIPPED). They stay
+- **10 on FAILED blocks that already declare `// ...`**: `EFCoreQueryIntegration.md` #1, #3;
+  `HowServiceActivatorWorks.md` #7, #10; `QueryPipeline.md` #12, #16, #17, #22, #23;
+  `ReactorAndProactor.md` #12. Each keeps its warning unless its repair gives it `using`s
+- **7 on FAILED blocks whose first compile needed no `using`** (`page-type` or `values` at both
+  compiles): `HowServiceActivatorWorks.md` #2, #3, #6, #9; `ImplementAQueryHandler.md` #15;
+  `QueryPipeline.md` #18, #19. A stub alone may build them, and they then keep their warning, as
+  phase 4's eleven did
+- **68 on the other FAILED blocks** (23 *parse*, 45 needing a `using`), which their repairs edit
+
+**Predicted:**
+
+| Gate | At `0fc79a3` | Predicted at the close | Mechanism |
+|---|---|---|---|
+| corpus | 994 | **994–1,000** | splits only, where a fence holds alternatives: `CQRSWithBrighterAndDarker.md` #1, `HowServiceActivatorWorks.md` #1, `QueryPatterns.md` #2 (three) and #3, `QueriesAndQueryObjects.md` #8, up to +6. Each may instead be made whole in one fence |
+| BUILT | 536 | **662–676** | 673, plus splits (0–6), less what stays FAILED (3–8) and any SKIPPED (0–3). S3's 146 blocks less the SKIPPED one, all BUILT, would be 673. The 5 *same-page* blocks (`CQRSWithBrighterAndDarker.md` #2, #8; `ImplementAQueryHandler.md` #14; `QueriesAndQueryObjects.md` #22, #23) are the likely stays; phases 3 and 4 kept 6 of their 236 FAILED (§ *Blocks that stay FAILED*) |
+| FAILED | 441 | **307–312** | 304 (−137 for S3) plus what stays FAILED and listed; off-group 0 |
+| SKIPPED | 17 | **17–20** | a V9 form found unlabelled on an S3 page, labelled as such; `HowConfiguringTheCommandProcessorWorks.md` is the page that shows V9-era code |
+| `pagelint` | 0 errors / 346 | **0 errors / 266–281** | 346 less 65–80: of the 85 warnings on FAILED blocks, 5–20 stay (the 10 declared `// ...`, the 7 a stub may build untouched, and any repaired fragment that keeps an omission without `using`s). Off-group 0 |
+| `symbolcheck` | 24 entries, 14 silenced | **unmoved** | no S3 page holds a watchlisted name; whether `IHandleRequests Create(Type)` or `ConfigurationCommandType.StopChannel` earn a row is read at 5.5 |
+| scaffold rule | 60 units | **60–69 units**, 0 violations, 0 compile errors | a unit per S3 page that needs a stub; `HowConfiguringTheCommandProcessorWorks.md` has one, and `QueryPatterns.md` may share `DarkerQueryPatternsContext` |
+| assemblies | 553 | **553–554** | unmoved, unless `DarkerBasicConfiguration.md` #9's repair pins Swashbuckle |
+| `linkcheck` · `versioncheck` · `pagelint --plant` | 168 / 0 · 0 of 18 · 5 / 5 | **unmoved** | |
+
+#### The repairs (5.2)
+
+**S3's reachable rows, 85 blocks** (7 built-by-using, 7 values, 71 page-type), plus the five 5.1 read
+as misreads (`CQRSWithBrighterAndDarker.md` #4, #10; `DarkerBasicConfiguration.md` #5, #10;
+`QueryPatterns.md` #5). **72 of the 85 build**, and 13 do not: 8 turned out *same-page* (below) and 5
+wait on a ruling (R8). Of the misreads, `DarkerBasicConfiguration.md` #5 and #10 build; the other three
+are *same-page*. Three blocks whose page was otherwise whole were repaired with it, as 4.2 repaired
+`AgreementDispatcher.md` #7: `DarkerBasicConfiguration.md` #9 (ledger 52) and
+`ImplementAQueryHandler.md` #13 (ledger 55) build, and `QueriesAndQueryObjects.md` #22 and #23, classed
+*same-page* because block 1 lists Darker's `IQuery`, needed only `using Paramore.Darker;` and build.
+Seven scaffold units are new (`DarkerBasicConfiguration`, `EFCoreQueryIntegration`,
+`HowServiceActivatorWorks`, `ImplementAQueryHandler`, `QueriesAndQueryObjects`, `QueryPipeline`,
+`ReactorAndProactor`) and two extended (`HowConfiguringTheCommandProcessorWorks`, and
+`DarkerQueryPatterns`, which now also serves `QueryPatterns.md`), with **0** unit-rule violations.
+
+**Measured after 5.2:** `--report` → **994 / 614 / 363 / 17**; 83 findings, all expected: 78 BUILT
+blocks not yet baselined, and 5 BUILT blocks whose page gained a unit (`ImplementAQueryHandler.md`
+#1, #2; `QueriesAndQueryObjects.md` #1–#3). 67 units. `pagelint` 0 errors / **304**; `--changed
+origin/master` 0 errors. `linkcheck` 168 / 0. `symbolcheck` 24 / 14 silenced.
+
+**Why eight *page-type* rows are *same-page*.** The classifier calls a block *same-page* only when
+every name it lacks is declared on the page. A block lacking one page-declared type and one
+undeclared one is *page-type*, and stays FAILED all the same, since no stub may supply a type
+another block declares (unit rule 2). `ImplementAQueryHandler.md` #3, #5, #6, #16, #21, #23 and
+`CQRSWithBrighterAndDarker.md` #3, #5 are that case. With the three misreads that are *same-page*,
+the three original *same-page* rows still FAILED (`CQRSWithBrighterAndDarker.md` #2, #8;
+`ImplementAQueryHandler.md` #14) and R8's five, **19** S3 blocks now look unlikely to build, against
+5.1's 3–8. 5.6 reconciles it.
+
+**What the reachable rows hid.** As in phases 3 and 4, a block that did not compile had not been
+checked for anything else:
+- **The message pump's own calls (ledger 53).** `HowServiceActivatorWorks.md` § *Message Flow* quotes
+  the pump's private methods. Read against `Reactor.cs` and `Proactor.cs` at 10.8.0, four of five
+  blocks were wrong. The section now quotes each call as the pump makes it, with its file and line, and
+  puts *Request Context Creation* before *Message Deserialization*, the order the pump runs them in.
+  No link named either anchor (`grep -rn 'HowServiceActivatorWorks.md#' contents/ SUMMARY.md` → 0)
+- **A router's return type (ledger 54).** `HowServiceActivatorWorks.md` #9 returned `Type[]`; it now
+  uses collection expressions, as `AgreementDispatcher.md` does
+- **Darker's interfaces (ledger 55).** `ImplementAQueryHandler.md` #12 listed `IQueryHandler<,>` as two
+  methods, and #13 implemented the listing, which is why it failed. Both now follow 4.1.1, and the page
+  says the base classes supply `Fallback` and `FallbackAsync`. `QueriesAndQueryObjects.md` #1, already
+  BUILT, lacked `IQuery<TResult>`'s base
+- **Dependencies never declared.** `ImplementAQueryHandler.md` #10, #11, #17–#21, #23 and
+  `ReactorAndProactor.md` #1, #4 used a `_repository` no block declared. Each now takes its repository
+  by primary constructor (phase 3's rule). One static stub could not have served them: `GetByIdAsync`
+  returns a customer in one block and an order in another
+- `QueryPatterns.md` #5, a controller action shown alone, is made whole in its controller, as
+  `ShowMeTheCode.md` #1 was (D15). It is *same-page* on `GetProductCatalogQuery`
+
+**For 5.3:** `HowServiceActivatorWorks.md` #15 is ledger 53's neighbour, not its recurrence: a lone
+`deadLetterChannelName:` argument, repaired with #7. `ImplementAQueryHandler.md` #22 declares an
+`UnauthorizedAccessException` that shadows the BCL's, and #16 registers a `GetPersonQueryHandler` no
+block declares; both are read at 5.5. **For 5.4:** the page now says the base classes' `Fallback`
+returns `default(TResult)` when the `[FallbackPolicy]` decorator calls it, a claim to run.
+
+**Ruling asked** (obligation 21: no accepted skip reason fits), and **ruled 2026-10-20 as D21**, below the table:
+
+| # | Block | Question |
+|---:|---|---|
+| R8 | `HowServiceActivatorWorks.md` #1–#6 | Each quotes one line of the Reactor or Proactor message loop (#1, added at 5.3, its two `Receive` calls), which call private methods (`InitRequestContext`, `TranslateMessage`, `InvokeDispatchRequest`). The Reactor and Proactor methods take the same parameters and differ only in return type, so no unit can stub both, and no reader can call them. The lines are now 10.8.0's. Accept a fourth skip reason, *"a line quoted from Brighter's source, calling a private member"*, with the file and line cited in the block? Or retag them `text`, or list them as FAILED? |
+
+**R8 ruled (D21).** A fourth accepted skip reason, widened from the one asked: *"a line quoted from Brighter's source, calling a private member or reading the pump's own state"*, with the file and line cited in the block. The question was wrong about #1: `Channel.Receive` is public, and #1 fails because the pump's `Channel` is an `IAmAChannelSync` in the Reactor and an `IAmAChannelAsync` in the Proactor, so the reason was widened to cover it. All eight cited lines were read at the 10.8.0 tag and match; #2, which cited its lines only in the prose, now cites them in the block. Each block carries its marker. S3 after the ruling: **114 BUILT, 19 FAILED** (all *same-page*), **11 SKIPPED**
+
+#### The repairs (5.3)
+
+**S3's hard rows, 40 blocks** (31 *parse* and the 9 *defects* 5.2 left), counted as they stood at
+5.2. Every one is made whole, skipped with an accepted reason, retagged, or listed:
+- **Made whole, BUILT: 26.** `QueryPipeline.md`'s 13 (#8, #12–#17, #20–#25, every *parse* block the
+  task names) now build on one running example, a `GetOrderQuery` answered through an external API:
+  attribute lists gain the method they decorate, #14's two policies their two handlers, #15's delays
+  their policy, #21's registration its registry and `AddPolicies`. `EFCoreQueryIntegration.md` #1–#3,
+  whose `(...)` parameters became the real ones. `HowConfiguringTheCommandProcessorWorks.md` #2 (a
+  missing `;`) and #3 (ledger 56). `HowServiceActivatorWorks.md` #7 (ledger 59), #11 (ledger 57), #13
+  (ledger 58), #14. `QueriesAndQueryObjects.md` #8, its usage moved above the type it creates.
+  `QueryPatterns.md` #1–#3, its alternatives given distinct names
+- **Split: 3**, each a ✅ and ❌ pair that cannot share a wrapper (§ *Splits*):
+  `CQRSWithBrighterAndDarker.md` #1, `EFCoreQueryIntegration.md` #1, `QueryPatterns.md` #3
+- **Skipped: 4**, each with an accepted reason. `ImplementAQueryHandler.md` #4, #8: *a method signature
+  shown for comparison*. `HowServiceActivatorWorks.md` #15, #17: *a fragment of the configuration shown
+  whole in block* 7 and 10, which the prose now links
+- **Retagged `text`: 5.** `QueriesAndQueryObjects.md` #13–#17 were lists of query names
+- **Made whole, still FAILED: 5**, six blocks after the split, each *same-page* or R8's and listed: `CQRSWithBrighterAndDarker.md` #1, #2
+  (old #1) and #12–#14 (old #11–#13, whose bodies lacked a `return`); `HowServiceActivatorWorks.md`
+  #1 joins R8
+
+**Measured after 5.3:** `--report` → **992 / 642 / 329 / 21**; 113 findings, all expected: 107 BUILT
+blocks not yet baselined, 5 whose page gained a unit, and `CQRSWithBrighterAndDarker.md` #6
+*"stopped building"*, which is the split moving old #6 (BUILT, now #7) off its ordinal. 67 units,
+0 violations. S3: **114 BUILT, 25 FAILED** (19 *same-page*, 6 R8), **5 SKIPPED**.
+
+**Said and measured, at 5.2 and corrected here.** 5.2 wrote on `ImplementAQueryHandler.md` that the
+base classes' `Fallback` and `FallbackAsync` return `default(TResult)`. At 4.1.1 each base class
+returns it only for its own mode: `QueryHandler.Fallback` and `QueryHandlerAsync.FallbackAsync`; the
+other mode's members throw `NotImplementedException`. The page now says so, and 5.4 runs it.
+
+**What the hard rows hid**, besides ledger 56–59:
+- **Pitfall 4 (ledger 60).** `QueryPipeline.md` said a `[FallbackPolicy]` handler without
+  `FallbackAsync` fails at runtime. `QueryHandlerAsync`'s own returns `default(TResult)`, so the
+  caller gets `null` and no exception. The pitfall now says that; 5.4 runs it with a control
+- **A unit-rule edge.** `EFCoreQueryIntegration.md` never named the entity behind `Orders`, and a
+  `DbSet<T>` needs a class, so no stub could satisfy rule 1. Block 3 now says what it loads (*"each
+  Order with its Customer, and each OrderItem with its Product"*), which names the entity for the
+  reader and the rule alike. `Customers` keeps 5.2's stand-in, the projection's DTO
+
+**For 5.4:** pitfall 4 and the base classes' fallbacks (above); 5.2's `ImplementAQueryHandler.md`
+interface claims are read, not run; the Dispatcher reading `AddConsumers`' instrumentation (ledger 57)
+is read from source and worth a run; `QueryPipeline.md`'s pitfalls 1 (decorator order), 2 (no
+policies) and 3 (an unknown policy name throws `ConfigurationException`) predate the phase and each
+asserts behaviour.
+
+#### Behaviour (5.4, AC10)
+
+**Every run is against the released packages**, Darker **4.1.1** and Brighter **10.8.0**, as
+`probe/s3/<name>/` projects; each prints `ok` or `FAIL` per row and exits 1 on any `FAIL`. Each block
+is copied as the page shows it, the probe's own lines marked `// probe`. `darker-pipeline` runs every
+row in one process, its containers sharing one `ILoggerFactory`, since Darker's decorators cache a
+static logger per generic type. `dispatcher-instrumentation` runs one process per case.
+
+| Claim | Case | Control | Probe | Result |
+|---|---|---|---|---|
+| `QueryPipeline.md` pitfall 1: retry at a lower step than fallback puts the fallback inside it, so nothing is retried | `[RetryableQuery(1)] [FallbackPolicy(2)]`, an API that always fails, the default policies | `[FallbackPolicy(1)] [RetryableQuery(2)]` | `darker-pipeline` | 1 attempt, the fallback's value / 4 attempts, then the fallback's |
+| `QueryPipeline.md` § *Decorator Ordering*: logging at step 1 logs once, the completion marked *(with fallback)*, and no retries | `[QueryLogging(1)] [FallbackPolicy(2)] [RetryableQuery(3)]`, always failing | the same handler succeeding | `darker-pipeline` | 4 attempts, 1 *Executing*, 1 completion *(with fallback)* / 1 completion, unmarked |
+| the same: a query that fails after its last retry logs only its *Executing* line | `[QueryLogging(1)] [RetryableQuery(2)]`, always failing | — (the row above's completion is the control) | `darker-pipeline` | 4 attempts, 1 *Executing*, 0 completions, the exception |
+| the same: logging inside retry logs every attempt, and a completion only for the one that succeeds | `[RetryableQuery(1)] [QueryLogging(2)]`, failing twice | the rows above, logging outside | `darker-pipeline` | 3 attempts, 3 *Executing*, 1 completion |
+| `QueryPipeline.md` pitfall 2: `[RetryableQuery]` with no policies *"will cause runtime errors"* | no `AddDefaultPolicies()` or `AddPolicies()` | `AddDefaultPolicies()` | `darker-pipeline` | the processor builds; the first query throws `MissingHandlerDecoratorException`, *"Handler decorator could not be created for type: …RetryableQueryDecorator…"* / runs. True, and now named |
+| `QueryPipeline.md` pitfall 3: an unknown policy name throws `ConfigurationException` the first time the handler runs | `[RetryableQuery(2, "MyCircuitBreaker")]`, the default registry | the registry holding the name | `darker-pipeline` | the processor builds; the first query throws *"Policy does not exist in policy registry: MyCircuitBreaker"* / runs |
+| `QueryPipeline.md` pitfall 3's ✅ block: a registry holding only `"MyCircuitBreaker"`, passed to `AddPolicies` | the block as it was | the block as repaired, with the two defaults beside the name | `darker-pipeline` | `ConfigurationException` at `AddPolicies`, *"The policy registry is missing the Darker.RetryPolicy policy which is required"* / runs. **Overturned** (ledger 61) |
+| `QueryPipeline.md` pitfall 4 (ledger 60): `[FallbackPolicy]` without `FallbackAsync` answers with `default(TResult)`, no exception | the ❌ handler | `FallbackAsync` overridden; no `[FallbackPolicy]` | `darker-pipeline` | `null` / the override's value; the exception reaches the caller |
+| `ImplementAQueryHandler.md`: each base class's own-mode fallback returns `default(TResult)`; the other mode's `Execute` and fallback throw `NotImplementedException` | `QueryHandler`: `Fallback`, `FallbackAsync`, `ExecuteAsync`; `QueryHandlerAsync`: `FallbackAsync`, `Fallback`, `Execute` | each against the other mode's member | `darker-pipeline` | `default`, `NotImplementedException` ×2, on each base class; and `[FallbackPolicy]` on a throwing `QueryHandler`, through `Execute`, returns `null` |
+| `ImplementAQueryHandler.md` #13: `IQueryHandler<TQuery, TResult>` and `IQueryHandler` have five members; `QueriesAndQueryObjects.md`: `IQuery` and `IQuery<TResult>` have none | reflection over the 4.1.1 assemblies | the same reflection over `IQueryHandler`, which finds its member | `darker-pipeline` | `Context`, `Execute`, `ExecuteAsync`, `Fallback`, `FallbackAsync`; 0 members, `IQuery<T> : IQuery` / 3 |
+| `HowServiceActivatorWorks.md` #11 (ledger 57): the Dispatcher reads its instrumentation from `AddConsumers`' options | `AddConsumers(All)` alone, a message enqueued on the internal bus | `AddConsumers(RequestInformation)` alone | `dispatcher-instrumentation` | the pump's process span carries `messaging.message.body` / it does not |
+| `HowServiceActivatorWorks.md`, the sentence before #11: *"The Command Processor takes its own, separately, from `AddBrighter`'s options"* | `AddConsumers(All)` alone | `AddBrighter(All).Handlers(…)`, then `AddConsumers(RequestInformation)`, the shape of five transport pages' #1 | `dispatcher-instrumentation` | the Command Processor's span under the pump carries `paramore.brighter.request.body`: `AddConsumers`' options configure both / the Command Processor takes `AddBrighter`'s, the pump `AddConsumers`', the handler runs. **Overturned** for an app that calls `AddConsumers` alone (ledger 62) |
+| unstated, found by the control: handlers registered on `AddConsumers`' builder in an app that called `AddBrighter` first | `AddBrighter(All)`, then `AddConsumers(…).Handlers(…)` | the five transport pages' shape, above | `dispatcher-instrumentation` | *"Found 0 pipelines for event: Greeting"*, the message rejected / handled. The page now says to register on `AddBrighter`'s builder; no page shows the failing shape (block scan for both calls: `FAQ.md` #3 and the five transport pages, each registering on `AddBrighter`'s) |
+| `HowServiceActivatorWorks.md` § 3: the pump releases the transform pipeline straight away, or after the handler when a transform left cleanup pending | — | — | read, not run | `Reactor.cs:213–217` at 10.8.0: `if (!delivery.HasPendingCleanup) ReleasePipeline(…)` before `InvokeDispatchRequest` |
+
+**Two claims overturned, each repaired at every recurrence (obligation 21):**
+
+- **Ledger 61.** `QueryPipeline.md` pitfall 3's ✅ block registers `"MyCircuitBreaker"` beside
+  `Constants.RetryPolicyName` and `Constants.CircuitBreakerPolicyName`, and its sentence says
+  `AddPolicies` requires both. Block scan for a block calling `AddPolicies` on a registry with no
+  `RetryPolicyName`: **1** (`QueryPipeline.md` #21) → **0**; `grep -rn -B10 '\.AddPolicies(' contents/ |
+  grep -c 'new PolicyRegistry()'`: **1** → **0**. `DarkerBasicConfiguration.md` #11 and
+  `QueryPipelinePolicies.md` #2 hold both keys already
+- **Ledger 62.** `HowServiceActivatorWorks.md` now says `AddConsumers`' options configure the
+  Command Processor too when it is the only registration, and that an app calling `AddBrighter` first
+  gets two option sets and must register its handlers on `AddBrighter`'s builder
+
+**Pitfall 2 was true and vague**, so it now names the exception and when it is thrown. No ledger
+row: nothing it said was false.
+
+**Measured after 5.4:** `blockcheck --explain QueryPipeline_21 HowServiceActivatorWorks_11` → 0
+diagnostics. `--report` → **992 / 642 / 323 / 27**, 113 findings, as predicted: against 5.3, R8's six
+blocks moved FAILED → SKIPPED (D21), and 5.4's edits, prose and one registry, moved nothing. Two
+methods: the summary line, and `cut -f1` of the rows. `pagelint` 0 / **271**; `linkcheck` and
+`symbolcheck` clean on the two pages.
+
+#### Second pass (5.5)
+
+**Every phase-5 ledger row holds.** Rows 52–62 each give their *After* from their grep, run as
+written at `fcd6f7b`: **0** for every row but 55's second grep, which counts the repaired
+`Fallback` that is now there (**1**). 5.1's five recurrence greps are rows 52, 56, 58, 59 and 55's
+first, so they are among them. No ruling is open.
+
+**Widened, by shape rather than words:**
+
+| Defect | Widened grep | Hits | Reading |
+|---|---|---:|---|
+| 52, an unpinned package in a setup | `swagger\|swashbuckle`, case-blind | 1 | `AsyncAPISupport.md`: *"OpenAPI (Swagger)"*, an analogy in prose |
+| 53, the pump's private calls | `InitRequestContext\|TranslateMessage\|InvokeDispatchRequest\|ReleasePipeline` outside `HowServiceActivatorWorks.md` | 0 | |
+| 54, a route returning an array | `new\[\] *\{ *typeof\|new Type\[\]` | 1 | `AsyncAPISupport.md`: `AssembliesToScan`, an assembly list, not a route |
+| 55, Darker's interfaces listed short | `interface IQuery(Handler)?\b` | 4 | the four repaired listings, each matching 4.1.1 |
+| 56, a V9 handler factory | `Create\(Type\|Release\(IHandleRequests\|TinyIoC\|IAmAHandlerFactory\b` | 5 | the repaired factory (2); `CommandProcessorConfigurationReference.md`'s `handlerFactory` parameter, an `IAmAHandlerFactory` at 10.8.0 (`CommandProcessor.cs:157`); prose on 2 pages naming the family |
+| 57, 62, the consumer's options | block scan for `AddBrighter(` and `AddConsumers(` in one block, and what chains off `AddConsumers` | 6 blocks | `FAQ.md` #3 and #1 of `GcpPubSubConfiguration.md`, `MQTTConfiguration.md`, `MSSQLMessageBroker.md`, `RedisConfiguration.md`, `RocketMQConfiguration.md`: each registers handlers on `AddBrighter`'s builder, the shape 5.4 ran as `transport-pages`, and chains nothing off `AddConsumers` |
+| 58, the control bus | `ConfigurationCommand\|ControlBus\|controlBus` | 11 | the repaired block; `Monitoring.md`'s `IAmAControlBusSender` and `ControlBusSenderFactory`, live at 10.8.0 (phase 4) |
+| 59, dead letters off `RmqSubscription` | `new \w*Subscription<` within 8 lines before a `deadLetter…` argument, not `Rmq` | 5 | `KafkaSubscription` and `SqsSubscription` on `ErrorHandlingOptions.md` (4) and `HandlingPoisonMessages.md`: both take `deadLetterRoutingKey` at 10.8.0 (`IUseBrighterDeadLetterSupport`) |
+| 60, a fallback's failure mode | `fallback` beside `runtime\|throw\|exception\|error\|default(` on the 20 Darker pages | 10 | each matches `darker-pipeline`'s rows |
+| 61, a registry short of the defaults | `new PolicyRegistry\b` | 4 | each registers both `Constants` names |
+| pitfall 2, policies required | `without … AddDefaultPolicies\|AddPolicies`, and the reverse | 4 | the repaired pitfalls 2 and 3, and `QueryPipelinePolicies.md`, which already says `AddPolicies()` requires both names |
+
+**The two blocks 5.3 left to be read here, both defects:**
+
+| Claim | Case | Control | Probe | Result |
+|---|---|---|---|---|
+| `ImplementAQueryHandler.md` #16: manual registration builds each handler with `Activator.CreateInstance`, and the sentence after it says each handler needs a parameterless constructor | the block, less the `GetPersonQueryHandler` no block declares, executing `GetPeopleQuery` and a `GetOrderQuery` whose handler takes `IOrderRepository`, as every `GetOrderQueryHandler` on the page does | the factory constructing that handler with its repository | `darker-pipeline` | `GetPeopleQuery` answered; `MissingMethodException` on `GetOrderQuery` / both answered. **Overturned** (ledger 63) |
+
+- **Ledger 63.** #16 is now a `BuildQueryProcessor(IOrderRepository)` whose handler factory constructs
+  `GetOrderQueryHandler` itself, and its sentence says `Activator.CreateInstance` throws
+  `MissingMethodException` for a handler with no parameterless constructor. `GetPersonQueryHandler`
+  is gone from the page. `DarkerConfigurationReference.md` #4 registers its own `GetPersonQueryHandler`
+  through `Activator` too, but its handlers are the reader's and its prose states the requirement:
+  not a recurrence
+- **Ledger 64.** #22 declared a `UnauthorizedAccessException` that hides `System.UnauthorizedAccessException`
+  under the section *Domain Exceptions*. It is `OrderAccessDeniedException` now, and #23 throws it. No
+  other page declares a BCL exception's name
+- **Found beside them.** § *Blocks that stay FAILED* gave #23's diagnostic as `OrderNotFoundException`
+  alone; it also fails on `IAuthService` and `Order.IsDeleted`, which the page never declares. A unit
+  stub for them was tried and refused by unit rule 1 (*"named by no BUILT block"*, 3 violations), since
+  #23 stays FAILED on block 22's exceptions; the row now gives all four. #16's row names the three
+  types it still lacks
+
+**`symbolcheck` rows (5.1):** `IHandleRequests Create(Type)` is a signature, not a name the
+watchlist matches, and `ConfigurationCommandType.StopChannel` has **0** sites left and was never on
+more than one block. Neither earns a row, so nothing is put to the maintainer; `symbolcheck` stays
+24 entries.
+
+**Carried, not run:** `ReactorAndProactor.md` § *Handler and Mapper Requirements* says mixing sync
+and async handlers *"will cause runtime errors"*. It predates the phase, no phase-5 block touches it,
+and 017's run covered only the mapper half. Phase 8's reading criteria, or a later spec.
+
+**Off-group term: 0.** Every edit is on `ImplementAQueryHandler.md` and its unit. `blockcheck
+--explain` → #22 builds; #16 fails on `GetPeopleQuery`, `GetPeopleQueryHandler`, `GetOrderQueryHandler`;
+#23 on `OrderAccessDeniedException`, `OrderNotFoundException`, `IAuthService`, `IsDeleted`. `--report` →
+**992 / 642 / 323 / 27**, unmoved, as predicted: #16 and #23 stay FAILED, #22 stays BUILT. Two methods:
+the summary line, and `cut -f1` of the rows. 67 units, 0 violations. `pagelint` 0 / **271**.
+
+#### Phase 5 closed (5.6)
+
+**Baselined.** `baseline.tsv` lists every BUILT block on the ten S3 pages, **114** rows, replacing
+their **8** earlier ones (§ the file's own header). Three keep their ref, their text and scaffold
+unchanged at their present ordinal: `CQRSWithBrighterAndDarker.md` #7 and #8 (which were #6 and #7,
+before the split of #1) and `HowConfiguringTheCommandProcessorWorks.md` #10. The other five earlier
+rows gained their page's unit; with the rest, they are at **`b9183b0`**, the phase's last page commit.
+The rows were appended as phase 4's were, so the diff is 8 out and 114 in. Text unchanged was judged
+against a `git worktree` at `0fc79a3`, never a stash. **Two methods agree:** `grep -v '^#' baseline.tsv
+| grep -vc '^$'` → **642**, and `--report`'s BUILT → **642**. `--report` exit **0**, **0 findings**.
+
+**Rule 8.** `pagelint` → **0 errors**; the one `attr-mismatch-intended` marker stays on
+`PipelineValidation.md` #7, and `--plant` → 5 / 5.
+
+**Readings (obligation 19).** `git diff -U0 0fc79a3 HEAD -- contents`, hunks against fence ranges:
+10 pages, **100** changed C# blocks, all on S3. Two methods: the hunks, and S3 blocks whose text
+is not on their page at `0fc79a3`, **100**.
+- **AC9.** The phase added `// ...` at **17** lines in **9** blocks. `HowServiceActivatorWorks.md`
+  #11, #14 and `QueriesAndQueryObjects.md` #1 are BUILT, so `--explain` has nothing to report for
+  them. `HowServiceActivatorWorks.md` #1–#6 are R8's SKIPPED quotes (D21), whose `// ...` marks the
+  source elided around the quoted line, and whose markers cite that line
+- **AC10.** § *Behaviour (5.4)*: thirteen claims run with a control, one read from source.
+  § *Second pass (5.5)*: one more run, `ImplementAQueryHandler.md` #16. No changed block lies off
+  S3. Carried, not run: `ReactorAndProactor.md`'s *"will cause runtime errors"*, which no phase-5
+  block touches (§ *Second pass (5.5)*)
+
+**Gates against 5.1.**
+
+| Gate | Predicted (5.1) | Measured at the close | |
+|---|---|---|---|
+| corpus | 994–1,000 | **992** | **below the band by 2** (below) |
+| BUILT | 662–676 | **642** | **below the band by 20** (below) |
+| FAILED | 307–312 | **323** | **above the band by 11** (below) |
+| SKIPPED | 17–20 | **27** | **above the band by 7** (below) |
+| `pagelint` | 0 errors / 266–281 | **0 / 271** | in band |
+| `symbolcheck` | unmoved | **24, 14**, exit 0 | as predicted; 5.5 found neither candidate earns a row |
+| scaffold rule | 60–69 units | **67**, 0 violations, 0 compile errors | in band |
+| assemblies | 553–554 | **553** on each pin | in band: Swashbuckle was removed from `DarkerBasicConfiguration.md` #9, not pinned (ledger 52) |
+| `linkcheck` · shape · redirects · `--verify` | unmoved | 168 / 0 · 161, widest 12 of 20 · 77, 7858 bytes · 161 = 161 | as predicted |
+| `versioncheck` · `optioncheck` | unmoved | 0 of 18 · 0 / 59 / 529 | as predicted |
+| `pagelint --plant` | unmoved | 5 / 5 | as predicted |
+| off-group | **0** | **0** changed blocks off S3 | as predicted |
+
+**Why four verdict gates fell outside their bands.** One account covers all four. 5.1 started from
+*S3's 146 blocks, less the one SKIPPED, all BUILT* (673), and allowed 3–8 to stay FAILED and 0–3 new
+skips:
+- **Five retags, unpredicted.** `QueriesAndQueryObjects.md` #13–#17 were lists of query names, not
+  C#. With three splits, the corpus is 994 + 3 − 5 = **992**, and S3 holds 144 blocks
+- **Nineteen stay FAILED, not 3–8**, every one *same-page* and listed. 5.1 counted the five blocks
+  already *same-page*. 5.3's repairs made fragments whole on one running example per page
+  (`CQRSWithBrighterAndDarker.md`'s e-commerce model, `ImplementAQueryHandler.md`'s domain
+  exceptions), so a block now names types another block on its page declares, which unit rule 1 does
+  not let a stub supply. 304 + 19 = **323**
+- **Ten new skips, not 0–3.** Six are R8's, under a reason that did not exist at 5.1 (D21); four are
+  5.3's signatures and fragments shown whole elsewhere. 17 + 10 = **27**
+- **BUILT follows from the three:** 673 + 3 − 5 − 19 − 10 = **642**
+
+`pagelint` landed in band by the mechanism 5.1 named: S3's 87 warnings fell to **12**, 11 of them
+on SKIPPED blocks and the twelfth on `QueriesAndQueryObjects.md` #1, BUILT and untouched, which 5.1
+said would stay. 346 − 75 = **271**. None of the measured numbers is adopted. The lesson for phase 6:
+a repair that makes blocks whole on a running example moves blocks from *page-type* to *same-page*,
+so predict the stays from how many blocks the example spans, not from the *same-page* count before
+the work. `tools/README.md` rows 2 and 9 now give the close's figures.
 
 ### Phase 6 — S4, Using an External Bus; Transports *(6 tasks, one PR)*
 
@@ -2066,6 +2429,18 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `QuartzScheduler.md` | 22 | `CS0246` `BrighterJobListener`, `BrighterTriggerListener` | *same-page*: block 15 declares `BrighterJobListener`; the trigger listener is the reader's, "written the same way", as the sentence before it says | 3 |
 | `FeatureSwitches.md` | 5 | `CS0246` `MyFeatureSwitchedHandler`, `MyIncompleteHandlerAsync` | *same-page*: blocks 1 and 2 declare them; the sentence before block 5 says so | 4 |
 | `PolicyRetryAndCircuitBreaker.md` | 17 | `CS0246` `MyQoSProtectedHandler`; `CS0103` `services` | *same-page*: block 1 declares the handler, as the sentence before block 17 now says | 4 |
+| `CQRSWithBrighterAndDarker.md` | 1, 2 | `CS0246` `Customer`, `ICustomerRepository` | *same-page*: block 8 declares `Customer`, which no stub may supply; split from old #1 at 5.3 | 5 |
+| `CQRSWithBrighterAndDarker.md` | 3 | `CS0246` `Order`, `OrderItem`, `OrderPlacedEvent`, `IOrderRepository`; `CS0103` `OrderStatus` | *same-page*: block 8 declares the write model, as the sentence before block 3 says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 4 | `CS0246` `OrderItemDto`, `ApplicationDbContext` | *same-page*: block 7 declares `OrderItemDto`, as the sentence before block 4 now says; the context's `Orders` are block 8's `Order`, which no stub may supply | 5 |
+| `CQRSWithBrighterAndDarker.md` | 5 | `CS0246` `PlaceOrderCommandHandler`, `GetOrderDetailsQueryHandler`, `ApplicationDbContext` | *same-page*: blocks 3, 4, 9 and 11 declare the handlers, as the sentence before block 5 now says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 6 | `CS0246` `PlaceOrderCommand`, `GetOrderDetailsQuery`, `PlaceOrderRequest` | *same-page*: blocks 4, 7 and 10 declare the command and the query, as the sentence before block 6 now says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 9 | `CS0246` `PlaceOrderCommand`, `Order`, `IOrderRepository`, `IProductRepository` … | *same-page*: blocks 7 and 8, as the sentence before block 9 now says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 11 | `CS0246` `GetOrderDetailsQuery`, `OrderDetailsDto`, `OrderItemDetailsDto`, `ApplicationDbContext` | *same-page*: block 10 declares the query and its DTOs, as the sentence before block 11 now says | 5 |
+| `CQRSWithBrighterAndDarker.md` | 12–14 | `CS0246` `PlaceOrderCommand` (12, 13), `GetOrderDetailsQuery`, `OrderDetailsDto` (14) | *same-page*: methods of the e-commerce example's handlers, as the sentence under *CQRS Common Pitfalls* now says | 5 |
+| `ImplementAQueryHandler.md` | 3, 5, 6, 14 | `CS0246` `GetPeopleQuery` (and #3, #5 `PersonRepository`; #6 `IPersonRepository`) | *same-page*: block 1 declares the query, which its lead-in says the guide uses throughout | 5 |
+| `ImplementAQueryHandler.md` | 16 | `CS0246` `GetPeopleQuery`, `GetPeopleQueryHandler`, `GetOrderQueryHandler` | *same-page*: blocks 1, 3 and 10 declare them. At 5.5 it lost `GetPersonQueryHandler`, which no block declared, and gained a factory for the handler that takes a repository | 5 |
+| `ImplementAQueryHandler.md` | 21, 23 | `CS0246` `OrderNotFoundException`; #23 also `OrderAccessDeniedException`, `IAuthService`, and `CS1061` `Order.IsDeleted` | *same-page*: block 22 declares both exceptions, as the sentences before blocks 21 and 23 now say. `IAuthService` and `IsDeleted` are the reader's, and no unit may stub them while no BUILT block names them (unit rule 1) | 5 |
+| `QueryPatterns.md` | 6 | `CS0246` `GetProductCatalogQuery` | *same-page*: block 5 declares it, as the sentence before block 6 now says | 5 |
 
 ## Splits
 
@@ -2078,6 +2453,9 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `HangfireScheduler.md` | 25 | 25, 26 | 3 |
 | `QuartzScheduler.md` | 23 | 23, 24 | 3 |
 | `PipelineValidation.md` | 3 | 3, 4 | 4 |
+| `CQRSWithBrighterAndDarker.md` | 1 | 1, 2 | 5 |
+| `EFCoreQueryIntegration.md` | 1 | 1, 2 | 5 |
+| `QueryPatterns.md` | 3 | 3, 4 | 5 |
 
 ## Defect ledger
 
@@ -2137,6 +2515,19 @@ design, and their greps were run there.*
 | 49 | #4443 and #4444 stated as current: the DynamoDB and Spanner Outboxes ignore `TrippedTopics`; 10.8.0 fixes both | `SweeperCircuitBreaking.md` | `grep -rnF 'it accepts the list and ignores it' contents/` | **1** | **0** | task 4.5a, `probe/s5/tripped-topics` | 4 |
 | 50 | `messaging.system` said to be always `internal_bus` on pump spans; at 10.8.0 it is the transport's | `Telemetry.md` | `grep -rnF 'Always `internal_bus` on pump spans' contents/` | **1** | **0** | task 4.5a, `probe/s5/messaging-system` | 4 |
 | 51 | Relational DDL that is not 10.8.0's `GetDDL`: three blocks 10.7.0's output, without `CausationId`, and three no release generates, one of them invalid SQLite | `MSSQLOutbox.md`, `MySQLOutbox.md`, `PostgresOutbox.md`, `SqliteOutbox.md`, `SpannerOutbox.md`, `SpannerInbox.md` | `grep -LiE causationid` on the six pages | **6** | **0** | task 4.5b, `probe/s5/ddl-refresh` | 4 |
+| 52 | Swashbuckle's `AddSwaggerGen`, `UseSwagger` and `UseSwaggerUI` in a Darker setup, from a package the page never names and no pin carries | `DarkerBasicConfiguration.md` | `grep -rnE 'AddSwaggerGen\|UseSwagger' contents/` | **3** | **0** | task 5.1, the second compile; removed at 5.2 | 5 |
+| 53 | The message pump's private calls misquoted: `TranslateMessage` with two arguments (10.8.0 takes three), `InvokeDispatchRequest(request, message, context)` (it takes `request, context`), the Reactor's dispatch shown as `InitRequestContext`, an awaited call labelled Reactor, and translation before the context it uses is created | `HowServiceActivatorWorks.md` | `grep -rnE 'TranslateMessage\(message, context\)\|InvokeDispatchRequest\(request, message' contents/` | **3** | **0** | task 5.2, hidden behind *page-type*; read against `Reactor.cs`, `Proactor.cs` at 10.8.0 | 5 |
+| 54 | A route returning `Type[]`; at 10.8.0 `RegisterAsync<TRequest>`'s router returns `List<Type>` | `HowServiceActivatorWorks.md` | `grep -rnE 'return new( Type)?\[\] ?\{ ?typeof' contents/` | **2** | **0** | task 5.2, hidden behind *page-type* | 5 |
+| 55 | Darker's interfaces listed short of 4.1.1: `IQuery<TResult>` without its `IQuery` base, `IQueryHandler<,>` with two of its four methods and without `IQueryHandler.Context`; and a handler implementing the short listing | `QueriesAndQueryObjects.md`, `ImplementAQueryHandler.md` | `grep -rnE 'interface IQuery<out TResult>$\|interface IQueryHandler<in TQuery, TResult> where' contents/`; `grep -rnE 'public Order Fallback\(GetOrderQuery' contents/` | **2**; **0** | **0**; **1** | task 5.1, the second compile (`ImplementAQueryHandler.md` #13); the listings read at 5.2 | 5 |
+| 56 | A V9 handler factory shown as current: `Create(Type)` and `Release(IHandleRequests)` on `IAmAHandlerFactory`, which at 10.8.0 declares only `CreatePipelineScope()`; the members are `IAmAHandlerFactorySync`'s, each with an `IAmALifetime` | `HowConfiguringTheCommandProcessorWorks.md` | `grep -rnE 'IHandleRequests\??\s+Create\(Type \w+\)\|void Release\(IHandleRequests \w+\)\|: IAmAHandlerFactory(\s\|$\|,\|\{)' contents/` | **3** | **0** | task 5.1, the second compile | 5 |
+| 57 | The Dispatcher's instrumentation set on `AddBrighter`'s options, which configure the Command Processor; the Dispatcher reads `AddConsumers`' (`ServiceCollectionExtensions.cs:180`) | `HowServiceActivatorWorks.md` | `grep -rn -B2 'options.InstrumentationOptions = InstrumentationOptions.All;' contents/ \| grep -c AddBrighter` | **1** | **0** | task 5.3, hidden behind *parse*. Not a recurrence: `Telemetry.md` and `ConfiguringOpenTelemetry.md` set the Command Processor's on `AddBrighter` and the Dispatcher's on `AddConsumers`; run at 5.4 (`probe/s3/dispatcher-instrumentation`), confirmed | 5 |
+| 58 | A control-bus sender's `Send`, and `ConfigurationCommandType.StopChannel`, `.StartChannel` with a settable string `SubscriptionName`; at 10.8.0 the sender has `Post`, the members are `CM_STOPCHANNEL`, `CM_STARTCHANNEL`, and the constructor takes a `SubscriptionName` | `HowServiceActivatorWorks.md` | `grep -rnE 'ConfigurationCommandType\.(Stop\|Start)Channel\|controlBusSender\.Send\(' contents/` | **2** | **0** | task 5.1, the second compile | 5 |
+| 59 | Dead-letter parameters on `Subscription<T>`, which has none; at 10.8.0 only `RmqSubscription` takes them | `HowServiceActivatorWorks.md` | `grep -rn -B4 deadLetterChannelName contents/ \| grep -c 'new Subscription<'` | **1** | **0** | task 5.1, the second compile | 5 |
+| 60 | A `[FallbackPolicy]` handler without `FallbackAsync` said to fail at runtime; `QueryHandlerAsync.FallbackAsync` returns `default(TResult)` (`QueryHandlerAsync.cs` at 4.1.1) | `QueryPipeline.md` | `grep -rnE 'or you.ll get a runtime error' contents/` | **1** | **0** | task 5.3, read against 4.1.1; run at 5.4 (`probe/s3/darker-pipeline`), confirmed | 5 |
+| 61 | A Darker policy registry holding only a custom name, passed to `AddPolicies`, which throws `ConfigurationException` without `Constants.RetryPolicyName` and `Constants.CircuitBreakerPolicyName` (`QueryProcessorBuilderExtensions.cs` at 4.1.1) | `QueryPipeline.md` | `grep -rn -B10 '\.AddPolicies(' contents/ \| grep -c 'new PolicyRegistry()'` | **1** | **0** | task 5.4, read against 4.1.1 and run (`probe/s3/darker-pipeline`) | 5 |
+| 62 | `AddBrighter`'s options said to configure the Command Processor beside `AddConsumers`; with `AddConsumers` alone, its options configure both, `ConsumersOptions` being a `BrighterOptions` | `HowServiceActivatorWorks.md` | `grep -rn 'separately, from `AddBrighter`' contents/` | **1** | **0** | task 5.4, run (`probe/s3/dispatcher-instrumentation`); written at 5.3 with ledger 57 | 5 |
+| 63 | Manual registration building a handler that takes a repository with `Activator.CreateInstance`, which throws `MissingMethodException`; and registering a `GetPersonQueryHandler` no block declares | `ImplementAQueryHandler.md` | `grep -rn 'GetPersonQueryHandler' contents/ImplementAQueryHandler.md` | **1** | **0** | task 5.5, run (`probe/s3/darker-pipeline`) | 5 |
+| 64 | A domain exception named `UnauthorizedAccessException`, hiding `System.UnauthorizedAccessException` | `ImplementAQueryHandler.md` | `grep -rn 'class UnauthorizedAccessException' contents/` | **1** | **0** | task 5.5, read | 5 |
 
 ## Friction ledger
 

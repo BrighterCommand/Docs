@@ -52,7 +52,6 @@ contents/BoxProvisioningConfiguration.md	7	BoxProvisioningConfigurationContext.c
 contents/BoxProvisioningConfiguration.md	8	BoxProvisioningConfigurationContext.cs	24e6e53
 contents/BoxProvisioningConfiguration.md	9	BoxProvisioningConfigurationContext.cs	24e6e53
 contents/BuildingAnAsyncPipeline.md	1	-	280d1b7
-contents/CQRSWithBrighterAndDarker.md	6	-	9c57ae2
 contents/ClaimCheck.md	1	ClaimCheckContext.cs	71d0c60
 contents/ClaimCheck.md	2	ClaimCheckContext.cs	71d0c60
 contents/ClaimCheck.md	3	ClaimCheckContext.cs	71d0c60
@@ -89,9 +88,6 @@ contents/HandlingPoisonMessages.md	4	HandlingPoisonMessagesContext.cs	280d1b7
 contents/HandlingPoisonMessages.md	5	HandlingPoisonMessagesContext.cs	280d1b7
 contents/HandlingPoisonMessages.md	6	HandlingPoisonMessagesContext.cs	280d1b7
 contents/HealthChecks.md	1	HealthChecksContext.cs	51b5fef
-contents/HowConfiguringTheCommandProcessorWorks.md	10	HowConfiguringTheCommandProcessorWorksContext.cs	280d1b7
-contents/ImplementAQueryHandler.md	1	-	280d1b7
-contents/ImplementAQueryHandler.md	2	-	280d1b7
 contents/ImplementingAHandler.md	1	-	0363fae
 contents/ImplementingAsyncHandler.md	1	-	0363fae
 contents/InMemoryTransport.md	1	InMemoryTransportContext.cs	7edaada
@@ -148,9 +144,6 @@ contents/PostgresOutbox.md	1	RelationalOutboxContext.cs	a8ede7c
 contents/PostgresOutbox.md	2	RelationalOutboxContext.cs	a8ede7c
 contents/PostgresOutbox.md	3	RelationalOutboxContext.cs	a8ede7c
 contents/ProjectionQueryPatterns.md	4	DarkerQueryPatternsContext.cs	1cafef9
-contents/QueriesAndQueryObjects.md	1	-	280d1b7
-contents/QueriesAndQueryObjects.md	2	-	280d1b7
-contents/QueriesAndQueryObjects.md	3	-	280d1b7
 contents/QueryObjectValidation.md	1	QueryObjectValidationContext.cs	3462412
 contents/QueryObjectValidation.md	2	QueryObjectValidationContext.cs	3462412
 contents/QueryObjectValidation.md	3	QueryObjectValidationContext.cs	3462412
@@ -311,7 +304,6 @@ contents/Telemetry.md	3	TelemetryContext.cs	2d938c8
 contents/Telemetry.md	5	TelemetryContext.cs	2d938c8
 contents/PostgreSQLMessageBroker.md	11	PostgreSQLMessageBrokerContext.cs	2d938c8
 contents/Telemetry.md	4	TelemetryContext.cs	2d938c8
-contents/CQRSWithBrighterAndDarker.md	7	-	b4c3ae0
 contents/DefaultMessageMappers.md	4	-	b4c3ae0
 contents/DefaultMessageMappers.md	5	-	b4c3ae0
 contents/V10MigrationGuide.md	9	-	f4cfd88
@@ -475,6 +467,14 @@ contents/SwitchingSchedulers.md	7	SwitchingSchedulersContext.cs	9aafd19
 # The phase split one fence (PipelineValidation.md #3), so that page's later ordinals moved. Every
 # row is at `6ad8b0a`, the phase's last page commit. Monitoring.md #1 is re-measured there too: it
 # gained the IAmAControlBusSenderAsync registration (ledger 47).
+#
+# Spec 018 phase 5 repaired S3, Darker and Understanding Brighter. Every BUILT block on its ten
+# pages is listed below, replacing their eight earlier rows. The phase split three fences, so later
+# ordinals on CQRSWithBrighterAndDarker.md, EFCoreQueryIntegration.md and QueryPatterns.md moved, and
+# five of the eight gained their page's scaffold unit. A block whose text and scaffold did not change
+# keeps its original ref at its present ordinal (CQRSWithBrighterAndDarker.md #7, #8, which were #6, #7;
+# HowConfiguringTheCommandProcessorWorks.md #10); every other block is at `b9183b0`, the phase's last
+# page commit.
 contents/AgreementDispatcher.md	1	AgreementDispatcherContext.cs	6ad8b0a
 contents/AgreementDispatcher.md	2	AgreementDispatcherContext.cs	6ad8b0a
 contents/AgreementDispatcher.md	3	AgreementDispatcherContext.cs	6ad8b0a
@@ -584,3 +584,117 @@ contents/UsingTheContextBag.md	15	UsingTheContextBagContext.cs	6ad8b0a
 contents/UsingTheContextBag.md	16	UsingTheContextBagContext.cs	6ad8b0a
 contents/UsingTheContextBag.md	17	UsingTheContextBagContext.cs	6ad8b0a
 contents/UsingTheContextBag.md	18	UsingTheContextBagContext.cs	6ad8b0a
+contents/CQRSWithBrighterAndDarker.md	7	-	9c57ae2
+contents/CQRSWithBrighterAndDarker.md	8	-	b4c3ae0
+contents/CQRSWithBrighterAndDarker.md	10	-	b9183b0
+contents/DarkerBasicConfiguration.md	1	DarkerBasicConfigurationContext.cs	b9183b0
+contents/DarkerBasicConfiguration.md	2	DarkerBasicConfigurationContext.cs	b9183b0
+contents/DarkerBasicConfiguration.md	3	DarkerBasicConfigurationContext.cs	b9183b0
+contents/DarkerBasicConfiguration.md	4	DarkerBasicConfigurationContext.cs	b9183b0
+contents/DarkerBasicConfiguration.md	5	DarkerBasicConfigurationContext.cs	b9183b0
+contents/DarkerBasicConfiguration.md	6	DarkerBasicConfigurationContext.cs	b9183b0
+contents/DarkerBasicConfiguration.md	7	DarkerBasicConfigurationContext.cs	b9183b0
+contents/DarkerBasicConfiguration.md	8	DarkerBasicConfigurationContext.cs	b9183b0
+contents/DarkerBasicConfiguration.md	9	DarkerBasicConfigurationContext.cs	b9183b0
+contents/DarkerBasicConfiguration.md	10	DarkerBasicConfigurationContext.cs	b9183b0
+contents/DarkerBasicConfiguration.md	11	DarkerBasicConfigurationContext.cs	b9183b0
+contents/EFCoreQueryIntegration.md	1	EFCoreQueryIntegrationContext.cs	b9183b0
+contents/EFCoreQueryIntegration.md	2	EFCoreQueryIntegrationContext.cs	b9183b0
+contents/EFCoreQueryIntegration.md	3	EFCoreQueryIntegrationContext.cs	b9183b0
+contents/EFCoreQueryIntegration.md	4	EFCoreQueryIntegrationContext.cs	b9183b0
+contents/EFCoreQueryIntegration.md	5	EFCoreQueryIntegrationContext.cs	b9183b0
+contents/EFCoreQueryIntegration.md	6	EFCoreQueryIntegrationContext.cs	b9183b0
+contents/HowConfiguringTheCommandProcessorWorks.md	1	HowConfiguringTheCommandProcessorWorksContext.cs	b9183b0
+contents/HowConfiguringTheCommandProcessorWorks.md	2	HowConfiguringTheCommandProcessorWorksContext.cs	b9183b0
+contents/HowConfiguringTheCommandProcessorWorks.md	3	HowConfiguringTheCommandProcessorWorksContext.cs	b9183b0
+contents/HowConfiguringTheCommandProcessorWorks.md	4	HowConfiguringTheCommandProcessorWorksContext.cs	b9183b0
+contents/HowConfiguringTheCommandProcessorWorks.md	5	HowConfiguringTheCommandProcessorWorksContext.cs	b9183b0
+contents/HowConfiguringTheCommandProcessorWorks.md	6	HowConfiguringTheCommandProcessorWorksContext.cs	b9183b0
+contents/HowConfiguringTheCommandProcessorWorks.md	7	HowConfiguringTheCommandProcessorWorksContext.cs	b9183b0
+contents/HowConfiguringTheCommandProcessorWorks.md	8	HowConfiguringTheCommandProcessorWorksContext.cs	b9183b0
+contents/HowConfiguringTheCommandProcessorWorks.md	9	HowConfiguringTheCommandProcessorWorksContext.cs	b9183b0
+contents/HowConfiguringTheCommandProcessorWorks.md	10	HowConfiguringTheCommandProcessorWorksContext.cs	280d1b7
+contents/HowServiceActivatorWorks.md	7	HowServiceActivatorWorksContext.cs	b9183b0
+contents/HowServiceActivatorWorks.md	8	HowServiceActivatorWorksContext.cs	b9183b0
+contents/HowServiceActivatorWorks.md	9	HowServiceActivatorWorksContext.cs	b9183b0
+contents/HowServiceActivatorWorks.md	10	HowServiceActivatorWorksContext.cs	b9183b0
+contents/HowServiceActivatorWorks.md	11	HowServiceActivatorWorksContext.cs	b9183b0
+contents/HowServiceActivatorWorks.md	12	HowServiceActivatorWorksContext.cs	b9183b0
+contents/HowServiceActivatorWorks.md	13	HowServiceActivatorWorksContext.cs	b9183b0
+contents/HowServiceActivatorWorks.md	14	HowServiceActivatorWorksContext.cs	b9183b0
+contents/HowServiceActivatorWorks.md	16	HowServiceActivatorWorksContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	1	ImplementAQueryHandlerContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	2	ImplementAQueryHandlerContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	7	ImplementAQueryHandlerContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	9	ImplementAQueryHandlerContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	10	ImplementAQueryHandlerContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	11	ImplementAQueryHandlerContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	12	ImplementAQueryHandlerContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	13	ImplementAQueryHandlerContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	15	ImplementAQueryHandlerContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	17	ImplementAQueryHandlerContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	18	ImplementAQueryHandlerContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	19	ImplementAQueryHandlerContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	20	ImplementAQueryHandlerContext.cs	b9183b0
+contents/ImplementAQueryHandler.md	22	ImplementAQueryHandlerContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	1	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	2	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	3	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	4	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	5	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	6	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	7	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	8	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	9	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	10	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	11	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	12	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	13	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	14	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	15	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	16	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	17	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueriesAndQueryObjects.md	18	QueriesAndQueryObjectsContext.cs	b9183b0
+contents/QueryPatterns.md	1	DarkerQueryPatternsContext.cs	b9183b0
+contents/QueryPatterns.md	2	DarkerQueryPatternsContext.cs	b9183b0
+contents/QueryPatterns.md	3	DarkerQueryPatternsContext.cs	b9183b0
+contents/QueryPatterns.md	4	DarkerQueryPatternsContext.cs	b9183b0
+contents/QueryPatterns.md	5	DarkerQueryPatternsContext.cs	b9183b0
+contents/QueryPipeline.md	1	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	2	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	3	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	4	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	5	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	6	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	7	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	8	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	9	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	10	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	11	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	12	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	13	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	14	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	15	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	16	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	17	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	18	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	19	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	20	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	21	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	22	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	23	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	24	QueryPipelineContext.cs	b9183b0
+contents/QueryPipeline.md	25	QueryPipelineContext.cs	b9183b0
+contents/ReactorAndProactor.md	1	ReactorAndProactorContext.cs	b9183b0
+contents/ReactorAndProactor.md	2	ReactorAndProactorContext.cs	b9183b0
+contents/ReactorAndProactor.md	3	ReactorAndProactorContext.cs	b9183b0
+contents/ReactorAndProactor.md	4	ReactorAndProactorContext.cs	b9183b0
+contents/ReactorAndProactor.md	5	ReactorAndProactorContext.cs	b9183b0
+contents/ReactorAndProactor.md	6	ReactorAndProactorContext.cs	b9183b0
+contents/ReactorAndProactor.md	7	ReactorAndProactorContext.cs	b9183b0
+contents/ReactorAndProactor.md	8	ReactorAndProactorContext.cs	b9183b0
+contents/ReactorAndProactor.md	9	ReactorAndProactorContext.cs	b9183b0
+contents/ReactorAndProactor.md	10	ReactorAndProactorContext.cs	b9183b0
+contents/ReactorAndProactor.md	12	ReactorAndProactorContext.cs	b9183b0
+contents/ReactorAndProactor.md	13	ReactorAndProactorContext.cs	b9183b0
+contents/ReactorAndProactor.md	14	ReactorAndProactorContext.cs	b9183b0

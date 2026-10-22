@@ -74,35 +74,22 @@ Let's trace a message from the broker to your handler:
 
 ### 1. Message Pump Retrieves Message
 
-The Performer polls the configured channel for new messages:
+The Performer's message pump polls its channel for new messages (`Reactor.cs:123`, `Proactor.cs:162` at 10.8.0):
 
+<!-- blockcheck: skip a line quoted from Brighter's source, calling a private member or reading the pump's own state: Reactor.cs:123 and Proactor.cs:162, the pump's Channel -->
 ```csharp
-// Reactor (blocking)
-Message message = channel.Receive(timeOut);
+// Reactor (blocking), Reactor.cs:123
+// ...
+message = Channel.Receive(TimeOut);
+// ...
 
-// Proactor (non-blocking)
-Message message = await channel.ReceiveAsync(timeOut, cancellationToken);
+// Proactor (non-blocking), Proactor.cs:162
+// ...
+message = await Channel.ReceiveAsync(TimeOut);
+// ...
 ```
 
-### 2. Message Deserialization
-
-The Dispatcher uses the registered message mapper to convert the `Message` into a request object:
-
-```csharp
-
-// V10: Default mapper used automatically if no custom mapper registered
-// Reactor (blocking)
-var request = TranslateMessage(message, context);
-```
-
-```csharp
-
-// V10: Default mapper used automatically if no custom mapper registered
-// Reactor (blocking)
-var request = await TranslateMessage(message, context);
-```
-
-### 3. Request Context Creation
+### 2. Request Context Creation
 
 The Message Pump creates a `RequestContext` that includes:
 
@@ -111,24 +98,54 @@ The Message Pump creates a `RequestContext` that includes:
 - Channel Name
 - When the request started
 
+Both pumps make the same call inside their message loop (`Reactor.cs:208`, `Proactor.cs:247` at 10.8.0):
+
+<!-- blockcheck: skip a line quoted from Brighter's source, calling a private member or reading the pump's own state: Reactor.cs:208 and Proactor.cs:247, InitRequestContext -->
 ```csharp
+// Reactor.cs:208, Proactor.cs:247
+// ...
+RequestContext context = InitRequestContext(processSpan, message);
+// ...
+```
 
-RequestContext context = InitRequestContext(span, message);
+### 3. Message Deserialization
 
+The Dispatcher uses the registered message mapper to convert the `Message` into a request object, passing the context it has just created. If you register no custom mapper, V10 uses the default mapper. The callback hands back the transform pipeline the mapper ran, so the pump can release it: straight away, or after the handler has run if a transform left cleanup pending.
+
+<!-- blockcheck: skip a line quoted from Brighter's source, calling a private member or reading the pump's own state: Reactor.cs:211, TranslateMessage -->
+```csharp
+// Reactor (blocking), Reactor.cs:211
+// ...
+var request = TranslateMessage(message, context, pipeline => unwrapPipeline = pipeline);
+// ...
+```
+
+<!-- blockcheck: skip a line quoted from Brighter's source, calling a private member or reading the pump's own state: Proactor.cs:250, TranslateMessage -->
+```csharp
+// Proactor (non-blocking), Proactor.cs:250
+// ...
+var request = await TranslateMessage(message, context, pipeline => unwrapPipeline = pipeline);
+// ...
 ```
 
 ### 4. Handler Dispatch
 
 The request is dispatched to the Command Processor, which executes the handler pipeline:
 
+<!-- blockcheck: skip a line quoted from Brighter's source, calling a private member or reading the pump's own state: Reactor.cs:219, InvokeDispatchRequest -->
 ```csharp
-// Reactor
-RequestContext context = InitRequestContext(span, message);
+// Reactor, Reactor.cs:219
+// ...
+InvokeDispatchRequest(request, context);
+// ...
 ```
 
+<!-- blockcheck: skip a line quoted from Brighter's source, calling a private member or reading the pump's own state: Proactor.cs:258, InvokeDispatchRequest -->
 ```csharp
-// Proactor
-await InvokeDispatchRequest(request, message, context);
+// Proactor, Proactor.cs:258
+// ...
+await InvokeDispatchRequest(request, context);
+// ...
 ```
 
 ### 5. Message Acknowledgment, Rejection, Requeue and Fallback
@@ -196,10 +213,13 @@ When a handler throws a `DeferMessageAction` exception:
 
 ### Dead Letter Queues (DLQ)
 
-Configure a DLQ to capture failed messages:
+Configure a DLQ to capture failed messages. Dead letter queues are set per transport: with RabbitMQ, `RmqSubscription` takes the dead letter channel and its routing key. [Dead Letter Queue Configuration](/contents/ErrorHandlingOptions.md#dead-letter-queue-configuration) covers the other transports:
 
 ```csharp
-var subscription = new Subscription<MyCommand>(
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
+var subscription = new RmqSubscription<MyCommand>(
     // ... other config
     deadLetterChannelName: new ChannelName("my.channel.dlq"),
     deadLetterRoutingKey: new RoutingKey("my.routing.key.dlq")
@@ -227,6 +247,10 @@ The message is acknowledged, to prevent a poison pill message from blocking furt
 Use `getRequestType` callback for content-based routing:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription(
     new SubscriptionName("task.processor"),
     channelName: new ChannelName("tasks"),
@@ -248,16 +272,18 @@ var subscription = new KafkaSubscription(
 Use Agreement Dispatcher for dynamic handler selection:
 
 ```csharp
+using Paramore.Brighter;
+
 registry.RegisterAsync<MyCommand>(
     (request, context) =>
     {
         var myCommand = request as MyCommand;
         if (myCommand?.Priority == "high")
-            return new[] { typeof(HighPriorityHandlerAsync) };
+            return [typeof(HighPriorityHandlerAsync)];
 
-        return new[] { typeof(StandardHandlerAsync) };
+        return [typeof(StandardHandlerAsync)];
     },
-    new[] { typeof(HighPriorityHandlerAsync), typeof(StandardHandlerAsync) }
+    [typeof(HighPriorityHandlerAsync), typeof(StandardHandlerAsync)]
 );
 ```
 
@@ -268,6 +294,8 @@ registry.RegisterAsync<MyCommand>(
 Scale message processing with multiple Performers:
 
 ```csharp
+using Paramore.Brighter;
+
 var subscription = new Subscription<MyCommand>(
     // ... other config
     noOfPerformers: 5,  // Five concurrent consumers
@@ -292,13 +320,18 @@ The Message Pump automatically creates spans for:
 - Handler dispatch
 - Message acknowledgment
 
-Configure instrumentation:
+Configure the Dispatcher's instrumentation on its consumer options. When `AddConsumers` is the only registration, those options configure the Command Processor too: `ConsumersOptions` is a `BrighterOptions`, so one setting governs the pump's spans and the handler pipeline's. An app that also calls `AddBrighter`, first, gets two: the Command Processor takes `AddBrighter`'s options, and its handler registry, so register handlers on `AddBrighter`'s builder. Handlers registered on `AddConsumers`' builder are then never found, and the pump rejects their messages:
 
 ```csharp
-services.AddBrighter(options =>
+using Paramore.Brighter;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+using Paramore.Brighter.Observability;
+
+services.AddConsumers(options =>
 {
+    // ... subscriptions and channel factory
     options.InstrumentationOptions = InstrumentationOptions.All;
-})
+});
 ```
 
 **See [Telemetry](Telemetry.md) for details.**
@@ -308,6 +341,9 @@ services.AddBrighter(options =>
 Monitor Dispatcher health:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.ServiceActivator.Extensions.Diagnostics.HealthChecks;
+
 services.AddHealthChecks()
     .AddCheck<BrighterServiceActivatorHealthCheck>("brighter-dispatcher");
 ```
@@ -319,17 +355,18 @@ services.AddHealthChecks()
 Control the Dispatcher at runtime:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.ServiceActivator.Ports.Commands;
+
 // Stop specific channel
-controlBusSender.Send(new ConfigurationCommand(ConfigurationCommandType.StopChannel)
-{
-    SubscriptionName = "my.subscription"
-});
+controlBusSender.Post(new ConfigurationCommand(
+    ConfigurationCommandType.CM_STOPCHANNEL,
+    new SubscriptionName("my.subscription")));
 
 // Start specific channel
-controlBusSender.Send(new ConfigurationCommand(ConfigurationCommandType.StartChannel)
-{
-    SubscriptionName = "my.subscription"
-});
+controlBusSender.Post(new ConfigurationCommand(
+    ConfigurationCommandType.CM_STARTCHANNEL,
+    new SubscriptionName("my.subscription")));
 ```
 
 **See [Brighter Control API](BrighterControlAPI.md) for details.**
@@ -345,15 +382,22 @@ controlBusSender.Send(new ConfigurationCommand(ConfigurationCommandType.StartCha
 ### 2. Configure Appropriate Timeouts
 
 ```csharp
-timeOut: TimeSpan.FromMilliseconds(200)  // Responsive but not too aggressive
+using System;
+using Paramore.Brighter;
+
+var subscription = new Subscription<MyCommand>(
+    // ... other config
+    timeOut: TimeSpan.FromMilliseconds(200)  // Responsive but not too aggressive
+);
 ```
 
 Balance responsiveness vs. CPU usage.
 
 ### 3. Use Dead Letter Queues
 
-Always configure DLQs for production:
+Always configure DLQs for production, as [Dead Letter Queues](#dead-letter-queues-dlq) shows:
 
+<!-- blockcheck: skip a fragment of the configuration shown whole in block 7 -->
 ```csharp
 deadLetterChannelName: new ChannelName("my.channel.dlq")
 ```
@@ -388,8 +432,9 @@ public class MyCommandHandler : RequestHandlerAsync<MyCommand>
 
 ### 6. Scale with Competing Consumers
 
-For high-volume scenarios:
+For high-volume scenarios, raise `noOfPerformers` on the subscription, as [Competing Consumers](#competing-consumers) shows:
 
+<!-- blockcheck: skip a fragment of the configuration shown whole in block 10 -->
 ```csharp
 noOfPerformers: 5  // Start with multiple performers
 ```

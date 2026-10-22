@@ -55,6 +55,7 @@ Install-Package Paramore.Darker.Policies
 To configure Darker in an ASP.NET Core application, use the `AddDarker` extension method in your `Program.cs` or `Startup.cs` file. Darker integrates with the ASP.NET Core dependency injection container, making the `IQueryProcessor` available for injection into your controllers and endpoints.
 
 ```csharp
+using Microsoft.AspNetCore.Builder;
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Policies;
@@ -82,6 +83,8 @@ The `AddHandlersFromAssemblies` method scans the specified assembly for query ha
 Here's a complete example of using Darker with ASP.NET Core Minimal APIs:
 
 ```csharp
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 
@@ -271,6 +274,7 @@ For more control, you can create a custom policy registry with specific retry st
 ```csharp
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
+using System;
 using Paramore.Darker.Policies;
 using Polly;
 using Polly.Registry;
@@ -313,6 +317,8 @@ Once policies are configured, you can apply them to query handlers using attribu
 This is the most common setup for an ASP.NET Core Web API using Darker:
 
 ```csharp
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Policies;
@@ -328,16 +334,8 @@ builder.Services.AddDarker()
 
 // Add other services
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
@@ -351,7 +349,9 @@ app.Run();
 When using Entity Framework Core, you must configure the Query Processor with scoped lifetime to match the DbContext:
 
 ```csharp
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
@@ -381,6 +381,7 @@ Without the scoped configuration, the query processor is a singleton that resolv
 When your query handlers are spread across multiple assemblies, register all of them:
 
 ```csharp
+using Microsoft.AspNetCore.Builder;
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 

@@ -107,6 +107,7 @@ First, add the query logging decorator to your Darker configuration in `Program.
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 using Paramore.Darker.QueryLogging;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -191,6 +192,7 @@ First, add policies to your Darker configuration:
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Policies;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -266,6 +268,7 @@ The FallbackPolicy decorator is available when you add policies to Darker:
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Policies;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -366,6 +369,7 @@ public override async Task<OrderData> ExecuteAsync(
     CancellationToken cancellationToken = default)
 {
     // Query external API
+    return await _externalApi.GetOrderAsync(query.OrderId, cancellationToken);
 }
 ```
 
@@ -508,6 +512,7 @@ using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 public sealed class GetCustomerOrderSummaryQueryHandler :
     QueryHandlerAsync<GetCustomerOrderSummaryQuery, CustomerOrderSummary>
@@ -558,10 +563,21 @@ For more fine-grained control, you might create separate query handlers for each
 
 Place logging first (step 1) so every call is logged once, timed across its retries and marked when a fallback answered it:
 ```csharp
-// ...
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker.Policies;
+using Paramore.Darker.QueryLogging;
+using Paramore.Darker.Attributes;
+
 [QueryLogging(1)]
 [FallbackPolicy(2)]
 [RetryableQuery(3)]
+public override async Task<OrderData> ExecuteAsync(
+    GetOrderQuery query,
+    CancellationToken cancellationToken = default)
+{
+    return await _externalApi.GetOrderAsync(query.OrderId, cancellationToken);
+}
 ```
 
 **2. Use circuit breakers for external dependencies**
@@ -572,15 +588,25 @@ Whenever your query interacts with external systems (databases, APIs, microservi
 
 For queries that directly serve user requests, implement fallback logic to provide graceful degradation rather than error messages:
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker.Policies;
+using Paramore.Darker.Attributes;
+
 [FallbackPolicy(2)]
-public override async Task<Result> ExecuteAsync(Query query, ...)
+public override async Task<OrderData> ExecuteAsync(
+    GetOrderQuery query,
+    CancellationToken cancellationToken = default)
 {
-    // primary logic
+    return await _externalApi.GetOrderAsync(query.OrderId, cancellationToken);
 }
 
-public override Task<Result> FallbackAsync(Query query, ...)
+public override Task<OrderData> FallbackAsync(
+    GetOrderQuery query,
+    CancellationToken cancellationToken = default)
 {
-    return Task.FromResult(GetDefaultValue());
+    // Return a simple default value
+    return Task.FromResult(OrderData.Unavailable);
 }
 ```
 
@@ -592,17 +618,51 @@ Each decorator should have a single responsibility. Compose multiple simple deco
 
 Register a separate circuit breaker for each external dependency, and name it on that dependency's handlers:
 ```csharp
-[RetryableQuery(2, "DatabaseCircuitBreaker")]    // For database queries
-[RetryableQuery(2, "ExternalApiCircuitBreaker")] // For API queries
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker;
+using Paramore.Darker.Policies;
+
+// For database queries
+public sealed class GetOrderQueryHandler(IOrderStore orders) : QueryHandlerAsync<GetOrderQuery, OrderData>
+{
+    [RetryableQuery(2, "DatabaseCircuitBreaker")]
+    public override async Task<OrderData> ExecuteAsync(
+        GetOrderQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        return await orders.GetAsync(query.OrderId, cancellationToken);
+    }
+}
+
+// For API queries
+public sealed class GetOrderFromApiQueryHandler(IExternalApi externalApi) : QueryHandlerAsync<GetOrderQuery, OrderData>
+{
+    [RetryableQuery(2, "ExternalApiCircuitBreaker")]
+    public override async Task<OrderData> ExecuteAsync(
+        GetOrderQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        return await externalApi.GetOrderAsync(query.OrderId, cancellationToken);
+    }
+}
 ```
 
 **6. Configure appropriate retry delays**
 
 Use exponential backoff for retries to avoid overwhelming recovering systems:
 ```csharp
-TimeSpan.FromMilliseconds(50),   // 50ms
-TimeSpan.FromMilliseconds(100),  // 100ms
-TimeSpan.FromMilliseconds(200),  // 200ms
+using System;
+using Polly;
+
+var retryPolicy = Policy
+    .Handle<Exception>()
+    .WaitAndRetryAsync(new[]
+    {
+        TimeSpan.FromMilliseconds(50),   // 50ms
+        TimeSpan.FromMilliseconds(100),  // 100ms
+        TimeSpan.FromMilliseconds(200),  // 200ms
+    });
 ```
 
 **7. Monitor circuit breaker state changes**
@@ -621,24 +681,46 @@ Putting retry at a lower step than fallback puts the retry outside the fallback:
 
 ❌ Bad:
 ```csharp
-// ...
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker.Policies;
+using Paramore.Darker.Attributes;
+
 [RetryableQuery(1)]
 [FallbackPolicy(2)]  // Catches the first failure, so the retry never runs
+public override async Task<OrderData> ExecuteAsync(
+    GetOrderQuery query,
+    CancellationToken cancellationToken = default)
+{
+    return await _externalApi.GetOrderAsync(query.OrderId, cancellationToken);
+}
 ```
 
 ✅ Good:
 ```csharp
-// ...
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker.Policies;
+using Paramore.Darker.Attributes;
+
 [FallbackPolicy(1)]  // Runs only once the retries are exhausted
 [RetryableQuery(2)]
+public override async Task<OrderData> ExecuteAsync(
+    GetOrderQuery query,
+    CancellationToken cancellationToken = default)
+{
+    return await _externalApi.GetOrderAsync(query.OrderId, cancellationToken);
+}
 ```
 
 **2. Forgetting to configure policies**
 
-Using `[RetryableQuery]` without calling `AddDefaultPolicies()` or `AddPolicies()` will cause runtime errors.
+Using `[RetryableQuery]` without calling `AddDefaultPolicies()` or `AddPolicies()` throws a `MissingHandlerDecoratorException`, *"Handler decorator could not be created for type: …RetryableQueryDecorator…"*, the first time the handler runs. Neither call has registered the decorator the attribute names.
 
 ❌ Bad:
 ```csharp
+using Paramore.Darker.AspNetCore;
+
 builder.Services.AddDarker()
     .AddHandlersFromAssemblies(typeof(Program).Assembly);
     // No policies configured!
@@ -646,6 +728,9 @@ builder.Services.AddDarker()
 
 ✅ Good:
 ```csharp
+using Paramore.Darker.AspNetCore;
+using Paramore.Darker.Policies;
+
 builder.Services.AddDarker()
     .AddHandlersFromAssemblies(typeof(Program).Assembly)
     .AddDefaultPolicies();
@@ -653,47 +738,105 @@ builder.Services.AddDarker()
 
 **3. Policy naming mismatches**
 
-Naming a policy that doesn't exist in the policy registry throws a `ConfigurationException`, *"Policy does not exist in policy registry"*, the first time the handler runs.
+Naming a policy that doesn't exist in the policy registry throws a `ConfigurationException`, *"Policy does not exist in policy registry"*, the first time the handler runs. Register yours beside Darker's two defaults, `Constants.RetryPolicyName` and `Constants.CircuitBreakerPolicyName`: `AddPolicies` requires both, and throws a `ConfigurationException` at startup when either is missing.
 
 ❌ Bad:
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker.Policies;
+
 [RetryableQuery(2, "MyCircuitBreaker")]  // Policy name doesn't exist
+public override async Task<OrderData> ExecuteAsync(
+    GetOrderQuery query,
+    CancellationToken cancellationToken = default)
+{
+    return await _externalApi.GetOrderAsync(query.OrderId, cancellationToken);
+}
 ```
 
 ✅ Good:
 ```csharp
-// Define policy
-policyRegistry.Add("MyCircuitBreaker", circuitBreakerPolicy);
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker;
+using Paramore.Darker.AspNetCore;
+using Paramore.Darker.Policies;
+using Polly;
+using Polly.Registry;
 
-// Reference it
-[RetryableQuery(2, "MyCircuitBreaker")]
+// Define the policy, and register it under the name, beside the two defaults AddPolicies requires
+var circuitBreakerPolicy = Policy
+    .Handle<Exception>()
+    .CircuitBreakerAsync(1, TimeSpan.FromMilliseconds(500));
+
+var policyRegistry = new PolicyRegistry
+{
+    { Constants.RetryPolicyName, Policy.Handle<Exception>().WaitAndRetryAsync(3, attempt => TimeSpan.FromMilliseconds(50 * attempt)) },
+    { Constants.CircuitBreakerPolicyName, Policy.Handle<Exception>().CircuitBreakerAsync(1, TimeSpan.FromMilliseconds(500)) },
+    { "MyCircuitBreaker", circuitBreakerPolicy }
+};
+
+builder.Services.AddDarker()
+    .AddHandlersFromAssemblies(typeof(Program).Assembly)
+    .AddPolicies(policyRegistry);
+
+// Reference it by that name
+public sealed class GetOrderQueryHandler : QueryHandlerAsync<GetOrderQuery, OrderData>
+{
+    [RetryableQuery(2, "MyCircuitBreaker")]
+    public override async Task<OrderData> ExecuteAsync(
+        GetOrderQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        return await _externalApi.GetOrderAsync(query.OrderId, cancellationToken);
+    }
+}
 ```
 
 **4. Fallback not implemented when using FallbackPolicy**
 
-If you use the `[FallbackPolicy]` attribute, you **must** implement the `FallbackAsync` method, or you'll get a runtime error.
+If you use the `[FallbackPolicy]` attribute, implement `FallbackAsync`. Without it, `QueryHandlerAsync`'s own `FallbackAsync` answers the failed query with `default(TResult)`: no exception, and `null` for a reference type, which the caller then has to guard against.
 
 ❌ Bad:
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker.Policies;
+using Paramore.Darker.Attributes;
+
 [FallbackPolicy(2)]
-public override async Task<Result> ExecuteAsync(Query query, ...)
+public override async Task<OrderData> ExecuteAsync(
+    GetOrderQuery query,
+    CancellationToken cancellationToken = default)
 {
-    // ...
+    return await _externalApi.GetOrderAsync(query.OrderId, cancellationToken);
 }
-// Missing FallbackAsync method!
+// No FallbackAsync: QueryHandlerAsync's returns default(OrderData), which is null
 ```
 
 ✅ Good:
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Darker.Policies;
+using Paramore.Darker.Attributes;
+
 [FallbackPolicy(2)]
-public override async Task<Result> ExecuteAsync(Query query, ...)
+public override async Task<OrderData> ExecuteAsync(
+    GetOrderQuery query,
+    CancellationToken cancellationToken = default)
 {
-    // ...
+    return await _externalApi.GetOrderAsync(query.OrderId, cancellationToken);
 }
 
-public override Task<Result> FallbackAsync(Query query, ...)
+public override Task<OrderData> FallbackAsync(
+    GetOrderQuery query,
+    CancellationToken cancellationToken = default)
 {
-    return Task.FromResult(defaultValue);
+    // Return a simple default value
+    return Task.FromResult(OrderData.Unavailable);
 }
 ```
 
@@ -703,19 +846,29 @@ Fallback methods should be fast and not call external services. The purpose is t
 
 ❌ Bad:
 ```csharp
-public override async Task<string> FallbackAsync(Query query, ...)
+using System.Threading;
+using System.Threading.Tasks;
+
+public override async Task<OrderData> FallbackAsync(
+    GetOrderQuery query,
+    CancellationToken cancellationToken = default)
 {
     // Calling another external service in fallback!
-    return await _alternativeService.GetDataAsync();
+    return await _alternativeService.GetOrderAsync(query.OrderId, cancellationToken);
 }
 ```
 
 ✅ Good:
 ```csharp
-public override Task<string> FallbackAsync(Query query, ...)
+using System.Threading;
+using System.Threading.Tasks;
+
+public override Task<OrderData> FallbackAsync(
+    GetOrderQuery query,
+    CancellationToken cancellationToken = default)
 {
     // Return a simple default value
-    return Task.FromResult("Default Value");
+    return Task.FromResult(OrderData.Unavailable);
 }
 ```
 

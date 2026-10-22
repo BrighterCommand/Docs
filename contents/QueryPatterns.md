@@ -22,16 +22,23 @@ These patterns address real challenges like handling large data sets, optimizing
 **Always project to DTOs** rather than loading full entities:
 
 ```csharp
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+
 // ✅ Good: Select only needed fields
-.Select(o => new OrderDto
-{
-    Id = o.Id,
-    OrderDate = o.OrderDate,
-    CustomerName = o.Customer.Name
-})
+var orderDtos = await _dbContext.Orders
+    .Select(o => new OrderDto
+    {
+        Id = o.Id,
+        OrderDate = o.OrderDate,
+        CustomerName = o.Customer.Name
+    })
+    .ToListAsync();
 
 // ❌ Bad: Load entire entity
-.Select(o => o)  // or .ToList() directly
+var orders = await _dbContext.Orders
+    .Select(o => o)  // or .ToListAsync() directly
+    .ToListAsync();
 ```
 
 ### Pattern: Avoid N+1 Queries
@@ -39,6 +46,9 @@ These patterns address real challenges like handling large data sets, optimizing
 **N+1 problem:** Loading a collection, then querying related data for each item.
 
 ```csharp
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+
 // ❌ Bad: N+1 queries (1 query for orders + N queries for customers)
 var orders = await _dbContext.Orders.ToListAsync();
 foreach (var order in orders)
@@ -48,12 +58,12 @@ foreach (var order in orders)
 }
 
 // ✅ Good: Single query with Include
-var orders = await _dbContext.Orders
+var ordersWithCustomers = await _dbContext.Orders
     .Include(o => o.Customer)
     .ToListAsync();
 
 // ✅ Good: Single query with projection
-var orders = await _dbContext.Orders
+var orderDtos = await _dbContext.Orders
     .Select(o => new OrderDto
     {
         OrderId = o.Id,
@@ -67,15 +77,29 @@ var orders = await _dbContext.Orders
 **Always use async methods** for I/O operations:
 
 ```csharp
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+
 // ✅ Good: Async all the way
-public override async Task<Result> ExecuteAsync(Query query, CancellationToken ct)
+public override async Task<List<Product>> ExecuteAsync(GetProductsQuery query, CancellationToken ct)
 {
     return await _dbContext.Products
         .ToListAsync(ct);  // Async
 }
+```
+
+```csharp
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 // ❌ Bad: Blocking on async
-public override Task<Result> ExecuteAsync(Query query, CancellationToken ct)
+public override Task<List<Product>> ExecuteAsync(GetProductsQuery query, CancellationToken ct)
 {
     return Task.FromResult(_dbContext.Products.ToList());  // Blocking!
 }
@@ -248,33 +272,46 @@ public sealed class GetProductCatalogQueryHandler :
 ```
 
 **Usage in controller:**
-```csharp
-[HttpGet("products")]
-public async Task<IActionResult> GetProducts(
-    [FromQuery] int page = 1,
-    [FromQuery] int pageSize = 20,
-    [FromQuery] string? search = null,
-    [FromQuery] int? categoryId = null,
-    [FromQuery] decimal? minPrice = null,
-    [FromQuery] decimal? maxPrice = null,
-    [FromQuery] bool inStockOnly = false,
-    [FromQuery] string sortBy = "Name",
-    [FromQuery] bool sortDesc = false,
-    CancellationToken cancellationToken = default)
-{
-    var query = new GetProductCatalogQuery(
-        page,
-        pageSize,
-        search,
-        categoryId,
-        minPrice,
-        maxPrice,
-        inStockOnly,
-        sortBy,
-        sortDesc);
 
-    var result = await _queryProcessor.ExecuteAsync(query, cancellationToken);
-    return Ok(result);
+The controller executes the `GetProductCatalogQuery` declared above:
+
+```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Paramore.Darker;
+
+[ApiController]
+[Route("api/catalog")]
+public class CatalogController(IQueryProcessor queryProcessor) : ControllerBase
+{
+    [HttpGet("products")]
+    public async Task<IActionResult> GetProducts(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? search = null,
+        [FromQuery] int? categoryId = null,
+        [FromQuery] decimal? minPrice = null,
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] bool inStockOnly = false,
+        [FromQuery] string sortBy = "Name",
+        [FromQuery] bool sortDesc = false,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetProductCatalogQuery(
+            page,
+            pageSize,
+            search,
+            categoryId,
+            minPrice,
+            maxPrice,
+            inStockOnly,
+            sortBy,
+            sortDesc);
+
+        var result = await queryProcessor.ExecuteAsync(query, cancellationToken);
+        return Ok(result);
+    }
 }
 ```
 
