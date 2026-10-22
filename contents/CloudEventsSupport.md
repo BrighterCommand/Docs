@@ -86,7 +86,12 @@ CloudEvents properties are configured in the `Publication` when you register pro
 ### Basic Publication with CloudEvents
 
 ```csharp
-var publication = new Publication
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
+var publication = new RmqPublication
 {
     Topic = new RoutingKey("com.example.orders"),
     RequestType = typeof(OrderCreated),
@@ -100,7 +105,7 @@ var publication = new Publication
 services.AddBrighter(options => { /* ... */ })
     .AddProducers(configure =>
     {
-        configure.ProducerRegistry = new RabbitMQProducerRegistryFactory(
+        configure.ProducerRegistry = new RmqProducerRegistryFactory(
             new RmqMessagingGatewayConnection { /* ... */ },
             new[] { publication }
         ).Create();
@@ -112,6 +117,9 @@ services.AddBrighter(options => { /* ... */ })
 You can set additional CloudEvents properties in the Publication:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 var publication = new Publication
 {
     Topic = new RoutingKey("com.example.orders"),
@@ -145,6 +153,10 @@ If you're using default mappers (recommended), CloudEvents are handled automatic
 If you need a custom mapper (e.g., for transforms), you can access CloudEvents from the Publication:
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+
 public class OrderCreatedMapper : IAmAMessageMapper<OrderCreated>
 {
     public IRequestContext? Context { get; set; }
@@ -404,6 +416,8 @@ Subject = "customer/67890/profile"
 In most cases, use Brighter's default message mappers rather than implementing custom mappers:
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // Recommended - Use default mapper
 services.AddBrighter(options => { })
     .AddProducers(configure => { })

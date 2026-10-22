@@ -543,6 +543,11 @@ Brighter uses **RoundRobin** as the default strategy because:
 The **Range** strategy is useful when you want to co-locate partitions on the same consumer:
 
 ``` csharp
+using System;
+using Confluent.Kafka;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription<GreetingEvent>(
 	subscriptionName: new SubscriptionName("paramore.example.greeting"),
 	channelName: new ChannelName("greeting.event"),
@@ -562,6 +567,11 @@ var subscription = new KafkaSubscription<GreetingEvent>(
 The **CooperativeSticky** strategy is not supported when using manual offset commits (which Brighter requires for its at-least-once delivery guarantees). Attempting to use it will throw an `ArgumentOutOfRangeException`:
 
 ``` csharp
+using System;
+using Confluent.Kafka;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 // This will throw an exception:
 var subscription = new KafkaSubscription<GreetingEvent>(
 	// ...
@@ -588,6 +598,11 @@ Brighter supports both protocols through the **GroupProtocol** property on `Kafk
 **Using the classic protocol explicitly**:
 
 ``` csharp
+using System;
+using Confluent.Kafka;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription<GreetingEvent>(
 	subscriptionName: new SubscriptionName("paramore.example.greeting"),
 	channelName: new ChannelName("greeting.event"),
@@ -611,6 +626,10 @@ When you don't supply a **GroupProtocol**, Brighter uses a `ClassicGroupProtocol
 **Using the KIP-848 consumer protocol**:
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription<GreetingEvent>(
 	subscriptionName: new SubscriptionName("paramore.example.greeting"),
 	channelName: new ChannelName("greeting.event"),
@@ -679,6 +698,9 @@ and a package for the serialization of your choice. Here we are using JSON, so w
 When working with Brighter, to use Confluent Schema Registry you will need to take a dependency on ISchemaRegistry in the constructor of your message mapper. To fulfill this constructor, in your application setup you will need to register an instance of schema registry. You should configure the schema registry config url to be the url of you schema registry. (Here we just use localhost for a development instance running in docker as an example).
 
 ``` csharp
+using Confluent.SchemaRegistry;
+using Microsoft.Extensions.DependencyInjection;
+
 var schemaRegistryConfig = new SchemaRegistryConfig { Url = "http://localhost:8081"};
 var cachedSchemaRegistryClient = new CachedSchemaRegistryClient(schemaRegistryConfig);
 services.AddSingleton<ISchemaRegistryClient>(cachedSchemaRegistryClient);

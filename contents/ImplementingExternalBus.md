@@ -49,6 +49,9 @@ in addition, we can support a [Competing Consumers](http://www.enterpriseintegra
 Instead of using **CommandProcessor.Send()** you use **CommandProcessor.Post()** or **CommandProcessor.DepositPost** and **CommandProcessor.ClearOutbox** to send the message
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+
 var reminderCommand = new TaskReminderCommand(
      taskName: reminder.TaskName,
      dueDate: DateTime.Parse(reminder.DueDate),

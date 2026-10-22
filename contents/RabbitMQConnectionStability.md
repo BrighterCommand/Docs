@@ -29,6 +29,9 @@ The first three need no configuration. The rest of this page covers the ones tha
 The `AmqpUriSpecification` provides several options for connection reliability:
 
 ```csharp
+using System;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 // ...
 var rmqConnection = new RmqMessagingGatewayConnection
 {
@@ -36,7 +39,7 @@ var rmqConnection = new RmqMessagingGatewayConnection
         uri: new Uri("amqp://guest:guest@localhost:5672"),
         connectionRetryCount: 5,                  // Number of retry attempts
         retryWaitInMilliseconds: 250,             // Wait between retries
-        circuitBreakerTimeInMilliseconds: 30000   // Circuit breaker timeout
+        circuitBreakTimeInMilliseconds: 30000     // Circuit breaker timeout
     ),
     Exchange = new Exchange("paramore.brighter.exchange"),
     Heartbeat = 20  // Heartbeat interval in seconds
@@ -59,6 +62,9 @@ exist for, and a retry configuration that has never been exercised is a guess.
 RabbitMQ uses heartbeats to detect dead TCP connections. If a connection doesn't send a heartbeat within the configured interval, RabbitMQ considers it dead and closes the connection.
 
 ```csharp
+using System;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 // ...
 var rmqConnection = new RmqMessagingGatewayConnection
 {

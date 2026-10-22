@@ -196,6 +196,10 @@ The most common solution to serialization of the message payload is to use Syste
 You can then use this, when you want to set options consistently for message serialization.
 
 ``` csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+
    public GreetingMade MapToRequest(Message message)
     {
         return JsonSerializer.Deserialize<GreetingMade>(message.Body.Value, JsonSerialisationOptions.Options);

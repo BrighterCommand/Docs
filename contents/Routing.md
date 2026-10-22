@@ -71,6 +71,7 @@ To help route direct messages we provide two classes, **Request** and **Reply** 
 Note also the correlation id that is added to the **ReplyAddress**.
 
 ``` csharp
+using Paramore.Brighter;
 
 public class MyRequest : Request
 {

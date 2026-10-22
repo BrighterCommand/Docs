@@ -115,7 +115,7 @@ the ones your network obliges you to; for how to choose values, see
 
 - **connectionRetryCount**: Number of times to retry connecting to RabbitMQ before giving up (default: 3)
 - **retryWaitInMilliseconds**: Time to wait between retry attempts (default: 1000ms)
-- **circuitBreakerTimeInMilliseconds**: Time to wait before attempting to reconnect after exceeding retry count (default: 60000ms)
+- **circuitBreakTimeInMilliseconds**: Time to wait before attempting to reconnect after exceeding retry count (default: 60000ms)
 - **Heartbeat**: Interval for RabbitMQ heartbeat checks to detect dead connections (default: 20s)
 
 ## RabbitMQ Publication
@@ -310,7 +310,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
                     new Uri("amqp://guest:guest@localhost:5672")
                     connectionRetryCount: 5,
                     retryWaitInMilliseconds: 250,
-                    circuitBreakerTimeInMilliseconds = 30000
+                    circuitBreakTimeInMilliseconds = 30000
                 ),
         Exchange = new Exchange("paramore.brighter.exchange")
     };
@@ -334,6 +334,10 @@ To use quorum queues, you must configure the subscription with:
 - **highAvailability**: Must be `false` (quorum queues provide their own replication)
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 // ...
 var subscription = new RmqSubscription<GreetingMade>(
     new SubscriptionName("paramore.sample.salutationanalytics"),

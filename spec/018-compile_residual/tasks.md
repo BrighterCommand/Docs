@@ -2175,7 +2175,7 @@ the work. `tools/README.md` rows 2 and 9 now give the close's figures.
 - [x] **Task 6.1:** Predict phase 6's gate movement
   - Input: § *The groups*, S4; recurrence greps for S4's defects
   - Output: § *Phase 6 as executed*, *Predicted*, as 3.1's
-- [ ] **Task 6.2:** Repair S4's reachable blocks
+- [x] **Task 6.2:** Repair S4's reachable blocks
   - Input: S4's table, reachable rows; the V4 pin for `S3LuggageStore.md` #1
   - Output: as 3.2's, for S4. `S3LuggageStore.md` #1 is BUILT or listed with a diagnostic that is
     not `CS0234 … V4`
@@ -2297,6 +2297,100 @@ one, `S3LuggageStore.md` none), read against `--report` and `--classify`:
 | assemblies | 553 | **unmoved** | every package S4 names is pinned (AsyncAPI, AWSSQS, Azure Service Bus, Kafka, both RMQ, the AWS transformers) |
 | `optioncheck` | 0 / 59 / 529 | **0 mismatches, 59 / 529 unless a repair adds a row** | five S4 pages carry marked tables; the `circuitBreakerTimeInMilliseconds` prose is a list, not a marked table |
 | `linkcheck` · `versioncheck` · `pagelint --plant` | 168 / 0 · 0 of 18 · 5 / 5 | **unmoved** | |
+
+#### The repairs (6.2)
+
+**S4's reachable rows, 78 blocks**: the 72 classed `built-by-using` (7), `values` (6) and `page-type` (59), and
+the six 6.1's reading assigned here (`AWSSQSConfiguration.md` #7–#10, `RabbitMQConnectionStability.md` #1,
+`RabbitMQConfiguration.md` #5; `S3LuggageStore.md` #1 is among the six `values`). **73 of the 78 build**, and
+5 do not: four stay FAILED because the type they lack is declared by another block on their page (below), and
+one needs a package the pin does not carry. `AWSSQSConfiguration.md` #7–#10, `RabbitMQConnectionStability.md` #1
+and `RabbitMQConfiguration.md` #5 build once their `name:`, `circuitBreakTimeInMilliseconds` and
+`using Paramore.Brighter.MessagingGateway.RMQ.Async;` are in. **`S3LuggageStore.md` #1 is BUILT** on the V4 pin: a
+`credentials` value in `S3LuggageStoreContext` is all it lacked, and the namespace resolved. Beside the 78,
+`AsyncAPISupport.md` #4 and #9 were given their `using`s although they stay FAILED, so the diagnostic that
+remains is the declared type's alone. Eleven scaffold units are new (`AsyncAPISupport`, `CloudEventsSupport`,
+`DefaultMessageMappers`, `DynamicMessageDeserialization`, `HandlerFailure`, `ImplementingExternalBus`,
+`KafkaConfiguration`, `MessageTransforms`, `RabbitMQConfiguration`, `Routing`, `RoutingMultipleMessageTypes`) and two
+extended (`MessageMappersContext`, `S3LuggageStoreContext`), with **0** unit-rule violations.
+
+**Measured after 6.2:** `--report` → **992 / 715 / 250 / 27**; 78 findings, all expected: 73 BUILT blocks
+not yet baselined (6.6), and 5 BUILT blocks whose page gained a unit (`AsyncAPISupport.md` #5;
+`CloudEventsSupport.md` #8, #10; `DefaultMessageMappers.md` #4, #5). The scaffold rule reads **78 units, 0
+violations, 0 compile errors**; the pin rule 4 pages, 0 violations; the V4 pin 28 blocks, 25 built, 3 failing (24 and 4
+before). `groups.py` over this `--classify` gives S4 **15 pages, 52 FAILED** (35 parse, 9 defect, 5 same-page, 3
+page-type), 76 BUILT, one page with nothing BUILT (`AzureServiceBusConfiguration.md`); `RoutingMultipleMessageTypes.md`
+and `S3LuggageStore.md` are whole and have left the table. Two methods: the FAILED column, 52; `--report` on the
+seventeen pages, 52, with 87 BUILT and 4 SKIPPED. `pagelint` 0 errors / **218** warnings (271 before; S4's own 94 →
+**41**, `--per-page` on the seventeen pages), `--changed origin/master` 0 errors, `--plant` 5 / 5. `linkcheck` 168 / 0.
+`symbolcheck` 24 entries, 14 silenced. `optioncheck` 0 mismatches, 59 tables, 529 rows.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| § *Predicted (6.1)*, assemblies: *"every package S4 names is pinned"* | `RabbitMQConnectionStability.md` #3 names Serilog (`Log`, `LoggerConfiguration`, `AddSerilog`, a Seq sink). No pin carries it: `grep -in serilog tools/blockcheck/refs/refs.csproj tools/blockcheck/refs-v4/refs-v4.csproj` → 0. Serilog is named on one page only (`grep -rln Serilog contents/` → 1) | the prediction stands, reconciled at 6.6; the block stays FAILED (§ *Blocks that stay FAILED*) and the pin is unmoved at 553 |
+| § *Predicted (6.1)*, `versioncheck` *0 of 18* | `python3 tools/versioncheck.py` → **18 of 18 stale**: NuGet's latest `Paramore.*` is 10.8.1 and the five tutorial pages pin 10.8.0. No S4 page is on its list | not S4's, not a 6.2 change; the pins are `10.8.0` on purpose (the refs pin) and the tutorial pages are phase 7's or the maintainer's to move. Carried to 6.6 |
+| § *Predicted (6.1)*, `pagelint`: *0 errors / 185–210 at the close* | 218 after 6.2 alone, with 6.3's *parse* and *defect* blocks (44 of S4's 52) still to be edited | the band stands for the close; reconciled at 6.6 |
+
+**What stays FAILED from the reachable rows (5).** The unit rule (2) forbids a stub for a type another block
+on the page declares, so these cannot be repaired by a stub; making them whole would declare the type a second
+time, a change of what the page teaches:
+- `AsyncAPISupport.md` #11 and #12 (`OrderCreatedEvent`, declared by #5) and #4 (the same, and `rmqConnection`,
+  which no BUILT block names, so no unit may stub it). The page now says so before #4 and before the *Complete
+  Examples* (two sentences); #9 follows #8, which declares `MySchemaGenerator`
+- `DefaultMessageMappers.md` #6 and #10 (`OrderShipped` and `AvroMessageMapperAsync<T>`, declared by #4 and #5, and the
+  `Orders` namespace #5 declares)
+- `RabbitMQConnectionStability.md` #3 (Serilog; above)
+
+**What the reachable rows hid.** A block that did not compile had not been checked for anything else:
+- **A type that does not exist (ledger 67).** `CloudEventsSupport.md` #1 and `DefaultMessageMappers.md` #1
+  constructed `RabbitMQProducerRegistryFactory`; the type is `RmqProducerRegistryFactory`, in both RMQ packages.
+  The classifier called both *page-type* because the lacking `OrderCreated` and `services` were the first errors
+- **A plain `Publication` given to a transport's registry factory (ledger 68).** `RmqProducerRegistryFactory` takes
+  `IEnumerable<RmqPublication>` and `KafkaProducerRegistryFactory` `IEnumerable<KafkaPublication>`, so a
+  `Publication[]` is `CS1503`. `CloudEventsSupport.md` #1 and `DefaultMessageMappers.md` #1 now construct
+  `RmqPublication`, `RoutingMultipleMessageTypes.md` #2's three `KafkaPublication`. `CloudEventsSupport.md` #2 builds a
+  `Publication` and passes it nowhere, and stays one; so does `InMemoryOptions.md`, whose factory takes `Publication`
+- **A required member left to a comment (ledger 69).** `KafkaMessagingGatewayConfiguration { /* ... */ }` leaves
+  `BootStrapServers`, which is `required`, unset (`CS9035`). `RoutingMultipleMessageTypes.md` #2 now sets it and keeps its
+  `// ...`
+- **`name:` for `subscriptionName:` (ledger 65)** and **`circuitBreakerTimeInMilliseconds` (ledger 66)**, the two 6.1
+  predicted. The second recurs in `RabbitMQConfiguration.md` #4 (a *parse* block) and in its *RabbitMQ Connection
+  Reliability Options* list; both now say `circuitBreakTimeInMilliseconds`
+
+**Units, by what they supply.** Each stub is a request (`Event` or `Command`) and nothing more unless a BUILT block
+names a member: `OrderCreated` in `DefaultMessageMappersContext` carries `CustomerId` and `Total`, `PlaceOrder` in
+`HandlerFailureContext` carries `OrderId`, `Amount` and `CustomerId`, `TaskReminderCommand` takes the four arguments
+`ImplementingExternalBus.md` #1 names. A mapper stub derives from `JsonMessageMapper<T>` and adds nothing, so
+`mappers.Register<LargeOrder, CompressedOrderMapper>()` is still checked against the real constraint. The values
+(`services`, `_commandProcessor`, `options`, `builder`, `host`, `subscription`, `_logger`) are typed from a pinned package
+and return a default; `reminder` is a tuple of the four strings the block reads; `ProcessOrder` and `ProcessOrderAsync` are
+statics that do nothing, reached through `using static`, standing for the `// ...` of the reader's own handler.
+`MessageMappersContext` also supplies the four fields of the Kafka mapper `MessageMappers.md` #6 shows on its own.
+
+**For 6.3.**
+- `RabbitMQConfiguration.md` #4: the name is repaired (ledger 66); the parse errors remain (a missing comma and `=`
+  in an argument list) and the block needs `GreetingMade`, which `RabbitMQConfigurationContext` now supplies
+- `KafkaConfiguration.md`: `GreetingEvent` is now in `KafkaConfigurationContext`, and `new KafkaMessagingGatewayConfiguration {...}`
+  is the `BootStrapServers` defect of ledger 69 when made whole
+- `DynamicMessageDeserialization.md` #6 builds with `// ...` as its argument list (`KafkaSubscription<T>` has a
+  parameterless constructor); #7 is still a fragment (`CS7036`)
+- `MessageTransforms.md` #7, #8: `GreetingEvent` is the unit's; `LargeOrder`, `SensitiveOrder` are not, and are declared by no block
+- `ImplementingExternalBus.md` #3 stays 6.3's V10 handler; `TaskReminderCommand` is in the unit
+
+**For 6.4.** Blocks edited by 6.2 whose comments or prose assert behaviour, none run here:
+- `KafkaConfiguration.md` #15: `CooperativeSticky` with manual commits throws (the page names `ArgumentOutOfRangeException`)
+- `DefaultMessageMappers.md` #1, #8, #9, #12: the default mapper is `JsonMessageMapper<T>`; binary-mode CloudEvents as the default,
+  structured-mode with `CloudEventJsonMessageMapper<>`; #3, #9 and #15 choose a default mapper; #1 now also `RmqPublication` (ledger 68)
+- `CloudEventsSupport.md` #1, #6: the Publication's CloudEvents attributes reach the header; a claim-checked message over
+  256 KB is stored and its `dataref` set
+- `HandlerFailure.md` #1–#8, #10, #11: each attribute's action on an unhandled exception (defer with a delay, reject to the
+  dead letter queue, don't acknowledge), their step order, and which exception type each action is
+- `DynamicMessageDeserialization.md` #4, #8; `RoutingMultipleMessageTypes.md` #1, #3, #4, #6–#9: `getRequestType` resolves
+  by CloudEvents type or header and an unmapped message throws `InvalidMessageAction`; #6's handler routing by property
+- `AsyncAPISupport.md` #2, #10: `GenerateAsyncApiDocumentAsync` writes JSON and YAML
+- `AWSSQSConfiguration.md` #7–#10: the FIFO and point-to-point attributes (ledger 65)
 
 ### Phase 7 — S5, the remaining five sections *(7 tasks, one PR)*
 
@@ -2546,6 +2640,12 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `ImplementAQueryHandler.md` | 16 | `CS0246` `GetPeopleQuery`, `GetPeopleQueryHandler`, `GetOrderQueryHandler` | *same-page*: blocks 1, 3 and 10 declare them. At 5.5 it lost `GetPersonQueryHandler`, which no block declared, and gained a factory for the handler that takes a repository | 5 |
 | `ImplementAQueryHandler.md` | 21, 23 | `CS0246` `OrderNotFoundException`; #23 also `OrderAccessDeniedException`, `IAuthService`, and `CS1061` `Order.IsDeleted` | *same-page*: block 22 declares both exceptions, as the sentences before blocks 21 and 23 now say. `IAuthService` and `IsDeleted` are the reader's, and no unit may stub them while no BUILT block names them (unit rule 1) | 5 |
 | `QueryPatterns.md` | 6 | `CS0246` `GetProductCatalogQuery` | *same-page*: block 5 declares it, as the sentence before block 6 now says | 5 |
+| `AsyncAPISupport.md` | 4 | `CS0103` `rmqConnection`; `CS0246` `OrderCreatedEvent` | *same-page*: block 5 declares `OrderCreatedEvent`, as the sentence before block 4 now says. `rmqConnection` is the reader's, and no unit may stub it while no BUILT block names it (unit rule 3) | 6 |
+| `AsyncAPISupport.md` | 9 | `CS0246` `MySchemaGenerator` | *same-page*: block 8 declares it, and the sentence before block 9 says to register your implementation | 6 |
+| `AsyncAPISupport.md` | 11, 12 | `CS0246` `OrderCreatedEvent` | *same-page*: block 5 declares it, as the sentence under *Complete Examples* now says | 6 |
+| `Routing.md` | 3 | `CS0246` `MyRequest` | *same-page*: block 2 declares it, and the sentence before block 3 names "this request" | 6 |
+| `DefaultMessageMappers.md` | 6, 10 | `CS0246` `Orders`, `OrderShipped`, `AvroMessageMapperAsync<>` | *same-page*: block 4 declares the mapper and block 5 `OrderShipped`, in the namespace `Orders`; the sentences before blocks 6 and 10 are about that mapper | 6 |
+| `RabbitMQConnectionStability.md` | 3 | `CS0103` `Log`, `services`; `CS0246` `LoggerConfiguration` | Serilog (and its Seq sink) is on no pin, and the page names it alone. Adding it moves the pin's 553 assemblies and is not a repair of this page: put to 6.5 | 6 |
 
 ## Splits
 
@@ -2633,6 +2733,11 @@ design, and their greps were run there.*
 | 62 | `AddBrighter`'s options said to configure the Command Processor beside `AddConsumers`; with `AddConsumers` alone, its options configure both, `ConsumersOptions` being a `BrighterOptions` | `HowServiceActivatorWorks.md` | `grep -rn 'separately, from `AddBrighter`' contents/` | **1** | **0** | task 5.4, run (`probe/s3/dispatcher-instrumentation`); written at 5.3 with ledger 57 | 5 |
 | 63 | Manual registration building a handler that takes a repository with `Activator.CreateInstance`, which throws `MissingMethodException`; and registering a `GetPersonQueryHandler` no block declares | `ImplementAQueryHandler.md` | `grep -rn 'GetPersonQueryHandler' contents/ImplementAQueryHandler.md` | **1** | **0** | task 5.5, run (`probe/s3/darker-pipeline`) | 5 |
 | 64 | A domain exception named `UnauthorizedAccessException`, hiding `System.UnauthorizedAccessException` | `ImplementAQueryHandler.md` | `grep -rn 'class UnauthorizedAccessException' contents/` | **1** | **0** | task 5.5, read | 5 |
+| 65 | `name:` for `subscriptionName:` on `SqsSubscription<T>`, whose constructors take `subscriptionName` (`CS1739`) | `AWSSQSConfiguration.md` | `grep -rnE 'name: new SubscriptionName' contents/` | **4** | **0** | task 6.1, the second compile; repaired at 6.2 | 6 |
+| 66 | `circuitBreakerTimeInMilliseconds` for `circuitBreakTimeInMilliseconds`, the name `AmqpUriSpecification` takes (`CS1739`); once in a block, once in a block hidden by a parse error, once in prose | `RabbitMQConnectionStability.md`, `RabbitMQConfiguration.md` | `grep -rn circuitBreakerTimeInMilliseconds contents/` | **3** | **0** | task 6.1, the second compile; the prose and the parse block repaired with it (obligation 21) | 6 |
+| 67 | `RabbitMQProducerRegistryFactory`, a type that does not exist; both RMQ packages have `RmqProducerRegistryFactory` | `CloudEventsSupport.md`, `DefaultMessageMappers.md` | `grep -rn RabbitMQProducerRegistryFactory contents/` | **2** | **0** | task 6.2, hidden behind *page-type* | 6 |
+| 68 | A plain `Publication` given to a transport's producer registry factory, which takes the transport's own: `RmqPublication` for RMQ, `KafkaPublication` for Kafka (`CS1503`) | `CloudEventsSupport.md`, `DefaultMessageMappers.md`, `RoutingMultipleMessageTypes.md` | `grep -rn -B40 -A14 -E 'new (Rmq\|Kafka\|RabbitMQ)ProducerRegistryFactory\(' contents/ \| grep -E 'new Publication$' \| sort -u \| wc -l` | **7**, of which 5 are this defect | **1** | task 6.2, hidden behind *page-type*. Of the 2 other hits, `InMemoryOptions.md`'s factory takes `Publication`, and `CloudEventsSupport.md` #2 passes its `Publication` to no factory. The latter has left the window since (the `using`s above it); the former is the 1 | 6 |
+| 69 | `new KafkaMessagingGatewayConfiguration { /* ... */ }`, leaving `BootStrapServers`, which is `required`, to a comment (`CS9035`) | `RoutingMultipleMessageTypes.md` | `grep -rnF 'KafkaMessagingGatewayConfiguration { /* ... */ }' contents/` | **1** | **0** | task 6.2, hidden behind *page-type* | 6 |
 
 ## Friction ledger
 

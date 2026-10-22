@@ -22,6 +22,10 @@ By default, Brighter uses the **DataType Channel** pattern from [Enterprise Inte
 ### DataType Channel Example
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 // DataType Channel - One type per subscription
 var subscription = new KafkaSubscription<TaskCreated>(
     new SubscriptionName("paramore.example.tasks"),
@@ -168,6 +172,9 @@ See [CloudEvents Support](CloudEventsSupport.md) for more on CloudEvents type na
 Start with DataType Channel (one type per topic) unless you have a specific need for dynamic deserialization:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 // Good - Simple DataType Channel when possible
 var subscription = new KafkaSubscription<TaskCreated>(
     // ...

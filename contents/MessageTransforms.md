@@ -18,6 +18,11 @@ Some concerns are orthogonal to how you map a **IRequest** into a **Message** or
 A *Transform* is a middleware that runs as part of the pipeline we use to map a **IRequest** into a **Message** or how you map a **Message** into an **IRequest**. A transform implements an **IMessageTransformAsync**. (All transforms are async).
 
 ``` csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 // ...
 public interface IAmAMessageTransformAsync : IDisposable
 {
@@ -35,6 +40,11 @@ When we *wrap* the source is the *Message Mapper* and the transform is applied t
 You indicate that you wish to *wrap* a *Message Mapper* with the **WrapWithAttribute** associated with the **IMessageTransformAsync** you want to apply to the **Message** you have created from the **IRequest**. In the example below we use a **ClaimCheck** to move large message payloads (those over the threshold) into a *luggage store* (for example an S3 bucket).
 
 ``` csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+
 // ...
 [ClaimCheck(step:0, thresholdInKb: 256)]
 public Message MapToMessage(GreetingEvent request, Publication publication)
@@ -53,6 +63,11 @@ When we *unwrap* the sink is the *Message Mapper* and the transform is applied t
 You indicate that you wish to *unwrap* a *Message Mapper* with the **UnwrapWithAttribute** associated with the **IMessageTransformAsync** you want to apply to the **Message** before you create your **IRequest**. In the example below we use a **RetrieveClaim** to retrieve a large message payload (most likely stored by a Claim Check in a *luggage store*) that will provide the body of our **Message** before we deserialize it to the **IRequest**. 
 
 ``` csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+
 // ...
 [RetrieveClaim(step:0)]
 public GreetingEvent MapToRequest(Message message)
@@ -61,7 +76,6 @@ public GreetingEvent MapToRequest(Message message)
     
     return greetingCommand;
 }
-
 ```
 
 ### Transform, Wrap and Unwrap
@@ -97,6 +111,10 @@ If you want to pass parameters to your transform, they must be available at comp
 So in this example, the **ClaimCheck** takes a parameter for the *threshold* at which point we move the body of the message into distributed storage as opposed to serializing it in the message body.
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Transforms.Transformers;
+
 // ...
 public class ClaimCheck : WrapWithAttribute
 {
@@ -141,6 +159,11 @@ The [Claim Check pattern](ClaimCheck.md) stores large message payloads externall
 Here's a real example from the Brighter samples:
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+
 // ...
 public class GreetingEventMessageMapper : IAmAMessageMapper<GreetingEvent>
 {

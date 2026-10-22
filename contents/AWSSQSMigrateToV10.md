@@ -136,6 +136,11 @@ AWS SDK v4 introduced new credential and configuration patterns:
 **V3 Approach**:
 
 ```csharp
+using System;
+using Amazon;
+using Amazon.Runtime.CredentialManagement;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 // ...
 // V3 - Using profile
 var chain = new CredentialProfileStoreChain();
@@ -151,6 +156,11 @@ var connection = new AWSMessagingGatewayConnection(credentials, region);
 **V4 Approach**:
 
 ```csharp
+using System;
+using Amazon;
+using Amazon.Runtime.CredentialManagement;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 // ...
 // V4 - Using profile (similar, but with v4 SDK)
 var chain = new CredentialProfileStoreChain();
@@ -166,6 +176,9 @@ var connection = new AWSMessagingGatewayConnection(credentials, region);
 **V4 - Using Default Credentials** (recommended):
 
 ```csharp
+using Amazon.Runtime;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 // ...
 // V4 - Let SDK resolve credentials automatically
 var credentials = FallbackCredentialsFactory.GetCredentials();

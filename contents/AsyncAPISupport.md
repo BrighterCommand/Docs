@@ -40,6 +40,8 @@ Register AsyncAPI generation by calling `UseAsyncApi()` on your Brighter builder
 
 ```csharp
 using Paramore.Brighter.AsyncAPI;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 
 services.AddConsumers(options =>
 {
@@ -60,6 +62,9 @@ services.AddConsumers(options =>
 Then generate the document after building your host:
 
 ```csharp
+using System;
+using Paramore.Brighter.AsyncAPI;
+
 var host = builder.Build();
 
 if (args.Length > 0 && args[0] == "--generate-asyncapi")
@@ -87,6 +92,9 @@ Deduplication is keyed on `(channel, action)`. Subscriptions produce `receive` o
 Subscriptions registered with `AddConsumers()` become `receive` operations in the AsyncAPI document. Each subscription's [RoutingKey](/contents/Routing.md) becomes a channel address, and the `RequestType` provides the message schema.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 options.Subscriptions = new Subscription[]
 {
     new RmqSubscription<PaymentReceivedEvent>(
@@ -104,9 +112,12 @@ Send-only applications that do not call `AddConsumers()` produce documents with 
 
 ### Publications (Send Operations)
 
-Publications registered in the producer registry become `send` operations. Each publication's `Topic` becomes the channel address. Use typed publications (e.g. `RmqPublication<T>`) to associate a `RequestType` with the publication for schema generation.
+Publications registered in the producer registry become `send` operations. Each publication's `Topic` becomes the channel address. Use typed publications (e.g. `RmqPublication<T>`) to associate a `RequestType` with the publication for schema generation. `OrderCreatedEvent` is the event declared under [Assembly Scanning (Send Operations)](#assembly-scanning-send-operations) below.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 var producerRegistry = new RmqProducerRegistryFactory(
     rmqConnection,
     new RmqPublication<OrderCreatedEvent>[]
@@ -231,6 +242,10 @@ public class MySchemaGenerator : IAmASchemaGenerator
 Register your implementation before calling `UseAsyncApi()`:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.AsyncAPI;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 services.AddSingleton<IAmASchemaGenerator, MySchemaGenerator>();
 
 services.AddConsumers(options => { /* ... */ })
@@ -244,6 +259,9 @@ When `UseAsyncApi()` finds an existing `IAmASchemaGenerator` registration, it do
 A common pattern is to generate the AsyncAPI document as part of your CI pipeline using a command-line argument:
 
 ```csharp
+using System;
+using Paramore.Brighter.AsyncAPI;
+
 if (args.Length > 0 && args[0] == "--generate-asyncapi")
 {
     var document = await host.GenerateAsyncApiDocumentAsync("asyncapi.json");
@@ -264,6 +282,8 @@ asyncapi validate asyncapi.json
 ```
 
 ## Complete Examples
+
+Both examples use the `OrderCreatedEvent` declared under [Assembly Scanning (Send Operations)](#assembly-scanning-send-operations), and a `PaymentReceivedEvent` of your own, written the same way.
 
 ### RabbitMQ Example
 

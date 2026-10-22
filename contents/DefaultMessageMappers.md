@@ -57,16 +57,22 @@ Brighter looks for first for an explicit `IAmAMessageMapper<T>` registration. If
 This is the simplest and recommended approach for most scenarios:
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
 .AddProducers(configure =>
 {
-    configure.ProducerRegistry = new RabbitMQProducerRegistryFactory(
+    configure.ProducerRegistry = new RmqProducerRegistryFactory(
         new RmqMessagingGatewayConnection { /* ... */ },
         [
-            new Publication
+            new RmqPublication
             {
                 Topic = new RoutingKey("orders.created"),
                 RequestType = typeof(OrderCreated),
@@ -108,6 +114,9 @@ Brighter automatically:
 You can configure which default mapper to use:
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageMappers;
+
 services.AddBrighter(options => { })
     .AddProducers(configure => { })
     .AutoFromAssemblies(
@@ -237,6 +246,8 @@ When you need message transformation (Claim Check, Compression, Encryption, PII 
 If you have specific messages that need custom mappers, register them explicitly:
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter(options => { })
     .AddProducers(configure => { })
     .AutoFromAssemblies(
@@ -258,6 +269,8 @@ services.AddBrighter(options => { })
 ### Using Default Binary-Mode Mapper (Recommended)
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter(options => { })
     .AddProducers(configure => { })
     .AutoFromAssemblies([typeof(OrderCreated).Assembly]);
@@ -267,6 +280,9 @@ services.AddBrighter(options => { })
 ### Using Structured-Mode as Default
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageMappers;
+
 services.AddBrighter(options => { })
     .AddProducers(configure => { })
     .AutoFromAssemblies(
@@ -318,6 +334,8 @@ services.AddBrighter(options => { })
 Use default `JsonMessageMapper<T>` for all new messages unless you have a specific need:
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // ✅ Recommended - Simple and maintainable
 services.AddBrighter(options => { })
     .AutoFromAssemblies([typeof(OrderCreated).Assembly]);
@@ -370,6 +388,9 @@ public Message MapToMessage(LargeEvent request, Publication publication)
 Choose one default mapper strategy for your application:
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageMappers;
+
 // Good - Consistent default across all assemblies
 services.AddBrighter(options => { })
     .AutoFromAssemblies(
