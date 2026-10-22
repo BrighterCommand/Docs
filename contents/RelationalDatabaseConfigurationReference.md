@@ -34,6 +34,7 @@ property you read back is the same word capitalised.
 | `schemaName` | `string?` | `null` | Qualifies the tables with a schema; the provider's own default applies when null. |
 | `binaryMessagePayload` | `bool` | `false` | Stores the message body as bytes rather than as UTF-8 text. |
 | `jsonMessagePayload` | `bool` | `false` | Stores the message body in the database's native JSON type. |
+| `outstandingCountTimeout` | `TimeSpan?` | `null` | The command timeout for the Outbox's count of outstanding messages; `null` is 15 seconds. Rounded up to whole seconds. |
 
 Only `connectionString` is required. The three table names default to `Outbox`, `Inbox` and
 `Queue`, so a component that uses one of them needs no configuration beyond the connection.
@@ -41,6 +42,14 @@ Only `connectionString` is required. The three table names default to `Outbox`, 
 `binaryMessagePayload` and `jsonMessagePayload` change the column the payload is written to,
 so **changing either against an existing table is a migration, not a setting**. See
 [Database Provisioning](/contents/BoxProvisioning.md).
+
+`outstandingCountTimeout` bounds the count an Outbox runs when `MaxOutStandingMessages` is set,
+from Brighter 10.8.1; before it, the count had no timeout, and a lock on the Outbox table could hold
+it, and the limit check waiting on it, indefinitely. A count that times out is logged and read as 0,
+so while it keeps timing out the limit does not stop posts. The value replaces any command timeout
+in the connection string for that query, and must be greater than zero and at most 2,147,483
+seconds, or the constructor throws `ArgumentOutOfRangeException`. On Spanner the default falls from
+60 seconds to 15. The Sweeper's read of outstanding messages keeps its own timeout.
 
 ## Which Components Take the Relational Configuration
 

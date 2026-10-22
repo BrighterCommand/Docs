@@ -192,7 +192,7 @@ public class GreetingMadeHandler : RequestHandlerAsync<GreetingMade>
 ```
 
 **Key Points:**
-- **UseInboxAsync** attribute ensures the message is only processed once
+- **UseInboxAsync** attribute ensures the message is only processed once, using the Inbox you configure with `InboxConfiguration` on `AddConsumers`. From Brighter 10.8.1 there is none until you set it, and without one the handler fails — see [Inbox Configuration](/contents/DispatcherConfigurationReference.md#inbox)
 - **DepositPostAsync** writes to the Outbox within the transaction
 - **ClearOutboxAsync** sends the message after the transaction commits
 - Both entity writes and message writes succeed or fail together

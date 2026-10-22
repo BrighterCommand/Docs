@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- dotnet run -p:BrighterVersion=10.8.1 (the case) and -p:BrighterVersion=10.8.0 (the control) -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+    <BrighterVersion Condition="'$(BrighterVersion)' == ''">10.8.1</BrighterVersion>
+    <DefineConstants Condition="'$(BrighterVersion)' == '10.8.1'">$(DefineConstants);B1081</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection" Version="$(BrighterVersion)" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.Diagnostics" Version="$(BrighterVersion)" />
+  </ItemGroup>
+</Project>
