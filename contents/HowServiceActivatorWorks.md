@@ -338,14 +338,14 @@ services.AddConsumers(options =>
 
 ### Health Checks
 
-Monitor Dispatcher health:
+Monitor Dispatcher health. From Brighter 10.8.1, `AddBrighterConsumerHealthChecks` registers a restart check for missing consumers and a take-out-of-service check for consumers that keep failing to read their channels; it replaces `BrighterServiceActivatorHealthCheck`, which is obsolete from 10.8.1:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.ServiceActivator.Extensions.Diagnostics.HealthChecks;
 
 services.AddHealthChecks()
-    .AddCheck<BrighterServiceActivatorHealthCheck>("brighter-dispatcher");
+    .AddBrighterConsumerHealthChecks();
 ```
 
 **See [Health Checks](HealthChecks.md) for details.**

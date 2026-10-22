@@ -107,8 +107,8 @@ Both processes talk to the broker, so both change. Remove RabbitMQ and add Kafka
 ```bash
 dotnet remove GreetingsSender package Paramore.Brighter.MessagingGateway.RMQ.Async
 dotnet remove GreetingsReceiver package Paramore.Brighter.MessagingGateway.RMQ.Async
-dotnet add GreetingsSender package Paramore.Brighter.MessagingGateway.Kafka --version 10.8.0
-dotnet add GreetingsReceiver package Paramore.Brighter.MessagingGateway.Kafka --version 10.8.0
+dotnet add GreetingsSender package Paramore.Brighter.MessagingGateway.Kafka --version 10.8.1
+dotnet add GreetingsReceiver package Paramore.Brighter.MessagingGateway.Kafka --version 10.8.1
 ```
 
 That is the entire package change. `Paramore.Brighter`,

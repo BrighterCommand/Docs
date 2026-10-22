@@ -281,6 +281,12 @@ var subscription = new Subscription<ProcessOrderCommand>(
 - Uses native transport delay mechanism
 - No external scheduler required
 - Message requeued directly on the broker
+- On Azure Service Bus, from Brighter 10.8.1, only a consumer that reads a queue — with
+  `UseServiceBusQueue` or `ForwardTo` — can delay a requeue. One that reads a topic subscription
+  directly requeues at once and logs a warning that the delay was not applied. A queue consumer can
+  use the scheduler you configured instead of the broker's, by setting
+  `RequeueScheduler = RequeueSchedulerMode.Global` on the publication it is created with. See
+  [Azure Service Bus Configuration](/contents/AzureServiceBusConfiguration.md#azure-service-bus-entity-options)
 
 **Transports without Native Delay (Kafka, AWS SNS, etc.):**
 

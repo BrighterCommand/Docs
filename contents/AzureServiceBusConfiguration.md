@@ -104,6 +104,7 @@ the property you set.
 | `SqlFilter` | `string` | `""` | Obsolete — use `Rule`. A SQL filter expression, applied to the subscription as a SQL rule named `sqlFilter`. |
 | `Rule` | `CreateRuleOptions?` | `null` | The rule that filters, and can act on, the messages the subscription receives. Setting both `Rule` and `SqlFilter` throws `ConfigurationException` when the subscription is constructed. |
 | `UseServiceBusQueue` | `bool` | `false` | Reads a Service Bus queue instead of a topic subscription. |
+| `ForwardTo` | `string?` | `null` | A queue in the same namespace that the topic subscription forwards its messages to, and that the consumer reads instead. `null` reads the topic subscription directly. Cannot be combined with `UseServiceBusQueue`. |
 
 `MaxDeliveryCount` is the transport's own count and is not Brighter's `requeueCount`: it fires
 on lock expiry, which is what a slow or crashed handler looks like to Service Bus.
@@ -131,6 +132,16 @@ expiration, lock duration, lifetime, idle timeout and session settings above; it
 reconfigure a queue that already exists. A producer creates a queue with the broker's defaults,
 and Service Bus does not let you change a queue's session requirement after it is created — so
 provision a session-enabled queue before producers start, or let the consumer create it first.
+
+`ForwardTo` keeps a topic subscription, and its routing key stays the topic's name, but the
+messages and their retries arrive on the named queue. Give each independent subscription its own
+queue. `Create` provisions the queue before the subscription, `Validate` checks both entities and
+the forwarding, and `Assume` expects both to exist already — an existing subscription must already
+forward to the queue. Session settings apply to the queue, not to the forwarding subscription.
+
+**A requeue delay needs a queue.** Only a consumer reading a queue — through `UseServiceBusQueue`
+or `ForwardTo` — can hold a message back for a delay. A consumer reading a topic subscription
+directly abandons the message at once, and logs a warning that the delay was not applied.
 
 ## Azure Service Bus Subscription Options
 

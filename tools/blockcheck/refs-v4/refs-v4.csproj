@@ -106,75 +106,75 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.35" />
-    <PackageReference Include="Paramore.Brighter" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Archive.Azure" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.AsyncAPI" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.BoxProvisioning" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.BoxProvisioning.MsSql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.BoxProvisioning.MySql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.BoxProvisioning.PostgreSql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.BoxProvisioning.Spanner" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.BoxProvisioning.Sqlite" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Dapper" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.DynamoDb.V4" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Firestore" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Inbox.DynamoDB.V4" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Inbox.Firestore" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Inbox.MongoDb" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Inbox.MsSql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Inbox.MySql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Inbox.Postgres" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Inbox.Spanner" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Inbox.Sqlite" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Locking.Azure" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Locking.DynamoDB.V4" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Locking.Firestore" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Locking.MongoDb" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Locking.MsSql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Locking.MySql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Locking.PostgresSql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessageScheduler.AWS.V4" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessageScheduler.Azure" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessageScheduler.Hangfire" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessageScheduler.Quartz" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessageScheduler.TickerQ" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessagingGateway.AWSSQS.V4" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessagingGateway.AzureServiceBus" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessagingGateway.GcpPubSub" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessagingGateway.Kafka" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessagingGateway.MQTT" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessagingGateway.MsSql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessagingGateway.Postgres" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessagingGateway.RMQ.Async" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessagingGateway.RMQ.Sync" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessagingGateway.Redis" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MessagingGateway.RocketMQ" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MongoDb" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MsSql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MySql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Outbox.DynamoDB.V4" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Outbox.Firestore" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Outbox.Hosting" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Outbox.MongoDb" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Outbox.MsSql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Outbox.MySql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Outbox.PostgreSql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Outbox.Spanner" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Outbox.Sqlite" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.PostgreSql" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.ServiceActivator" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.Hosting" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Spanner" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Sqlite" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Transformers.AWS.V4" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Transformers.Azure" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Transformers.Gcp" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Transformers.MongoGridFS" Version="10.8.0" />
+    <PackageReference Include="Paramore.Brighter" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Archive.Azure" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.AsyncAPI" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.MsSql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.MySql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.PostgreSql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.Spanner" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.BoxProvisioning.Sqlite" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Dapper" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.DynamoDb.V4" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Firestore" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Inbox.DynamoDB.V4" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Inbox.Firestore" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Inbox.MongoDb" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Inbox.MsSql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Inbox.MySql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Inbox.Postgres" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Inbox.Spanner" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Inbox.Sqlite" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Locking.Azure" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Locking.DynamoDB.V4" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Locking.Firestore" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Locking.MongoDb" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Locking.MsSql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Locking.MySql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Locking.PostgresSql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.AWS.V4" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.Azure" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.Hangfire" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.Quartz" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessageScheduler.TickerQ" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.AWSSQS.V4" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.AzureServiceBus" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.GcpPubSub" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.Kafka" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.MQTT" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.MsSql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.Postgres" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.RMQ.Async" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.RMQ.Sync" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.Redis" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.RocketMQ" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MongoDb" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MsSql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MySql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Outbox.DynamoDB.V4" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Firestore" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Hosting" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MongoDb" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MsSql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MySql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Outbox.PostgreSql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Spanner" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Sqlite" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.PostgreSql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.Hosting" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Spanner" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Sqlite" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Transformers.AWS.V4" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Transformers.Azure" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Transformers.Gcp" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Transformers.MongoGridFS" Version="10.8.1" />
 
     <!-- DARKER, AND IT IS PINNED SEPARATELY BECAUSE IT VERSIONS SEPARATELY.
-         Brighter is at 10.8.0 and Darker's latest release is 4.1.1; there has
+         Brighter is at 10.8.1 and Darker's latest release is 4.1.1; there has
          never been a "Darker V10". Spec 016 Q3 asked whether Darker's surface
          joins the first baseline and phase 2 ruled YES by measurement: the four
          packages restore alongside Brighter's 67 with no conflict, and they are
@@ -191,22 +191,22 @@
          a verdict would be a change nobody repaired.
 
          Brighter packages the pages name that the probe's 67 did not carry. -->
-    <PackageReference Include="Paramore.Brighter.AsyncAPI.NJsonSchema" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MsSql.EntityFrameworkCore" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.MySql.EntityFrameworkCore" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.PostgreSql.EntityFrameworkCore" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.ServiceActivator.Control" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.ServiceActivator.Control.Api" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.Diagnostics" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Sqlite.EntityFrameworkCore" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Testing" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Validation.DataAnnotations" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Validation.FluentValidation" Version="10.8.0" />
-    <PackageReference Include="Paramore.Brighter.Validation.Specification" Version="10.8.0" />
+    <PackageReference Include="Paramore.Brighter.AsyncAPI.NJsonSchema" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MsSql.EntityFrameworkCore" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MySql.EntityFrameworkCore" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.PostgreSql.EntityFrameworkCore" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Control" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Control.Api" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.Diagnostics" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Sqlite.EntityFrameworkCore" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Testing" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Validation.DataAnnotations" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Validation.FluentValidation" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Validation.Specification" Version="10.8.1" />
 
     <!-- What the scheduler pages configure the schedulers WITH. Hangfire and
          Quartz are at the versions Paramore.Brighter.MessageScheduler.Hangfire
-         and .Quartz 10.8.0 themselves depend on, so a reader who installs the
+         and .Quartz 10.8.1 themselves depend on, so a reader who installs the
          Brighter package gets these. Hangfire's storage packages are third
          party and version independently; each is its latest stable release.
 
@@ -229,7 +229,7 @@
          AddConcurrencyLimiter (spec 018 D13). Polly.Core's version on the pin. -->
     <PackageReference Include="Polly.RateLimiting" Version="8.8.0" />
 
-    <!-- The floor Paramore.Brighter.MsSql.EntityFrameworkCore 10.8.0 sets for
+    <!-- The floor Paramore.Brighter.MsSql.EntityFrameworkCore 10.8.1 sets for
          net9.0. Below it the restore fails NU1605, a package downgrade. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.20" />
 
@@ -239,7 +239,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
 
     <!-- TickerQScheduler.md's persistence and dashboard blocks, at the version
-         Paramore.Brighter.MessageScheduler.TickerQ 10.8.0 takes for net9.0. -->
+         Paramore.Brighter.MessageScheduler.TickerQ 10.8.1 takes for net9.0. -->
     <PackageReference Include="TickerQ.Dashboard" Version="9.3.0" />
     <PackageReference Include="TickerQ.EntityFrameworkCore" Version="9.3.0" />
 
@@ -255,15 +255,15 @@
 
     <!-- The assertions TestDoubleOptions.md's blocks make (`ShouldBe`,
          `ShouldContain`), at the version Brighter's own tests use:
-         Directory.Packages.props:152 at 10.8.0. The page's reader installs
+         Directory.Packages.props:153 at 10.8.1. The page's reader installs
          it beside Paramore.Brighter.Testing (spec 018 D4). -->
     <PackageReference Include="Shouldly" Version="4.3.0" />
 
     <!-- The Avro serializers DefaultMessageMappers.md's mapper calls, at the
-         Confluent version Paramore.Brighter.MessagingGateway.Kafka 10.8.0
+         Confluent version Paramore.Brighter.MessagingGateway.Kafka 10.8.1
          depends on (its Serdes.Json is the same release). Brings Apache.Avro,
          for ISpecificRecord. -->
-    <PackageReference Include="Confluent.SchemaRegistry.Serdes.Avro" Version="2.15.1" />
+    <PackageReference Include="Confluent.SchemaRegistry.Serdes.Avro" Version="2.16.0" />
 
     <PackageReference Include="Paramore.Darker" Version="4.1.1" />
     <PackageReference Include="Paramore.Darker.AspNetCore" Version="4.1.1" />

@@ -181,7 +181,7 @@ The benefits of using an **Outbox Sweeper** are:
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `TimerInterval` | `int` | `5` | How many seconds the Sweeper waits between checks for undispatched messages. Must be at least 1; a lower value throws a `ConfigurationException` when the Sweeper is created. |
+| `TimerInterval` | `int` | `5` | How many seconds the Sweeper waits between checks for undispatched messages. From Brighter 10.8.1, must be at least 1; a lower value throws a `ConfigurationException` when the Sweeper is created. |
 | `MinimumMessageAge` | `TimeSpan` | `5000 ms` | How old a message must be before the Sweeper attempts to dispatch it. |
 | `BatchSize` | `int` | `100` | How many messages the Sweeper attempts to dispatch in each check. |
 | `UseBulk` | `bool` | `false` | Whether the Sweeper dispatches in bulk; not every messaging gateway supports it. |

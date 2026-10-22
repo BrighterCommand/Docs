@@ -156,6 +156,7 @@ constructor arguments, and reads both back as properties you can also set on the
 |---|---|---|---|
 | `ClientProvider` | `IServiceBusClientProvider` | `null` | Supplies the Service Bus client the scheduler sends through, and carries the credential. |
 | `SenderOptions` | `ServiceBusSenderOptions?` | `null` | The options the scheduler creates its Service Bus sender with. |
+| `InstrumentationOptions` | `InstrumentationOptions` | `All` | How much telemetry the scheduler records for a retry it sends to a queue, when a publication selects it with `RequeueScheduler = RequeueSchedulerMode.Global`. |
 | `Topic` | `RoutingKey` | `none` | Names the topic or queue scheduled messages are sent to. |
 | `TimeProvider` | `TimeProvider` | `TimeProvider.System` | The clock the scheduler measures delays against. |
 
