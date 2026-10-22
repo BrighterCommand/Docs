@@ -23,3 +23,5 @@ PROMPT.md
 .Trashes
 ehthumbs.db
 Thumbs.db
+# /spec:ralph-implement's kill-switch: `touch RALPH_STOP` halts the batch before its next task
+RALPH_STOP
