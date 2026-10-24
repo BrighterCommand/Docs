@@ -131,19 +131,20 @@ quotes, so no duration changes.
 
 ## Follow-ups, not in this change
 
-1. **An upstream issue, the maintainer's to file or not:** `AddConsumers`' `Func<IServiceProvider,
+1. **Filed upstream as [Brighter#4647](https://github.com/BrighterCommand/Brighter/issues/4647):** `AddConsumers`' `Func<IServiceProvider,
    ConsumersOptions>` overload registers `IAmAnInboxSync`/`IAmAnInboxAsync` factories that return `null`
    when no `InboxConfiguration` is set (10.8.1 DI `ServiceCollectionExtensions.cs:105–125`). A handler
    marked `[UseInbox]` then fails with a `NullReferenceException`, where the `Action` overload names the
    missing service.
-2. **Two more for upstream, the maintainer's to file or not:**
-   - `release_notes.md:147` says the obsolete Dispatcher check *"still returns the same status for
+2. **Filed upstream:**
+   - [Brighter#4648](https://github.com/BrighterCommand/Brighter/issues/4648): `release_notes.md:147` says the obsolete Dispatcher check *"still returns the same status for
      the same conditions"*; from 10.8.1 it also reports Degraded on channel failures (#4555). The pages
      follow the code
-   - a channel whose `Receive` throws `ChannelFailureException` reached 28,000–44,000 consecutive
+   - [Brighter#4646](https://github.com/BrighterCommand/Brighter/issues/4646): a channel whose `Receive` throws `ChannelFailureException` reached 28,000–44,000 consecutive
      failures in 2 s with `channelFailureDelay` at 100 ms, which looks like the delay not being applied
-     (`Reactor.cs:136`, `:145`). Seen in the health-check probe; not investigated
-   - the 10.8.0 control of the sweeper probe crashed the process when a sweep failed, as #4560 says
+     (`Reactor.cs:136`, `:145`). The cause: `ConsumerFactory.CreateReactor` never copies the
+     subscription's `ChannelFailureDelay` to the pump, which `CreateProactor` does (`:135`); 10.8.0 too
+   - not filed, because 10.8.1 fixes it: the 10.8.0 control of the sweeper probe crashed the process when a sweep failed, as #4560 says
      10.8.1 no longer does. A page describing sweep failures without a 10.8.1 floor is wrong for 10.8.0
 3. **From the replay:**
    - `TutorialStreamingWithKafka.md` Step 5 states the receive order (alice, grace, mia) unconditionally;
