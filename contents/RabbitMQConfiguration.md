@@ -86,9 +86,18 @@ connection to the broker and are not exercised by any example on this page.
 The following code creates a typical RabbitMQ connection (here shown as part of configuring an External Bus):
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
+    services.AddBrighter(options =>
+        {
+            // ... other configuration
+        })
        .AddProducers((configure) =>
         {
             configure.ProducerRegistry = new RmqProducerRegistryFactory(
@@ -97,11 +106,12 @@ public void ConfigureServices(IServiceCollection services)
                     AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
                     Exchange = new Exchange("paramore.brighter.exchange"),
                 },
-
-                ...//publication, see below
-            
+                new RmqPublication[]
+                {
+                    // ... the publications, see below
+                }
             ).Create();
-        }    
+        });
 }
 ```
 
@@ -153,13 +163,17 @@ using Paramore.Brighter.MessagingGateway.RMQ.Async;
 
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
+    services.AddBrighter(options =>
+        {
+            // ... other configuration
+        })
       .AddProducers((configure) =>
         {
             configure.ProducerRegistry = new RmqProducerRegistryFactory(
- 
-                ...//connection, see above
-
+                new RmqMessagingGatewayConnection
+                {
+                    // ... the connection, see above
+                },
                 new RmqPublication[]{
                     new RmqPublication
                 {
@@ -173,6 +187,7 @@ public void ConfigureServices(IServiceCollection services)
             // Outbox thresholds are producers configuration, not publication
             configure.MaxOutStandingMessages = 5;
             configure.MaxOutStandingCheckInterval = TimeSpan.FromMilliseconds(500);
+        });
 }
 ```
 
@@ -189,7 +204,10 @@ using Paramore.Brighter.MessagingGateway.RMQ.Async;
 
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
+    services.AddBrighter(options =>
+        {
+            // ... other configuration
+        })
       .AddProducers((configure) =>
         {
             configure.ProducerRegistry = new RmqProducerRegistryFactory(
@@ -211,7 +229,7 @@ public void ConfigureServices(IServiceCollection services)
             // Outbox thresholds are producers configuration, not publication
             configure.MaxOutStandingMessages = 5;
             configure.MaxOutStandingCheckInterval = TimeSpan.FromMilliseconds(500);
-        }
+        });
 }
 ```
 
@@ -289,6 +307,14 @@ and supplies four defaults the table cannot: `requestType` is `T`, `subscription
 This is a typical *Subscription* configuration in a Consumer application:
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 // ...
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
@@ -307,10 +333,10 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
     var rmqConnection = new RmqMessagingGatewayConnection
     {
         AmpqUri = new AmqpUriSpecification(
-                    new Uri("amqp://guest:guest@localhost:5672")
+                    new Uri("amqp://guest:guest@localhost:5672"),
                     connectionRetryCount: 5,
                     retryWaitInMilliseconds: 250,
-                    circuitBreakTimeInMilliseconds = 30000
+                    circuitBreakTimeInMilliseconds: 30000
                 ),
         Exchange = new Exchange("paramore.brighter.exchange")
     };
@@ -321,8 +347,9 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
         {
             options.Subscriptions = subscriptions;
             options.DefaultChannelFactory = new ChannelFactory(rmqMessageConsumerFactory);
-            ... //see Basic Configuration
-        })
+            // ... see Basic Configuration
+        });
+}
 ```
 
 ## RabbitMQ Quorum Queue Requirements
@@ -383,9 +410,19 @@ For full persistence, you should configure:
 **Complete Example**:
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+using RabbitMQ.Client;
+
 // ...
 // Producer Configuration
-services.AddBrighter(...)
+services.AddBrighter(options =>
+    {
+        // ... other configuration
+    })
     .AddProducers((configure) =>
     {
         configure.ProducerRegistry = new RmqProducerRegistryFactory(

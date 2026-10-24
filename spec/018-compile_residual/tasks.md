@@ -2179,7 +2179,7 @@ the work. `tools/README.md` rows 2 and 9 now give the close's figures.
   - Input: S4's table, reachable rows; the V4 pin for `S3LuggageStore.md` #1
   - Output: as 3.2's, for S4. `S3LuggageStore.md` #1 is BUILT or listed with a diagnostic that is
     not `CS0234 … V4`
-- [ ] **Task 6.3:** Repair S4's hard blocks
+- [x] **Task 6.3:** Repair S4's hard blocks
   - Input: S4's table, hard rows; Brighter `10.8.0` source, the pinned release
   - Output: as 3.3's, for S4. `KafkaConfiguration.md`'s 14 *parse* blocks are each made whole,
     skipped with an accepted reason, or listed
@@ -2391,6 +2391,70 @@ statics that do nothing, reached through `using static`, standing for the `// ..
   by CloudEvents type or header and an unmapped message throws `InvalidMessageAction`; #6's handler routing by property
 - `AsyncAPISupport.md` #2, #10: `GenerateAsyncApiDocumentAsync` writes JSON and YAML
 - `AWSSQSConfiguration.md` #7–#10: the FIFO and point-to-point attributes (ledger 65)
+
+#### The hard blocks (6.3)
+
+**Every S4 hard block leaves in one of the four states.** The 52 FAILED at the start of 6.3 (35 *parse*, 9 *defect*,
+5 *same-page*, 3 *page-type*) are now **40 BUILT, 2 SKIPPED and 10 FAILED and listed** (§ *Blocks that stay FAILED*):
+all ten are *same-page* or the Serilog block 6.2 already listed, and none is retagged. `KafkaConfiguration.md`'s 14
+*parse* blocks (#1–#13, #18) are all BUILT; the six `configHook:` fragments (#9–#13, #18) were each made whole inside the
+`KafkaSubscription<GreetingEvent>` call they belong to, as 3.3 did, so none is SKIPPED under D3. No fence was split: the
+alternatives 6.1 listed (`AWSSQSMigrateToV10.md` #5, #6; `CloudEventsSupport.md` #13–#15; `DynamicMessageDeserialization.md`
+#3, #5; `DefaultMessageMappers.md` #13) are each one whole fence, so the corpus holds the same 994 blocks.
+
+**Measured after 6.3:** `--report` → **994 / 757 / 208 / 29**, 118 findings, all expected: 113 BUILT blocks not yet
+baselined (6.6; 73 from 6.2 and 40 from this task) and the same 5 whose page gained a unit. The scaffold rule reads **79
+units, 0 violations, 0 compile errors** (78 + `AzureServiceBusConfigurationContext`); the pin rule 4 pages, 0 violations.
+S4 alone: **127 BUILT, 10 FAILED, 6 SKIPPED** (87, 52, 4 before), 143 blocks. Two methods: `--report` grepped on the
+seventeen pages, 127 / 10 / 6; `groups.py` over this `--classify`, S4 **4 pages, 10 FAILED** (7 *same-page*, 3
+*page-type*), and no S4 page with nothing BUILT. `pagelint` 0 errors / **185** warnings (218 before: S4's own 41 → **8**
+by `--per-page` on the seventeen pages, and 218 − 185 = 33 = 41 − 8), `--changed origin/master` 0 errors, `--plant` 5 / 5.
+`linkcheck` 169 / 0. `symbolcheck` 24 entries, 14 silenced. `versioncheck` 0 stale of 18. `optioncheck` 0 mismatches on
+the four S4 pages with marked tables (10 tables, 133 rows); no table was touched.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| Task 6.3: *"Brighter `10.8.0` source, the pinned release"* | the pins are 10.8.1 (bugfix 0003, #206). Every API read here is at the `10.8.1` tag; `MessageBody.cs:126`, `:164`, `:191` and `TransformAttributeBase.cs:5` read the same at `10.8.0` and `10.8.1` | the task line stands as written; this row is the reading |
+| § *The repairs (6.2)*, *Measured after 6.2*: **992 / 715 / 250 / 27** at 10.8.0 | after the rebase onto 10.8.1, **994 / 717 / 250 / 27**: the +2 are `HealthChecks.md` #2 and #3, added and baselined by #206, off-group. No S4 verdict moved (87 / 52 / 4 at both); `--report` at 10.8.1 was byte-identical to 10.8.0's at #206, codes included. `pagelint` 0 / 218, `versioncheck` 0 of 18, `linkcheck` 169 / 0, `symbolcheck` 24 / 14, scaffold 78 units, 0 violations | 6.1 and 6.2 stand as measured at 10.8.0; this row is the reading at the start of 6.3 |
+| § *Predicted (6.1)*: `MessageMappers.md` #3, #5 and `MessageTransforms.md` #4 are candidates for D21's skip *"if their lines match 10.8.0"* | the lines match (`MessageBody.cs:126`, `:164`, `:191`; `TransformAttributeBase.cs:5`), but D21's reason is *"calling a private member or reading the pump's own state"*, and these are a public constructor's signature and a public class's declaration. #3 and #5 are SKIPPED under 017's *"a method signature shown for comparison, with no body or class to compile in"*, their braces closed; #4 is made whole, as a copy of the declaration at 10.8.1 (ledger 76). D21 is not used | the prediction stands, reconciled at 6.6 |
+| § *Predicted (6.1)*: `MessageTransforms.md` #8's `RemovePII`/`RestorePII` *"declared as the reader's own transform, or replaced by a shipped one; judged at the repair"* | judged: replaced (ledger 72). A declared pair needs two transformer classes implementing `IAmAMessageTransform`, an invented PII scrubber the page does not teach; the shipped `Compress` then `ClaimCheck` is the ordering the page's own *Step* paragraph describes | the prediction stands |
+| § *Predicted (6.1)*: *"`KafkaConfiguration.md`'s six `configHook:` fragments, 0–6"* skipped | 0 skipped: each is whole | the prediction stands |
+| § *Predicted (6.1)*: *"`MessageMappers.md` #3 and #5"* (two blocks) and `Routing.md` among the *same-page* 3 | #5 holds two constructors in one fence; both are in the one SKIPPED block. `Routing.md` #4 and `AsyncAPISupport.md` #7 join the *same-page* list: each names a type another block declares (`MyReply`, block 2; `OrderCreatedEvent`, block 5), hidden until its parse errors were gone | § *Blocks that stay FAILED* carries both |
+
+**Defects the prediction did not name (ledger 73–76), each found in a block 6.3 was repairing and repaired in place.**
+- **`Routing.md` #3 and #4 (ledger 73).** #3 did not report that it assigned a `Guid` to `Id` (`CS0029`), because `MyRequest`
+  was unresolved and `request` untyped; compiled with block 2's classes in scope, it did. Its serialiser, and the one #4
+  needed, used `new JProperty("Id", request.Id)`, which Newtonsoft cannot build from the record. `probe/s4/routing-id`: case
+  (`request.Id.Value`) round-trips the Id; control (`request.Id`) throws `ArgumentException: Could not determine JSON object
+  type for type Paramore.Brighter.Id`
+- **`CloudEventsSupport.md` #14 (ledger 74).** `new Uri("/orders/12345")` is `file:///orders/12345` on macOS and Linux
+  (`Uri.IsAbsoluteUri` true, checked on .NET 9) and throws on Windows; now `UriKind.Relative`. Nothing in `Paramore.Brighter`
+  reads `AbsoluteUri`, so a relative source passes through; that is read, not run
+- **`AzureServiceBusConfiguration.md` #2 (ledger 75).** `builder.Services` in a method that takes `services`; the three
+  mapper `.Topic` constants it read, from mappers the page never shows, are now the routing keys block 1 gives the matching
+  publications, paired by name
+
+**Recurrences, by their greps (ledger 65–76).** `compressionType` and `RemovePII` and `LogProvider` recur nowhere; the
+`KafkaMessagingGatewayConfiguration {...}` of ledger 69 recurred on `KafkaConfiguration.md` #7, #8 and is closed by editing
+that row. No S4 defect recurs on a page outside S4.
+
+**Units.** One unit is new (`AzureServiceBusConfigurationContext`: three requests). Six are extended, each stub a request or
+a member a BUILT block names: `GreetingEvent.CustomerId` (`KafkaConfiguration`), `LargeOrder` (`MessageTransforms`),
+`LargeEvent` (`DefaultMessageMappers`), `OrderCreated` (`DynamicMessageDeserialization`), `services` (`RabbitMQConfiguration`,
+for #6's top-level statements), and `TaskReminderCommand`'s four members with `IAmAMailGateway`, `TaskReminder`, `TaskName`
+and `EmailAddress` (`ImplementingExternalBus`). `pages.tsv` gained one row. `AsyncAPISupportContext`'s comment names the two
+blocks that now use its `services`.
+
+**For 6.4.** Blocks 6.3 wrote or edited whose text asserts behaviour, none run here but `routing-id`:
+- `MessageTransforms.md` #8 and the sentence after it: *"On receive, they execute in reverse order"* and the step numbers
+  of the send and receive chains (`Compress` 0, `ClaimCheck` 1; `RetrieveClaim` 0, `Decompress` 1)
+- `Routing.md` #3, #4: the Id round trip is run; the `ReplyAddress` routing is not
+- `CloudEventsSupport.md` #13–#15: that a relative `Source` and a `Subject` reach the header
+- `DynamicMessageDeserialization.md` #3, #4 (the `InvalidMessageAction` default arm), #7
+- `KafkaConfiguration.md` #9–#13, #18: that each `configHook` setting reaches the consumer, and #2's `SslCaLocation` ternary
+- `RabbitMQConfiguration.md` #4: `circuitBreakTimeInMilliseconds: 30000`, the argument ledger 66 names
 
 ### Phase 7 — S5, the remaining five sections *(7 tasks, one PR)*
 
@@ -2641,9 +2705,11 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `ImplementAQueryHandler.md` | 21, 23 | `CS0246` `OrderNotFoundException`; #23 also `OrderAccessDeniedException`, `IAuthService`, and `CS1061` `Order.IsDeleted` | *same-page*: block 22 declares both exceptions, as the sentences before blocks 21 and 23 now say. `IAuthService` and `IsDeleted` are the reader's, and no unit may stub them while no BUILT block names them (unit rule 1) | 5 |
 | `QueryPatterns.md` | 6 | `CS0246` `GetProductCatalogQuery` | *same-page*: block 5 declares it, as the sentence before block 6 now says | 5 |
 | `AsyncAPISupport.md` | 4 | `CS0103` `rmqConnection`; `CS0246` `OrderCreatedEvent` | *same-page*: block 5 declares `OrderCreatedEvent`, as the sentence before block 4 now says. `rmqConnection` is the reader's, and no unit may stub it while no BUILT block names it (unit rule 3) | 6 |
+| `AsyncAPISupport.md` | 7 | `CS0246` `OrderCreatedEvent` | *same-page*: block 5 declares it, as the sentence before block 7 now says | 6 |
 | `AsyncAPISupport.md` | 9 | `CS0246` `MySchemaGenerator` | *same-page*: block 8 declares it, and the sentence before block 9 says to register your implementation | 6 |
 | `AsyncAPISupport.md` | 11, 12 | `CS0246` `OrderCreatedEvent` | *same-page*: block 5 declares it, as the sentence under *Complete Examples* now says | 6 |
 | `Routing.md` | 3 | `CS0246` `MyRequest` | *same-page*: block 2 declares it, and the sentence before block 3 names "this request" | 6 |
+| `Routing.md` | 4 | `CS0246` `MyReply` | *same-page*: block 2 declares it, as the sentence before block 4 now says. Block 3 and block 4 build once block 2's classes are in scope; each was checked that way (0 diagnostics) before the stub was taken out again | 6 |
 | `DefaultMessageMappers.md` | 6, 10 | `CS0246` `Orders`, `OrderShipped`, `AvroMessageMapperAsync<>` | *same-page*: block 4 declares the mapper and block 5 `OrderShipped`, in the namespace `Orders`; the sentences before blocks 6 and 10 are about that mapper | 6 |
 | `RabbitMQConnectionStability.md` | 3 | `CS0103` `Log`, `services`; `CS0246` `LoggerConfiguration` | Serilog (and its Seq sink) is on no pin, and the page names it alone. Adding it moves the pin's 553 assemblies and is not a repair of this page: put to 6.5 | 6 |
 
@@ -2737,7 +2803,14 @@ design, and their greps were run there.*
 | 66 | `circuitBreakerTimeInMilliseconds` for `circuitBreakTimeInMilliseconds`, the name `AmqpUriSpecification` takes (`CS1739`); once in a block, once in a block hidden by a parse error, once in prose | `RabbitMQConnectionStability.md`, `RabbitMQConfiguration.md` | `grep -rn circuitBreakerTimeInMilliseconds contents/` | **3** | **0** | task 6.1, the second compile; the prose and the parse block repaired with it (obligation 21) | 6 |
 | 67 | `RabbitMQProducerRegistryFactory`, a type that does not exist; both RMQ packages have `RmqProducerRegistryFactory` | `CloudEventsSupport.md`, `DefaultMessageMappers.md` | `grep -rn RabbitMQProducerRegistryFactory contents/` | **2** | **0** | task 6.2, hidden behind *page-type* | 6 |
 | 68 | A plain `Publication` given to a transport's producer registry factory, which takes the transport's own: `RmqPublication` for RMQ, `KafkaPublication` for Kafka (`CS1503`) | `CloudEventsSupport.md`, `DefaultMessageMappers.md`, `RoutingMultipleMessageTypes.md` | `grep -rn -B40 -A14 -E 'new (Rmq\|Kafka\|RabbitMQ)ProducerRegistryFactory\(' contents/ \| grep -E 'new Publication$' \| sort -u \| wc -l` | **7**, of which 5 are this defect | **1** | task 6.2, hidden behind *page-type*. Of the 2 other hits, `InMemoryOptions.md`'s factory takes `Publication`, and `CloudEventsSupport.md` #2 passes its `Publication` to no factory. The latter has left the window since (the `using`s above it); the former is the 1 | 6 |
-| 69 | `new KafkaMessagingGatewayConfiguration { /* ... */ }`, leaving `BootStrapServers`, which is `required`, to a comment (`CS9035`) | `RoutingMultipleMessageTypes.md` | `grep -rnF 'KafkaMessagingGatewayConfiguration { /* ... */ }' contents/` | **1** | **0** | task 6.2, hidden behind *page-type* | 6 |
+| 69 | `new KafkaMessagingGatewayConfiguration { /* ... */ }` and `{...}`, leaving `BootStrapServers`, which is `required`, to a comment or an ellipsis (`CS9035`) | `RoutingMultipleMessageTypes.md`; recurs on `KafkaConfiguration.md` | `grep -rnF 'KafkaMessagingGatewayConfiguration { /* ... */ }' contents/`; `grep -rnF 'KafkaMessagingGatewayConfiguration {...}' contents/` | **1**; **2** | **0**; **0** | task 6.2, hidden behind *page-type*; the recurrence hidden behind *parse* (`KafkaConfiguration.md` #7, #8), repaired at 6.3 (obligation 21) | 6 |
+| 70 | `compressionType: CompressionType.Gzip` for `compressionMethod: CompressionMethod.GZip`, the argument and enum `CompressAttribute` takes (`CompressAttribute.cs:47`, `CompressionMethod.cs:3` at 10.8.1) | `MessageTransforms.md` | `grep -rnE 'compressionType\|CompressionType\.' contents/` | **2** | **0** | task 6.1, the second compile; repaired at 6.3 | 6 |
+| 71 | A V9 handler shown as current: LibLog's `ILog` and `LogProvider`, and a constructor taking a logger for `RequestHandler`, none of which exist at 10.8.1 | `ImplementingExternalBus.md` | `grep -rnE 'LogProvider\|\bILog\b\|: base\(logger\)' contents/` | **2** | **0** | task 6.1, the second compile; repaired at 6.3 | 6 |
+| 72 | `[RemovePII]` and `[RestorePII]` shown as transforms Brighter ships; it ships `ClaimCheck`/`RetrieveClaim`, `Compress`/`Decompress`, `CloudEvents` and the JustSaying pair, and the page declares neither. Replaced by the shipped `Compress` then `ClaimCheck` on send, `RetrieveClaim` then `Decompress` on receive | `MessageTransforms.md` | `grep -rnE 'RemovePII\|RestorePII' contents/` | **2** | **0** | task 6.1, the second compile; repaired at 6.3 | 6 |
+| 73 | `request.Id = Guid.Parse(…)`, a `Guid` assigned to `Id`, which converts only from `string` (`CS0029`); and `new JProperty("Id", request.Id)`, which Newtonsoft cannot build from the `Id` record (`ArgumentException`), so the mapper on the page throws when it serialises | `Routing.md` | `grep -rnF 'request.Id = Guid.Parse' contents/`; `grep -rnF 'new JProperty("Id", request.Id)' contents/` | **1**; **1** | **0**; **0** | task 6.3, hidden behind *same-page* (#3, `MyRequest` unresolved, so `request.Id` was untyped) and *parse* (#4); `probe/s4/routing-id` | 6 |
+| 74 | `new Uri("/orders/12345")` shown as a good, resource-specific CloudEvents `source`; with the default `UriKind` it is the absolute `file:///orders/12345` on macOS and Linux and a `UriFormatException` on Windows. The relative reference needs `UriKind.Relative` | `CloudEventsSupport.md` | `grep -rnF 'new Uri("/orders/12345")' contents/` | **1** | **0** | task 6.3, hidden behind *parse*; a scratch `Uri` probe (macOS, .NET 9) | 6 |
+| 75 | `builder.Services.AddConsumers(…)` inside `ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)`, where `builder` is declared nowhere; the method's own `services` is the collection | `AzureServiceBusConfiguration.md` | `grep -rn -B40 'builder.Services.AddConsumers' contents/ \| grep -c 'ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)'` | **1** | **0** | task 6.3, hidden behind *parse*. Not a recurrence: the other ten `builder.Services` sites are top-level statements | 6 |
+| 76 | The `TransformAttribute` listing short of 10.8.1's: `object[] InitializerParams()` returning `new object[0]`, where the source has `object?[]` and `[]` (`TransformAttributeBase.cs:25`), and the class left unclosed | `MessageTransforms.md` | `grep -rnF 'public virtual object[] InitializerParams' contents/` | **1** | **0** | task 6.3, hidden behind *parse* | 6 |
 
 ## Friction ledger
 

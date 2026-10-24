@@ -73,11 +73,19 @@ Dynamic deserialization is useful when:
 Instead of specifying the type via a generic parameter, you provide a `getRequestType` callback in your Subscription that examines the message and returns the appropriate type:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription(
     new SubscriptionName("paramore.example.tasks"),
     channelName: new ChannelName("task.state"),
     routingKey: new RoutingKey("task.update"),
-    getRequestType: message => /* return type based on message */,
+    getRequestType: message =>
+    {
+        // ... examine the message and return the type it carries
+        return typeof(TaskCreated);
+    },
     groupId: "task-processor",
     timeOut: TimeSpan.FromMilliseconds(100)
 );
@@ -108,20 +116,28 @@ Dynamic message deserialization has a small performance overhead compared to Dat
 CloudEvents provides a standard, interoperable way to identify message types:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+
+// Pass either callback as the subscription's getRequestType argument.
+
 // Good - Standard CloudEvents type
-getRequestType: message => message.Header.Type switch
+Func<Message, Type> standard = message => message.Header.Type switch
 {
     var t when t == new CloudEventsType("com.example.order.created")
         => typeof(OrderCreated),
     // ...
-}
+    _ => throw new InvalidMessageAction("No type mapping found for this CloudEvents type")
+};
 
 // Bad - Custom header parsing
-getRequestType: message =>
+Func<Message, Type> custom = message =>
 {
     var type = message.Header.Bag["MessageType"];
     // Non-standard approach
-}
+    return Type.GetType((string)type)!;
+};
 ```
 
 ### 2. Provide Comprehensive Type Mappings
@@ -154,15 +170,17 @@ An ordinary exception such as `ArgumentException` or `Exception` does not reques
 Follow reverse-DNS naming for CloudEvents types:
 
 ```csharp
+using Paramore.Brighter;
+
 // Good - Reverse DNS, hierarchical
-new CloudEventsType("io.goparamore.task.created")
-new CloudEventsType("com.example.inventory.item.added")
+var created = new CloudEventsType("io.goparamore.task.created");
+var itemAdded = new CloudEventsType("com.example.inventory.item.added");
 
 // Bad - Too generic
-new CloudEventsType("TaskCreated")
+var generic = new CloudEventsType("TaskCreated");
 
 // Bad - Not following conventions
-new CloudEventsType("CREATE_TASK")
+var unconventional = new CloudEventsType("CREATE_TASK");
 ```
 
 See [CloudEvents Support](CloudEventsSupport.md) for more on CloudEvents type naming.
@@ -192,6 +210,10 @@ Only use dynamic when needed:
 Document which CloudEvents types map to which Request types:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 /// <summary>
 /// Subscription for task state changes.
 /// Supports the following CloudEvents types:
@@ -199,11 +221,14 @@ Document which CloudEvents types map to which Request types:
 /// - io.goparamore.task.updated → TaskUpdated
 /// - io.goparamore.task.completed → TaskCompleted
 /// </summary>
-var subscription = new KafkaSubscription(
-    // ...
+public KafkaSubscription TaskStateSubscription() => new KafkaSubscription(
+    subscriptionName: new SubscriptionName("paramore.example.tasks"),
+    channelName: new ChannelName("task.state"),
+    routingKey: new RoutingKey("task.update"),
     getRequestType: message => message.Header.Type switch
     {
-        // ...
+        // ... an arm for each type listed above
+        _ => throw new InvalidMessageAction("No type mapping found for this CloudEvents type")
     }
 );
 ```

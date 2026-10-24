@@ -93,16 +93,16 @@ The use of that pattern means the complexity of the distributed task queue is hi
 that your command is handled reliably, asynchronously, and in parallel with little cognitive overhead. It just works!
 
 ``` csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 // ...
 public class MailTaskReminderHandler : RequestHandler<TaskReminderCommand>
 {
     private readonly IAmAMailGateway _mailGateway;
 
-    public MailTaskReminderHandler(IAmAMailGateway mailGateway, IAmACommandProcessor commandProcessor)
-        : this(mailGateway, commandProcessor, LogProvider.GetCurrentClassLogger())
-        {}
-
-    public MailTaskReminderHandler(IAmAMailGateway mailGateway, ILog logger) : base(logger)
+    public MailTaskReminderHandler(IAmAMailGateway mailGateway)
     {
         _mailGateway = mailGateway;
     }

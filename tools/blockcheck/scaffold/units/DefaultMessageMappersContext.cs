@@ -43,3 +43,6 @@ public class SecureLargeOrderMapper : JsonMessageMapper<SensitiveOrder>;
 // block 11: `mappers.Register<SensitiveData, EncryptedMapper>()`
 public class SensitiveData() : Event(Id.Random());
 public class EncryptedMapper : JsonMessageMapper<SensitiveData>;
+
+// block 14: `MapToMessage(LargeEvent request, …)`, `request.Id`
+public class LargeEvent() : Event(Id.Random());

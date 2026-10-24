@@ -395,6 +395,10 @@ Throw `InvalidMessageAction` from a message mapper when deserialization fails du
 ### Throwing InvalidMessageAction in a Message Mapper
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+
 public class OrderMessageMapper : IAmAMessageMapper<PlaceOrder>
 {
     public IRequestContext? Context { get; set; }
@@ -416,7 +420,15 @@ public class OrderMessageMapper : IAmAMessageMapper<PlaceOrder>
 
     public Message MapToMessage(PlaceOrder request, Publication publication)
     {
-        // ... serialization logic
+        var header = new MessageHeader(
+            messageId: request.Id,
+            topic: publication.Topic,
+            messageType: MessageType.MT_COMMAND
+        );
+
+        var body = new MessageBody(JsonSerializer.Serialize(request));
+
+        return new Message(header, body);
     }
 }
 ```

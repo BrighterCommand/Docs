@@ -354,14 +354,17 @@ Don't create custom mappers "just in case". Add them when you need:
 CloudEvents properties belong in `Publication`, not in mappers:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 // Good - CloudEvents in Publication
-new Publication
+var publication = new Publication
 {
     Topic = new RoutingKey("orders"),
     RequestType = typeof(OrderCreated),
     Source = new Uri("https://example.com/orders"),
     Type = new CloudEventsType("com.example.order.created")
-}
+};
 
 // Bad - Don't configure CloudEvents in mapper
 // Let default mapper handle it from Publication or use transform
@@ -372,11 +375,27 @@ new Publication
 Transform attributes are powerful for cross-cutting concerns:
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+
 // Good - Use transforms for large messages
 [ClaimCheck(step: 0, thresholdInKb: 256)]
 public Message MapToMessage(LargeEvent request, Publication publication)
 {
     // Just serialize - transform handles storage
+    var header = new MessageHeader(
+        messageId: request.Id,
+        topic: publication.Topic,
+        messageType: MessageType.MT_EVENT
+    );
+
+    var body = new MessageBody(
+        JsonSerializer.Serialize(request, JsonSerialisationOptions.Options)
+    );
+
+    return new Message(header, body);
 }
 
 // Bad - Don't implement claim check logic in mapper

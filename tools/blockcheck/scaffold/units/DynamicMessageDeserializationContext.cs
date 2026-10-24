@@ -15,8 +15,11 @@ public static class DynamicMessageDeserializationContext
     public static ILogger _logger => null!;
 }
 
-// blocks 1, 4, 8: `typeof(TaskCreated)`, `KafkaSubscription<TaskCreated>`
+// blocks 1, 2, 4, 8: `typeof(TaskCreated)`, `KafkaSubscription<TaskCreated>`
 public class TaskCreated() : Event(Id.Random());
 
 // blocks 4, 8: `typeof(TaskUpdated)`
 public class TaskUpdated() : Event(Id.Random());
+
+// block 3: `typeof(OrderCreated)`
+public class OrderCreated() : Event(Id.Random());

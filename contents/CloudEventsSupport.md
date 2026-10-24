@@ -372,14 +372,25 @@ See the [V10 Migration Guide](V10MigrationGuide.md) for complete migration instr
 The `type` attribute should follow reverse-DNS naming:
 
 ```csharp
+using Paramore.Brighter;
+
 // Good - Reverse DNS, specific
-Type = new CloudEventsType("com.example.orders.order.created")
+var specific = new Publication
+{
+    Type = new CloudEventsType("com.example.orders.order.created")
+};
 
 // Bad - Too generic
-Type = new CloudEventsType("OrderCreated")
+var generic = new Publication
+{
+    Type = new CloudEventsType("OrderCreated")
+};
 
 // Bad - Not following conventions
-Type = new CloudEventsType("CREATE_ORDER")
+var unconventional = new Publication
+{
+    Type = new CloudEventsType("CREATE_ORDER")
+};
 ```
 
 ### 3. Include Source Context
@@ -387,14 +398,26 @@ Type = new CloudEventsType("CREATE_ORDER")
 The `source` should uniquely identify where the event originated:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 // Good - Specific service and environment
-Source = new Uri("https://prod.example.com/orders-service")
+var service = new Publication
+{
+    Source = new Uri("https://prod.example.com/orders-service")
+};
 
 // Good - Resource-specific
-Source = new Uri("/orders/12345")
+var resource = new Publication
+{
+    Source = new Uri("/orders/12345", UriKind.Relative)
+};
 
 // Bad - Too vague
-Source = new Uri("https://example.com")
+var vague = new Publication
+{
+    Source = new Uri("https://example.com")
+};
 ```
 
 ### 4. Use Subject for Fine-Grained Routing
@@ -402,13 +425,22 @@ Source = new Uri("https://example.com")
 The `subject` provides additional context in the scope of the source:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 // For an order event
-Source = new Uri("https://example.com/orders")
-Subject = "order/12345"
+var order = new Publication
+{
+    Source = new Uri("https://example.com/orders"),
+    Subject = "order/12345"
+};
 
 // For a customer event
-Source = new Uri("https://example.com/customers")
-Subject = "customer/67890/profile"
+var customer = new Publication
+{
+    Source = new Uri("https://example.com/customers"),
+    Subject = "customer/67890/profile"
+};
 ```
 
 ### 5. Leverage Default Mappers

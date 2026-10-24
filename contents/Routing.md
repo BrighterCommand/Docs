@@ -110,7 +110,7 @@ public class MyRequestMessageMapper : IAmAMessageMapper<MyRequest>
         correlationId: request.ReplyAddress.CorrelationId,
         replyTo: request.ReplyAddress.Topic);
 
-        var json = new JObject(new JProperty("Id", request.Id));
+        var json = new JObject(new JProperty("Id", request.Id.Value));
         var body = new MessageBody(json.ToString());
         var message = new Message(header, body);
         return message;
@@ -121,16 +121,17 @@ public class MyRequestMessageMapper : IAmAMessageMapper<MyRequest>
         var replyAddress = new ReplyAddress(topic: message.Header.ReplyTo, correlationId: message.Header.CorrelationId);
         var request = new MyRequest(replyAddress);
         var messageBody = JObject.Parse(message.Body.Value);
-        request.Id = Guid.Parse((string) messageBody["Id"]);
+        request.Id = new Id((string) messageBody["Id"]!);
         return request;
     }
 }
 ```
 
-When we reply, we again use the message mapper to ensure that we route correctly. Again the key to responding is the **IAmAMessageMapper** implementation which uses the **ReplyAddress** to route the **Message** via its **MessageHeader** back to the caller. Note that whilst the response could be considered an event - a fact raised in response to a command - because it only has one Consumer, the sender, we route it as a command. If you want to broadcast the outcome, treat it as an event, but add **ReplyAddress** to your class derived from **Event** to correlate with the command.
+When we reply, we again use the message mapper to ensure that we route correctly. Again the key to responding is the **IAmAMessageMapper** implementation, here for the `MyReply` declared above, which uses the **ReplyAddress** to route the **Message** via its **MessageHeader** back to the caller. Note that whilst the response could be considered an event - a fact raised in response to a command - because it only has one Consumer, the sender, we route it as a command. If you want to broadcast the outcome, treat it as an event, but add **ReplyAddress** to your class derived from **Event** to correlate with the command.
 
 ``` csharp
 using System;
+using Newtonsoft.Json.Linq;
 using Paramore.Brighter;
 
 internal class MyReplyMessageMapper : IAmAMessageMapper<MyReply>
@@ -147,7 +148,7 @@ internal class MyReplyMessageMapper : IAmAMessageMapper<MyReply>
             correlationId: request.SendersAddress.CorrelationId
         );
 
-        var json = ...//serialize the reply body
+        var json = new JObject(new JProperty("Id", request.Id.Value));
 
         var body = new MessageBody(json.ToString());
         var message = new Message(header, body);
@@ -159,8 +160,9 @@ internal class MyReplyMessageMapper : IAmAMessageMapper<MyReply>
         var replyAddress = new ReplyAddress(message.Header.Topic, message.Header.CorrelationId);
 
         var reply = new MyReply(replyAddress);
-        
-        ...//deserialize the body
+
+        var messageBody = JObject.Parse(message.Body.Value);
+        reply.Id = new Id((string) messageBody["Id"]!);
 
         return reply;
     }

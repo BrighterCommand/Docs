@@ -137,14 +137,21 @@ We use **GetTopicAttributesAsync** SDK method to request attributes of a Topic w
 If you supply only the **Topic** name via the routing key, we construct the ARN by convention as follows:
 
 ``` csharp
+using Amazon;
+
+// ...
+var region = RegionEndpoint.EUWest1;   // the region you supplied to us
+var accountId = "123456789012";        // the account your credentials belong to
+var topicName = "greeting.event";      // the routing key
+
 var arn = new Arn
     {
-        Partition = //derived from the partition of the region you supplied to us,
+        Partition = region.PartitionName,   // derived from the partition of the region you supplied to us
         Service = "sns",
-        Region = //derived from the system name of the region you supplied to us,
-        AccountId = //your account id - derived from the credentials you supplied,
+        Region = region.SystemName,         // derived from the system name of the region you supplied to us
+        AccountId = accountId,              // your account id - derived from the credentials you supplied
         Resource = topicName
-    }
+    };
 ```
 
 These assumptions work, if the topic is created by the account your credentials belong to. If not, you can't use by convention.

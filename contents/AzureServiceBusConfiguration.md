@@ -57,21 +57,33 @@ get-only, so they are set once at construction.
 Basic Brighter configutarion publications is as follows
 
 ``` csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.AzureServiceBus;
+using Paramore.Brighter.MessagingGateway.AzureServiceBus.ClientProvider;
+
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
-        .AddProducers(
-        new AzureServiceBusProducerRegistryFactory(
-                asbConnection,
-                new AzureServiceBusPublication[]
-                {
-                    new() { Topic = new RoutingKey("greeting.event") },
-                    new() { Topic = new RoutingKey("greeting.addGreetingCommand") },
-                    new() { Topic = new RoutingKey("greeting.Asyncevent") }
-                }
-            )
-            .Create()
-    )
+    var asbConnection = new ServiceBusVisualStudioCredentialClientProvider("my-awesome-asb.servicebus.windows.net");
+
+    services.AddBrighter(options =>
+        {
+            // ... other configuration
+        })
+        .AddProducers(configure =>
+        {
+            configure.ProducerRegistry = new AzureServiceBusProducerRegistryFactory(
+                    asbConnection,
+                    new AzureServiceBusPublication[]
+                    {
+                        new() { Topic = new RoutingKey("greeting.event") },
+                        new() { Topic = new RoutingKey("greeting.addGreetingCommand") },
+                        new() { Topic = new RoutingKey("greeting.Asyncevent") }
+                    }
+                )
+                .Create();
+        });
 }
 ```
 
@@ -189,33 +201,44 @@ is `Proactor`.
 This is a typical *Subscription* configuration in a Consumer application:
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.AzureServiceBus;
+using Paramore.Brighter.MessagingGateway.AzureServiceBus.ClientProvider;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 // ...
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
+    var subscriptionName = "paramore.example.greeting";
+
     var subscriptions = new Subscription[]
     {
         new AzureServiceBusSubscription<GreetingAsyncEvent>(
-            new SubscriptionName(GreetingEventAsyncMessageMapper.Topic),
+            new SubscriptionName("greeting.Asyncevent"),
             new ChannelName(subscriptionName),
-            new RoutingKey(GreetingEventAsyncMessageMapper.Topic),
+            new RoutingKey("greeting.Asyncevent"),
             timeOut: TimeSpan.FromMilliseconds(400),
             makeChannels: OnMissingChannel.Create,
             requeueCount: 3,
             messagePumpType: MessagePumpType.Proactor,
             noOfPerformers: 2, unacceptableMessageLimit: 1),
         new AzureServiceBusSubscription<GreetingEvent>(
-            new SubscriptionName(GreetingEventMessageMapper.Topic),
+            new SubscriptionName("greeting.event"),
             new ChannelName(subscriptionName),
-            new RoutingKey(GreetingEventMessageMapper.Topic),
+            new RoutingKey("greeting.event"),
             timeOut: TimeSpan.FromMilliseconds(400),
             makeChannels: OnMissingChannel.Create,
             requeueCount: 3,
             messagePumpType: MessagePumpType.Reactor,
             noOfPerformers: 2),
         new AzureServiceBusSubscription<AddGreetingCommand>(
-            new SubscriptionName(AddGreetingMessageMapper.Topic),
+            new SubscriptionName("greeting.addGreetingCommand"),
             new ChannelName(subscriptionName),
-            new RoutingKey(AddGreetingMessageMapper.Topic),
+            new RoutingKey("greeting.addGreetingCommand"),
             timeOut: TimeSpan.FromMilliseconds(400),
             makeChannels: OnMissingChannel.Create,
             requeueCount: 3,
@@ -227,12 +250,13 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
     var asbConsumerFactory = new AzureServiceBusConsumerFactory(clientProvider);
 
-    builder.Services.AddConsumers(options =>
+    services.AddConsumers(options =>
     {
         options.Subscriptions = subscriptions;
         options.DefaultChannelFactory = new AzureServiceBusChannelFactory(asbConsumerFactory);
-        
-    }
+        // ... see Basic Configuration
+    });
+}
 ```
 
 ## Complete Reject

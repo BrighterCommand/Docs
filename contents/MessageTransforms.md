@@ -85,17 +85,18 @@ Usually your **WrapWithAttribute** and **UnwrapWithAttribute** are paired and op
 Both the **WrapWithAttribute** and the **UnwrapWithAttribute** are a type of **TransformAttribute**
 
 ``` csharp
-// ...
+using System;
 
+// Brighter's own declaration, in Paramore.Brighter (TransformAttributeBase.cs:5 at 10.8.1)
 public abstract class TransformAttribute : Attribute
+{
+    public int Step { get; set; }
+    public abstract Type GetHandlerType();
+    public virtual object?[] InitializerParams()
     {
-        public int Step { get; set; }
-        public abstract Type GetHandlerType();
-        public virtual object[] InitializerParams()
-        {
-            return new object[0];
-        }
-
+        return [];
+    }
+}
 ```
 
 To implement a **TransformAttribute** you need to create a derived type that overrides the **GetHandlerType** to return the type of your **IMessageTransformAsync**. 
@@ -221,12 +222,18 @@ public class GreetingEventMessageMapper : IAmAMessageMapper<GreetingEvent>
 Similarly, you can compress messages:
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+using Paramore.Brighter.Transforms.Transformers;
+
 // ...
 public class CompressedOrderMapper : IAmAMessageMapper<LargeOrder>
 {
     public IRequestContext? Context { get; set; }
 
-    [Compress(step: 0, compressionType: CompressionType.Gzip)]
+    [Compress(step: 0, compressionMethod: CompressionMethod.GZip)]
     public Message MapToMessage(LargeOrder request, Publication publication)
     {
         var header = new MessageHeader(
@@ -260,15 +267,20 @@ public class CompressedOrderMapper : IAmAMessageMapper<LargeOrder>
 You can chain transforms by using different step numbers:
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+using Paramore.Brighter.Transforms.Transformers;
+
 // ...
-public class SecureLargeOrderMapper : IAmAMessageMapper<SensitiveOrder>
+public class CompressedClaimCheckMapper : IAmAMessageMapper<LargeOrder>
 {
     public IRequestContext? Context { get; set; }
 
-    [RemovePII(step: 0)]                          // First: Remove PII
-    [Compress(step: 1, compressionType: CompressionType.Gzip)]  // Second: Compress
-    [ClaimCheck(step: 2, thresholdInKb: 512)]     // Third: Claim check if still large
-    public Message MapToMessage(SensitiveOrder request, Publication publication)
+    [Compress(step: 0, compressionMethod: CompressionMethod.GZip)]  // First: Compress
+    [ClaimCheck(step: 1, thresholdInKb: 512)]                       // Second: Claim check if still large
+    public Message MapToMessage(LargeOrder request, Publication publication)
     {
         // Standard serialization
         var header = new MessageHeader(
@@ -286,10 +298,9 @@ public class SecureLargeOrderMapper : IAmAMessageMapper<SensitiveOrder>
 
     [RetrieveClaim(step: 0)]                      // First: Retrieve if claim checked
     [Decompress(step: 1)]                         // Second: Decompress
-    [RestorePII(step: 2)]                         // Third: Restore PII
-    public SensitiveOrder MapToRequest(Message message)
+    public LargeOrder MapToRequest(Message message)
     {
-        var order = JsonSerializer.Deserialize<SensitiveOrder>(
+        var order = JsonSerializer.Deserialize<LargeOrder>(
             message.Body.Value,
             JsonSerialisationOptions.Options
         );

@@ -14,7 +14,7 @@ using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 
 public static class AsyncAPISupportContext
 {
-    // blocks 1, 9: `services.AddConsumers(…)`
+    // blocks 1, 6, 7, 9: `services.AddConsumers(…)`
     public static IServiceCollection services => null!;
 
     // block 2: `var host = builder.Build();`
