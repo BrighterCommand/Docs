@@ -237,13 +237,13 @@ You can make it the default instead, with `asyncDefaultMessageMapper: typeof(Avr
 
 ### 2. Transform Pipelines
 
-When you need message transformation (Claim Check, Compression, Encryption, PII removal, etc.), you must use a custom mapper with transform attributes. See [Message Transforms](/contents/MessageTransforms.md) for the pipeline and worked examples.
+When you need message transformation, you must use a custom mapper with transform attributes. Brighter ships the Claim Check and Compression transforms; for anything else, such as encryption or PII removal, you write your own transform. See [Message Transforms](/contents/MessageTransforms.md) for the pipeline and worked examples.
 
 ## Registering Custom Mappers
 
 ### Explicit Registration
 
-If you have specific messages that need custom mappers, register them explicitly:
+If you have specific messages that need custom mappers, register them explicitly. The request types and mappers below are your own, not Brighter's: `LargeOrder` and `SensitiveOrder` stand for your requests, and `CompressedOrderMapper` and `SecureLargeOrderMapper` for mappers you write, carrying the transform attributes they need:
 
 ```csharp
 using Paramore.Brighter.Extensions.DependencyInjection;
@@ -256,10 +256,10 @@ services.AddBrighter(options => { })
     )
     .MapperRegistry(mappers =>
     {
-        // Explicit registration for LargeOrder
+        // Your LargeOrder, mapped by your CompressedOrderMapper
         mappers.Register<LargeOrder, CompressedOrderMapper>();
 
-        // Explicit registration for SensitiveOrder
+        // Your SensitiveOrder, mapped by your SecureLargeOrderMapper
         mappers.Register<SensitiveOrder, SecureLargeOrderMapper>();
     });
 ```
@@ -310,6 +310,8 @@ services.AddBrighter(options => { })
 
 ### Mixed: Default + Custom Mappers
 
+As above, `LargeOrder`, `SensitiveData` and their mappers are your own types; Brighter ships none of them.
+
 ```csharp
 using Paramore.Brighter.Extensions.DependencyInjection;
 
@@ -321,7 +323,7 @@ services.AddBrighter(options => { })
     )
      .MapperRegistry(mappers =>
     {
-        // Specific messages with transforms
+        // Your own messages and mappers, with your transforms
         mappers.Register<LargeOrder, CompressedOrderMapper>();
         mappers.Register<SensitiveData, EncryptedMapper>();
     });
