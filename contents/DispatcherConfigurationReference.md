@@ -216,14 +216,12 @@ the signature and the constructor body rejects it. `getRequestType` is assigned 
 `AddConsumers` takes the [`AddBrighter` options](/contents/CommandProcessorConfigurationReference.md#addbrighter-options)
 and adds these four.
 
-<!-- optioncheck: Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection.ConsumersOptions
-     manual: InboxConfiguration — the property is initialised to a default InboxConfiguration, which has no printable value
--->
+<!-- optioncheck: Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection.ConsumersOptions -->
 
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `DefaultChannelFactory` | `IAmAChannelFactory?` | `null` | Creates a channel for any subscription that supplies no factory of its own. |
-| `InboxConfiguration` | `InboxConfiguration` | a default `InboxConfiguration` | Configures the global Inbox described below. |
+| `InboxConfiguration` | `InboxConfiguration?` | `null` | Configures the global Inbox described below. `null` turns it off: every delivery reaches its handler. |
 | `Subscriptions` | `IEnumerable<Subscription>` | `empty` | The subscriptions this Dispatcher runs. |
 | `ShutdownTimeout` | `TimeSpan` | `10000 ms` | How long shutdown waits for in-flight messages to drain before tearing down. |
 
@@ -241,6 +239,14 @@ An option intended for the context of a Dispatcher (message consumer) is describ
 As described in the [Outbox Pattern](/contents/OutboxPattern.md) an *Outbox* offers **Guaranteed, At Least Once** delivery. It explicitly may result in you sending duplicate messages. In addition, MoM tends to offer "At Least Once" guarantees only, further creating the risk that you will receive a duplicate message.
 
 If the request is not idempotent, you can use an Inbox to de-duplicate it. See [Inbox Support](/contents/BrighterInboxSupport.md) for more.
+
+**The global Inbox is off unless you set `InboxConfiguration`.** From Brighter 10.8.1,
+`AddConsumers` registers no Inbox by default, so a duplicate delivery reaches its handler. Before
+10.8.1 it registered an in-memory one; to keep that behaviour, set
+`options.InboxConfiguration = new InboxConfiguration()`. An in-memory Inbox is local to one
+process and forgets on restart, so de-duplication that must survive either needs a persistent
+store, as below. A handler marked `[UseInbox]` or `[UseInboxAsync]` still needs an Inbox store
+registered in the container when the global Inbox is off.
 
 Configuring an *Inbox* has two elements. The first is the type of *Inbox*, the second configuration for the *Inbox* behavior.
 

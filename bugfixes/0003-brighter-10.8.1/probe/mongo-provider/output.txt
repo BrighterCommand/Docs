@@ -1,0 +1,8 @@
+Brighter 10.8.1+708fa74bf7d578a53c7093ed0879faaedfbf4357
+pass IAmAMongoDbTransactionProvider directly : ok, deposited 01a16605-4032-7dfd-8a49-93dcdbec5a57
+pass as IAmABoxTransactionProvider<IClientSessionHandle>: ok, deposited 01a16605-408d-753c-a1ea-9f7cb8534bce
+Outbox documents: 2, People documents: 2
+Brighter 10.8.0+de2181535522bce33dc486d4889255c22b5d5328
+pass IAmAMongoDbTransactionProvider directly : InvalidOperationException: Supplied transaction provider doesn't match configured transaction type.
+pass as IAmABoxTransactionProvider<IClientSessionHandle>: ok, deposited 01a16605-4a6b-71a3-a37e-4d3b2891cbb3
+Outbox documents: 1, People documents: 1

@@ -80,7 +80,7 @@ docker compose up -d
 
 ```bash
 dotnet new classlib -n Greetings -f net9.0
-dotnet add Greetings package Paramore.Brighter --version 10.8.0
+dotnet add Greetings package Paramore.Brighter --version 10.8.1
 ```
 
 Delete the generated `Class1.cs`, and put this in `Greetings/GreetingEvent.cs`:
@@ -126,8 +126,8 @@ library has nothing to run, and neither process exists.
 
 ```bash
 dotnet new console -n GreetingsSender -f net9.0
-dotnet add GreetingsSender package Paramore.Brighter.Extensions.DependencyInjection --version 10.8.0
-dotnet add GreetingsSender package Paramore.Brighter.MessagingGateway.RMQ.Async --version 10.8.0
+dotnet add GreetingsSender package Paramore.Brighter.Extensions.DependencyInjection --version 10.8.1
+dotnet add GreetingsSender package Paramore.Brighter.MessagingGateway.RMQ.Async --version 10.8.1
 dotnet add GreetingsSender package Microsoft.Extensions.Hosting --version 10.0.12
 dotnet add GreetingsSender reference Greetings
 ```
@@ -214,9 +214,9 @@ the two in the order that works.
 
 ```bash
 dotnet new console -n GreetingsReceiver -f net9.0
-dotnet add GreetingsReceiver package Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection --version 10.8.0
-dotnet add GreetingsReceiver package Paramore.Brighter.ServiceActivator.Extensions.Hosting --version 10.8.0
-dotnet add GreetingsReceiver package Paramore.Brighter.MessagingGateway.RMQ.Async --version 10.8.0
+dotnet add GreetingsReceiver package Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection --version 10.8.1
+dotnet add GreetingsReceiver package Paramore.Brighter.ServiceActivator.Extensions.Hosting --version 10.8.1
+dotnet add GreetingsReceiver package Paramore.Brighter.MessagingGateway.RMQ.Async --version 10.8.1
 dotnet add GreetingsReceiver package Microsoft.Extensions.Hosting --version 10.0.12
 dotnet add GreetingsReceiver reference Greetings
 ```

@@ -390,7 +390,7 @@ Set both flags and both sets of attributes will be recorded.
 
 ## Outbox Sweeper Metrics
 
-The [Outbox Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) runs in the background, so when it stalls nothing fails visibly. Messages simply stay in the Outbox. To make a stall visible, the sweeper records three metrics about its own health on the `Paramore.Brighter` meter. They tell you whether sweeps are running, whether they start on time, and how long they take.
+The [Outbox Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) runs in the background, so when it stalls nothing fails visibly. Messages simply stay in the Outbox. To make a stall visible, the sweeper records five instruments about its own health on the `Paramore.Brighter` meter. They tell you whether sweeps are running, whether they start on time, how long they take, how long the sweep in progress has been running, and how many topics the outbox circuit breaker has tripped. Everything in this section applies from Brighter 10.8.1.
 
 ### Enabling the Metrics
 
@@ -415,6 +415,8 @@ If you do not call `AddBrighterInstrumentation()`, the sweeper uses a no-op mete
 | `paramore.brighter.outbox_sweeper.tick.lag` | Histogram | `s` | How long after its due time a sweep started |
 | `paramore.brighter.outbox_sweeper.sweep.duration` | Histogram | `s` | How long a sweep took |
 | `paramore.brighter.outbox_sweeper.sweeps` | Counter | `{sweep}` | Number of sweeps, by how each ended |
+| `paramore.brighter.outbox_sweeper.sweep.running_time` | Gauge (observable) | `s` | How long the sweep in progress has been running, including any wait for the [distributed lock](/contents/DistributedLock.md), or 0 when no sweep is in progress |
+| `paramore.brighter.outbox_sweeper.tripped_topics` | Gauge (observable) | `{topic}` | Number of topics whose outbox circuit breaker is tripped |
 
 `sweep.duration` and `sweeps` carry a `paramore.brighter.outbox_sweeper.outcome` attribute:
 
@@ -423,6 +425,10 @@ If you do not call `AddBrighterInstrumentation()`, the sweeper uses a no-op mete
 | `completed` | The sweep ran to the end |
 | `failed` | The sweep threw an exception. The sweeper logs it and sweeps again on the next tick |
 | `lock_unavailable` | The sweep did not run, because another sweeper holds the [distributed lock](/contents/DistributedLock.md) |
+
+The two gauges carry no attributes. They read the sweeper's state each time your exporter collects, rather than being recorded when a sweep ends, so they report while a sweep is still running. Each reports 0 if it cannot read what it needs: Brighter logs a warning, and the sweeper carries on sweeping.
+
+`tripped_topics` reads the `IAmAnOutboxCircuitBreaker` registered in your service provider, and reports 0 when none is registered. Register the circuit breaker as a singleton shared with the outbox producer mediator, or the gauge may not match the topics the sweeper skips. It counts only while this instance is the active sweeper — the one that obtained the distributed lock — so it reads 0 on an instance that does not hold the lock, and while a sweep is waiting for the lock. `InMemoryOutboxCircuitBreaker` is per instance, so the count is one instance's view.
 
 These metrics describe the sweeper, not the messages it sends. They do not count how many messages a sweep found or dispatched.
 
@@ -437,7 +443,7 @@ The sweep itself also stays on that thread: when a send completes, as Kafka's do
 
 The schedule is measured in elapsed time, not by the wall clock, so a clock that steps backwards does not delay a sweep.
 
-Because sweeps run one after another on that one thread, **a hung sweep records nothing**. No later sweep starts while it is stuck, so there is no `tick.lag`, `sweep.duration` or `sweeps` until it ends. `lock_unavailable` shows up only on *other* instances that share the distributed lock, and with a single instance or the in-memory lock, not even that. So don't use `lock_unavailable` or `tick.lag` to detect a stall. Alert on sweeps that should have completed and didn't, as in [Suggested Alerts](#suggested-alerts).
+Because sweeps run one after another on that one thread, **a hung sweep records nothing on the histograms or the counter**. No later sweep starts while it is stuck, so there is no further `tick.lag`, and no `sweep.duration` or `sweeps`, until it ends. `lock_unavailable` shows up only on *other* instances that share the distributed lock, and with a single instance or the in-memory lock, not even that. So don't use `lock_unavailable` or `tick.lag` to detect a stall. The `sweep.running_time` gauge does see it: it reads the sweep in progress each time it is collected, so a hung sweep shows as a value that keeps growing. Alert on that, as in [Suggested Alerts](#suggested-alerts).
 
 The same thread also means that code in the sweep's path that blocks on a task, such as a custom distributed lock, producer or Outbox that calls `.GetAwaiter().GetResult()` on an async method, can deadlock the sweeper. Brighter's own implementations don't do this.
 
@@ -459,7 +465,15 @@ min_over_time(sum by (messaging_destination_name) (paramore_brighter_publish_con
 
 The examples below use PromQL, with the names a Prometheus exporter produces: dots become underscores, and the unit and `_total` are added as suffixes. Adjust them for your backend.
 
-**The sweeper has stalled.** No sweep has completed for several intervals. With a 5-second `TimerInterval`, this alerts after about 30 seconds:
+**The sweeper has stalled.** The sweep in progress has run for more than three `TimerInterval`s. With a 5-second `TimerInterval`, this alerts once a sweep has run for 15 seconds:
+
+```promql
+max(paramore_brighter_outbox_sweeper_sweep_running_time_seconds) > 15
+```
+
+This catches a hung sweep directly, on the instance where it is hung. Size the threshold above the longest healthy sweep, which you can read from the `sweep.duration` histogram.
+
+**No sweep is completing.** No sweep has completed for several intervals. This also fires when no instance is sweeping at all, which `sweep.running_time` cannot show. With a 5-second `TimerInterval`, this alerts after about 30 seconds:
 
 ```promql
 sum(increase(paramore_brighter_outbox_sweeper_sweeps_total{paramore_brighter_outbox_sweeper_outcome="completed"}[30s])) == 0
@@ -480,6 +494,12 @@ sum(increase(paramore_brighter_outbox_sweeper_sweeps_total{paramore_brighter_out
 ```
 
 To find the reason for a failure, check the sweeper's error log.
+
+**Topics are tripped.** The active sweeper is skipping topics whose outbox circuit breaker has tripped, so messages for them are not swept until the cooldown ends. Because the gauge reads 0 while the sweeper waits for the lock, a single sample can miss a tripped topic; take the maximum over a window of three `TimerInterval`s:
+
+```promql
+max(max_over_time(paramore_brighter_outbox_sweeper_tripped_topics[15s])) > 0
+```
 
 ### Histogram Buckets
 

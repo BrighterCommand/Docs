@@ -107,9 +107,8 @@ Storage, retries, the dashboard and the worker count all belong to Hangfire itse
 configured through `AddHangfire`, not here.
 
 <!-- optioncheck: Paramore.Brighter.MessageScheduler.Hangfire.HangfireMessageSchedulerFactory
-     manual: Queue — the factory reaches Hangfire's JobStorage static as it is constructed, so no default on this type is readable outside a configured Hangfire host
-     manual: Client — the factory reaches Hangfire's JobStorage static as it is constructed, so no default on this type is readable outside a configured Hangfire host
-     manual: TimeProvider — the factory reaches Hangfire's JobStorage static as it is constructed, so no default on this type is readable outside a configured Hangfire host
+     manual: Client — reading it creates a BackgroundJobClient from Hangfire's JobStorage static, so no default is readable outside a configured Hangfire host
+     manual: TimeProvider — initialised to TimeProvider.System, which has no printable value
 -->
 
 | Option | Type | Default | Description |
@@ -118,11 +117,13 @@ configured through `AddHangfire`, not here.
 | `Client` | `IBackgroundJobClientV2` | a new `BackgroundJobClient` | The Hangfire client the scheduler enqueues jobs through. |
 | `TimeProvider` | `TimeProvider` | `TimeProvider.System` | The clock the scheduler measures delays against. |
 
-**`Client` is created eagerly, so configure Hangfire before you construct the factory.**
-Its initialiser calls `new BackgroundJobClient()`, which reads Hangfire's `JobStorage.Current`
-static and throws `InvalidOperationException: Current JobStorage instance has not been
-initialized yet` when no storage is registered. Register your Hangfire storage before the
-factory is constructed, as the complete examples below do.
+**`Client` is created the first time it is read, so configure Hangfire before the scheduler
+runs.** Unless you set it, reading `Client` calls `new BackgroundJobClient()`, which reads
+Hangfire's `JobStorage.Current` static and throws `InvalidOperationException: Current JobStorage
+instance has not been initialized yet` when no storage is registered. Constructing the factory
+reads nothing, from Brighter 10.8.1; before it, the factory created its client as it was
+constructed and threw there instead. Register your Hangfire storage first, or set `Client` to
+one from the service provider, as the complete examples below do.
 
 ### Basic Configuration
 

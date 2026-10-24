@@ -164,6 +164,8 @@ The interfaces use them like this: `IAmABoxMigration` and the `BoxMigration` rec
 
 The five string-backed types also expose a static `IsNullOrEmpty` helper (mirroring `Id.IsNullOrEmpty`), so `BoxTableName.IsNullOrEmpty(t)` replaces `string.IsNullOrEmpty(t.Value)`. `MigrationVersion` additionally implements `IComparable<MigrationVersion>` so versions order correctly.
 
+`SchemaName` and `SourceReference`, the two that are optional in use, never hold an empty value, from Brighter 10.8.1: their constructors throw `ArgumentException` for a null or empty string, and the implicit conversion from `string` turns a null or empty string into a null `SchemaName?` or `SourceReference?`. Their `IsNullOrEmpty` is therefore a null check.
+
 Because the conversions are **implicit in both directions**, you can pass primitives directly. Constructing a `BoxMigration` with string and `int` literals works — the literals convert to the value types at the call site:
 
 ```csharp

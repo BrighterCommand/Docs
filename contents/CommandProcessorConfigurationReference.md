@@ -811,6 +811,7 @@ ones you meet first.
 | `DefaultHeaders` | `IDictionary<string, object>?` | `null` | Headers the default mappers add to every message. |
 | `CloudEventsAdditionalProperties` | `IDictionary<string, object>?` | `null` | Non-standard CloudEvents attributes serialised alongside the standard ones in a structured-mode envelope, by `CloudEventJsonMessageMapper<>`. The default `JsonMessageMapper<>` does not write them. |
 | `ReplyTo` | `string?` | `null` | The queue a sender listens on under Request-Reply. |
+| `RequeueScheduler` | `RequeueSchedulerMode` | `Native` | Which scheduler delays a requeued message, for a transport whose consumer can schedule a retry onto a queue: `Native`, the consuming broker's own, or `Global`, the scheduler you configured with `UseScheduler`. Azure Service Bus reads it from the publication passed to `AzureServiceBusConsumerFactory`. |
 
 `Source` reads back with a trailing slash, because `Uri` normalises it. `Type` is empty on a
 new publication, and Brighter's own doc comment says otherwise — the value above is the one

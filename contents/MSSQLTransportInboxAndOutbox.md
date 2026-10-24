@@ -236,14 +236,12 @@ public class GreetingEventHandler : RequestHandler<GreetingEvent>
 
 **`MsSqlInbox` takes the same configuration object**, reading `inboxTableName` from it — the third of the three names step 3 set.
 
-> **Why the attribute rather than the global configuration alone.** `InboxConfiguration`'s
-> other arguments — `scope`, `onceOnly`, `actionOnExists` — only reach the pipeline through
-> `CommandProcessorBuilder`'s `ExternalBus` overloads. A process that registers **no producers**
-> takes the `NoExternalBus` branch instead (`ServiceCollectionExtensions.cs:657`), and **that
-> overload accepts no inbox at all** — so a consumer-only application gets no de-duplication and
-> no warning that it is missing. Measured on a receiver with the Inbox table present and
-> provisioned: **0 rows written with no producer registered, 1 row with one registered.**
-> `[UseInbox]` is an ordinary handler attribute and does not depend on there being a bus.
+> **Why the attribute as well as the configuration.** `InboxConfiguration` supplies the store,
+> and from Brighter 10.8.1 `AddConsumers` registers none until you set it — a handler that carries
+> the attribute without one fails on every message rather than running unprotected. The
+> configuration's own `scope`, `onceOnly` and `actionOnExists` apply an Inbox to every handler the
+> consumer runs, with or without producers registered. The attribute puts the policy on the one
+> handler that needs it, where whoever reads the handler can see it.
 
 The attribute's arguments are the ones worth deciding rather than defaulting:
 
@@ -435,7 +433,7 @@ You skipped step 4. What makes this one expensive is how healthy everything look
 
 **Every message is handled twice, and the Inbox table stays empty**
 
-The handler has no `[UseInbox]`, or the process registers no producers and you were relying on `InboxConfiguration`'s policy arguments — which never reach the pipeline without an external bus. Step 7. Setting `scope:` will not help: `InboxScope` is inert.
+The handler has no `[UseInbox]` and the options set no `InboxConfiguration`: from Brighter 10.8.1 there is no Inbox until you set one. Step 7. Setting `scope:` will not help: `InboxScope` is inert.
 
 **Every message is handled twice, and the Inbox table has rows**
 

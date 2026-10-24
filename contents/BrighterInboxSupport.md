@@ -67,6 +67,17 @@ Use the **contextKey** parameter to the attribute to disambiguate the request id
 
 There are two versions of the attribute: sync and async. Ensure that you choose the correct version, which should [match your handler](/contents/DispatchingARequest.md#pipelines-must-be-homogeneous).
 
+**The attribute needs an Inbox store, and from Brighter 10.8.1 you must configure one.**
+`AddConsumers` registers a store only when you set `InboxConfiguration` on its options — see
+[Inbox Configuration](#inbox-configuration). Without one, every request sent to a handler that
+carries the attribute fails, and the handler never runs: Brighter throws a `ConfigurationException`
+whose inner exception reads *Unable to resolve service for type 'Paramore.Brighter.IAmAnInboxSync'*
+(or `IAmAnInboxAsync`), or, if you configure the consumers through the `AddConsumers` overload that
+takes a `Func<IServiceProvider, ConsumersOptions>`, a `NullReferenceException` from
+`UseInboxHandler`. To keep the in-memory Inbox that earlier versions registered for you, set
+`options.InboxConfiguration = new InboxConfiguration()`; for one that survives a restart, give it a
+persistent store.
+
 ``` csharp
        [UseInboxAsync(step:0, contextKey: typeof(GreetingMadeHandlerAsync), onceOnly: true )]
         public override async Task<GreetingMade> HandleAsync(GreetingMade @event, CancellationToken cancellationToken = default(CancellationToken))
@@ -79,7 +90,7 @@ There are two versions of the attribute: sync and async. Ensure that you choose 
 
 ### Inbox Configuration
 
-Your inbox is configured as part of the Brighter extensions to `IServiceCollection`. See [Inbox Configuration](/contents/DispatcherConfigurationReference.md#inbox) for more.
+Your inbox is configured as part of the Brighter extensions to `IServiceCollection`, by setting `InboxConfiguration` on the options you pass to `AddConsumers`. From Brighter 10.8.1 there is no Inbox unless you set it: a duplicate delivery reaches its handler, and a handler marked `[UseInbox]` or `[UseInboxAsync]` fails. See [Inbox Configuration](/contents/DispatcherConfigurationReference.md#inbox) for more.
 
 ### Global Inbox Configuration in a Consumer-Only Application
 

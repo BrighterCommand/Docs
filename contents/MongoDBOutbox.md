@@ -244,7 +244,9 @@ When TTL is configured, MongoDB will automatically create a TTL index on the `Ti
 
 In your handler, take a dependency on **IAmAMongoDbTransactionProvider**, which Brighter registers for the `MongoDbUnitOfWork` you set as the `TransactionProvider`, and on the `IAmAMongoDbConfiguration` you registered beside it. Brighter does not register `IAmATransactionConnectionProvider` for MongoDB; that interface is for relational databases, and a handler that asks for it cannot be created.
 
-Use the provider as an `IAmABoxTransactionProvider<IClientSessionHandle>`. The `MongoDbOutbox` writes in an `IClientSessionHandle`, so that is the transaction type Brighter configures, and `DepositPostAsync` checks the provider you pass against it: passing the `IAmAMongoDbTransactionProvider` itself throws `InvalidOperationException: Supplied transaction provider doesn't match configured transaction type.` It is also the session type the MongoDB driver's collection methods take.
+Pass the provider to `DepositPostAsync` as it is. `IAmAMongoDbTransactionProvider` is an `IAmABoxTransactionProvider<IClientSessionHandle>`, and the `MongoDbOutbox` writes in an `IClientSessionHandle`, so that is the transaction type Brighter configures. It is also the session type the MongoDB driver's collection methods take.
+
+> **Before Brighter 10.8.1**, the interface was an `IAmABoxTransactionProvider<IClientSession>`, so `DepositPostAsync` threw `InvalidOperationException: Supplied transaction provider doesn't match configured transaction type.` unless you cast the provider to `IAmABoxTransactionProvider<IClientSessionHandle>` first.
 
 Start the transaction through the provider, write your documents in its session, and call **DepositPostAsync** with the provider so the message is written to the Outbox in the same transaction. Commit through the provider; if anything fails, roll back and neither your change nor the message is written. Once the transaction has committed, you can call **ClearOutboxAsync** to dispatch the message immediately, or you can rely on the Outbox Sweeper to dispatch it for you.
 
@@ -270,9 +272,7 @@ public class AddGreetingHandler(
     {
         var posts = new List<Id>();
 
-        // The MongoDB Outbox writes in an IClientSessionHandle, so use the provider as one
-        var unitOfWork = (IAmABoxTransactionProvider<IClientSessionHandle>)transactionProvider;
-        var session = await unitOfWork.GetTransactionAsync(cancellationToken);
+        var session = await transactionProvider.GetTransactionAsync(cancellationToken);
 
         try
         {
@@ -289,22 +289,22 @@ public class AddGreetingHandler(
             // Now write the message we want to send to the Outbox in the same transaction
             posts.Add(await postBox.DepositPostAsync(
                 new GreetingMade(addGreeting.Greeting),
-                unitOfWork,
+                transactionProvider,
                 cancellationToken: cancellationToken));
 
             // Commit both the entity change and the outgoing message
-            await unitOfWork.CommitAsync(cancellationToken);
+            await transactionProvider.CommitAsync(cancellationToken);
         }
         catch (Exception e)
         {
             logger.LogError(e, "Exception thrown handling Add Greeting request");
             // It went wrong, rollback the entity change and the downstream message
-            await unitOfWork.RollbackAsync(cancellationToken);
+            await transactionProvider.RollbackAsync(cancellationToken);
             return await base.HandleAsync(addGreeting, cancellationToken);
         }
         finally
         {
-            unitOfWork.Close();
+            transactionProvider.Close();
         }
 
         // Send this message via a transport. We need the ids to send just the messages here, not all outstanding ones.
