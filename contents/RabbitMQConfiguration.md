@@ -45,7 +45,7 @@ If your application relies on proactor subscriptions for efficient, non-blocking
 The Connection to RabbitMQ is provided by an **RmqMessagingGatewayConnection** which allows you to configure the following:
 
 - **Name**: A unique name for the connection, for diagnostic purposes
-- **AmqpUri**: A connection to AMQP in the form of an [RabbitMQ Uri](https://www.rabbitmq.com/uri-spec.html) **Uri** with reliability options for a retry count (defaults to 3), **ConnectionRetryCount**, retry interval (defaults to 1000ms) **RetryWaitInMilliseconds** and a circuit breaker retry timeout (defaults to 60000ms), **CircuitBreakTimeInMilliseconds**, which introduces a delay when connections exceed the retry count.
+- **AmqpUri**: A connection to AMQP in the form of an [RabbitMQ Uri](https://www.rabbitmq.com/uri-spec.html) **Uri** with reliability options for a retry count (defaults to 3), **ConnectionRetryCount**, the base of an exponential back-off between retries (defaults to 1000ms, so a first wait of 2 seconds) **RetryWaitInMilliseconds** and a circuit breaker retry timeout (defaults to 60000ms), **CircuitBreakTimeInMilliseconds**, which introduces a delay when connections exceed the retry count.
 - **Exchange**: The definition of the exchange. **Name** is the identifier for the exchange. All exchanges have a [**Type**](https://www.rabbitmq.com/tutorials/amqp-concepts.html), and the default is **ExchangeType.Direct**, but it is a string value that supports all RabbitMQ exchange types on the .NET SDK. The **Durable** flag is used to indicate if the exchange definition survives node failure or restart of the broker which defaults to *false*. **SupportDelay** indicates if the Exchange supports retry with delay, which defaults to *false*.
 - **DeadLetterExchange**: Another exchange definition, but this one is used to host any Dead Letter Queues (DLQ). This could be the same exchange, but normal practice is to use a different exchange.
 - **Heartbeat**: RabbitMQ uses a heartbeat to determine if a connection has died. This sets the interval for that heartbeat. Defaults to 20s.
@@ -124,7 +124,7 @@ the ones your network obliges you to; for how to choose values, see
 **Configuration Options**:
 
 - **connectionRetryCount**: Number of times to retry connecting to RabbitMQ before giving up (default: 3)
-- **retryWaitInMilliseconds**: Time to wait between retry attempts (default: 1000ms)
+- **retryWaitInMilliseconds**: The base of an exponential back-off between retry attempts: Brighter waits twice this before the first retry and doubles the wait for each retry after it (default: 1000ms, so 2, 4 and 8 seconds for the default three retries)
 - **circuitBreakTimeInMilliseconds**: Time to wait before attempting to reconnect after exceeding retry count (default: 60000ms)
 - **Heartbeat**: Interval for RabbitMQ heartbeat checks to detect dead connections (default: 20s)
 

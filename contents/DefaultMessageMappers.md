@@ -237,7 +237,7 @@ You can make it the default instead, with `asyncDefaultMessageMapper: typeof(Avr
 
 ### 2. Transform Pipelines
 
-When you need message transformation, you must use a custom mapper with transform attributes. Brighter ships the Claim Check and Compression transforms; for anything else, such as encryption or PII removal, you write your own transform. See [Message Transforms](/contents/MessageTransforms.md) for the pipeline and worked examples.
+When you need message transformation, you must use a custom mapper with transform attributes. Brighter ships the Claim Check, Compression and CloudEvents transforms, and the `Paramore.Brighter.Transformers.JustSaying` and `Paramore.Brighter.Transformers.MassTransit` packages ship transforms for exchanging messages with those frameworks; for anything else, such as encryption or PII removal, you write your own transform. See [Message Transforms](/contents/MessageTransforms.md) for the pipeline and worked examples.
 
 ## Registering Custom Mappers
 

@@ -38,7 +38,7 @@ var rmqConnection = new RmqMessagingGatewayConnection
     AmpqUri = new AmqpUriSpecification(
         uri: new Uri("amqp://guest:guest@localhost:5672"),
         connectionRetryCount: 5,                  // Number of retry attempts
-        retryWaitInMilliseconds: 250,             // Wait between retries
+        retryWaitInMilliseconds: 250,             // Back-off: 500 ms before the first retry, doubling
         circuitBreakTimeInMilliseconds: 30000     // Circuit breaker timeout
     ),
     Exchange = new Exchange("paramore.brighter.exchange"),

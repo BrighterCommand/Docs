@@ -400,7 +400,7 @@ var subscriptions = new Subscription[]
 
 #### SQS FIFO Pub/Sub
 
-For ordered message processing, you can use FIFO topics and queues. Note that both the topic and queue names must end with `.fifo`, and the `Type` in both `SnsAttributes` and `SqsAttributes` must be set to `Fifo`.
+For ordered message processing, you can use FIFO topics and queues. Set the `Type` in both `SnsAttributes` and `SqsAttributes` to `Fifo`. AWS requires FIFO topic and queue names to end in `.fifo`; Brighter appends the suffix when the name you give lacks it.
 
 ```csharp
 using Paramore.Brighter;
@@ -442,7 +442,7 @@ var subscriptions = new Subscription[]
 
 #### SQS FIFO Point-to-Point
 
-For ordered Point-to-Point messaging, you can use a FIFO queue. The queue name must end with `.fifo`, and the `Type` in `SqsAttributes` must be `Fifo`.
+For ordered Point-to-Point messaging, you can use a FIFO queue. Set the `Type` in `SqsAttributes` to `Fifo`. AWS requires a FIFO queue's name to end in `.fifo`; Brighter appends the suffix when the name you give lacks it.
 
 ```csharp
 using Paramore.Brighter;

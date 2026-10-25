@@ -103,7 +103,7 @@ To implement a **TransformAttribute** you need to create a derived type that ove
 
 #### Step
 
-Step specifies the order in which a transform runs (attributes are not guaranteed to be made available in top-down order by reflection). This can be important in transforms. Imagine that you want to compress any message over 256Kb, but because a large enough message might still not be small enough after compression,  a message that is *still* over 256Kb to distributed storage. In this case you would want to make sure that the step value for compression was lower than the step value to offload to distributed storage.
+Step specifies the order in which a transform runs (attributes are not guaranteed to be made available in top-down order by reflection). This can be important in transforms. Imagine that you want to compress any message over 256Kb, but because a large enough message might still not be small enough after compression,  a message that is *still* over 256Kb to distributed storage. Brighter runs the transforms on a method from the highest step to the lowest, so in this case you would want to make sure that the step value for compression was higher than the step value to offload to distributed storage.
 
 #### Passing Parameters to a Transform
 
@@ -264,7 +264,7 @@ public class CompressedOrderMapper : IAmAMessageMapper<LargeOrder>
 
 ### Chaining Multiple Transforms
 
-You can chain transforms by using different step numbers:
+You can chain transforms by using different step numbers. Brighter runs them from the highest step to the lowest, so the transform you want to run first takes the highest step:
 
 ```csharp
 using System.Text.Json;
@@ -278,8 +278,8 @@ public class CompressedClaimCheckMapper : IAmAMessageMapper<LargeOrder>
 {
     public IRequestContext? Context { get; set; }
 
-    [Compress(step: 0, compressionMethod: CompressionMethod.GZip)]  // First: Compress
-    [ClaimCheck(step: 1, thresholdInKb: 512)]                       // Second: Claim check if still large
+    [Compress(step: 1, compressionMethod: CompressionMethod.GZip)]  // First: Compress
+    [ClaimCheck(step: 0, thresholdInKb: 512)]                       // Second: Claim check if still large
     public Message MapToMessage(LargeOrder request, Publication publication)
     {
         // Standard serialization
@@ -296,8 +296,8 @@ public class CompressedClaimCheckMapper : IAmAMessageMapper<LargeOrder>
         return new Message(header, body);
     }
 
-    [RetrieveClaim(step: 0)]                      // First: Retrieve if claim checked
-    [Decompress(step: 1)]                         // Second: Decompress
+    [RetrieveClaim(step: 1)]                      // First: Retrieve if claim checked
+    [Decompress(step: 0)]                         // Second: Decompress
     public LargeOrder MapToRequest(Message message)
     {
         var order = JsonSerializer.Deserialize<LargeOrder>(
@@ -310,7 +310,7 @@ public class CompressedClaimCheckMapper : IAmAMessageMapper<LargeOrder>
 }
 ```
 
-The transforms execute in order based on the `step` parameter. On receive, they execute in reverse order.
+The transforms execute in order based on the `step` parameter, from the highest to the lowest, on receive as on send. So on send `Compress` (step 1) runs before `ClaimCheck` (step 0), and a message that is still over the threshold once compressed goes to the luggage store compressed; on receive `RetrieveClaim` (step 1) fetches it before `Decompress` (step 0) restores the body.
 
 ## Further Reading
 

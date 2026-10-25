@@ -2183,7 +2183,7 @@ the work. `tools/README.md` rows 2 and 9 now give the close's figures.
   - Input: S4's table, hard rows; Brighter `10.8.0` source, the pinned release
   - Output: as 3.3's, for S4. `KafkaConfiguration.md`'s 14 *parse* blocks are each made whole,
     skipped with an accepted reason, or listed
-- [ ] **Task 6.4:** Run S4's behavioural claims (AC10)
+- [x] **Task 6.4:** Run S4's behavioural claims (AC10)
   - Input: S4's changed blocks
   - Output: a *Claim / Case / Control* table, each row naming `probe/s4/<name>/Program.cs`
 - [ ] **Task 6.5:** Second pass for S4
@@ -2455,6 +2455,80 @@ blocks that now use its `services`.
 - `DynamicMessageDeserialization.md` #3, #4 (the `InvalidMessageAction` default arm), #7
 - `KafkaConfiguration.md` #9–#13, #18: that each `configHook` setting reaches the consumer, and #2's `SslCaLocation` ternary
 - `RabbitMQConfiguration.md` #4: `circuitBreakTimeInMilliseconds: 30000`, the argument ledger 66 names
+
+#### The behavioural claims (6.4, AC10)
+
+**Every run is against the released 10.8.1 packages**, as `probe/s4/<name>/` projects; each prints `ok` or `FAIL` per
+row and exits 1 on any `FAIL`. Each block is copied as the page shows it, the probe's own lines marked `// probe`. Two
+claims needed a broker, and each got one: `kafka-consumer` runs against `apache/kafka:4.0.2` and `sqs-channels` against
+`localstack/localstack:4.4`, each started on `localhost` for the run and removed after it, as the csproj comments say.
+RabbitMQ's claims are about Brighter's connection policies, which the probe drives directly, so no broker was needed.
+`routing-id` is 6.3's, rerun here at 10.8.1 with the same output.
+
+| Claim | Case | Control | Probe | Result |
+|---|---|---|---|---|
+| `MessageTransforms.md`, the sentence after #8, as it stood: *"The transforms execute in order based on the `step` parameter. On receive, they execute in reverse order"* | recording transforms, A at step 0 and B at step 1, on a mapper's send and receive | the steps swapped | `transform-order` | send B, A; receive B, A / send A, B; receive A, B. **Both pipelines run the highest step first.** **Overturned** (ledger 77) |
+| `MessageTransforms.md` #8, as it stood: `[Compress(step: 0)] // First: Compress`, `[ClaimCheck(step: 1)] // Second` | #8 as repaired (`Compress` 1, `ClaimCheck` 0), a 600 KB body of one repeated character, through Brighter's `TransformPipelineBuilder`, an `InMemoryStorageProvider` the luggage store | #8 as it stood | `transform-order` | 707 bytes sent, not claim-checked / claim-checked, 68 bytes sent: the claim token compressed, the payload stored uncompressed. **Overturned** (ledger 77) |
+| `MessageTransforms.md` #8 as repaired: `RetrieveClaim` (step 1) fetches before `Decompress` (step 0) | 1.2 MB of random hex, still over 512 KB once compressed, so the stored luggage is compressed | the receive as it stood (`RetrieveClaim` 0, `Decompress` 1) | `transform-order` | claim-checked, restored / `JsonException`, *"'0x1F' is an invalid start of a value"*: the gzip bytes reach the mapper |
+| `DefaultMessageMappers.md` § *Transform Pipelines* (`254e8a7`): *"Brighter ships the Claim Check and Compression transforms; for anything else … you write your own"* | reflection over `Paramore.Brighter`, `Paramore.Brighter.Transformers.JustSaying` and `…MassTransit` 10.8.1 for concrete `WrapWithAttribute` and `UnwrapWithAttribute` types | the same reflection over the probe's assembly, which declares an `EncryptAttribute` | `shipped-transforms` | `ClaimCheck`/`RetrieveClaim`, `Compress`/`Decompress`, `CloudEvents`/`ReadFromCloudEvents`; `JustSaying`/`JustSayingDecompress`; `MassTransitWrap`/`MassTransitUnwrap` / `EncryptAttribute`. **Overturned** (ledger 78) |
+| `HandlerFailure.md` #1: `[DeferMessageOnError(0, 5000)]` turns any unhandled exception into `DeferMessageAction`; `0` or omitted leaves the Subscription's delay | a handler that throws | no attribute; `delayMilliseconds` omitted | `handler-failure` | `DeferMessageAction`, `InnerException` the original, `Delay` 5 s / the original exception; `Delay` null |
+| `HandlerFailure.md` #2, #5, #8, #10, #11: a backstop at step 0 outside a retry at step 1 fires only once the retries are spent | each page handler, a retry of 3 the probe supplies for the page's unshown `OrderRetryPolicy`, always failing; #2 failing twice | the backstop at step 2, inside the retry | `handler-failure` | 4 runs, then `DeferMessageAction`, `RejectMessageAction` (#5, #10, and #11 async) or `DontAckAction`, each with the original inside; failing twice, 3 runs and no exception / 1 run, then the action |
+| `HandlerFailure.md` #6: `[FeatureSwitch(…, dontAck: true)]` throws `DontAckAction` when the feature is off; without it the message is silently consumed | the handler switched off | `dontAck` omitted | `handler-failure` | `DontAckAction`, handler not run / no exception, handler not run |
+| `HandlerFailure.md` #9: the mapper turns a deserialisation failure into `InvalidMessageAction` | a body that is not JSON; `null` | a valid body | `handler-failure` | `InvalidMessageAction`, `JsonException` inside; `InvalidMessageAction` / maps |
+| `KafkaConfiguration.md` #9–#13, #18: each `configHook` setting reaches the consumer; #12 raises the session timeout | each hook, the consumer built by `KafkaMessageConsumerFactory`, its `ConsumerConfig` read | no hook | `kafka-consumer` | every value set / unset; #12 45000 / 10000, the hook running after the group protocol applies the subscription's; #18 a different `greeter-…` id per consumer |
+| `KafkaConfiguration.md` #15 and § *Available Strategies*, as they stood: *"CooperativeSticky: Not supported with Brighter's manual offset commits"*, *"will throw an `ArgumentOutOfRangeException`"* | `CooperativeSticky`: a message produced, received, acknowledged, the consumer closed; and a second consumer joining a three-partition topic | `RoundRobin`, the default | `kafka-consumer` | no exception: round trip done; rebalanced, the first consumer keeping 2 partitions and the second taking 1, 12 messages acknowledged across both / no exception: round trip done; rebalanced, 1 and 2. **Overturned** (ledger 79) |
+| `RabbitMQConnectionStability.md` #1, as it stood: `retryWaitInMilliseconds: 250, // Wait between retries`; `RabbitMQConfiguration.md`'s list, *"Time to wait between retry attempts"* | #1's connection, its `ConnectionPolicyFactory` retry driven with `BrokerUnreachableException` | `retryWaitInMilliseconds: 500` | `rmq-connection` | 6 attempts (`connectionRetryCount: 5` is 5 retries), gaps 512, 1002, 2002, 4001, 8001 ms / 1001, 2001, 4002, 8002, 16002 ms: an exponential back-off from twice the value. **Overturned** (ledger 80) |
+| `RabbitMQConfiguration.md` #4 (ledger 66) and its list: `circuitBreakTimeInMilliseconds` is how long Brighter waits before reconnecting | `30000`, one unreachable broker, a call 1 s later | `500` | `rmq-connection` | refused, `BrokenCircuitException` / goes through |
+| `AWSSQSConfiguration.md` #7–#10 (ledger 65): each subscription makes the channel its heading names | each block's subscription, made by Brighter's `ChannelFactory` on LocalStack, then read back | the four against each other | `sqs-channels` | #7 a standard queue and topic, one subscription; #8 a FIFO queue and FIFO topic, content-based deduplication on the topic; #9 a standard queue, no topic; #10 a FIFO queue with deduplication, no topic |
+| `AWSSQSConfiguration.md`, the sentences before #8 and #10, as they stood: the names *"must end with `.fifo`"* | #8 and #10, their names ending `.fifo` | the same with names that do not | `sqs-channels` | `greeting…_queue.fifo` and `…_topic.fifo`, FIFO / the same FIFO resources: Brighter appends `.fifo` (and turns each `.` into `_`). **Overturned** (ledger 81) |
+| `CloudEventsSupport.md` #1: the Publication's `Source`, `Type` and `Subject` reach the message | the page's publication through the default `JsonMessageMapper<T>` | a Publication setting none | `cloudevents-mappers` | the three values in the header / `http://goparamore.io/`, empty, null |
+| `CloudEventsSupport.md` #13–#15 (ledger 74): `Type`, a relative `Source`, `Subject` | the blocks' good examples | an absolute `Source` | `cloudevents-mappers` | `/orders/12345`, not absolute, in the header and as `"source"` in a structured envelope; the type and subjects as written |
+| `CloudEventsSupport.md` #6: over the threshold the payload is stored and `dataref` set, and the receive restores it | 300 KB through `LargeOrderMapper` | 100 KB | `cloudevents-mappers` | `DataRef` set, the luggage stored, 48 bytes sent, restored / no `DataRef`, 102,479 bytes sent |
+| `DefaultMessageMappers.md` #8, #12, #15: the default is `JsonMessageMapper<T>`, binary mode; #3, #9: `CloudEventJsonMessageMapper<>` named, structured mode; #1 relies on the first | each block's registration, the registry `AddBrighter` builds asked for `OrderCreated`'s mapper, which is run | an explicit mapper registered beside a default | `cloudevents-mappers` | `JsonMessageMapper<OrderCreated>`, default, attributes in the header; `CloudEventJsonMessageMapper<OrderCreated>`, default, the envelope in the body / the explicit mapper, not default |
+| `DynamicMessageDeserialization.md` #3, #4, #7, #8 and the prose beside them: known types reach their handlers; `InvalidMessageAction` requests rejection as unacceptable; an ordinary exception is acknowledged | #4's callback on Brighter's Reactor, the in-memory transport, an invalid-message channel set; created, updated and an unmapped type enqueued | `ArgumentException` in the default arm | `dynamic-request-type` | each handler once; the unmapped message on the invalid-message channel / each handler once; the invalid-message channel empty and nothing left on the channel |
+| `RoutingMultipleMessageTypes.md` #3 (header), #4 (body), #6 (handler router) | `Create`/`Update`/`Cancel`; each `eventType`; `US`, `UK` | an unknown value and no header; an unknown, a missing `eventType`, not JSON; `FR` | `routing-callbacks` | the matching types; `USOrderCreatedHandler`, `UKOrderCreatedHandler` / `InvalidMessageAction` throughout, the last with a `JsonReaderException`, a `JsonException`, inside; `DefaultOrderCreatedHandler` |
+| `AsyncAPISupport.md` #2, #10 and § *Output Formats*: `asyncapi.json` and `asyncapi.yaml`; `.json` appended to a path without it; no `UseAsyncApi()` throws `InvalidOperationException` | #10's call | a path without `.json`; a host without `UseAsyncApi()` | `asyncapi-files` | both files, the title in each / `contracts.json`, `contracts.yaml`; `InvalidOperationException` |
+| `AsyncAPISupport.md` #8, #9: a generator registered before `UseAsyncApi()` is not overridden | #9's registration of #8's `MySchemaGenerator` | no registration | `asyncapi-files` | `MySchemaGenerator`, no `Amount` in the payload / `NJsonSchemaGenerator`, `Amount` |
+| `Routing.md` #3, #4 (ledger 73): the Id round trip | `request.Id.Value` | `request.Id` | `routing-id` (6.3) | the Id kept / `ArgumentException` |
+| `Routing.md` #3, #4: the reply goes to the `ReplyAddress` the request carried, with its correlation id | a request replying to `replies.a`, mapped out and in, its reply mapped out and in | `replies.b` | `routing-reply` | the reply on `replies.a`, correlation kept / on `replies.b` |
+| `ImplementingExternalBus.md` #3 (ledger 71), unstated: the V10 handler builds under `AddBrighter`'s defaults and `RETRYPOLICY` retries | a gateway failing once | the handler without `[UsePolicy]` | `external-bus-handler` | sent, the gateway called twice / `TimeoutException`, called once |
+
+**Five claims overturned, each repaired at every recurrence (obligation 21):**
+- **Ledger 77.** `MessageTransforms.md` #8 now gives `Compress` step 1 and `ClaimCheck` step 0, `RetrieveClaim` step 1 and
+  `Decompress` step 0, its comments unchanged; the sentence before it and the one after it, and § *Step*, say the highest
+  step runs first, on send and receive. No other page chains two transforms (`grep -rnE '\[(Compress|ClaimCheck|RetrieveClaim|Decompress)\(' contents/`
+  → one step value per method everywhere else)
+- **Ledger 78.** `DefaultMessageMappers.md` names the CloudEvents transform and the JustSaying and MassTransit packages
+- **Ledger 79.** `KafkaConfiguration.md`'s strategy list describes `CooperativeSticky` as the incremental strategy, its
+  *Limitation* paragraph is *Using CooperativeSticky Strategy*, #15 loses its *"This will throw"* and *"❌ Not supported"*
+  comments, and the librdkafka sentence is gone: issue 4059 was closed on 2025-03-25, and 10.8.1 pins Confluent.Kafka 2.16.0
+- **Ledger 80.** `RabbitMQConnectionStability.md` #1's comment and both of `RabbitMQConfiguration.md`'s descriptions say
+  the back-off doubles from twice the value. Both RMQ packages compute it the same way
+- **Ledger 81.** The two `AWSSQSConfiguration.md` sentences say AWS requires the suffix and Brighter appends it
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| § *The repairs (6.2)*, *For 6.4*: *"`KafkaConfiguration.md` #15: `CooperativeSticky` with manual commits throws"* | it does not, on a round trip or a rebalance (above); Brighter's own `When_a_partition_is_revoked_offsets_are_committed` runs both strategies at 10.8.1 | the list stands; ledger 79 |
+| Ledger 72: Brighter ships *"`ClaimCheck`/`RetrieveClaim`, `Compress`/`Decompress`, `CloudEvents` and the JustSaying pair"* | the MassTransit pair as well, in `Paramore.Brighter.Transformers.MassTransit` 10.8.1 | row 72 stands; row 78 carries the full list |
+| `docs/adr/0053` (Brighter's), the pipeline description sorting transform steps `OrderBy(s => s.Step)` | the 10.8.1 source sorts them `OrderByDescending`, for the description and for both pipelines | not this repository's to change; recorded for the ruling below |
+
+**Read, not run:**
+- `KafkaConfiguration.md` #2's `SslCaLocation` ternary: plain C#, and a Homebrew path the probe cannot vouch for
+- `AWSSQSMigrateToV10.md` #5, #6: the AWS SDK's credential and region resolution, not Brighter's
+- `AzureServiceBusConfiguration.md` #2 (ledger 75): no Service Bus emulator here; its routing keys pair by name with #1's publications
+- `RoutingMultipleMessageTypes.md` #1, #7–#9: the same `message.Header.Type` switch as `DynamicMessageDeserialization.md` #4, which
+  `dynamic-request-type` runs on the pump; #3 over RabbitMQ: header values pass through `RmqMessageCreator.ParseHeaderValue`, and the
+  probe's are strings
+- `DynamicMessageDeserialization.md`, *"logs it, increments the unacceptable-message count"*: the probe observes the acknowledgement only
+- `CloudEventsSupport.md` #6's comment, *"Set the CloudEvents dataref attribute to the storage location"*: `ClaimCheckTransformer` sets
+  `DataRef` to the id its store returns, which for S3 is the object's key
+
+**Measured after 6.4:** `--report` → **994 / 757 / 208 / 29**, 118 findings, unmoved: the three blocks edited
+(`MessageTransforms.md` #8, `KafkaConfiguration.md` #15, `RabbitMQConnectionStability.md` #1) stay BUILT. Two methods: the summary
+line, and `cut -f1 | sort | uniq -c` of the rows. `pagelint` 0 errors / **185**, `--changed origin/master` 0 errors, `--plant` 5 / 5;
+`linkcheck` 169 / 0; `symbolcheck` 24 entries, 14 silenced; `optioncheck` 0 mismatches, 59 tables, 533 rows (no marked table touched).
 
 ### Phase 7 — S5, the remaining five sections *(7 tasks, one PR)*
 
@@ -2811,6 +2885,11 @@ design, and their greps were run there.*
 | 74 | `new Uri("/orders/12345")` shown as a good, resource-specific CloudEvents `source`; with the default `UriKind` it is the absolute `file:///orders/12345` on macOS and Linux and a `UriFormatException` on Windows. The relative reference needs `UriKind.Relative` | `CloudEventsSupport.md` | `grep -rnF 'new Uri("/orders/12345")' contents/` | **1** | **0** | task 6.3, hidden behind *parse*; a scratch `Uri` probe (macOS, .NET 9) | 6 |
 | 75 | `builder.Services.AddConsumers(…)` inside `ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)`, where `builder` is declared nowhere; the method's own `services` is the collection | `AzureServiceBusConfiguration.md` | `grep -rn -B40 'builder.Services.AddConsumers' contents/ \| grep -c 'ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)'` | **1** | **0** | task 6.3, hidden behind *parse*. Not a recurrence: the other ten `builder.Services` sites are top-level statements | 6 |
 | 76 | The `TransformAttribute` listing short of 10.8.1's: `object[] InitializerParams()` returning `new object[0]`, where the source has `object?[]` and `[]` (`TransformAttributeBase.cs:25`), and the class left unclosed | `MessageTransforms.md` | `grep -rnF 'public virtual object[] InitializerParams' contents/` | **1** | **0** | task 6.3, hidden behind *parse* | 6 |
+| 77 | Transforms said to run in ascending `step` order on send and in reverse on receive; at 10.8.1 both pipelines run the highest step first (`TransformPipelineBuilder.cs`, `FindWrapTransforms` and `FindUnwrapTransforms`, `OrderByDescending`). So #8's `Compress` 0 and `ClaimCheck` 1 claim-checked before compressing, its *"First: Compress"* false, and § *Step*'s *"lower"* backwards | `MessageTransforms.md` | `grep -rnF 'On receive, they execute in reverse order' contents/`; `grep -rnF 'step value for compression was lower' contents/`; `grep -rnE '\[Compress\(step: 0, compressionMethod: CompressionMethod.GZip\)\]  // First' contents/` | **1**; **1**; **1** | **0**; **0**; **0** | task 6.4, run (`probe/s4/transform-order`). The step numbers were 6.3's (ledger 72); the sentences and § *Step* predate it | 6 |
+| 78 | Brighter said to ship only the Claim Check and Compression transforms; `Paramore.Brighter` 10.8.1 also ships `CloudEvents`/`ReadFromCloudEvents`, and `Paramore.Brighter.Transformers.JustSaying` and `…MassTransit` ship a pair each | `DefaultMessageMappers.md` | `grep -rnF 'Brighter ships the Claim Check and Compression transforms;' contents/` | **1** | **0** | task 6.4, run (`probe/s4/shipped-transforms`); written at `254e8a7` | 6 |
+| 79 | `CooperativeSticky` said to be unsupported with Brighter's manual commits and to throw `ArgumentOutOfRangeException`; at 10.8.1 (Confluent.Kafka 2.16.0) it round-trips and rebalances without an exception, as `RoundRobin` does | `KafkaConfiguration.md` | `grep -rnE 'CooperativeSticky.*([Nn]ot supported\|throw)' contents/` | **3** | **0** | task 6.4, run against `apache/kafka:4.0.2` (`probe/s4/kafka-consumer`) | 6 |
+| 80 | `retryWaitInMilliseconds` said to be the wait between connection retries; Brighter waits `retryWaitInMilliseconds × 2^attempt` (`ConnectionPolicyFactory.cs:66` in RMQ.Async, `ConnectionPoolFactory.cs:69` in RMQ.Sync at 10.8.1), so 500, 1000, 2000 … ms for 250 | `RabbitMQConnectionStability.md`, `RabbitMQConfiguration.md` | `grep -rnE 'Wait between retries\|Time to wait between retry attempts\|retry interval \(defaults to 1000ms\)' contents/` | **3** | **0** | task 6.4, run (`probe/s4/rmq-connection`); the comment in a block 6.2 edited, the two descriptions beside it (obligation 21) | 6 |
+| 81 | FIFO topic and queue names said to need a `.fifo` suffix; Brighter appends it when the name lacks it (`AWSNameExtensions.cs`, `Truncate`, at 10.8.1) | `AWSSQSConfiguration.md` | `grep -rnF 'must end with `.fifo`' contents/` | **2** | **0** | task 6.4, run on LocalStack 4.4 (`probe/s4/sqs-channels`) | 6 |
 
 ## Friction ledger
 

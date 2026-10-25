@@ -646,7 +646,7 @@ Kafka distributes partitions across consumers in a consumer group using a partit
 
 - **RoundRobin** (default): Distributes partitions evenly across consumers in a round-robin fashion. This is the most balanced distribution but may cause all partitions to be reassigned during rebalances.
 - **Range**: Assigns contiguous partition ranges to consumers. Useful for co-locating related partitions on the same consumer.
-- **CooperativeSticky**: Not supported with Brighter's manual offset commits (will throw an exception).
+- **CooperativeSticky**: Rebalances incrementally. A consumer keeps the partitions it already owns, and only the partitions moving to another consumer are revoked.
 
 **Why RoundRobin is the Default**:
 
@@ -679,9 +679,9 @@ var subscription = new KafkaSubscription<GreetingEvent>(
 };
 ```
 
-**CooperativeSticky Limitation**:
+**Using CooperativeSticky Strategy**:
 
-The **CooperativeSticky** strategy is not supported when using manual offset commits (which Brighter requires for its at-least-once delivery guarantees). Attempting to use it will throw an `ArgumentOutOfRangeException`:
+The **CooperativeSticky** strategy is useful when you want a consumer joining or leaving the group to move as few partitions as possible. Set it on a `ClassicGroupProtocol`:
 
 ``` csharp
 using System;
@@ -689,19 +689,16 @@ using Confluent.Kafka;
 using Paramore.Brighter;
 using Paramore.Brighter.MessagingGateway.Kafka;
 
-// This will throw an exception:
 var subscription = new KafkaSubscription<GreetingEvent>(
 	// ...
 )
 {
 	GroupProtocol = new ClassicGroupProtocol
 	{
-		PartitionAssignmentStrategy = PartitionAssignmentStrategy.CooperativeSticky // ❌ Not supported
+		PartitionAssignmentStrategy = PartitionAssignmentStrategy.CooperativeSticky
 	}
 };
 ```
-
-This is due to a [known issue in librdkafka](https://github.com/confluentinc/librdkafka/issues/4059) where CooperativeSticky doesn't work correctly with manual offset management.
 
 ### Consumer Group Protocol (KIP-848)
 
