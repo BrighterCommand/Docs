@@ -147,3 +147,4 @@ contents/ImplementingExternalBus.md	ImplementingExternalBusContext	-	-
 contents/RoutingMultipleMessageTypes.md	RoutingMultipleMessageTypesContext	-	-
 contents/KafkaConfiguration.md	KafkaConfigurationContext	-	-
 contents/AzureServiceBusConfiguration.md	AzureServiceBusConfigurationContext	-	-
+contents/RabbitMQConnectionStability.md	RabbitMQConnectionStabilityContext	-	-

@@ -56,9 +56,10 @@ therefore catches all of it.
 
 ## Logging with Dependency Injection
 
-If you use the DI extensions, there is nothing to do. Both `AddBrighter` and `AddConsumers`
-resolve `ILoggerFactory` from the container as they build, and hand it to
-`ApplicationLogging`:
+If you use the DI extensions, Brighter installs your container's factory for you. The
+command processor `AddBrighter` registers, and the Dispatcher `AddConsumers` registers, each
+resolve `ILoggerFactory` from the container when they are built — the first time the container
+resolves them — and hand it to `ApplicationLogging`:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -77,6 +78,10 @@ var host = builder.Build();
 The resolution is `GetService<ILoggerFactory>()`, not `GetRequiredService`, so a container
 with no factory registered is not an error — Brighter keeps the empty default and writes
 nothing.
+
+**Until then, Brighter's types log to the empty default.** A type that logs before the command
+processor or the Dispatcher is first resolved — a producer you send through at startup, say —
+keeps that logger for the life of the process, and none of its lines reach your providers.
 
 ## Logging Without Dependency Injection
 
@@ -135,7 +140,8 @@ because a pipeline logs as it is built for every request.
 ## Logging Common Pitfalls
 
 - **Nothing appears.** No provider is registered, or the factory was assigned after a
-  Brighter type had already initialised its static logger. Check the order.
+  Brighter type had already initialised its static logger. Check the order: under DI, resolve
+  the command processor before you use a producer directly.
 - **Logs stop when you move off DI.** The DI extensions were doing the assignment for you;
   the manual path does not.
 - **Setting `ApplicationLogging.LoggerFactory` in a test affects the whole process.** It is

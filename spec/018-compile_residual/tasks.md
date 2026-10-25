@@ -2629,6 +2629,55 @@ baseline); two methods, the summary line and `cut -f1 | sort | uniq -c` of the r
 `--changed origin/master` 0 errors; `linkcheck` 169 / 0; `symbolcheck` 24 entries, 161 pages, 14 silenced. No marked option
 table touched.
 
+#### Addendum: the Serilog ruling
+
+**Ruled (after `3671922`): `RabbitMQConnectionStability.md` #3 is rewritten to `Microsoft.Extensions.Logging` alone, and the
+pin is unmoved.** The block now adds a console provider and an `Information` filter on the
+`Paramore.Brighter.MessagingGateway.RMQ` categories, and the sentence before it says any `ILoggerProvider` (Serilog, Seq,
+OpenTelemetry) receives the same lines. `services` comes from a new unit, `RabbitMQConnectionStabilityContext` (one member,
+typed `IServiceCollection`), mapped in `pages.tsv`; blocks 1 and 2 are now compiled with it and still build. **#3 is BUILT**
+(`blockcheck --explain`: 0 diagnostics), and its row is gone from § *Blocks that stay FAILED*. It read: *"`CS0103` `Log`,
+`services`; `CS0246` `LoggerConfiguration` | Serilog (and its Seq sink) is on no pin, and the page names it alone. Adding it
+moves the pin's 553 assemblies and is not a repair of this page: put to 6.5 | 6"*.
+
+**The block's claim, run.** Its comment said *"Blocked events will be logged automatically"*, and the section opened *"Brighter
+automatically logs blocked and unblocked events"*. The gateway logs through `static readonly ILogger s_logger =
+ApplicationLogging.CreateLogger<RmqMessageGateway>()` (`RmqMessageGateway.cs:57`, RMQ.Async; `:54`, RMQ.Sync), and
+`ApplicationLogging.LoggerFactory` is a provider-less `LoggerFactory` until `BuildCommandProcessor`
+(`Extensions.DependencyInjection/ServiceCollectionExtensions.cs:776`) or `BuildDispatcher` (ServiceActivator's
+`ServiceCollectionExtensions.cs:141`) replaces it with the container's. A real broker alarm drove the events:
+`rabbitmqctl set_vm_memory_high_watermark 0`, a publish under it, then `0.4`.
+
+| Claim | Case | Control | Probe | Result |
+|---|---|---|---|---|
+| `RabbitMQConnectionStability.md` #3, as it stood: *"Blocked events will be logged automatically"* once a provider is added | #3 as rewritten, a capturing provider beside the console; the producer registry made in `AddProducers`' configure, as every RMQ page shows it; the command processor resolved, then `PostAsync`, the alarm, a publish under it, the alarm cleared | the same, but the producer sends once before the command processor is resolved | `rmq-logging`, against `rabbitmq:3.13-management` | the `Warning` *"… Subscription to amqp://\*\*\*\*\*@localhost:5679/ blocked. Reason: low on memory"* and the `Information` *"… unblocked"* reach the provider, with every other RMQ line / **nothing** from any RMQ category reaches it, not even the later `Published message` lines, while `rabbitmqctl list_connections state` reads `blocked` in both. **Conditional** (ledger 82) |
+
+The hypothesis given with the ruling, that creating the registry during configuration binds the gateway's logger early, is
+**not** what happens: the case arm creates it there, and its lines arrive. A logger is bound when its class first logs, at any
+level, so only a class that *logs* before the swap is affected. The Dispatcher half is read from source, not run.
+
+- **Ledger 82.** `RabbitMQConnectionStability.md`'s section now says the gateway logs *"through your application's logging"*,
+  and a paragraph after #3 says the classes take the container's `ILoggerFactory` once the command processor or Dispatcher is
+  built, and that a class which logs before then keeps a provider-less logger for the life of the process. **Recurs on
+  `Logging.md`** (S5, off-group): *"If you use the DI extensions, there is nothing to do"*, with `AddBrighter` and
+  `AddConsumers` resolving the factory *"as they build"*. It now says the command processor and the Dispatcher each resolve it
+  when first resolved, adds the same consequence, and its *Nothing appears* pitfall says to resolve the command processor before
+  using a producer directly. Prose only on that page; its blocks are unchanged. `grep -rniE 'logged automatically|automatically
+  logs?' contents/` → 0; `grep -rn 'ApplicationLogging\|ILoggerFactory' contents/` → `Logging.md` and this page only
+- **Ledger 83.** The two sample lines showed `amqp://localhost:5672`; the gateway logs `GetSanitizedUri()`, which masks the
+  credentials and keeps `Uri.ToString()`'s trailing slash (`RmqMessagingGatewayConnection.cs:137`), as the probe printed. They
+  now read `amqp://*****@localhost:5672/`, the page's own URI (`guest:guest`) masked
+
+**Upstream, for the maintainer (not filed).** Arguably yes: every Brighter type that logs holds a `static readonly` logger from
+whatever factory `ApplicationLogging` held at the type's first log, so any Brighter code that logs before the command processor
+or Dispatcher is resolved loses its lines for the life of the process, silently. A logger that resolves the current factory
+on each call, or installing the factory when the container is built rather than when the command processor is, would remove
+the ordering trap the two pages now describe.
+
+**Measured after the addendum:** see the return; `--report` → **994 / 758 / 207 / 29**, 119 findings (#3 joins 6.6's
+built-not-baselined; blocks 1 and 2 stay in it with their new scaffold). `pagelint` 0 errors / **184** (the old #3's
+using-directive warning gone).
+
 ### Phase 7 — S5, the remaining five sections *(7 tasks, one PR)*
 
 - [ ] **Task 7.1:** Predict phase 7's gate movement
@@ -2884,7 +2933,6 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `Routing.md` | 3 | `CS0246` `MyRequest` | *same-page*: block 2 declares it, and the sentence before block 3 names "this request" | 6 |
 | `Routing.md` | 4 | `CS0246` `MyReply` | *same-page*: block 2 declares it, as the sentence before block 4 now says. Block 3 and block 4 build once block 2's classes are in scope; each was checked that way (0 diagnostics) before the stub was taken out again | 6 |
 | `DefaultMessageMappers.md` | 6, 10 | `CS0246` `Orders`, `OrderShipped`, `AvroMessageMapperAsync<>` | *same-page*: block 4 declares the mapper and block 5 `OrderShipped`, in the namespace `Orders`; the sentences before blocks 6 and 10 are about that mapper | 6 |
-| `RabbitMQConnectionStability.md` | 3 | `CS0103` `Log`, `services`; `CS0246` `LoggerConfiguration` | Serilog (and its Seq sink) is on no pin, and the page names it alone. Adding it moves the pin's 553 assemblies and is not a repair of this page: put to 6.5 | 6 |
 
 ## Splits
 
@@ -2989,6 +3037,8 @@ design, and their greps were run there.*
 | 79 | `CooperativeSticky` said to be unsupported with Brighter's manual commits and to throw `ArgumentOutOfRangeException`; at 10.8.1 (Confluent.Kafka 2.16.0) it round-trips and rebalances without an exception, as `RoundRobin` does | `KafkaConfiguration.md` | `grep -rnE 'CooperativeSticky.*([Nn]ot supported\|throw)' contents/` | **3** | **0** | task 6.4, run against `apache/kafka:4.0.2` (`probe/s4/kafka-consumer`) | 6 |
 | 80 | `retryWaitInMilliseconds` said to be the wait between connection retries; Brighter waits `retryWaitInMilliseconds × 2^attempt` (`ConnectionPolicyFactory.cs:66` in RMQ.Async, `ConnectionPoolFactory.cs:69` in RMQ.Sync at 10.8.1), so 500, 1000, 2000 … ms for 250 | `RabbitMQConnectionStability.md`, `RabbitMQConfiguration.md` | `grep -rnE 'Wait between retries\|Time to wait between retry attempts\|retry interval \(defaults to 1000ms\)' contents/` | **3** | **0** | task 6.4, run (`probe/s4/rmq-connection`); the comment in a block 6.2 edited, the two descriptions beside it (obligation 21) | 6 |
 | 81 | FIFO topic and queue names said to need a `.fifo` suffix; Brighter appends it when the name lacks it (`AWSNameExtensions.cs`, `Truncate`, at 10.8.1) | `AWSSQSConfiguration.md` | `grep -rnF 'must end with `.fifo`' contents/` | **2** | **0** | task 6.4, run on LocalStack 4.4 (`probe/s4/sqs-channels`) | 6 |
+| 82 | RabbitMQ's blocked and unblocked events said to be logged *"automatically"* once a provider is added, and the DI extensions said to leave *"nothing to do"*; each Brighter type logs through a `static readonly` logger from `ApplicationLogging.LoggerFactory` at its first log, which is the container's factory only once the command processor (`ServiceCollectionExtensions.cs:776`) or the Dispatcher (`:141`, ServiceActivator) is built, so a type that logs earlier never reaches the providers | `RabbitMQConnectionStability.md`; `Logging.md` | `grep -rnF 'Blocked events will be logged automatically' contents/`; `grep -rnF 'Brighter automatically logs blocked and unblocked events' contents/`; `grep -rnF 'If you use the DI extensions, there is nothing to do' contents/` | **1**; **1**; **1** | **0**; **0**; **0** | task 6.5's Serilog addendum, run against `rabbitmq:3.13-management` (`probe/s4/rmq-logging`); the `Logging.md` recurrence by `grep -rn 'ApplicationLogging\|ILoggerFactory' contents/` (obligation 21) | 6 |
+| 83 | The blocked and unblocked sample lines showing `amqp://localhost:5672`; the gateway logs the sanitised URI, credentials masked and a trailing slash (`RmqMessagingGatewayConnection.cs:137`) | `RabbitMQConnectionStability.md` | `grep -rnF 'Subscription to amqp://localhost:5672' contents/` | **2** | **0** | task 6.5's Serilog addendum, the probe's output (`probe/s4/rmq-logging`) | 6 |
 
 ## Friction ledger
 

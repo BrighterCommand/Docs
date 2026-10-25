@@ -107,18 +107,19 @@ producers do, because a blocked connection presents as a hang rather than an err
 
 ## Monitoring RabbitMQ Connection Events
 
-Brighter automatically logs blocked and unblocked events:
+Brighter's RabbitMQ gateway logs blocked and unblocked events through your application's
+logging, with the credentials in the URI masked:
 
 **Blocked Event**:
 
 ```text
-[Warning] RMQMessagingGateway: Subscription to amqp://localhost:5672 blocked. Reason: {reason}
+[Warning] RMQMessagingGateway: Subscription to amqp://*****@localhost:5672/ blocked. Reason: {reason}
 ```
 
 **Unblocked Event**:
 
 ```text
-[Information] RMQMessagingGateway: Subscription to amqp://localhost:5672 unblocked
+[Information] RMQMessagingGateway: Subscription to amqp://*****@localhost:5672/ unblocked
 ```
 
 To monitor blocked connections in your application:
@@ -130,24 +131,29 @@ To monitor blocked connections in your application:
 3. **Monitor RabbitMQ metrics**: Use RabbitMQ Management UI or Prometheus to track memory and disk usage.
 
 The same logs carry connection failures and recoveries, so route them somewhere you
-can query rather than somewhere you can tail:
+can query rather than somewhere you can tail. Brighter writes them through
+`Microsoft.Extensions.Logging`, under categories that begin
+`Paramore.Brighter.MessagingGateway.RMQ`, so any `ILoggerProvider` you add — Serilog, Seq,
+OpenTelemetry — receives them the same way the console does here:
 
 ```csharp
-// ...
-// Using Serilog
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .WriteTo.Console()
-    .WriteTo.Seq("http://localhost:5341")
-    .CreateLogger();
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
-// Blocked events will be logged automatically
-services.AddLogging(loggingBuilder =>
+services.AddLogging(logging =>
 {
-    loggingBuilder.ClearProviders();
-    loggingBuilder.AddSerilog();
+    logging.AddConsole();
+    // Blocked (Warning) and unblocked (Information) events, connection failures and recoveries
+    logging.AddFilter("Paramore.Brighter.MessagingGateway.RMQ", LogLevel.Information);
 });
 ```
+
+**Use a producer only after the command processor has been resolved.** Brighter's
+RabbitMQ classes take their loggers from your container's `ILoggerFactory` once the command
+processor or the Dispatcher has been built; before that, they log to a factory with no
+providers. A class that logs before then — a producer you send through at startup, say —
+keeps that logger for the life of the process, and none of its lines, blocked and
+unblocked events included, reach your providers.
 
 ## Further Reading
 
