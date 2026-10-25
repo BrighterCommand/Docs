@@ -2186,7 +2186,7 @@ the work. `tools/README.md` rows 2 and 9 now give the close's figures.
 - [x] **Task 6.4:** Run S4's behavioural claims (AC10)
   - Input: S4's changed blocks
   - Output: a *Claim / Case / Control* table, each row naming `probe/s4/<name>/Program.cs`
-- [ ] **Task 6.5:** Second pass for S4
+- [x] **Task 6.5:** Second pass for S4
   - Input: 6.1's recurrences; rulings asked
   - Output: as 3.6's
 - [ ] **Task 6.6:** Close phase 6
@@ -2529,6 +2529,105 @@ RabbitMQ's claims are about Brighter's connection policies, which the probe driv
 (`MessageTransforms.md` #8, `KafkaConfiguration.md` #15, `RabbitMQConnectionStability.md` #1) stay BUILT. Two methods: the summary
 line, and `cut -f1 | sort | uniq -c` of the rows. `pagelint` 0 errors / **185**, `--changed origin/master` 0 errors, `--plant` 5 / 5;
 `linkcheck` 169 / 0; `symbolcheck` 24 entries, 14 silenced; `optioncheck` 0 mismatches, 59 tables, 533 rows (no marked table touched).
+
+#### Second pass (6.5)
+
+**Every phase-6 ledger row holds.** Rows 65–81 each give their *After* from their grep, run as written at `2f68a96`:
+**0** for every row but 68, whose grep still counts `InMemoryOptions.md`'s `Publication`, which its factory takes (**1**).
+6.1's six recurrence greps, run corpus-wide as written:
+
+| Defect | 6.1's grep | At `f4d965f` | At `2f68a96` | Ledger |
+|---|---|---:|---:|---:|
+| `name:` for `subscriptionName:` | `grep -rnE 'name: new SubscriptionName' contents/` | 4 | **0** | 65 |
+| Compression arguments | `grep -rnE 'compressionType\|CompressionType\.' contents/` | 2 | **0** | 70 |
+| `circuitBreakerTimeInMilliseconds` | `grep -rn circuitBreakerTimeInMilliseconds contents/` | 3 | **0** | 66 |
+| LibLog | `grep -rnE 'LogProvider\|\bILog\b\|: base\(logger\)' contents/` | 2 | **0** | 71 |
+| Unshipped PII transforms | `grep -rnE 'RemovePII\|RestorePII' contents/` | 2 | **0** | 72 |
+| Quorum on a subscription | `grep -rn 'QueueType\.Quorum' contents/` | 2 | **2** | — |
+
+The last counts sites that are now right: `RabbitMQConfiguration.md` #5 builds on `RMQ.Async`'s `RmqSubscription`, the
+one that takes `queueType`, and the list beside it names the value.
+
+**Widened, by shape rather than words:**
+
+| Defect | Widened grep | Hits | Reading |
+|---|---|---:|---|
+| 65, a subscription's argument misnamed | `^\s*name: ` | 3 | `RabbitMQConfiguration.md` #6, twice: `Exchange(name: …)`, whose constructor takes `name` (`RmqMessagingGatewayConnection.cs:195` in RMQ.Async, `:203` in RMQ.Sync); `OutboxArchiver.md`, a YAML key |
+| 66, the circuit-break argument | `circuitBreak\w*Time\|CircuitBreakerTime`, case-blind | 4 | each `circuitBreakTimeInMilliseconds`, the name 10.8.1 takes |
+| 67, a `RabbitMQ`-prefixed type | `\bRabbitMQ[A-Z]\w+` | 32 | every one a page's file name in a link |
+| 68, a plain `Publication` given to a factory | `new \w+ProducerRegistryFactory\(` across all ten factories the corpus names, within 40 lines before and 14 after a `new Publication` | 8, on 5 pages | `InMemoryOptions.md` (3), `InMemoryTransport.md` (2), `Monitoring.md`, `V10MigrationGuide.md`: `InMemoryProducerRegistryFactory`, which takes `Publication`. `MSSQLMessageBroker.md` #1: `MsSqlProducerRegistryFactory(RelationalDatabaseConfiguration, IEnumerable<Publication>)` at 10.8.1, BUILT |
+| 69, a required member left to a comment | `new \w+(Configuration\|Connection\|Options)\s*\{` holding only `/* ... */`, `...` or a comment | 5 | `RmqMessagingGatewayConnection { /* ... */ }` on `DefaultMessageMappers.md` #1 and `CloudEventsSupport.md` #1, both BUILT; `DynamoDbConfiguration { /* ... */ }` on `DistributedLock.md`, `DynamoDbDistributedLock.md`, `OutboxArchiver.md`, which declares no `required` member at 10.8.1 (`DynamoDbConfiguration.cs:71`, every argument optional). Not recurrences |
+| 70, compression's names | `CompressionType\|\bGzip\b\|compressionLevel\|CompressionLevel` | 2 | `Compression.md`: `CompressionMethod.GZip` and `CompressionLevel.Optimal`, both live |
+| 71, a V9 logger | `LibLog\|\bILog\b\|ILogger\w*<…> \w+\)\s*:\s*base\(\|: base\(\w*[lL]og` | 0 | |
+| 72, a transform Brighter does not ship | every attribute within four lines above a `MapToMessage`/`MapToRequest`; every class deriving `WrapWithAttribute`, `UnwrapWithAttribute` or `TransformAttribute` | 24; 1 | `ClaimCheck`, `RetrieveClaim`, `Compress`, `Decompress` only, on 9 pages; `MessageTransforms.md` #5, a copy of the shipped `ClaimCheck` |
+| 73, the `Id` record | `JProperty\("Id"\|\.Id = Guid\.\|Id = Guid\.NewGuid\(\)` | 7 | the two repaired `request.Id.Value`; `DefaultMessageMappers.md` #2's `Guid.NewGuid().ToString()`, a `string`, which `Id` converts from; `CloudEventsSupport.md`'s `Guid` pairs, V9 forms (SKIPPED) beside their V10 `Id` forms (BUILT) |
+| 74, a relative `Uri` | `new Uri\("/` | 1 | the repaired `UriKind.Relative` |
+| 75, `builder` inside a method | the 30 lines before each of 140 `builder.Services` sites, for a method header | 15 headers | none takes an `IServiceCollection`; 6.3's reading stands |
+| 76, `InitializerParams`' signature | `InitializerParams` | 5 | `MessageTransforms.md` #4 as repaired; two overrides returning `object[]` (`MessageTransforms.md` #5, `BuildingAPipeline.md`), as 10.8.1's own overrides do (`RequestLoggingAttribute.cs:49`); two prose mentions |
+| 77, transform step order | `\bsteps?\b` within 80 characters of `first\|order\|reverse\|ascending\|descending\|lowest\|highest\|lower\|higher`, case-blind, either way round, read for transforms | 57 lines, 6 on transforms | `MessageTransforms.md`'s five (§ *Step*, the lead-in to *Chaining Multiple Transforms*, #8's two `// First` comments, the sentence after #8), as repaired; **`HandlingLargeMessages.md`** § *Troubleshooting*: *"The claim check unwraps at `step: 0` by convention because it has to run before anything that reads the body"*, which takes the lowest step to run first. **A recurrence**, repaired (below). The rest are handler or Darker pipelines, where the lowest step is the outermost, a different mechanism the pages state correctly |
+| 78, what Brighter ships | `(brighter\|it) (ships\|provides\|includes) .{0,60}transform`, case-blind | 1 | the repaired sentence |
+| 79, `CooperativeSticky` | `CooperativeSticky` | 4 | `KafkaConfiguration.md`, as repaired |
+| 80, the retry wait | `retryWait\|retry ?wait\|wait between\|between retr`, case-blind | 4 | the three repaired sites and `RabbitMQConfiguration.md` #4's argument |
+| 81, the FIFO suffix | `\.fifo`; `fifo` within 60 characters of `suffix\|end in\|end with` | 10; 2 | the two repaired sentences; the rest are names in blocks |
+
+**The recurrence (ledger 77, extended).** `HandlingLargeMessages.md` now says a `[RetrieveClaim]` sharing `MapToRequest` with
+another transform takes the highest step, because Brighter runs a mapper's transforms from the highest step to the lowest,
+on receive as on send, and that `step: 0` is the convention when it is alone. Its other clause, that the step ordering can
+put the retrieve *"after something that already tried to deserialize"*, is gone: the mapper deserializes after every
+transform, so no ordering of transforms explains a `Claim Check <guid>` body; a missing `[RetrieveClaim]` does. The claim the
+sentence now makes is `transform-order`'s, run at 6.4 (receive, highest step first). Prose only; no block moves.
+
+**Rulings, recorded.** Session 132, on 6.3's spot check:
+- Ledger 73–76 stand. 6.3's extension of row 69 with the `KafkaConfiguration.md` recurrence, rather than a new row, stands
+- `MessageMappers.md` #3, #5, SKIPPED under 017's *"a method signature shown for comparison, with no body or class to compile
+  in"* rather than D21: **agreed**
+- `MessageTransforms.md` #8's unshipped `RemovePII`/`RestorePII`, replaced by shipped transforms: **agreed**. A PII-protecting
+  transform is filed upstream as **Brighter #4649** (envelope encryption, a pluggable key store, the key's reference in the
+  headers)
+- `DefaultMessageMappers.md`'s `SensitiveOrder`/`SecureLargeOrderMapper` and `SensitiveData`/`EncryptedMapper`: **kept, labelled
+  as the reader's own types**, at `254e8a7` (the prose before blocks 7 and 11, and their comments). That commit's sentence on
+  the shipped transforms was overturned at 6.4 (ledger 78)
+
+Session 134, on 6.4's pause:
+- Ledger 77–81 stand. **(a)** Ledger 79, `CooperativeSticky` works with Brighter's commits: **agreed**
+- **(b)** Transform order: **10.8.1 is as intended, and no upstream issue is filed.** The transforms nest: you enter one, it
+  hands on to the next lower step, and control comes back to it when that returns, so the highest step runs first on send
+  and on receive (`TransformPipelineBuilder.cs:366`, `:395`, `OrderByDescending`). 6.4's *"`docs/adr/0053` … `OrderBy`"* row
+  is a misreading: that ADR's `OrderBy` only formats a handler pipeline for a log line. Read against the ruling,
+  `MessageTransforms.md`'s three sentences (§ *Step*, the lead-in to *Chaining Multiple Transforms*, the sentence after #8)
+  each give one order, highest step first, and the last says *"on receive as on send"*; none sets a sender's order against a
+  receiver's, so none is changed. `HandlingLargeMessages.md`, above, now says the same
+- **(c)** `RetryWaitInMilliseconds`' doc comment, which says a fixed wait where both RMQ gateways wait `base × 2^attempt`, is
+  filed upstream as **Brighter #4650**
+- 6.4 started and removed two docker containers for its runs, `apache/kafka:4.0.2` and `localstack/localstack:4.4`
+
+**`symbolcheck` rows (6.1).** Each candidate resolved with `git grep -lw` at `10.8.1` and Brighter's `master`
+(`f27d3cc2b`): `LogProvider`, `ILog`, `circuitBreakerTimeInMilliseconds`, `CompressionType`, `RemovePII`, `RestorePII` and
+`RabbitMQProducerRegistryFactory` are **0** at both. None earns a row, on 5.5's reading, so nothing is put to the
+maintainer and `symbolcheck` stays 24 entries:
+- `circuitBreakerTimeInMilliseconds`, `RemovePII`, `RestorePII`, `RabbitMQProducerRegistryFactory` were never a released
+  name (`git grep -lw` → 0 for each at `8.1.1399` and `9.33`, the last V8 and V9 tags), and the watchlist holds *"names known
+  dead in a released product, each with the live replacement"*. Each is 0 sites now, and the blocks that held them build,
+  so `blockcheck` catches their return in those blocks
+- `compressionType:` is an argument name, and `CompressionType` is live in `Confluent.Kafka` 2.16.0, which the Kafka package
+  brings onto the pin: a row would police a name a Kafka producer's configuration can rightly use
+- `LogProvider` and `ILog` are LibLog's, live at `8.1.1399` (73 and 71 files) and gone at `9.33`. They stood in one block and
+  are 0 sites now, as `ConfigurationCommandType.StopChannel` was at 5.5
+- `new JProperty("Id", request.Id)` is an expression, not a name a watchlist matches, as `IHandleRequests Create(Type)` was
+
+**Put to the maintainer: `RabbitMQConnectionStability.md` #3 (Serilog).** No earlier task ruled on it (`grep -n Serilog` over
+this file: 6.2's two mentions, 6.3's one and the stay-FAILED row, none a ruling). The block configures Serilog with a Seq sink and hands it to
+`AddLogging`; `Log`, `LoggerConfiguration`, `WriteTo.Seq` and `AddSerilog` come from `Serilog`, `Serilog.Sinks.Console`,
+`Serilog.Sinks.Seq` and `Serilog.Extensions.Logging` (or `.Hosting`), none of them on a pin. Adding a package to a pin is the
+maintainer's, so the choice is a ruling, not a repair: add the packages to `tools/blockcheck/refs/refs.csproj` (553
+assemblies move), rewrite the block to `Microsoft.Extensions.Logging` alone, skip it with a reason, or leave it FAILED and
+listed as it is. Its comment, *"Blocked events will be logged automatically"*, is a behavioural claim no task has run.
+
+**Off-group term:** `HandlingLargeMessages.md`, prose, in S4's *Using an External Bus* section but outside its seventeen
+FAILED-bearing pages. **Measured after 6.5:** `--report` → **994 / 757 / 208 / 29**, unmoved, 118 findings (6.6's to
+baseline); two methods, the summary line and `cut -f1 | sort | uniq -c` of the rows. `pagelint` 0 errors / **185**,
+`--changed origin/master` 0 errors; `linkcheck` 169 / 0; `symbolcheck` 24 entries, 161 pages, 14 silenced. No marked option
+table touched.
 
 ### Phase 7 — S5, the remaining five sections *(7 tasks, one PR)*
 
@@ -2885,7 +2984,7 @@ design, and their greps were run there.*
 | 74 | `new Uri("/orders/12345")` shown as a good, resource-specific CloudEvents `source`; with the default `UriKind` it is the absolute `file:///orders/12345` on macOS and Linux and a `UriFormatException` on Windows. The relative reference needs `UriKind.Relative` | `CloudEventsSupport.md` | `grep -rnF 'new Uri("/orders/12345")' contents/` | **1** | **0** | task 6.3, hidden behind *parse*; a scratch `Uri` probe (macOS, .NET 9) | 6 |
 | 75 | `builder.Services.AddConsumers(…)` inside `ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)`, where `builder` is declared nowhere; the method's own `services` is the collection | `AzureServiceBusConfiguration.md` | `grep -rn -B40 'builder.Services.AddConsumers' contents/ \| grep -c 'ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)'` | **1** | **0** | task 6.3, hidden behind *parse*. Not a recurrence: the other ten `builder.Services` sites are top-level statements | 6 |
 | 76 | The `TransformAttribute` listing short of 10.8.1's: `object[] InitializerParams()` returning `new object[0]`, where the source has `object?[]` and `[]` (`TransformAttributeBase.cs:25`), and the class left unclosed | `MessageTransforms.md` | `grep -rnF 'public virtual object[] InitializerParams' contents/` | **1** | **0** | task 6.3, hidden behind *parse* | 6 |
-| 77 | Transforms said to run in ascending `step` order on send and in reverse on receive; at 10.8.1 both pipelines run the highest step first (`TransformPipelineBuilder.cs`, `FindWrapTransforms` and `FindUnwrapTransforms`, `OrderByDescending`). So #8's `Compress` 0 and `ClaimCheck` 1 claim-checked before compressing, its *"First: Compress"* false, and § *Step*'s *"lower"* backwards | `MessageTransforms.md` | `grep -rnF 'On receive, they execute in reverse order' contents/`; `grep -rnF 'step value for compression was lower' contents/`; `grep -rnE '\[Compress\(step: 0, compressionMethod: CompressionMethod.GZip\)\]  // First' contents/` | **1**; **1**; **1** | **0**; **0**; **0** | task 6.4, run (`probe/s4/transform-order`). The step numbers were 6.3's (ledger 72); the sentences and § *Step* predate it | 6 |
+| 77 | Transforms said to run in ascending `step` order on send and in reverse on receive; at 10.8.1 both pipelines run the highest step first (`TransformPipelineBuilder.cs`, `FindWrapTransforms` and `FindUnwrapTransforms`, `OrderByDescending`). So #8's `Compress` 0 and `ClaimCheck` 1 claim-checked before compressing, its *"First: Compress"* false, and § *Step*'s *"lower"* backwards. Recurs on `HandlingLargeMessages.md`: the claim check *"unwraps at `step: 0` by convention because it has to run before anything that reads the body"* | `MessageTransforms.md`; `HandlingLargeMessages.md` | `grep -rnF 'On receive, they execute in reverse order' contents/`; `grep -rnF 'step value for compression was lower' contents/`; `grep -rnE '\[Compress\(step: 0, compressionMethod: CompressionMethod.GZip\)\]  // First' contents/`; `grep -rnF 'The claim check unwraps at `step: 0` by convention because it has to run before' contents/` | **1**; **1**; **1**; **1** | **0**; **0**; **0**; **0** | task 6.4, run (`probe/s4/transform-order`). The step numbers were 6.3's (ledger 72); the sentences and § *Step* predate it. The recurrence found by task 6.5's widened grep and repaired there (obligation 21) | 6 |
 | 78 | Brighter said to ship only the Claim Check and Compression transforms; `Paramore.Brighter` 10.8.1 also ships `CloudEvents`/`ReadFromCloudEvents`, and `Paramore.Brighter.Transformers.JustSaying` and `…MassTransit` ship a pair each | `DefaultMessageMappers.md` | `grep -rnF 'Brighter ships the Claim Check and Compression transforms;' contents/` | **1** | **0** | task 6.4, run (`probe/s4/shipped-transforms`); written at `254e8a7` | 6 |
 | 79 | `CooperativeSticky` said to be unsupported with Brighter's manual commits and to throw `ArgumentOutOfRangeException`; at 10.8.1 (Confluent.Kafka 2.16.0) it round-trips and rebalances without an exception, as `RoundRobin` does | `KafkaConfiguration.md` | `grep -rnE 'CooperativeSticky.*([Nn]ot supported\|throw)' contents/` | **3** | **0** | task 6.4, run against `apache/kafka:4.0.2` (`probe/s4/kafka-consumer`) | 6 |
 | 80 | `retryWaitInMilliseconds` said to be the wait between connection retries; Brighter waits `retryWaitInMilliseconds × 2^attempt` (`ConnectionPolicyFactory.cs:66` in RMQ.Async, `ConnectionPoolFactory.cs:69` in RMQ.Sync at 10.8.1), so 500, 1000, 2000 … ms for 250 | `RabbitMQConnectionStability.md`, `RabbitMQConfiguration.md` | `grep -rnE 'Wait between retries\|Time to wait between retry attempts\|retry interval \(defaults to 1000ms\)' contents/` | **3** | **0** | task 6.4, run (`probe/s4/rmq-connection`); the comment in a block 6.2 edited, the two descriptions beside it (obligation 21) | 6 |
