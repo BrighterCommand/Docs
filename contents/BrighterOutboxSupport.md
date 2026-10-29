@@ -192,6 +192,8 @@ rather than assigning a new one.
 
 To monitor whether the sweeper is running and keeping to its schedule, see [Outbox Sweeper Metrics](/contents/Telemetry.md#outbox-sweeper-metrics).
 
+To monitor how many messages in the outbox have gone stale, overall and per topic, see [Outbox Stale Message Metrics](/contents/Telemetry.md#outbox-stale-message-metrics).
+
 It is important to note that the lower the Minimum Message age is the more likely it is that your message will be dispatches more than once (as if you are explicitly clearing messages your application may have instructed the clearing of a message at the same time as the **Outbox Sweeper**)
 
 ### Singleton Sweeper
