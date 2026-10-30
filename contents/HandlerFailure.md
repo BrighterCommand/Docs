@@ -87,6 +87,8 @@ However, if you don't want to block the thread throwing `DeferMessageAction` wil
 
 `DeferMessageAction` will de-order the message. This means you cannot rely on the order of messages in the channel. Either, your message must be able to processed independently of the others, or you must use a strategy to process out-of-order. For example you may add a version stamp to the message and only applying it if you have not already processed a later message.
 
+**Exception: AWS SQS.** On SQS, a deferred message is not re-published. Brighter calls `ChangeMessageVisibility` on the same in-flight message, so the message ID, message group ID and deduplication ID do not change. On an SQS FIFO queue, SQS does not deliver later messages from the same message group while the deferred message is invisible, so order within the group is preserved. The group is blocked until the delay ends; other message groups keep flowing. On a standard SQS queue there is no ordering to preserve. See [Ack and Nack](/contents/AWSSQSConfiguration.md#ack-and-nack) for how requeue is implemented.
+
 A useful rule of thumb is:
 
 * **Queue**: You can use `DeferMessageAction` without other design decisions, as items on the queue are not ordered.
