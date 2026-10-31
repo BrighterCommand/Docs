@@ -2189,7 +2189,7 @@ the work. `tools/README.md` rows 2 and 9 now give the close's figures.
 - [x] **Task 6.5:** Second pass for S4
   - Input: 6.1's recurrences; rulings asked
   - Output: as 3.6's
-- [ ] **Task 6.6:** Close phase 6
+- [x] **Task 6.6:** Close phase 6
   - Input: § 1 obligations 6, 7, 19
   - Output: as 3.7's
 
@@ -2677,6 +2677,117 @@ the ordering trap the two pages now describe.
 **Measured after the addendum:** see the return; `--report` → **994 / 758 / 207 / 29**, 119 findings (#3 joins 6.6's
 built-not-baselined; blocks 1 and 2 stay in it with their new scaffold). `pagelint` 0 errors / **184** (the old #3's
 using-directive warning gone).
+
+#### Phase 6 closed (6.6)
+
+**Baselined.** `baseline.tsv` lists every BUILT block on the seventeen S4 pages, **128** rows, replacing their
+**14** earlier ones (§ the file's own header). Seven keep their ref, their text, ordinal and scaffold unchanged:
+`AWSSQSConfiguration.md` #1, #3–#6 (`TransportConfigurationContext.cs`, which the phase did not touch) and
+`AWSSQSMigrateToV10.md` #1, #7. Of the other seven earlier rows, five gained their page's unit (`AsyncAPISupport.md`
+#5, `CloudEventsSupport.md` #8, #10, `DefaultMessageMappers.md` #4, #5) and two kept a unit the phase extended
+(`MessageMappers.md` #4, `S3LuggageStore.md` #2); with the 114 new rows, they are at **`b6a23f8`**, the phase's last
+page commit. The rows were appended as phase 5's were, in `--report`'s order, so the diff is 14 out and 128 in. Text
+unchanged was judged against a `git worktree` at `e46f47e`, the base the branch was rebased onto, never a stash: all
+fourteen read the same there, and no S4 page gained or lost a block. **Two methods agree:** `grep -v '^#' baseline.tsv
+| grep -vc '^$'` → **758**, and `--report`'s BUILT → **758**. `--report` exit **0**, **0 findings**.
+
+**Rule 8.** `pagelint` → **0 errors**; the one `attr-mismatch-intended` marker stays on `PipelineValidation.md` #7, and
+`--plant` → 5 / 5.
+
+**Readings (obligation 19).** `git diff -U0 e46f47e HEAD -- contents`, 223 hunks against fence ranges: 18 pages,
+**101** changed C# blocks on 16 of them, all on S4. Two methods: the hunks, and S4 blocks whose text is not on their
+page at `e46f47e` (a `git worktree`), **101** on the same 16 pages. `HandlingLargeMessages.md` and `Logging.md` changed
+prose only.
+- **AC9.** The hunks add `// ...` at **23** lines in **17** blocks: `AWSSQSConfiguration.md` #2;
+  `AzureServiceBusConfiguration.md` #1, #2; `DynamicMessageDeserialization.md` #2, #7; `KafkaConfiguration.md` #1–#3,
+  #6–#8; `RabbitMQConfiguration.md` #1–#4, #6; `RoutingMultipleMessageTypes.md` #2. They remove **6**, as fragments
+  were made whole (one each on `AsyncAPISupport.md`, `HandlerFailure.md`, `MessageTransforms.md` and
+  `RabbitMQConnectionStability.md`) and two reworded on `DynamicMessageDeserialization.md`; net **+17**, which a count
+  of `// ...` lines in C# blocks at both refs confirms. All 17 blocks are BUILT, so `--explain` has nothing to report
+  for any of them: no added omission hides an error
+- **AC10.** § *The behavioural claims (6.4)*: **twenty-five** claims run with a control against the released 10.8.1
+  packages, in fourteen probes (thirteen new and 6.3's `routing-id`), two of them against a broker. § *Addendum*: one
+  more, `rmq-logging`, against a real RabbitMQ alarm. Five were overturned at 6.4 (ledger 77–81) and one found
+  conditional at the addendum (ledger 82). Read and named, not run: 6.4's six (`KafkaConfiguration.md` #2's ternary,
+  `AWSSQSMigrateToV10.md` #5, #6, `AzureServiceBusConfiguration.md` #2, `RoutingMultipleMessageTypes.md` #1, #7–#9,
+  the unacceptable-message count, `CloudEventsSupport.md` #6's `dataref` comment) and the addendum's Dispatcher half. No
+  changed block lies off S4. The off-group prose makes claims already run: `HandlingLargeMessages.md`'s is
+  `transform-order`'s, `Logging.md`'s is `rmq-logging`'s
+
+**Gates against 6.1.**
+
+| Gate | Predicted (6.1) | Measured at the close | |
+|---|---|---|---|
+| corpus | 992–1,000 | **994** | in band, **not by the mechanism named** (below) |
+| BUILT | 740–770 | **758** | in band |
+| FAILED | 201–216 | **207** | in band: 323 − 125 + 9 |
+| SKIPPED | 29–36 | **29** | the floor, by a different reason (below) |
+| `pagelint` | 0 errors / 185–210 | **0 / 184** | **below the band by 1** (below) |
+| `symbolcheck` | unmoved | **24, 14**, exit 0 | as predicted; 6.5 found no candidate earns a row |
+| scaffold rule | 74–81 units | **80**, 0 violations, 0 compile errors | in band: 13 new units; the Kafka, RabbitMQ and Service Bus pages each took their own rather than sharing `TransportConfigurationContext` |
+| pin rule | 4 pages, 0 violations | **4, 0**; the V4 pin 28 blocks, **25** built | as predicted: `S3LuggageStore.md` #1 BUILT on a `credentials` value |
+| assemblies | 553 | **553** on each pin | as predicted, **not by the mechanism named** (below) |
+| `optioncheck` | 0 / 59 / 529 | **0 / 59 / 533** | the +4 rows are bugfix 0003's (10.8.1), merged before the rebase; no S4 marked table touched |
+| `linkcheck` | 168 / 0 | **169 / 0** | the +1 file is bugfix 0003's record, merged before the rebase |
+| `versioncheck` | 0 of 18 | **0 of 18** | as predicted; 6.2's *18 of 18 stale* at 10.8.0 was cleared by bugfix 0003 moving the tutorial pins to 10.8.1 |
+| shape · redirects · `--verify` | unmoved | 161, widest 12 of 20 · 77, 7858 bytes · 161 = 161 | as predicted |
+| `pagelint --plant` | 5 / 5 | 5 / 5 | as predicted |
+| off-group | **0** | **0** changed blocks off S4; prose on 2 pages | as predicted for blocks (below) |
+
+**Every number in band but `pagelint`, and four by a mechanism other than the one 6.1 gave.** One account:
+- **The corpus.** 6.1's mechanism was *"splits only, up to +8"*. No fence was split: each set of alternatives was made
+  whole in its one fence (§ *The hard blocks (6.3)*). The +2 is `HealthChecks.md` #2 and #3, added and baselined by
+  bugfix 0003 (#206) and on `master` before the rebase. The phase's own movement is **0**
+- **BUILT, FAILED, SKIPPED.** S4's 125 FAILED ended **114 BUILT, 9 FAILED, 2 SKIPPED**: 642 + 2 + 114 = **758**, 323 −
+  125 + 9 = **207**, 27 + 2 = **29**. The nine stays are inside 3–18 and are all *same-page* and listed (§ *Blocks that
+  stay FAILED*; two methods, the nine phase-6 blocks there and `--report` grepped on the seventeen pages, 9): the seven
+  6.1 named, and `AsyncAPISupport.md` #7 and `Routing.md` #4, hidden behind *parse* (6.3). No running example was
+  declared, so none moved a page's blocks to *same-page*, which phase 5's lesson guarded against. The two skips are
+  `MessageMappers.md` #3 and #5, under 017's *"a method signature shown for comparison"*, not D21 as 6.1 said; the
+  third D21 candidate, `MessageTransforms.md` #4, was made whole (ledger 76), and none of `KafkaConfiguration.md`'s six
+  `configHook:` fragments was skipped
+- **`pagelint`.** S4's 94 warnings fell to **7** (`--per-page` on the seventeen pages): the 5 6.1 said stay
+  (`AWSSQSMigrateToV10.md` #7; `CloudEventsSupport.md` #7, #9, #11, #12), and the 2 new skips. 271 − 94 + 7 = **184**,
+  and off-group 0. The band's floor, 271 − 94 + 5 + 3, assumed three new skips; two came. At 6.3 the gate read 185,
+  because `RabbitMQConnectionStability.md` #3 stayed FAILED with its warning, a block 6.1 counted as one its repair
+  would edit; the Serilog ruling rewrote it, and the gate fell to 184
+- **Assemblies.** 6.1 said *"every package S4 names is pinned"*; `RabbitMQConnectionStability.md` #3 named Serilog,
+  which is on no pin (6.2). The figure held because the ruling rewrote the block to `Microsoft.Extensions.Logging`
+  rather than growing the pin, not because the claim was true
+- **`optioncheck`, `linkcheck`, `versioncheck`** moved, or were cleared, by bugfix 0003, merged after 6.1 measured and
+  rebased under the branch before 6.3. None moved inside the phase
+
+**What 6.1 named, and what the phase found.** 6.1 read S4's 15 *defect* blocks as 8 API defects and predicted five
+ledger rows from them (65, 66, 70, 71, 72) and one `using`. The phase wrote **nineteen** (65–83), all repaired at every
+recurrence: **3** hidden behind *page-type* (67–69), **4** behind *parse* or *same-page* (73–76), and **7** that only a
+run could find (77–83), five overturned at 6.4 and two at the addendum. Two recurred off the seventeen pages, in prose:
+77 on `HandlingLargeMessages.md` (S4's section) and 82 on `Logging.md` (S5). 6.1's off-group term was zero *from its
+greps*, and those greps held; the two recurrences are of defects no compile reading could name. None of the measured
+numbers is adopted. The lesson for phase 7: a compile reading predicts the blocks that build, not the claims they make,
+so predict the off-group term from the behavioural claims as well, as recurrences the reading cannot see.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| `2f68a96`'s commit subject: *"26 rows"* in 6.4's *Claim / Case / Control* table | **25**: the rows between the table's header and the blank line after it, and the *Probe* column's entries, each 25 | the table stands; a commit message is not this file's text |
+| § *The repairs (6.2)* and § *The hard blocks (6.3)*: four predictions *"reconciled at 6.6"* (assemblies, `versioncheck`, `pagelint`'s band, D21) | reconciled above | the predictions stand |
+
+**Rulings, recorded.** Session 135, on the Serilog addendum:
+- Ledger **82** (the conditional logging claim, and the repairs on `RabbitMQConnectionStability.md` and, off-group,
+  `Logging.md`) and **83** (the sanitised URIs): **accepted**
+- The addendum's *"Upstream, for the maintainer (not filed)"*: **filed** as **Brighter #4690**, the static logger
+  bound at a type's first log, related to #4184 and #4588
+- `RabbitMQConnectionStability.md` #3's row in § *Blocks that stay FAILED*, removed once the block built rather than
+  annotated: **noted**, and it stands
+
+**Upstream, filed during the phase:** **#4646**, **#4647** and **#4648** (bugfix 0003, recorded there); **#4649**, a
+PII-protecting transform (session 132); **#4650**, the RMQ `RetryWaitInMilliseconds` doc comment (session 134); **#4690**,
+the static logger binding (session 135).
+
+**Off the prediction.** 6.4 started and removed two containers (`apache/kafka:4.0.2`, `localstack/localstack:4.4`), the
+addendum one (`rabbitmq:3.13-management`, `probe-rmq-logging`); none is left (`docker ps -a`). `tools/README.md` rows 2
+and 9 now give the close's figures; rows 1 and 6 already gave bugfix 0003's, which are the close's.
 
 ### Phase 7 — S5, the remaining five sections *(7 tasks, one PR)*
 
