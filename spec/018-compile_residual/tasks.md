@@ -2791,7 +2791,7 @@ and 9 now give the close's figures; rows 1 and 6 already gave bugfix 0003's, whi
 
 ### Phase 7 — S5, the remaining five sections *(7 tasks, one PR)*
 
-- [ ] **Task 7.1:** Predict phase 7's gate movement
+- [x] **Task 7.1:** Predict phase 7's gate movement
   - Input: § *The groups*, S5; recurrence greps for S5's defects
   - Output: § *Phase 7 as executed*, *Predicted*, as 3.1's
 - [ ] **Task 7.2:** Repair S5's reachable blocks
@@ -2815,6 +2815,175 @@ and 9 now give the close's figures; rows 1 and 6 already gave bugfix 0003's, whi
 - [ ] **Task 7.7:** Close phase 7
   - Input: § 1 obligations 6, 7, 19
   - Output: as 3.7's
+
+### Phase 7 as executed
+
+**Measured at phase start, `dc09559`** (#210's merge). `--report` → **994 / 758 / 207 / 29, 0 findings**,
+exit 0; `--classify` → 31 parse, 12 built-by-using, 42 defect, 37 same-page, 12 values, 73 page-type,
+settled in 3 rounds. 553 reference assemblies on each pin, 28 blocks on the V4 pin (25 built); scaffold rule
+80 units, 0 violations, 0 compile errors; pin rule 4 pages. `pagelint` 0 errors / **184** warnings (39 pages),
+`--plant` 5 / 5; `symbolcheck` 24 entries, 14 silenced; `linkcheck` 169 / 0; `versioncheck` 0 of 18 across 5
+pages, so no Brighter release beyond the pinned 10.8.1; `optioncheck` 0 / 59 / 533; shape 161 pages, widest 12
+of 20; redirects 77, 7858 bytes.
+
+#### Predicted (7.1)
+
+**S5 at `dc09559`**: `groups.py` gives 22 pages, **134** FAILED (30 parse, 12 built-by-using, **32** defect,
+3 same-page, 9 values, **48** page-type), 41 BUILT, 10 with nothing BUILT. Two methods: the FAILED column, 134;
+`grep` over `--report` on the twenty-two pages, 134, with 41 BUILT and 7 SKIPPED (`FAQ.md` #15,
+`V10MigrationGuide.md` #1, #4, #6, #8, #14, #18). The S5 pages hold **182** C# blocks. Off S5, `--report` has
+73 FAILED on 29 pages (207 − 134).
+
+**The inventory.** *Reachable*, **69**: 12 built-by-using, 9 values, 48 page-type. *Hard*, **62**: 30 parse,
+32 defect. *Same-page*, **3**: `V10MigrationGuide.md` #3, #10, #17. *V4*, **3**, all *values* on the V4 pin:
+`DistributedLock.md` #2 (`services`), `DynamoDbDistributedLock.md` #1 (`dynamoDb`) and #2 (`services`).
+*Shouldly*, **6**: `TestDoubleOptions.md` #1, #5–#9, each classed *defect* on `CS1061 ShouldBe…`. Two methods: the
+six `CS1061` rows of `--classify`, and a scan of the page's blocks for `.Should(Be|NotBe|Contain|Throw)`,
+**17** calls in the same six blocks.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| S5's table: `MongoDBOutbox.md` **1** defect, **0** page-type; S5 **33** defect, **47** page-type | **0** and **1**; S5 **32** and **48**. #5 was repaired off-group at task 4.3 (ledger 36) and now fails only on the reader's `AddGreeting`, `GreetingMade`, `Person` | the table stands, being the instrument's at `f3f685f`; this row is the reading at `dc09559` |
+| Task 7.3: *"10.8.0 source"* | the pins are **10.8.1** (bugfix 0003) | the reading below is against the 10.8.1 tag; the task's text is not this task's to edit |
+| S5's table: **32** defect blocks (as measured) | the second compile's diagnostics (below): **5** are API defects, **3** a pin limit already ruled, **6** Shouldly's missing `using`, **2** 017's mapper defect recurring, **5** alternatives in one fence, **3** types and statements in one fence, **7** fragments, and **1** a source-generated quote | the table stands; the repairs follow the reading |
+
+**Reading S5's 32 defect blocks** with `probe/second.py` over the twenty-two pages (527 diagnostic lines),
+each against the 10.8.1 tag:
+
+| Page | # | Second compile | Reading against the pin | Repair |
+|---|---:|---|---|---|
+| `FAQ.md` | 2, 14, 16 | `CS1503` ×2 on `UseResiliencePipeline(1, "…")`; #2 also `CS0592` `RequestLoggingAsync` | **defect**, twice: `UseResiliencePipelineAttribute(string policy, int step)` (`UseResiliencePipelineAttribute.cs:68`), so the arguments are reversed; and the attributes decorate the class, where `[AttributeUsage(AttributeTargets.Method)]` (`:52`) allows only a method. The handlers are `RequestHandlerAsync`, so the method is `HandleAsync` and the attributes their `…Async` twins (`CLAUDE.md` § *Handler attributes match their handler*). Rule 8 reads methods, so a class-level attribute never reaches it | 7.3 |
+| `FAQ.md` | 1 | `CS0452` | **defect**: `class MyHandlerBase<T> : RequestHandlerAsync<T>` without the `where T : class, IRequest` the base requires | 7.3 |
+| `CommandProcessorConfigurationReference.md` | 20 | `CS1520`, `CS0118` | **defect**: a quote of `JsonSerialisationOptions`' static constructor showing **4** of the **12** converters 10.8.1 adds (`JsonSerialisationOptions.cs:33–44`; the 8 missing are `SubscriptionNameConverter`, `RoutingKeyConvertor`, `ChannelNameConverter`, `BaggageConverter`, `IdConverter`, `PartitionKeyConverter`, `TraceStateConverter` and `TraceParentConverter`). The prose before #21 says the hook takes an `Action<JsonSerialisationOptions>`; it takes `Action<JsonSerializerOptions>` (`ServiceCollectionExtensions.cs:866–867`), the class being static | 7.3: the listing brought to the tag, and SKIPPED under D21 if it cites the file and line, or made whole; the prose with it |
+| `ConfiguringOpenTelemetry.md` | 1, 5, 6 | `CS0234` `Paramore.Brighter.Extensions.Diagnostics`; `CS1929` `AddOpenTelemetry` | **a pin limit, already ruled**: neither `Paramore.Brighter.Extensions.Diagnostics` nor `OpenTelemetry.Extensions.Hosting` is on a pin. 017's ruling (2) of 2026-09-28 (`spec/017-compile_repairs/tasks.md` § *Phase 5 as executed*): *"No pin change … stay FAILED as a pin limit, each compiled in scratch"*. `Telemetry.md` #1, #6–#9 and `PostgreSQLMessageBroker.md` #8, tranche pages, fail on the same `CS0234` | stay FAILED and listed, each compiled in scratch against the released packages; a ruling to pin would move all nine |
+| `TestDoubleOptions.md` | 1, 5–9 | `CS1061` `ShouldBe…` | **Shouldly with no `using`** (ledger 2, D4): pinned at 4.3.0 since phase 2, never named by the page | 7.4 |
+| `MigratingToNullableReferenceTypes.md` | 22 | `CS0535` `MapToMessage` | **017's mapper defect recurring**: an `IAmAMessageMapper<T>` with one of its two members, under a `// ...` that declares nothing about the member | 7.3 |
+| `OutboxArchiver.md` | 4 | `CS0535` `MapToRequest` | the same, the other member | 7.3 |
+| `NullableReferenceTypes.md` | 1, 10, 11 | `CS0128` | **alternatives**: a *before* and an *after*, each declaring the same local. #1's second line is the `CS8600` warning the page teaches | 7.3, split or made whole |
+| `FAQ.md` | 8 | `CS0111` | **alternatives**: two handlers' `HandleAsync` in one fence | 7.3, split or made whole |
+| `TurningOnReplayOnSeen.md` | 4 | `CS0111` | **alternatives**: a ❌ and a ✅ `Handle` | 7.3, split or made whole |
+| `MigratingToNullableReferenceTypes.md` | 4, 7 | `CS0825`, `CS0116` | **types and statements in one fence**: a class, then `var command = …` | 7.3, split or made whole |
+| `NullableReferenceTypes.md` | 12 | `CS0825`, `CS0116` | the same | 7.3, split or made whole |
+| `BrighterOutboxSupport.md` | 1 | `CS1520` | a fragment: a handler's constructor without its class | 7.3 |
+| `BrighterOutboxSupport.md` | 2 | `CS1106` | a fragment: an extension method outside a static class | 7.3 |
+| `CausationTrackingStores.md` | 2 | `CS0535` ×11 | a fragment: `IAmAnOutboxSync<,>` implemented in part, the rest declared `// ...` | 7.3, made whole or skipped |
+| `CommandProcessorConfigurationReference.md` | 10 | `CS0117` `Environment.IsDevelopment` | a fragment: a `Startup` method whose `Environment` is the class's `IWebHostEnvironment`, so `System.Environment` binds | 7.3 |
+| `Logging.md` | 4 | `CS1061` `INeedAHandlers.Build` | a fragment: the builder's chain elided as `// ...` | 7.3 |
+| `InMemoryOptions.md` | 3 | `CS7036`, `CS1729` ×2, `CS0104` `ChannelFactory` | a fragment: four constructors given `/* production config */` for arguments, and a `ChannelFactory` the pin's MQTT and RMQ.Sync packages both declare | 7.3, made whole |
+| `SweeperCircuitBreaking.md` | 1 | `CS1501` `AddProducers` | a fragment: `.AddProducers(/* producer configuration */)` | 7.3, made whole |
+| `Logging.md` | 5 | `CS8795` | **a quote of Brighter's source**: `CommandProcessor.Log`'s `[LoggerMessage]` partial (`CommandProcessor.cs:1617–1618` at 10.8.1), whose implementation a source generator writes and `blockcheck` does not run | 7.3: SKIPPED under D21 if cited and matching, or listed |
+
+**Behind *parse*, read by first lines and by `--explain`** (30 blocks; phase 6's lesson that a *parse* block
+hides what lies behind it):
+- **an API that does not exist**, hidden: `FAQ.md` #3 and #5 call `services.AddProducers(…)`, on
+  `IServiceCollection` where it extends `IBrighterBuilder` (`CLAUDE.md` § *Version markers on code*), with
+  `options.UseRabbitMQ(...)`, `.Publication<T>(…)` and `.Subscription<T>(…)`. `git grep UseRabbitMQ` finds
+  nothing in Brighter's `src` at 10.8.1 or at `origin/master`
+- **lone chained calls, arguments and initialisers**, candidates for D3's *"a single option shown alone"*
+  where the type resolves: `FAQ.md` #4 and #20; `MongoDBInbox.md` #4 and `MongoDBOutbox.md` #4
+  (`MongoDbCollectionConfiguration`); `CommandProcessorConfigurationReference.md` #21; `OutboxArchiver.md` #1.
+  `ConfiguringOpenTelemetry.md` #2–#4 have the shape, but their exporters resolve in no pin, which D3 requires;
+  they stay with #1, #5, #6 under 017's ruling
+- **types and statements in one fence**: `SweeperCircuitBreaking.md` #4, a class then its registration;
+  `V10MigrationGuide.md` #19, `PersonCreated` then a `PostAsync`
+- **`...` or a comment for arguments or a value**, made whole: `CommandProcessorConfigurationReference.md` #1,
+  #5, #13, #14, #15, #17, #19; `DispatcherConfigurationReference.md` #1–#5; `V10MigrationGuide.md` #5 and #16;
+  `OutboxArchiver.md` #2
+- **a statement missing its `;`**: `BrighterInboxSupport.md` #2
+- **a listing of expressions**: `TestDoubleOptions.md` #2, the spy's members, each live in
+  `SpyCommandProcessor.cs` at 10.8.1; made whole, or retagged `text` as phase 5 retagged lists of names
+
+**Packages on no pin.** 6.1 said *"every package S4 names is pinned"* and was wrong once (Serilog). Read here
+from `--classify`'s *page-type* names against `refs.csproj`'s **103** `PackageReference`s:
+- `NSubstitute`: `TestDoubleOptions.md` #12 (`Substitute`, `Arg`). Unpinned, and named in no spec
+- `BenchmarkDotNet`: `V10MigrationGuide.md` #26 (`[Benchmark]`). Unpinned, and named in no spec
+- `OpenTelemetry.Extensions.Hosting`, `Paramore.Brighter.Extensions.Diagnostics` and the Zipkin, OTLP and Azure
+  Monitor exporters: `ConfiguringOpenTelemetry.md` #1–#6, under 017's ruling
+- `Moq` and `xunit` are pinned, so `TestDoubleOptions.md` #11 (`Mock`, `Times`) and
+  `CommandProcessorConfigurationReference.md` #11 (`Fact`) need only their `using`s; `Confluent.Kafka` comes with
+  the Kafka package, so `V10MigrationGuide.md` #22, #23 (`PartitionAssignmentStrategy`) the same
+
+**Recurrence greps (obligation 20), run as written at `dc09559`:**
+
+| Defect | Grep | Hits | Off-group |
+|---|---|---:|---|
+| `UseResiliencePipeline` given its step first | `grep -rnE '\[UseResiliencePipeline(Async)?\([0-9]' contents/` | **4**: `FAQ.md` #2, #14, #16; and `PipelineValidation.md`'s `text` fence under *Full Detail*, a log line naming the attribute and its step, not a call | none. Against **22** sites that pass the name first (`grep -rnE '\[UseResiliencePipeline(Async)?\("' contents/`) |
+| A handler attribute on a class | `grep -rn -A2 -E '^\[(RequestLogging\|UseResiliencePipeline\|UsePolicy\|UseInbox\|FallbackPolicy\|FeatureSwitch\|Monitor\|ValidateRequest\|DeferMessageOnError\|RejectMessageOnError\|DontAckOnError\|Timeout)(Async)?\(' contents/ \| grep -E '^\S+-[0-9]+-\s*public (abstract \|sealed )?class '` | **3**, `FAQ.md` #2, #14, #16 | none |
+| A generic handler base without its constraint | `grep -rnE 'class \w+<T>\s*:\s*RequestHandler(Async)?<T>\s*$' contents/` | **1**, `FAQ.md` #1 | none |
+| `JsonSerialisationOptions` short of 10.8.1 | `grep -rnF 'Action\<JsonSerialisationOptions\>' contents/`; `grep -c SubscriptionNameConverter contents/CommandProcessorConfigurationReference.md` | **1**, the prose before `CommandProcessorConfigurationReference.md` #21; **0** | none. The page's other uses of `JsonSerialisationOptions.Options`, and those on 10 other pages, name the public static property, which is live |
+| `UseRabbitMQ` and `services.AddProducers` | `grep -rnE 'UseRabbitMQ\(' contents/`; `grep -rnE '[Ss]ervices\.AddProducers\(' contents/` | **3** lines in 2 blocks; **2**: `FAQ.md` #3, #5 | none |
+| 017's mapper missing a member | a scan of every C# block declaring `class … : IAmAMessageMapper(Async)?<` for both of its `MapTo…` members (`probe`'s reading of `enumerate_blocks()`) | **2**: `MigratingToNullableReferenceTypes.md` #22, `OutboxArchiver.md` #4 | none |
+| `System.Environment` bound for a host's | `grep -rnE '(^\|[^.A-Za-z_])Environment\.IsDevelopment\(\)' contents/` | **1**, `CommandProcessorConfigurationReference.md` #10 | none |
+| Arguments given as a comment | `grep -rnE '\(/\* [^*]+ \*/\)' contents/` | **8**: `InMemoryOptions.md` #3 (4), `SweeperCircuitBreaking.md` #1, `OutboxArchiver.md` #3; and `MigratingToPollyV8.md` #5 and `UsingSweeperCircuitBreaking.md` #3 | `MigratingToPollyV8.md` #5 is SKIPPED (V9), `UsingSweeperCircuitBreaking.md` #3 is BUILT; neither is a defect, so no off-group repair |
+| A source-generated `[LoggerMessage]` | `grep -rn 'LoggerMessage(' contents/` | **1**, `Logging.md` #5 | none |
+| Ledger 2, Shouldly unnamed | `grep -c Shouldly contents/TestDoubleOptions.md` | **0** | none: the 17 calls are all on this page |
+| Ledger 3, `…DynamoDb.V4` | `grep -rn 'Inbox.DynamoDb.V4' contents/` | **1**, `DynamoInbox.md`'s package list | **`DynamoInbox.md`**, a 017 tranche page, prose only (obligation 21) |
+| Unpinned packages | `grep -rnE 'Substitute\.For<\|using NSubstitute' contents/`; `grep -rnE '\[Benchmark\|BenchmarkDotNet' contents/` | **1**; **1** | none |
+
+**The off-group term, from the compile reading, is one page and no block**: `DynamoInbox.md`'s package name
+(ledger 3). **From the behavioural claims**, phase 6's lesson, these are the claims in blocks 7.2–7.4 will
+touch, for 7.5 to run, with their recurrences:
+- `TurningOnReplayOnSeen.md` #4: a `Post` without the pipeline's context is *"a silent no-op under Replay"*
+- `CommandProcessorConfigurationReference.md` #10 and `InMemoryOptions.md`: `PostConfigure<BrighterOptions>`
+  reaches the command processor's `RequestContextFactory` (`ServiceCollectionExtensions.cs:68–75` registers
+  the options pattern; what reads it is the claim). Both pages are S5
+- `MongoDBInbox.md` #4, `MongoDBOutbox.md` #4: `TimeToLive` deletes messages after 30 days
+- `FAQ.md` #20: `channelCount` is the number of concurrent message pumps
+- `V10MigrationGuide.md` #19: no mapper registration is needed, the default mapper serialising
+- `TestDoubleOptions.md` #2: `Observe<T>()` dequeues in FIFO order, consuming
+- `SweeperCircuitBreaking.md` #1: `CooldownCount` defaults to 10. Read, not run: `OutboxCircuitBreakerOptions.cs:37`
+  at 10.8.1 says `= 10`. Recurs off-group on `UsingSweeperCircuitBreaking.md`, and holds there by the same line
+
+A claim overturned on these is repaired at every recurrence the 7.6 greps find, as 6.5 found
+`HandlingLargeMessages.md` and `Logging.md`.
+
+**Where blocks will stay *same-page*.** A unit may not stand in for a type the page declares; `probe`'s
+reading of each S5 FAILED block's `names` against the page's own `class`/`record`/`interface` declarations:
+- **the 3 already *same-page***: `V10MigrationGuide.md` #3, #17 (`PersonCreated`, declared in #19) and #10
+  (`MyCommand`, declared in #14 and #15)
+- **5 more already named by a declaration**: `V10MigrationGuide.md` #16 and #25 (`PersonCreated`, #19);
+  `NullableReferenceTypes.md` #4 and #5 (`CreateOrderCommand`, #3 and #9) and #7 (`CreateUserCommand`, #6)
+- **the running examples, undeclared today**: `GreetingMade` across `CommandProcessorConfigurationReference.md`
+  #7, #16, #22 and `BrighterInboxSupport.md` #1; `GreetingEvent` across `V10MigrationGuide.md` #21–#24;
+  `MyCommand` across `FAQ.md` and `TestDoubleOptions.md`; `ProcessPayment`/`ShipOrder` across
+  `TurningOnReplayOnSeen.md` #1, #2, #4, #6. A stub serves each while no block declares it
+
+**Blocks expected to stay FAILED**, each to be listed in § *Blocks that stay FAILED*:
+- **3–8 *same-page***, the two groups above
+- **6 under 017's pin-limit ruling**: `ConfiguringOpenTelemetry.md` #1–#6, unless the ruling is revisited
+- **0–2 on an unpinned package**: `TestDoubleOptions.md` #12 and `V10MigrationGuide.md` #26, by the ruling asked
+  below: pinned (D4, D12, D13), rewritten (the Serilog ruling), or listed
+- **0–1 source-generated**: `Logging.md` #5, if D21 is not accepted for it
+
+So **9–17** stay; with the ruling to pin all three families, **3–9**.
+
+**`pagelint`, block by block.** S5's **123** warnings (`--per-page` on the twenty-two pages; 15 carry one),
+read against `--report` and `--classify`:
+- **29 on blocks no repair touches**: 22 BUILT (20 declared `// ...`, 2 bare: `NullableReferenceTypes.md` #8,
+  #16) and 7 SKIPPED (`FAQ.md` #15; `V10MigrationGuide.md` #1, #4, #6, #8, #14, #18). They stay
+- **41 on FAILED blocks that already declare `// ...`**: 7 *defect*, 13 *page-type*, 19 *parse*, 2 *values*
+- **53 on the other FAILED blocks**: 16 *defect*, 15 *page-type*, 11 *built-by-using*, 9 *parse*, 2 *values*
+
+Phase 6 took its 94 to 7; nearly every declared omission gained its `using`s. The floor here is 184 − 94 = **90**.
+
+**Predicted:**
+
+| Gate | At `dc09559` | Predicted at the close | Mechanism |
+|---|---|---|---|
+| corpus | 994 | **993–1,004** | splits only, up to +10: the 8 alternatives and mixed fences in the defect reading and the 2 behind *parse* (`SweeperCircuitBreaking.md` #4, `V10MigrationGuide.md` #19). Each may instead be made whole in its fence, as phase 6 did with all of its own. −1 if `TestDoubleOptions.md` #2 is retagged `text` |
+| BUILT | 758 | **866–899** | 892 (758 + S5's 134), plus splits (0–10), less new skips (0–8), stays (3–17) and a retag (0–1). Off-group **0** |
+| FAILED | 207 | **76–90** | 73 (−134 for S5) plus the stays: 3–17, the groups above. Off-group 0 |
+| SKIPPED | 29 | **29–37** | D3's lone options, 0–6 (`FAQ.md` #4, #20; `MongoDBInbox.md` #4; `MongoDBOutbox.md` #4; `CommandProcessorConfigurationReference.md` #21; `OutboxArchiver.md` #1); D21's source quotes, 0–2 (`CommandProcessorConfigurationReference.md` #20, `Logging.md` #5) |
+| `pagelint` | 0 errors / 184 | **0 errors / 90–115** | 184 less S5's 94 on FAILED blocks, plus what of S5 keeps one: 0–9 on stays not given their `using`s, 0–5 on new skips that carry a warning today (`FAQ.md` #4, #20, the two MongoDB initialisers, `CommandProcessorConfigurationReference.md` #20), 0–10 on a split's new fence, 0–10 declared `// ...` that keep their omission. Off-group 0 |
+| `symbolcheck` | 24 entries, 14 silenced | **24–25 entries, 14 silenced**, exit 0 | `UseRabbitMQ` is dead at 10.8.1 and at `origin/master`, as `AddServiceActivator` was (D5); whether it earns a row is read at 7.6. The opt-outs on `FAQ.md` and `V10MigrationGuide.md` stay |
+| scaffold rule | 80 units | **89–98 units**, 0 violations, 0 compile errors | 3 S5 pages have units (`FAQContext`, `MigratingToNullableReferenceTypesContext`, `SweeperCircuitBreakingContext`); 9–18 of the other nineteen need one, the two V4 pages as `<unit>+v4` |
+| pin rule | 4 pages, 0 violations | **unmoved**; the V4 pin 28 blocks, **28** built | `DistributedLock.md` #2, `DynamoDbDistributedLock.md` #1, #2 each fail only on a value (AC11) |
+| assemblies | 553 | **553**, unless the ruling below pins a package | every other package S5 names is pinned |
+| nothing BUILT | 12 pages (10 S5, and `ReplayOnSeenReference.md`, `ReturningResultsFromAHandler.md`) | **2–3** | each S5 page gains a BUILT block but `ConfiguringOpenTelemetry.md`, whose six blocks are all under the pin limit |
+| `optioncheck` | 0 / 59 / 533 | **0 mismatches, 59 / 533 unless a repair adds a row** | seven S5 pages carry marked tables; no defect above is in one |
+| `linkcheck` · `versioncheck` · shape · redirects · `pagelint --plant` | 169 / 0 · 0 of 18 · 161, widest 12 · 77 · 5 / 5 | **unmoved** | no link, tutorial pin or `SUMMARY.md` change |
 
 ---
 
