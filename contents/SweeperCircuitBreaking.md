@@ -131,6 +131,10 @@ services.AddSingleton<IAmAnOutboxCircuitBreaker>(
 You can query the circuit breaker to see which topics are currently tripped:
 
 ```csharp
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter.CircuitBreaker;
+
 public class OutboxMonitorService
 {
     private readonly IAmAnOutboxCircuitBreaker _circuitBreaker;

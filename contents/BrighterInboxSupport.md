@@ -79,6 +79,11 @@ takes a `Func<IServiceProvider, ConsumersOptions>`, a `NullReferenceException` f
 persistent store.
 
 ``` csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter.Inbox.Attributes;
+
        [UseInboxAsync(step:0, contextKey: typeof(GreetingMadeHandlerAsync), onceOnly: true )]
         public override async Task<GreetingMade> HandleAsync(GreetingMade @event, CancellationToken cancellationToken = default(CancellationToken))
         {    

@@ -2794,7 +2794,7 @@ and 9 now give the close's figures; rows 1 and 6 already gave bugfix 0003's, whi
 - [x] **Task 7.1:** Predict phase 7's gate movement
   - Input: § *The groups*, S5; recurrence greps for S5's defects
   - Output: § *Phase 7 as executed*, *Predicted*, as 3.1's
-- [ ] **Task 7.2:** Repair S5's reachable blocks
+- [x] **Task 7.2:** Repair S5's reachable blocks
   - Input: S5's table, reachable rows; the V4 pin for `DistributedLock.md` #2 and
     `DynamoDbDistributedLock.md` #1, #2
   - Output: as 3.2's, for S5. The three V4 blocks are BUILT or listed with a diagnostic that is not
@@ -2984,6 +2984,173 @@ Phase 6 took its 94 to 7; nearly every declared omission gained its `using`s. Th
 | nothing BUILT | 12 pages (10 S5, and `ReplayOnSeenReference.md`, `ReturningResultsFromAHandler.md`) | **2–3** | each S5 page gains a BUILT block but `ConfiguringOpenTelemetry.md`, whose six blocks are all under the pin limit |
 | `optioncheck` | 0 / 59 / 533 | **0 mismatches, 59 / 533 unless a repair adds a row** | seven S5 pages carry marked tables; no defect above is in one |
 | `linkcheck` · `versioncheck` · shape · redirects · `pagelint --plant` | 169 / 0 · 0 of 18 · 161, widest 12 · 77 · 5 / 5 | **unmoved** | no link, tutorial pin or `SUMMARY.md` change |
+
+#### Rulings (session 136)
+
+Given by the maintainer on 2026-10-31 and recorded as given; 7.1's three questions are answered by 1 and 2, and
+3 approves the four defects 7.1 named:
+
+> 1. **NSubstitute and BenchmarkDotNet: pin.** `TestDoubleOptions.md` #12 (NSubstitute) and `V10MigrationGuide.md` #26
+>    (BenchmarkDotNet) — add the packages to the appropriate pin (follow the D4 Shouldly / D12 / D13 precedent for how a
+>    package joins a pin), rather than rewriting or listing the blocks.
+> 2. **OpenTelemetry: 017's 2026-09-28 "no pin change" ruling no longer binds in 018. Change the pin if needed** —
+>    `OpenTelemetry.Extensions.Hosting` and `Paramore.Brighter.Extensions.Diagnostics` (and any exporter packages
+>    `ConfiguringOpenTelemetry.md` #1–#6 need) may be pinned. This also moves `Telemetry.md` #1, #6–#9 and
+>    `PostgreSQLMessageBroker.md` #8 outside S5; rebuild and record their movement.
+> 3. **The four defects 7.1 named are approved for repair in phase 7, each with a defect-ledger row and recurrence greps
+>    across the corpus:**
+>    - `FAQ.md` #2, #14, #16: `[UseResiliencePipeline(1, "…")]` has arguments reversed (ctor is `(string policy, int step)`)
+>      and sits on the class (`AttributeTargets.Method`). Fix: the async attribute `[UseResiliencePipelineAsync("…", 1)]` on
+>      `HandleAsync` (handlers are `RequestHandlerAsync`), with `[RequestLoggingAsync]` moved there too.
+>    - `FAQ.md` #1: `MyHandlerBase<T> : RequestHandlerAsync<T>` missing `where T : class, IRequest`.
+>    - `CommandProcessorConfigurationReference.md` #20 and the prose before #21: `ConfigureJsonSerialisation` takes
+>      `Action<JsonSerializerOptions>` (not `JsonSerialisationOptions`); the `JsonSerialisationOptions` static-ctor listing
+>      shows 4 of 12 converters — bring it into line with the 10.8.1 source.
+>    - `FAQ.md` #3, #5: `services.AddProducers(o => o.UseRabbitMQ(...).Publication<T>/.Subscription<T>)` — API never
+>      existed. Rewrite to the real V10 shape: `services.AddConsumers(...)` first, then `.AddProducers(...)` chained off the
+>      returned `IBrighterBuilder`, with `RmqProducerRegistryFactory` and `RmqSubscription<T>`. Keep what the FAQ answer
+>      teaches (the difference between AddProducers and AddConsumers).
+
+**Carried out at 7.2.** Ruling 1 is **D22** and ruling 2 **D23** (`design.md` § *Design Decisions*). Ruling 3's five blocks
+are all *hard* rows (`FAQ.md` #1, #2, #14, #16 *defect*; #3, #5 *parse*; `CommandProcessorConfigurationReference.md` #20
+*defect*, and the prose before #21), so the repairs, their ledger rows and their recurrence greps are 7.3's, written when
+each grep has run after its repair (obligation 22). 7.1's recurrence greps stand as run. The pin changes were made here, so 7.3
+and 7.4 inherit them. 7.3's text says *"Brighter `10.8.0` source"*; the pins are **10.8.1**, and 7.3 reads 10.8.1.
+
+#### The repairs (7.2)
+
+**The pins.** Ten packages joined `refs.csproj` and `refs-v4.csproj` together (103 → **113** `PackageReference`s each;
+the two lists still differ only by the seven AWS swaps). Each is built against the released packages, never a
+`ProjectReference`:
+
+| Package | Version | Why that version | Needed by |
+|---|---|---|---|
+| `NSubstitute` | 6.2.0 | latest stable; Brighter's own tests use FakeItEasy | `TestDoubleOptions.md` #12 (D22) |
+| `BenchmarkDotNet` | 0.15.8 | Brighter's own (`Directory.Packages.props` at 10.8.1) | `V10MigrationGuide.md` #26 (D22) |
+| `Paramore.Brighter.Extensions.Diagnostics` | 10.8.1 | the pinned release | `ConfiguringOpenTelemetry.md` #1, #5, #6; `Telemetry.md` #1, #6–#9 (D23) |
+| `OpenTelemetry.Extensions.Hosting`, `.Exporter.Zipkin`, `.Exporter.OpenTelemetryProtocol` | 1.19.1 | what `Paramore.Brighter.Extensions.Diagnostics` 10.8.1 depends on (`OpenTelemetry.Api.ProviderBuilderExtensions` 1.19.1) | `ConfiguringOpenTelemetry.md` #1–#6 (D23) |
+| `OpenTelemetry.Instrumentation.AspNetCore`, `.Http` | 1.19.0 | Brighter's own | `ConfiguringOpenTelemetry.md` #5, which the page already names (D23) |
+| `Azure.Monitor.OpenTelemetry.Exporter` | 1.10.0 | latest stable | `ConfiguringOpenTelemetry.md` #4 (D23) |
+| `Polly.Extensions` | 8.8.0 | `Polly.Core`'s version on the pin | `FAQ.md` #13 (**D24**, below) |
+
+Reference assemblies: **553 → 579** on each pin (576 after the first nine packages; the two instrumentation packages
+and `Polly.Extensions` added 2 and 1). No restore warning on either project. Three packages were found only by building:
+`OpenTelemetry.Instrumentation.AspNetCore` and `.Http` (7.1's list stopped at the exporters), and `Polly.Extensions` (below).
+
+**D24 is not ruled.** `FAQ.md` #13 reads *values* (`services`) in 7.1's table. Once `services` was supplied the second
+compile said `CS1061 AddResiliencePipeline`: the extension lives in `Polly.Extensions`, which no pin carries and the page
+never named, and 7.1's list of packages on no pin (read from *page-type* names) could not see it. It is the same shape as D13,
+so it was pinned here and the page now says `AddResiliencePipeline` comes from `Polly.Extensions`. **Reverting is one line in
+each project and one sentence in the page; the maintainer is asked to ratify it.**
+
+**What the pins moved, by page and ordinal** (`--report` before and after, diffed by `(page, ordinal)`):
+
+| Block | Before | After | Mechanism |
+|---|---|---|---|
+| `ConfiguringOpenTelemetry.md` #1, #5, #6 | FAILED (*defect*, `CS0234`/`CS1929`) | **BUILT** | the pin alone; no page or unit change |
+| `ConfiguringOpenTelemetry.md` #2, #3, #4 | FAILED (*parse*) | FAILED (*parse*) | lone `.AddZipkinExporter(…)`, `.AddOtlpExporter(…)`, `.AddAzureMonitorTraceExporter(…)` calls, whose receivers now resolve in the pin: D3's *"a single option shown alone"* applies, 7.3's |
+| `Telemetry.md` #1, #9 | FAILED (`CS0234`) | **BUILT** | the pin alone |
+| `Telemetry.md` #6, #7, #8 | FAILED (`CS0234`) | **BUILT** | the pin, then the second compile read *values* (`builder`, `CS0103`); `TelemetryContext` gained `WebApplicationBuilder builder` and each block `using Microsoft.Extensions.DependencyInjection;` (obligation 21: a block the ruling made reachable is repaired by the phase that moved it) |
+| `PostgreSQLMessageBroker.md` #8 | FAILED (`CS0234`) | FAILED (`CS7036`) | `AddNpgsql()` is `Npgsql.OpenTelemetry`'s extension on `TracerProviderBuilder`, which the page names and no pin carries; binding falls to `Npgsql.EntityFrameworkCore.PostgreSQL`'s. **Not pinned: no ruling covers it** (a question for the maintainer, below) |
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| § *Predicted (7.1)*, `Telemetry.md` #1, #6–#9 and `PostgreSQLMessageBroker.md` #8 *"fail on the same `CS0234`"* as `ConfiguringOpenTelemetry.md` #1, #5, #6: nine blocks a pin ruling would move | pinned: **5** build on the pin alone (`ConfiguringOpenTelemetry.md` #1, #5, #6; `Telemetry.md` #1, #9), **3** more after a `builder` value (`Telemetry.md` #6–#8, which were *values*, not `CS0234`, once the pin was in), and **1** (`PostgreSQLMessageBroker.md` #8) fails on another unpinned package. `ConfiguringOpenTelemetry.md` #2–#4, not among the nine, stay *parse* | the prediction stands; this row is the reading at 7.2 |
+| § *Predicted (7.1)*, assemblies: *"553, unless the ruling below pins a package"*; *"every other package S5 names is pinned"* | **579**; and `Polly.Extensions` (`FAQ.md` #13) and `Npgsql.OpenTelemetry` (`PostgreSQLMessageBroker.md` #8) are two more packages on no pin | the prediction stands; reconciled at 7.7 |
+| § *Predicted (7.1)*, *Reachable*, **69** | **65** build and **4** stay: `NullableReferenceTypes.md` #4, #5, #7 and `V10MigrationGuide.md` #25, the *page-type* rows 7.1 named as already declared by another block. Three *hard* rows (`ConfiguringOpenTelemetry.md` #1, #5, #6) build on the pin, so S5 loses **68** FAILED, not 65 | the table stands; the stays are in § *Blocks that stay FAILED* |
+| § *Predicted (7.1)*, scaffold rule *89–98 units* | **94** units, 0 violations, 0 compile errors: 14 new, 3 extended | in band |
+| § *Predicted (7.1)*, nothing BUILT *2–3* | **2**: `DispatcherConfigurationReference.md` and `BrighterOutboxSupport.md`, both all-hard | in band |
+
+**S5's reachable rows: 65 build, 4 stay.**
+- **12 *built-by-using*** got their `using`s: `CommandProcessorConfigurationReference.md` #2, `NullableReferenceTypes.md` #2, #3,
+  #6, #13, #14, `TestDoubleOptions.md` #10, `V10MigrationGuide.md` #2, #15, `MongoDBInbox.md` #1, #3,
+  `SweeperCircuitBreaking.md` #3
+- **the 3 V4 blocks are BUILT** on the V4 pin, none with a `CS0234 … V4` diagnostic: `DistributedLock.md` #2 and
+  `DynamoDbDistributedLock.md` #1, #2 each lacked only a value (`services`; `dynamoDb`, an `IAmazonDynamoDB`). They got a unit
+  each (`DistributedLockContext`, `DynamoDbDistributedLockContext`), and the pin column is still `v4`. The V4 pin is now
+  **28 blocks, 28 built, 0 failing** (25 built before); `DistributedLock.md` #1 was already BUILT and its scaffold changed
+- **the *page-type* rows** are stubs in 14 new units, each stub a request or an interface with only the members a BUILT
+  block names, plus usings: `BrighterBasicConfiguration`, `BrighterInboxSupport`, `CommandProcessorConfigurationReference`,
+  `EFCoreOutbox`, `InMemoryOptions`, `Logging`, `MongoDBOutbox`, `NullableReferenceTypes`, `OutboxArchiver`,
+  `TestDoubleOptions`, `TurningOnReplayOnSeen`, `V10MigrationGuide`, and the two V4 units. `FAQContext`,
+  `MigratingToNullableReferenceTypesContext` and `TelemetryContext` were extended. `TestDoubleOptions.md` #3, #4, #10, #11,
+  #12 build; its Shouldly blocks (#1, #5–#9) and #2 are 7.4's and 7.3's, and `TestDoubleOptionsContext` carries only what the
+  five need
+- **`OutboxArchiver.md` #3** was a fragment (`.AddProducers(/* producer configuration */)`, `CS1501`), the 7.1 table's
+  *arguments given as a comment* row. It is made whole: `AddProducers(options => { // ... the producer registry for your
+  bus` then `options.Outbox = new InMemoryOutbox(TimeProvider.System); })`. The declared omission is the registry, which the
+  reader has
+- **`EFCoreOutbox.md` #2** gained a comment, `// uow.People is the DbSet<Person> on your context`. The unit rule names a
+  type only if a BUILT block does, and `Person` appears in none; the comment says what `People` is, which the reader needs
+- **The 4 that stay** cannot take a stub: `NullableReferenceTypes.md` #4, #5, #7 name `CreateOrderCommand` and
+  `CreateUserCommand`, declared by #3, #9 and #6, and the other undeclared types they name (`Order`, `IOrderRepository`,
+  `CreateOrderDto`, `CreateUserDto`) are named by no BUILT block, so unit rule 1 refuses them. They were given their
+  `using`s, so the diagnostics left are the undeclared types'. `V10MigrationGuide.md` #25 names `PersonCreated` (#19) and
+  `BuildServiceProvider`. The sentence before each now says what it assumes
+
+**What the reachable rows hid: nothing the compiler could see.** Every block that became BUILT did so with no diagnostic
+beyond the names and `using`s; the second compile (`probe/second.py`, 131 FAILED blocks on S5's 22 pages once the pin was
+in) named no API defect behind a *page-type* or *values* row, which 6.2 found in S4 and 3.2 in S1. The two readings above are
+not defects of the page's claims: a package no pin carried (D24) and a fragment (`OutboxArchiver.md` #3). No ledger row is
+written. What compiling cannot say is in § *For 7.5*.
+
+**Prose added** (the packages and the sentences the stays need):
+- `TestDoubleOptions.md`: *Add the `Moq` package…* and *Add the `NSubstitute` package…* under their headings (7.4 adds the
+  Shouldly sentence)
+- `V10MigrationGuide.md`: *…with the `BenchmarkDotNet` package*, and the sentence before #25
+- `FAQ.md`: *`AddResiliencePipeline` comes from the `Polly.Extensions` package*
+- `NullableReferenceTypes.md`: a clause before #4, #5 and #7 saying which block declares the command
+
+**Measured after 7.2** (`dc09559` + this task's tree; `git add -A` first):
+
+| Gate | At `dc09559` | After 7.2 | |
+|---|---|---|---|
+| `--report` | 994 / 758 / 207 / 29, 0 findings | **994 / 831 / 134 / 29**, 87 findings, exit 1 | 73 FAILED → BUILT and **nothing else moved** (diffed by page and ordinal); the 87 are 73 BUILT blocks not yet baselined and 14 BUILT blocks whose page gained a unit, all 7.7's |
+| scaffold rule · pin rule | 80 units, 0 · 4 pages, 0 | **94** units, 0 violations, 0 compile errors · 4 pages, 0 violations | the first run read 3 violations (`EFCoreOutboxContext`: `Person`, `Message`; `FAQContext`: `Name`), each a stub no BUILT block names, repaired |
+| reference assemblies | 553 | **579** on each pin | above |
+| `--classify` | 31 / 12 / 42 / 37 / 12 / 73 | **31 parse, 0 built-by-using, 34 defect, 37 same-page, 3 values, 29 page-type**, 3 rounds | the 3 *values* are off-S5 (`AgreementDispatcherRouting.md` #12, `InMemoryScheduler.md` #14, `QueryHandlerDependencies.md` #3) |
+| `groups.py`, S5 | 22 pages, 134 FAILED | **18 pages, 66 FAILED** (30 parse, 0 built-by-using, 29 defect, 3 same-page, 0 values, 4 page-type), 98 BUILT, 2 with nothing BUILT | `BrighterBasicConfiguration.md`, `DistributedLock.md`, `DynamoDbDistributedLock.md`, `EFCoreOutbox.md` are whole and have left the table. Two methods: the FAILED column, 66; `--report` on the same 18 pages, **66**, with 98 BUILT and 7 SKIPPED. `groups.py` total 29 pages, 100 FAILED: S5's 66 and 34 on the 11 pages S1–S4 still hold. The other 34 of the 134 are on tranche pages |
+| `pagelint` | 0 / 184 | **0 errors / 142** | S5's 123 → **81** (`--per-page` on the 22 pages), nothing off-S5 moved; `--changed origin/master` 0 errors; `--plant` 5 / 5 |
+| `linkcheck` · `symbolcheck` · `optioncheck` | 169 / 0 · 24 / 14 · 0 / 59 / 533 | 169 / 0 · 24 entries, 14 silenced, exit 0 · 0 mismatches (5 tables, 47 rows on the five pages touched) | no table was touched |
+| `versioncheck` · shape | 0 of 18 · 161, widest 12 | unmoved | |
+
+Against 7.1's bands, which 7.7 reconciles: BUILT **831** now against **866–899** at the close (7.3–7.5 still to come);
+FAILED **134** against **76–90**; `pagelint` 142 against **90–115**; units 94 in band.
+
+**For 7.3.**
+- the five blocks of ruling 3 (above) and the 30 *parse* and 29 *defect* blocks; `CommandProcessorConfigurationReference.md`
+  gained `GreetingMade`, `MyCommand`, `GetSubscriptions` and a `builder` in its unit, so #10 (`Environment`) and #20/#21 find
+  them
+- `ConfiguringOpenTelemetry.md` #2–#4: D3's *single option shown alone*, each now resolving in the pin
+- `V10MigrationGuide.md` #3, #10, #16, #17 stay *same-page* or *parse* as 7.1 read them; `MyCommand` and `PersonCreated` are
+  declared by blocks, so `V10MigrationGuideContext` may not stub them
+- `FAQ.md` #1 needs `where T : class, IRequest`; #2, #14, #16 are the async attribute on `HandleAsync` (their
+  `[RequestLoggingAsync]` with them); `FAQContext` already supplies `MyCommand` (with `Value`), `MyEvent`, `GreetingCommand`
+  and `registry`
+
+**For 7.4.** `TestDoubleOptionsContext` supplies `spy`, `MyCommand`, `MyEvent` and `MyHandler`. Blocks #1, #5–#9 name
+`PlaceOrderHandler`, `PlaceOrder`, `OrderPlaced`, `TriggerCommand`, `DownstreamCommand` and more, undeclared by any block,
+and #2's `spy.Observe<MyCommand>()` lines are the *listing of expressions* 7.1 read.
+
+**For 7.5.** Blocks 7.2 touched whose prose or comment asserts behaviour, none run here:
+- `FAQ.md` #10–#12: a base-typed `ICommand` sent with `Send` throws *"No command handler was found for the typeof command
+  Paramore.Brighter.ICommand"*, and `Send((dynamic)command)` resolves the runtime type
+- `FAQ.md` #13: a pipeline registered with `services.AddResiliencePipeline("MyRetryPolicy", …)` is the one
+  `[UseResiliencePipelineAsync("MyRetryPolicy", …)]` finds. It is the claim D24 depends on
+- `TestDoubleOptions.md` #11, #12: `Times.Once` and `Received(1)` verify one `Publish`; both frameworks' calls compile
+  against the real `IAmACommandProcessor.Publish<T>(T, RequestContext?)`
+- `OutboxArchiver.md` #3: `.UseOutboxArchiver<CommittableTransaction>(new InMemoryArchiveProvider())` is the InMemory Outbox's
+  transaction type (`System.Transactions.CommittableTransaction`)
+- `TurningOnReplayOnSeen.md` #1–#3, #5, #6 and `BrighterInboxSupport.md` #1 built with a stub for the request; the claims
+  7.1 listed (#4's silent no-op under Replay) are unchanged
+- `V10MigrationGuide.md` #22–#24: `PartitionAssignmentStrategy.Range` is `Confluent.Kafka`'s, and `GroupProtocol`
+  replaces the flat settings
+
+**Question for the maintainer, from 7.2.** (1) Ratify **D24**, `Polly.Extensions` 8.8.0 on both pins. (2) `PostgreSQLMessageBroker.md` #8
+(a tranche page, off-S5) now fails only because `Npgsql.OpenTelemetry`, which the page names, is on no pin: pin it (as
+D22 and D23), or list the block? Until ruled it stays FAILED and is in § *Blocks that stay FAILED*.
 
 ---
 
@@ -3213,6 +3380,11 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `Routing.md` | 3 | `CS0246` `MyRequest` | *same-page*: block 2 declares it, and the sentence before block 3 names "this request" | 6 |
 | `Routing.md` | 4 | `CS0246` `MyReply` | *same-page*: block 2 declares it, as the sentence before block 4 now says. Block 3 and block 4 build once block 2's classes are in scope; each was checked that way (0 diagnostics) before the stub was taken out again | 6 |
 | `DefaultMessageMappers.md` | 6, 10 | `CS0246` `Orders`, `OrderShipped`, `AvroMessageMapperAsync<>` | *same-page*: block 4 declares the mapper and block 5 `OrderShipped`, in the namespace `Orders`; the sentences before blocks 6 and 10 are about that mapper | 6 |
+| `NullableReferenceTypes.md` | 4 | `CS0246` `CreateOrderCommand`, `IOrderRepository`, `Order` | *same-page*: block 3 declares `CreateOrderCommand`, as the clause before block 4 now says. `IOrderRepository` and `Order` are the reader's, and no BUILT block names them (unit rule 1) | 7 |
+| `NullableReferenceTypes.md` | 5 | `CS0246` `CreateOrderCommand`, `CreateOrderDto` | *same-page*: block 3 declares the command, as the clause before block 5 now says; `CreateOrderDto` is the reader's | 7 |
+| `NullableReferenceTypes.md` | 7 | `CS0246` `CreateUserCommand`, `CreateUserDto` | *same-page*: block 6 declares the command, as the clause before block 7 now says; `CreateUserDto` is the reader's | 7 |
+| `V10MigrationGuide.md` | 25 | `CS0103` `BuildServiceProvider`; `CS0246` `PersonCreated` | *same-page*: block 19 declares `PersonCreated`, and the sentence before block 25 says so; `BuildServiceProvider` is the reader's own helper, named by no other block | 7 |
+| `PostgreSQLMessageBroker.md` | 8 | `CS7036` `AddNpgsql` | *pin*: `Npgsql.OpenTelemetry`, which the page names, is on no pin, so `.AddNpgsql()` binds to the EF Core provider's. A tranche page the ruling-2 pin moved; asked of the maintainer at 7.2 | 7 |
 
 ## Splits
 

@@ -77,6 +77,10 @@ var @event = spy.Observe<MyEvent>();
 For examining all calls without consuming them:
 
 ```csharp
+using System.Collections.Generic;
+using Paramore.Brighter;
+using Paramore.Brighter.Testing;
+
 // Get all requests of a specific type (non-destructive, can call repeatedly)
 IEnumerable<MyCommand> commands = spy.GetRequests<MyCommand>();
 
@@ -93,6 +97,10 @@ IReadOnlyList<CommandType> types = spy.Commands;
 For advanced scenarios requiring complete call information:
 
 ```csharp
+using System;
+using System.Collections.Generic;
+using Paramore.Brighter.Testing;
+
 // All recorded calls with full details
 IReadOnlyList<RecordedCall> allCalls = spy.RecordedCalls;
 
@@ -221,6 +229,10 @@ spy.DepositedRequests.Count.ShouldBe(0);
 All methods on `SpyCommandProcessor` are `virtual`, allowing you to create specialized subclasses:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Testing;
+
 public class ThrowingSpyCommandProcessor : SpyCommandProcessor
 {
     public override void Send<TRequest>(TRequest command, RequestContext? requestContext = null)
@@ -239,7 +251,12 @@ If you prefer mocking frameworks, you can mock `IAmACommandProcessor` directly. 
 
 ### Moq
 
+Add the `Moq` package to your test project:
+
 ```csharp
+using Moq;
+using Paramore.Brighter;
+
 var mock = new Mock<IAmACommandProcessor>();
 var handler = new MyHandler(mock.Object);
 
@@ -250,7 +267,12 @@ mock.Verify(p => p.Publish(It.IsAny<MyEvent>(), It.IsAny<RequestContext>()), Tim
 
 ### NSubstitute
 
+Add the `NSubstitute` package to your test project:
+
 ```csharp
+using NSubstitute;
+using Paramore.Brighter;
+
 var substitute = Substitute.For<IAmACommandProcessor>();
 var handler = new MyHandler(substitute);
 

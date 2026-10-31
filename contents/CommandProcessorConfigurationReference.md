@@ -51,6 +51,7 @@ The **AddBrighter()** method returns an **IBrighterBuilder** interface. **IBrigh
 To use Polly with Brighter, register resilience pipelines with a **ResiliencePipelineRegistry<string>**:
 
 ``` csharp
+using System;
 using Polly;
 using Polly.Registry;
 using Polly.Retry;
@@ -78,6 +79,9 @@ resiliencePipelineRegistry.TryAddBuilder("CircuitBreakerPipeline",
 And use them in your handler like this:
 
 ``` csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
 // ...
 public class MyQoSProtectedHandler : RequestHandler<MyCommand>
 {
@@ -172,6 +176,10 @@ In addition to the standard `Action<BrighterOptions>` delegate, Brighter provide
 **AddBrighter with Service Provider**
 
 ``` csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // ...
 public void ConfigureServices(IServiceCollection services)
 {
@@ -194,6 +202,13 @@ public void ConfigureServices(IServiceCollection services)
 The `AddProducers` method also supports a service provider overload for configuring your external bus producers:
 
 ``` csharp
+using System;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 // ...
 public void ConfigureServices(IServiceCollection services)
 {
@@ -235,6 +250,11 @@ public void ConfigureServices(IServiceCollection services)
 Similarly, `AddConsumers` supports deferred resolution:
 
 ``` csharp
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 // ...
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
@@ -262,6 +282,9 @@ Brighter integrates with Microsoft's [Options pattern](https://docs.microsoft.co
 The `PostConfigure<BrighterOptions>` method runs after all `Configure` calls, allowing you to override settings for tests:
 
 ``` csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // ...
 // In your test setup
 public class MyIntegrationTests
@@ -326,6 +349,12 @@ The combination of service provider overloads and the Options pattern enables pa
 - Test-specific overrides don't affect other tests
 
 ``` csharp
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Xunit;
+
 // ...
 public class ParallelTestsA
 {
@@ -402,6 +431,9 @@ value you assign here.
 We recommend enabling pipeline validation and diagnostics as part of your standard configuration. This catches common misconfiguration errors — such as sync/async mismatches, incorrect attribute ordering, and missing handlers — at startup rather than at runtime.
 
 ``` csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // ...
 builder.Services.AddBrighter(options =>
     {
@@ -539,6 +571,10 @@ Typically for a transport we implement a **producer registry factory**; it needs
 The following code shows an application using the RMQ transport support to create its **producer registry**.
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 // ...
 var producerRegistry = new RmqProducerRegistryFactory(
     new RmqMessagingGatewayConnection
@@ -738,6 +774,10 @@ You can use the **IBrighterBuilder** extension **ConfigureJsonSerialisation** to
 If you want to use this configured set of JSON Serialization options in your own code, you can, by using the static property JsonSerialisationOptions.Options. For example:
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+
 // ...
 public GreetingMade MapToRequest(Message message)
 {

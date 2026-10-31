@@ -1,4 +1,4 @@
-// The type and value Telemetry.md names in its blocks and never declares.
+// The type and values Telemetry.md names in its blocks and never declares.
 //
 // The page sends a `ProcessOrderCommand`, the reader's own, through the reader's command processor
 // and handles it, and never shows the command. The value is typed from a pinned package and
@@ -6,12 +6,15 @@
 //
 // blockcheck: using static TelemetryContext;
 
+using Microsoft.AspNetCore.Builder;
 using Paramore.Brighter;
 
 public static class TelemetryContext
 {
     // block 3: `await commandProcessor.SendAsync(new ProcessOrderCommand { OrderId = 123 });`
     public static IAmACommandProcessor commandProcessor => null!;
+    // blocks 6–8: `builder.Services.AddOpenTelemetry()`
+    public static WebApplicationBuilder builder => null!;
 }
 
 // blocks 3, 4: `new ProcessOrderCommand { OrderId = 123 }`, `RequestHandlerAsync<ProcessOrderCommand>`,

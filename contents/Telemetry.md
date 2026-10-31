@@ -397,6 +397,7 @@ The [Outbox Sweeper](/contents/BrighterOutboxSupport.md#implicit-clear) runs in 
 `AddBrighterInstrumentation()` on the `MeterProviderBuilder` registers the sweeper's meter, alongside Brighter's messaging and database meters, and listens to the `Paramore.Brighter` meter. It comes from the `Paramore.Brighter.Extensions.Diagnostics` package:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
 using Paramore.Brighter.Extensions.Diagnostics;
 
@@ -506,6 +507,7 @@ max(max_over_time(paramore_brighter_outbox_sweeper_tripped_topics[15s])) > 0
 The OpenTelemetry .NET SDK's default histogram buckets were designed for millisecond values: 0, 5, 10, 25, 50 and so on. Both sweeper histograms record seconds, and most values fall below 5, so with the default buckets nearly every value lands in the first one or two. Add a view that sets buckets that fit your `TimerInterval`:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
 using Paramore.Brighter.Extensions.Diagnostics;
 
@@ -534,6 +536,7 @@ builder.Services.AddOpenTelemetry()
 To see whether the thread pool is starved, enable the .NET runtime's built-in `System.Runtime` meter (.NET 9 and later) and look at the thread pool's queue length and thread count:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
 using Paramore.Brighter.Extensions.Diagnostics;
 

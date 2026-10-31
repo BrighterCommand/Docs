@@ -364,6 +364,8 @@ Use Agreement Dispatcher when you need **dynamic handler selection** based on re
 **Example:**
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 registry.RegisterAsync<MyCommand>((request, context) =>
 {
     var myCommand = request as MyCommand;
@@ -391,6 +393,8 @@ When you try this, you will encounter the issue that we dispatch based on the co
 If you try this:
 
 ``` csharp
+using Paramore.Brighter;
+
 ICommand command = new GreetingCommand("Ian");
 commandProcessor.Send(command);
 ```
@@ -400,6 +404,8 @@ Then you will get this error: *\"ArgumentException \"No command handler was foun
 Now, you don\'t see this issue if you pass the concrete type in, so the compiler can correctly resolve the run-time type.
 
 ``` csharp
+using Paramore.Brighter;
+
 commandProcessor.Send(new GreetingCommand("Ian"));
 ```
 
@@ -408,6 +414,8 @@ So what can you do if you must pass the base class to the **Command Processor** 
 The workaround is to use the dynamic keyword. Using the dynamic keyword means that the type will be evaluated using RTTI, which will successfully pick up the type that you need.
 
 ``` csharp
+using Paramore.Brighter;
+
 ICommand command = new GreetingCommand("Ian");
 commandProcessor.Send((dynamic)command);
 ```
@@ -420,9 +428,14 @@ commandProcessor.Send((dynamic)command);
 
 In V10, use **Resilience Pipelines** with Polly v8:
 
-**1. Configure the pipeline:**
+**1. Configure the pipeline:** `AddResiliencePipeline` comes from the `Polly.Extensions` package.
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Polly;
+using Polly.Retry;
+
 services.AddResiliencePipeline("MyRetryPolicy", builder =>
 {
     builder.AddRetry(new RetryStrategyOptions
@@ -526,6 +539,8 @@ See: [Scheduler Support](/contents/BrighterSchedulerSupport.md)
 Use `SendAsync()` or `PostAsync()` with a delay:
 
 ```csharp
+using System;
+
 // ...
 // Schedule with DateTimeOffset
 await commandProcessor.SendAsync(

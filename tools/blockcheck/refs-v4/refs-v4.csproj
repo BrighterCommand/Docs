@@ -118,6 +118,7 @@
     <PackageReference Include="Paramore.Brighter.Dapper" Version="10.8.1" />
     <PackageReference Include="Paramore.Brighter.DynamoDb.V4" Version="10.8.1" />
     <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Extensions.Diagnostics" Version="10.8.1" />
     <PackageReference Include="Paramore.Brighter.Firestore" Version="10.8.1" />
     <PackageReference Include="Paramore.Brighter.Inbox.DynamoDB.V4" Version="10.8.1" />
     <PackageReference Include="Paramore.Brighter.Inbox.Firestore" Version="10.8.1" />
@@ -228,6 +229,10 @@
     <!-- PolicyRetryAndCircuitBreaker.md tells its reader to install this, for
          AddConcurrencyLimiter (spec 018 D13). Polly.Core's version on the pin. -->
     <PackageReference Include="Polly.RateLimiting" Version="8.8.0" />
+    <!-- FAQ.md #13 and the timeout answer after it call AddResiliencePipeline,
+         which lives in Polly.Extensions, and the page now names the package
+         (spec 018 D24, found at 7.2). Polly.Core's version on the pin. -->
+    <PackageReference Include="Polly.Extensions" Version="8.8.0" />
 
     <!-- The floor Paramore.Brighter.MsSql.EntityFrameworkCore 10.8.1 sets for
          net9.0. Below it the restore fails NU1605, a package downgrade. -->
@@ -258,6 +263,31 @@
          Directory.Packages.props:153 at 10.8.1. The page's reader installs
          it beside Paramore.Brighter.Testing (spec 018 D4). -->
     <PackageReference Include="Shouldly" Version="4.3.0" />
+
+    <!-- The assertions and test doubles the test pages' blocks use beyond
+         Shouldly: NSubstitute, which TestDoubleOptions.md #12 builds its
+         substitutes with, latest stable (spec 018 D22). -->
+    <PackageReference Include="NSubstitute" Version="6.2.0" />
+
+    <!-- V10MigrationGuide.md #26 decorates a benchmark with [Benchmark], at the
+         version Brighter's own benchmarks use: Directory.Packages.props at
+         10.8.1 (spec 018 D22). -->
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+
+    <!-- ConfiguringOpenTelemetry.md's registration and exporters (spec 018
+         D23, which retires spec 017's no-pin-change ruling of 2026-09-28).
+         OpenTelemetry at 1.19.1, the version Paramore.Brighter.Extensions
+         .Diagnostics 10.8.1 itself depends on, so the exporters and the hosting
+         extension agree with it. The two instrumentation packages are at
+         Brighter's own versions (Directory.Packages.props at 10.8.1), the two
+         ConfiguringOpenTelemetry.md #5 names. The Azure Monitor exporter is
+         latest stable. -->
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.19.1" />
+    <PackageReference Include="OpenTelemetry.Exporter.Zipkin" Version="1.19.1" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.19.1" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.19.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.19.0" />
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.10.0" />
 
     <!-- The Avro serializers DefaultMessageMappers.md's mapper calls, at the
          Confluent version Paramore.Brighter.MessagingGateway.Kafka 10.8.1

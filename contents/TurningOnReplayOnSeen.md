@@ -69,6 +69,12 @@ resend — silently. That failure is common enough to have
 For an async handler, use `[UseInboxAsync]` on a `RequestHandlerAsync<T>`:
 
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Inbox.Attributes;
+
 public class ProcessPaymentHandlerAsync : RequestHandlerAsync<ProcessPayment>
 {
     private readonly IAmACommandProcessor _commandProcessor;
@@ -104,6 +110,13 @@ To make `Replay` the default for every handler, set `actionOnExists` when you co
 the `InboxConfiguration` you hand to `AddConsumers`:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Inbox.MySql;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
     services.AddConsumers(options =>
@@ -260,7 +273,11 @@ needs a Sweeper to dispatch what replay marks outstanding.
 Register one on your producer registration:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.Outbox.Hosting;
+using Paramore.Brighter.Outbox.MySql;
 
 services.AddBrighter()
     .AddProducers(opt =>

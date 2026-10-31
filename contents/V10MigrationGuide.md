@@ -109,6 +109,9 @@ public class CreatePersonCommand : Command
 **After (V10)**:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 public class CreatePersonCommand : Command
 {
     public required string Name { get; set; }  // Required property
@@ -232,6 +235,8 @@ var subscription = new Subscription<MyEvent>(
 **After (V10)**:
 
 ```csharp
+using Paramore.Brighter;
+
 var subscription = new Subscription<MyEvent>(
     new SubscriptionName("my-subscription"),
     new ChannelName("my-channel"),
@@ -482,6 +487,7 @@ class MyCommand() : Command(Guid.NewGuid())
 After:
 
 ```csharp
+using Paramore.Brighter;
 
 class MyCommand() : Command(Id.Random())
 {
@@ -713,6 +719,7 @@ V10 provides comprehensive InMemory implementations for testing.
 **Example**:
 
 ```csharp
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
@@ -760,6 +767,11 @@ V10 adds support for [KIP-848](https://cwiki.apache.org/confluence/display/KAFKA
 **Before**:
 
 ```csharp
+using System;
+using Confluent.Kafka;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription<GreetingEvent>(
     subscriptionName: new SubscriptionName("paramore.example.greeting"),
     channelName: new ChannelName("greeting.event"),
@@ -773,6 +785,11 @@ var subscription = new KafkaSubscription<GreetingEvent>(
 **After**:
 
 ```csharp
+using System;
+using Confluent.Kafka;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription<GreetingEvent>(
     subscriptionName: new SubscriptionName("paramore.example.greeting"),
     channelName: new ChannelName("greeting.event"),
@@ -791,6 +808,9 @@ var subscription = new KafkaSubscription<GreetingEvent>(
 **Opting into KIP-848**:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription<GreetingEvent>(
     subscriptionName: new SubscriptionName("paramore.example.greeting"),
     channelName: new ChannelName("greeting.event"),
@@ -821,7 +841,7 @@ dotnet test
 
 ### Integration Tests
 
-1. **Test with InMemory components** (fast):
+1. **Test with InMemory components** (fast). `BuildServiceProvider` is your own helper, which registers the InMemory components above, and `PersonCreated` is the event declared in the mapper section:
 
 ```csharp
 using System.Threading.Tasks;
@@ -862,9 +882,12 @@ dotnet test --filter Category=Integration
 
 ### Performance Testing
 
-Compare V9 and V10 performance:
+Compare V9 and V10 performance with the `BenchmarkDotNet` package:
 
 ```csharp
+using System.Threading.Tasks;
+using BenchmarkDotNet.Attributes;
+
 [Benchmark]
 public async Task V10_MessageProcessing()
 {

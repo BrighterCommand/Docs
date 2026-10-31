@@ -22,6 +22,15 @@ For this we will need the *Inbox* packages for the MongoDB *Inbox*.
 ### Basic Configuration
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Inbox.MongoDb;
+using Paramore.Brighter.MongoDb;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
         .ConfigureServices((hostContext, services) =>
@@ -119,6 +128,14 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 You can also use a custom connection provider for more control over the MongoDB connection:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Inbox.MongoDb;
+using Paramore.Brighter.MongoDb;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
     var mongoDbConfiguration = new MongoDbConfiguration("mongodb://localhost:27017", "BrighterDatabase")

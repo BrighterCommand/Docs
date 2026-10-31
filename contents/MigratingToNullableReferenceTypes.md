@@ -244,6 +244,9 @@ public class Order
 Review your handlers for null safety:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 // ...
 public class ProcessOrderHandler : RequestHandler<ProcessOrderCommand>
 {

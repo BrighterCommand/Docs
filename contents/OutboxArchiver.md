@@ -125,13 +125,23 @@ The InMemory Archive stores dispatched messages in memory for diagnostics and re
 ### InMemory Archive Configuration
 
 ```csharp
-// ...
+using System;
+using System.Transactions;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.Hosting;
+
 services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
 .UseOutboxArchiver<CommittableTransaction>(new InMemoryArchiveProvider())  // the InMemory Outbox's transaction type
-.AddProducers(/* producer configuration */);
+.AddProducers(options =>
+{
+    // ... the producer registry for your bus
+    options.Outbox = new InMemoryOutbox(TimeProvider.System);
+});
 ```
 
 ### InMemory Archive Example Usage
