@@ -548,6 +548,151 @@ A `dotnet.thread_pool.queue.length` that keeps growing, together with a `dotnet.
 
 ---
 
+## Outbox Stale Message Metrics
+
+> **Not in a released package yet.** The stale message monitor ships after Brighter 10.8.1, which is the current release. `UseOutboxStaleMessageMonitor`, `Publication.StaleMessageAge` and the three instruments below are on Brighter's development branch and are in no version you can install today, so treat this section as the feature as it will ship.
+
+A message that stays undispatched in the outbox is invisible until someone queries the store. The stale message monitor counts those messages on a timer and reports the counts as metrics, so you can alert when messages get stuck. It is opt-in.
+
+```csharp
+using System;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.Hosting;
+
+services.AddBrighter()
+    .AddProducers(options =>
+    {
+        // ... your producer registry and outbox
+    })
+    .UseOutboxStaleMessageMonitor(TimeSpan.FromMinutes(5), options =>
+    {
+        options.CountCeiling = 10;
+    });
+```
+
+Like the sweeper, the monitor is a hosted service in the `Paramore.Brighter.Outbox.Hosting` package. At start it resolves your outbox, and it fails with a `ConfigurationException` if there is no outbox, no producers configuration (`AddProducers` registers both), or if the outbox cannot count asynchronously. If you call `UseOutboxStaleMessageMonitor` twice, both calls are validated and the first call's settings are kept.
+
+The instruments are on the `Paramore.Brighter` meter. They report once you call `AddBrighterInstrumentation()` on a meter provider that shares the application's container, as `services.AddOpenTelemetry().WithMetrics(...)` in [Enabling the Metrics](#enabling-the-metrics) does. A meter provider built with `Sdk.CreateMeterProviderBuilder()` has a container of its own, so it is not supported. Without `AddBrighterInstrumentation()` the monitor still counts on its timer, but nothing reports the result.
+
+### What Is Measured
+
+A message is stale when it is still undispatched and older than a given age. The monitor takes two counts.
+
+- The overall count is every stale message in the outbox, whatever its topic. It uses the age you pass to `UseOutboxStaleMessageMonitor`, called A on this page.
+- The count per topic is the stale messages of each topic that your publications name. It uses the age that topic's publications ask for. Set it with `Publication.StaleMessageAge`. A publication with no age counts as A, and a topic with several publications uses the smallest age among them. The count per topic needs an outbox that offers it, see [Which Outboxes Offer the Count per Topic](#which-outboxes-offer-the-count-per-topic). With no such outbox, or with no topic to count, the monitor logs one Information entry saying that only the overall count is measured.
+
+The overall value is not the sum of the topic values. The topics can use different ages, and a message whose topic has no publication in this process is in the overall count only.
+
+Each count stops at the ceiling, C. A value equal to C means "C or more", for each topic too. C of 1 is enough to answer "is any message stale?".
+
+Three instruments carry the result:
+
+| Instrument | Type | Unit | Attributes | Reports |
+|---|---|---|---|---|
+| `paramore.brighter.outbox.stale.messages` | Gauge (observable) | `{message}` | `paramore.brighter.outbox.implementation` | The latest overall count |
+| `paramore.brighter.outbox.stale.topic.messages` | Gauge (observable) | `{message}` | `paramore.brighter.outbox.implementation`, `messaging.destination.name` | The latest count for one topic |
+| `paramore.brighter.outbox.stale.measurements` | Counter (observable) | `{measurement}` | `paramore.brighter.outbox.implementation`, `paramore.brighter.outbox.stale.count`, `paramore.brighter.outbox.stale.outcome` | How many measurements ended in each outcome |
+
+The implementation attribute is the outbox's type name, such as `MsSqlOutbox`. The count attribute is `overall` or `per_topic`. The outcome attribute is one of:
+
+- `completed`: the count finished and the gauge now shows its value;
+- `failed`: the outbox threw or returned an invalid count, and the exception is logged;
+- `abandoned`: the count did not end by `MeasurementTimeout` and the monitor stopped waiting;
+- `skipped`: a due time passed without a count, because the previous count of the same kind was still running or because the monitor fell behind.
+
+The counter has one series for each count and outcome from the start, so a rate is defined before the first failure. The per-topic series exist only when the monitor measures topics.
+
+### Settings
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `StaleMessageAge` | `TimeSpan` | None, required | The first argument of `UseOutboxStaleMessageMonitor`, called A on this page. The age after which a message is stale, for the overall count and for a topic with no age of its own. Greater than zero and at most 365 days |
+| `CountCeiling` | `int` | `100` | Where each count stops, called C on this page. At least 1 and at most 1000 |
+| `MeasurementInterval` | `TimeSpan` | 1 minute | How often a measurement is due, called I on this page. The first one runs one interval after start. Greater than zero and at most 4,294,967,294 ms, about 49.7 days |
+| `MeasurementTimeout` | `TimeSpan` | 10 seconds | How long the monitor waits for a count, called T on this page. Greater than zero and less than `MeasurementInterval` |
+
+`Publication.StaleMessageAge` sets the age for one topic. It defaults to A and has the same bounds.
+
+`UseOutboxStaleMessageMonitor` validates the settings when you call it, and the monitor validates each publication's age when it starts. Both fail with a `ConfigurationException` for a value outside these bounds.
+
+### No Recent Reading
+
+The gauges show the latest completed value. After a due time that did not complete (`failed`, `abandoned` or `skipped`), that count's gauge has no value until its next completed measurement. Stopping the monitor clears both gauges. The gauge never shows 0 in place of a missing reading.
+
+The signal for "no recent reading" is the `completed` total. If it has not risen for about `MeasurementInterval` plus `MeasurementTimeout`, the count has no recent reading. For the overall count, filter on the count attribute `overall`. For the topics, filter on `per_topic`. The `[2m]` window below assumes the defaults, a 1 minute interval and a 10 second timeout, so use a window longer than the two together.
+
+### Alerting
+
+The examples below use PromQL, with the names a Prometheus exporter produces, as in the sweeper's [Suggested Alerts](#suggested-alerts). Adjust them for your backend.
+
+Instances that share a store count the same messages, so combine them with the maximum, not the sum, and keep the `job` label so that two services with the same kind of outbox stay apart. For the topic gauge, combine per topic. For each gauge, alert on the maximum over a window longer than `MeasurementInterval`, so a single gap does not clear the alert:
+
+```promql
+max by (job, paramore_brighter_outbox_implementation) (max_over_time(paramore_brighter_outbox_stale_messages[5m])) > 0
+
+max by (job, paramore_brighter_outbox_implementation, messaging_destination_name) (max_over_time(paramore_brighter_outbox_stale_topic_messages[5m])) > 0
+```
+
+Every instance runs its own monitor, so alert on missing readings for each instance. Alert when the `completed` total of a count has not risen for `MeasurementInterval` plus `MeasurementTimeout`:
+
+```promql
+increase(paramore_brighter_outbox_stale_measurements_total{paramore_brighter_outbox_stale_count="overall", paramore_brighter_outbox_stale_outcome="completed"}[2m]) == 0
+```
+
+An instance that has stopped reporting may also lose the series, so pair this alert with `absent()` on the same series if your backend drops series that go stale.
+
+### Which Outboxes Offer the Count per Topic
+
+The count per topic is an optional capability, `IAmATopicCountingOutbox`. `InMemoryOutbox` implements it. Every other outbox reports the overall count only, until its own follow-up lands:
+
+- relational outboxes (MsSql, PostgreSql, MySql, Sqlite, Spanner): [BrighterCommand/Brighter#4686](https://github.com/BrighterCommand/Brighter/issues/4686)
+- MongoDb: [BrighterCommand/Brighter#4687](https://github.com/BrighterCommand/Brighter/issues/4687)
+- DynamoDB and DynamoDB V4: [BrighterCommand/Brighter#4688](https://github.com/BrighterCommand/Brighter/issues/4688)
+- Firestore: [BrighterCommand/Brighter#4689](https://github.com/BrighterCommand/Brighter/issues/4689)
+
+A decorator around an outbox hides the capability, see [Known Limitations](#known-limitations).
+
+### Tripped Topics
+
+A topic whose outbox circuit breaker is open holds its messages back, and its stale count grows while other topics flow. Where the outbox offers the count per topic, which today is `InMemoryOutbox` only, that topic shows as its own series at the age its publications ask for. Topics are tripped only when your application registers an outbox circuit breaker.
+
+### Stale Count Traces
+
+Each count goes through the outbox, so it records the outbox's usual database span. The monitor runs with no ambient activity, so where a tracer is configured, each measurement may start a new trace, sampled like any other span.
+
+### Operational Guidance
+
+#### Choosing the Measurement Timeout
+
+T bounds how long the monitor waits for a count. Some outboxes also have a timeout of their own, and the shorter of the two ends the count first.
+
+- The relational outboxes (MsSql, PostgreSql, MySql, Sqlite and Spanner) use `RelationalDatabaseConfiguration.OutstandingCountTimeout`, 15 seconds by default. That is above the default T of 10 seconds, so T applies first.
+- DynamoDB and DynamoDB V4 use `DynamoDbConfiguration.Timeout`, 500 milliseconds by default. That is below the default T, so DynamoDB fails first, and the due time is recorded as `failed` with the exception, not `abandoned`.
+
+If you want `abandoned` to mean "the outbox ignored its own timeout", set T a little above the outbox's timeout. If you want T to always be the bound, set it below.
+
+Keep T well below `HostOptions.ShutdownTimeout`, which every hosted service shares and which is 30 seconds by default in current Microsoft.Extensions.Hosting versions. T must also be below I, so set T explicitly when I is 10 seconds or less.
+
+#### Choosing the Interval, the Ceiling and the Ages
+
+- Each instance makes up to two calls to the store per interval, the overall count and, when topics are measured, the count per topic, so a short I multiplies that load.
+- The cost of the count per topic, and its number of series, grow linearly with the number of topics measured: one series per topic, fixed when the monitor starts, and up to C entries counted for each. If the per-topic call keeps passing T, lower C or raise T. Use C of 1 if you only need to know whether any message is stale.
+- Choose A and each `StaleMessageAge` above the sweeper's `MinimumMessageAge` plus its `TimerInterval`. A shorter age counts messages the sweeper has not yet had a chance to send.
+- The monitor assumes the application's clock and the store's clock agree to within seconds. Ages are usually minutes, so that much skew does not matter.
+- A change to a publication's topic or age needs a restart.
+
+### Known Limitations
+
+- Every outbox other than `InMemoryOutbox` reports the overall count only, until its own follow-up lands: relational outboxes in [BrighterCommand/Brighter#4686](https://github.com/BrighterCommand/Brighter/issues/4686), MongoDb in [BrighterCommand/Brighter#4687](https://github.com/BrighterCommand/Brighter/issues/4687), DynamoDB and DynamoDB V4 in [BrighterCommand/Brighter#4688](https://github.com/BrighterCommand/Brighter/issues/4688), and Firestore in [BrighterCommand/Brighter#4689](https://github.com/BrighterCommand/Brighter/issues/4689).
+- DynamoDB and DynamoDB V4: the age is a filter applied after the read, so the overall count also reads outstanding items that are not stale yet. The scan runs in `ScanConcurrency` segments, and each segment stops once it has found C stale messages, so a segment with fewer than C stale messages reads all of its part of the index ([BrighterCommand/Brighter#4684](https://github.com/BrighterCommand/Brighter/issues/4684)). Its outstanding index is also eventually consistent, so a message that was just added may not be counted yet.
+- The relational outboxes and MongoDb load up to C whole rows or documents for each overall count ([BrighterCommand/Brighter#4685](https://github.com/BrighterCommand/Brighter/issues/4685)). In one measurement of a relational count, counting 100 rows of 200 KB allocated about 60 MB, so keep C low when messages are large.
+- Sqlite: Microsoft.Data.Sqlite waits on a locked database synchronously, so when the overall count passes T while the database is locked, the monitor stops waiting, but the read keeps a thread pool thread until the lock is released or `OutstandingCountTimeout` passes, 15 seconds by default.
+- MongoDb narrows the overall count to the topic in the outbox bag when the bag sets one. The monitor passes the bag to the count, so with a bag topic set the overall value is for that topic. Every other outbox, `InMemoryOutbox` included, ignores the bag.
+- A message whose header topic differs from its publication's topic is in the count per topic only if a publication in this process uses that header topic. It is always in the overall count.
+- A decorator around an outbox hides the count per topic unless the decorator implements it too, so the monitor measures the overall count only.
+
+---
+
 ## Telemetry Best Practices
 
 1. **Start with Minimal Instrumentation**: Enable `RequestInformation` and `Messaging`, and leave out expensive flags like `RequestBody`
