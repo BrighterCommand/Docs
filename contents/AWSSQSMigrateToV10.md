@@ -136,6 +136,11 @@ AWS SDK v4 introduced new credential and configuration patterns:
 **V3 Approach**:
 
 ```csharp
+using System;
+using Amazon;
+using Amazon.Runtime.CredentialManagement;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 // ...
 // V3 - Using profile
 var chain = new CredentialProfileStoreChain();
@@ -151,6 +156,11 @@ var connection = new AWSMessagingGatewayConnection(credentials, region);
 **V4 Approach**:
 
 ```csharp
+using System;
+using Amazon;
+using Amazon.Runtime.CredentialManagement;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 // ...
 // V4 - Using profile (similar, but with v4 SDK)
 var chain = new CredentialProfileStoreChain();
@@ -166,6 +176,9 @@ var connection = new AWSMessagingGatewayConnection(credentials, region);
 **V4 - Using Default Credentials** (recommended):
 
 ```csharp
+using Amazon.Runtime;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 // ...
 // V4 - Let SDK resolve credentials automatically
 var credentials = FallbackCredentialsFactory.GetCredentials();
@@ -202,10 +215,14 @@ Ensure your build and deployment pipelines reference the correct package version
 **Issue 1: Credential Resolution Fails**
 
 ```csharp
+using System;
+using Amazon.Runtime;
+using Amazon.Runtime.CredentialManagement;
+
 // ...
 // Problem: Credentials not found
 var chain = new CredentialProfileStoreChain();
-if (!chain.TryGetAWSCredentials("default", out var credentials))
+if (!chain.TryGetAWSCredentials("default", out var profileCredentials))
 {
     throw new InvalidOperationException("Missing AWS Credentials");
 }
@@ -217,9 +234,15 @@ var credentials = FallbackCredentialsFactory.GetCredentials(); // Checks env var
 **Issue 2: Region Not Set**
 
 ```csharp
+using Amazon;
+using Amazon.Runtime;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 // ...
+var credentials = FallbackCredentialsFactory.GetCredentials();
+
 // Problem: Region not specified
-var connection = new AWSMessagingGatewayConnection(credentials, null); // ❌
+var connectionWithoutRegion = new AWSMessagingGatewayConnection(credentials, null); // ❌
 
 // Solution: Provide region explicitly or use fallback
 var region = FallbackRegionFactory.GetRegionEndpoint()

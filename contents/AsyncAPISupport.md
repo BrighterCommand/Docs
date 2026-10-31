@@ -40,6 +40,8 @@ Register AsyncAPI generation by calling `UseAsyncApi()` on your Brighter builder
 
 ```csharp
 using Paramore.Brighter.AsyncAPI;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 
 services.AddConsumers(options =>
 {
@@ -60,6 +62,9 @@ services.AddConsumers(options =>
 Then generate the document after building your host:
 
 ```csharp
+using System;
+using Paramore.Brighter.AsyncAPI;
+
 var host = builder.Build();
 
 if (args.Length > 0 && args[0] == "--generate-asyncapi")
@@ -87,6 +92,9 @@ Deduplication is keyed on `(channel, action)`. Subscriptions produce `receive` o
 Subscriptions registered with `AddConsumers()` become `receive` operations in the AsyncAPI document. Each subscription's [RoutingKey](/contents/Routing.md) becomes a channel address, and the `RequestType` provides the message schema.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 options.Subscriptions = new Subscription[]
 {
     new RmqSubscription<PaymentReceivedEvent>(
@@ -104,9 +112,12 @@ Send-only applications that do not call `AddConsumers()` produce documents with 
 
 ### Publications (Send Operations)
 
-Publications registered in the producer registry become `send` operations. Each publication's `Topic` becomes the channel address. Use typed publications (e.g. `RmqPublication<T>`) to associate a `RequestType` with the publication for schema generation.
+Publications registered in the producer registry become `send` operations. Each publication's `Topic` becomes the channel address. Use typed publications (e.g. `RmqPublication<T>`) to associate a `RequestType` with the publication for schema generation. `OrderCreatedEvent` is the event declared under [Assembly Scanning (Send Operations)](#assembly-scanning-send-operations) below.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 var producerRegistry = new RmqProducerRegistryFactory(
     rmqConnection,
     new RmqPublication<OrderCreatedEvent>[]
@@ -143,10 +154,15 @@ Assembly scanning discovers concrete, non-abstract types that implement `IReques
 Assembly scanning is useful when you want your message types to self-document their publication topics without requiring them to be wired into a producer registry. You can disable it with:
 
 ```csharp
-.UseAsyncApi(opts =>
-{
-    opts.DisableAssemblyScanning = true;
-})
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.AsyncAPI;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
+services.AddConsumers(options => { /* ... */ })
+    .UseAsyncApi(opts =>
+    {
+        opts.DisableAssemblyScanning = true;
+    });
 ```
 
 ### Deduplication
@@ -176,27 +192,32 @@ Configure the generated document via the `UseAsyncApi()` delegate:
 | `DisableAssemblyScanning` | `bool` | `false` | Turns off assembly scanning, leaving only registered producers and `SupplementalPublications`. |
 | `SupplementalPublications` | `IEnumerable<Publication>?` | `null` | Adds publications beyond those found in the producer registry and by scanning. |
 
-Full configuration example:
+Full configuration example, with `OrderCreatedEvent` the event declared under [Assembly Scanning (Send Operations)](#assembly-scanning-send-operations) above:
 
 ```csharp
+using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 using Neuroglia.AsyncApi.v3;
+using Paramore.Brighter.AsyncAPI;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 
-.UseAsyncApi(opts =>
-{
-    opts.Title = "Order Service";
-    opts.Version = "2.1.0";
-    opts.Description = "Handles order lifecycle events";
-    opts.Servers = new Dictionary<string, V3ServerDefinition>
+services.AddConsumers(options => { /* ... */ })
+    .UseAsyncApi(opts =>
     {
-        ["production"] = new V3ServerDefinition
+        opts.Title = "Order Service";
+        opts.Version = "2.1.0";
+        opts.Description = "Handles order lifecycle events";
+        opts.Servers = new Dictionary<string, V3ServerDefinition>
         {
-            Host = "rabbitmq.internal:5672",
-            Protocol = "amqp",
-            Description = "Production RabbitMQ cluster"
-        }
-    };
-    opts.AssembliesToScan = new[] { typeof(OrderCreatedEvent).Assembly };
-})
+            ["production"] = new V3ServerDefinition
+            {
+                Host = "rabbitmq.internal:5672",
+                Protocol = "amqp",
+                Description = "Production RabbitMQ cluster"
+            }
+        };
+        opts.AssembliesToScan = new[] { typeof(OrderCreatedEvent).Assembly };
+    });
 ```
 
 ### Output Formats
@@ -215,6 +236,9 @@ The default schema generator uses NJsonSchema to produce JSON Schema from your `
 To substitute your own schema generation logic, implement `IAmASchemaGenerator`:
 
 ```csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Neuroglia.AsyncApi.v3;
 using Paramore.Brighter.AsyncAPI;
 
@@ -223,7 +247,7 @@ public class MySchemaGenerator : IAmASchemaGenerator
     public Task<V3SchemaDefinition?> GenerateAsync(Type? requestType, CancellationToken ct = default)
     {
         // Return a V3SchemaDefinition with your schema, or null for an empty object schema
-        // ...
+        return Task.FromResult<V3SchemaDefinition?>(null);
     }
 }
 ```
@@ -231,6 +255,10 @@ public class MySchemaGenerator : IAmASchemaGenerator
 Register your implementation before calling `UseAsyncApi()`:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.AsyncAPI;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 services.AddSingleton<IAmASchemaGenerator, MySchemaGenerator>();
 
 services.AddConsumers(options => { /* ... */ })
@@ -244,6 +272,9 @@ When `UseAsyncApi()` finds an existing `IAmASchemaGenerator` registration, it do
 A common pattern is to generate the AsyncAPI document as part of your CI pipeline using a command-line argument:
 
 ```csharp
+using System;
+using Paramore.Brighter.AsyncAPI;
+
 if (args.Length > 0 && args[0] == "--generate-asyncapi")
 {
     var document = await host.GenerateAsyncApiDocumentAsync("asyncapi.json");
@@ -264,6 +295,8 @@ asyncapi validate asyncapi.json
 ```
 
 ## Complete Examples
+
+Both examples use the `OrderCreatedEvent` declared under [Assembly Scanning (Send Operations)](#assembly-scanning-send-operations), and a `PaymentReceivedEvent` of your own, written the same way.
 
 ### RabbitMQ Example
 

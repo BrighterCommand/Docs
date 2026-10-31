@@ -32,15 +32,7 @@
 #
 # Brighter 10.8.0 (bugfix 0002) moved the pins. CausationTrackingStores.md #1 builds against it,
 # because `RequestContextBagNames.CausationId` shipped; it is at `5e0a63b`.
-contents/AWSSQSConfiguration.md	1	TransportConfigurationContext.cs	7edaada
-contents/AWSSQSConfiguration.md	3	TransportConfigurationContext.cs	7edaada
-contents/AWSSQSConfiguration.md	4	TransportConfigurationContext.cs	7edaada
-contents/AWSSQSConfiguration.md	5	TransportConfigurationContext.cs	7edaada
-contents/AWSSQSConfiguration.md	6	TransportConfigurationContext.cs	7edaada
-contents/AWSSQSMigrateToV10.md	1	-	280d1b7
-contents/AWSSQSMigrateToV10.md	7	-	280d1b7
 contents/AnalyzerSupport.md	1	-	ec38400
-contents/AsyncAPISupport.md	5	-	280d1b7
 contents/BoxProvisioning.md	1	-	280d1b7
 contents/BoxProvisioningConfiguration.md	1	BoxProvisioningConfigurationContext.cs	24e6e53
 contents/BoxProvisioningConfiguration.md	2	BoxProvisioningConfigurationContext.cs	24e6e53
@@ -55,8 +47,6 @@ contents/BuildingAnAsyncPipeline.md	1	-	280d1b7
 contents/ClaimCheck.md	1	ClaimCheckContext.cs	71d0c60
 contents/ClaimCheck.md	2	ClaimCheckContext.cs	71d0c60
 contents/ClaimCheck.md	3	ClaimCheckContext.cs	71d0c60
-contents/CloudEventsSupport.md	8	-	9c57ae2
-contents/CloudEventsSupport.md	10	-	9c57ae2
 contents/CommandProcessorConfigurationReference.md	4	-	280d1b7
 contents/Compression.md	1	CompressionContext.cs	71d0c60
 contents/Compression.md	2	CompressionContext.cs	71d0c60
@@ -298,17 +288,13 @@ contents/PostgreSQLMessageBroker.md	9	PostgreSQLMessageBrokerContext.cs	2d938c8
 contents/PostgreSQLMessageBroker.md	10	PostgreSQLMessageBrokerContext.cs	2d938c8
 contents/PostgreSQLMessageBroker.md	12	PostgreSQLMessageBrokerContext.cs	2d938c8
 contents/PostgreSQLMessageBroker.md	13	PostgreSQLMessageBrokerContext.cs	2d938c8
-contents/S3LuggageStore.md	2	S3LuggageStoreContext.cs+v4	937db00
 contents/Telemetry.md	2	TelemetryContext.cs	2d938c8
 contents/Telemetry.md	3	TelemetryContext.cs	2d938c8
 contents/Telemetry.md	5	TelemetryContext.cs	2d938c8
 contents/PostgreSQLMessageBroker.md	11	PostgreSQLMessageBrokerContext.cs	2d938c8
 contents/Telemetry.md	4	TelemetryContext.cs	2d938c8
-contents/DefaultMessageMappers.md	4	-	b4c3ae0
-contents/DefaultMessageMappers.md	5	-	b4c3ae0
 contents/V10MigrationGuide.md	9	-	f4cfd88
 contents/V10MigrationGuide.md	12	-	f4cfd88
-contents/MessageMappers.md	4	MessageMappersContext.cs	6ddcf7b
 contents/MongoDBInbox.md	2	-	7c6c0a1
 contents/MongoDBOutbox.md	1	-	7c6c0a1
 contents/MongoDBOutbox.md	2	-	7c6c0a1
@@ -475,6 +461,15 @@ contents/SwitchingSchedulers.md	7	SwitchingSchedulersContext.cs	9aafd19
 # keeps its original ref at its present ordinal (CQRSWithBrighterAndDarker.md #7, #8, which were #6, #7;
 # HowConfiguringTheCommandProcessorWorks.md #10); every other block is at `b9183b0`, the phase's last
 # page commit.
+#
+# Spec 018 phase 6 repaired S4, Using an External Bus and Transports. Every BUILT block on its
+# seventeen pages is listed below, replacing their fourteen earlier rows. The phase split no fence and
+# retagged none, so no ordinal moved. A block whose text and scaffold did not change keeps its original
+# ref (AWSSQSConfiguration.md #1, #3-#6, whose TransportConfigurationContext.cs is unchanged;
+# AWSSQSMigrateToV10.md #1, #7). Of the other seven, five gained their page's scaffold unit
+# (AsyncAPISupport.md #5, CloudEventsSupport.md #8, #10, DefaultMessageMappers.md #4, #5) and two kept
+# a unit the phase extended (MessageMappers.md #4, S3LuggageStore.md #2); with the rest, they are at
+# `b6a23f8`, the phase's last page commit.
 contents/AgreementDispatcher.md	1	AgreementDispatcherContext.cs	6ad8b0a
 contents/AgreementDispatcher.md	2	AgreementDispatcherContext.cs	6ad8b0a
 contents/AgreementDispatcher.md	3	AgreementDispatcherContext.cs	6ad8b0a
@@ -700,3 +695,131 @@ contents/ReactorAndProactor.md	13	ReactorAndProactorContext.cs	b9183b0
 contents/ReactorAndProactor.md	14	ReactorAndProactorContext.cs	b9183b0
 contents/HealthChecks.md	2	HealthChecksContext.cs	35b0bc2
 contents/HealthChecks.md	3	HealthChecksContext.cs	35b0bc2
+contents/AWSSQSConfiguration.md	1	TransportConfigurationContext.cs	7edaada
+contents/AWSSQSConfiguration.md	2	TransportConfigurationContext.cs	b6a23f8
+contents/AWSSQSConfiguration.md	3	TransportConfigurationContext.cs	7edaada
+contents/AWSSQSConfiguration.md	4	TransportConfigurationContext.cs	7edaada
+contents/AWSSQSConfiguration.md	5	TransportConfigurationContext.cs	7edaada
+contents/AWSSQSConfiguration.md	6	TransportConfigurationContext.cs	7edaada
+contents/AWSSQSConfiguration.md	7	TransportConfigurationContext.cs	b6a23f8
+contents/AWSSQSConfiguration.md	8	TransportConfigurationContext.cs	b6a23f8
+contents/AWSSQSConfiguration.md	9	TransportConfigurationContext.cs	b6a23f8
+contents/AWSSQSConfiguration.md	10	TransportConfigurationContext.cs	b6a23f8
+contents/AWSSQSMigrateToV10.md	1	-	280d1b7
+contents/AWSSQSMigrateToV10.md	2	-	b6a23f8
+contents/AWSSQSMigrateToV10.md	3	-	b6a23f8
+contents/AWSSQSMigrateToV10.md	4	-	b6a23f8
+contents/AWSSQSMigrateToV10.md	5	-	b6a23f8
+contents/AWSSQSMigrateToV10.md	6	-	b6a23f8
+contents/AWSSQSMigrateToV10.md	7	-	280d1b7
+contents/AsyncAPISupport.md	1	AsyncAPISupportContext.cs	b6a23f8
+contents/AsyncAPISupport.md	2	AsyncAPISupportContext.cs	b6a23f8
+contents/AsyncAPISupport.md	3	AsyncAPISupportContext.cs	b6a23f8
+contents/AsyncAPISupport.md	5	AsyncAPISupportContext.cs	b6a23f8
+contents/AsyncAPISupport.md	6	AsyncAPISupportContext.cs	b6a23f8
+contents/AsyncAPISupport.md	8	AsyncAPISupportContext.cs	b6a23f8
+contents/AsyncAPISupport.md	10	AsyncAPISupportContext.cs	b6a23f8
+contents/AzureServiceBusConfiguration.md	1	AzureServiceBusConfigurationContext.cs	b6a23f8
+contents/AzureServiceBusConfiguration.md	2	AzureServiceBusConfigurationContext.cs	b6a23f8
+contents/CloudEventsSupport.md	1	CloudEventsSupportContext.cs	b6a23f8
+contents/CloudEventsSupport.md	2	CloudEventsSupportContext.cs	b6a23f8
+contents/CloudEventsSupport.md	3	CloudEventsSupportContext.cs	b6a23f8
+contents/CloudEventsSupport.md	4	CloudEventsSupportContext.cs	b6a23f8
+contents/CloudEventsSupport.md	5	CloudEventsSupportContext.cs	b6a23f8
+contents/CloudEventsSupport.md	6	CloudEventsSupportContext.cs	b6a23f8
+contents/CloudEventsSupport.md	8	CloudEventsSupportContext.cs	b6a23f8
+contents/CloudEventsSupport.md	10	CloudEventsSupportContext.cs	b6a23f8
+contents/CloudEventsSupport.md	13	CloudEventsSupportContext.cs	b6a23f8
+contents/CloudEventsSupport.md	14	CloudEventsSupportContext.cs	b6a23f8
+contents/CloudEventsSupport.md	15	CloudEventsSupportContext.cs	b6a23f8
+contents/CloudEventsSupport.md	16	CloudEventsSupportContext.cs	b6a23f8
+contents/DefaultMessageMappers.md	1	DefaultMessageMappersContext.cs	b6a23f8
+contents/DefaultMessageMappers.md	2	DefaultMessageMappersContext.cs	b6a23f8
+contents/DefaultMessageMappers.md	3	DefaultMessageMappersContext.cs	b6a23f8
+contents/DefaultMessageMappers.md	4	DefaultMessageMappersContext.cs	b6a23f8
+contents/DefaultMessageMappers.md	5	DefaultMessageMappersContext.cs	b6a23f8
+contents/DefaultMessageMappers.md	7	DefaultMessageMappersContext.cs	b6a23f8
+contents/DefaultMessageMappers.md	8	DefaultMessageMappersContext.cs	b6a23f8
+contents/DefaultMessageMappers.md	9	DefaultMessageMappersContext.cs	b6a23f8
+contents/DefaultMessageMappers.md	11	DefaultMessageMappersContext.cs	b6a23f8
+contents/DefaultMessageMappers.md	12	DefaultMessageMappersContext.cs	b6a23f8
+contents/DefaultMessageMappers.md	13	DefaultMessageMappersContext.cs	b6a23f8
+contents/DefaultMessageMappers.md	14	DefaultMessageMappersContext.cs	b6a23f8
+contents/DefaultMessageMappers.md	15	DefaultMessageMappersContext.cs	b6a23f8
+contents/DynamicMessageDeserialization.md	1	DynamicMessageDeserializationContext.cs	b6a23f8
+contents/DynamicMessageDeserialization.md	2	DynamicMessageDeserializationContext.cs	b6a23f8
+contents/DynamicMessageDeserialization.md	3	DynamicMessageDeserializationContext.cs	b6a23f8
+contents/DynamicMessageDeserialization.md	4	DynamicMessageDeserializationContext.cs	b6a23f8
+contents/DynamicMessageDeserialization.md	5	DynamicMessageDeserializationContext.cs	b6a23f8
+contents/DynamicMessageDeserialization.md	6	DynamicMessageDeserializationContext.cs	b6a23f8
+contents/DynamicMessageDeserialization.md	7	DynamicMessageDeserializationContext.cs	b6a23f8
+contents/DynamicMessageDeserialization.md	8	DynamicMessageDeserializationContext.cs	b6a23f8
+contents/HandlerFailure.md	1	HandlerFailureContext.cs	b6a23f8
+contents/HandlerFailure.md	2	HandlerFailureContext.cs	b6a23f8
+contents/HandlerFailure.md	3	HandlerFailureContext.cs	b6a23f8
+contents/HandlerFailure.md	4	HandlerFailureContext.cs	b6a23f8
+contents/HandlerFailure.md	5	HandlerFailureContext.cs	b6a23f8
+contents/HandlerFailure.md	6	HandlerFailureContext.cs	b6a23f8
+contents/HandlerFailure.md	7	HandlerFailureContext.cs	b6a23f8
+contents/HandlerFailure.md	8	HandlerFailureContext.cs	b6a23f8
+contents/HandlerFailure.md	9	HandlerFailureContext.cs	b6a23f8
+contents/HandlerFailure.md	10	HandlerFailureContext.cs	b6a23f8
+contents/HandlerFailure.md	11	HandlerFailureContext.cs	b6a23f8
+contents/ImplementingExternalBus.md	1	ImplementingExternalBusContext.cs	b6a23f8
+contents/ImplementingExternalBus.md	2	ImplementingExternalBusContext.cs	b6a23f8
+contents/ImplementingExternalBus.md	3	ImplementingExternalBusContext.cs	b6a23f8
+contents/KafkaConfiguration.md	1	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	2	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	3	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	4	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	5	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	6	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	7	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	8	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	9	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	10	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	11	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	12	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	13	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	14	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	15	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	16	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	17	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	18	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	19	KafkaConfigurationContext.cs	b6a23f8
+contents/KafkaConfiguration.md	20	KafkaConfigurationContext.cs	b6a23f8
+contents/MessageMappers.md	1	MessageMappersContext.cs	b6a23f8
+contents/MessageMappers.md	2	MessageMappersContext.cs	b6a23f8
+contents/MessageMappers.md	4	MessageMappersContext.cs	b6a23f8
+contents/MessageMappers.md	6	MessageMappersContext.cs	b6a23f8
+contents/MessageMappers.md	7	MessageMappersContext.cs	b6a23f8
+contents/MessageTransforms.md	1	MessageTransformsContext.cs	b6a23f8
+contents/MessageTransforms.md	2	MessageTransformsContext.cs	b6a23f8
+contents/MessageTransforms.md	3	MessageTransformsContext.cs	b6a23f8
+contents/MessageTransforms.md	4	MessageTransformsContext.cs	b6a23f8
+contents/MessageTransforms.md	5	MessageTransformsContext.cs	b6a23f8
+contents/MessageTransforms.md	6	MessageTransformsContext.cs	b6a23f8
+contents/MessageTransforms.md	7	MessageTransformsContext.cs	b6a23f8
+contents/MessageTransforms.md	8	MessageTransformsContext.cs	b6a23f8
+contents/RabbitMQConfiguration.md	1	RabbitMQConfigurationContext.cs	b6a23f8
+contents/RabbitMQConfiguration.md	2	RabbitMQConfigurationContext.cs	b6a23f8
+contents/RabbitMQConfiguration.md	3	RabbitMQConfigurationContext.cs	b6a23f8
+contents/RabbitMQConfiguration.md	4	RabbitMQConfigurationContext.cs	b6a23f8
+contents/RabbitMQConfiguration.md	5	RabbitMQConfigurationContext.cs	b6a23f8
+contents/RabbitMQConfiguration.md	6	RabbitMQConfigurationContext.cs	b6a23f8
+contents/RabbitMQConnectionStability.md	1	RabbitMQConnectionStabilityContext.cs	b6a23f8
+contents/RabbitMQConnectionStability.md	2	RabbitMQConnectionStabilityContext.cs	b6a23f8
+contents/RabbitMQConnectionStability.md	3	RabbitMQConnectionStabilityContext.cs	b6a23f8
+contents/Routing.md	1	RoutingContext.cs	b6a23f8
+contents/Routing.md	2	RoutingContext.cs	b6a23f8
+contents/RoutingMultipleMessageTypes.md	1	RoutingMultipleMessageTypesContext.cs	b6a23f8
+contents/RoutingMultipleMessageTypes.md	2	RoutingMultipleMessageTypesContext.cs	b6a23f8
+contents/RoutingMultipleMessageTypes.md	3	RoutingMultipleMessageTypesContext.cs	b6a23f8
+contents/RoutingMultipleMessageTypes.md	4	RoutingMultipleMessageTypesContext.cs	b6a23f8
+contents/RoutingMultipleMessageTypes.md	5	RoutingMultipleMessageTypesContext.cs	b6a23f8
+contents/RoutingMultipleMessageTypes.md	6	RoutingMultipleMessageTypesContext.cs	b6a23f8
+contents/RoutingMultipleMessageTypes.md	7	RoutingMultipleMessageTypesContext.cs	b6a23f8
+contents/RoutingMultipleMessageTypes.md	8	RoutingMultipleMessageTypesContext.cs	b6a23f8
+contents/RoutingMultipleMessageTypes.md	9	RoutingMultipleMessageTypesContext.cs	b6a23f8
+contents/S3LuggageStore.md	1	S3LuggageStoreContext.cs+v4	b6a23f8
+contents/S3LuggageStore.md	2	S3LuggageStoreContext.cs+v4	b6a23f8

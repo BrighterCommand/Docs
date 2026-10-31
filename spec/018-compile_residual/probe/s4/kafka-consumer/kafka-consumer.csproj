@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 6.4: KafkaConfiguration.md's configHook blocks and the CooperativeSticky limitation, run against the
+       released 10.8.1 packages and a local broker: docker run -d -p 9092:9092 apache/kafka:4.0.2 -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.Kafka" Version="10.8.1" />
+  </ItemGroup>
+</Project>

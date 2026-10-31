@@ -57,16 +57,22 @@ Brighter looks for first for an explicit `IAmAMessageMapper<T>` registration. If
 This is the simplest and recommended approach for most scenarios:
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
 .AddProducers(configure =>
 {
-    configure.ProducerRegistry = new RabbitMQProducerRegistryFactory(
+    configure.ProducerRegistry = new RmqProducerRegistryFactory(
         new RmqMessagingGatewayConnection { /* ... */ },
         [
-            new Publication
+            new RmqPublication
             {
                 Topic = new RoutingKey("orders.created"),
                 RequestType = typeof(OrderCreated),
@@ -108,6 +114,9 @@ Brighter automatically:
 You can configure which default mapper to use:
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageMappers;
+
 services.AddBrighter(options => { })
     .AddProducers(configure => { })
     .AutoFromAssemblies(
@@ -228,15 +237,17 @@ You can make it the default instead, with `asyncDefaultMessageMapper: typeof(Avr
 
 ### 2. Transform Pipelines
 
-When you need message transformation (Claim Check, Compression, Encryption, PII removal, etc.), you must use a custom mapper with transform attributes. See [Message Transforms](/contents/MessageTransforms.md) for the pipeline and worked examples.
+When you need message transformation, you must use a custom mapper with transform attributes. Brighter ships the Claim Check, Compression and CloudEvents transforms, and the `Paramore.Brighter.Transformers.JustSaying` and `Paramore.Brighter.Transformers.MassTransit` packages ship transforms for exchanging messages with those frameworks; for anything else, such as encryption or PII removal, you write your own transform. See [Message Transforms](/contents/MessageTransforms.md) for the pipeline and worked examples.
 
 ## Registering Custom Mappers
 
 ### Explicit Registration
 
-If you have specific messages that need custom mappers, register them explicitly:
+If you have specific messages that need custom mappers, register them explicitly. The request types and mappers below are your own, not Brighter's: `LargeOrder` and `SensitiveOrder` stand for your requests, and `CompressedOrderMapper` and `SecureLargeOrderMapper` for mappers you write, carrying the transform attributes they need:
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter(options => { })
     .AddProducers(configure => { })
     .AutoFromAssemblies(
@@ -245,10 +256,10 @@ services.AddBrighter(options => { })
     )
     .MapperRegistry(mappers =>
     {
-        // Explicit registration for LargeOrder
+        // Your LargeOrder, mapped by your CompressedOrderMapper
         mappers.Register<LargeOrder, CompressedOrderMapper>();
 
-        // Explicit registration for SensitiveOrder
+        // Your SensitiveOrder, mapped by your SecureLargeOrderMapper
         mappers.Register<SensitiveOrder, SecureLargeOrderMapper>();
     });
 ```
@@ -258,6 +269,8 @@ services.AddBrighter(options => { })
 ### Using Default Binary-Mode Mapper (Recommended)
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 services.AddBrighter(options => { })
     .AddProducers(configure => { })
     .AutoFromAssemblies([typeof(OrderCreated).Assembly]);
@@ -267,6 +280,9 @@ services.AddBrighter(options => { })
 ### Using Structured-Mode as Default
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageMappers;
+
 services.AddBrighter(options => { })
     .AddProducers(configure => { })
     .AutoFromAssemblies(
@@ -294,6 +310,8 @@ services.AddBrighter(options => { })
 
 ### Mixed: Default + Custom Mappers
 
+As above, `LargeOrder`, `SensitiveData` and their mappers are your own types; Brighter ships none of them.
+
 ```csharp
 using Paramore.Brighter.Extensions.DependencyInjection;
 
@@ -305,7 +323,7 @@ services.AddBrighter(options => { })
     )
      .MapperRegistry(mappers =>
     {
-        // Specific messages with transforms
+        // Your own messages and mappers, with your transforms
         mappers.Register<LargeOrder, CompressedOrderMapper>();
         mappers.Register<SensitiveData, EncryptedMapper>();
     });
@@ -318,6 +336,8 @@ services.AddBrighter(options => { })
 Use default `JsonMessageMapper<T>` for all new messages unless you have a specific need:
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // ✅ Recommended - Simple and maintainable
 services.AddBrighter(options => { })
     .AutoFromAssemblies([typeof(OrderCreated).Assembly]);
@@ -336,14 +356,17 @@ Don't create custom mappers "just in case". Add them when you need:
 CloudEvents properties belong in `Publication`, not in mappers:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 // Good - CloudEvents in Publication
-new Publication
+var publication = new Publication
 {
     Topic = new RoutingKey("orders"),
     RequestType = typeof(OrderCreated),
     Source = new Uri("https://example.com/orders"),
     Type = new CloudEventsType("com.example.order.created")
-}
+};
 
 // Bad - Don't configure CloudEvents in mapper
 // Let default mapper handle it from Publication or use transform
@@ -354,11 +377,27 @@ new Publication
 Transform attributes are powerful for cross-cutting concerns:
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+
 // Good - Use transforms for large messages
 [ClaimCheck(step: 0, thresholdInKb: 256)]
 public Message MapToMessage(LargeEvent request, Publication publication)
 {
     // Just serialize - transform handles storage
+    var header = new MessageHeader(
+        messageId: request.Id,
+        topic: publication.Topic,
+        messageType: MessageType.MT_EVENT
+    );
+
+    var body = new MessageBody(
+        JsonSerializer.Serialize(request, JsonSerialisationOptions.Options)
+    );
+
+    return new Message(header, body);
 }
 
 // Bad - Don't implement claim check logic in mapper
@@ -370,6 +409,9 @@ public Message MapToMessage(LargeEvent request, Publication publication)
 Choose one default mapper strategy for your application:
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessageMappers;
+
 // Good - Consistent default across all assemblies
 services.AddBrighter(options => { })
     .AutoFromAssemblies(

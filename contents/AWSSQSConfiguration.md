@@ -137,14 +137,21 @@ We use **GetTopicAttributesAsync** SDK method to request attributes of a Topic w
 If you supply only the **Topic** name via the routing key, we construct the ARN by convention as follows:
 
 ``` csharp
+using Amazon;
+
+// ...
+var region = RegionEndpoint.EUWest1;   // the region you supplied to us
+var accountId = "123456789012";        // the account your credentials belong to
+var topicName = "greeting.event";      // the routing key
+
 var arn = new Arn
     {
-        Partition = //derived from the partition of the region you supplied to us,
+        Partition = region.PartitionName,   // derived from the partition of the region you supplied to us
         Service = "sns",
-        Region = //derived from the system name of the region you supplied to us,
-        AccountId = //your account id - derived from the credentials you supplied,
+        Region = region.SystemName,         // derived from the system name of the region you supplied to us
+        AccountId = accountId,              // your account id - derived from the credentials you supplied
         Resource = topicName
-    }
+    };
 ```
 
 These assumptions work, if the topic is created by the account your credentials belong to. If not, you can't use by convention.
@@ -376,10 +383,13 @@ When subscribing to an SNS topic, Brighter handles the creation of the SQS queue
 This sample demonstrates a standard Pub/Sub scenario where a consumer subscribes to an SNS topic via an SQS queue.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 var subscriptions = new Subscription[]
 {
     new SqsSubscription<GreetingEvent>(
-        name: new SubscriptionName("greeting.subscriber"),
+        subscriptionName: new SubscriptionName("greeting.subscriber"),
         channelName: new ChannelName("greeting.queue"),
         routingKey: new RoutingKey("greeting.topic"),
         channelType: ChannelType.PubSub,
@@ -390,13 +400,16 @@ var subscriptions = new Subscription[]
 
 #### SQS FIFO Pub/Sub
 
-For ordered message processing, you can use FIFO topics and queues. Note that both the topic and queue names must end with `.fifo`, and the `Type` in both `SnsAttributes` and `SqsAttributes` must be set to `Fifo`.
+For ordered message processing, you can use FIFO topics and queues. Set the `Type` in both `SnsAttributes` and `SqsAttributes` to `Fifo`. AWS requires FIFO topic and queue names to end in `.fifo`; Brighter appends the suffix when the name you give lacks it.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 var subscriptions = new Subscription[]
 {
     new SqsSubscription<GreetingEvent>(
-        name: new SubscriptionName("greeting.subscriber.fifo"),
+        subscriptionName: new SubscriptionName("greeting.subscriber.fifo"),
         channelName: new ChannelName("greeting.queue.fifo"),
         routingKey: new RoutingKey("greeting.topic.fifo"),
         channelType: ChannelType.PubSub,
@@ -412,10 +425,13 @@ var subscriptions = new Subscription[]
 This sample shows a direct Point-to-Point communication using a standard SQS queue.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 var subscriptions = new Subscription[]
 {
     new SqsSubscription<GreetingEvent>(
-        name: new SubscriptionName("greeting.consumer"),
+        subscriptionName: new SubscriptionName("greeting.consumer"),
         channelName: new ChannelName("greeting.queue"),
         routingKey: new RoutingKey("greeting.queue"),
         channelType: ChannelType.PointToPoint,
@@ -426,13 +442,16 @@ var subscriptions = new Subscription[]
 
 #### SQS FIFO Point-to-Point
 
-For ordered Point-to-Point messaging, you can use a FIFO queue. The queue name must end with `.fifo`, and the `Type` in `SqsAttributes` must be `Fifo`.
+For ordered Point-to-Point messaging, you can use a FIFO queue. Set the `Type` in `SqsAttributes` to `Fifo`. AWS requires a FIFO queue's name to end in `.fifo`; Brighter appends the suffix when the name you give lacks it.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.AWSSQS;
+
 var subscriptions = new Subscription[]
 {
     new SqsSubscription<GreetingEvent>(
-        name: new SubscriptionName("greeting.consumer.fifo"),
+        subscriptionName: new SubscriptionName("greeting.consumer.fifo"),
         channelName: new ChannelName("greeting.queue.fifo"),
         routingKey: new RoutingKey("greeting.queue.fifo"),
         channelType: ChannelType.PointToPoint,

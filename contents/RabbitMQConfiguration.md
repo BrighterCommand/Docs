@@ -45,7 +45,7 @@ If your application relies on proactor subscriptions for efficient, non-blocking
 The Connection to RabbitMQ is provided by an **RmqMessagingGatewayConnection** which allows you to configure the following:
 
 - **Name**: A unique name for the connection, for diagnostic purposes
-- **AmqpUri**: A connection to AMQP in the form of an [RabbitMQ Uri](https://www.rabbitmq.com/uri-spec.html) **Uri** with reliability options for a retry count (defaults to 3), **ConnectionRetryCount**, retry interval (defaults to 1000ms) **RetryWaitInMilliseconds** and a circuit breaker retry timeout (defaults to 60000ms), **CircuitBreakTimeInMilliseconds**, which introduces a delay when connections exceed the retry count.
+- **AmqpUri**: A connection to AMQP in the form of an [RabbitMQ Uri](https://www.rabbitmq.com/uri-spec.html) **Uri** with reliability options for a retry count (defaults to 3), **ConnectionRetryCount**, the base of an exponential back-off between retries (defaults to 1000ms, so a first wait of 2 seconds) **RetryWaitInMilliseconds** and a circuit breaker retry timeout (defaults to 60000ms), **CircuitBreakTimeInMilliseconds**, which introduces a delay when connections exceed the retry count.
 - **Exchange**: The definition of the exchange. **Name** is the identifier for the exchange. All exchanges have a [**Type**](https://www.rabbitmq.com/tutorials/amqp-concepts.html), and the default is **ExchangeType.Direct**, but it is a string value that supports all RabbitMQ exchange types on the .NET SDK. The **Durable** flag is used to indicate if the exchange definition survives node failure or restart of the broker which defaults to *false*. **SupportDelay** indicates if the Exchange supports retry with delay, which defaults to *false*.
 - **DeadLetterExchange**: Another exchange definition, but this one is used to host any Dead Letter Queues (DLQ). This could be the same exchange, but normal practice is to use a different exchange.
 - **Heartbeat**: RabbitMQ uses a heartbeat to determine if a connection has died. This sets the interval for that heartbeat. Defaults to 20s.
@@ -86,9 +86,18 @@ connection to the broker and are not exercised by any example on this page.
 The following code creates a typical RabbitMQ connection (here shown as part of configuring an External Bus):
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
+    services.AddBrighter(options =>
+        {
+            // ... other configuration
+        })
        .AddProducers((configure) =>
         {
             configure.ProducerRegistry = new RmqProducerRegistryFactory(
@@ -97,11 +106,12 @@ public void ConfigureServices(IServiceCollection services)
                     AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
                     Exchange = new Exchange("paramore.brighter.exchange"),
                 },
-
-                ...//publication, see below
-            
+                new RmqPublication[]
+                {
+                    // ... the publications, see below
+                }
             ).Create();
-        }    
+        });
 }
 ```
 
@@ -114,8 +124,8 @@ the ones your network obliges you to; for how to choose values, see
 **Configuration Options**:
 
 - **connectionRetryCount**: Number of times to retry connecting to RabbitMQ before giving up (default: 3)
-- **retryWaitInMilliseconds**: Time to wait between retry attempts (default: 1000ms)
-- **circuitBreakerTimeInMilliseconds**: Time to wait before attempting to reconnect after exceeding retry count (default: 60000ms)
+- **retryWaitInMilliseconds**: The base of an exponential back-off between retry attempts: Brighter waits twice this before the first retry and doubles the wait for each retry after it (default: 1000ms, so 2, 4 and 8 seconds for the default three retries)
+- **circuitBreakTimeInMilliseconds**: Time to wait before attempting to reconnect after exceeding retry count (default: 60000ms)
 - **Heartbeat**: Interval for RabbitMQ heartbeat checks to detect dead connections (default: 20s)
 
 ## RabbitMQ Publication
@@ -153,13 +163,17 @@ using Paramore.Brighter.MessagingGateway.RMQ.Async;
 
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
+    services.AddBrighter(options =>
+        {
+            // ... other configuration
+        })
       .AddProducers((configure) =>
         {
             configure.ProducerRegistry = new RmqProducerRegistryFactory(
- 
-                ...//connection, see above
-
+                new RmqMessagingGatewayConnection
+                {
+                    // ... the connection, see above
+                },
                 new RmqPublication[]{
                     new RmqPublication
                 {
@@ -173,6 +187,7 @@ public void ConfigureServices(IServiceCollection services)
             // Outbox thresholds are producers configuration, not publication
             configure.MaxOutStandingMessages = 5;
             configure.MaxOutStandingCheckInterval = TimeSpan.FromMilliseconds(500);
+        });
 }
 ```
 
@@ -189,7 +204,10 @@ using Paramore.Brighter.MessagingGateway.RMQ.Async;
 
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
+    services.AddBrighter(options =>
+        {
+            // ... other configuration
+        })
       .AddProducers((configure) =>
         {
             configure.ProducerRegistry = new RmqProducerRegistryFactory(
@@ -211,7 +229,7 @@ public void ConfigureServices(IServiceCollection services)
             // Outbox thresholds are producers configuration, not publication
             configure.MaxOutStandingMessages = 5;
             configure.MaxOutStandingCheckInterval = TimeSpan.FromMilliseconds(500);
-        }
+        });
 }
 ```
 
@@ -289,6 +307,14 @@ and supplies four defaults the table cannot: `requestType` is `T`, `subscription
 This is a typical *Subscription* configuration in a Consumer application:
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 // ...
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
@@ -307,10 +333,10 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
     var rmqConnection = new RmqMessagingGatewayConnection
     {
         AmpqUri = new AmqpUriSpecification(
-                    new Uri("amqp://guest:guest@localhost:5672")
+                    new Uri("amqp://guest:guest@localhost:5672"),
                     connectionRetryCount: 5,
                     retryWaitInMilliseconds: 250,
-                    circuitBreakerTimeInMilliseconds = 30000
+                    circuitBreakTimeInMilliseconds: 30000
                 ),
         Exchange = new Exchange("paramore.brighter.exchange")
     };
@@ -321,8 +347,9 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
         {
             options.Subscriptions = subscriptions;
             options.DefaultChannelFactory = new ChannelFactory(rmqMessageConsumerFactory);
-            ... //see Basic Configuration
-        })
+            // ... see Basic Configuration
+        });
+}
 ```
 
 ## RabbitMQ Quorum Queue Requirements
@@ -334,6 +361,10 @@ To use quorum queues, you must configure the subscription with:
 - **highAvailability**: Must be `false` (quorum queues provide their own replication)
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 // ...
 var subscription = new RmqSubscription<GreetingMade>(
     new SubscriptionName("paramore.sample.salutationanalytics"),
@@ -379,9 +410,19 @@ For full persistence, you should configure:
 **Complete Example**:
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+using RabbitMQ.Client;
+
 // ...
 // Producer Configuration
-services.AddBrighter(...)
+services.AddBrighter(options =>
+    {
+        // ... other configuration
+    })
     .AddProducers((configure) =>
     {
         configure.ProducerRegistry = new RmqProducerRegistryFactory(
