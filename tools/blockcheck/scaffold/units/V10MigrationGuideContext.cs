@@ -24,7 +24,7 @@ public static class V10MigrationGuideContext
     public static IAmACommandProcessor _commandProcessor => null!;
 }
 
-// block 7: `new Subscription<MyEvent>(…)`
+// blocks 5, 7: `new RmqPublication<MyEvent>(…)`, `new Subscription<MyEvent>(…)`
 public class MyEvent() : Event(Id.Random());
 
 // block 13: `PlaceOrderAsync(OrderPlaced orderPlaced)`, `orderPlaced.TenantId`

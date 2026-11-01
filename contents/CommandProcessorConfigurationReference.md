@@ -30,10 +30,16 @@ By adding the package you can call the **AddBrighter()** extension method.
 If you are using a **Startup** class's **ConfigureServices** method  call the following:
 
 ``` csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // ...
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
+    services.AddBrighter(options =>
+    {
+        // ... your BrighterOptions
+    });
 }
 
 ```
@@ -152,13 +158,17 @@ We recommend the following lifetimes:
 You configure the lifetimes for the different types that Brighter can create at run-time as follows:
 
 ``` csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // ...
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddBrighter(options =>
+    {
         options.HandlerLifetime = ServiceLifetime.Scoped;
         options.MapperLifetime = ServiceLifetime.Singleton;
-    );
+    });
 }
 
 ```
@@ -316,26 +326,36 @@ public class MyIntegrationTests
 You can combine Brighter's configuration with other Options pattern features:
 
 ``` csharp
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // ...
-public void ConfigureServices(IServiceCollection services)
+public class Startup(IConfiguration configuration, IWebHostEnvironment environment)
 {
-    // Bind from configuration
-    services.Configure<BrighterOptions>(Configuration.GetSection("Brighter"));
-
-    // Add Brighter with defaults
-    services.AddBrighter(options =>
+    public void ConfigureServices(IServiceCollection services)
     {
-        options.HandlerLifetime = ServiceLifetime.Scoped;
-    })
-    .AutoFromAssemblies();
+        // Bind from configuration
+        services.Configure<BrighterOptions>(configuration.GetSection("Brighter"));
 
-    // Environment-specific overrides
-    if (Environment.IsDevelopment())
-    {
-        services.PostConfigure<BrighterOptions>(options =>
+        // Add Brighter with defaults
+        services.AddBrighter(options =>
         {
-            options.RequestContextFactory = new DebugRequestContextFactory();
-        });
+            options.HandlerLifetime = ServiceLifetime.Scoped;
+        })
+        .AutoFromAssemblies();
+
+        // Environment-specific overrides
+        if (environment.IsDevelopment())
+        {
+            services.PostConfigure<BrighterOptions>(options =>
+            {
+                options.RequestContextFactory = new DebugRequestContextFactory();
+            });
+        }
     }
 }
 ```
@@ -469,10 +489,16 @@ sets `ThrowOnError`; neither is usually set by hand.
 The **IBrighterBuilder** fluent interface can scan your assemblies for your *Request Handlers* (inherit from **IHandleRequests<>** or **IHandleRequestsAsync<>**) and *Message Mappers* (inherit from **IAmAMessageMapper<>**) and register them with the **ServiceCollection**. This is the most common way to register your code. The scan registers only **public** handlers: a handler declared `internal` is never found, and sending its request throws an `ArgumentException`, *"No command handler was found"*.
 
 ``` csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // ...
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
+    services.AddBrighter(options =>
+        {
+            // ... your BrighterOptions
+        })
         .AutoFromAssemblies();
 }
 
@@ -481,11 +507,17 @@ public void ConfigureServices(IServiceCollection services)
 The code scans any loaded assemblies. If you need to register types from assemblies that are not yet loaded, you can provide a list of additional assemblies to scan as an argument to the call to **AutoFromAssemblies()**.
 
 ``` csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // ...
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
-        .AutoFromAssemblies(typeof(MyRequestHandlerAsync).Assembly);
+    services.AddBrighter(options =>
+        {
+            // ... your BrighterOptions
+        })
+        .AutoFromAssemblies([typeof(MyRequestHandlerAsync).Assembly]);
 }
 
 ```
@@ -517,20 +549,25 @@ The major difference here is whether or not you wish to use an *Outbox* for Tran
 
 To use an *External Bus*, you need to supply Brighter with configuration information that tells Brighter what middleware you are using and how to find it. (You don't need to do anything to configure an *Internal Bus*, it is always available.)
 
-The **IBrighterBuilder** interface returned from **AddBrighter** allows you to configure the properties of your external bus, by calling the **AddProducers** extension method. The AddProducers extension method takes a lambda function, whose only parameter is an **ExternalBusConfiguration**. 
+The **IBrighterBuilder** interface returned from **AddBrighter** allows you to configure the properties of your external bus, by calling the **AddProducers** extension method. The AddProducers extension method takes a lambda function, whose only parameter is a **ProducersConfiguration**. 
 
 ``` csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // ...
 private void ConfigureBrighter(IServiceCollection services)
 {
     services.AddBrighter(options =>
         {
-            ...
+            // ... your BrighterOptions
         })
         .AddProducers((configure) =>
         {
+            // ... your producer configuration
         })
         .AutoFromAssemblies();
+}
 
 ```
 
@@ -601,10 +638,19 @@ var producerRegistry = new RmqProducerRegistryFactory(
 Putting this together, an example configuration for an External Bus for a local RabbitMQ instance could look like this:
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
 // ...
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
+    services.AddBrighter(options =>
+        {
+            // ... your BrighterOptions
+        })
         .AddProducers((configure) =>
         {
             configure.ProducerRegistry = new RmqProducerRegistryFactory(
@@ -627,9 +673,7 @@ public void ConfigureServices(IServiceCollection services)
             configure.MaxOutStandingMessages = 5;
             configure.MaxOutStandingCheckInterval = TimeSpan.FromMilliseconds(500);
         })
-        .AutoFromAssemblies()
-
-            ...
+        .AutoFromAssemblies();
 }
 ```
 
@@ -656,7 +700,7 @@ For a given ORM the pattern should be Paramore.Brighter.{ORM}.{DATABASE} where {
 
 ### Configuring the Outbox
 
-To configure our *Outbox* we need to use the **ExternalBusConfiguration**.
+To configure our *Outbox* we need to use the **ProducersConfiguration**.
 
 An Outbox has three pieces:
 
@@ -716,14 +760,23 @@ You can then add a sweeper using "UseOutboxSweeper"
 For a development version, using an internal sweeper, this results in:
 
 ``` csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.Hosting;
+
 // ...
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddBrighter(...)
-        .AddProducers(...)
-         .UseOutboxSweeper()
-         .AutoFromAssemblies();
-        ...
+    services.AddBrighter(options =>
+        {
+            // ... your BrighterOptions
+        })
+        .AddProducers(configure =>
+        {
+            // ... your producer configuration
+        })
+        .UseOutboxSweeper()
+        .AutoFromAssemblies();
 }
 
 ```
@@ -736,39 +789,53 @@ public void ConfigureServices(IServiceCollection services)
 
 Brighter defines a set of serialization options for use when it needs to serialize messages to JSON. Internally we use these options in our transports, when serializing messages to an external bus and deserializing from an external bus. We also use them in default JSON message mappers. You may wish to use these options in your own [*Message Mapper*](/contents/MessageMappers.md) implementation.
 
-By default our JSONSerialization Options are configured as follows:
+By default our JSONSerialization Options are configured as follows. This is the static constructor of `JsonSerialisationOptions` (`src/Paramore.Brighter/JsonConverters/JsonSerialisationOptions.cs`), written as statements that build the same `JsonSerializerOptions`:
 
 ``` csharp
-// ...
-static JsonSerialisationOptions()
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Observability;
+using Paramore.Brighter.Serialization;
+
+var opts = new JsonSerializerOptions
 {
-    var opts = new JsonSerializerOptions
-    {
-        PropertyNameCaseInsensitive = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        NumberHandling = JsonNumberHandling.AllowReadingFromString,
-        AllowTrailingCommas = true
-    };
+    PropertyNameCaseInsensitive = true,
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    NumberHandling = JsonNumberHandling.AllowReadingFromString,
+    AllowTrailingCommas = true
+};
 
-    opts.Converters.Add(new JsonStringConverter());
-    opts.Converters.Add(new DictionaryStringObjectJsonConverter());
-    opts.Converters.Add(new ObjectToInferredTypesConverter());
-    opts.Converters.Add(new JsonStringEnumConverter());
-
-    Options = opts;
-}
+opts.Converters.Add(new JsonStringConverter());
+opts.Converters.Add(new DictionaryStringObjectJsonConverter());
+opts.Converters.Add(new ObjectToInferredTypesConverter());
+opts.Converters.Add(new JsonStringEnumConverter());
+opts.Converters.Add(new SubscriptionNameConverter());
+opts.Converters.Add(new RoutingKeyConvertor());
+opts.Converters.Add(new ChannelNameConverter());
+opts.Converters.Add(new BaggageConverter());
+opts.Converters.Add(new IdConverter());
+opts.Converters.Add(new PartitionKeyConverter());
+opts.Converters.Add(new TraceStateConverter());
+opts.Converters.Add(new TraceParentConverter());
 ```
 
-You can use the **IBrighterBuilder** extension **ConfigureJsonSerialisation** to override these values. The method takes an **Action\<JsonSerialisationOptions\>** lambda expression that allows you to override these defaults. For example:
+You can use the **IBrighterBuilder** extension **ConfigureJsonSerialisation** to override these values. The method takes an **Action\<JsonSerializerOptions\>** lambda expression, and calls it with a copy of the current options, so that the existing settings and converters are preserved and you override only what you need to. For example:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 // ...
-
-.ConfigureJsonSerialisation((options) =>
+public void ConfigureServices(IServiceCollection services)
 {
-    options.PropertyNameCaseInsensitive = true;
-})
-
+    services.AddBrighter()
+        .ConfigureJsonSerialisation((options) =>
+        {
+            options.WriteIndented = true;
+        });
+}
 ```
 
 If you want to use this configured set of JSON Serialization options in your own code, you can, by using the static property JsonSerialisationOptions.Options. For example:

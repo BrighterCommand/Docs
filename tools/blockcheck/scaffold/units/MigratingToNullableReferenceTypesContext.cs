@@ -7,6 +7,7 @@
 //
 // blockcheck: using static MigratingToNullableReferenceTypesContext;
 
+using System;
 using Paramore.Brighter;
 
 public static class MigratingToNullableReferenceTypesContext
@@ -26,4 +27,15 @@ public class ProcessOrderCommand() : Command(Id.Random())
 public interface IOrderService
 {
     void ProcessOrder(string orderId);
+}
+
+// block 22: `IAmAMessageMapper<OrderCreatedEvent>`, `new OrderCreatedEvent(orderId:, customerName:, createdAt:)`
+public class OrderCreatedEvent(string orderId, string customerName, DateTime createdAt) : Event(Id.Random());
+
+// block 22: `JsonSerializer.Deserialize<OrderDto>(…)`, `dto.OrderId`, `dto.CustomerName`, `dto.CreatedAt`
+public class OrderDto
+{
+    public string? OrderId { get; set; }
+    public string? CustomerName { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

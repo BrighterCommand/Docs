@@ -69,74 +69,87 @@ Brighter has the functionality to allow the  **Outbox** to participate in the da
 
 To have the Brighter **Outbox** participate in a relational database's transactions your command handler takes a dependency on an **IAmATransactionConnectionProvider**. (The non-relational stores have their own: see [DynamoDB Outbox](/contents/DynamoOutbox.md) and [MongoDB Outbox](/contents/MongoDBOutbox.md#using-the-outbox-in-handlers).) The provider will be used when **CommandProcessor.DepositPost** is called and if there is an active transaction the **Outbox** will participate in that transaction. You use the **IAmATransactionConnectionProvider** to create the transaction that you use to interact with the Db; you also use it to grab any connection to the Db that you need.  
 
-Below is an fragment using Dapper
+Below is a handler that uses Dapper:
 
-``` csharp
-public AddGreetingHandlerAsync(IAmATransactionConnectionProvider transactionProvider, IAmACommandProcessor postBox, ILogger<AddGreetingHandlerAsync> logger)
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Dapper;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+
+public class AddGreetingHandlerAsync : RequestHandlerAsync<AddGreeting>
 {
-    _transactionProvider = transactionProvider; 
-    _postBox = postBox;
-    _logger = logger;
-}
+    private readonly IAmATransactionConnectionProvider _transactionProvider;
+    private readonly IAmACommandProcessor _postBox;
+    private readonly ILogger<AddGreetingHandlerAsync> _logger;
 
-//...
-
-public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default)
-{
-    var posts = new List<Id>();
-    
-    // The transaction provider (unit of work) gives us a connection and transaction
-    // that the Outbox can share 'behind the scenes'.
-    var conn = await _transactionProvider.GetConnectionAsync(cancellationToken);
-    var tx = await _transactionProvider.GetTransactionAsync(cancellationToken);
-    try
+    public AddGreetingHandlerAsync(IAmATransactionConnectionProvider transactionProvider, IAmACommandProcessor postBox, ILogger<AddGreetingHandlerAsync> logger)
     {
-        var people = await conn.QueryAsync<Person>(
-            "select * from Person where name = @name",
-            new {name = addGreeting.Name},
-            tx
-        );
-        var person = people.SingleOrDefault();
-
-        if (person != null)
-        {
-            var greeting = new Greeting(addGreeting.Greeting, person);
-
-            //write the added child entity to the Db
-            await conn.ExecuteAsync(
-                "insert into Greeting (Message, Recipient_Id) values (@Message, @RecipientId)",
-                new { greeting.Message, RecipientId = greeting.RecipientId },
-                tx);
-
-            // Now write the message to the Outbox in the same transaction.
-            posts.Add(await _postBox.DepositPostAsync(
-                new GreetingMade(greeting.Greet()),
-                _transactionProvider,
-                cancellationToken: cancellationToken));
-
-            //commit both new greeting and outgoing message
-            await _transactionProvider.CommitAsync(cancellationToken);
-        }
+        _transactionProvider = transactionProvider;
+        _postBox = postBox;
+        _logger = logger;
     }
-    catch (Exception e)
+
+    public override async Task<AddGreeting> HandleAsync(AddGreeting addGreeting, CancellationToken cancellationToken = default)
     {
-        _logger.LogError(e, "Exception thrown handling Add Greeting request");
-        // Rollback the entity change and the outgoing message.
-        await _transactionProvider.RollbackAsync(cancellationToken);
+        var posts = new List<Id>();
+
+        // The transaction provider (unit of work) gives us a connection and transaction
+        // that the Outbox can share 'behind the scenes'.
+        var conn = await _transactionProvider.GetConnectionAsync(cancellationToken);
+        var tx = await _transactionProvider.GetTransactionAsync(cancellationToken);
+        try
+        {
+            var people = await conn.QueryAsync<Person>(
+                "select * from Person where name = @name",
+                new {name = addGreeting.Name},
+                tx
+            );
+            var person = people.SingleOrDefault();
+
+            if (person != null)
+            {
+                var greeting = new Greeting(addGreeting.Greeting, person);
+
+                //write the added child entity to the Db
+                await conn.ExecuteAsync(
+                    "insert into Greeting (Message, Recipient_Id) values (@Message, @RecipientId)",
+                    new { greeting.Message, RecipientId = greeting.RecipientId },
+                    tx);
+
+                // Now write the message to the Outbox in the same transaction.
+                posts.Add(await _postBox.DepositPostAsync(
+                    new GreetingMade(greeting.Greet()),
+                    _transactionProvider,
+                    cancellationToken: cancellationToken));
+
+                //commit both new greeting and outgoing message
+                await _transactionProvider.CommitAsync(cancellationToken);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown handling Add Greeting request");
+            // Rollback the entity change and the outgoing message.
+            await _transactionProvider.RollbackAsync(cancellationToken);
+            return await base.HandleAsync(addGreeting, cancellationToken);
+        }
+        finally
+        {
+            _transactionProvider.Close();
+        }
+
+        // Dispatch the message(s) via a transport.
+        // Alternatively, let the Sweeper handle this, at the cost of increased latency.
+        await _postBox.ClearOutboxAsync(posts, cancellationToken:cancellationToken);
+
         return await base.HandleAsync(addGreeting, cancellationToken);
     }
-    finally
-    {
-        _transactionProvider.Close();
-    }
-
-    // Dispatch the message(s) via a transport.
-    // Alternatively, let the Sweeper handle this, at the cost of increased latency.
-    await _postBox.ClearOutboxAsync(posts, cancellationToken:cancellationToken);
-
-    return await base.HandleAsync(addGreeting, cancellationToken);
 }
-
 ```
 
 ## Post is Without Transactions
@@ -228,50 +241,61 @@ Brighter contains DDL to configure your Outbox. For each supported database we i
 
 The following example shows creation of a MySql outbox.
 
-We assume that OUTBOX_TABLE_NAME is a constant, shared with the code that configures your inbox.
+The example declares OUTBOX_TABLE_NAME as a constant; share it with the code that configures your outbox.
 
-``` csharp
+```csharp
+using System;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using MySqlConnector;
+using Paramore.Brighter.Outbox.MySql;
 
-public static IHost CreateOutbox(this IHost webHost)
+public static class OutboxHostExtensions
 {
-	using (var scope = webHost.Services.CreateScope())
-	{
-	    var services = scope.ServiceProvider;
-	    var env = services.GetService<IWebHostEnvironment>();
-	    var config = services.GetService<IConfiguration>();
+    private const string OUTBOX_TABLE_NAME = "Outbox";
 
-	    CreateOutbox(config, env);
-	}
+    public static IHost CreateOutbox(this IHost webHost)
+    {
+        using (var scope = webHost.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+            var env = services.GetService<IWebHostEnvironment>();
+            var config = services.GetService<IConfiguration>();
 
-	return webHost;
-}
+            CreateOutbox(config, env);
+        }
 
-private static void CreateOutbox(IConfiguration config, IWebHostEnvironment env)
-{
-	try
-	{
-	   var connectionString = config.GetConnectionString("Greetings");
+        return webHost;
+    }
 
-	    using var sqlConnection = new MySqlConnection(connectionString);
-        sqlConnection.Open();
+    private static void CreateOutbox(IConfiguration config, IWebHostEnvironment env)
+    {
+        try
+        {
+            var connectionString = config.GetConnectionString("Greetings");
 
-        using var existsQuery = sqlConnection.CreateCommand();
-        existsQuery.CommandText = MySqlOutboxBuilder.GetExistsQuery(OUTBOX_TABLE_NAME);
-        bool exists = existsQuery.ExecuteScalar() != null;
+            using var sqlConnection = new MySqlConnection(connectionString);
+            sqlConnection.Open();
 
-        if (exists) return;
+            using var existsQuery = sqlConnection.CreateCommand();
+            existsQuery.CommandText = MySqlOutboxBuilder.GetExistsQuery(sqlConnection.Database, OUTBOX_TABLE_NAME);
+            bool exists = Convert.ToInt32(existsQuery.ExecuteScalar()) == 1;
 
-        using var command = sqlConnection.CreateCommand();
-        command.CommandText = MySqlOutboxBuilder.GetDDL(OUTBOX_TABLE_NAME);
-        command.ExecuteScalar();
+            if (exists) return;
 
-	}
-	catch (System.Exception e)
-	{
-	    Console.WriteLine($"Issue with creating Outbox table, {e.Message}");
-	    //Rethrow, if we can't create the Outbox, shut down
-	    throw;
-	}
+            using var command = sqlConnection.CreateCommand();
+            command.CommandText = MySqlOutboxBuilder.GetDDL(OUTBOX_TABLE_NAME);
+            command.ExecuteScalar();
+        }
+        catch (System.Exception e)
+        {
+            Console.WriteLine($"Issue with creating Outbox table, {e.Message}");
+            //Rethrow, if we can't create the Outbox, shut down
+            throw;
+        }
+    }
 }
 ```
 

@@ -57,13 +57,16 @@ SpyCommandProcessor provides a layered API, from simple checks to detailed inspe
 For the most common verification needs:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Testing;
+
 // Was a specific method type called?
-spy.WasCalled(CommandType.Send)       // true/false
-spy.WasCalled(CommandType.Publish)    // true/false
-spy.WasCalled(CommandType.Post)       // true/false
+var wasSent = spy.WasCalled(CommandType.Send);          // true/false
+var wasPublished = spy.WasCalled(CommandType.Publish);  // true/false
+var wasPosted = spy.WasCalled(CommandType.Post);        // true/false
 
 // How many times?
-spy.CallCount(CommandType.Send)       // int
+var sendCount = spy.CallCount(CommandType.Send);        // int
 
 // Dequeue requests in FIFO order (consuming)
 var command = spy.Observe<MyCommand>();

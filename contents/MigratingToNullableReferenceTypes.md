@@ -63,14 +63,14 @@ string name = "default"; // ✅
 ```csharp
 using Paramore.Brighter;
 
+var command = new CreateOrderCommand();
+// CustomerName is null but declared as non-nullable
+
 // ...
 public class CreateOrderCommand() : Command(Id.Random())
 {
     public string CustomerName { get; set; }
 }
-
-var command = new CreateOrderCommand();
-// CustomerName is null but declared as non-nullable
 ```
 
 **Solutions**:
@@ -92,14 +92,19 @@ public string CustomerName { get; set; } = string.Empty;
 **Option 3**: Use required keyword (C# 11+):
 
 ```csharp
-// ...
-public required string CustomerName { get; set; }
+using Paramore.Brighter;
 
 // Must be initialized:
 var command = new CreateOrderCommand
 {
     CustomerName = "John" // Required
 };
+
+// ...
+public class CreateOrderCommand() : Command(Id.Random())
+{
+    public required string CustomerName { get; set; }
+}
 ```
 
 ### CS8602: Dereference of a possibly null reference
@@ -276,10 +281,21 @@ public class ProcessOrderHandler : RequestHandler<ProcessOrderCommand>
 Ensure message mappers handle deserialization nullability:
 
 ```csharp
+using System;
+using System.Text.Json;
+using Paramore.Brighter;
+
 // ...
 public class OrderEventMessageMapper : IAmAMessageMapper<OrderCreatedEvent>
 {
     public IRequestContext? Context { get; set; }
+
+    public Message MapToMessage(OrderCreatedEvent request, Publication publication)
+    {
+        var header = new MessageHeader(request.Id, publication.Topic!, MessageType.MT_EVENT);
+        var body = new MessageBody(JsonSerializer.Serialize(request));
+        return new Message(header, body);
+    }
 
     public OrderCreatedEvent MapToRequest(Message message)
     {

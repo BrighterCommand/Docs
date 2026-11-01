@@ -160,3 +160,6 @@ contents/TurningOnReplayOnSeen.md	TurningOnReplayOnSeenContext	-	-
 contents/MongoDBOutbox.md	MongoDBOutboxContext	-	-
 contents/OutboxArchiver.md	OutboxArchiverContext	-	-
 contents/Logging.md	LoggingContext	-	-
+contents/DispatcherConfigurationReference.md	DispatcherConfigurationReferenceContext	-	-
+contents/BrighterOutboxSupport.md	BrighterOutboxSupportContext	-	-
+contents/CausationTrackingStores.md	CausationTrackingStoresContext	-	-

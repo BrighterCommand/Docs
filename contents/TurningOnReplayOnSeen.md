@@ -179,21 +179,30 @@ you need to replay.
 ### The fix
 
 ```csharp
-// ...
+using Paramore.Brighter;
+
 // ❌ Silent no-op under Replay — a fresh context, so the Causation Id is lost
-public override ProcessPayment Handle(ProcessPayment command)
+public class ProcessPaymentHandlerWithoutContext(IAmACommandProcessor commandProcessor)
+    : RequestHandler<ProcessPayment>
 {
-    _commandProcessor.Post(new ShipOrder { OrderId = command.OrderId });
-    return base.Handle(command);
+    public override ProcessPayment Handle(ProcessPayment command)
+    {
+        commandProcessor.Post(new ShipOrder { OrderId = command.OrderId });
+        return base.Handle(command);
+    }
 }
 
 // ✅ Threads the pipeline's context, so the message is stored under this
 //    invocation's Causation Id and a later replay can match it
-public override ProcessPayment Handle(ProcessPayment command)
+public class ProcessPaymentHandlerWithContext(IAmACommandProcessor commandProcessor)
+    : RequestHandler<ProcessPayment>
 {
-    _commandProcessor.Post(new ShipOrder { OrderId = command.OrderId },
-        Context as RequestContext);
-    return base.Handle(command);
+    public override ProcessPayment Handle(ProcessPayment command)
+    {
+        commandProcessor.Post(new ShipOrder { OrderId = command.OrderId },
+            Context as RequestContext);
+        return base.Handle(command);
+    }
 }
 ```
 

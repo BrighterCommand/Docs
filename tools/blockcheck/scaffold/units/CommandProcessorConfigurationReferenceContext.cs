@@ -44,3 +44,9 @@ public class TestRequestContextFactory : InMemoryRequestContextFactory;
 // block 11: `new TestContextFactoryA()`, `new TestContextFactoryB()`
 public class TestContextFactoryA : InMemoryRequestContextFactory;
 public class TestContextFactoryB : InMemoryRequestContextFactory;
+
+// block 14: `typeof(MyRequestHandlerAsync).Assembly`
+public class MyRequestHandlerAsync : RequestHandlerAsync<MyCommand>;
+
+// block 10: `new DebugRequestContextFactory()`
+public class DebugRequestContextFactory : InMemoryRequestContextFactory;

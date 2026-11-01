@@ -183,15 +183,30 @@ services.AddBrighter()
 
 **After (V10)**:
 ```csharp
-// ...
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
+var rmqConnection = new RmqMessagingGatewayConnection
+{
+    AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
+    Exchange = new Exchange("paramore.brighter.exchange")
+};
+
 services.AddConsumers(options =>
     {
         options.Subscriptions = subscriptions;
-        options.DefaultChannelFactory = new ChannelFactory(...);
+        options.DefaultChannelFactory = new ChannelFactory(new RmqMessageConsumerFactory(rmqConnection));
     })
     .AddProducers(options =>
     {
-        options.ProducerRegistry = new RmqProducerRegistryFactory(...).Create();
+        options.ProducerRegistry = new RmqProducerRegistryFactory(
+            rmqConnection,
+            [new RmqPublication<MyEvent> { Topic = new RoutingKey("MyEvent") }]
+        ).Create();
     });
 ```
 
@@ -510,14 +525,14 @@ V10 adds full Cloud Events specification support.
 
 **Adoption Steps**:
 
-1. **Update Publication** to include Cloud Events properties:
+1. **Update Publication** to include Cloud Events properties. `PersonCreated` is the event declared in the mapper section below:
 
 ```csharp
 using System;
 using Paramore.Brighter;
 using Paramore.Brighter.MessagingGateway.RMQ.Async;
 
-new RmqPublication
+var publication = new RmqPublication
 {
     Topic = new RoutingKey("PersonCreated"),
     RequestType = typeof(PersonCreated),
@@ -525,7 +540,7 @@ new RmqPublication
     Source = new Uri("https://api.example.com/persons"),
     Subject = "person/created",
     MakeChannels = OnMissingChannel.Create
-}
+};
 ```
 
 2. **Use Cloud Events headers** in your mapper (optional):
@@ -606,6 +621,7 @@ messageMapperRegistry.Register<PersonCreated, PersonCreatedMapper>();
 **After (V10) - No Mapper Needed**:
 
 ```csharp
+using System.Threading.Tasks;
 using Paramore.Brighter;
 
 // No mapper registration needed for simple JSON serialization!
@@ -619,11 +635,15 @@ public class PersonCreated() : Event(Id.Random())
 }
 
 // Post it to the bus; the default mapper serializes it
-await commandProcessor.PostAsync(new PersonCreated
+public class PersonCreatedPublisher(IAmACommandProcessor commandProcessor)
 {
-    Name = "Alice",
-    Email = "alice@example.com"
-});
+    public async Task PublishAsync() =>
+        await commandProcessor.PostAsync(new PersonCreated
+        {
+            Name = "Alice",
+            Email = "alice@example.com"
+        });
+}
 ```
 
 **When to use custom mappers**:

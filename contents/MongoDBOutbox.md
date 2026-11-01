@@ -231,11 +231,17 @@ public void ConfigureServices(IServiceCollection services)
 The MongoDB Outbox supports automatic message expiration using MongoDB's TTL feature. You can configure this through the `TimeToLive` property in the collection configuration:
 
 ```csharp
-Outbox = new MongoDbCollectionConfiguration
+using System;
+using Paramore.Brighter.MongoDb;
+
+var mongoDbConfiguration = new MongoDbConfiguration("mongodb://localhost:27017", "BrighterDatabase")
 {
-    Name = "Outbox",
-    TimeToLive = TimeSpan.FromDays(30) // Messages will be automatically deleted after 30 days
-}
+    Outbox = new MongoDbCollectionConfiguration
+    {
+        Name = "Outbox",
+        TimeToLive = TimeSpan.FromDays(30) // Messages will be automatically deleted after 30 days
+    }
+};
 ```
 
 When TTL is configured, MongoDB will automatically create a TTL index on the `TimeStamp` field and remove expired documents.

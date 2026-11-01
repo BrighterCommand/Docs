@@ -76,33 +76,68 @@ the [OTLP exporter](#otlp-opentelemetry-protocol) at Jaeger's OTLP endpoint, por
 
 #### Zipkin
 
+Add the `OpenTelemetry.Exporter.Zipkin` package, then export to Zipkin:
+
 ```csharp
-// ...
-.AddZipkinExporter(o =>
-{
-    o.Endpoint = new Uri("http://localhost:9411/api/v2/spans");
-})
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Trace;
+using Paramore.Brighter.Extensions.Diagnostics;
+
+var services = new ServiceCollection();
+
+services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing
+        .AddBrighterInstrumentation()
+        .AddZipkinExporter(o =>
+        {
+            o.Endpoint = new Uri("http://localhost:9411/api/v2/spans");
+        }));
 ```
 
 #### OTLP (OpenTelemetry Protocol)
 
+The basic configuration already uses this exporter. To choose the protocol:
+
 ```csharp
-// ...
-.AddOtlpExporter(o =>
-{
-    o.Endpoint = new Uri("http://localhost:4317");
-    o.Protocol = OtlpExportProtocol.Grpc;
-})
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Trace;
+using Paramore.Brighter.Extensions.Diagnostics;
+
+var services = new ServiceCollection();
+
+services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing
+        .AddBrighterInstrumentation()
+        .AddOtlpExporter(o =>
+        {
+            o.Endpoint = new Uri("http://localhost:4317");
+            o.Protocol = OtlpExportProtocol.Grpc;
+        }));
 ```
 
 #### Azure Monitor / Application Insights
 
+Add the `Azure.Monitor.OpenTelemetry.Exporter` package, then export to Azure Monitor:
+
 ```csharp
-// ...
-.AddAzureMonitorTraceExporter(o =>
-{
-    o.ConnectionString = "InstrumentationKey=...";
-})
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Azure.Monitor.OpenTelemetry.Exporter;
+using OpenTelemetry.Trace;
+using Paramore.Brighter.Extensions.Diagnostics;
+
+var services = new ServiceCollection();
+
+services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing
+        .AddBrighterInstrumentation()
+        .AddAzureMonitorTraceExporter(o =>
+        {
+            o.ConnectionString = "InstrumentationKey=...";
+        }));
 ```
 
 ---

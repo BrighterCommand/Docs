@@ -16,14 +16,24 @@ Like the Sweeper, the Archiver should run as a **singleton** — only one Archiv
 You register the Archiver with `UseOutboxArchiver<TTransaction>`, passing an archive provider (an `IAmAnArchiveProvider`) and options. For a ready-made archive provider, see the [Azure Archive Provider](/contents/AzureBlobArchiveProvider.md).
 
 ```csharp
+using System;
+using Amazon.DynamoDBv2.Model;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.Hosting;
+
 // ...
-.UseOutboxArchiver<TransactWriteItemsRequest>(
-    archiveProvider,
-    opt =>
-    {
-        opt.MinimumAge = TimeSpan.FromHours(24);   // archive messages dispatched over a day ago
-        opt.ArchiveBatchSize = 100;
-    });
+IAmAnArchiveProvider archiveProvider = new InMemoryArchiveProvider();   // or your own archive provider
+
+services.AddBrighter()
+    .UseOutboxArchiver<TransactWriteItemsRequest>(
+        archiveProvider,
+        opt =>
+        {
+            opt.MinimumAge = TimeSpan.FromHours(24);   // archive messages dispatched over a day ago
+            opt.ArchiveBatchSize = 100;
+        });
 ```
 
 `TTransaction` is the **transaction type** your Outbox writes to — the same type Brighter wraps in a transaction when it stores a message — not the transaction *provider* you register on `opt.ConnectionProvider`/`opt.TransactionProvider`. Use the type from the column below for your store:
@@ -58,9 +68,20 @@ Running the Sweeper or Archiver on a background thread inside your producer appl
 The worker below uses DynamoDB; swap the three fenced lines for your own database, Outbox, and lock provider.
 
 ```csharp
-// ...
+using System;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.DynamoDb;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Locking.DynamoDb;
+using Paramore.Brighter.Outbox.DynamoDB;
+using Paramore.Brighter.Outbox.Hosting;
+
 var dynamoDb = new AmazonDynamoDBClient();
-IAmAnArchiveProvider archiveProvider = /* your archive provider, e.g. an S3/blob archive */;
+IAmAnArchiveProvider archiveProvider = new InMemoryArchiveProvider(); // swap for your archive provider, e.g. an S3/blob archive
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services
@@ -147,12 +168,15 @@ services.AddBrighter(options =>
 ### InMemory Archive Example Usage
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+
 // ...
 public class LargeMessageMapper : IAmAMessageMapper<LargeDataCommand>
 {
     public IRequestContext? Context { get; set; }
-
-    private readonly IAmAStorageProviderAsync _storageProvider;
 
     [ClaimCheck(0, thresholdInKb: 5)]  // Store payloads > 5KB
     public Message MapToMessage(LargeDataCommand request, Publication publication)
@@ -166,6 +190,10 @@ public class LargeMessageMapper : IAmAMessageMapper<LargeDataCommand>
         var body = new MessageBody(JsonSerializer.Serialize(request));
         return new Message(header, body);
     }
+
+    [RetrieveClaim(0)]  // Fetch the payload back from the luggage store
+    public LargeDataCommand MapToRequest(Message message)
+        => JsonSerializer.Deserialize<LargeDataCommand>(message.Body.Value, JsonSerialisationOptions.Options)!;
 }
 ```
 

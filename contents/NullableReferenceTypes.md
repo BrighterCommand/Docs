@@ -20,11 +20,13 @@ V10 enables [nullable reference types](https://learn.microsoft.com/en-us/dotnet/
 In C# with nullable reference types enabled, reference types are non-nullable by default:
 
 ```csharp
+using System;
+
 // This string cannot be null
 string name = "John";
 
 // Compiler warning: Cannot convert null to non-nullable reference type
-string name = null; // ⚠️ CS8600
+string nickname = null; // ⚠️ CS8600
 ```
 
 ### Nullable Types
@@ -318,8 +320,10 @@ public class CreateOrderCommand : Command
 Use the null-forgiving operator (`!`) sparingly:
 
 ```csharp
+using System;
+
 // ⚠️ Avoid unless you're certain
-var name = user.Name!; // Asserts Name is not null
+var assumedName = user.Name!; // Asserts Name is not null
 
 // ✅ Better: Check explicitly
 if (user.Name == null)
@@ -332,6 +336,12 @@ var name = user.Name;
 Modern C# pattern matching provides concise null checks:
 
 ```csharp
+using System;
+
+// ...
+var command = new { Notes = (string?)null };   // stands for the command above, with its optional Notes
+void ProcessNotes(string notes) => Console.WriteLine(notes);
+
 // Traditional
 if (command.Notes != null)
 {
@@ -345,7 +355,7 @@ if (command.Notes is { } notes)
 }
 
 // Null-coalescing
-var notes = command.Notes ?? "No notes provided";
+var notesOrDefault = command.Notes ?? "No notes provided";
 ```
 
 ### 7. Consider Required Members (C# 11+)
@@ -353,13 +363,7 @@ var notes = command.Notes ?? "No notes provided";
 Use `required` keyword for properties that must be initialized:
 
 ```csharp
-public class OrderDto
-{
-    public required string OrderId { get; init; }
-    public required string CustomerId { get; init; }
-    public decimal Amount { get; init; }
-    public string? Notes { get; init; }
-}
+using System;
 
 // Must initialize required properties
 var dto = new OrderDto
@@ -369,6 +373,14 @@ var dto = new OrderDto
     Amount = 100.0m,
     Notes = null          // Optional
 };
+
+public class OrderDto
+{
+    public required string OrderId { get; init; }
+    public required string CustomerId { get; init; }
+    public decimal Amount { get; init; }
+    public string? Notes { get; init; }
+}
 ```
 
 ---

@@ -243,6 +243,12 @@
          does not. 9.0.4, the latest for EF Core 9. -->
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
 
+    <!-- PostgreSQLMessageBroker.md #8 calls AddNpgsql() on a TracerProviderBuilder,
+         which is Npgsql.OpenTelemetry's extension (spec 018 D25). 9.0.3, the
+         last 9.x release, to agree with the Npgsql 9.0.3 that
+         Npgsql.EntityFrameworkCore.PostgreSQL 9.0.4 brings. -->
+    <PackageReference Include="Npgsql.OpenTelemetry" Version="9.0.3" />
+
     <!-- TickerQScheduler.md's persistence and dashboard blocks, at the version
          Paramore.Brighter.MessageScheduler.TickerQ 10.8.1 takes for net9.0. -->
     <PackageReference Include="TickerQ.Dashboard" Version="9.3.0" />

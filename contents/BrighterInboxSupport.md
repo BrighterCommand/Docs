@@ -113,22 +113,30 @@ Brighter contains DDL to configure your Inbox. For each supported database we in
 
 The following example shows creation of a MySql inbox.
 
-We assume that INBOX_TABLE_NAME is a constant, shared with the code that configures your inbox.
+The example declares INBOX_TABLE_NAME as a constant; share it with the code that configures your inbox.
 
-``` csharp
+```csharp
+using System;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using MySqlConnector;
+using Paramore.Brighter.Inbox.MySql;
+
+// ...
+private const string INBOX_TABLE_NAME = "Inbox";
 
 private static void CreateInbox(IConfiguration config, IHostEnvironment env)
 {
     try
     {
-        var connectionString = config.GetConnectionString("Salutations")
+        var connectionString = config.GetConnectionString("Salutations");
 
         using var sqlConnection = new MySqlConnection(connectionString);
         sqlConnection.Open();
 
         using var existsQuery = sqlConnection.CreateCommand();
-        existsQuery.CommandText = MySqlInboxBuilder.GetExistsQuery(INBOX_TABLE_NAME);
-        bool exists = existsQuery.ExecuteScalar() != null;
+        existsQuery.CommandText = MySqlInboxBuilder.GetExistsQuery(sqlConnection.Database, INBOX_TABLE_NAME);
+        bool exists = Convert.ToInt32(existsQuery.ExecuteScalar()) == 1;
 
         if (exists) return;
 
@@ -142,7 +150,6 @@ private static void CreateInbox(IConfiguration config, IHostEnvironment env)
         throw;
     }
 }
-
 ```
 
 ## Clearing the Inbox
