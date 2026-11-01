@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 7.5: V10MigrationGuide.md #19 (no mapper registration) and #22-#24 (KIP-848's GroupProtocol), run against the
+       released 10.8.1 packages; #22-#24 against a throwaway broker:
+         docker run -d - -rm - -name probe-s5-kafka -p 9092:9092 apache/kafka:4.0.2
+       (each "- -" is two hyphens), then docker rm -f probe-s5-kafka. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable><NoWarn>CS0618</NoWarn></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.Kafka" Version="10.8.1" />
+  </ItemGroup>
+</Project>

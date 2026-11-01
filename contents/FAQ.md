@@ -493,15 +493,18 @@ commandProcessor.Send((dynamic)command);
 
 In V10, use **Resilience Pipelines** with Polly v8:
 
-**1. Configure the pipeline:** `AddResiliencePipeline` comes from the `Polly.Extensions` package.
+**1. Configure the pipeline:** register it by name in a `ResiliencePipelineRegistry<string>` and give that registry to `AddBrighter`. Brighter looks pipelines up only in that registry. One registered with Polly's `services.AddResiliencePipeline` is not found, and the request fails with a `ConfigurationException` whose inner `KeyNotFoundException` names the pipeline.
 
 ```csharp
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
 using Polly;
+using Polly.Registry;
 using Polly.Retry;
 
-services.AddResiliencePipeline("MyRetryPolicy", builder =>
+var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>();
+resiliencePipelineRegistry.TryAddBuilder("MyRetryPolicy", (builder, _) =>
 {
     builder.AddRetry(new RetryStrategyOptions
     {
@@ -510,6 +513,12 @@ services.AddResiliencePipeline("MyRetryPolicy", builder =>
         BackoffType = DelayBackoffType.Exponential
     });
 });
+
+services.AddBrighter(options =>
+{
+    options.ResiliencePipelineRegistry = resiliencePipelineRegistry;
+})
+.AutoFromAssemblies();
 ```
 
 **2. Apply to handler:**
@@ -571,14 +580,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.Policies.Attributes;
 using Polly;
+using Polly.Registry;
 
-// Configure pipeline
-services.AddResiliencePipeline("MyTimeout", builder =>
+// Configure pipeline, in the registry you give AddBrighter
+var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>();
+resiliencePipelineRegistry.TryAddBuilder("MyTimeout", (builder, _) =>
 {
     builder.AddTimeout(TimeSpan.FromSeconds(5));
 });
+
+services.AddBrighter(options =>
+{
+    options.ResiliencePipelineRegistry = resiliencePipelineRegistry;
+})
+.AutoFromAssemblies();
 
 // Apply to handler
 public class MyHandler : RequestHandlerAsync<MyCommand>

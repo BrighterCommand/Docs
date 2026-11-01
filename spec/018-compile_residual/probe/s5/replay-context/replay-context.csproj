@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 7.5: TurningOnReplayOnSeen.md #1 and #4 (Replay needs the pipeline's Context on Post) and BrighterInboxSupport.md
+       #1 (onceOnly with the default action), run against the released 10.8.1 packages, in memory. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.1" />
+  </ItemGroup>
+</Project>

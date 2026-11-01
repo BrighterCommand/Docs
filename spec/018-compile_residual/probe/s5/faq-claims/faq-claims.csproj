@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 7.5: FAQ.md's behavioural claims in blocks phase 7 touched (#3, #10-#13, the New (V10) timeout block, #20),
+       run against the released 10.8.1 packages and Polly.Extensions 8.8.0, the version D24 pins. No broker: the RMQ
+       registrations are read, not connected. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.RMQ.Async" Version="10.8.1" />
+    <PackageReference Include="Polly.Extensions" Version="8.8.0" />
+  </ItemGroup>
+</Project>

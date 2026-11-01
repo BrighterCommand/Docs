@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 7.5: OutboxArchiver.md #3 and #4, and SweeperCircuitBreaking.md #1's "(default: 10)", run against the released
+       10.8.1 packages. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Outbox.Hosting" Version="10.8.1" />
+  </ItemGroup>
+</Project>

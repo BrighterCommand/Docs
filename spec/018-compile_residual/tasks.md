@@ -2806,7 +2806,7 @@ and 9 now give the close's figures; rows 1 and 6 already gave bugfix 0003's, whi
   - Input: design § *Page Repair Rules*, the Shouldly row; 2.7's pin
   - Output: `using Shouldly;` in each of the six blocks, and one sentence naming the package.
     `grep -c Shouldly contents/TestDoubleOptions.md` → **≥ 7**, from **0**; the six BUILT or listed
-- [ ] **Task 7.5:** Run S5's behavioural claims (AC10)
+- [x] **Task 7.5:** Run S5's behavioural claims (AC10)
   - Input: S5's changed blocks
   - Output: a *Claim / Case / Control* table, each row naming `probe/s5/<name>/Program.cs`
 - [ ] **Task 7.6:** Second pass for S5
@@ -3038,6 +3038,14 @@ Carried out at 7.3: ruling 1 is `design.md` D24 (status *Yes, the maintainer, 20
 
 Carried out at 7.4 (§ *The repairs (7.4)*): 1 is recorded on ledger rows 88–91; 2 is done and builds; 3 is done on the page and
 stays FAILED on `CS8795`, the fallback the ruling names.
+
+**Ruling on 7.4's PAUSE, 2026-11-01 (session 136, continued)**, given by the maintainer and recorded as given:
+
+> **Option (c).** `Logging.md` #5 stays listed as FAILED (`CS8795`; `blockcheck` runs no source generators). Making `blockcheck` run the
+> source generators its pinned packages ship is recorded as a **follow-up after spec 018**, not done in 018.
+
+Carried out at 7.5: the row in § *Blocks that stay FAILED* and 7.4's question are annotated, and the follow-up is recorded in § *The
+behavioural claims (7.5, AC10)*, *Follow-up after 018*.
 
 #### The repairs (7.2)
 
@@ -3362,7 +3370,8 @@ never writes the method's body. It was compiled two-way in `probe/s5/logger-mess
 So the block is now one a reader can compile; before, out of its class, it could not. The gate cannot show this without running
 generators. The row stays in § *Blocks that stay FAILED*, annotated with the ruling, and no skip reason was written. This is the ruling's fallback,
 and **7.4 returns PAUSE on it**. A choice is open: whether `blockcheck` should run the generators its pinned packages ship (a tool change, so
-scope), or the row stays as it is.
+scope), or the row stays as it is. **Ruled 2026-11-01: (c).** The row stays listed as FAILED on `CS8795`; teaching `blockcheck` to
+run the generators its pinned packages ship is a follow-up after spec 018, not done in 018 (§ *Rulings (session 136)*).
 
 **Off-group: none.** No recurrence grep was needed. The Shouldly calls are all on this page (7.1's grep, ledger 2). `grep -rn 'LoggerMessage(' contents/`
 → 1, `Logging.md` #5. The only InMemory archive example is the one replaced.
@@ -3388,6 +3397,92 @@ all in band.
   only after the clear; #9: `Reset()` empties `RecordedCalls` and `DepositedRequests`. The stubs' handlers make the calls the reader's would
 - 7.3's item *"`OutboxArchiver.md` #4: a `[ClaimCheck]` on `MapToMessage` pairs with `[RetrieveClaim]` on `MapToRequest`"* lapses: the block
   no longer shows a mapper
+
+#### The behavioural claims (7.5, AC10)
+
+**Every run is against the released packages at the pins** (Brighter 10.8.1; Moq 4.21.0, NSubstitute 6.2.0, Shouldly 4.3.0;
+`Polly.Extensions` 8.8.0), as `probe/s5/<name>/` projects, never a `ProjectReference`. Each prints `ok` or `FAIL` per row and exits 1 on
+any `FAIL`. Each block is copied as the page shows it, the probe's own lines marked `// probe`. Two claims needed infrastructure, and each got
+a disposable container, started for the run and removed after it, as the csproj comments say: `mongo-ttl` ran against `mongo:7` with
+`ttlMonitorSleepSecs=1` on port 27019, and `v10-migration`'s Kafka rows against `apache/kafka:4.0.2`. The repository's own `brighter-*`
+containers were not touched. 7.3's two runs (ledger 86, 90) are listed as 7.3 recorded them, not rerun.
+
+| Claim | Case | Control | Probe | Result |
+|---|---|---|---|---|
+| `MongoDBOutbox.md` #4 and `MongoDBInbox.md` #4, as they stood: `TimeToLive = TimeSpan.FromDays(30) // Messages will be automatically deleted after 30 days`; *"MongoDB will automatically create a TTL index on the `TimeStamp` field and remove expired documents"* | each block's configuration (`MakeCollection` left at its default, `Assume`), one message or entry stored; then a 2 s `TimeToLive` and 10 s waited | `MakeCollection = CreateIfNotExists`; and, as the instrument, a raw document with a BSON date `TimeStamp` in the control's collection | `mongo-ttl` | no TTL index; the message left / `brighter_ttl_Outbox` (and `_Inbox`) on `TimeStamp`, `expireAfterSeconds` 2592000, and **the message still left**; the instrument removed, so the monitor ran. `TimeStamp` is stored as `{ DateTime, Ticks, Offset }`. **Overturned** (ledger 93) |
+| `MongoDbDistributedLock.md`, as it stood: *"a TTL index expires stale lock documents automatically, which protects you if an instance crashes"* | a lock obtained and never released, `TimeToLive` 2 s, `CreateIfNotExists`; a second instance asks 10 s later | the lock released, then obtained | `mongo-ttl` | `null`: still held / obtained. **Overturned** (ledger 93) |
+| The repair the Mongo pages now show: a TTL index on `TimeStamp.DateTime` | that index on the default collection, a message, an entry and an unreleased lock, 10 s waited | the case rows above, without it | `mongo-ttl` | 0 of 1 message, 0 of 1 entry left; the lock obtained again / 1, 1, held |
+| `FAQ.md` #13 with the handler under it (#14), as they stood: a pipeline registered with `services.AddResiliencePipeline("MyRetryPolicy", …)` is the one `[UseResiliencePipelineAsync("MyRetryPolicy", 1)]` runs | the page's registration, the handler failing once | the same retry in a `ResiliencePipelineRegistry<string>` given to `AddBrighter`'s `options.ResiliencePipelineRegistry`, which is #13 as repaired | `faq-claims` | `ConfigurationException`, inner `KeyNotFoundException` *"Unable to find a resilience pipeline associated with the key 'MyRetryPolicy'"*; the handler never ran / no exception, the handler ran twice. **Overturned** (ledger 94) |
+| `FAQ.md` #16, as it stood: `services.AddResiliencePipeline("MyTimeout", …)` | the page's registration | the repaired form, a 1 s timeout over a 3 s handler | `faq-claims` | `ConfigurationException`, the same inner / `TimeoutRejectedException`. **Overturned** (ledger 94) |
+| `FAQ.md` #10–#12: `Send` of an `ICommand`-typed variable throws *"ArgumentException … No command handler was found for the typeof command Paramore.Brighter.ICommand - a command should have exactly one handler."*; `(dynamic)` resolves the runtime type | #10 | #11, the concrete type; #12, `(dynamic)` | `faq-claims` | `ArgumentException` with that message, word for word / handled once; handled once |
+| `FAQ.md` #20: `noOfPerformers: 3  // Number of concurrent message pumps` | #20's `RmqSubscription` (`NoOfPerformers` 3), and the Dispatcher `AddConsumers` builds for an in-memory subscription with `noOfPerformers: 3`, received | `noOfPerformers: 1` | `faq-claims` | 3 consumers / 1 |
+| `FAQ.md` #3: the `AddConsumers`-first chain registers both sides | #3 as shown, no broker (registrations read, not connected) | `AddBrighter().AddProducers(…)` alone | `faq-claims` | `IDispatcher` registered and resolved, the producer registry's topics `[my.event]` / no `IDispatcher` |
+| `CommandProcessorConfigurationReference.md` #9: `PostConfigure<BrighterOptions>` sets the factory the command processor uses, and runs after the `AddBrighter` delegate | #9; and `AddBrighter` setting a factory of its own beside the `PostConfigure` | no `PostConfigure` | `options-pattern` | the handler's context from `TestRequestContextFactory`; the `PostConfigure` one wins / `RequestContext`, Brighter's own |
+| `CommandProcessorConfigurationReference.md` #10: in Development, `DebugRequestContextFactory` | `Startup` with a Development environment, a `Brighter` section bound | Production | `options-pattern` | `DebugRequestContextFactory`'s / Brighter's own |
+| `CommandProcessorConfigurationReference.md` #11: two providers in one process, each with its own factory | `ParallelTestsA`'s and `ParallelTestsB`'s registrations, sent A, B, A | each other | `options-pattern` | `ContextA`, `ContextB`, `ContextA` |
+| `InMemoryOptions.md` #1: the same, beside `AddProducers` and an `InMemoryOutbox` | #1 | as #9 | `options-pattern` | `TestRequestContextFactory`'s |
+| `TurningOnReplayOnSeen.md` #1 and #4 ✅: with `Context as RequestContext` on `Post`, a duplicate does not run the handler and marks the original message undispatched, for the Sweeper to resend | each handler (#4's carry no `[UseInbox]`, so each was given #1's), the same command sent twice, then the outstanding messages cleared | #4 ❌, `Post` with no context: *"a silent no-op — no exception, nothing resent"* | `replay-context` | handler once, no exception, 1 outstanding, the bus 1 then 2 after the clear / handler once, no exception, 0 outstanding, the bus 1 |
+| `BrighterInboxSupport.md` #1: `[UseInboxAsync(step:0, …, onceOnly: true)]` with the default action throws `OnceOnlyException` on a duplicate | the same event published twice | an event with its own Id | `replay-context` | `OnceOnlyException` / handled |
+| `TestDoubleOptions.md` #2 and the sentence after it: `Observe<T>()` dequeues FIFO, consuming, and throws `InvalidOperationException` when none is left | A, an event, B sent; Observe three times | `GetRequests<T>()` twice | `spy-processor` | A, B, then `InvalidOperationException` / `AB`, `AB`, and A still observable after |
+| `TestDoubleOptions.md` #8: `ClearOutbox` moves a deposit to the observation queue | `Observe` after the clear | `Observe` before it | `spy-processor` | the deposit, `Amount` 99.99 / `InvalidOperationException` |
+| `TestDoubleOptions.md` #9: `Reset()` empties `RecordedCalls` and `DepositedRequests` | a `Send` and a `DepositPost`, then `Reset` | no `Reset` | `spy-processor` | `false`, 0, 0 / `true`, 2, 1 |
+| `TestDoubleOptions.md` #11, #12: `Times.Once` and `Received(1)` verify one `Publish` | a handler publishing once | twice | `spy-processor` | both pass / `MockException`, `ReceivedCallsException` |
+| `OutboxArchiver.md` #4: `Archive(TimeSpan.FromDays(1))` moves a message dispatched two days ago into `ArchivedMessages`, keyed by its Id, and out of the Outbox | #4 | a message dispatched an hour ago; one never dispatched | `outbox-archiver` | archived, gone from the Outbox / neither archived, both kept |
+| `OutboxArchiver.md` #3: `CommittableTransaction` is the InMemory Outbox's transaction type | #3's `UseOutboxArchiver<CommittableTransaction>`, the archiver resolved and run | `UseOutboxArchiver<IDbTransaction>` | `outbox-archiver` | 1 archived / `ArgumentException` *"A sync Outbox must be defined."*, 0 |
+| `SweeperCircuitBreaking.md` #1: `CooldownCount … (default: 10)` | `new OutboxCircuitBreakerOptions()` | set to 3 | `outbox-archiver` | 10 / 3. 7.1 read it from `OutboxCircuitBreakerOptions.cs:37`; now run |
+| `V10MigrationGuide.md` #19: no mapper registration, the default mapper serialising | `PersonCreatedPublisher.PublishAsync` on the in-memory bus | an explicit async mapper registered for the type | `v10-migration` | a JSON body, `name` Alice, `email` alice@example.com / the explicit mapper ran (its header marker present) |
+| `V10MigrationGuide.md` #22–#24: the obsolete properties are back-fill defaults; `ClassicGroupProtocol` gives the same settings; `ConsumerGroupProtocol` is KIP-848 | each subscription's consumer, built by `KafkaMessageConsumerFactory` against the broker, its `ConsumerConfig` read | a subscription setting none | `v10-migration` | both properties `[Obsolete]`; #22 and #23 `Classic`, 30000, `Range`; #24 `Consumer`, unset, unset / `Classic`, 10000, `RoundRobin` |
+| `CommandProcessorConfigurationReference.md` #20, #21 (ledger 86) | 7.3's | 7.3's | `json-options` (7.3) | 12 converters; `WriteIndented` true on the copy / false on the instance read before the call |
+| `BrighterInboxSupport.md` #2, `BrighterOutboxSupport.md` #2 (ledger 90) | 7.3's, table absent | table present | `mysql-exists` (7.3) | `0`, the corrected test false / `1`, true; the old test true in both |
+
+**Two claims overturned, each repaired at every recurrence (obligation 21)**, the recurrence greps run after the repair (obligation 22):
+- **Ledger 93.** `MongoDBOutbox.md` and `MongoDBInbox.md`: § *Time-To-Live (TTL) Support* now says what `TimeToLive` does at 10.8.1 and why
+  it removes nothing, and #4 is the index a reader creates on `TimeStamp.DateTime`, the form the probe shows removing documents. #1's comment
+  (*"Optional: Auto-expire messages after 7 days"*) now points to that section; the Outbox's `TimeToLive` option row, both pages' structure lists
+  and the Inbox's `ExpireAfterSeconds` line say the same. `MongoDbDistributedLock.md`'s options paragraph, § *Provisioning* and *Notes*, and
+  `DistributedLock.md`'s provider table, say a crashed holder's lock stays held unless the reader adds that index. The three headings are kept,
+  so their anchors hold. `FirestoreDistributedLock.md`'s *"TTL document"* row is Firestore's and not this defect
+- **Ledger 94.** `FAQ.md` #13 and #16 now build a `ResiliencePipelineRegistry<string>` and give it to `AddBrighter`; the sentence before #13 says
+  Brighter looks only there, and what a `services.AddResiliencePipeline` registration gets instead. No other page registers a pipeline that
+  way (`grep -rnF 'services.AddResiliencePipeline(' contents/` → 0)
+
+**Candidate upstream issue, for the maintainer (not filed).** `Paramore.Brighter.MongoDb` 10.8.1, and `origin/master` unchanged:
+`MongoDbCollectionConfiguration.TimeToLive` never expires a document. `BaseMongoDb.CreateCollection` creates the TTL index only on the
+`CreateIfNotExists` path (`BaseMongoDb.cs:108–118`), and indexes `TimeStamp`, a `DateTimeOffset` that MongoDB.Driver 3.x serialises as an
+embedded document, which a TTL index ignores. `OutboxMessage`, `InboxMessage` and `LockMessage` all carry it, so stale locks are never
+released either. A fix would index `TimeStamp.DateTime` (or store `TimeStamp` as a BSON date) and create the index whenever `TimeToLive` is set.
+`probe/s5/mongo-ttl` reproduces it.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| § *Predicted (7.1)*: *"`MongoDBInbox.md` #4, `MongoDBOutbox.md` #4: `TimeToLive` deletes messages after 30 days"*, a claim to run | it deletes nothing, on either `MakeCollection` (above) | ledger 93 |
+| § *The repairs (7.2)*, *For 7.5*: *"`FAQ.md` #13 … the one `[UseResiliencePipelineAsync("MyRetryPolicy", …)]` finds. It is the claim D24 depends on"* | it is not found; and once #13 is repaired, no block on the corpus calls `AddResiliencePipeline`, so D24's `Polly.Extensions` pin serves no block (`grep -rn 'AddResiliencePipeline(' contents/` → 0) | ledger 94; the pin is put to the maintainer below |
+| 7.1's claim list: `SweeperCircuitBreaking.md` #1, *"Read, not run"* | run, 10 | it holds |
+
+**Read, not run:**
+- `V10MigrationGuide.md`, *"requires Apache Kafka 4.0 or later"*: the probe reads the consumer's configuration and joins no group
+- `TurningOnReplayOnSeen.md` § *The symptom*: the Debug log line and the span event names; the probe observes the Outbox and the bus only
+- `FAQ.md` #3 over a live RabbitMQ: the registrations are read, not connected
+- 7.3's `OutboxArchiver.md` #4 claim about a `[ClaimCheck]`/`[RetrieveClaim]` pair lapsed at 7.4, as § *The repairs (7.4)* says
+
+**Follow-up after 018** (ruled 2026-11-01, § *Rulings (session 136)*). Teach `blockcheck` to run the source generators its pinned packages ship,
+so a block such as `Logging.md` #5, a `[LoggerMessage]` partial, can build as it does in a reader's project (`probe/s5/logger-message`). Recorded
+here because this spec keeps no follow-ups list and § *Friction ledger* is written at 8.5; 8.5 should carry it there.
+
+**Measured after 7.5** (`20a27ad` + this task's tree; `git add -A` first):
+
+| Gate | After 7.4 | After 7.5 | |
+|---|---|---|---|
+| `--report` | 994 / 889 / 76 / 29, 146 findings | **994 / 889 / 76 / 29**, 146 findings, exit 1 | the six blocks edited (`FAQ.md` #13, #16; `MongoDBOutbox.md` #1, #4; `MongoDBInbox.md` #1, #4) stay BUILT and nothing moved. Two methods: the summary line, and `cut -f1 \| sort \| uniq -c` of the rows, 889 / 76 / 29. The 146 are 7.7's, as at 7.4 |
+| scaffold rule · pin rule · assemblies | 97 units, 0 · 4 pages, 0 · 580 | **97** units, 0 violations, 0 compile errors · 4 pages, 0 · **580** on each pin; the V4 pin 28 of 28 | no unit changed |
+| `pagelint` | 0 errors / 91 | **0 errors / 91** | the five touched pages 0 errors / 3 warnings, which they carried before; `--changed origin/master` 0 errors; `--plant` 5 / 5 |
+| `linkcheck` · `symbolcheck` · `optioncheck` | 169 / 0 · 24 / 14 · — | 169 / 0 · 24 entries, 14 silenced, exit 0 · 0 mismatches, 2 tables, 12 rows on the five pages (`MongoDBOutbox.md`'s `TimeToLive` row's description changed) | |
+
+**Questions for the maintainer, from 7.5.** (1) Ledger 93 and 94 are new defects, each repaired at every recurrence; confirm them. (2) The Mongo
+`TimeToLive` defect is upstream (above): file it? (3) D24: with `FAQ.md` #13 and #16 repaired, no block needs `Polly.Extensions`, and the FAQ no longer names
+the package. Keep the pin (one line in each project, harmless) or revert it?
 
 ---
 
@@ -3622,7 +3717,7 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `NullableReferenceTypes.md` | 7 | `CS0246` `CreateUserCommand`, `CreateUserDto` | *same-page*: block 6 declares the command, as the clause before block 7 now says; `CreateUserDto` is the reader's | 7 |
 | `V10MigrationGuide.md` | 25 | `CS0103` `BuildServiceProvider`; `CS0246` `PersonCreated` | *same-page*: block 19 declares `PersonCreated`, and the sentence before block 25 says so; `BuildServiceProvider` is the reader's own helper, named by no other block | 7 |
 | `V10MigrationGuide.md` | 16 | `CS0246` `PersonCreated` | *same-page*: block 19 declares it, and the clause before block 16 now says so. It was *parse* (a bare `new RmqPublication { … }` statement) until 7.3 made it `var publication = …` | 7 |
-| `Logging.md` | 5 | `CS8795` `BuildingSendPipelineForCommand` | *source generator*: a quote of `CommandProcessor.Log`'s `[LoggerMessage]` partial (`CommandProcessor.cs:1615–1618` at 10.8.1), whose implementation a generator writes and `blockcheck` does not run. Listed, not skipped: D21's reason names a private member or the pump's own state, which a logging partial is neither. The lead-in now cites the file **Ruled 2026-11-01: option (a).** At 7.4 the block is whole, a top-level `internal static partial class Log`, and the lead-in no longer calls it verbatim; it still fails `CS8795` because `blockcheck` compiles with no analyzers and so runs no generator. `probe/s5/logger-message`: with the generator, 0 errors; with every analyzer removed, `CS8795`; the former top-level `private` form, `CS1527` | 7 |
+| `Logging.md` | 5 | `CS8795` `BuildingSendPipelineForCommand` | *source generator*: a quote of `CommandProcessor.Log`'s `[LoggerMessage]` partial (`CommandProcessor.cs:1615–1618` at 10.8.1), whose implementation a generator writes and `blockcheck` does not run. Listed, not skipped: D21's reason names a private member or the pump's own state, which a logging partial is neither. The lead-in now cites the file **Ruled 2026-11-01: option (a).** At 7.4 the block is whole, a top-level `internal static partial class Log`, and the lead-in no longer calls it verbatim; it still fails `CS8795` because `blockcheck` compiles with no analyzers and so runs no generator. `probe/s5/logger-message`: with the generator, 0 errors; with every analyzer removed, `CS8795`; the former top-level `private` form, `CS1527`. **Ruled 2026-11-01: (c).** It stays listed on `CS8795`; `blockcheck` running source generators is a follow-up after spec 018 | 7 |
 
 ## Splits
 
@@ -3738,6 +3833,8 @@ design, and their greps were run there.*
 | 90 | `MySqlInboxBuilder.GetExistsQuery(INBOX_TABLE_NAME)` and `MySqlOutboxBuilder.GetExistsQuery(OUTBOX_TABLE_NAME)`, each one argument where both take `(tableSchema, tableName)`; and `ExecuteScalar() != null` as the exists test, where the query is `SELECT EXISTS (…) AS TableExists`, which returns a row either way, so the test is always true and the table is never created. Run: `probe/s5/mysql-exists`, against MySQL 8 and the released 10.8.1 packages. Case, table absent: `ExecuteScalar()` is `0` (Int64) and `Convert.ToInt32(…) == 1` is false; control, table present: `1` and true; the old test says true in both | `BrighterInboxSupport.md`; `BrighterOutboxSupport.md` | `grep -rnE 'ExistsQuery\((INBOX\|OUTBOX)_TABLE_NAME\)' contents/`; `grep -rnF 'ExecuteScalar() != null' contents/` | **2**; **2** | **0**; **0** | task 7.3, hidden behind *parse* (Inbox #2) and *defect* (Outbox #2, `CS1106`: an extension method outside a static class); run; confirmed by the maintainer 2026-11-01 | 7 |
 | 91 | `Environment.IsDevelopment()` in a `Startup` method, where `Environment` binds to `System.Environment`; the host's is `IWebHostEnvironment`, which a `Startup` takes by constructor | `CommandProcessorConfigurationReference.md` | `grep -rnE '(^\|[^.A-Za-z_])Environment\.IsDevelopment\(\)' contents/` | **1** | **0** | task 7.1, the second compile (`CS0117`); repaired at 7.3; confirmed by the maintainer 2026-11-01 | 7 |
 | 92 | An `IAmAMessageMapper<T>` shown with one of its two members, under a `// ...` that declares nothing about the other (017's recurring defect): `MapToMessage` missing from `OrderEventMessageMapper`, `MapToRequest` from `LargeMessageMapper` | `MigratingToNullableReferenceTypes.md`; `OutboxArchiver.md` | a scan of every C# fence declaring `class … : IAmAMessageMapper(Async)?<` for both `MapTo…` members, run at `HEAD` and on the tree | **2** | **0** | task 7.1, the second compile (`CS0535`); repaired at 7.3; `OutboxArchiver.md`'s mapper was later replaced by an `InMemoryArchiveProvider` example at 7.4 (ruled 2026-11-01) | 7 |
+| 93 | `TimeToLive` said to make MongoDB delete documents (*"Messages will be automatically deleted after 30 days"*, *"MongoDB will automatically create a TTL index on the `TimeStamp` field and remove expired documents"*, *"a TTL index expires stale lock documents automatically"*). At 10.8.1 it deletes nothing: Brighter creates its index only when it creates the collection (`MakeCollection = CreateIfNotExists`; the default, `Assume`, makes none, `BaseMongoDb.cs:83–118`), and that index, on `TimeStamp`, matches no date, because the driver stores the `DateTimeOffset` as an embedded `{ DateTime, Ticks, Offset }` document. Run: `probe/s5/mongo-ttl`, MongoDB 7 with the TTL monitor every second. The pages now say so, and show a TTL index on `TimeStamp.DateTime`, which the probe shows removing the message, the Inbox entry and an unreleased lock | `MongoDBOutbox.md`; `MongoDBInbox.md`; `MongoDbDistributedLock.md`; `DistributedLock.md` | `grep -rnE 'automatically deleted after\|Auto-expire messages\|remove expired documents\|expires them through a MongoDB TTL index\|a TTL index expires stale lock\|before the TTL index removes it\|Used for the TTL index' contents/`; `grep -rn 'MongoDb.*\| TTL document \|' contents/` | **10** (Outbox 5, Inbox 3, lock 2); **1** | **0**; **0** | task 7.5, run with a control (`MongoDBInbox.md` #4, `MongoDBOutbox.md` #4); an upstream candidate, not filed | 7 |
+| 94 | `services.AddResiliencePipeline("MyRetryPolicy", …)` (and `"MyTimeout"`) shown as the registration `[UseResiliencePipelineAsync("…", 1)]` finds. Brighter looks pipelines up only in its own registry, `options.ResiliencePipelineRegistry` or a new one (`BrighterResiliencePipelineRegistry`, 10.8.1), and never reads the one `Polly.Extensions` puts in DI. Run: `probe/s5/faq-claims`, the handler never runs and the request fails `ConfigurationException`, inner `KeyNotFoundException`; the registry given to `AddBrighter` retries (control). #13 and #16 now build that registry | `FAQ.md` | `grep -rnF 'services.AddResiliencePipeline(' contents/` | **2** | **0** | task 7.5, run with a control (`FAQ.md` #13, #16) | 7 |
 
 ## Friction ledger
 
