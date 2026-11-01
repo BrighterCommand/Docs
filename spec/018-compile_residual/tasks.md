@@ -2802,7 +2802,7 @@ and 9 now give the close's figures; rows 1 and 6 already gave bugfix 0003's, whi
 - [x] **Task 7.3:** Repair S5's hard blocks
   - Input: S5's table, hard rows; Brighter `10.8.0` source, the pinned release
   - Output: as 3.3's, for S5
-- [ ] **Task 7.4:** Repair `TestDoubleOptions.md`'s Shouldly blocks (P0-8)
+- [x] **Task 7.4:** Repair `TestDoubleOptions.md`'s Shouldly blocks (P0-8)
   - Input: design § *Page Repair Rules*, the Shouldly row; 2.7's pin
   - Output: `using Shouldly;` in each of the six blocks, and one sentence naming the package.
     `grep -c Shouldly contents/TestDoubleOptions.md` → **≥ 7**, from **0**; the six BUILT or listed
@@ -3024,6 +3024,20 @@ and 7.4 inherit them. 7.3's text says *"Brighter `10.8.0` source"*; the pins are
 >    already on the pin. Rebuild `PostgreSQLMessageBroker.md` #8 and record its movement.
 
 Carried out at 7.3: ruling 1 is `design.md` D24 (status *Yes, the maintainer, 2026-11-01*) and ruling 2 is **D25**, **9.0.3**.
+
+**Rulings on 7.3's PAUSE, 2026-11-01 (session 136, continued)**, given by the maintainer and recorded as given:
+
+> 1. **Ledger 88–91 confirmed**: `FAQ.md` #20 `channelCount` → `noOfPerformers`; `ExternalBusConfiguration` → `ProducersConfiguration`;
+>    the Inbox/Outbox `GetExistsQuery` check that was always true; `IsDevelopment()` in a `Startup`.
+> 2. **`OutboxArchiver.md` § *InMemory Archive Example Usage*: replace the Claim Check mapper with a real `InMemoryArchiveProvider`
+>    example**, read at the 10.8.1 tag, compiling against the pins, with prose that matches what it does. Keep the heading. Delete the
+>    Claim Check scaffolding if nothing else uses it. List any behavioural claim for 7.5.
+> 3. **`Logging.md` #5: option (a), make it whole** as a top-level `internal static partial class Log`. If `blockcheck` does not run the
+>    `Microsoft.Extensions.Logging` source generator (so `CS8795` remains), leave it listed as FAILED with that diagnostic, and PAUSE
+>    explaining; no skip reason is invented. The lead-in must not claim the block is verbatim if the modifier changes.
+
+Carried out at 7.4 (§ *The repairs (7.4)*): 1 is recorded on ledger rows 88–91; 2 is done and builds; 3 is done on the page and
+stays FAILED on `CS8795`, the fallback the ruling names.
 
 #### The repairs (7.2)
 
@@ -3278,6 +3292,103 @@ as the replacement keeps it so.
 (2) `OutboxArchiver.md` § *InMemory Archive Example Usage*: replace the Claim Check mapper with an example that uses the InMemory archive provider,
 or leave it? (3) `Logging.md` #5 is listed as FAILED. Widen D21 to *a source-generated partial quoted from Brighter's source* and SKIP it, or leave it listed?
 
+**Ruled 2026-11-01:** (1) ledger 88–91 confirmed. (2) Replace it with a real `InMemoryArchiveProvider` example, heading kept. (3) Option (a):
+make it whole as a top-level `internal static partial class Log`; if `blockcheck` runs no source generator, leave it listed on `CS8795`.
+Carried out at 7.4.
+
+#### The repairs (7.4)
+
+**`TestDoubleOptions.md`'s six Shouldly blocks are BUILT.** #1, #5, #6, #7, #8 and #9 each gained `using Paramore.Brighter.Testing;` and
+`using Shouldly;`, and #6 and #8 `using System.Linq;` for `.First()`. The *Installation* section now says the examples assert with the
+`Shouldly` package's `ShouldBe…` methods, so the reader adds it to run them as written. The sentence sits beside the `Paramore.Brighter.Testing`
+reference rather than under a heading of its own, because the Moq and NSubstitute sentences 7.2 added already name their packages where
+their examples are. `grep -c Shouldly contents/TestDoubleOptions.md` → **7**, from **0** (ledger 2, closed on its row).
+
+**Before and after, by `--report`:**
+
+| Block | Before | After |
+|---:|---|---|
+| 1 | FAILED, 5 diagnostics, `CS0103`, `CS0246` | **BUILT** |
+| 5 | FAILED, 4, `CS0103`, `CS0246` | **BUILT** |
+| 6 | FAILED, 5, `CS0103`, `CS0246` | **BUILT** |
+| 7 | FAILED, 5, `CS0103`, `CS0246` | **BUILT** |
+| 8 | FAILED, 8, `CS0103`, `CS0246`, `CS8130` | **BUILT** |
+| 9 | FAILED, 4, `CS0103`, `CS0246` | **BUILT** |
+
+The `CS0103` and `CS0246` left after 2.7's pin were the page's types and the missing `using`s. `TestDoubleOptionsContext` gained a stub for
+each type a block names and no block declares: `PlaceOrder`, `OrderPlaced`, `PlaceOrderHandler`, `OrderHandler`, `TriggerCommand`,
+`DownstreamCommand`, `SendNotification`, `NotificationSent`, `NotificationHandler`, `ProcessPayment`, `PaymentProcessed`,
+`TransactionalHandler` and `CommandA`, plus `MyHandler.Handle(TriggerCommand)` for #5. Each stub has only the members a block names. Each
+handler stub makes the call its block then checks (`Publish`, `Send`, `Post`, `DepositPost`), as 7.2's `MyHandler` does. The scaffold rule
+reads **0 violations**.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| § *Shouldly in the pin (2.7)*: #8's `CS8130` and `CS1503` on the deconstruction *"likely an API mismatch, read at 7.4"* | **not an API mismatch**. `DepositedRequests` is an `IReadOnlyDictionary<Id, IRequest>` (`SpyCommandProcessor.cs:65` at 10.8.1), whose `KeyValuePair` deconstructs. With `.First()` unresolved for want of `System.Linq`, the compiler could not infer `id` and `request`. Given the `using`, #8 builds with no other change, and `ClearOutbox(new[] { id })` takes the `Id[]` it declares (`:428`) | 2.7's text stands as its reading; no ledger row, since nothing on the page was wrong but the `using` |
+| § *Predicted (7.1)*: the six Shouldly blocks BUILT or listed | **6 BUILT**, 0 listed | in band |
+
+**Ruling 2: `OutboxArchiver.md` § *InMemory Archive Example Usage*** (heading kept, so its anchor holds). The Claim Check mapper is replaced
+by an example read at the 10.8.1 tag. `UseOutboxArchiver<TTransaction>` registers an `OutboxArchiver<Message, TTransaction>` over the
+registered Outbox and archive provider (`HostedServiceCollectionExtensions.cs:58–74`), and `TimedOutboxArchiver` calls its `Archive` or
+`ArchiveAsync` with `MinimumAge` on each tick (`TimedOutboxArchiver.cs:118–120`). So the example builds one directly over an
+`InMemoryOutbox` with an `InMemoryArchiveProvider`, the shape a test takes. It adds a message, marks it dispatched two days ago, calls
+`Archive(TimeSpan.FromDays(1))` and reads `ArchivedMessages`, the provider's `Dictionary<string, Message>` keyed by message Id
+(`InMemoryArchiveProvider.cs:38`). `TTransaction` is `CommittableTransaction`, the type `InMemoryOutbox.Add` takes (`InMemoryOutbox.cs:131`),
+as § *InMemory Archive Configuration* above it already uses. The block builds (#4, BUILT before and after). `LargeDataCommand` left
+`OutboxArchiverContext`, since no block names it any more, and the unit keeps `services` for #3. No other page names `LargeMessageMapper`,
+so nothing else loses its example (`grep -rn LargeMessageMapper contents/` → 0).
+
+Two things the example avoids, read at the tag. A `FakeTimeProvider` advanced past `MinimumAge` would also pass the `InMemoryBox`'s
+`ExpirationScanInterval` (10 minutes) and `EntryTimeToLive` (5 minutes) (`InMemoryBox.cs:68`, `:76`). That hands expiry to a background
+worker, which races the archive. Marking the message dispatched in the past with `TimeProvider.System` keeps the test deterministic.
+`DispatchedMessages` selects `TimeFlushed <= now − dispatchedSince` (`InMemoryOutbox.cs:309–312`), so a message dispatched two days ago is
+eligible at one day.
+
+**Ruling 3: `Logging.md` #5 is whole, and stays FAILED on `CS8795`.** It is now a top-level `internal static partial class Log`. The lead-in
+says the Command Processor declares it in a `Log` class nested inside it (`CommandProcessor.cs:1615` at 10.8.1, `private`), and that the page
+shows one of them as a top-level `internal` class, the form it takes in your own code, so it no longer claims to be verbatim.
+`blockcheck --explain Logging_5` still reads `CS8795`: blockcheck compiles with no analyzers, so the `Microsoft.Extensions.Logging` generator
+never writes the method's body. It was compiled two-way in `probe/s5/logger-message`, against `Microsoft.Extensions.Logging.Abstractions`
+9.0.0:
+
+| Run | Result |
+|---|---|
+| Case: `dotnet build`, the generator running, as in a reader's project | **0 errors** |
+| Control: `dotnet build -p:DropGen=true`, every `Analyzer` removed before `CoreCompile`, as blockcheck compiles | **`CS8795`**, blockcheck's diagnostic |
+| Second control: the former top-level `private static partial class Log`, generator running | **`CS1527`** |
+
+So the block is now one a reader can compile; before, out of its class, it could not. The gate cannot show this without running
+generators. The row stays in § *Blocks that stay FAILED*, annotated with the ruling, and no skip reason was written. This is the ruling's fallback,
+and **7.4 returns PAUSE on it**. A choice is open: whether `blockcheck` should run the generators its pinned packages ship (a tool change, so
+scope), or the row stays as it is.
+
+**Off-group: none.** No recurrence grep was needed. The Shouldly calls are all on this page (7.1's grep, ledger 2). `grep -rn 'LoggerMessage(' contents/`
+→ 1, `Logging.md` #5. The only InMemory archive example is the one replaced.
+**No new defect.** #8's `CS8130` was a missing `using` (above).
+
+**Measured after 7.4** (`ee54515` + this task's tree; `git add -A` first):
+
+| Gate | After 7.3 | After 7.4 | |
+|---|---|---|---|
+| `--report` | 994 / 883 / 82 / 29, 140 findings | **994 / 889 / 76 / 29**, 146 findings, exit 1 | the six → BUILT and nothing else moved (`diff` of verdicts by page and ordinal). The 146 are **131** BUILT blocks not yet baselined and **15** whose page gained or changed a unit (counted by their lines in the output), all 7.7's |
+| scaffold rule · pin rule · assemblies | 97 units, 0 · 4 pages, 0 · 580 | **97** units, 0 violations, 0 compile errors · 4 pages, 0 · **580** on each pin; the V4 pin 28 of 28 | no unit added; two edited |
+| `groups.py`, S5 | 4 pages, 15 FAILED | **3 pages, 9 FAILED** (1 *defect*, 4 *same-page*, 4 *page-type*), 0 with nothing BUILT | two methods: the FAILED column, 9; `--report` on the 22 S5 pages, **166 BUILT / 9 FAILED / 7 SKIPPED**, 182 blocks. `--classify` 1 parse, 0 built-by-using, 5 defect, 38 same-page, 3 values, 29 page-type |
+| `pagelint` | 0 errors / 97 | **0 errors / 91** | `TestDoubleOptions.md` 6 → **0** (`--per-page`, before and after), nothing else moved; the three touched pages 0 / 0; `--changed origin/master` 0 errors; `--plant` 5 / 5 |
+| `linkcheck` · `symbolcheck` · `optioncheck` | 169 / 0 · 24 / 14 · — | 169 / 0 · 24 entries, 14 silenced, exit 0 · `OutboxArchiver.md` 0 mismatches, 1 table, 4 rows (not touched; run because the page carries one) | |
+
+Against 7.1's bands, which 7.7 reconciles: BUILT **889** (866–899), FAILED **76** (76–90), `pagelint` **91** (90–115), units 97 (89–98):
+all in band.
+
+**For 7.5.** Blocks 7.4 wrote or made build whose text asserts behaviour, none run here:
+- `OutboxArchiver.md` #4: `Archive(TimeSpan.FromDays(1))` moves a message dispatched two days ago into `ArchivedMessages`, keyed by its Id,
+  and deletes it from the Outbox. Control: a message dispatched within the day, or never dispatched, stays in the Outbox and is not archived
+- `TestDoubleOptions.md` #8: `ClearOutbox` moves a deposited request to the observation queue, so `Observe<PaymentProcessed>()` returns it
+  only after the clear; #9: `Reset()` empties `RecordedCalls` and `DepositedRequests`. The stubs' handlers make the calls the reader's would
+- 7.3's item *"`OutboxArchiver.md` #4: a `[ClaimCheck]` on `MapToMessage` pairs with `[RetrieveClaim]` on `MapToRequest`"* lapses: the block
+  no longer shows a mapper
+
 ---
 
 ## Phase 8 — Acceptance *(6 tasks, one PR, no page touched)*
@@ -3511,7 +3622,7 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `NullableReferenceTypes.md` | 7 | `CS0246` `CreateUserCommand`, `CreateUserDto` | *same-page*: block 6 declares the command, as the clause before block 7 now says; `CreateUserDto` is the reader's | 7 |
 | `V10MigrationGuide.md` | 25 | `CS0103` `BuildServiceProvider`; `CS0246` `PersonCreated` | *same-page*: block 19 declares `PersonCreated`, and the sentence before block 25 says so; `BuildServiceProvider` is the reader's own helper, named by no other block | 7 |
 | `V10MigrationGuide.md` | 16 | `CS0246` `PersonCreated` | *same-page*: block 19 declares it, and the clause before block 16 now says so. It was *parse* (a bare `new RmqPublication { … }` statement) until 7.3 made it `var publication = …` | 7 |
-| `Logging.md` | 5 | `CS8795` `BuildingSendPipelineForCommand` | *source generator*: a quote of `CommandProcessor.Log`'s `[LoggerMessage]` partial (`CommandProcessor.cs:1615–1618` at 10.8.1), whose implementation a generator writes and `blockcheck` does not run. Listed, not skipped: D21's reason names a private member or the pump's own state, which a logging partial is neither. The lead-in now cites the file | 7 |
+| `Logging.md` | 5 | `CS8795` `BuildingSendPipelineForCommand` | *source generator*: a quote of `CommandProcessor.Log`'s `[LoggerMessage]` partial (`CommandProcessor.cs:1615–1618` at 10.8.1), whose implementation a generator writes and `blockcheck` does not run. Listed, not skipped: D21's reason names a private member or the pump's own state, which a logging partial is neither. The lead-in now cites the file **Ruled 2026-11-01: option (a).** At 7.4 the block is whole, a top-level `internal static partial class Log`, and the lead-in no longer calls it verbatim; it still fails `CS8795` because `blockcheck` compiles with no analyzers and so runs no generator. `probe/s5/logger-message`: with the generator, 0 errors; with every analyzer removed, `CS8795`; the former top-level `private` form, `CS1527` | 7 |
 
 ## Splits
 
@@ -3536,7 +3647,7 @@ design, and their greps were run there.*
 | # | Defect | Page(s) | Recurrence grep | Before | After | Found by | Phase |
 |---:|---|---|---|---:|---:|---|---:|
 | 1 | `AddServiceActivator` called as current code; dead at `10.7.0` and `master` (doc comments only) | `AwsScheduler.md`, `AzureScheduler.md` | `grep -rn 'Services.AddServiceActivator(' contents/` | **2** | **0** | re-derivation (design E2); the watchlist missed it | 3 |
-| 2 | Shouldly assertions with the package never named and no `using` | `TestDoubleOptions.md` | `grep -c Shouldly contents/TestDoubleOptions.md` | **0** | | the second compile (design E2, *pin-gap*) | 7 |
+| 2 | Shouldly assertions with the package never named and no `using` | `TestDoubleOptions.md` | `grep -c Shouldly contents/TestDoubleOptions.md` | **0** | **7** (≥ 7: a `using Shouldly;` in each of the six blocks and one sentence naming the package) | the second compile (design E2, *pin-gap*); repaired at 7.4 | 7 |
 | 3 | Package spelt `Paramore.Brighter.Inbox.DynamoDb.V4`; the project is `…DynamoDB.V4` | `DynamoInbox.md` (a 017 tranche page; repaired under obligation 21) | `grep -rn 'Inbox.DynamoDb.V4' contents/` | **1** | | re-derivation (requirements, the V4 pin) | 7 |
 | 4 | `UseExternalBus` called as current code; dead at `10.8.0` and `master` (one doc comment) | `AwsScheduler.md`, `AzureScheduler.md` | `grep -rn '^\.UseExternalBus(' contents/` | **2** | **0** | task 3.1, chained after defect 1 | 3 |
 | 5 | `AzureServiceBusSubscription<T>` given `deadLetterQueueHandling:` and `lockTimeout:`, parameters no overload has at 10.8.0; both settings live on `AzureServiceBusSubscriptionConfiguration` | `AzureScheduler.md` | `grep -rnE 'deadLetterQueueHandling\|lockTimeout: 60' contents/` | **2** | **0** | task 3.1, the second compile (`probe/second.py`) | 3 |
@@ -3622,11 +3733,11 @@ design, and their greps were run there.*
 | 85 | `MyHandlerBase<T> : RequestHandlerAsync<T>` without the `where T : class, IRequest` the base requires (`RequestHandlerAsync.cs:54`) | `FAQ.md` | `grep -rn -A1 -E 'class \w+<T>\s*:\s*RequestHandler(Async)?<T>\s*$' contents/`, read for a `where` on the next line | **1** unconstrained | **0** (1 hit, constrained) | task 7.1, the second compile (`CS0452`); ruled 2026-10-31, repaired at 7.3 | 7 |
 | 86 | The `JsonSerialisationOptions` static-constructor listing showing 4 of the 12 converters 10.8.1 adds (`JsonSerialisationOptions.cs:33–44`), and `ConfigureJsonSerialisation` said to take an `Action<JsonSerialisationOptions>` (the class is static; it takes `Action<JsonSerializerOptions>`, `ServiceCollectionExtensions.cs:866–867`). Run: `probe/s5/json-options` reads 12 converters in the listed order, and the call keeps all 12 on a copy | `CommandProcessorConfigurationReference.md` | `grep -rnF 'Action\<JsonSerialisationOptions\>' contents/`; `grep -c SubscriptionNameConverter contents/CommandProcessorConfigurationReference.md` | **1**; **0** | **0**; **1** | task 7.1, the second compile (`CS1520`, `CS0118`); ruled 2026-10-31, repaired at 7.3 | 7 |
 | 87 | `services.AddProducers(o => o.UseRabbitMQ(…).Publication<T>(…))` and `.Subscription<T>(…)`: `AddProducers` extends `IBrighterBuilder`, not `IServiceCollection`, and `UseRabbitMQ` exists nowhere in `src` at 10.8.1 or `origin/master`. Rewritten to `services.AddConsumers(…)` with `RmqSubscription<T>`, then `.AddProducers(…)` with `RmqProducerRegistryFactory` and `RmqPublication<T>` | `FAQ.md` | `grep -rnE 'UseRabbitMQ\(' contents/`; `grep -rnE '[Ss]ervices\.AddProducers\(' contents/` | **3** lines in 2 blocks; **2** | **0**; **0** | task 7.1, hidden behind *parse*; ruled 2026-10-31, repaired at 7.3 | 7 |
-| 88 | `channelCount: 3`, a parameter no `Subscription` has; the count of message pumps is `noOfPerformers` (`Subscription.cs`, 10.8.1) | `FAQ.md` | `grep -rn 'channelCount' contents/` | **1** | **0** | task 7.3, hidden behind *parse* (#20) | 7 |
-| 89 | `ExternalBusConfiguration`, a type that exists nowhere in `src` at 10.8.1; the `AddProducers` delegate takes a `ProducersConfiguration` (`ServiceCollectionExtensions.cs:312`) | `CommandProcessorConfigurationReference.md` | `grep -rn 'ExternalBusConfiguration' contents/` | **2** | **0** | task 7.3, reading the prose beside #15 and #17 | 7 |
-| 90 | `MySqlInboxBuilder.GetExistsQuery(INBOX_TABLE_NAME)` and `MySqlOutboxBuilder.GetExistsQuery(OUTBOX_TABLE_NAME)`, each one argument where both take `(tableSchema, tableName)`; and `ExecuteScalar() != null` as the exists test, where the query is `SELECT EXISTS (…) AS TableExists`, which returns a row either way, so the test is always true and the table is never created. Run: `probe/s5/mysql-exists`, against MySQL 8 and the released 10.8.1 packages. Case, table absent: `ExecuteScalar()` is `0` (Int64) and `Convert.ToInt32(…) == 1` is false; control, table present: `1` and true; the old test says true in both | `BrighterInboxSupport.md`; `BrighterOutboxSupport.md` | `grep -rnE 'ExistsQuery\((INBOX\|OUTBOX)_TABLE_NAME\)' contents/`; `grep -rnF 'ExecuteScalar() != null' contents/` | **2**; **2** | **0**; **0** | task 7.3, hidden behind *parse* (Inbox #2) and *defect* (Outbox #2, `CS1106`: an extension method outside a static class); run | 7 |
-| 91 | `Environment.IsDevelopment()` in a `Startup` method, where `Environment` binds to `System.Environment`; the host's is `IWebHostEnvironment`, which a `Startup` takes by constructor | `CommandProcessorConfigurationReference.md` | `grep -rnE '(^\|[^.A-Za-z_])Environment\.IsDevelopment\(\)' contents/` | **1** | **0** | task 7.1, the second compile (`CS0117`); repaired at 7.3 | 7 |
-| 92 | An `IAmAMessageMapper<T>` shown with one of its two members, under a `// ...` that declares nothing about the other (017's recurring defect): `MapToMessage` missing from `OrderEventMessageMapper`, `MapToRequest` from `LargeMessageMapper` | `MigratingToNullableReferenceTypes.md`; `OutboxArchiver.md` | a scan of every C# fence declaring `class … : IAmAMessageMapper(Async)?<` for both `MapTo…` members, run at `HEAD` and on the tree | **2** | **0** | task 7.1, the second compile (`CS0535`); repaired at 7.3 | 7 |
+| 88 | `channelCount: 3`, a parameter no `Subscription` has; the count of message pumps is `noOfPerformers` (`Subscription.cs`, 10.8.1) | `FAQ.md` | `grep -rn 'channelCount' contents/` | **1** | **0** | task 7.3, hidden behind *parse* (#20); confirmed by the maintainer 2026-11-01 | 7 |
+| 89 | `ExternalBusConfiguration`, a type that exists nowhere in `src` at 10.8.1; the `AddProducers` delegate takes a `ProducersConfiguration` (`ServiceCollectionExtensions.cs:312`) | `CommandProcessorConfigurationReference.md` | `grep -rn 'ExternalBusConfiguration' contents/` | **2** | **0** | task 7.3, reading the prose beside #15 and #17; confirmed by the maintainer 2026-11-01 | 7 |
+| 90 | `MySqlInboxBuilder.GetExistsQuery(INBOX_TABLE_NAME)` and `MySqlOutboxBuilder.GetExistsQuery(OUTBOX_TABLE_NAME)`, each one argument where both take `(tableSchema, tableName)`; and `ExecuteScalar() != null` as the exists test, where the query is `SELECT EXISTS (…) AS TableExists`, which returns a row either way, so the test is always true and the table is never created. Run: `probe/s5/mysql-exists`, against MySQL 8 and the released 10.8.1 packages. Case, table absent: `ExecuteScalar()` is `0` (Int64) and `Convert.ToInt32(…) == 1` is false; control, table present: `1` and true; the old test says true in both | `BrighterInboxSupport.md`; `BrighterOutboxSupport.md` | `grep -rnE 'ExistsQuery\((INBOX\|OUTBOX)_TABLE_NAME\)' contents/`; `grep -rnF 'ExecuteScalar() != null' contents/` | **2**; **2** | **0**; **0** | task 7.3, hidden behind *parse* (Inbox #2) and *defect* (Outbox #2, `CS1106`: an extension method outside a static class); run; confirmed by the maintainer 2026-11-01 | 7 |
+| 91 | `Environment.IsDevelopment()` in a `Startup` method, where `Environment` binds to `System.Environment`; the host's is `IWebHostEnvironment`, which a `Startup` takes by constructor | `CommandProcessorConfigurationReference.md` | `grep -rnE '(^\|[^.A-Za-z_])Environment\.IsDevelopment\(\)' contents/` | **1** | **0** | task 7.1, the second compile (`CS0117`); repaired at 7.3; confirmed by the maintainer 2026-11-01 | 7 |
+| 92 | An `IAmAMessageMapper<T>` shown with one of its two members, under a `// ...` that declares nothing about the other (017's recurring defect): `MapToMessage` missing from `OrderEventMessageMapper`, `MapToRequest` from `LargeMessageMapper` | `MigratingToNullableReferenceTypes.md`; `OutboxArchiver.md` | a scan of every C# fence declaring `class … : IAmAMessageMapper(Async)?<` for both `MapTo…` members, run at `HEAD` and on the tree | **2** | **0** | task 7.1, the second compile (`CS0535`); repaired at 7.3; `OutboxArchiver.md`'s mapper was later replaced by an `InMemoryArchiveProvider` example at 7.4 (ruled 2026-11-01) | 7 |
 
 ## Friction ledger
 

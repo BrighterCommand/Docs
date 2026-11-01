@@ -116,13 +116,13 @@ the types that have already initialised.
 ## What Brighter Logs
 
 Log methods are source-generated with `[LoggerMessage]`, so the messages are structured
-rather than interpolated. This is how the Command Processor declares its own (`src/Paramore.Brighter/CommandProcessor.cs`, in the 10.8.1 release):
+rather than interpolated. The Command Processor declares its own in a `Log` class nested inside it (`src/Paramore.Brighter/CommandProcessor.cs`, in the 10.8.1 release). Here is one of them, with `Log` written as a top-level `internal` class, the form it takes in your own code; the generator writes the method's body:
 
 ```csharp
 using System;
 using Microsoft.Extensions.Logging;
 
-private static partial class Log
+internal static partial class Log
 {
     [LoggerMessage(LogLevel.Information, "Building send pipeline for command: {CommandType} {Id}")]
     public static partial void BuildingSendPipelineForCommand(ILogger logger, Type commandType, string id);

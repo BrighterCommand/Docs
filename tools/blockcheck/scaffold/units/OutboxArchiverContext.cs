@@ -13,6 +13,3 @@ public static class OutboxArchiverContext
     // block 3: `services.AddBrighter(…)`
     public static IServiceCollection services => null!;
 }
-
-// block 4: `IAmAMessageMapper<LargeDataCommand>`
-public class LargeDataCommand() : Paramore.Brighter.Command(Paramore.Brighter.Id.Random());

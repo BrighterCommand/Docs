@@ -27,6 +27,8 @@ Or reference the project directly:
 <ProjectReference Include="..\..\src\Paramore.Brighter.Testing\Paramore.Brighter.Testing.csproj" />
 ```
 
+The examples assert with the `Shouldly` package's `ShouldBe…` extension methods, so add `Shouldly` to your test project as well to run them as written, or use your test framework's own assertions; the mocking-framework examples at the end name their packages where they appear.
+
 ## Using SpyCommandProcessor
 
 ### Basic Usage
@@ -34,6 +36,9 @@ Or reference the project directly:
 Inject `SpyCommandProcessor` as your `IAmACommandProcessor` dependency and verify interactions after exercising the handler:
 
 ```csharp
+using Paramore.Brighter.Testing;
+using Shouldly;
+
 // Arrange
 var spy = new SpyCommandProcessor();
 var handler = new PlaceOrderHandler(spy);
@@ -139,6 +144,9 @@ Each `IAmACommandProcessor` method maps to a `CommandType`:
 ### Verifying Send
 
 ```csharp
+using Paramore.Brighter.Testing;
+using Shouldly;
+
 var spy = new SpyCommandProcessor();
 var handler = new MyHandler(spy);
 
@@ -155,6 +163,10 @@ sent.SomeProperty.ShouldBe("expected");
 ### Verifying Publish
 
 ```csharp
+using System.Linq;
+using Paramore.Brighter.Testing;
+using Shouldly;
+
 var spy = new SpyCommandProcessor();
 var handler = new OrderHandler(spy);
 
@@ -171,6 +183,9 @@ events.First().OrderId.ShouldBe("ORD-1");
 ### Verifying Post (External Bus)
 
 ```csharp
+using Paramore.Brighter.Testing;
+using Shouldly;
+
 var spy = new SpyCommandProcessor();
 var handler = new NotificationHandler(spy);
 
@@ -186,6 +201,10 @@ posted.UserId.ShouldBe("user-1");
 When handlers use the outbox pattern, `SpyCommandProcessor` tracks deposits separately:
 
 ```csharp
+using System.Linq;
+using Paramore.Brighter.Testing;
+using Shouldly;
+
 var spy = new SpyCommandProcessor();
 var handler = new TransactionalHandler(spy);
 
@@ -213,6 +232,9 @@ cleared.Amount.ShouldBe(99.99m);
 Use `Reset()` between test scenarios when reusing a spy:
 
 ```csharp
+using Paramore.Brighter.Testing;
+using Shouldly;
+
 var spy = new SpyCommandProcessor();
 
 // First scenario

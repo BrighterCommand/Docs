@@ -167,34 +167,30 @@ services.AddBrighter(options =>
 
 ### InMemory Archive Example Usage
 
+In a test you do not have to wait for the hosted service's timer. `UseOutboxArchiver` registers an `OutboxArchiver<Message, TTransaction>`, and the timed service calls it with `MinimumAge` on each tick, so you can construct one over an `InMemoryOutbox` and call `Archive` yourself. `InMemoryArchiveProvider.ArchivedMessages` is a dictionary of everything archived, keyed by message Id:
+
 ```csharp
-using System.Text.Json;
+using System;
+using System.Transactions;
 using Paramore.Brighter;
-using Paramore.Brighter.JsonConverters;
-using Paramore.Brighter.Transforms.Attributes;
 
-// ...
-public class LargeMessageMapper : IAmAMessageMapper<LargeDataCommand>
-{
-    public IRequestContext? Context { get; set; }
+var outbox = new InMemoryOutbox(TimeProvider.System);
+var archiveProvider = new InMemoryArchiveProvider();
+var archiver = new OutboxArchiver<Message, CommittableTransaction>(outbox, archiveProvider);
 
-    [ClaimCheck(0, thresholdInKb: 5)]  // Store payloads > 5KB
-    public Message MapToMessage(LargeDataCommand request, Publication publication)
-    {
-        var header = new MessageHeader(
-            messageId: request.Id,
-            topic: new RoutingKey("LargeData"),
-            messageType: MessageType.MT_COMMAND
-        );
+// A message that was dispatched two days ago
+var message = new Message(
+    new MessageHeader(Id.Random(), new RoutingKey("orders"), MessageType.MT_EVENT),
+    new MessageBody("{\"OrderId\":\"ORD-1\"}"));
+var context = new RequestContext();
+outbox.Add(message, context);
+outbox.MarkDispatched(message.Id, context, DateTimeOffset.UtcNow.AddDays(-2));
 
-        var body = new MessageBody(JsonSerializer.Serialize(request));
-        return new Message(header, body);
-    }
+// Archive every message dispatched more than a day ago
+archiver.Archive(TimeSpan.FromDays(1));
 
-    [RetrieveClaim(0)]  // Fetch the payload back from the luggage store
-    public LargeDataCommand MapToRequest(Message message)
-        => JsonSerializer.Deserialize<LargeDataCommand>(message.Body.Value, JsonSerialisationOptions.Options)!;
-}
+// The Archiver moved the message out of the Outbox and into the archive provider
+bool archived = archiveProvider.ArchivedMessages.ContainsKey(message.Id.Value);   // true
 ```
 
 ## Further Reading
