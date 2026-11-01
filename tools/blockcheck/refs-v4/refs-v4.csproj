@@ -229,10 +229,6 @@
     <!-- PolicyRetryAndCircuitBreaker.md tells its reader to install this, for
          AddConcurrencyLimiter (spec 018 D13). Polly.Core's version on the pin. -->
     <PackageReference Include="Polly.RateLimiting" Version="8.8.0" />
-    <!-- FAQ.md #13 and the timeout answer after it call AddResiliencePipeline,
-         which lives in Polly.Extensions, and the page now names the package
-         (spec 018 D24, found at 7.2). Polly.Core's version on the pin. -->
-    <PackageReference Include="Polly.Extensions" Version="8.8.0" />
 
     <!-- The floor Paramore.Brighter.MsSql.EntityFrameworkCore 10.8.1 sets for
          net9.0. Below it the restore fails NU1605, a package downgrade. -->

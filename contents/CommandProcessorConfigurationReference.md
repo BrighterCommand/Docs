@@ -579,7 +579,7 @@ We use the naming convention **Paramore.Brighter.MessagingGateway.{TRANSPORT}** 
 
 In this example we will use the transport for RabbitMQ, provided by the NuGet package: 
 
-* **Paramore.Brighter.MessagingGateway.RMQ**
+* **Paramore.Brighter.MessagingGateway.RMQ.Async**
 
 See the documentation for detail on specific *transports* on how to configure them for use with Brighter, for now it is enough to know that you need to provide a *Messaging Gateway* which tells us how to reach the middleware and a *Publication* which tells us how to configure the middleware.
 

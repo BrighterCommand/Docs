@@ -2809,7 +2809,7 @@ and 9 now give the close's figures; rows 1 and 6 already gave bugfix 0003's, whi
 - [x] **Task 7.5:** Run S5's behavioural claims (AC10)
   - Input: S5's changed blocks
   - Output: a *Claim / Case / Control* table, each row naming `probe/s5/<name>/Program.cs`
-- [ ] **Task 7.6:** Second pass for S5
+- [x] **Task 7.6:** Second pass for S5
   - Input: 7.1's recurrences; rulings asked
   - Output: as 3.6's
 - [ ] **Task 7.7:** Close phase 7
@@ -3046,6 +3046,20 @@ stays FAILED on `CS8795`, the fallback the ruling names.
 
 Carried out at 7.5: the row in § *Blocks that stay FAILED* and 7.4's question are annotated, and the follow-up is recorded in § *The
 behavioural claims (7.5, AC10)*, *Follow-up after 018*.
+
+**Rulings on 7.5's PAUSE, 2026-11-01 (session 136, continued)**, given by the maintainer and recorded as given:
+
+> 1. **Ledger 93 confirmed, and filed upstream as two bugs** (filed by the orchestrator): **BrighterCommand/Brighter#4716**, *MongoDB:
+>    TimeToLive is ignored unless MakeCollection is CreateIfNotExists*; **BrighterCommand/Brighter#4717**, *MongoDB: TTL index on TimeStamp
+>    never expires documents (DateTimeOffset stored as a subdocument)*.
+> 2. **Ledger 94 accepted.**
+> 3. **D24 reverted: drop the `Polly.Extensions` pin**, since no block needs it after ledger 94 (`grep -rn 'AddResiliencePipeline(' contents/`
+>    → 0). Remove it from both pins, mark D24 reverted in `design.md`, rebuild, and confirm nothing moved.
+> 4. **Note, don't change: `MigratingToPollyV8.md` Step 1 tells readers to add `Polly.Extensions` 8.0.0.** Given ledger 94, that package is
+>    probably unnecessary for Brighter. Record it as an observation, a candidate for 8.5's friction ledger or a later spec; do not edit the page.
+
+Carried out at 7.6 (§ *Second pass (7.6)*): 1 is on ledger row 93 and in *Upstream, filed during the phase*; 3 is done, 580 → **579**
+reference assemblies on each pin and no verdict moved; 4 is recorded as an observation.
 
 #### The repairs (7.2)
 
@@ -3452,6 +3466,7 @@ containers were not touched. 7.3's two runs (ledger 86, 90) are listed as 7.3 re
 embedded document, which a TTL index ignores. `OutboxMessage`, `InboxMessage` and `LockMessage` all carry it, so stale locks are never
 released either. A fix would index `TimeStamp.DateTime` (or store `TimeStamp` as a BSON date) and create the index whenever `TimeToLive` is set.
 `probe/s5/mongo-ttl` reproduces it.
+**Filed as #4716 and #4717 (2026-11-01).**
 
 **Said and measured.**
 
@@ -3483,6 +3498,115 @@ here because this spec keeps no follow-ups list and § *Friction ledger* is writ
 **Questions for the maintainer, from 7.5.** (1) Ledger 93 and 94 are new defects, each repaired at every recurrence; confirm them. (2) The Mongo
 `TimeToLive` defect is upstream (above): file it? (3) D24: with `FAQ.md` #13 and #16 repaired, no block needs `Polly.Extensions`, and the FAQ no longer names
 the package. Keep the pin (one line in each project, harmless) or revert it?
+
+**Ruled 2026-11-01:** (1) ledger 93 confirmed and ledger 94 accepted. (2) Filed, by the orchestrator, as **Brighter #4716** (`TimeToLive`
+ignored unless `MakeCollection` is `CreateIfNotExists`) and **#4717** (the TTL index on `TimeStamp` never expires a document). (3) Reverted:
+`Polly.Extensions` leaves both pins (D24). Carried out at 7.6.
+
+#### Second pass (7.6)
+
+**Every phase-7 ledger row holds.** Rows 84–94 each give their *After* from their grep, run as written on the tree: **0** for every row
+but 84 (`PipelineValidation.md`'s `text` log line, as recorded), 85 (1 hit, constrained) and 86 (1, the converter now listed), whose greps
+count sites that are now right. Row 92's mapper scan, committed at last as `probe/mapper_members.py` (obligation 18: 7.1, 7.3 and this
+task ran it), reads **0**; run over the tree at `dc09559`, it names the two blocks 7.1 found, so it can fail. 7.1's recurrence greps, run corpus-wide as written:
+
+| Defect | 7.1's grep | At `dc09559` | On the tree | Ledger |
+|---|---|---:|---:|---:|
+| `UseResiliencePipeline` given its step first | `grep -rnE '\[UseResiliencePipeline(Async)?\([0-9]' contents/` | 4 | **1**, the log line | 84 |
+| A handler attribute on a class | 7.1's `-A2` grep | 3 | **0** | 84 |
+| A generic handler base without its constraint | `grep -rnE 'class \w+<T>\s*:\s*RequestHandler(Async)?<T>\s*$' contents/` | 1 | **1**, constrained on the next line | 85 |
+| `JsonSerialisationOptions` short of 10.8.1 | `grep -rnF 'Action\<JsonSerialisationOptions\>'`; `grep -c SubscriptionNameConverter` | 1; 0 | **0**; **1** | 86 |
+| `UseRabbitMQ` and `services.AddProducers` | `grep -rnE 'UseRabbitMQ\('`; `grep -rnE '[Ss]ervices\.AddProducers\('` | 3; 2 | **0**; **0** | 87 |
+| 017's mapper missing a member | `probe/mapper_members.py` | 2 | **0** | 92 |
+| `System.Environment` bound for a host's | `grep -rnE '(^\|[^.A-Za-z_])Environment\.IsDevelopment\(\)'` | 1 | **0** | 91 |
+| Arguments given as a comment | `grep -rnE '\(/\* [^*]+ \*/\)'` | 8 | **2**, `MigratingToPollyV8.md` #5 (SKIPPED, V9) and `UsingSweeperCircuitBreaking.md` #3 (BUILT), as 7.1 read them | — |
+| A source-generated `[LoggerMessage]` | `grep -rn 'LoggerMessage('` | 1 | **1**, `Logging.md` #5, listed | — |
+| Ledger 2, Shouldly unnamed | `grep -c Shouldly contents/TestDoubleOptions.md` | 0 | **7** | 2 |
+| Ledger 3, `…DynamoDb.V4` | `grep -rn 'Inbox.DynamoDb.V4'` | 1 | **0**, repaired here | 3 |
+| Unpinned packages | `Substitute\.For<\|using NSubstitute`; `\[Benchmark\|BenchmarkDotNet` | 1; 1 | 2; 3, each now pinned (D22) and named by its page | — |
+
+**Widened, by shape rather than words:**
+
+| Defect | Widened grep | Hits | Reading |
+|---|---|---:|---|
+| 3, a package id misspelt | `Paramore\.Brighter\.(Inbox\|Outbox\|Locking)\.Dynamo[Dd][Bb](\.V4)?`, against each package's `<id>` in its `.nuspec` | 3 misspelt at `8c90dcc` | **a recurrence**: `DynamoInbox.md` spells the v3 Inbox package `…Inbox.DynamoDb` as well, and `DynamoOutbox.md` the v3 Outbox package `…Outbox.DynamoDb`; the ids are `…DynamoDB`. Repaired (ledger 3). The `Locking.DynamoDb` hits name a namespace, which 10.8.1 spells `DynamoDb` in two of its three files (`AWSSQSMigrateToV10.md` says so), and are right |
+| 84, a resilience or policy attribute given its step first | `\[(UseResiliencePipeline\|UsePolicy\|FallbackPolicy\|TimeoutPolicy)(Async)?\(\s*[^"\s)]` | 36 | every one a named `step:` argument, a constant, a `string[]`, or Darker's `[FallbackPolicy(step)]`; the log line |
+| 84, any attribute on a class | an attribute line directly above a `class` declaration | 8 | **a recurrence**: `FAQ.md` #15, `[TimeoutPolicy]` on a `RequestHandlerAsync` class, which 7.1's list (`Timeout(`, not `TimeoutPolicy(`) could not match. The other seven are `[PublicationTopic]`, `[ApiController]`/`[Route]` and test-class attributes, valid on a class |
+| 84, an attribute's kind against its method | every attribute in the run of lines above a `Handle`, `HandleAsync`, `Execute` or `ExecuteAsync`, its `Async` suffix against the method's | 45 at `8c90dcc`, 44 on the tree | **a new defect**, ledger 95: `V10MigrationGuide.md` #8, `[TimeoutPolicy]` on `HandleAsync`. The rest are Darker's attributes, which carry no suffix and decorate either method, and `PipelineValidation.md`'s marked block |
+| 85, a generic base without its constraint | `class \w+<\w+>\s*:\s*(RequestHandler\|QueryHandler\|IHandleRequests\|IAmAMessageMapper)` | 2 | both constrained |
+| 86, `JsonSerialisationOptions` as a type | `JsonSerialisationOptions\b(\.\w+)?`; `ConfigureJsonSerialisation` | 34; 3 | 31 `.Options`, the live property; two prose names of the class; the file name; the two `ConfigureJsonSerialisation` calls take `JsonSerializerOptions` |
+| 87, `AddProducers` off the wrong receiver, an invented fluent transport | `(services\|serviceCollection\|builder\.Services\|Services)\s*\.\s*AddProducers\(`; `\.Use(RabbitMQ\|Rmq\|Kafka\|Sqs\|Sns\|AzureServiceBus\|Redis\|MsSql\|Postgres\|InMemory)\w*\(`; `\.(Publication\|Subscription)<\w+>\(` | 0; 3; 0 | Hangfire's `UseRedisStorage` and Quartz's `UsePostgres`, live in their packages and in BUILT blocks |
+| 88, a pump count misnamed | `(channel\|pump\|performer\|consumer\|thread)s?Count`, case-blind; `noOf\w+\|numberOf\w+` | 0; 32 | `noOfPerformers`/`NoOfPerformers`; the Control API's `numberOfPerformers`, `numberOfActivePerformers` (its route and JSON); `numberOfShards` |
+| 89, a V9 bus configuration type | `\w*BusConfiguration\b\|ExternalBus\(\|IAmExternalBus\w*` | 4 | `AzureServiceBusConfiguration`, the live class or its page's file name in a link |
+| 90, an exists query and its test | `GetExistsQuery\(`; `ExecuteScalar(Async)?\(` | 3; 4 | the two repaired; `MsSqlQueueBuilder.GetExistsQuery("QueueData", schemaName: "dbo")`, matching `(string queueTableName, string? schemaName = "dbo")` (`MsSqlQueueBuilder.cs:114`); the two repaired tests and two DDL executions |
+| 91, a host's environment | `Environment\.(Is\w+\|EnvironmentName)\b`, unqualified | 0 | |
+| 93, a TTL claim | `TimeToLive\|\bTTL\b\|ExpireAfter\|expireAfter` | 49 lines on 17 pages | the four Mongo and lock pages as repaired; the rest are other stores', transports' and schedulers' TTLs (Azure Service Bus, Redis, Firestore, the InMemory stores, RabbitMQ, DynamoDB), not this mechanism. `DynamoOutbox.md`'s `TimeToLive` row (*"before DynamoDB expires it"*) is a behavioural claim no task has run; read, not run |
+| 94, a DI-registered pipeline | `AddResiliencePipeline\|ResiliencePipelineProvider\|AddResiliencePipelines` | 1 | `FAQ.md`'s sentence saying Brighter does not read it |
+| Arguments given as a comment | `\(\s*/\*[^*]*\*/\s*\)\|\(\s*\.\.\.\s*\)\|=\s*/\*[^*]*\*/\s*[;,]` | 13 | prose, inline code and a code comment (`HangfireScheduler.md`), SKIPPED V9 forms (`V10MigrationGuide.md`, `MigratingToPollyV8.md`), and BUILT `UsingSweeperCircuitBreaking.md` #3 |
+| A package on no pin | every `dotnet add package`, `Install-Package` and `PackageReference Include` on the corpus, against both `refs` projects | 10 not on a pin | Hangfire, Quartz, TickerQ, the Analyzer and `Microsoft.Extensions.Hosting` are transitive or install steps; no FAILED block fails for want of one (each FAILED block on their pages is listed *same-page*). `Polly` and `Polly.Extensions` on `MigratingToPollyV8.md`: the observation below. `Paramore.Brighter.MessagingGateway.RMQ`: the next row |
+| A package that does not exist | every `Paramore.Brighter…` id the corpus tells a reader to install (`dotnet add package`, `PackageReference`, a bulleted package name), 61, each against NuGet's version index for a stable 10.x release | 2 with none | **a new defect**, ledger 96: `Paramore.Brighter.MessagingGateway.RMQ` stops at `10.0.0-preview.4`; V10 ships `…RMQ.Async` and `…RMQ.Sync` (10.0.0 through 10.8.1). Named on `V10MigrationGuide.md` (`dotnet add package … --version 10.0.0`) and `CommandProcessorConfigurationReference.md` (*Transports*), whose blocks import `…RMQ.Async`. Repaired. `RabbitMQConnectionStability.md` names it as a log-category prefix, which is right. The other, `Paramore.Brighter.Outbox.{DB}`, is a placeholder |
+
+**The recurrences, repaired (obligation 21).**
+- **Ledger 3, widened.** `DynamoInbox.md`'s two package names and `DynamoOutbox.md`'s one now read `…DynamoDB` (prose only; no block moves)
+- **Ledger 96.** `V10MigrationGuide.md`'s install step and `CommandProcessorConfigurationReference.md`'s *Transports* now name
+  `Paramore.Brighter.MessagingGateway.RMQ.Async`, the package each page's blocks import (prose and a `bash` fence; no C# block moves)
+- **Ledger 84 → 95.** `FAQ.md` #15 and `V10MigrationGuide.md` #8, each a V9 form SKIPPED beside its V10 replacement, are now `[TimeoutPolicy]` on a
+  synchronous `Handle`, with the `using`s a V9 reader needs (`Paramore.Brighter`, `Paramore.Brighter.Policies.Attributes`, both live at 9.33). The
+  sentence before each says the attribute has no async form, so in V9 it decorates a synchronous `Handle`. `probe/s5/timeout-policy-kind`, against
+  10.8.1, two-way:
+
+| Claim | Case | Control | Probe | Result |
+|---|---|---|---|---|
+| `V10MigrationGuide.md` #8 as it stood: `[TimeoutPolicy]` on an async handler's `HandleAsync` is the V9 form | the block, sent with `SendAsync` | the repaired form, `[TimeoutPolicy]` on `Handle`: a handler slower than the timeout, and one faster | `timeout-policy-kind` | `ConfigurationException`, *"All handlers in an async pipeline must derive from IHandleRequestsAsync"*, naming `TimeoutPolicyHandler<T>` / cut off with `OperationCanceledException`; handled once |
+| `FAQ.md` #15 as it stood: `[TimeoutPolicy]` on the class | `dotnet build -p:ClassLevel=true` | `dotnet build`, the repaired form | `timeout-policy-kind` | `CS0592` / 0 errors |
+
+  The cut-off surfaces as `OperationCanceledException`, not `TimeoutException`: `TimeoutPolicyHandler.Handle` waits on the token its timer
+  cancels. No page says which, so nothing else changes.
+
+**Ruling 3: D24 reverted.** The `Polly.Extensions` `PackageReference` and its comment left `refs.csproj` and `refs-v4.csproj` (**114 → 113**
+`PackageReference`s each). After the rebuild each pin resolves **579** reference assemblies, from **580**. `--report` before and after, the
+whole row file compared: **identical**, 994 / 889 / 76 / 29. `design.md` D24 is marked reverted, and its ruling-dates sentence says so.
+
+**Ruling 4, an observation, the page not changed.** `MigratingToPollyV8.md` Step 1 tells the reader to add `Polly.Extensions` 8.0.0 (as a
+`PackageReference`, beside `Polly` 8.0.0). Brighter reads only the `ResiliencePipelineRegistry<string>` given to `AddBrighter` (ledger 94,
+`probe/s5/faq-claims`), never the registry `Polly.Extensions` puts in DI, so for Brighter that package is probably unnecessary. Its blocks need
+it for nothing: none calls `AddResiliencePipeline`, and none is FAILED (#1, #3, #5 are SKIPPED V9 forms; the rest BUILT on a pin without it). A
+candidate for 8.5's friction ledger, or a later spec.
+
+**`symbolcheck` rows (7.3's recommendation; ledgers 87–89).** Each name resolved with `git -C ../Brighter grep -lw <name> <ref> -- 'src/*.cs'`
+at `8.1.1399`, `9.9.13` and `9.33` (V8 and V9), `10.8.1` and `origin/master`, the live replacement the second way:
+
+| Name | V8 · V9 (9.9.13, 9.33) | 10.8.1 · master | Replacement, live | Reading |
+|---|---|---|---|---|
+| `UseRabbitMQ` | 0 · 0, 0 | 0 · 0 | `AddConsumers` 6 files at each | **no row.** Never a released name, and the watchlist holds *"names known dead in a released product"*; 6.5's reading for `RabbitMQProducerRegistryFactory` and the rest. 0 sites, and the blocks that held it build, so `blockcheck` catches its return there |
+| `channelCount` | 0 · 0, 0 (and `ChannelCount` 0) | 0 · 0 | `noOfPerformers` 14 files at each | **no row**, the same reading; and an argument name, as 6.5 read `compressionType:` |
+| `ExternalBusConfiguration` | 0 · **5, 5** | 0 · 0 | `ProducersConfiguration` 3 files at each | **meets the watchlist's test**: V9's type for the external bus (`CommandProcessorBuilder.ExternalBus(ExternalBusConfiguration, …)` and the DI extensions at 9.33), gone at V10, and written as current prose on `CommandProcessorConfigurationReference.md` (ledger 89). A watchlist row is scope (D10), so it is **put to the maintainer, not added** |
+
+A trial with the row in place, reverted after: `symbolcheck` **25 entries, 161 pages, 14 silenced, 0 findings**; `--verify-list` all 25 DEAD at
+both refs, every replacement live. Two-way: a planted page naming `ExternalBusConfiguration` gave **1 site**, exit 1, with the row; **0**, exit 0,
+without it. `tools/symbolwatch.tsv` is unchanged.
+
+**Upstream, filed during the phase:** **#4716** and **#4717**, MongoDB `TimeToLive` (ledger 93; filed by the orchestrator, 2026-11-01).
+
+**Off-group term:** `DynamoInbox.md` and `DynamoOutbox.md`, 017 tranche pages, prose only (ledger 3). `FAQ.md`, `V10MigrationGuide.md` and
+`CommandProcessorConfigurationReference.md` are S5.
+
+**Measured after 7.6** (`8c90dcc` + this task's tree; `git add -A` first):
+
+| Gate | After 7.5 | After 7.6 | |
+|---|---|---|---|
+| `--report` | 994 / 889 / 76 / 29, 146 findings | **994 / 889 / 76 / 29**, 146 findings, exit 1 | the row files before and after, `diff` → identical. Two methods: the summary line, and `cut -f1 \| sort \| uniq -c` of the rows. The compiler's own line moved 861 / 105 → **862 / 104** built and failing: it compiles SKIPPED blocks too, and `FAQ.md` #15 no longer fails `CS0592`. The 146 are 7.7's |
+| reference assemblies | 580 on each pin | **579** on each pin; the V4 pin 28 of 28 | D24 reverted |
+| scaffold rule · pin rule | 97 units, 0 · 4 pages, 0 | **97** units, 0 violations, 0 compile errors · 4 pages, 0 violations | no unit changed |
+| `pagelint` | 0 errors / 91 | **0 errors / 89** | the two V9 blocks gained their `using`s; the five touched pages 0 errors / 7 warnings; `--changed origin/master` 0 errors; `--plant` 5 / 5 |
+| `linkcheck` · `symbolcheck` · `optioncheck` | 169 / 0 · 24 / 14 · — | 169 / 0 · 24 entries, 161 pages, 14 silenced, exit 0 · 0 mismatches, 7 tables, 56 rows on the five pages (no table touched) | |
+| `versioncheck` | 0 of 18 | **0 stale pins of 18**, 5 pages | |
+
+**Questions for the maintainer, from 7.6.** (1) Ledger 95 and 96 are new defects, found by widening ledger 84 and 7.1's package shape, each
+repaired at both its sites: confirm them.
+(2) Add `ExternalBusConfiguration` to `tools/symbolwatch.tsv` (replacement `ProducersConfiguration`, evidence ledger 89), as D10 added
+`UseExternalBus`? (3) Rule 8 cannot see ledger 95's shape, an attribute with no `…Async` twin on `HandleAsync`, because `PAIRED` holds only the
+attributes Brighter ships in both forms. Teaching it the sync-only attributes is a tool change: in 018, or a follow-up after it?
 
 ---
 
@@ -3743,7 +3867,7 @@ design, and their greps were run there.*
 |---:|---|---|---|---:|---:|---|---:|
 | 1 | `AddServiceActivator` called as current code; dead at `10.7.0` and `master` (doc comments only) | `AwsScheduler.md`, `AzureScheduler.md` | `grep -rn 'Services.AddServiceActivator(' contents/` | **2** | **0** | re-derivation (design E2); the watchlist missed it | 3 |
 | 2 | Shouldly assertions with the package never named and no `using` | `TestDoubleOptions.md` | `grep -c Shouldly contents/TestDoubleOptions.md` | **0** | **7** (≥ 7: a `using Shouldly;` in each of the six blocks and one sentence naming the package) | the second compile (design E2, *pin-gap*); repaired at 7.4 | 7 |
-| 3 | Package spelt `Paramore.Brighter.Inbox.DynamoDb.V4`; the project is `…DynamoDB.V4` | `DynamoInbox.md` (a 017 tranche page; repaired under obligation 21) | `grep -rn 'Inbox.DynamoDb.V4' contents/` | **1** | | re-derivation (requirements, the V4 pin) | 7 |
+| 3 | Package spelt `Paramore.Brighter.Inbox.DynamoDb.V4`; the project is `…DynamoDB.V4`. Widened at 7.6 by shape, every DynamoDB Inbox and Outbox package spelt `…DynamoDb`: the v3 Inbox and Outbox packages too, whose ids are `Paramore.Brighter.Inbox.DynamoDB` and `Paramore.Brighter.Outbox.DynamoDB` (each package's `.nuspec` at 10.8.1) | `DynamoInbox.md`; `DynamoOutbox.md` (017 tranche pages; repaired under obligation 21) | `grep -rn 'Inbox.DynamoDb.V4' contents/`; `grep -rnE 'Paramore\.Brighter\.(Inbox\|Outbox)\.DynamoDb' contents/` | **1**; **3** | **0**; **0** | re-derivation (requirements, the V4 pin); repaired at 7.6 | 7 |
 | 4 | `UseExternalBus` called as current code; dead at `10.8.0` and `master` (one doc comment) | `AwsScheduler.md`, `AzureScheduler.md` | `grep -rn '^\.UseExternalBus(' contents/` | **2** | **0** | task 3.1, chained after defect 1 | 3 |
 | 5 | `AzureServiceBusSubscription<T>` given `deadLetterQueueHandling:` and `lockTimeout:`, parameters no overload has at 10.8.0; both settings live on `AzureServiceBusSubscriptionConfiguration` | `AzureScheduler.md` | `grep -rnE 'deadLetterQueueHandling\|lockTimeout: 60' contents/` | **2** | **0** | task 3.1, the second compile (`probe/second.py`) | 3 |
 | 6 | A scheduler class implementing `IAmA(Message\|Request)Scheduler(Async\|Sync)` with two of each interface's five members, and no `CancellationToken` | `CustomScheduler.md` | `grep -rnE 'class \w+ : IAmA(Message\|Request)SchedulerAsync' contents/` | **2** | **2**, both whole: each class implements all five members of each interface, and both blocks build | task 3.1, the second compile | 3 |
@@ -3824,7 +3948,7 @@ design, and their greps were run there.*
 | 81 | FIFO topic and queue names said to need a `.fifo` suffix; Brighter appends it when the name lacks it (`AWSNameExtensions.cs`, `Truncate`, at 10.8.1) | `AWSSQSConfiguration.md` | `grep -rnF 'must end with `.fifo`' contents/` | **2** | **0** | task 6.4, run on LocalStack 4.4 (`probe/s4/sqs-channels`) | 6 |
 | 82 | RabbitMQ's blocked and unblocked events said to be logged *"automatically"* once a provider is added, and the DI extensions said to leave *"nothing to do"*; each Brighter type logs through a `static readonly` logger from `ApplicationLogging.LoggerFactory` at its first log, which is the container's factory only once the command processor (`ServiceCollectionExtensions.cs:776`) or the Dispatcher (`:141`, ServiceActivator) is built, so a type that logs earlier never reaches the providers | `RabbitMQConnectionStability.md`; `Logging.md` | `grep -rnF 'Blocked events will be logged automatically' contents/`; `grep -rnF 'Brighter automatically logs blocked and unblocked events' contents/`; `grep -rnF 'If you use the DI extensions, there is nothing to do' contents/` | **1**; **1**; **1** | **0**; **0**; **0** | task 6.5's Serilog addendum, run against `rabbitmq:3.13-management` (`probe/s4/rmq-logging`); the `Logging.md` recurrence by `grep -rn 'ApplicationLogging\|ILoggerFactory' contents/` (obligation 21) | 6 |
 | 83 | The blocked and unblocked sample lines showing `amqp://localhost:5672`; the gateway logs the sanitised URI, credentials masked and a trailing slash (`RmqMessagingGatewayConnection.cs:137`) | `RabbitMQConnectionStability.md` | `grep -rnF 'Subscription to amqp://localhost:5672' contents/` | **2** | **0** | task 6.5's Serilog addendum, the probe's output (`probe/s4/rmq-logging`) | 6 |
-| 84 | `[UseResiliencePipeline(1, "…")]` with the step first, where `UseResiliencePipelineAttribute(string policy, int step)` takes the policy first (`UseResiliencePipelineAttribute.cs:68`), and on a handler class, where `[AttributeUsage(AttributeTargets.Method)]` (`:52`) allows only a method; the handlers are `RequestHandlerAsync`, so the attribute is `[UseResiliencePipelineAsync("…", 1)]` on `HandleAsync`, with `[RequestLoggingAsync]` moved beside it | `FAQ.md` | `grep -rnE '\[UseResiliencePipeline(Async)?\([0-9]' contents/`; `grep -rn -A2 -E '^\[(RequestLogging\|UseResiliencePipeline\|UsePolicy\|UseInbox\|FallbackPolicy\|FeatureSwitch\|Monitor\|ValidateRequest\|DeferMessageOnError\|RejectMessageOnError\|DontAckOnError\|Timeout)(Async)?\(' contents/ \| grep -E '^\S+-[0-9]+-\s*public (abstract \|sealed )?class '` | **3** (+1, `PipelineValidation.md`'s `text` log line, not a call); **3** | **0** (+ the same log line); **0** | task 7.1, the second compile (`CS1503`, `CS0592`); ruled 2026-10-31, repaired at 7.3 | 7 |
+| 84 | `[UseResiliencePipeline(1, "…")]` with the step first, where `UseResiliencePipelineAttribute(string policy, int step)` takes the policy first (`UseResiliencePipelineAttribute.cs:68`), and on a handler class, where `[AttributeUsage(AttributeTargets.Method)]` (`:52`) allows only a method; the handlers are `RequestHandlerAsync`, so the attribute is `[UseResiliencePipelineAsync("…", 1)]` on `HandleAsync`, with `[RequestLoggingAsync]` moved beside it | `FAQ.md` | `grep -rnE '\[UseResiliencePipeline(Async)?\([0-9]' contents/`; `grep -rn -A2 -E '^\[(RequestLogging\|UseResiliencePipeline\|UsePolicy\|UseInbox\|FallbackPolicy\|FeatureSwitch\|Monitor\|ValidateRequest\|DeferMessageOnError\|RejectMessageOnError\|DontAckOnError\|Timeout)(Async)?\(' contents/ \| grep -E '^\S+-[0-9]+-\s*public (abstract \|sealed )?class '` | **3** (+1, `PipelineValidation.md`'s `text` log line, not a call); **3** | **0** (+ the same log line); **0** | task 7.1, the second compile (`CS1503`, `CS0592`); ruled 2026-10-31, repaired at 7.3. Widened at 7.6: the second grep's list named `Timeout(`, not `TimeoutPolicy(`; with `TimeoutPolicy` added it read **1** at `8c90dcc`, `FAQ.md` #15 (*Old (V9)*), and **0** after, repaired with ledger 95 | 7 |
 | 85 | `MyHandlerBase<T> : RequestHandlerAsync<T>` without the `where T : class, IRequest` the base requires (`RequestHandlerAsync.cs:54`) | `FAQ.md` | `grep -rn -A1 -E 'class \w+<T>\s*:\s*RequestHandler(Async)?<T>\s*$' contents/`, read for a `where` on the next line | **1** unconstrained | **0** (1 hit, constrained) | task 7.1, the second compile (`CS0452`); ruled 2026-10-31, repaired at 7.3 | 7 |
 | 86 | The `JsonSerialisationOptions` static-constructor listing showing 4 of the 12 converters 10.8.1 adds (`JsonSerialisationOptions.cs:33–44`), and `ConfigureJsonSerialisation` said to take an `Action<JsonSerialisationOptions>` (the class is static; it takes `Action<JsonSerializerOptions>`, `ServiceCollectionExtensions.cs:866–867`). Run: `probe/s5/json-options` reads 12 converters in the listed order, and the call keeps all 12 on a copy | `CommandProcessorConfigurationReference.md` | `grep -rnF 'Action\<JsonSerialisationOptions\>' contents/`; `grep -c SubscriptionNameConverter contents/CommandProcessorConfigurationReference.md` | **1**; **0** | **0**; **1** | task 7.1, the second compile (`CS1520`, `CS0118`); ruled 2026-10-31, repaired at 7.3 | 7 |
 | 87 | `services.AddProducers(o => o.UseRabbitMQ(…).Publication<T>(…))` and `.Subscription<T>(…)`: `AddProducers` extends `IBrighterBuilder`, not `IServiceCollection`, and `UseRabbitMQ` exists nowhere in `src` at 10.8.1 or `origin/master`. Rewritten to `services.AddConsumers(…)` with `RmqSubscription<T>`, then `.AddProducers(…)` with `RmqProducerRegistryFactory` and `RmqPublication<T>` | `FAQ.md` | `grep -rnE 'UseRabbitMQ\(' contents/`; `grep -rnE '[Ss]ervices\.AddProducers\(' contents/` | **3** lines in 2 blocks; **2** | **0**; **0** | task 7.1, hidden behind *parse*; ruled 2026-10-31, repaired at 7.3 | 7 |
@@ -3833,8 +3957,10 @@ design, and their greps were run there.*
 | 90 | `MySqlInboxBuilder.GetExistsQuery(INBOX_TABLE_NAME)` and `MySqlOutboxBuilder.GetExistsQuery(OUTBOX_TABLE_NAME)`, each one argument where both take `(tableSchema, tableName)`; and `ExecuteScalar() != null` as the exists test, where the query is `SELECT EXISTS (…) AS TableExists`, which returns a row either way, so the test is always true and the table is never created. Run: `probe/s5/mysql-exists`, against MySQL 8 and the released 10.8.1 packages. Case, table absent: `ExecuteScalar()` is `0` (Int64) and `Convert.ToInt32(…) == 1` is false; control, table present: `1` and true; the old test says true in both | `BrighterInboxSupport.md`; `BrighterOutboxSupport.md` | `grep -rnE 'ExistsQuery\((INBOX\|OUTBOX)_TABLE_NAME\)' contents/`; `grep -rnF 'ExecuteScalar() != null' contents/` | **2**; **2** | **0**; **0** | task 7.3, hidden behind *parse* (Inbox #2) and *defect* (Outbox #2, `CS1106`: an extension method outside a static class); run; confirmed by the maintainer 2026-11-01 | 7 |
 | 91 | `Environment.IsDevelopment()` in a `Startup` method, where `Environment` binds to `System.Environment`; the host's is `IWebHostEnvironment`, which a `Startup` takes by constructor | `CommandProcessorConfigurationReference.md` | `grep -rnE '(^\|[^.A-Za-z_])Environment\.IsDevelopment\(\)' contents/` | **1** | **0** | task 7.1, the second compile (`CS0117`); repaired at 7.3; confirmed by the maintainer 2026-11-01 | 7 |
 | 92 | An `IAmAMessageMapper<T>` shown with one of its two members, under a `// ...` that declares nothing about the other (017's recurring defect): `MapToMessage` missing from `OrderEventMessageMapper`, `MapToRequest` from `LargeMessageMapper` | `MigratingToNullableReferenceTypes.md`; `OutboxArchiver.md` | a scan of every C# fence declaring `class … : IAmAMessageMapper(Async)?<` for both `MapTo…` members, run at `HEAD` and on the tree | **2** | **0** | task 7.1, the second compile (`CS0535`); repaired at 7.3; `OutboxArchiver.md`'s mapper was later replaced by an `InMemoryArchiveProvider` example at 7.4 (ruled 2026-11-01) | 7 |
-| 93 | `TimeToLive` said to make MongoDB delete documents (*"Messages will be automatically deleted after 30 days"*, *"MongoDB will automatically create a TTL index on the `TimeStamp` field and remove expired documents"*, *"a TTL index expires stale lock documents automatically"*). At 10.8.1 it deletes nothing: Brighter creates its index only when it creates the collection (`MakeCollection = CreateIfNotExists`; the default, `Assume`, makes none, `BaseMongoDb.cs:83–118`), and that index, on `TimeStamp`, matches no date, because the driver stores the `DateTimeOffset` as an embedded `{ DateTime, Ticks, Offset }` document. Run: `probe/s5/mongo-ttl`, MongoDB 7 with the TTL monitor every second. The pages now say so, and show a TTL index on `TimeStamp.DateTime`, which the probe shows removing the message, the Inbox entry and an unreleased lock | `MongoDBOutbox.md`; `MongoDBInbox.md`; `MongoDbDistributedLock.md`; `DistributedLock.md` | `grep -rnE 'automatically deleted after\|Auto-expire messages\|remove expired documents\|expires them through a MongoDB TTL index\|a TTL index expires stale lock\|before the TTL index removes it\|Used for the TTL index' contents/`; `grep -rn 'MongoDb.*\| TTL document \|' contents/` | **10** (Outbox 5, Inbox 3, lock 2); **1** | **0**; **0** | task 7.5, run with a control (`MongoDBInbox.md` #4, `MongoDBOutbox.md` #4); an upstream candidate, not filed | 7 |
+| 93 | `TimeToLive` said to make MongoDB delete documents (*"Messages will be automatically deleted after 30 days"*, *"MongoDB will automatically create a TTL index on the `TimeStamp` field and remove expired documents"*, *"a TTL index expires stale lock documents automatically"*). At 10.8.1 it deletes nothing: Brighter creates its index only when it creates the collection (`MakeCollection = CreateIfNotExists`; the default, `Assume`, makes none, `BaseMongoDb.cs:83–118`), and that index, on `TimeStamp`, matches no date, because the driver stores the `DateTimeOffset` as an embedded `{ DateTime, Ticks, Offset }` document. Run: `probe/s5/mongo-ttl`, MongoDB 7 with the TTL monitor every second. The pages now say so, and show a TTL index on `TimeStamp.DateTime`, which the probe shows removing the message, the Inbox entry and an unreleased lock | `MongoDBOutbox.md`; `MongoDBInbox.md`; `MongoDbDistributedLock.md`; `DistributedLock.md` | `grep -rnE 'automatically deleted after\|Auto-expire messages\|remove expired documents\|expires them through a MongoDB TTL index\|a TTL index expires stale lock\|before the TTL index removes it\|Used for the TTL index' contents/`; `grep -rn 'MongoDb.*\| TTL document \|' contents/` | **10** (Outbox 5, Inbox 3, lock 2); **1** | **0**; **0** | task 7.5, run with a control (`MongoDBInbox.md` #4, `MongoDBOutbox.md` #4); an upstream candidate, not filed. **Filed as Brighter #4716 and #4717 (2026-11-01)**; confirmed by the maintainer 2026-11-01 | 7 |
 | 94 | `services.AddResiliencePipeline("MyRetryPolicy", …)` (and `"MyTimeout"`) shown as the registration `[UseResiliencePipelineAsync("…", 1)]` finds. Brighter looks pipelines up only in its own registry, `options.ResiliencePipelineRegistry` or a new one (`BrighterResiliencePipelineRegistry`, 10.8.1), and never reads the one `Polly.Extensions` puts in DI. Run: `probe/s5/faq-claims`, the handler never runs and the request fails `ConfigurationException`, inner `KeyNotFoundException`; the registry given to `AddBrighter` retries (control). #13 and #16 now build that registry | `FAQ.md` | `grep -rnF 'services.AddResiliencePipeline(' contents/` | **2** | **0** | task 7.5, run with a control (`FAQ.md` #13, #16) | 7 |
+| 95 | `[TimeoutPolicy]` shown on an async handler as the V9 form: on `HandleAsync` (`V10MigrationGuide.md` #8, *Before (V9)*), and on a `RequestHandlerAsync` class (`FAQ.md` #15, *Old (V9)*, ledger 84's shape). The attribute has no async form, and its handler is synchronous (`TimeoutPolicyHandler<T> : RequestHandler<T>` at 9.33 and 10.8.1), so building an async pipeline with it throws `ConfigurationException` (*"All handlers in an async pipeline must derive from IHandleRequestsAsync"*, `PipelineBuilder.cs:294`, `:350` at 9.33), and on a class it is `CS0592`. Run: `probe/s5/timeout-policy-kind`, against 10.8.1, where the attribute is `[Obsolete]` and unchanged in kind. Both blocks are now a synchronous `Handle`, and the sentence before each says why. Rule 8 cannot see it: `TimeoutPolicy` has no `…Async` twin, so it is not in `PAIRED` | `V10MigrationGuide.md`; `FAQ.md` | `grep -rn -A1 -E '\[TimeoutPolicy\(' contents/ \| grep -E 'HandleAsync\|class '` | **2** | **0** | task 7.6, ledger 84's grep widened by shape, then the attribute-kind scan over every attribute above a `Handle`/`HandleAsync`; run with a control | 7 |
+| 96 | `Paramore.Brighter.MessagingGateway.RMQ` named as the V10 RabbitMQ package (`dotnet add package … --version 10.0.0`; *"provided by the NuGet package"*). NuGet's index for that id stops at `10.0.0-preview.4`; V10 ships `Paramore.Brighter.MessagingGateway.RMQ.Async` and `….RMQ.Sync` (10.0.0 to 10.8.1; `src/` at 10.0.0 and 10.8.1 has only those two), and both pages' blocks import `….RMQ.Async` | `V10MigrationGuide.md`; `CommandProcessorConfigurationReference.md` | `grep -rnE 'MessagingGateway\.RMQ(\*\*\| \|$)' contents/` | **2** | **0** | task 7.6, 7.1's unpinned-package shape widened to every `Paramore.Brighter…` id against NuGet | 7 |
 
 ## Friction ledger
 

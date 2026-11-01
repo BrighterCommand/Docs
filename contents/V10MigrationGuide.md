@@ -59,7 +59,7 @@ dotnet add package Paramore.Brighter --version 10.0.0
 dotnet add package Paramore.Brighter.Extensions.DependencyInjection --version 10.0.0
 
 # Transport packages (update as needed)
-dotnet add package Paramore.Brighter.MessagingGateway.RMQ --version 10.0.0
+dotnet add package Paramore.Brighter.MessagingGateway.RMQ.Async --version 10.0.0
 dotnet add package Paramore.Brighter.MessagingGateway.Kafka --version 10.0.0
 dotnet add package Paramore.Brighter.MessagingGateway.AWSSQS --version 10.0.0
 
@@ -273,19 +273,22 @@ var subscription = new Subscription<MyEvent>(
 
 **Breaking Change**: `TimeoutPolicyAttribute` is obsolete. Use `UseResiliencePipeline` on a synchronous handler and `UseResiliencePipelineAsync` on an async one.
 
+`TimeoutPolicyAttribute` has no async form, so in V9 it decorates a synchronous `Handle`; the example after it shows the async replacement.
+
 **Before (V9)**:
 
 <!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled Before (V9)) -->
 ```csharp
-public class MyHandler : RequestHandlerAsync<MyCommand>
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
+public class MyHandler : RequestHandler<MyCommand>
 {
     [TimeoutPolicy(milliseconds: 5000, step: 1)]
-    public override async Task<MyCommand> HandleAsync(
-        MyCommand command,
-        CancellationToken cancellationToken = default)
+    public override MyCommand Handle(MyCommand command)
     {
         // Handler logic
-        return await base.HandleAsync(command, cancellationToken);
+        return base.Handle(command);
     }
 }
 ```

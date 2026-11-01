@@ -564,12 +564,23 @@ See: [Resilience Pipelines](/contents/PolicyRetryAndCircuitBreaker.md)
 
 **Migrate to Resilience Pipeline:**
 
+`[TimeoutPolicy]` has no async form, so in V9 it decorates a synchronous `Handle`. Its V10 replacement serves both kinds of handler: `[UseResiliencePipeline]` on `Handle`, `[UseResiliencePipelineAsync]` on `HandleAsync`.
+
 **Old (V9):**
 
 <!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled Old (V9)) -->
 ```csharp
-[TimeoutPolicy(step: 1, milliseconds: 5000)]
-public class MyHandler : RequestHandlerAsync<MyCommand> { }
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
+public class MyHandler : RequestHandler<MyCommand>
+{
+    [TimeoutPolicy(step: 1, milliseconds: 5000)]
+    public override MyCommand Handle(MyCommand command)
+    {
+        return base.Handle(command);
+    }
+}
 ```
 
 **New (V10):**
