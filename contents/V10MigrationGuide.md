@@ -59,7 +59,7 @@ dotnet add package Paramore.Brighter --version 10.0.0
 dotnet add package Paramore.Brighter.Extensions.DependencyInjection --version 10.0.0
 
 # Transport packages (update as needed)
-dotnet add package Paramore.Brighter.MessagingGateway.RMQ --version 10.0.0
+dotnet add package Paramore.Brighter.MessagingGateway.RMQ.Async --version 10.0.0
 dotnet add package Paramore.Brighter.MessagingGateway.Kafka --version 10.0.0
 dotnet add package Paramore.Brighter.MessagingGateway.AWSSQS --version 10.0.0
 
@@ -109,6 +109,9 @@ public class CreatePersonCommand : Command
 **After (V10)**:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 public class CreatePersonCommand : Command
 {
     public required string Name { get; set; }  // Required property
@@ -180,15 +183,30 @@ services.AddBrighter()
 
 **After (V10)**:
 ```csharp
-// ...
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
+var rmqConnection = new RmqMessagingGatewayConnection
+{
+    AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
+    Exchange = new Exchange("paramore.brighter.exchange")
+};
+
 services.AddConsumers(options =>
     {
         options.Subscriptions = subscriptions;
-        options.DefaultChannelFactory = new ChannelFactory(...);
+        options.DefaultChannelFactory = new ChannelFactory(new RmqMessageConsumerFactory(rmqConnection));
     })
     .AddProducers(options =>
     {
-        options.ProducerRegistry = new RmqProducerRegistryFactory(...).Create();
+        options.ProducerRegistry = new RmqProducerRegistryFactory(
+            rmqConnection,
+            [new RmqPublication<MyEvent> { Topic = new RoutingKey("MyEvent") }]
+        ).Create();
     });
 ```
 
@@ -232,6 +250,8 @@ var subscription = new Subscription<MyEvent>(
 **After (V10)**:
 
 ```csharp
+using Paramore.Brighter;
+
 var subscription = new Subscription<MyEvent>(
     new SubscriptionName("my-subscription"),
     new ChannelName("my-channel"),
@@ -253,19 +273,22 @@ var subscription = new Subscription<MyEvent>(
 
 **Breaking Change**: `TimeoutPolicyAttribute` is obsolete. Use `UseResiliencePipeline` on a synchronous handler and `UseResiliencePipelineAsync` on an async one.
 
+`TimeoutPolicyAttribute` has no async form, so in V9 it decorates a synchronous `Handle`; the example after it shows the async replacement.
+
 **Before (V9)**:
 
 <!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled Before (V9)) -->
 ```csharp
-public class MyHandler : RequestHandlerAsync<MyCommand>
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
+public class MyHandler : RequestHandler<MyCommand>
 {
     [TimeoutPolicy(milliseconds: 5000, step: 1)]
-    public override async Task<MyCommand> HandleAsync(
-        MyCommand command,
-        CancellationToken cancellationToken = default)
+    public override MyCommand Handle(MyCommand command)
     {
         // Handler logic
-        return await base.HandleAsync(command, cancellationToken);
+        return base.Handle(command);
     }
 }
 ```
@@ -482,6 +505,7 @@ class MyCommand() : Command(Guid.NewGuid())
 After:
 
 ```csharp
+using Paramore.Brighter;
 
 class MyCommand() : Command(Id.Random())
 {
@@ -504,14 +528,14 @@ V10 adds full Cloud Events specification support.
 
 **Adoption Steps**:
 
-1. **Update Publication** to include Cloud Events properties:
+1. **Update Publication** to include Cloud Events properties. `PersonCreated` is the event declared in the mapper section below:
 
 ```csharp
 using System;
 using Paramore.Brighter;
 using Paramore.Brighter.MessagingGateway.RMQ.Async;
 
-new RmqPublication
+var publication = new RmqPublication
 {
     Topic = new RoutingKey("PersonCreated"),
     RequestType = typeof(PersonCreated),
@@ -519,7 +543,7 @@ new RmqPublication
     Source = new Uri("https://api.example.com/persons"),
     Subject = "person/created",
     MakeChannels = OnMissingChannel.Create
-}
+};
 ```
 
 2. **Use Cloud Events headers** in your mapper (optional):
@@ -600,6 +624,7 @@ messageMapperRegistry.Register<PersonCreated, PersonCreatedMapper>();
 **After (V10) - No Mapper Needed**:
 
 ```csharp
+using System.Threading.Tasks;
 using Paramore.Brighter;
 
 // No mapper registration needed for simple JSON serialization!
@@ -613,11 +638,15 @@ public class PersonCreated() : Event(Id.Random())
 }
 
 // Post it to the bus; the default mapper serializes it
-await commandProcessor.PostAsync(new PersonCreated
+public class PersonCreatedPublisher(IAmACommandProcessor commandProcessor)
 {
-    Name = "Alice",
-    Email = "alice@example.com"
-});
+    public async Task PublishAsync() =>
+        await commandProcessor.PostAsync(new PersonCreated
+        {
+            Name = "Alice",
+            Email = "alice@example.com"
+        });
+}
 ```
 
 **When to use custom mappers**:
@@ -713,6 +742,7 @@ V10 provides comprehensive InMemory implementations for testing.
 **Example**:
 
 ```csharp
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
@@ -760,6 +790,11 @@ V10 adds support for [KIP-848](https://cwiki.apache.org/confluence/display/KAFKA
 **Before**:
 
 ```csharp
+using System;
+using Confluent.Kafka;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription<GreetingEvent>(
     subscriptionName: new SubscriptionName("paramore.example.greeting"),
     channelName: new ChannelName("greeting.event"),
@@ -773,6 +808,11 @@ var subscription = new KafkaSubscription<GreetingEvent>(
 **After**:
 
 ```csharp
+using System;
+using Confluent.Kafka;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription<GreetingEvent>(
     subscriptionName: new SubscriptionName("paramore.example.greeting"),
     channelName: new ChannelName("greeting.event"),
@@ -791,6 +831,9 @@ var subscription = new KafkaSubscription<GreetingEvent>(
 **Opting into KIP-848**:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription<GreetingEvent>(
     subscriptionName: new SubscriptionName("paramore.example.greeting"),
     channelName: new ChannelName("greeting.event"),
@@ -821,7 +864,7 @@ dotnet test
 
 ### Integration Tests
 
-1. **Test with InMemory components** (fast):
+1. **Test with InMemory components** (fast). `BuildServiceProvider` is your own helper, which registers the InMemory components above, and `PersonCreated` is the event declared in the mapper section:
 
 ```csharp
 using System.Threading.Tasks;
@@ -862,9 +905,12 @@ dotnet test --filter Category=Integration
 
 ### Performance Testing
 
-Compare V9 and V10 performance:
+Compare V9 and V10 performance with the `BenchmarkDotNet` package:
 
 ```csharp
+using System.Threading.Tasks;
+using BenchmarkDotNet.Attributes;
+
 [Benchmark]
 public async Task V10_MessageProcessing()
 {

@@ -27,6 +27,8 @@ Or reference the project directly:
 <ProjectReference Include="..\..\src\Paramore.Brighter.Testing\Paramore.Brighter.Testing.csproj" />
 ```
 
+The examples assert with the `Shouldly` package's `ShouldBe…` extension methods, so add `Shouldly` to your test project as well to run them as written, or use your test framework's own assertions; the mocking-framework examples at the end name their packages where they appear.
+
 ## Using SpyCommandProcessor
 
 ### Basic Usage
@@ -34,6 +36,9 @@ Or reference the project directly:
 Inject `SpyCommandProcessor` as your `IAmACommandProcessor` dependency and verify interactions after exercising the handler:
 
 ```csharp
+using Paramore.Brighter.Testing;
+using Shouldly;
+
 // Arrange
 var spy = new SpyCommandProcessor();
 var handler = new PlaceOrderHandler(spy);
@@ -57,13 +62,16 @@ SpyCommandProcessor provides a layered API, from simple checks to detailed inspe
 For the most common verification needs:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Testing;
+
 // Was a specific method type called?
-spy.WasCalled(CommandType.Send)       // true/false
-spy.WasCalled(CommandType.Publish)    // true/false
-spy.WasCalled(CommandType.Post)       // true/false
+var wasSent = spy.WasCalled(CommandType.Send);          // true/false
+var wasPublished = spy.WasCalled(CommandType.Publish);  // true/false
+var wasPosted = spy.WasCalled(CommandType.Post);        // true/false
 
 // How many times?
-spy.CallCount(CommandType.Send)       // int
+var sendCount = spy.CallCount(CommandType.Send);        // int
 
 // Dequeue requests in FIFO order (consuming)
 var command = spy.Observe<MyCommand>();
@@ -77,6 +85,10 @@ var @event = spy.Observe<MyEvent>();
 For examining all calls without consuming them:
 
 ```csharp
+using System.Collections.Generic;
+using Paramore.Brighter;
+using Paramore.Brighter.Testing;
+
 // Get all requests of a specific type (non-destructive, can call repeatedly)
 IEnumerable<MyCommand> commands = spy.GetRequests<MyCommand>();
 
@@ -93,6 +105,10 @@ IReadOnlyList<CommandType> types = spy.Commands;
 For advanced scenarios requiring complete call information:
 
 ```csharp
+using System;
+using System.Collections.Generic;
+using Paramore.Brighter.Testing;
+
 // All recorded calls with full details
 IReadOnlyList<RecordedCall> allCalls = spy.RecordedCalls;
 
@@ -128,6 +144,9 @@ Each `IAmACommandProcessor` method maps to a `CommandType`:
 ### Verifying Send
 
 ```csharp
+using Paramore.Brighter.Testing;
+using Shouldly;
+
 var spy = new SpyCommandProcessor();
 var handler = new MyHandler(spy);
 
@@ -144,6 +163,10 @@ sent.SomeProperty.ShouldBe("expected");
 ### Verifying Publish
 
 ```csharp
+using System.Linq;
+using Paramore.Brighter.Testing;
+using Shouldly;
+
 var spy = new SpyCommandProcessor();
 var handler = new OrderHandler(spy);
 
@@ -160,6 +183,9 @@ events.First().OrderId.ShouldBe("ORD-1");
 ### Verifying Post (External Bus)
 
 ```csharp
+using Paramore.Brighter.Testing;
+using Shouldly;
+
 var spy = new SpyCommandProcessor();
 var handler = new NotificationHandler(spy);
 
@@ -175,6 +201,10 @@ posted.UserId.ShouldBe("user-1");
 When handlers use the outbox pattern, `SpyCommandProcessor` tracks deposits separately:
 
 ```csharp
+using System.Linq;
+using Paramore.Brighter.Testing;
+using Shouldly;
+
 var spy = new SpyCommandProcessor();
 var handler = new TransactionalHandler(spy);
 
@@ -202,6 +232,9 @@ cleared.Amount.ShouldBe(99.99m);
 Use `Reset()` between test scenarios when reusing a spy:
 
 ```csharp
+using Paramore.Brighter.Testing;
+using Shouldly;
+
 var spy = new SpyCommandProcessor();
 
 // First scenario
@@ -221,6 +254,10 @@ spy.DepositedRequests.Count.ShouldBe(0);
 All methods on `SpyCommandProcessor` are `virtual`, allowing you to create specialized subclasses:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Testing;
+
 public class ThrowingSpyCommandProcessor : SpyCommandProcessor
 {
     public override void Send<TRequest>(TRequest command, RequestContext? requestContext = null)
@@ -239,7 +276,12 @@ If you prefer mocking frameworks, you can mock `IAmACommandProcessor` directly. 
 
 ### Moq
 
+Add the `Moq` package to your test project:
+
 ```csharp
+using Moq;
+using Paramore.Brighter;
+
 var mock = new Mock<IAmACommandProcessor>();
 var handler = new MyHandler(mock.Object);
 
@@ -250,7 +292,12 @@ mock.Verify(p => p.Publish(It.IsAny<MyEvent>(), It.IsAny<RequestContext>()), Tim
 
 ### NSubstitute
 
+Add the `NSubstitute` package to your test project:
+
 ```csharp
+using NSubstitute;
+using Paramore.Brighter;
+
 var substitute = Substitute.For<IAmACommandProcessor>();
 var handler = new MyHandler(substitute);
 

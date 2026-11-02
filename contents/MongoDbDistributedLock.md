@@ -56,7 +56,8 @@ The lock has no options type of its own. `MongoDbConfiguration` and the
 `MongoDbCollectionConfiguration` you assign to `Locking` are documented once, on the Outbox
 page: see [MongoDB Outbox Options](/contents/MongoDBOutbox.md#mongodb-outbox-options). The two
 that matter here are `Locking.Name`, which names the collection holding the lock documents, and
-`Locking.TimeToLive`, which expires them through a MongoDB TTL index.
+`Locking.TimeToLive`, which asks for a MongoDB TTL index to expire them. At Brighter 10.8.1 that
+index expires nothing; see [MongoDB Distributed Lock Provisioning](#mongodb-distributed-lock-provisioning).
 
 ## MongoDB Distributed Lock Example
 
@@ -89,14 +90,21 @@ services
 ## MongoDB Distributed Lock Provisioning
 
 The provider writes lock documents to the collection named by `Locking.Name` and relies
-on a unique index on the resource so only one instance can hold a given lock. If you set
-`TimeToLive`, a TTL index expires stale lock documents automatically, which protects you
-if an instance crashes before releasing its lock. Ensure the application's MongoDB user
-can create the collection and its indexes, or create them ahead of time.
+on a unique index on the resource so only one instance can hold a given lock. Ensure the
+application's MongoDB user can create the collection, or create it ahead of time.
+
+A lock whose holder crashes before releasing it stays held until its document is removed.
+`TimeToLive` does not remove it at Brighter 10.8.1: Brighter creates its TTL index only when it
+creates the collection (`MakeCollection = OnResolvingACollection.CreateIfNotExists`), and that
+index, on `TimeStamp`, removes nothing, because Brighter stores `TimeStamp` as an embedded
+document and MongoDB expires only dates. To expire stale locks, create a TTL index on
+`TimeStamp.DateTime` of the lock collection, as
+[MongoDB Outbox TTL Support](/contents/MongoDBOutbox.md#mongodb-outbox-time-to-live-ttl-support)
+shows for the Outbox.
 
 ## MongoDB Distributed Lock Notes
 
-- Set `TimeToLive` longer than a typical Sweeper or Archiver batch so a lock is not
+- Set the TTL index's expiry longer than a typical Sweeper or Archiver batch so a lock is not
   expired mid-run. See [Lease Expiry vs Manual
   Release](/contents/DistributedLock.md#lease-expiry-vs-manual-release).
 - Point the provider at the same MongoDB database as your Outbox so the Sweeper,

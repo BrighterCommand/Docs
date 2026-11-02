@@ -20,11 +20,13 @@ V10 enables [nullable reference types](https://learn.microsoft.com/en-us/dotnet/
 In C# with nullable reference types enabled, reference types are non-nullable by default:
 
 ```csharp
+using System;
+
 // This string cannot be null
 string name = "John";
 
 // Compiler warning: Cannot convert null to non-nullable reference type
-string name = null; // ⚠️ CS8600
+string nickname = null; // ⚠️ CS8600
 ```
 
 ### Nullable Types
@@ -32,6 +34,8 @@ string name = null; // ⚠️ CS8600
 Use `?` to explicitly mark types as nullable:
 
 ```csharp
+using System;
+
 // This string can be null
 string? optionalName = null; // ✅ OK
 
@@ -51,6 +55,9 @@ if (optionalName != null)
 **Required properties** should be non-nullable:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 public class CreateOrderCommand : Command
 {
     public Guid OrderId { get; }
@@ -75,9 +82,12 @@ public class CreateOrderCommand : Command
 
 ### Handlers
 
-Handler dependencies should declare nullability appropriately:
+Handler dependencies should declare nullability appropriately. This handler handles the `CreateOrderCommand` declared above; the `Order` entity and `IOrderRepository` are your own:
 
 ```csharp
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+
 public class CreateOrderCommandHandler : RequestHandler<CreateOrderCommand>
 {
     private readonly IOrderRepository _orderRepository;
@@ -112,7 +122,7 @@ public class CreateOrderCommandHandler : RequestHandler<CreateOrderCommand>
 
 ### Message Mappers
 
-Message mappers should handle nullable message properties:
+Message mappers should handle nullable message properties. This mapper maps the `CreateOrderCommand` declared above, from a `CreateOrderDto` of your own:
 
 ```csharp
 using System;
@@ -183,6 +193,9 @@ public class CreateOrderCommandMessageMapper : IAmAMessageMapper<CreateOrderComm
 Make your intent clear by using non-nullable types for properties that should never be null:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 public class CreateUserCommand : Command
 {
     public string Email { get; }           // Required - non-nullable
@@ -207,7 +220,7 @@ public class CreateUserCommand : Command
 
 ### 2. Validate at Boundaries
 
-Validate nullability at system boundaries (message mappers, API controllers):
+Validate nullability at system boundaries (message mappers, API controllers). This mapper maps the `CreateUserCommand` declared in the previous section, from a `CreateUserDto` of your own:
 
 ```csharp
 using System;
@@ -307,8 +320,10 @@ public class CreateOrderCommand : Command
 Use the null-forgiving operator (`!`) sparingly:
 
 ```csharp
+using System;
+
 // ⚠️ Avoid unless you're certain
-var name = user.Name!; // Asserts Name is not null
+var assumedName = user.Name!; // Asserts Name is not null
 
 // ✅ Better: Check explicitly
 if (user.Name == null)
@@ -321,6 +336,12 @@ var name = user.Name;
 Modern C# pattern matching provides concise null checks:
 
 ```csharp
+using System;
+
+// ...
+var command = new { Notes = (string?)null };   // stands for the command above, with its optional Notes
+void ProcessNotes(string notes) => Console.WriteLine(notes);
+
 // Traditional
 if (command.Notes != null)
 {
@@ -334,7 +355,7 @@ if (command.Notes is { } notes)
 }
 
 // Null-coalescing
-var notes = command.Notes ?? "No notes provided";
+var notesOrDefault = command.Notes ?? "No notes provided";
 ```
 
 ### 7. Consider Required Members (C# 11+)
@@ -342,13 +363,7 @@ var notes = command.Notes ?? "No notes provided";
 Use `required` keyword for properties that must be initialized:
 
 ```csharp
-public class OrderDto
-{
-    public required string OrderId { get; init; }
-    public required string CustomerId { get; init; }
-    public decimal Amount { get; init; }
-    public string? Notes { get; init; }
-}
+using System;
 
 // Must initialize required properties
 var dto = new OrderDto
@@ -358,6 +373,14 @@ var dto = new OrderDto
     Amount = 100.0m,
     Notes = null          // Optional
 };
+
+public class OrderDto
+{
+    public required string OrderId { get; init; }
+    public required string CustomerId { get; init; }
+    public decimal Amount { get; init; }
+    public string? Notes { get; init; }
+}
 ```
 
 ---
@@ -367,6 +390,9 @@ var dto = new OrderDto
 ### Command with Validation
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 public class UpdateProductCommand : Command
 {
     public Guid ProductId { get; }
@@ -389,6 +415,9 @@ public class UpdateProductCommand : Command
 ### Event with Optional Properties
 
 ```csharp
+using System;
+using Paramore.Brighter;
+
 public class OrderCompletedEvent : Event
 {
     public Guid OrderId { get; }
@@ -411,6 +440,10 @@ public class OrderCompletedEvent : Event
 ### Handler with Optional Dependencies
 
 ```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter;
+
 public class SendEmailHandler : RequestHandler<SendEmailCommand>
 {
     private readonly IEmailService _emailService;

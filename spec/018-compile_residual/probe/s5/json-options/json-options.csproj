@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 7.3: CommandProcessorConfigurationReference.md #20 and #21, what JsonSerialisationOptions.Options holds
+       and whether ConfigureJsonSerialisation keeps it, run against the released 10.8.1 package. Case: the call the
+       page shows. Control: the options read before the call. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.1" />
+  </ItemGroup>
+</Project>

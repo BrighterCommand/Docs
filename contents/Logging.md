@@ -98,8 +98,14 @@ ApplicationLogging.LoggerFactory = LoggerFactory.Create(logging =>
     logging.SetMinimumLevel(LogLevel.Information);
 });
 
+// subscriberRegistry and handlerFactory are yours: they register and create your handlers
 var commandProcessor = CommandProcessorBuilder.StartNew()
-    // ... handler configuration, policies, request context factory
+    .Handlers(new HandlerConfiguration(subscriberRegistry, handlerFactory))
+    .DefaultResilience()
+    .NoExternalBus()
+    .NoInstrumentation()
+    .RequestContextFactory(new InMemoryRequestContextFactory())
+    .RequestSchedulerFactory(new InMemorySchedulerFactory())
     .Build();
 ```
 
@@ -110,12 +116,13 @@ the types that have already initialised.
 ## What Brighter Logs
 
 Log methods are source-generated with `[LoggerMessage]`, so the messages are structured
-rather than interpolated:
+rather than interpolated. The Command Processor declares its own in a `Log` class nested inside it (`src/Paramore.Brighter/CommandProcessor.cs`, in the 10.8.1 release). Here is one of them, with `Log` written as a top-level `internal` class, the form it takes in your own code; the generator writes the method's body:
 
 ```csharp
+using System;
 using Microsoft.Extensions.Logging;
 
-private static partial class Log
+internal static partial class Log
 {
     [LoggerMessage(LogLevel.Information, "Building send pipeline for command: {CommandType} {Id}")]
     public static partial void BuildingSendPipelineForCommand(ILogger logger, Type commandType, string id);

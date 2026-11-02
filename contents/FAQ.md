@@ -98,19 +98,34 @@ Follow these guidelines:
 **Bad** (custom base class):
 
 ```csharp
+using Paramore.Brighter;
+
 public abstract class MyHandlerBase<T> : RequestHandlerAsync<T>
+    where T : class, IRequest
 {
     // Custom logging, retry logic...
 }
 ```
 
 **Good** (use attributes):
+
 ```csharp
-[RequestLoggingAsync(0, HandlerTiming.Before)]
-[UseResiliencePipeline(1, "MyRetryPolicy")]
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 public class MyHandler : RequestHandlerAsync<MyCommand>
 {
-    // Business logic only
+    [RequestLoggingAsync(0, HandlerTiming.Before)]
+    [UseResiliencePipelineAsync("MyRetryPolicy", 1)]
+    public override async Task<MyCommand> HandleAsync(
+        MyCommand command, CancellationToken cancellationToken = default)
+    {
+        // Business logic only
+        return await base.HandleAsync(command, cancellationToken);
+    }
 }
 ```
 
@@ -131,22 +146,40 @@ In V10, configuration was simplified:
 **Example:**
 
 ```csharp
-services.AddBrighter()
-    .AutoFromAssemblies();
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 
-// Configure producers
-services.AddProducers(options =>
+var rmqConnection = new RmqMessagingGatewayConnection
 {
-    options.UseRabbitMQ(...)
-        .Publication<MyEvent>(p => p.Topic = new RoutingKey("my.event"));
-});
+    AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
+    Exchange = new Exchange("paramore.brighter.exchange")
+};
 
-// Configure consumers
+// Configure consumers: AddConsumers extends IServiceCollection, so it comes first
 services.AddConsumers(options =>
-{
-    options.UseRabbitMQ(...)
-        .Subscription<MyEvent>(s => s.ChannelName = new ChannelName("my.queue"));
-});
+    {
+        options.Subscriptions =
+        [
+            new RmqSubscription<MyEvent>(
+                new SubscriptionName("my.subscription"),
+                new ChannelName("my.queue"),
+                new RoutingKey("my.event"))
+        ];
+        options.DefaultChannelFactory = new ChannelFactory(new RmqMessageConsumerFactory(rmqConnection));
+    })
+    // Configure producers: AddProducers extends the IBrighterBuilder that AddConsumers returns
+    .AddProducers(options =>
+    {
+        options.ProducerRegistry = new RmqProducerRegistryFactory(
+            rmqConnection,
+            [new RmqPublication<MyEvent> { Topic = new RoutingKey("my.event") }]
+        ).Create();
+    })
+    .AutoFromAssemblies();
 ```
 
 See: [Basic Configuration](/contents/BrighterBasicConfiguration.md), [V10 Migration Guide](/contents/V10MigrationGuide.md)
@@ -166,9 +199,12 @@ See: [Basic Configuration](/contents/BrighterBasicConfiguration.md), [V10 Migrat
 **Configure with:**
 
 ```csharp
-new Subscription(
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
+var subscription = new RmqSubscription<MyEvent>(
     messagePumpType: MessagePumpType.Proactor  // or MessagePumpType.Reactor
-)
+);
 ```
 
 **Recommendation**: Use Proactor for most scenarios (better scalability). Use Reactor for CPU-intensive workloads.
@@ -182,17 +218,34 @@ See: [Reactor and Proactor](/contents/ReactorAndProactor.md)
 In V10, CloudEvents support is built-in. Configure in your Publication:
 
 ```csharp
-services.AddProducers(options =>
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
+var rmqConnection = new RmqMessagingGatewayConnection
 {
-    options.UseRabbitMQ(...)
-        .Publication<MyEvent>(publication =>
-        {
-            publication.Topic = new RoutingKey("my.event");
-            publication.Source = new Uri("https://myapp.example.com");
-            publication.Type = new CloudEventsType("com.example.myevent");
-            publication.Subject = "order/123";
-        });
-});
+    AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
+    Exchange = new Exchange("paramore.brighter.exchange")
+};
+
+services.AddBrighter()
+    .AddProducers(options =>
+    {
+        options.ProducerRegistry = new RmqProducerRegistryFactory(
+            rmqConnection,
+            [
+                new RmqPublication<MyEvent>
+                {
+                    Topic = new RoutingKey("my.event"),
+                    Source = new Uri("https://myapp.example.com"),
+                    Type = new CloudEventsType("com.example.myevent"),
+                    Subject = "order/123"
+                }
+            ]
+        ).Create();
+    });
 ```
 
 **Binary vs Structured mode:**
@@ -329,19 +382,31 @@ See: [Default Message Mappers](/contents/DefaultMessageMappers.md), [S3 Luggage 
 Use the **Request Context**:
 
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 // First handler
-public override async Task<MyCommand> HandleAsync(MyCommand command, CancellationToken ct)
+public class SetUserHandlerAsync : RequestHandlerAsync<MyCommand>
 {
-    Context.Bag["UserId"] = GetCurrentUserId();
-    return await base.HandleAsync(command, ct);
+    public override async Task<MyCommand> HandleAsync(
+        MyCommand command, CancellationToken cancellationToken = default)
+    {
+        Context!.Bag["UserId"] = "user-123"; // ... the current user's id
+        return await base.HandleAsync(command, cancellationToken);
+    }
 }
 
 // Next handler
-public override async Task<MyCommand> HandleAsync(MyCommand command, CancellationToken ct)
+public class UseUserHandlerAsync : RequestHandlerAsync<MyCommand>
 {
-    var userId = Context.Bag["UserId"] as string;
-    // Use userId...
-    return await base.HandleAsync(command, ct);
+    public override async Task<MyCommand> HandleAsync(
+        MyCommand command, CancellationToken cancellationToken = default)
+    {
+        var userId = Context!.Bag["UserId"] as string;
+        // Use userId...
+        return await base.HandleAsync(command, cancellationToken);
+    }
 }
 ```
 
@@ -364,6 +429,8 @@ Use Agreement Dispatcher when you need **dynamic handler selection** based on re
 **Example:**
 
 ```csharp
+using Paramore.Brighter.Extensions.DependencyInjection;
+
 registry.RegisterAsync<MyCommand>((request, context) =>
 {
     var myCommand = request as MyCommand;
@@ -391,6 +458,8 @@ When you try this, you will encounter the issue that we dispatch based on the co
 If you try this:
 
 ``` csharp
+using Paramore.Brighter;
+
 ICommand command = new GreetingCommand("Ian");
 commandProcessor.Send(command);
 ```
@@ -400,6 +469,8 @@ Then you will get this error: *\"ArgumentException \"No command handler was foun
 Now, you don\'t see this issue if you pass the concrete type in, so the compiler can correctly resolve the run-time type.
 
 ``` csharp
+using Paramore.Brighter;
+
 commandProcessor.Send(new GreetingCommand("Ian"));
 ```
 
@@ -408,6 +479,8 @@ So what can you do if you must pass the base class to the **Command Processor** 
 The workaround is to use the dynamic keyword. Using the dynamic keyword means that the type will be evaluated using RTTI, which will successfully pick up the type that you need.
 
 ``` csharp
+using Paramore.Brighter;
+
 ICommand command = new GreetingCommand("Ian");
 commandProcessor.Send((dynamic)command);
 ```
@@ -420,10 +493,18 @@ commandProcessor.Send((dynamic)command);
 
 In V10, use **Resilience Pipelines** with Polly v8:
 
-**1. Configure the pipeline:**
+**1. Configure the pipeline:** register it by name in a `ResiliencePipelineRegistry<string>` and give that registry to `AddBrighter`. Brighter looks pipelines up only in that registry. One registered with Polly's `services.AddResiliencePipeline` is not found, and the request fails with a `ConfigurationException` whose inner `KeyNotFoundException` names the pipeline.
 
 ```csharp
-services.AddResiliencePipeline("MyRetryPolicy", builder =>
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Polly;
+using Polly.Registry;
+using Polly.Retry;
+
+var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>();
+resiliencePipelineRegistry.TryAddBuilder("MyRetryPolicy", (builder, _) =>
 {
     builder.AddRetry(new RetryStrategyOptions
     {
@@ -432,19 +513,35 @@ services.AddResiliencePipeline("MyRetryPolicy", builder =>
         BackoffType = DelayBackoffType.Exponential
     });
 });
+
+services.AddBrighter(options =>
+{
+    options.ResiliencePipelineRegistry = resiliencePipelineRegistry;
+})
+.AutoFromAssemblies();
 ```
 
 **2. Apply to handler:**
 
 ```csharp
-[UseResiliencePipeline(1, "MyRetryPolicy")]
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
 public class MyHandler : RequestHandlerAsync<MyCommand>
 {
-    // Handler logic
+    [UseResiliencePipelineAsync("MyRetryPolicy", 1)]
+    public override async Task<MyCommand> HandleAsync(
+        MyCommand command, CancellationToken cancellationToken = default)
+    {
+        // Handler logic
+        return await base.HandleAsync(command, cancellationToken);
+    }
 }
 ```
 
-**Note**: `[UsePolicy]` and `[TimeoutPolicy]` are deprecated in V10. Migrate to `[UseResiliencePipeline]`.
+**Note**: `[UsePolicy]` and `[TimeoutPolicy]` are deprecated in V10. Migrate to `[UseResiliencePipeline]` on a synchronous handler's `Handle`, or `[UseResiliencePipelineAsync]` on a `HandleAsync`.
 
 See: [Resilience Pipelines](/contents/PolicyRetryAndCircuitBreaker.md), [V10 Migration Guide](/contents/V10MigrationGuide.md)
 
@@ -467,26 +564,61 @@ See: [Resilience Pipelines](/contents/PolicyRetryAndCircuitBreaker.md)
 
 **Migrate to Resilience Pipeline:**
 
+`[TimeoutPolicy]` has no async form, so in V9 it decorates a synchronous `Handle`. Its V10 replacement serves both kinds of handler: `[UseResiliencePipeline]` on `Handle`, `[UseResiliencePipelineAsync]` on `HandleAsync`.
+
 **Old (V9):**
 
 <!-- blockcheck: skip V9 form, shown beside its V10 replacement (labelled Old (V9)) -->
 ```csharp
-[TimeoutPolicy(step: 1, milliseconds: 5000)]
-public class MyHandler : RequestHandlerAsync<MyCommand> { }
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+
+public class MyHandler : RequestHandler<MyCommand>
+{
+    [TimeoutPolicy(step: 1, milliseconds: 5000)]
+    public override MyCommand Handle(MyCommand command)
+    {
+        return base.Handle(command);
+    }
+}
 ```
 
 **New (V10):**
 
 ```csharp
-// Configure pipeline
-services.AddResiliencePipeline("MyTimeout", builder =>
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Policies.Attributes;
+using Polly;
+using Polly.Registry;
+
+// Configure pipeline, in the registry you give AddBrighter
+var resiliencePipelineRegistry = new ResiliencePipelineRegistry<string>();
+resiliencePipelineRegistry.TryAddBuilder("MyTimeout", (builder, _) =>
 {
     builder.AddTimeout(TimeSpan.FromSeconds(5));
 });
 
+services.AddBrighter(options =>
+{
+    options.ResiliencePipelineRegistry = resiliencePipelineRegistry;
+})
+.AutoFromAssemblies();
+
 // Apply to handler
-[UseResiliencePipeline(1, "MyTimeout")]
-public class MyHandler : RequestHandlerAsync<MyCommand> { }
+public class MyHandler : RequestHandlerAsync<MyCommand>
+{
+    [UseResiliencePipelineAsync("MyTimeout", 1)]
+    public override async Task<MyCommand> HandleAsync(
+        MyCommand command, CancellationToken cancellationToken = default)
+    {
+        return await base.HandleAsync(command, cancellationToken);
+    }
+}
 ```
 
 See: [V10 Migration Guide](/contents/V10MigrationGuide.md)
@@ -526,6 +658,8 @@ See: [Scheduler Support](/contents/BrighterSchedulerSupport.md)
 Use `SendAsync()` or `PostAsync()` with a delay:
 
 ```csharp
+using System;
+
 // ...
 // Schedule with DateTimeOffset
 await commandProcessor.SendAsync(
@@ -656,10 +790,13 @@ under Configuration for the full comparison and how to configure it.
 **Configure with:**
 
 ```csharp
-new Subscription(
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+
+var subscription = new RmqSubscription<MyEvent>(
     // Other settings...
-    channelCount: 3  // Number of concurrent message pumps
-)
+    noOfPerformers: 3  // Number of concurrent message pumps
+);
 ```
 
 ### Should I use competing consumers or a single consumer?

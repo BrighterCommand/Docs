@@ -32,15 +32,21 @@ By adding the package you can call the **AddConsumers()** extension method.
 
 If you are using a **HostBuilder** class's **ConfigureServices** method  call the following:
 
-``` csharp
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 // ...
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
         .ConfigureServices((hostContext, services) =>
         {
-            services.AddConsumers(...)
+            services.AddConsumers(options =>
+            {
+                // ... your ServiceActivatorOptions
+            });
         });
-
 ```
 
 if you are using .NET 6 you can make the call direction on your **HostBuilder**'s Services property.
@@ -77,7 +83,14 @@ In addition, individual transports that provide access to specific MoM sub-class
 
 For RabbitMQ for example, this would look like this:
 
-``` csharp
+```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 // ...
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
@@ -103,11 +116,8 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
     services.AddConsumers(options =>
         {
             options.Subscriptions = subscriptions;
-        })
+        });
 }
-
-...
-
 ```
 
 ### Gateway Connections & Channel Factories
@@ -118,7 +128,14 @@ A *Channel Factory* connects Brighter to MoM. Depending on the configuration set
 
 For RabbitMQ, this would look like:
 
-``` csharp
+```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 // ...
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
@@ -129,10 +146,9 @@ private static IHostBuilder CreateHostBuilder(string[] args) =>
 
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
-
     var rmqConnection = new RmqMessagingGatewayConnection
     {
-        AmpqUri = new AmqpUriSpecification(new Uri($"amqp://guest:guest@local:5672")),
+        AmpqUri = new AmqpUriSpecification(new Uri("amqp://guest:guest@localhost:5672")),
         Exchange = new Exchange("paramore.brighter.exchange")
     };
 
@@ -140,19 +156,20 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 
     services.AddConsumers(options =>
         {
-             options.DefaultChannelFactory = new ChannelFactory(rmqMessageConsumerFactory);
-        })
+            options.DefaultChannelFactory = new ChannelFactory(rmqMessageConsumerFactory);
+        });
 }
-
-...
-
 ```
 
 ### Configuring Dispatcher Lifetimes
 
 Under the hood your Dispatcher uses a *Command Processor* and you will need to configure lifetimes as described in [Configuring Lifetimes](/contents/CommandProcessorConfigurationReference.md#configuring-lifetimes).
 
-``` csharp
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 // ...
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
@@ -167,11 +184,8 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
         {
             options.HandlerLifetime = ServiceLifetime.Scoped;
             options.MapperLifetime = ServiceLifetime.Singleton;
-        })
+        });
 }
-
-...
-
 ```
 ## Subscription Options
 
@@ -273,7 +287,15 @@ For *Inbox Configuration* you pass the following arguments, each of which is exp
 
 A typical *Inbox* configuration for MySQL would be:
 
-``` csharp
+```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Inbox.MySql;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 // ...
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
@@ -285,17 +307,15 @@ private static IHostBuilder CreateHostBuilder(string[] args) =>
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
     services.AddConsumers(options =>
-        {   
-            options.InboxConfiguration =  new InboxConfiguration(
-                    inbox: new MySqlInbox(new RelationalDatabaseConfiguration(DbConnectionString()))
-                    scope: InboxScope.Commands,
-                    onceOnly: true,
-                    actionOnExists: OnceOnlyAction.Throw
-            ...
+        {
+            options.InboxConfiguration = new InboxConfiguration(
+                inbox: new MySqlInbox(new RelationalDatabaseConfiguration(DbConnectionString())),
+                scope: InboxScope.Commands,
+                onceOnly: true,
+                actionOnExists: OnceOnlyAction.Throw
+            );
         });
- }
- 
- ...
+}
 ```
 Typically **DbConnectionString** would obtain the connection string for the Db from configuration.
 

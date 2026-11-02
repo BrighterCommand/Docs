@@ -15,10 +15,10 @@ The DynamoDb Inbox allows use of DynamoDb for [Brighter's inbox support](/conten
 For this we will need the *Inbox* packages for the DynamoDb *Inbox*.
 
 **AWS SDK v3** (legacy support):
-* **Paramore.Brighter.Inbox.DynamoDb**
+* **Paramore.Brighter.Inbox.DynamoDB**
 
 **AWS SDK v4** (recommended for new projects):
-* **Paramore.Brighter.Inbox.DynamoDb.V4**
+* **Paramore.Brighter.Inbox.DynamoDB.V4**
 
 The example on this page uses the v3 package's namespace, `Paramore.Brighter.Inbox.DynamoDB`; the v4 package's is `Paramore.Brighter.Inbox.DynamoDB.V4`.
 

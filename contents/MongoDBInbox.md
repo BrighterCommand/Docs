@@ -22,6 +22,15 @@ For this we will need the *Inbox* packages for the MongoDB *Inbox*.
 ### Basic Configuration
 
 ```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Inbox.MongoDb;
+using Paramore.Brighter.MongoDb;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 private static IHostBuilder CreateHostBuilder(string[] args) =>
     Host.CreateDefaultBuilder(args)
         .ConfigureServices((hostContext, services) =>
@@ -42,7 +51,7 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
         {
             Name = "Inbox",
             MakeCollection = OnResolvingACollection.Validate,
-            TimeToLive = TimeSpan.FromDays(7) // Optional: Auto-expire messages after 7 days
+            TimeToLive = TimeSpan.FromDays(7) // Optional: see Time-To-Live (TTL) Support below
         }
     };
 
@@ -119,6 +128,14 @@ private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCo
 You can also use a custom connection provider for more control over the MongoDB connection:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Inbox.MongoDb;
+using Paramore.Brighter.MongoDb;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
     var mongoDbConfiguration = new MongoDbConfiguration("mongodb://localhost:27017", "BrighterDatabase")
@@ -154,27 +171,39 @@ The MongoDB Inbox supports different strategies for collection management throug
 
 ## MongoDB Inbox Time-To-Live (TTL) Support
 
-The MongoDB Inbox supports automatic message expiration using MongoDB's TTL feature. You can configure this through the `TimeToLive` property in the collection configuration:
+`TimeToLive` asks for a MongoDB TTL index on the `TimeStamp` field. At Brighter 10.8.1 that index expires nothing, so if you want MongoDB to remove old entries, create the index yourself:
+
+- Brighter creates its index only when it creates the collection, which it does only with `MakeCollection = OnResolvingACollection.CreateIfNotExists`. Under the default, `Assume`, there is no index.
+- The index it creates, `brighter_ttl_Inbox` on `TimeStamp`, removes no document. Brighter stores `TimeStamp` as an embedded document of `DateTime`, `Ticks` and `Offset`, and MongoDB expires a document only when the indexed field holds a date.
+
+A TTL index on `TimeStamp.DateTime` does expire them:
 
 ```csharp
-Inbox = new MongoDbCollectionConfiguration
-{
-    Name = "Inbox",
-    TimeToLive = TimeSpan.FromDays(30) // Messages will be automatically deleted after 30 days
-}
+using System;
+using MongoDB.Bson;
+using MongoDB.Driver;
+
+var inbox = new MongoClient("mongodb://localhost:27017")
+    .GetDatabase("BrighterDatabase")
+    .GetCollection<BsonDocument>("Inbox");
+
+// Remove each document 30 days after its TimeStamp
+inbox.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(
+    Builders<BsonDocument>.IndexKeys.Ascending("TimeStamp.DateTime"),
+    new CreateIndexOptions { ExpireAfter = TimeSpan.FromDays(30) }));
 ```
 
-When TTL is configured, MongoDB will automatically create a TTL index on the `TimeStamp` field and remove expired documents.
+MongoDB's TTL monitor runs once a minute, so a document can outlive its time-to-live by up to a minute.
 
 ## MongoDB Inbox Message Structure
 
 The MongoDB Inbox stores messages with the following structure:
 
 - **Id**: Composite key containing the command ID and context key
-- **TimeStamp**: When the message was created
+- **TimeStamp**: When the message was created, as an embedded document of `DateTime`, `Ticks` and `Offset`
 - **CommandType**: The full type name of the command
 - **CommandBody**: JSON serialized command data
-- **ExpireAfterSeconds**: Optional expiration time for individual messages
+- **ExpireAfterSeconds**: The collection's `TimeToLive` in seconds, written onto each document; MongoDB does not act on it
 
 ## MongoDB Inbox Error Handling
 

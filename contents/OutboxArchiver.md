@@ -16,14 +16,24 @@ Like the Sweeper, the Archiver should run as a **singleton** — only one Archiv
 You register the Archiver with `UseOutboxArchiver<TTransaction>`, passing an archive provider (an `IAmAnArchiveProvider`) and options. For a ready-made archive provider, see the [Azure Archive Provider](/contents/AzureBlobArchiveProvider.md).
 
 ```csharp
+using System;
+using Amazon.DynamoDBv2.Model;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.Hosting;
+
 // ...
-.UseOutboxArchiver<TransactWriteItemsRequest>(
-    archiveProvider,
-    opt =>
-    {
-        opt.MinimumAge = TimeSpan.FromHours(24);   // archive messages dispatched over a day ago
-        opt.ArchiveBatchSize = 100;
-    });
+IAmAnArchiveProvider archiveProvider = new InMemoryArchiveProvider();   // or your own archive provider
+
+services.AddBrighter()
+    .UseOutboxArchiver<TransactWriteItemsRequest>(
+        archiveProvider,
+        opt =>
+        {
+            opt.MinimumAge = TimeSpan.FromHours(24);   // archive messages dispatched over a day ago
+            opt.ArchiveBatchSize = 100;
+        });
 ```
 
 `TTransaction` is the **transaction type** your Outbox writes to — the same type Brighter wraps in a transaction when it stores a message — not the transaction *provider* you register on `opt.ConnectionProvider`/`opt.TransactionProvider`. Use the type from the column below for your store:
@@ -58,9 +68,20 @@ Running the Sweeper or Archiver on a background thread inside your producer appl
 The worker below uses DynamoDB; swap the three fenced lines for your own database, Outbox, and lock provider.
 
 ```csharp
-// ...
+using System;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.DynamoDb;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Locking.DynamoDb;
+using Paramore.Brighter.Outbox.DynamoDB;
+using Paramore.Brighter.Outbox.Hosting;
+
 var dynamoDb = new AmazonDynamoDBClient();
-IAmAnArchiveProvider archiveProvider = /* your archive provider, e.g. an S3/blob archive */;
+IAmAnArchiveProvider archiveProvider = new InMemoryArchiveProvider(); // swap for your archive provider, e.g. an S3/blob archive
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services
@@ -125,38 +146,51 @@ The InMemory Archive stores dispatched messages in memory for diagnostics and re
 ### InMemory Archive Configuration
 
 ```csharp
-// ...
+using System;
+using System.Transactions;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.Hosting;
+
 services.AddBrighter(options =>
 {
     options.HandlerLifetime = ServiceLifetime.Scoped;
 })
 .UseOutboxArchiver<CommittableTransaction>(new InMemoryArchiveProvider())  // the InMemory Outbox's transaction type
-.AddProducers(/* producer configuration */);
+.AddProducers(options =>
+{
+    // ... the producer registry for your bus
+    options.Outbox = new InMemoryOutbox(TimeProvider.System);
+});
 ```
 
 ### InMemory Archive Example Usage
 
+In a test you do not have to wait for the hosted service's timer. `UseOutboxArchiver` registers an `OutboxArchiver<Message, TTransaction>`, and the timed service calls it with `MinimumAge` on each tick, so you can construct one over an `InMemoryOutbox` and call `Archive` yourself. `InMemoryArchiveProvider.ArchivedMessages` is a dictionary of everything archived, keyed by message Id:
+
 ```csharp
-// ...
-public class LargeMessageMapper : IAmAMessageMapper<LargeDataCommand>
-{
-    public IRequestContext? Context { get; set; }
+using System;
+using System.Transactions;
+using Paramore.Brighter;
 
-    private readonly IAmAStorageProviderAsync _storageProvider;
+var outbox = new InMemoryOutbox(TimeProvider.System);
+var archiveProvider = new InMemoryArchiveProvider();
+var archiver = new OutboxArchiver<Message, CommittableTransaction>(outbox, archiveProvider);
 
-    [ClaimCheck(0, thresholdInKb: 5)]  // Store payloads > 5KB
-    public Message MapToMessage(LargeDataCommand request, Publication publication)
-    {
-        var header = new MessageHeader(
-            messageId: request.Id,
-            topic: new RoutingKey("LargeData"),
-            messageType: MessageType.MT_COMMAND
-        );
+// A message that was dispatched two days ago
+var message = new Message(
+    new MessageHeader(Id.Random(), new RoutingKey("orders"), MessageType.MT_EVENT),
+    new MessageBody("{\"OrderId\":\"ORD-1\"}"));
+var context = new RequestContext();
+outbox.Add(message, context);
+outbox.MarkDispatched(message.Id, context, DateTimeOffset.UtcNow.AddDays(-2));
 
-        var body = new MessageBody(JsonSerializer.Serialize(request));
-        return new Message(header, body);
-    }
-}
+// Archive every message dispatched more than a day ago
+archiver.Archive(TimeSpan.FromDays(1));
+
+// The Archiver moved the message out of the Outbox and into the archive provider
+bool archived = archiveProvider.ArchivedMessages.ContainsKey(message.Id.Value);   // true
 ```
 
 ## Further Reading

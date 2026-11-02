@@ -89,16 +89,44 @@ restart consequence that memoizing carries.
 ## A skeleton
 
 ```csharp
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Paramore.Brighter;
+using Paramore.Brighter.Observability;
 
-public class MyOutbox : IAmAnOutboxSync<Message, MyTransaction>, IAmACausationTrackingOutbox
+public abstract class MyOutbox : IAmAnOutboxSync<Message, MyTransaction>, IAmACausationTrackingOutbox
 {
     private bool? _causationSupported;
 
     // ... the core Outbox members: Get, MarkDispatched, OutstandingMessages, Delete ...
+    // They are declared abstract here, so that the skeleton compiles; you implement each in your store.
+    public abstract IAmABrighterTracer? Tracer { set; }
+    public abstract void Add(IEnumerable<Message> messages, RequestContext? requestContext, int outBoxTimeout = -1,
+        IAmABoxTransactionProvider<MyTransaction>? transactionProvider = null);
+    public abstract void Delete(Id[] messageIds, RequestContext? requestContext, Dictionary<string, object>? args = null);
+    public abstract IEnumerable<Message> DispatchedMessages(TimeSpan dispatchedSince, RequestContext requestContext,
+        int pageSize = 100, int pageNumber = 1, int outBoxTimeout = -1, Dictionary<string, object>? args = null);
+    public abstract Message Get(Id messageId, RequestContext requestContext, int outBoxTimeout = -1,
+        Dictionary<string, object>? args = null);
+    public abstract IEnumerable<Message> Get(IEnumerable<Id> messageIds, RequestContext requestContext,
+        int outBoxTimeout = -1, Dictionary<string, object>? args = null);
+    public abstract void MarkDispatched(Id id, RequestContext requestContext, DateTimeOffset? dispatchedAt = null,
+        Dictionary<string, object>? args = null);
+    public abstract IEnumerable<Message> OutstandingMessages(TimeSpan dispatchedSince, RequestContext? requestContext,
+        int pageSize = 100, int pageNumber = 1, IEnumerable<RoutingKey>? trippedTopics = null,
+        Dictionary<string, object>? args = null);
+    public abstract int GetOutstandingMessageCount(TimeSpan dispatchedSince, RequestContext? requestContext,
+        int maxCount = 100, Dictionary<string, object>? args = null);
+
+    // ... your store's own reads and writes, declared abstract for the same reason
+    protected abstract string? ReadCausationId(RequestContext? requestContext);   // shown above
+    protected abstract bool CausationColumnExists();
+    protected abstract void StoreWithCausation(Message message, string? causationId);
+    protected abstract void Store(Message message);
+    protected abstract IEnumerable<Message> FindByCausation(string causationId);
+    protected abstract void ClearDispatchedState(Message message);
 
     public void Add(Message message, RequestContext requestContext, int outBoxTimeout = -1,
         IAmABoxTransactionProvider<MyTransaction>? transactionProvider = null)

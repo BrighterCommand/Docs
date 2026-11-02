@@ -2791,30 +2791,958 @@ and 9 now give the close's figures; rows 1 and 6 already gave bugfix 0003's, whi
 
 ### Phase 7 — S5, the remaining five sections *(7 tasks, one PR)*
 
-- [ ] **Task 7.1:** Predict phase 7's gate movement
+- [x] **Task 7.1:** Predict phase 7's gate movement
   - Input: § *The groups*, S5; recurrence greps for S5's defects
   - Output: § *Phase 7 as executed*, *Predicted*, as 3.1's
-- [ ] **Task 7.2:** Repair S5's reachable blocks
+- [x] **Task 7.2:** Repair S5's reachable blocks
   - Input: S5's table, reachable rows; the V4 pin for `DistributedLock.md` #2 and
     `DynamoDbDistributedLock.md` #1, #2
   - Output: as 3.2's, for S5. The three V4 blocks are BUILT or listed with a diagnostic that is not
     `CS0234 … V4` (AC11, with 3.3 and 6.2)
-- [ ] **Task 7.3:** Repair S5's hard blocks
+- [x] **Task 7.3:** Repair S5's hard blocks
   - Input: S5's table, hard rows; Brighter `10.8.0` source, the pinned release
   - Output: as 3.3's, for S5
-- [ ] **Task 7.4:** Repair `TestDoubleOptions.md`'s Shouldly blocks (P0-8)
+- [x] **Task 7.4:** Repair `TestDoubleOptions.md`'s Shouldly blocks (P0-8)
   - Input: design § *Page Repair Rules*, the Shouldly row; 2.7's pin
   - Output: `using Shouldly;` in each of the six blocks, and one sentence naming the package.
     `grep -c Shouldly contents/TestDoubleOptions.md` → **≥ 7**, from **0**; the six BUILT or listed
-- [ ] **Task 7.5:** Run S5's behavioural claims (AC10)
+- [x] **Task 7.5:** Run S5's behavioural claims (AC10)
   - Input: S5's changed blocks
   - Output: a *Claim / Case / Control* table, each row naming `probe/s5/<name>/Program.cs`
-- [ ] **Task 7.6:** Second pass for S5
+- [x] **Task 7.6:** Second pass for S5
   - Input: 7.1's recurrences; rulings asked
   - Output: as 3.6's
-- [ ] **Task 7.7:** Close phase 7
+- [x] **Task 7.7:** Close phase 7
   - Input: § 1 obligations 6, 7, 19
   - Output: as 3.7's
+
+### Phase 7 as executed
+
+**Measured at phase start, `dc09559`** (#210's merge). `--report` → **994 / 758 / 207 / 29, 0 findings**,
+exit 0; `--classify` → 31 parse, 12 built-by-using, 42 defect, 37 same-page, 12 values, 73 page-type,
+settled in 3 rounds. 553 reference assemblies on each pin, 28 blocks on the V4 pin (25 built); scaffold rule
+80 units, 0 violations, 0 compile errors; pin rule 4 pages. `pagelint` 0 errors / **184** warnings (39 pages),
+`--plant` 5 / 5; `symbolcheck` 24 entries, 14 silenced; `linkcheck` 169 / 0; `versioncheck` 0 of 18 across 5
+pages, so no Brighter release beyond the pinned 10.8.1; `optioncheck` 0 / 59 / 533; shape 161 pages, widest 12
+of 20; redirects 77, 7858 bytes.
+
+#### Predicted (7.1)
+
+**S5 at `dc09559`**: `groups.py` gives 22 pages, **134** FAILED (30 parse, 12 built-by-using, **32** defect,
+3 same-page, 9 values, **48** page-type), 41 BUILT, 10 with nothing BUILT. Two methods: the FAILED column, 134;
+`grep` over `--report` on the twenty-two pages, 134, with 41 BUILT and 7 SKIPPED (`FAQ.md` #15,
+`V10MigrationGuide.md` #1, #4, #6, #8, #14, #18). The S5 pages hold **182** C# blocks. Off S5, `--report` has
+73 FAILED on 29 pages (207 − 134).
+
+**The inventory.** *Reachable*, **69**: 12 built-by-using, 9 values, 48 page-type. *Hard*, **62**: 30 parse,
+32 defect. *Same-page*, **3**: `V10MigrationGuide.md` #3, #10, #17. *V4*, **3**, all *values* on the V4 pin:
+`DistributedLock.md` #2 (`services`), `DynamoDbDistributedLock.md` #1 (`dynamoDb`) and #2 (`services`).
+*Shouldly*, **6**: `TestDoubleOptions.md` #1, #5–#9, each classed *defect* on `CS1061 ShouldBe…`. Two methods: the
+six `CS1061` rows of `--classify`, and a scan of the page's blocks for `.Should(Be|NotBe|Contain|Throw)`,
+**17** calls in the same six blocks.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| S5's table: `MongoDBOutbox.md` **1** defect, **0** page-type; S5 **33** defect, **47** page-type | **0** and **1**; S5 **32** and **48**. #5 was repaired off-group at task 4.3 (ledger 36) and now fails only on the reader's `AddGreeting`, `GreetingMade`, `Person` | the table stands, being the instrument's at `f3f685f`; this row is the reading at `dc09559` |
+| Task 7.3: *"10.8.0 source"* | the pins are **10.8.1** (bugfix 0003) | the reading below is against the 10.8.1 tag; the task's text is not this task's to edit |
+| S5's table: **32** defect blocks (as measured) | the second compile's diagnostics (below): **5** are API defects, **3** a pin limit already ruled, **6** Shouldly's missing `using`, **2** 017's mapper defect recurring, **5** alternatives in one fence, **3** types and statements in one fence, **7** fragments, and **1** a source-generated quote | the table stands; the repairs follow the reading |
+
+**Reading S5's 32 defect blocks** with `probe/second.py` over the twenty-two pages (527 diagnostic lines),
+each against the 10.8.1 tag:
+
+| Page | # | Second compile | Reading against the pin | Repair |
+|---|---:|---|---|---|
+| `FAQ.md` | 2, 14, 16 | `CS1503` ×2 on `UseResiliencePipeline(1, "…")`; #2 also `CS0592` `RequestLoggingAsync` | **defect**, twice: `UseResiliencePipelineAttribute(string policy, int step)` (`UseResiliencePipelineAttribute.cs:68`), so the arguments are reversed; and the attributes decorate the class, where `[AttributeUsage(AttributeTargets.Method)]` (`:52`) allows only a method. The handlers are `RequestHandlerAsync`, so the method is `HandleAsync` and the attributes their `…Async` twins (`CLAUDE.md` § *Handler attributes match their handler*). Rule 8 reads methods, so a class-level attribute never reaches it | 7.3 |
+| `FAQ.md` | 1 | `CS0452` | **defect**: `class MyHandlerBase<T> : RequestHandlerAsync<T>` without the `where T : class, IRequest` the base requires | 7.3 |
+| `CommandProcessorConfigurationReference.md` | 20 | `CS1520`, `CS0118` | **defect**: a quote of `JsonSerialisationOptions`' static constructor showing **4** of the **12** converters 10.8.1 adds (`JsonSerialisationOptions.cs:33–44`; the 8 missing are `SubscriptionNameConverter`, `RoutingKeyConvertor`, `ChannelNameConverter`, `BaggageConverter`, `IdConverter`, `PartitionKeyConverter`, `TraceStateConverter` and `TraceParentConverter`). The prose before #21 says the hook takes an `Action<JsonSerialisationOptions>`; it takes `Action<JsonSerializerOptions>` (`ServiceCollectionExtensions.cs:866–867`), the class being static | 7.3: the listing brought to the tag, and SKIPPED under D21 if it cites the file and line, or made whole; the prose with it |
+| `ConfiguringOpenTelemetry.md` | 1, 5, 6 | `CS0234` `Paramore.Brighter.Extensions.Diagnostics`; `CS1929` `AddOpenTelemetry` | **a pin limit, already ruled**: neither `Paramore.Brighter.Extensions.Diagnostics` nor `OpenTelemetry.Extensions.Hosting` is on a pin. 017's ruling (2) of 2026-09-28 (`spec/017-compile_repairs/tasks.md` § *Phase 5 as executed*): *"No pin change … stay FAILED as a pin limit, each compiled in scratch"*. `Telemetry.md` #1, #6–#9 and `PostgreSQLMessageBroker.md` #8, tranche pages, fail on the same `CS0234` | stay FAILED and listed, each compiled in scratch against the released packages; a ruling to pin would move all nine |
+| `TestDoubleOptions.md` | 1, 5–9 | `CS1061` `ShouldBe…` | **Shouldly with no `using`** (ledger 2, D4): pinned at 4.3.0 since phase 2, never named by the page | 7.4 |
+| `MigratingToNullableReferenceTypes.md` | 22 | `CS0535` `MapToMessage` | **017's mapper defect recurring**: an `IAmAMessageMapper<T>` with one of its two members, under a `// ...` that declares nothing about the member | 7.3 |
+| `OutboxArchiver.md` | 4 | `CS0535` `MapToRequest` | the same, the other member | 7.3 |
+| `NullableReferenceTypes.md` | 1, 10, 11 | `CS0128` | **alternatives**: a *before* and an *after*, each declaring the same local. #1's second line is the `CS8600` warning the page teaches | 7.3, split or made whole |
+| `FAQ.md` | 8 | `CS0111` | **alternatives**: two handlers' `HandleAsync` in one fence | 7.3, split or made whole |
+| `TurningOnReplayOnSeen.md` | 4 | `CS0111` | **alternatives**: a ❌ and a ✅ `Handle` | 7.3, split or made whole |
+| `MigratingToNullableReferenceTypes.md` | 4, 7 | `CS0825`, `CS0116` | **types and statements in one fence**: a class, then `var command = …` | 7.3, split or made whole |
+| `NullableReferenceTypes.md` | 12 | `CS0825`, `CS0116` | the same | 7.3, split or made whole |
+| `BrighterOutboxSupport.md` | 1 | `CS1520` | a fragment: a handler's constructor without its class | 7.3 |
+| `BrighterOutboxSupport.md` | 2 | `CS1106` | a fragment: an extension method outside a static class | 7.3 |
+| `CausationTrackingStores.md` | 2 | `CS0535` ×11 | a fragment: `IAmAnOutboxSync<,>` implemented in part, the rest declared `// ...` | 7.3, made whole or skipped |
+| `CommandProcessorConfigurationReference.md` | 10 | `CS0117` `Environment.IsDevelopment` | a fragment: a `Startup` method whose `Environment` is the class's `IWebHostEnvironment`, so `System.Environment` binds | 7.3 |
+| `Logging.md` | 4 | `CS1061` `INeedAHandlers.Build` | a fragment: the builder's chain elided as `// ...` | 7.3 |
+| `InMemoryOptions.md` | 3 | `CS7036`, `CS1729` ×2, `CS0104` `ChannelFactory` | a fragment: four constructors given `/* production config */` for arguments, and a `ChannelFactory` the pin's MQTT and RMQ.Sync packages both declare | 7.3, made whole |
+| `SweeperCircuitBreaking.md` | 1 | `CS1501` `AddProducers` | a fragment: `.AddProducers(/* producer configuration */)` | 7.3, made whole |
+| `Logging.md` | 5 | `CS8795` | **a quote of Brighter's source**: `CommandProcessor.Log`'s `[LoggerMessage]` partial (`CommandProcessor.cs:1617–1618` at 10.8.1), whose implementation a source generator writes and `blockcheck` does not run | 7.3: SKIPPED under D21 if cited and matching, or listed |
+
+**Behind *parse*, read by first lines and by `--explain`** (30 blocks; phase 6's lesson that a *parse* block
+hides what lies behind it):
+- **an API that does not exist**, hidden: `FAQ.md` #3 and #5 call `services.AddProducers(…)`, on
+  `IServiceCollection` where it extends `IBrighterBuilder` (`CLAUDE.md` § *Version markers on code*), with
+  `options.UseRabbitMQ(...)`, `.Publication<T>(…)` and `.Subscription<T>(…)`. `git grep UseRabbitMQ` finds
+  nothing in Brighter's `src` at 10.8.1 or at `origin/master`
+- **lone chained calls, arguments and initialisers**, candidates for D3's *"a single option shown alone"*
+  where the type resolves: `FAQ.md` #4 and #20; `MongoDBInbox.md` #4 and `MongoDBOutbox.md` #4
+  (`MongoDbCollectionConfiguration`); `CommandProcessorConfigurationReference.md` #21; `OutboxArchiver.md` #1.
+  `ConfiguringOpenTelemetry.md` #2–#4 have the shape, but their exporters resolve in no pin, which D3 requires;
+  they stay with #1, #5, #6 under 017's ruling
+- **types and statements in one fence**: `SweeperCircuitBreaking.md` #4, a class then its registration;
+  `V10MigrationGuide.md` #19, `PersonCreated` then a `PostAsync`
+- **`...` or a comment for arguments or a value**, made whole: `CommandProcessorConfigurationReference.md` #1,
+  #5, #13, #14, #15, #17, #19; `DispatcherConfigurationReference.md` #1–#5; `V10MigrationGuide.md` #5 and #16;
+  `OutboxArchiver.md` #2
+- **a statement missing its `;`**: `BrighterInboxSupport.md` #2
+- **a listing of expressions**: `TestDoubleOptions.md` #2, the spy's members, each live in
+  `SpyCommandProcessor.cs` at 10.8.1; made whole, or retagged `text` as phase 5 retagged lists of names
+
+**Packages on no pin.** 6.1 said *"every package S4 names is pinned"* and was wrong once (Serilog). Read here
+from `--classify`'s *page-type* names against `refs.csproj`'s **103** `PackageReference`s:
+- `NSubstitute`: `TestDoubleOptions.md` #12 (`Substitute`, `Arg`). Unpinned, and named in no spec
+- `BenchmarkDotNet`: `V10MigrationGuide.md` #26 (`[Benchmark]`). Unpinned, and named in no spec
+- `OpenTelemetry.Extensions.Hosting`, `Paramore.Brighter.Extensions.Diagnostics` and the Zipkin, OTLP and Azure
+  Monitor exporters: `ConfiguringOpenTelemetry.md` #1–#6, under 017's ruling
+- `Moq` and `xunit` are pinned, so `TestDoubleOptions.md` #11 (`Mock`, `Times`) and
+  `CommandProcessorConfigurationReference.md` #11 (`Fact`) need only their `using`s; `Confluent.Kafka` comes with
+  the Kafka package, so `V10MigrationGuide.md` #22, #23 (`PartitionAssignmentStrategy`) the same
+
+**Recurrence greps (obligation 20), run as written at `dc09559`:**
+
+| Defect | Grep | Hits | Off-group |
+|---|---|---:|---|
+| `UseResiliencePipeline` given its step first | `grep -rnE '\[UseResiliencePipeline(Async)?\([0-9]' contents/` | **4**: `FAQ.md` #2, #14, #16; and `PipelineValidation.md`'s `text` fence under *Full Detail*, a log line naming the attribute and its step, not a call | none. Against **22** sites that pass the name first (`grep -rnE '\[UseResiliencePipeline(Async)?\("' contents/`) |
+| A handler attribute on a class | `grep -rn -A2 -E '^\[(RequestLogging\|UseResiliencePipeline\|UsePolicy\|UseInbox\|FallbackPolicy\|FeatureSwitch\|Monitor\|ValidateRequest\|DeferMessageOnError\|RejectMessageOnError\|DontAckOnError\|Timeout)(Async)?\(' contents/ \| grep -E '^\S+-[0-9]+-\s*public (abstract \|sealed )?class '` | **3**, `FAQ.md` #2, #14, #16 | none |
+| A generic handler base without its constraint | `grep -rnE 'class \w+<T>\s*:\s*RequestHandler(Async)?<T>\s*$' contents/` | **1**, `FAQ.md` #1 | none |
+| `JsonSerialisationOptions` short of 10.8.1 | `grep -rnF 'Action\<JsonSerialisationOptions\>' contents/`; `grep -c SubscriptionNameConverter contents/CommandProcessorConfigurationReference.md` | **1**, the prose before `CommandProcessorConfigurationReference.md` #21; **0** | none. The page's other uses of `JsonSerialisationOptions.Options`, and those on 10 other pages, name the public static property, which is live |
+| `UseRabbitMQ` and `services.AddProducers` | `grep -rnE 'UseRabbitMQ\(' contents/`; `grep -rnE '[Ss]ervices\.AddProducers\(' contents/` | **3** lines in 2 blocks; **2**: `FAQ.md` #3, #5 | none |
+| 017's mapper missing a member | a scan of every C# block declaring `class … : IAmAMessageMapper(Async)?<` for both of its `MapTo…` members (`probe`'s reading of `enumerate_blocks()`) | **2**: `MigratingToNullableReferenceTypes.md` #22, `OutboxArchiver.md` #4 | none |
+| `System.Environment` bound for a host's | `grep -rnE '(^\|[^.A-Za-z_])Environment\.IsDevelopment\(\)' contents/` | **1**, `CommandProcessorConfigurationReference.md` #10 | none |
+| Arguments given as a comment | `grep -rnE '\(/\* [^*]+ \*/\)' contents/` | **8**: `InMemoryOptions.md` #3 (4), `SweeperCircuitBreaking.md` #1, `OutboxArchiver.md` #3; and `MigratingToPollyV8.md` #5 and `UsingSweeperCircuitBreaking.md` #3 | `MigratingToPollyV8.md` #5 is SKIPPED (V9), `UsingSweeperCircuitBreaking.md` #3 is BUILT; neither is a defect, so no off-group repair |
+| A source-generated `[LoggerMessage]` | `grep -rn 'LoggerMessage(' contents/` | **1**, `Logging.md` #5 | none |
+| Ledger 2, Shouldly unnamed | `grep -c Shouldly contents/TestDoubleOptions.md` | **0** | none: the 17 calls are all on this page |
+| Ledger 3, `…DynamoDb.V4` | `grep -rn 'Inbox.DynamoDb.V4' contents/` | **1**, `DynamoInbox.md`'s package list | **`DynamoInbox.md`**, a 017 tranche page, prose only (obligation 21) |
+| Unpinned packages | `grep -rnE 'Substitute\.For<\|using NSubstitute' contents/`; `grep -rnE '\[Benchmark\|BenchmarkDotNet' contents/` | **1**; **1** | none |
+
+**The off-group term, from the compile reading, is one page and no block**: `DynamoInbox.md`'s package name
+(ledger 3). **From the behavioural claims**, phase 6's lesson, these are the claims in blocks 7.2–7.4 will
+touch, for 7.5 to run, with their recurrences:
+- `TurningOnReplayOnSeen.md` #4: a `Post` without the pipeline's context is *"a silent no-op under Replay"*
+- `CommandProcessorConfigurationReference.md` #10 and `InMemoryOptions.md`: `PostConfigure<BrighterOptions>`
+  reaches the command processor's `RequestContextFactory` (`ServiceCollectionExtensions.cs:68–75` registers
+  the options pattern; what reads it is the claim). Both pages are S5
+- `MongoDBInbox.md` #4, `MongoDBOutbox.md` #4: `TimeToLive` deletes messages after 30 days
+- `FAQ.md` #20: `channelCount` is the number of concurrent message pumps
+- `V10MigrationGuide.md` #19: no mapper registration is needed, the default mapper serialising
+- `TestDoubleOptions.md` #2: `Observe<T>()` dequeues in FIFO order, consuming
+- `SweeperCircuitBreaking.md` #1: `CooldownCount` defaults to 10. Read, not run: `OutboxCircuitBreakerOptions.cs:37`
+  at 10.8.1 says `= 10`. Recurs off-group on `UsingSweeperCircuitBreaking.md`, and holds there by the same line
+
+A claim overturned on these is repaired at every recurrence the 7.6 greps find, as 6.5 found
+`HandlingLargeMessages.md` and `Logging.md`.
+
+**Where blocks will stay *same-page*.** A unit may not stand in for a type the page declares; `probe`'s
+reading of each S5 FAILED block's `names` against the page's own `class`/`record`/`interface` declarations:
+- **the 3 already *same-page***: `V10MigrationGuide.md` #3, #17 (`PersonCreated`, declared in #19) and #10
+  (`MyCommand`, declared in #14 and #15)
+- **5 more already named by a declaration**: `V10MigrationGuide.md` #16 and #25 (`PersonCreated`, #19);
+  `NullableReferenceTypes.md` #4 and #5 (`CreateOrderCommand`, #3 and #9) and #7 (`CreateUserCommand`, #6)
+- **the running examples, undeclared today**: `GreetingMade` across `CommandProcessorConfigurationReference.md`
+  #7, #16, #22 and `BrighterInboxSupport.md` #1; `GreetingEvent` across `V10MigrationGuide.md` #21–#24;
+  `MyCommand` across `FAQ.md` and `TestDoubleOptions.md`; `ProcessPayment`/`ShipOrder` across
+  `TurningOnReplayOnSeen.md` #1, #2, #4, #6. A stub serves each while no block declares it
+
+**Blocks expected to stay FAILED**, each to be listed in § *Blocks that stay FAILED*:
+- **3–8 *same-page***, the two groups above
+- **6 under 017's pin-limit ruling**: `ConfiguringOpenTelemetry.md` #1–#6, unless the ruling is revisited
+- **0–2 on an unpinned package**: `TestDoubleOptions.md` #12 and `V10MigrationGuide.md` #26, by the ruling asked
+  below: pinned (D4, D12, D13), rewritten (the Serilog ruling), or listed
+- **0–1 source-generated**: `Logging.md` #5, if D21 is not accepted for it
+
+So **9–17** stay; with the ruling to pin all three families, **3–9**.
+
+**`pagelint`, block by block.** S5's **123** warnings (`--per-page` on the twenty-two pages; 15 carry one),
+read against `--report` and `--classify`:
+- **29 on blocks no repair touches**: 22 BUILT (20 declared `// ...`, 2 bare: `NullableReferenceTypes.md` #8,
+  #16) and 7 SKIPPED (`FAQ.md` #15; `V10MigrationGuide.md` #1, #4, #6, #8, #14, #18). They stay
+- **41 on FAILED blocks that already declare `// ...`**: 7 *defect*, 13 *page-type*, 19 *parse*, 2 *values*
+- **53 on the other FAILED blocks**: 16 *defect*, 15 *page-type*, 11 *built-by-using*, 9 *parse*, 2 *values*
+
+Phase 6 took its 94 to 7; nearly every declared omission gained its `using`s. The floor here is 184 − 94 = **90**.
+
+**Predicted:**
+
+| Gate | At `dc09559` | Predicted at the close | Mechanism |
+|---|---|---|---|
+| corpus | 994 | **993–1,004** | splits only, up to +10: the 8 alternatives and mixed fences in the defect reading and the 2 behind *parse* (`SweeperCircuitBreaking.md` #4, `V10MigrationGuide.md` #19). Each may instead be made whole in its fence, as phase 6 did with all of its own. −1 if `TestDoubleOptions.md` #2 is retagged `text` |
+| BUILT | 758 | **866–899** | 892 (758 + S5's 134), plus splits (0–10), less new skips (0–8), stays (3–17) and a retag (0–1). Off-group **0** |
+| FAILED | 207 | **76–90** | 73 (−134 for S5) plus the stays: 3–17, the groups above. Off-group 0 |
+| SKIPPED | 29 | **29–37** | D3's lone options, 0–6 (`FAQ.md` #4, #20; `MongoDBInbox.md` #4; `MongoDBOutbox.md` #4; `CommandProcessorConfigurationReference.md` #21; `OutboxArchiver.md` #1); D21's source quotes, 0–2 (`CommandProcessorConfigurationReference.md` #20, `Logging.md` #5) |
+| `pagelint` | 0 errors / 184 | **0 errors / 90–115** | 184 less S5's 94 on FAILED blocks, plus what of S5 keeps one: 0–9 on stays not given their `using`s, 0–5 on new skips that carry a warning today (`FAQ.md` #4, #20, the two MongoDB initialisers, `CommandProcessorConfigurationReference.md` #20), 0–10 on a split's new fence, 0–10 declared `// ...` that keep their omission. Off-group 0 |
+| `symbolcheck` | 24 entries, 14 silenced | **24–25 entries, 14 silenced**, exit 0 | `UseRabbitMQ` is dead at 10.8.1 and at `origin/master`, as `AddServiceActivator` was (D5); whether it earns a row is read at 7.6. The opt-outs on `FAQ.md` and `V10MigrationGuide.md` stay |
+| scaffold rule | 80 units | **89–98 units**, 0 violations, 0 compile errors | 3 S5 pages have units (`FAQContext`, `MigratingToNullableReferenceTypesContext`, `SweeperCircuitBreakingContext`); 9–18 of the other nineteen need one, the two V4 pages as `<unit>+v4` |
+| pin rule | 4 pages, 0 violations | **unmoved**; the V4 pin 28 blocks, **28** built | `DistributedLock.md` #2, `DynamoDbDistributedLock.md` #1, #2 each fail only on a value (AC11) |
+| assemblies | 553 | **553**, unless the ruling below pins a package | every other package S5 names is pinned |
+| nothing BUILT | 12 pages (10 S5, and `ReplayOnSeenReference.md`, `ReturningResultsFromAHandler.md`) | **2–3** | each S5 page gains a BUILT block but `ConfiguringOpenTelemetry.md`, whose six blocks are all under the pin limit |
+| `optioncheck` | 0 / 59 / 533 | **0 mismatches, 59 / 533 unless a repair adds a row** | seven S5 pages carry marked tables; no defect above is in one |
+| `linkcheck` · `versioncheck` · shape · redirects · `pagelint --plant` | 169 / 0 · 0 of 18 · 161, widest 12 · 77 · 5 / 5 | **unmoved** | no link, tutorial pin or `SUMMARY.md` change |
+
+#### Rulings (session 136)
+
+Given by the maintainer on 2026-10-31 and recorded as given; 7.1's three questions are answered by 1 and 2, and
+3 approves the four defects 7.1 named:
+
+> 1. **NSubstitute and BenchmarkDotNet: pin.** `TestDoubleOptions.md` #12 (NSubstitute) and `V10MigrationGuide.md` #26
+>    (BenchmarkDotNet) — add the packages to the appropriate pin (follow the D4 Shouldly / D12 / D13 precedent for how a
+>    package joins a pin), rather than rewriting or listing the blocks.
+> 2. **OpenTelemetry: 017's 2026-09-28 "no pin change" ruling no longer binds in 018. Change the pin if needed** —
+>    `OpenTelemetry.Extensions.Hosting` and `Paramore.Brighter.Extensions.Diagnostics` (and any exporter packages
+>    `ConfiguringOpenTelemetry.md` #1–#6 need) may be pinned. This also moves `Telemetry.md` #1, #6–#9 and
+>    `PostgreSQLMessageBroker.md` #8 outside S5; rebuild and record their movement.
+> 3. **The four defects 7.1 named are approved for repair in phase 7, each with a defect-ledger row and recurrence greps
+>    across the corpus:**
+>    - `FAQ.md` #2, #14, #16: `[UseResiliencePipeline(1, "…")]` has arguments reversed (ctor is `(string policy, int step)`)
+>      and sits on the class (`AttributeTargets.Method`). Fix: the async attribute `[UseResiliencePipelineAsync("…", 1)]` on
+>      `HandleAsync` (handlers are `RequestHandlerAsync`), with `[RequestLoggingAsync]` moved there too.
+>    - `FAQ.md` #1: `MyHandlerBase<T> : RequestHandlerAsync<T>` missing `where T : class, IRequest`.
+>    - `CommandProcessorConfigurationReference.md` #20 and the prose before #21: `ConfigureJsonSerialisation` takes
+>      `Action<JsonSerializerOptions>` (not `JsonSerialisationOptions`); the `JsonSerialisationOptions` static-ctor listing
+>      shows 4 of 12 converters — bring it into line with the 10.8.1 source.
+>    - `FAQ.md` #3, #5: `services.AddProducers(o => o.UseRabbitMQ(...).Publication<T>/.Subscription<T>)` — API never
+>      existed. Rewrite to the real V10 shape: `services.AddConsumers(...)` first, then `.AddProducers(...)` chained off the
+>      returned `IBrighterBuilder`, with `RmqProducerRegistryFactory` and `RmqSubscription<T>`. Keep what the FAQ answer
+>      teaches (the difference between AddProducers and AddConsumers).
+
+**Carried out at 7.2.** Ruling 1 is **D22** and ruling 2 **D23** (`design.md` § *Design Decisions*). Ruling 3's five blocks
+are all *hard* rows (`FAQ.md` #1, #2, #14, #16 *defect*; #3, #5 *parse*; `CommandProcessorConfigurationReference.md` #20
+*defect*, and the prose before #21), so the repairs, their ledger rows and their recurrence greps are 7.3's, written when
+each grep has run after its repair (obligation 22). 7.1's recurrence greps stand as run. The pin changes were made here, so 7.3
+and 7.4 inherit them. 7.3's text says *"Brighter `10.8.0` source"*; the pins are **10.8.1**, and 7.3 reads 10.8.1.
+
+**Further rulings, 2026-11-01 (session 136, continued)**, given by the maintainer and recorded as given:
+
+> 1. **D24 ratified: keep `Polly.Extensions` 8.8.0** on both pins.
+> 2. **Pin `Npgsql.OpenTelemetry`** (new D25, the shape of D22 and D23) on both pins, at a version compatible with the Npgsql
+>    already on the pin. Rebuild `PostgreSQLMessageBroker.md` #8 and record its movement.
+
+Carried out at 7.3: ruling 1 is `design.md` D24 (status *Yes, the maintainer, 2026-11-01*) and ruling 2 is **D25**, **9.0.3**.
+
+**Rulings on 7.3's PAUSE, 2026-11-01 (session 136, continued)**, given by the maintainer and recorded as given:
+
+> 1. **Ledger 88–91 confirmed**: `FAQ.md` #20 `channelCount` → `noOfPerformers`; `ExternalBusConfiguration` → `ProducersConfiguration`;
+>    the Inbox/Outbox `GetExistsQuery` check that was always true; `IsDevelopment()` in a `Startup`.
+> 2. **`OutboxArchiver.md` § *InMemory Archive Example Usage*: replace the Claim Check mapper with a real `InMemoryArchiveProvider`
+>    example**, read at the 10.8.1 tag, compiling against the pins, with prose that matches what it does. Keep the heading. Delete the
+>    Claim Check scaffolding if nothing else uses it. List any behavioural claim for 7.5.
+> 3. **`Logging.md` #5: option (a), make it whole** as a top-level `internal static partial class Log`. If `blockcheck` does not run the
+>    `Microsoft.Extensions.Logging` source generator (so `CS8795` remains), leave it listed as FAILED with that diagnostic, and PAUSE
+>    explaining; no skip reason is invented. The lead-in must not claim the block is verbatim if the modifier changes.
+
+Carried out at 7.4 (§ *The repairs (7.4)*): 1 is recorded on ledger rows 88–91; 2 is done and builds; 3 is done on the page and
+stays FAILED on `CS8795`, the fallback the ruling names.
+
+**Ruling on 7.4's PAUSE, 2026-11-01 (session 136, continued)**, given by the maintainer and recorded as given:
+
+> **Option (c).** `Logging.md` #5 stays listed as FAILED (`CS8795`; `blockcheck` runs no source generators). Making `blockcheck` run the
+> source generators its pinned packages ship is recorded as a **follow-up after spec 018**, not done in 018.
+
+Carried out at 7.5: the row in § *Blocks that stay FAILED* and 7.4's question are annotated, and the follow-up is recorded in § *The
+behavioural claims (7.5, AC10)*, *Follow-up after 018*.
+
+**Rulings on 7.5's PAUSE, 2026-11-01 (session 136, continued)**, given by the maintainer and recorded as given:
+
+> 1. **Ledger 93 confirmed, and filed upstream as two bugs** (filed by the orchestrator): **BrighterCommand/Brighter#4716**, *MongoDB:
+>    TimeToLive is ignored unless MakeCollection is CreateIfNotExists*; **BrighterCommand/Brighter#4717**, *MongoDB: TTL index on TimeStamp
+>    never expires documents (DateTimeOffset stored as a subdocument)*.
+> 2. **Ledger 94 accepted.**
+> 3. **D24 reverted: drop the `Polly.Extensions` pin**, since no block needs it after ledger 94 (`grep -rn 'AddResiliencePipeline(' contents/`
+>    → 0). Remove it from both pins, mark D24 reverted in `design.md`, rebuild, and confirm nothing moved.
+> 4. **Note, don't change: `MigratingToPollyV8.md` Step 1 tells readers to add `Polly.Extensions` 8.0.0.** Given ledger 94, that package is
+>    probably unnecessary for Brighter. Record it as an observation, a candidate for 8.5's friction ledger or a later spec; do not edit the page.
+
+Carried out at 7.6 (§ *Second pass (7.6)*): 1 is on ledger row 93 and in *Upstream, filed during the phase*; 3 is done, 580 → **579**
+reference assemblies on each pin and no verdict moved; 4 is recorded as an observation.
+
+**Rulings on 7.6's PAUSE, 2026-11-02 (session 137)**, given by the maintainer and recorded as given:
+
+> 1. **Ledger 95 and 96 confirmed.**
+> 2. **Add a `symbolcheck` watchlist row for `ExternalBusConfiguration` → `ProducersConfiguration`** (evidence ledger 89; precedent
+>    D10's `UseExternalBus`), in the shape the existing rows use, and reflect the new figure wherever the gate's expected value is recorded.
+> 3. **Follow-ups after 018 are filed as Docs issues** (filed by the orchestrator): **BrighterCommand/Docs#211**, pagelint rule 8 misses
+>    sync-only handler attributes. Measured at 10.8.1: of Brighter's handler attributes there are 13 sync/async pairs (all in `PAIRED`) and
+>    exactly one sync-only, `[TimeoutPolicy]` (`[Obsolete]`); the transform attributes without twins (ClaimCheck, RetrieveClaim, Compress,
+>    Decompress, CloudEvents, ReadFromCloudEvents, JustSaying, JustSayingDecompress, MassTransitWrap, MassTransitUnwrap) decorate mappers, not
+>    handlers, so they are out of rule 8's scope. **BrighterCommand/Docs#212**, `blockcheck` runs no source generators (`Logging.md` #5, `CS8795`).
+
+Carried out at 7.7 (§ *Phase 7 closed (7.7)*): 1 is on ledger rows 95 and 96; 2 is `tools/symbolwatch.tsv`'s 25th row, `tools/README.md` row 8;
+3 is on ledger row 95, `Logging.md` #5's row in § *Blocks that stay FAILED*, 7.5's *Follow-up after 018* and the phase's upstream record.
+
+#### The repairs (7.2)
+
+**The pins.** Ten packages joined `refs.csproj` and `refs-v4.csproj` together (103 → **113** `PackageReference`s each;
+the two lists still differ only by the seven AWS swaps). Each is built against the released packages, never a
+`ProjectReference`:
+
+| Package | Version | Why that version | Needed by |
+|---|---|---|---|
+| `NSubstitute` | 6.2.0 | latest stable; Brighter's own tests use FakeItEasy | `TestDoubleOptions.md` #12 (D22) |
+| `BenchmarkDotNet` | 0.15.8 | Brighter's own (`Directory.Packages.props` at 10.8.1) | `V10MigrationGuide.md` #26 (D22) |
+| `Paramore.Brighter.Extensions.Diagnostics` | 10.8.1 | the pinned release | `ConfiguringOpenTelemetry.md` #1, #5, #6; `Telemetry.md` #1, #6–#9 (D23) |
+| `OpenTelemetry.Extensions.Hosting`, `.Exporter.Zipkin`, `.Exporter.OpenTelemetryProtocol` | 1.19.1 | what `Paramore.Brighter.Extensions.Diagnostics` 10.8.1 depends on (`OpenTelemetry.Api.ProviderBuilderExtensions` 1.19.1) | `ConfiguringOpenTelemetry.md` #1–#6 (D23) |
+| `OpenTelemetry.Instrumentation.AspNetCore`, `.Http` | 1.19.0 | Brighter's own | `ConfiguringOpenTelemetry.md` #5, which the page already names (D23) |
+| `Azure.Monitor.OpenTelemetry.Exporter` | 1.10.0 | latest stable | `ConfiguringOpenTelemetry.md` #4 (D23) |
+| `Polly.Extensions` | 8.8.0 | `Polly.Core`'s version on the pin | `FAQ.md` #13 (**D24**, below) |
+
+Reference assemblies: **553 → 579** on each pin (576 after the first nine packages; the two instrumentation packages
+and `Polly.Extensions` added 2 and 1). No restore warning on either project. Three packages were found only by building:
+`OpenTelemetry.Instrumentation.AspNetCore` and `.Http` (7.1's list stopped at the exporters), and `Polly.Extensions` (below).
+
+**D24 is not ruled.** `FAQ.md` #13 reads *values* (`services`) in 7.1's table. Once `services` was supplied the second
+compile said `CS1061 AddResiliencePipeline`: the extension lives in `Polly.Extensions`, which no pin carries and the page
+never named, and 7.1's list of packages on no pin (read from *page-type* names) could not see it. It is the same shape as D13,
+so it was pinned here and the page now says `AddResiliencePipeline` comes from `Polly.Extensions`. **Reverting is one line in
+each project and one sentence in the page; the maintainer is asked to ratify it.**
+
+**Ruled 2026-11-01: ratified.** `Polly.Extensions` 8.8.0 stays on both pins (D24, `design.md`).
+
+**What the pins moved, by page and ordinal** (`--report` before and after, diffed by `(page, ordinal)`):
+
+| Block | Before | After | Mechanism |
+|---|---|---|---|
+| `ConfiguringOpenTelemetry.md` #1, #5, #6 | FAILED (*defect*, `CS0234`/`CS1929`) | **BUILT** | the pin alone; no page or unit change |
+| `ConfiguringOpenTelemetry.md` #2, #3, #4 | FAILED (*parse*) | FAILED (*parse*) | lone `.AddZipkinExporter(…)`, `.AddOtlpExporter(…)`, `.AddAzureMonitorTraceExporter(…)` calls, whose receivers now resolve in the pin: D3's *"a single option shown alone"* applies, 7.3's |
+| `Telemetry.md` #1, #9 | FAILED (`CS0234`) | **BUILT** | the pin alone |
+| `Telemetry.md` #6, #7, #8 | FAILED (`CS0234`) | **BUILT** | the pin, then the second compile read *values* (`builder`, `CS0103`); `TelemetryContext` gained `WebApplicationBuilder builder` and each block `using Microsoft.Extensions.DependencyInjection;` (obligation 21: a block the ruling made reachable is repaired by the phase that moved it) |
+| `PostgreSQLMessageBroker.md` #8 | FAILED (`CS0234`) | FAILED (`CS7036`) | `AddNpgsql()` is `Npgsql.OpenTelemetry`'s extension on `TracerProviderBuilder`, which the page names and no pin carries; binding falls to `Npgsql.EntityFrameworkCore.PostgreSQL`'s. **Not pinned: no ruling covers it** (a question for the maintainer, below) |
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| § *Predicted (7.1)*, `Telemetry.md` #1, #6–#9 and `PostgreSQLMessageBroker.md` #8 *"fail on the same `CS0234`"* as `ConfiguringOpenTelemetry.md` #1, #5, #6: nine blocks a pin ruling would move | pinned: **5** build on the pin alone (`ConfiguringOpenTelemetry.md` #1, #5, #6; `Telemetry.md` #1, #9), **3** more after a `builder` value (`Telemetry.md` #6–#8, which were *values*, not `CS0234`, once the pin was in), and **1** (`PostgreSQLMessageBroker.md` #8) fails on another unpinned package. `ConfiguringOpenTelemetry.md` #2–#4, not among the nine, stay *parse* | the prediction stands; this row is the reading at 7.2 |
+| § *Predicted (7.1)*, assemblies: *"553, unless the ruling below pins a package"*; *"every other package S5 names is pinned"* | **579**; and `Polly.Extensions` (`FAQ.md` #13) and `Npgsql.OpenTelemetry` (`PostgreSQLMessageBroker.md` #8) are two more packages on no pin | the prediction stands; reconciled at 7.7 |
+| § *Predicted (7.1)*, *Reachable*, **69** | **65** build and **4** stay: `NullableReferenceTypes.md` #4, #5, #7 and `V10MigrationGuide.md` #25, the *page-type* rows 7.1 named as already declared by another block. Three *hard* rows (`ConfiguringOpenTelemetry.md` #1, #5, #6) build on the pin, so S5 loses **68** FAILED, not 65 | the table stands; the stays are in § *Blocks that stay FAILED* |
+| § *Predicted (7.1)*, scaffold rule *89–98 units* | **94** units, 0 violations, 0 compile errors: 14 new, 3 extended | in band |
+| § *Predicted (7.1)*, nothing BUILT *2–3* | **2**: `DispatcherConfigurationReference.md` and `BrighterOutboxSupport.md`, both all-hard | in band |
+
+**S5's reachable rows: 65 build, 4 stay.**
+- **12 *built-by-using*** got their `using`s: `CommandProcessorConfigurationReference.md` #2, `NullableReferenceTypes.md` #2, #3,
+  #6, #13, #14, `TestDoubleOptions.md` #10, `V10MigrationGuide.md` #2, #15, `MongoDBInbox.md` #1, #3,
+  `SweeperCircuitBreaking.md` #3
+- **the 3 V4 blocks are BUILT** on the V4 pin, none with a `CS0234 … V4` diagnostic: `DistributedLock.md` #2 and
+  `DynamoDbDistributedLock.md` #1, #2 each lacked only a value (`services`; `dynamoDb`, an `IAmazonDynamoDB`). They got a unit
+  each (`DistributedLockContext`, `DynamoDbDistributedLockContext`), and the pin column is still `v4`. The V4 pin is now
+  **28 blocks, 28 built, 0 failing** (25 built before); `DistributedLock.md` #1 was already BUILT and its scaffold changed
+- **the *page-type* rows** are stubs in 14 new units, each stub a request or an interface with only the members a BUILT
+  block names, plus usings: `BrighterBasicConfiguration`, `BrighterInboxSupport`, `CommandProcessorConfigurationReference`,
+  `EFCoreOutbox`, `InMemoryOptions`, `Logging`, `MongoDBOutbox`, `NullableReferenceTypes`, `OutboxArchiver`,
+  `TestDoubleOptions`, `TurningOnReplayOnSeen`, `V10MigrationGuide`, and the two V4 units. `FAQContext`,
+  `MigratingToNullableReferenceTypesContext` and `TelemetryContext` were extended. `TestDoubleOptions.md` #3, #4, #10, #11,
+  #12 build; its Shouldly blocks (#1, #5–#9) and #2 are 7.4's and 7.3's, and `TestDoubleOptionsContext` carries only what the
+  five need
+- **`OutboxArchiver.md` #3** was a fragment (`.AddProducers(/* producer configuration */)`, `CS1501`), the 7.1 table's
+  *arguments given as a comment* row. It is made whole: `AddProducers(options => { // ... the producer registry for your
+  bus` then `options.Outbox = new InMemoryOutbox(TimeProvider.System); })`. The declared omission is the registry, which the
+  reader has
+- **`EFCoreOutbox.md` #2** gained a comment, `// uow.People is the DbSet<Person> on your context`. The unit rule names a
+  type only if a BUILT block does, and `Person` appears in none; the comment says what `People` is, which the reader needs
+- **The 4 that stay** cannot take a stub: `NullableReferenceTypes.md` #4, #5, #7 name `CreateOrderCommand` and
+  `CreateUserCommand`, declared by #3, #9 and #6, and the other undeclared types they name (`Order`, `IOrderRepository`,
+  `CreateOrderDto`, `CreateUserDto`) are named by no BUILT block, so unit rule 1 refuses them. They were given their
+  `using`s, so the diagnostics left are the undeclared types'. `V10MigrationGuide.md` #25 names `PersonCreated` (#19) and
+  `BuildServiceProvider`. The sentence before each now says what it assumes
+
+**What the reachable rows hid: nothing the compiler could see.** Every block that became BUILT did so with no diagnostic
+beyond the names and `using`s; the second compile (`probe/second.py`, 131 FAILED blocks on S5's 22 pages once the pin was
+in) named no API defect behind a *page-type* or *values* row, which 6.2 found in S4 and 3.2 in S1. The two readings above are
+not defects of the page's claims: a package no pin carried (D24) and a fragment (`OutboxArchiver.md` #3). No ledger row is
+written. What compiling cannot say is in § *For 7.5*.
+
+**Prose added** (the packages and the sentences the stays need):
+- `TestDoubleOptions.md`: *Add the `Moq` package…* and *Add the `NSubstitute` package…* under their headings (7.4 adds the
+  Shouldly sentence)
+- `V10MigrationGuide.md`: *…with the `BenchmarkDotNet` package*, and the sentence before #25
+- `FAQ.md`: *`AddResiliencePipeline` comes from the `Polly.Extensions` package*
+- `NullableReferenceTypes.md`: a clause before #4, #5 and #7 saying which block declares the command
+
+**Measured after 7.2** (`dc09559` + this task's tree; `git add -A` first):
+
+| Gate | At `dc09559` | After 7.2 | |
+|---|---|---|---|
+| `--report` | 994 / 758 / 207 / 29, 0 findings | **994 / 831 / 134 / 29**, 87 findings, exit 1 | 73 FAILED → BUILT and **nothing else moved** (diffed by page and ordinal); the 87 are 73 BUILT blocks not yet baselined and 14 BUILT blocks whose page gained a unit, all 7.7's |
+| scaffold rule · pin rule | 80 units, 0 · 4 pages, 0 | **94** units, 0 violations, 0 compile errors · 4 pages, 0 violations | the first run read 3 violations (`EFCoreOutboxContext`: `Person`, `Message`; `FAQContext`: `Name`), each a stub no BUILT block names, repaired |
+| reference assemblies | 553 | **579** on each pin | above |
+| `--classify` | 31 / 12 / 42 / 37 / 12 / 73 | **31 parse, 0 built-by-using, 34 defect, 37 same-page, 3 values, 29 page-type**, 3 rounds | the 3 *values* are off-S5 (`AgreementDispatcherRouting.md` #12, `InMemoryScheduler.md` #14, `QueryHandlerDependencies.md` #3) |
+| `groups.py`, S5 | 22 pages, 134 FAILED | **18 pages, 66 FAILED** (30 parse, 0 built-by-using, 29 defect, 3 same-page, 0 values, 4 page-type), 98 BUILT, 2 with nothing BUILT | `BrighterBasicConfiguration.md`, `DistributedLock.md`, `DynamoDbDistributedLock.md`, `EFCoreOutbox.md` are whole and have left the table. Two methods: the FAILED column, 66; `--report` on the same 18 pages, **66**, with 98 BUILT and 7 SKIPPED. `groups.py` total 29 pages, 100 FAILED: S5's 66 and 34 on the 11 pages S1–S4 still hold. The other 34 of the 134 are on tranche pages |
+| `pagelint` | 0 / 184 | **0 errors / 142** | S5's 123 → **81** (`--per-page` on the 22 pages), nothing off-S5 moved; `--changed origin/master` 0 errors; `--plant` 5 / 5 |
+| `linkcheck` · `symbolcheck` · `optioncheck` | 169 / 0 · 24 / 14 · 0 / 59 / 533 | 169 / 0 · 24 entries, 14 silenced, exit 0 · 0 mismatches (5 tables, 47 rows on the five pages touched) | no table was touched |
+| `versioncheck` · shape | 0 of 18 · 161, widest 12 | unmoved | |
+
+Against 7.1's bands, which 7.7 reconciles: BUILT **831** now against **866–899** at the close (7.3–7.5 still to come);
+FAILED **134** against **76–90**; `pagelint` 142 against **90–115**; units 94 in band.
+
+**For 7.3.**
+- the five blocks of ruling 3 (above) and the 30 *parse* and 29 *defect* blocks; `CommandProcessorConfigurationReference.md`
+  gained `GreetingMade`, `MyCommand`, `GetSubscriptions` and a `builder` in its unit, so #10 (`Environment`) and #20/#21 find
+  them
+- `ConfiguringOpenTelemetry.md` #2–#4: D3's *single option shown alone*, each now resolving in the pin
+- `V10MigrationGuide.md` #3, #10, #16, #17 stay *same-page* or *parse* as 7.1 read them; `MyCommand` and `PersonCreated` are
+  declared by blocks, so `V10MigrationGuideContext` may not stub them
+- `FAQ.md` #1 needs `where T : class, IRequest`; #2, #14, #16 are the async attribute on `HandleAsync` (their
+  `[RequestLoggingAsync]` with them); `FAQContext` already supplies `MyCommand` (with `Value`), `MyEvent`, `GreetingCommand`
+  and `registry`
+
+**For 7.4.** `TestDoubleOptionsContext` supplies `spy`, `MyCommand`, `MyEvent` and `MyHandler`. Blocks #1, #5–#9 name
+`PlaceOrderHandler`, `PlaceOrder`, `OrderPlaced`, `TriggerCommand`, `DownstreamCommand` and more, undeclared by any block,
+and #2's `spy.Observe<MyCommand>()` lines are the *listing of expressions* 7.1 read.
+
+**For 7.5.** Blocks 7.2 touched whose prose or comment asserts behaviour, none run here:
+- `FAQ.md` #10–#12: a base-typed `ICommand` sent with `Send` throws *"No command handler was found for the typeof command
+  Paramore.Brighter.ICommand"*, and `Send((dynamic)command)` resolves the runtime type
+- `FAQ.md` #13: a pipeline registered with `services.AddResiliencePipeline("MyRetryPolicy", …)` is the one
+  `[UseResiliencePipelineAsync("MyRetryPolicy", …)]` finds. It is the claim D24 depends on
+- `TestDoubleOptions.md` #11, #12: `Times.Once` and `Received(1)` verify one `Publish`; both frameworks' calls compile
+  against the real `IAmACommandProcessor.Publish<T>(T, RequestContext?)`
+- `OutboxArchiver.md` #3: `.UseOutboxArchiver<CommittableTransaction>(new InMemoryArchiveProvider())` is the InMemory Outbox's
+  transaction type (`System.Transactions.CommittableTransaction`)
+- `TurningOnReplayOnSeen.md` #1–#3, #5, #6 and `BrighterInboxSupport.md` #1 built with a stub for the request; the claims
+  7.1 listed (#4's silent no-op under Replay) are unchanged
+- `V10MigrationGuide.md` #22–#24: `PartitionAssignmentStrategy.Range` is `Confluent.Kafka`'s, and `GroupProtocol`
+  replaces the flat settings
+
+**Question for the maintainer, from 7.2.** (1) Ratify **D24**, `Polly.Extensions` 8.8.0 on both pins. (2) `PostgreSQLMessageBroker.md` #8
+(a tranche page, off-S5) now fails only because `Npgsql.OpenTelemetry`, which the page names, is on no pin: pin it (as
+D22 and D23), or list the block? Until ruled it stays FAILED and is in § *Blocks that stay FAILED*.
+
+**Ruled 2026-11-01:** (1) D24 ratified. (2) `Npgsql.OpenTelemetry` is pinned (**D25**); `PostgreSQLMessageBroker.md` #8 builds, and
+its row has left § *Blocks that stay FAILED* (§ *The repairs (7.3)*).
+
+#### The repairs (7.3)
+
+**S5's hard blocks leave in the four states.** At the start of 7.3 (7.2's tree plus the D25 pin) S5 held **66** FAILED: 30 *parse*,
+29 *defect*, 3 *same-page*, 4 *page-type*. Of the 59 *parse* and *defect* rows, 6 are 7.4's (`TestDoubleOptions.md` #1, #5–#9, Shouldly),
+leaving **53** hard blocks, all on S5 pages and none off-group. They are now **51 BUILT**, **2 FAILED and listed** (§ *Blocks that stay
+FAILED*: `Logging.md` #5, a source-generated quote; `V10MigrationGuide.md` #16, which cleared its parse errors and is now *same-page*
+on `PersonCreated`), **0 SKIPPED** and **0 retagged**. No fence was split, so the corpus stays **994** and § *Splits* gains no row.
+
+**No block was SKIPPED under D3.** Each single option shown alone was made whole inside the call it belongs to, as 3.3 and 6.3 did:
+`FAQ.md` #4 and #20 (an `RmqSubscription<MyEvent>`), `MongoDBInbox.md` #4 and `MongoDBOutbox.md` #4 (a `MongoDbConfiguration`),
+`CommandProcessorConfigurationReference.md` #21 (a `ConfigureServices`), `OutboxArchiver.md` #1 (an `AddBrighter()` chain), and
+`ConfiguringOpenTelemetry.md` #2–#4, each now a `ServiceCollection` with `AddOpenTelemetry().WithTracing(…)`, the exporter's package named
+in the sentence before it. Alternatives in one fence were made whole as two classes (`TurningOnReplayOnSeen.md` #4) or renamed so the
+locals no longer collide (`NullableReferenceTypes.md` #1, #10, #11, `FAQ.md` #8); types and statements in one fence were reordered
+statements first (`MigratingToNullableReferenceTypes.md` #4, #7; `NullableReferenceTypes.md` #12; `SweeperCircuitBreaking.md` #4) or the
+statements put in a method (`V10MigrationGuide.md` #19).
+
+**The four approved defects (ruled 2026-10-31)** are ledger **84–87**. `FAQ.md` #2, #14, #16 are `[UseResiliencePipelineAsync("…", 1)]`
+on `HandleAsync` with `[RequestLoggingAsync]` beside it; rule 8 stays green. #1 gained its constraint. #3 and #5 are now
+`services.AddConsumers(…)` first, `.AddProducers(…)` chained off the returned builder (#3), and `services.AddBrighter().AddProducers(…)`
+(#5, the CloudEvents answer), with `RmqSubscription<T>`, `RmqProducerRegistryFactory` and `RmqPublication<T>`; the answer still teaches
+that `AddConsumers` replaces V9's `AddServiceActivator` and `AddProducers` its `UseExternalBus`. The deprecation note under #14 gained the
+sync/async pairing, because `[UseResiliencePipeline]` belongs on `Handle`. `CommandProcessorConfigurationReference.md`
+#20 is the static constructor's twelve converters, written as the statements that build the same `JsonSerializerOptions` (the class is
+`static`, so it cannot be redeclared), and the prose cites the file; #21 and its prose take `Action<JsonSerializerOptions>`, which receives a copy
+(`probe/s5/json-options`: 12 converters before, 12 after, `WriteIndented` true on the copy and false on the instance read before the call).
+#21's example sets `WriteIndented`, not `PropertyNameCaseInsensitive`, which is already `true` by default and so showed an override that overrides nothing.
+
+**Defects the prediction did not name (ledger 88–91), each hidden behind *parse* or *defect* and repaired in place.**
+- **`FAQ.md` #20 (ledger 88).** `channelCount: 3`; the parameter is `noOfPerformers`. Fourteen other pages name `noOfPerformers`.
+- **`CommandProcessorConfigurationReference.md` (ledger 89).** `ExternalBusConfiguration` twice, in the prose before #15 and before the Outbox
+  example; `ProducersConfiguration`.
+- **`BrighterInboxSupport.md` #2 and `BrighterOutboxSupport.md` #2 (ledger 90).** Two APIs wrong at once: `GetExistsQuery` takes the schema first
+  (`sqlConnection.Database`), and `ExecuteScalar() != null` is always true, because the query is `SELECT EXISTS (…)`. The page's code returned
+  at "exists" on the first run and never created the table. Run against a throwaway MySQL 8 container (`probe/s5/mysql-exists`): absent,
+  the scalar is `0` and the corrected test false; present, `1` and true; the old test true in both. The container is removed.
+- **`CommandProcessorConfigurationReference.md` #10 (ledger 91)** is 7.1's `Environment` row, repaired as a `Startup` taking
+  `IConfiguration` and `IWebHostEnvironment` by constructor.
+
+**What the hard blocks hid beyond that, repaired.** `OutboxArchiver.md` #2: `DynamoDbLockingProvider` lives in
+`Paramore.Brighter.Locking.DynamoDb` (lower-case `b`), not `…DynamoDB`; the block carried no usings. `DispatcherConfigurationReference.md` #2:
+`amqp://guest:guest@local:5672` for `localhost`. `CommandProcessorConfigurationReference.md` #5: `options =>` followed by two statements and
+no braces. #15 and #17: an unclosed method and a stray `...` after the chain. `InMemoryOptions.md` #3: `GetSubscriptions()` was called and
+never declared, which the first compile hid behind the other errors; the four `/* production config */` arguments are now built from
+`configuration`. `Logging.md` #4: `CommandProcessorBuilder.StartNew()…Build()` skipped four required steps; it now takes the chain
+`HowConfiguringTheDispatcherWorks.md` shows.
+
+**One content question, not repaired.** `OutboxArchiver.md` § *InMemory Archive Example Usage* shows a Claim Check mapper under a heading
+about the InMemory archive provider. The block now compiles (it gained `MapToRequest` and `[RetrieveClaim(0)]`, ledger 92), but it does not
+illustrate the heading. Replacing it would write new content for the page, so it is put to the maintainer.
+
+**Packages and the pins.** D25: `Npgsql.OpenTelemetry` **9.0.3** on both pins (**114** `PackageReference`s each; **580** reference assemblies
+on each, one more than 7.2). `PostgreSQLMessageBroker.md` #8 moved FAILED (`CS7036`) → **BUILT** on the pin alone, no page changed, and its row
+has left § *Blocks that stay FAILED*. D24 is ratified. Nothing else was pinned: the V4 pin is still **28 of 28**.
+
+**Units.** Three are new (`BrighterOutboxSupportContext`: `AddGreeting`, `Person`, `Greeting`, `GreetingMade`; `CausationTrackingStoresContext`:
+`MyTransaction`; `DispatcherConfigurationReferenceContext`: `GreetingMade` and `DbConnectionString()`), each with a `pages.tsv` row. Five are
+extended, each stub a type or member a BUILT block names: `CommandProcessorConfigurationReferenceContext` (`MyRequestHandlerAsync`,
+`DebugRequestContextFactory`), `LoggingContext` (`subscriberRegistry`, `handlerFactory`), `MigratingToNullableReferenceTypesContext`
+(`OrderCreatedEvent`, `OrderDto`), `NullableReferenceTypesContext` (`User`, `user`) and `OutboxArchiverContext` (`LargeDataCommand`);
+`V10MigrationGuideContext`'s comment now names block 5. `MyCommand` and `PersonCreated` were not stubbed on `V10MigrationGuide.md`.
+
+**Prose added** (the packages, and the sentences the repairs need): the exporter packages before the Zipkin and Azure Monitor examples
+(`ConfiguringOpenTelemetry.md`); the constants the Inbox and Outbox builders' examples now declare, in place of "we assume"; "Below is a
+handler that uses Dapper", for what had been a fragment; the clause before `V10MigrationGuide.md` #16; and the `Logging.md` lead-in citing
+`CommandProcessor.cs`.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| § *Predicted (7.1)*, the 30 *parse* blocks: *"candidates for D3's single option shown alone"* (0–6 SKIPPED) | 0 SKIPPED; each is whole | the prediction stands, reconciled at 7.7 |
+| § *Predicted (7.1)*, *Blocks expected to stay FAILED*: `Logging.md` #5 *"0–1 source-generated"*, *same-page* 3–8 | `Logging.md` #5 stays (listed, D21 not used); *same-page* is **4** on S5 (`V10MigrationGuide.md` #3, #10, #16, #17) and *page-type* **4** (`NullableReferenceTypes.md` #4, #5, #7; `V10MigrationGuide.md` #25), all in § *Blocks that stay FAILED* | the prediction stands |
+| § *Predicted (7.1)*, the *Defects the second compile read*: 5 API defects | 4 approved and ledgered (84–87), and **4 more** (88–91) in blocks 7.1 read as *parse* | the table stands; the four are ledgered |
+| § *The repairs (7.2)*, *"`PostgreSQLMessageBroker.md` #8 FAILED (`CS7036`)"* | **BUILT** after D25 | 7.2's row stands as the reading at 7.2 |
+| § *Predicted (7.1)*, scaffold rule *89–98 units* | **97** units, 0 violations, 0 compile errors | in band |
+
+**Measured after 7.3** (`3e8f0f3` + this task's tree; `git add -A` first):
+
+| Gate | After 7.2 | After the D25 pin | After 7.3 | |
+|---|---|---|---|---|
+| `--report` | 994 / 831 / 134 / 29, 87 findings | 994 / 832 / 133 / 29 | **994 / 883 / 82 / 29**, 140 findings, exit 1 | 51 FAILED → BUILT and nothing else moved; the 140 are 125 BUILT blocks not yet baselined and 15 BUILT blocks whose page gained or changed a unit, all 7.7's |
+| scaffold rule · pin rule | 94 units, 0 · 4 pages, 0 | | **97** units, 0 violations, 0 compile errors · 4 pages, 0 violations | |
+| reference assemblies | 579 | 580 | **580** on each pin | D25 |
+| `groups.py`, S5 | 18 pages, 66 FAILED | | **4 pages, 15 FAILED** (7 *defect*, 4 *same-page*, 4 *page-type*), 160 BUILT of 182, 7 SKIPPED | two methods: the FAILED column, 15; `--report` on the 22 S5 pages, 160 BUILT / 15 FAILED / 7 SKIPPED, 182 blocks. `TestDoubleOptions.md` holds 6, 7.4's; no S5 page has nothing BUILT |
+| `pagelint` | 0 errors / 142 | | **0 errors / 97** | S5's 81 → **36** (`--per-page` on the 22 pages), nothing off-S5 moved; `--changed origin/master` 0 errors; `--plant` 5 / 5 |
+| `linkcheck` · `symbolcheck` · `optioncheck` | 169 / 0 · 24 / 14 · 0 / 59 / 533 | | 169 / 0 · 24 entries, 14 silenced, exit 0 · 0 mismatches (13 tables, 94 rows on the 18 pages touched) | no table was touched |
+| `versioncheck` · shape · redirects | 0 of 18 · 161 pages, widest 12 · 77 / 7858 | | unmoved | |
+
+Against 7.1's bands, which 7.7 reconciles: BUILT **883** against **866–899** at the close (7.4 and 7.5 to come); FAILED **82** against
+**76–90**; `pagelint` **97** against **90–115**; units 97 in band.
+
+**For `symbolwatch.tsv`, a recommendation for 7.6 (the row is not added here).** `UseRabbitMQ` resolves at neither 10.8.1 nor
+`origin/master` (`git -C ../Brighter grep -lw UseRabbitMQ <ref> -- 'src/*.cs'` finds nothing at either), is dead as `AddServiceActivator`
+was (D5), and was written as current code on `FAQ.md` (ledger 87). The corpus has 0 hits now; a row with `AddConsumers(…).AddProducers(…)`
+as the replacement keeps it so.
+
+**For 7.5.** Blocks 7.3 wrote or edited whose text asserts behaviour, none run here but ledger 86 and 90:
+- `FAQ.md` #20: `noOfPerformers: 3` is the number of concurrent message pumps (the transport pages' tables say *"Threads reading this channel, each with
+  its own message pump"*); #3: the `AddConsumers`-first chain registers both sides
+- `CommandProcessorConfigurationReference.md` #10: `PostConfigure<BrighterOptions>` reaches the command processor's `RequestContextFactory`
+  (with `InMemoryOptions.md`), as 7.1 listed
+- `MongoDBInbox.md` #4, `MongoDBOutbox.md` #4: `TimeToLive` deletes messages after 30 days
+- `V10MigrationGuide.md` #19: no mapper registration is needed, the default mapper serialising
+- `TurningOnReplayOnSeen.md` #4: a `Post` without the pipeline's context is a silent no-op under Replay
+- `SweeperCircuitBreaking.md` #1: `CooldownCount` defaults to 10 (read: `OutboxCircuitBreakerOptions.cs:37`)
+- `TestDoubleOptions.md` #2: `Observe<T>()` dequeues in FIFO order, consuming
+- `OutboxArchiver.md` #4: a `[ClaimCheck]` on `MapToMessage` pairs with `[RetrieveClaim]` on `MapToRequest`
+
+**Questions for the maintainer, from 7.3.** (1) Ledger 88–91 were not in 7.1's prediction; each is repaired and ledgered, as obligation 21 asks.
+(2) `OutboxArchiver.md` § *InMemory Archive Example Usage*: replace the Claim Check mapper with an example that uses the InMemory archive provider,
+or leave it? (3) `Logging.md` #5 is listed as FAILED. Widen D21 to *a source-generated partial quoted from Brighter's source* and SKIP it, or leave it listed?
+
+**Ruled 2026-11-01:** (1) ledger 88–91 confirmed. (2) Replace it with a real `InMemoryArchiveProvider` example, heading kept. (3) Option (a):
+make it whole as a top-level `internal static partial class Log`; if `blockcheck` runs no source generator, leave it listed on `CS8795`.
+Carried out at 7.4.
+
+#### The repairs (7.4)
+
+**`TestDoubleOptions.md`'s six Shouldly blocks are BUILT.** #1, #5, #6, #7, #8 and #9 each gained `using Paramore.Brighter.Testing;` and
+`using Shouldly;`, and #6 and #8 `using System.Linq;` for `.First()`. The *Installation* section now says the examples assert with the
+`Shouldly` package's `ShouldBe…` methods, so the reader adds it to run them as written. The sentence sits beside the `Paramore.Brighter.Testing`
+reference rather than under a heading of its own, because the Moq and NSubstitute sentences 7.2 added already name their packages where
+their examples are. `grep -c Shouldly contents/TestDoubleOptions.md` → **7**, from **0** (ledger 2, closed on its row).
+
+**Before and after, by `--report`:**
+
+| Block | Before | After |
+|---:|---|---|
+| 1 | FAILED, 5 diagnostics, `CS0103`, `CS0246` | **BUILT** |
+| 5 | FAILED, 4, `CS0103`, `CS0246` | **BUILT** |
+| 6 | FAILED, 5, `CS0103`, `CS0246` | **BUILT** |
+| 7 | FAILED, 5, `CS0103`, `CS0246` | **BUILT** |
+| 8 | FAILED, 8, `CS0103`, `CS0246`, `CS8130` | **BUILT** |
+| 9 | FAILED, 4, `CS0103`, `CS0246` | **BUILT** |
+
+The `CS0103` and `CS0246` left after 2.7's pin were the page's types and the missing `using`s. `TestDoubleOptionsContext` gained a stub for
+each type a block names and no block declares: `PlaceOrder`, `OrderPlaced`, `PlaceOrderHandler`, `OrderHandler`, `TriggerCommand`,
+`DownstreamCommand`, `SendNotification`, `NotificationSent`, `NotificationHandler`, `ProcessPayment`, `PaymentProcessed`,
+`TransactionalHandler` and `CommandA`, plus `MyHandler.Handle(TriggerCommand)` for #5. Each stub has only the members a block names. Each
+handler stub makes the call its block then checks (`Publish`, `Send`, `Post`, `DepositPost`), as 7.2's `MyHandler` does. The scaffold rule
+reads **0 violations**.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| § *Shouldly in the pin (2.7)*: #8's `CS8130` and `CS1503` on the deconstruction *"likely an API mismatch, read at 7.4"* | **not an API mismatch**. `DepositedRequests` is an `IReadOnlyDictionary<Id, IRequest>` (`SpyCommandProcessor.cs:65` at 10.8.1), whose `KeyValuePair` deconstructs. With `.First()` unresolved for want of `System.Linq`, the compiler could not infer `id` and `request`. Given the `using`, #8 builds with no other change, and `ClearOutbox(new[] { id })` takes the `Id[]` it declares (`:428`) | 2.7's text stands as its reading; no ledger row, since nothing on the page was wrong but the `using` |
+| § *Predicted (7.1)*: the six Shouldly blocks BUILT or listed | **6 BUILT**, 0 listed | in band |
+
+**Ruling 2: `OutboxArchiver.md` § *InMemory Archive Example Usage*** (heading kept, so its anchor holds). The Claim Check mapper is replaced
+by an example read at the 10.8.1 tag. `UseOutboxArchiver<TTransaction>` registers an `OutboxArchiver<Message, TTransaction>` over the
+registered Outbox and archive provider (`HostedServiceCollectionExtensions.cs:58–74`), and `TimedOutboxArchiver` calls its `Archive` or
+`ArchiveAsync` with `MinimumAge` on each tick (`TimedOutboxArchiver.cs:118–120`). So the example builds one directly over an
+`InMemoryOutbox` with an `InMemoryArchiveProvider`, the shape a test takes. It adds a message, marks it dispatched two days ago, calls
+`Archive(TimeSpan.FromDays(1))` and reads `ArchivedMessages`, the provider's `Dictionary<string, Message>` keyed by message Id
+(`InMemoryArchiveProvider.cs:38`). `TTransaction` is `CommittableTransaction`, the type `InMemoryOutbox.Add` takes (`InMemoryOutbox.cs:131`),
+as § *InMemory Archive Configuration* above it already uses. The block builds (#4, BUILT before and after). `LargeDataCommand` left
+`OutboxArchiverContext`, since no block names it any more, and the unit keeps `services` for #3. No other page names `LargeMessageMapper`,
+so nothing else loses its example (`grep -rn LargeMessageMapper contents/` → 0).
+
+Two things the example avoids, read at the tag. A `FakeTimeProvider` advanced past `MinimumAge` would also pass the `InMemoryBox`'s
+`ExpirationScanInterval` (10 minutes) and `EntryTimeToLive` (5 minutes) (`InMemoryBox.cs:68`, `:76`). That hands expiry to a background
+worker, which races the archive. Marking the message dispatched in the past with `TimeProvider.System` keeps the test deterministic.
+`DispatchedMessages` selects `TimeFlushed <= now − dispatchedSince` (`InMemoryOutbox.cs:309–312`), so a message dispatched two days ago is
+eligible at one day.
+
+**Ruling 3: `Logging.md` #5 is whole, and stays FAILED on `CS8795`.** It is now a top-level `internal static partial class Log`. The lead-in
+says the Command Processor declares it in a `Log` class nested inside it (`CommandProcessor.cs:1615` at 10.8.1, `private`), and that the page
+shows one of them as a top-level `internal` class, the form it takes in your own code, so it no longer claims to be verbatim.
+`blockcheck --explain Logging_5` still reads `CS8795`: blockcheck compiles with no analyzers, so the `Microsoft.Extensions.Logging` generator
+never writes the method's body. It was compiled two-way in `probe/s5/logger-message`, against `Microsoft.Extensions.Logging.Abstractions`
+9.0.0:
+
+| Run | Result |
+|---|---|
+| Case: `dotnet build`, the generator running, as in a reader's project | **0 errors** |
+| Control: `dotnet build -p:DropGen=true`, every `Analyzer` removed before `CoreCompile`, as blockcheck compiles | **`CS8795`**, blockcheck's diagnostic |
+| Second control: the former top-level `private static partial class Log`, generator running | **`CS1527`** |
+
+So the block is now one a reader can compile; before, out of its class, it could not. The gate cannot show this without running
+generators. The row stays in § *Blocks that stay FAILED*, annotated with the ruling, and no skip reason was written. This is the ruling's fallback,
+and **7.4 returns PAUSE on it**. A choice is open: whether `blockcheck` should run the generators its pinned packages ship (a tool change, so
+scope), or the row stays as it is. **Ruled 2026-11-01: (c).** The row stays listed as FAILED on `CS8795`; teaching `blockcheck` to
+run the generators its pinned packages ship is a follow-up after spec 018, not done in 018 (§ *Rulings (session 136)*).
+
+**Off-group: none.** No recurrence grep was needed. The Shouldly calls are all on this page (7.1's grep, ledger 2). `grep -rn 'LoggerMessage(' contents/`
+→ 1, `Logging.md` #5. The only InMemory archive example is the one replaced.
+**No new defect.** #8's `CS8130` was a missing `using` (above).
+
+**Measured after 7.4** (`ee54515` + this task's tree; `git add -A` first):
+
+| Gate | After 7.3 | After 7.4 | |
+|---|---|---|---|
+| `--report` | 994 / 883 / 82 / 29, 140 findings | **994 / 889 / 76 / 29**, 146 findings, exit 1 | the six → BUILT and nothing else moved (`diff` of verdicts by page and ordinal). The 146 are **131** BUILT blocks not yet baselined and **15** whose page gained or changed a unit (counted by their lines in the output), all 7.7's |
+| scaffold rule · pin rule · assemblies | 97 units, 0 · 4 pages, 0 · 580 | **97** units, 0 violations, 0 compile errors · 4 pages, 0 · **580** on each pin; the V4 pin 28 of 28 | no unit added; two edited |
+| `groups.py`, S5 | 4 pages, 15 FAILED | **3 pages, 9 FAILED** (1 *defect*, 4 *same-page*, 4 *page-type*), 0 with nothing BUILT | two methods: the FAILED column, 9; `--report` on the 22 S5 pages, **166 BUILT / 9 FAILED / 7 SKIPPED**, 182 blocks. `--classify` 1 parse, 0 built-by-using, 5 defect, 38 same-page, 3 values, 29 page-type |
+| `pagelint` | 0 errors / 97 | **0 errors / 91** | `TestDoubleOptions.md` 6 → **0** (`--per-page`, before and after), nothing else moved; the three touched pages 0 / 0; `--changed origin/master` 0 errors; `--plant` 5 / 5 |
+| `linkcheck` · `symbolcheck` · `optioncheck` | 169 / 0 · 24 / 14 · — | 169 / 0 · 24 entries, 14 silenced, exit 0 · `OutboxArchiver.md` 0 mismatches, 1 table, 4 rows (not touched; run because the page carries one) | |
+
+Against 7.1's bands, which 7.7 reconciles: BUILT **889** (866–899), FAILED **76** (76–90), `pagelint` **91** (90–115), units 97 (89–98):
+all in band.
+
+**For 7.5.** Blocks 7.4 wrote or made build whose text asserts behaviour, none run here:
+- `OutboxArchiver.md` #4: `Archive(TimeSpan.FromDays(1))` moves a message dispatched two days ago into `ArchivedMessages`, keyed by its Id,
+  and deletes it from the Outbox. Control: a message dispatched within the day, or never dispatched, stays in the Outbox and is not archived
+- `TestDoubleOptions.md` #8: `ClearOutbox` moves a deposited request to the observation queue, so `Observe<PaymentProcessed>()` returns it
+  only after the clear; #9: `Reset()` empties `RecordedCalls` and `DepositedRequests`. The stubs' handlers make the calls the reader's would
+- 7.3's item *"`OutboxArchiver.md` #4: a `[ClaimCheck]` on `MapToMessage` pairs with `[RetrieveClaim]` on `MapToRequest`"* lapses: the block
+  no longer shows a mapper
+
+#### The behavioural claims (7.5, AC10)
+
+**Every run is against the released packages at the pins** (Brighter 10.8.1; Moq 4.21.0, NSubstitute 6.2.0, Shouldly 4.3.0;
+`Polly.Extensions` 8.8.0), as `probe/s5/<name>/` projects, never a `ProjectReference`. Each prints `ok` or `FAIL` per row and exits 1 on
+any `FAIL`. Each block is copied as the page shows it, the probe's own lines marked `// probe`. Two claims needed infrastructure, and each got
+a disposable container, started for the run and removed after it, as the csproj comments say: `mongo-ttl` ran against `mongo:7` with
+`ttlMonitorSleepSecs=1` on port 27019, and `v10-migration`'s Kafka rows against `apache/kafka:4.0.2`. The repository's own `brighter-*`
+containers were not touched. 7.3's two runs (ledger 86, 90) are listed as 7.3 recorded them, not rerun.
+
+| Claim | Case | Control | Probe | Result |
+|---|---|---|---|---|
+| `MongoDBOutbox.md` #4 and `MongoDBInbox.md` #4, as they stood: `TimeToLive = TimeSpan.FromDays(30) // Messages will be automatically deleted after 30 days`; *"MongoDB will automatically create a TTL index on the `TimeStamp` field and remove expired documents"* | each block's configuration (`MakeCollection` left at its default, `Assume`), one message or entry stored; then a 2 s `TimeToLive` and 10 s waited | `MakeCollection = CreateIfNotExists`; and, as the instrument, a raw document with a BSON date `TimeStamp` in the control's collection | `mongo-ttl` | no TTL index; the message left / `brighter_ttl_Outbox` (and `_Inbox`) on `TimeStamp`, `expireAfterSeconds` 2592000, and **the message still left**; the instrument removed, so the monitor ran. `TimeStamp` is stored as `{ DateTime, Ticks, Offset }`. **Overturned** (ledger 93) |
+| `MongoDbDistributedLock.md`, as it stood: *"a TTL index expires stale lock documents automatically, which protects you if an instance crashes"* | a lock obtained and never released, `TimeToLive` 2 s, `CreateIfNotExists`; a second instance asks 10 s later | the lock released, then obtained | `mongo-ttl` | `null`: still held / obtained. **Overturned** (ledger 93) |
+| The repair the Mongo pages now show: a TTL index on `TimeStamp.DateTime` | that index on the default collection, a message, an entry and an unreleased lock, 10 s waited | the case rows above, without it | `mongo-ttl` | 0 of 1 message, 0 of 1 entry left; the lock obtained again / 1, 1, held |
+| `FAQ.md` #13 with the handler under it (#14), as they stood: a pipeline registered with `services.AddResiliencePipeline("MyRetryPolicy", …)` is the one `[UseResiliencePipelineAsync("MyRetryPolicy", 1)]` runs | the page's registration, the handler failing once | the same retry in a `ResiliencePipelineRegistry<string>` given to `AddBrighter`'s `options.ResiliencePipelineRegistry`, which is #13 as repaired | `faq-claims` | `ConfigurationException`, inner `KeyNotFoundException` *"Unable to find a resilience pipeline associated with the key 'MyRetryPolicy'"*; the handler never ran / no exception, the handler ran twice. **Overturned** (ledger 94) |
+| `FAQ.md` #16, as it stood: `services.AddResiliencePipeline("MyTimeout", …)` | the page's registration | the repaired form, a 1 s timeout over a 3 s handler | `faq-claims` | `ConfigurationException`, the same inner / `TimeoutRejectedException`. **Overturned** (ledger 94) |
+| `FAQ.md` #10–#12: `Send` of an `ICommand`-typed variable throws *"ArgumentException … No command handler was found for the typeof command Paramore.Brighter.ICommand - a command should have exactly one handler."*; `(dynamic)` resolves the runtime type | #10 | #11, the concrete type; #12, `(dynamic)` | `faq-claims` | `ArgumentException` with that message, word for word / handled once; handled once |
+| `FAQ.md` #20: `noOfPerformers: 3  // Number of concurrent message pumps` | #20's `RmqSubscription` (`NoOfPerformers` 3), and the Dispatcher `AddConsumers` builds for an in-memory subscription with `noOfPerformers: 3`, received | `noOfPerformers: 1` | `faq-claims` | 3 consumers / 1 |
+| `FAQ.md` #3: the `AddConsumers`-first chain registers both sides | #3 as shown, no broker (registrations read, not connected) | `AddBrighter().AddProducers(…)` alone | `faq-claims` | `IDispatcher` registered and resolved, the producer registry's topics `[my.event]` / no `IDispatcher` |
+| `CommandProcessorConfigurationReference.md` #9: `PostConfigure<BrighterOptions>` sets the factory the command processor uses, and runs after the `AddBrighter` delegate | #9; and `AddBrighter` setting a factory of its own beside the `PostConfigure` | no `PostConfigure` | `options-pattern` | the handler's context from `TestRequestContextFactory`; the `PostConfigure` one wins / `RequestContext`, Brighter's own |
+| `CommandProcessorConfigurationReference.md` #10: in Development, `DebugRequestContextFactory` | `Startup` with a Development environment, a `Brighter` section bound | Production | `options-pattern` | `DebugRequestContextFactory`'s / Brighter's own |
+| `CommandProcessorConfigurationReference.md` #11: two providers in one process, each with its own factory | `ParallelTestsA`'s and `ParallelTestsB`'s registrations, sent A, B, A | each other | `options-pattern` | `ContextA`, `ContextB`, `ContextA` |
+| `InMemoryOptions.md` #1: the same, beside `AddProducers` and an `InMemoryOutbox` | #1 | as #9 | `options-pattern` | `TestRequestContextFactory`'s |
+| `TurningOnReplayOnSeen.md` #1 and #4 ✅: with `Context as RequestContext` on `Post`, a duplicate does not run the handler and marks the original message undispatched, for the Sweeper to resend | each handler (#4's carry no `[UseInbox]`, so each was given #1's), the same command sent twice, then the outstanding messages cleared | #4 ❌, `Post` with no context: *"a silent no-op — no exception, nothing resent"* | `replay-context` | handler once, no exception, 1 outstanding, the bus 1 then 2 after the clear / handler once, no exception, 0 outstanding, the bus 1 |
+| `BrighterInboxSupport.md` #1: `[UseInboxAsync(step:0, …, onceOnly: true)]` with the default action throws `OnceOnlyException` on a duplicate | the same event published twice | an event with its own Id | `replay-context` | `OnceOnlyException` / handled |
+| `TestDoubleOptions.md` #2 and the sentence after it: `Observe<T>()` dequeues FIFO, consuming, and throws `InvalidOperationException` when none is left | A, an event, B sent; Observe three times | `GetRequests<T>()` twice | `spy-processor` | A, B, then `InvalidOperationException` / `AB`, `AB`, and A still observable after |
+| `TestDoubleOptions.md` #8: `ClearOutbox` moves a deposit to the observation queue | `Observe` after the clear | `Observe` before it | `spy-processor` | the deposit, `Amount` 99.99 / `InvalidOperationException` |
+| `TestDoubleOptions.md` #9: `Reset()` empties `RecordedCalls` and `DepositedRequests` | a `Send` and a `DepositPost`, then `Reset` | no `Reset` | `spy-processor` | `false`, 0, 0 / `true`, 2, 1 |
+| `TestDoubleOptions.md` #11, #12: `Times.Once` and `Received(1)` verify one `Publish` | a handler publishing once | twice | `spy-processor` | both pass / `MockException`, `ReceivedCallsException` |
+| `OutboxArchiver.md` #4: `Archive(TimeSpan.FromDays(1))` moves a message dispatched two days ago into `ArchivedMessages`, keyed by its Id, and out of the Outbox | #4 | a message dispatched an hour ago; one never dispatched | `outbox-archiver` | archived, gone from the Outbox / neither archived, both kept |
+| `OutboxArchiver.md` #3: `CommittableTransaction` is the InMemory Outbox's transaction type | #3's `UseOutboxArchiver<CommittableTransaction>`, the archiver resolved and run | `UseOutboxArchiver<IDbTransaction>` | `outbox-archiver` | 1 archived / `ArgumentException` *"A sync Outbox must be defined."*, 0 |
+| `SweeperCircuitBreaking.md` #1: `CooldownCount … (default: 10)` | `new OutboxCircuitBreakerOptions()` | set to 3 | `outbox-archiver` | 10 / 3. 7.1 read it from `OutboxCircuitBreakerOptions.cs:37`; now run |
+| `V10MigrationGuide.md` #19: no mapper registration, the default mapper serialising | `PersonCreatedPublisher.PublishAsync` on the in-memory bus | an explicit async mapper registered for the type | `v10-migration` | a JSON body, `name` Alice, `email` alice@example.com / the explicit mapper ran (its header marker present) |
+| `V10MigrationGuide.md` #22–#24: the obsolete properties are back-fill defaults; `ClassicGroupProtocol` gives the same settings; `ConsumerGroupProtocol` is KIP-848 | each subscription's consumer, built by `KafkaMessageConsumerFactory` against the broker, its `ConsumerConfig` read | a subscription setting none | `v10-migration` | both properties `[Obsolete]`; #22 and #23 `Classic`, 30000, `Range`; #24 `Consumer`, unset, unset / `Classic`, 10000, `RoundRobin` |
+| `CommandProcessorConfigurationReference.md` #20, #21 (ledger 86) | 7.3's | 7.3's | `json-options` (7.3) | 12 converters; `WriteIndented` true on the copy / false on the instance read before the call |
+| `BrighterInboxSupport.md` #2, `BrighterOutboxSupport.md` #2 (ledger 90) | 7.3's, table absent | table present | `mysql-exists` (7.3) | `0`, the corrected test false / `1`, true; the old test true in both |
+
+**Two claims overturned, each repaired at every recurrence (obligation 21)**, the recurrence greps run after the repair (obligation 22):
+- **Ledger 93.** `MongoDBOutbox.md` and `MongoDBInbox.md`: § *Time-To-Live (TTL) Support* now says what `TimeToLive` does at 10.8.1 and why
+  it removes nothing, and #4 is the index a reader creates on `TimeStamp.DateTime`, the form the probe shows removing documents. #1's comment
+  (*"Optional: Auto-expire messages after 7 days"*) now points to that section; the Outbox's `TimeToLive` option row, both pages' structure lists
+  and the Inbox's `ExpireAfterSeconds` line say the same. `MongoDbDistributedLock.md`'s options paragraph, § *Provisioning* and *Notes*, and
+  `DistributedLock.md`'s provider table, say a crashed holder's lock stays held unless the reader adds that index. The three headings are kept,
+  so their anchors hold. `FirestoreDistributedLock.md`'s *"TTL document"* row is Firestore's and not this defect
+- **Ledger 94.** `FAQ.md` #13 and #16 now build a `ResiliencePipelineRegistry<string>` and give it to `AddBrighter`; the sentence before #13 says
+  Brighter looks only there, and what a `services.AddResiliencePipeline` registration gets instead. No other page registers a pipeline that
+  way (`grep -rnF 'services.AddResiliencePipeline(' contents/` → 0)
+
+**Candidate upstream issue, for the maintainer (not filed).** `Paramore.Brighter.MongoDb` 10.8.1, and `origin/master` unchanged:
+`MongoDbCollectionConfiguration.TimeToLive` never expires a document. `BaseMongoDb.CreateCollection` creates the TTL index only on the
+`CreateIfNotExists` path (`BaseMongoDb.cs:108–118`), and indexes `TimeStamp`, a `DateTimeOffset` that MongoDB.Driver 3.x serialises as an
+embedded document, which a TTL index ignores. `OutboxMessage`, `InboxMessage` and `LockMessage` all carry it, so stale locks are never
+released either. A fix would index `TimeStamp.DateTime` (or store `TimeStamp` as a BSON date) and create the index whenever `TimeToLive` is set.
+`probe/s5/mongo-ttl` reproduces it.
+**Filed as #4716 and #4717 (2026-11-01).**
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| § *Predicted (7.1)*: *"`MongoDBInbox.md` #4, `MongoDBOutbox.md` #4: `TimeToLive` deletes messages after 30 days"*, a claim to run | it deletes nothing, on either `MakeCollection` (above) | ledger 93 |
+| § *The repairs (7.2)*, *For 7.5*: *"`FAQ.md` #13 … the one `[UseResiliencePipelineAsync("MyRetryPolicy", …)]` finds. It is the claim D24 depends on"* | it is not found; and once #13 is repaired, no block on the corpus calls `AddResiliencePipeline`, so D24's `Polly.Extensions` pin serves no block (`grep -rn 'AddResiliencePipeline(' contents/` → 0) | ledger 94; the pin is put to the maintainer below |
+| 7.1's claim list: `SweeperCircuitBreaking.md` #1, *"Read, not run"* | run, 10 | it holds |
+
+**Read, not run:**
+- `V10MigrationGuide.md`, *"requires Apache Kafka 4.0 or later"*: the probe reads the consumer's configuration and joins no group
+- `TurningOnReplayOnSeen.md` § *The symptom*: the Debug log line and the span event names; the probe observes the Outbox and the bus only
+- `FAQ.md` #3 over a live RabbitMQ: the registrations are read, not connected
+- 7.3's `OutboxArchiver.md` #4 claim about a `[ClaimCheck]`/`[RetrieveClaim]` pair lapsed at 7.4, as § *The repairs (7.4)* says
+
+**Follow-up after 018** (ruled 2026-11-01, § *Rulings (session 136)*). Teach `blockcheck` to run the source generators its pinned packages ship,
+so a block such as `Logging.md` #5, a `[LoggerMessage]` partial, can build as it does in a reader's project (`probe/s5/logger-message`). Recorded
+here because this spec keeps no follow-ups list and § *Friction ledger* is written at 8.5; 8.5 should carry it there.
+**Filed as BrighterCommand/Docs#212 (2026-11-02).**
+
+**Measured after 7.5** (`20a27ad` + this task's tree; `git add -A` first):
+
+| Gate | After 7.4 | After 7.5 | |
+|---|---|---|---|
+| `--report` | 994 / 889 / 76 / 29, 146 findings | **994 / 889 / 76 / 29**, 146 findings, exit 1 | the six blocks edited (`FAQ.md` #13, #16; `MongoDBOutbox.md` #1, #4; `MongoDBInbox.md` #1, #4) stay BUILT and nothing moved. Two methods: the summary line, and `cut -f1 \| sort \| uniq -c` of the rows, 889 / 76 / 29. The 146 are 7.7's, as at 7.4 |
+| scaffold rule · pin rule · assemblies | 97 units, 0 · 4 pages, 0 · 580 | **97** units, 0 violations, 0 compile errors · 4 pages, 0 · **580** on each pin; the V4 pin 28 of 28 | no unit changed |
+| `pagelint` | 0 errors / 91 | **0 errors / 91** | the five touched pages 0 errors / 3 warnings, which they carried before; `--changed origin/master` 0 errors; `--plant` 5 / 5 |
+| `linkcheck` · `symbolcheck` · `optioncheck` | 169 / 0 · 24 / 14 · — | 169 / 0 · 24 entries, 14 silenced, exit 0 · 0 mismatches, 2 tables, 12 rows on the five pages (`MongoDBOutbox.md`'s `TimeToLive` row's description changed) | |
+
+**Questions for the maintainer, from 7.5.** (1) Ledger 93 and 94 are new defects, each repaired at every recurrence; confirm them. (2) The Mongo
+`TimeToLive` defect is upstream (above): file it? (3) D24: with `FAQ.md` #13 and #16 repaired, no block needs `Polly.Extensions`, and the FAQ no longer names
+the package. Keep the pin (one line in each project, harmless) or revert it?
+
+**Ruled 2026-11-01:** (1) ledger 93 confirmed and ledger 94 accepted. (2) Filed, by the orchestrator, as **Brighter #4716** (`TimeToLive`
+ignored unless `MakeCollection` is `CreateIfNotExists`) and **#4717** (the TTL index on `TimeStamp` never expires a document). (3) Reverted:
+`Polly.Extensions` leaves both pins (D24). Carried out at 7.6.
+
+#### Second pass (7.6)
+
+**Every phase-7 ledger row holds.** Rows 84–94 each give their *After* from their grep, run as written on the tree: **0** for every row
+but 84 (`PipelineValidation.md`'s `text` log line, as recorded), 85 (1 hit, constrained) and 86 (1, the converter now listed), whose greps
+count sites that are now right. Row 92's mapper scan, committed at last as `probe/mapper_members.py` (obligation 18: 7.1, 7.3 and this
+task ran it), reads **0**; run over the tree at `dc09559`, it names the two blocks 7.1 found, so it can fail. 7.1's recurrence greps, run corpus-wide as written:
+
+| Defect | 7.1's grep | At `dc09559` | On the tree | Ledger |
+|---|---|---:|---:|---:|
+| `UseResiliencePipeline` given its step first | `grep -rnE '\[UseResiliencePipeline(Async)?\([0-9]' contents/` | 4 | **1**, the log line | 84 |
+| A handler attribute on a class | 7.1's `-A2` grep | 3 | **0** | 84 |
+| A generic handler base without its constraint | `grep -rnE 'class \w+<T>\s*:\s*RequestHandler(Async)?<T>\s*$' contents/` | 1 | **1**, constrained on the next line | 85 |
+| `JsonSerialisationOptions` short of 10.8.1 | `grep -rnF 'Action\<JsonSerialisationOptions\>'`; `grep -c SubscriptionNameConverter` | 1; 0 | **0**; **1** | 86 |
+| `UseRabbitMQ` and `services.AddProducers` | `grep -rnE 'UseRabbitMQ\('`; `grep -rnE '[Ss]ervices\.AddProducers\('` | 3; 2 | **0**; **0** | 87 |
+| 017's mapper missing a member | `probe/mapper_members.py` | 2 | **0** | 92 |
+| `System.Environment` bound for a host's | `grep -rnE '(^\|[^.A-Za-z_])Environment\.IsDevelopment\(\)'` | 1 | **0** | 91 |
+| Arguments given as a comment | `grep -rnE '\(/\* [^*]+ \*/\)'` | 8 | **2**, `MigratingToPollyV8.md` #5 (SKIPPED, V9) and `UsingSweeperCircuitBreaking.md` #3 (BUILT), as 7.1 read them | — |
+| A source-generated `[LoggerMessage]` | `grep -rn 'LoggerMessage('` | 1 | **1**, `Logging.md` #5, listed | — |
+| Ledger 2, Shouldly unnamed | `grep -c Shouldly contents/TestDoubleOptions.md` | 0 | **7** | 2 |
+| Ledger 3, `…DynamoDb.V4` | `grep -rn 'Inbox.DynamoDb.V4'` | 1 | **0**, repaired here | 3 |
+| Unpinned packages | `Substitute\.For<\|using NSubstitute`; `\[Benchmark\|BenchmarkDotNet` | 1; 1 | 2; 3, each now pinned (D22) and named by its page | — |
+
+**Widened, by shape rather than words:**
+
+| Defect | Widened grep | Hits | Reading |
+|---|---|---:|---|
+| 3, a package id misspelt | `Paramore\.Brighter\.(Inbox\|Outbox\|Locking)\.Dynamo[Dd][Bb](\.V4)?`, against each package's `<id>` in its `.nuspec` | 3 misspelt at `8c90dcc` | **a recurrence**: `DynamoInbox.md` spells the v3 Inbox package `…Inbox.DynamoDb` as well, and `DynamoOutbox.md` the v3 Outbox package `…Outbox.DynamoDb`; the ids are `…DynamoDB`. Repaired (ledger 3). The `Locking.DynamoDb` hits name a namespace, which 10.8.1 spells `DynamoDb` in two of its three files (`AWSSQSMigrateToV10.md` says so), and are right |
+| 84, a resilience or policy attribute given its step first | `\[(UseResiliencePipeline\|UsePolicy\|FallbackPolicy\|TimeoutPolicy)(Async)?\(\s*[^"\s)]` | 36 | every one a named `step:` argument, a constant, a `string[]`, or Darker's `[FallbackPolicy(step)]`; the log line |
+| 84, any attribute on a class | an attribute line directly above a `class` declaration | 8 | **a recurrence**: `FAQ.md` #15, `[TimeoutPolicy]` on a `RequestHandlerAsync` class, which 7.1's list (`Timeout(`, not `TimeoutPolicy(`) could not match. The other seven are `[PublicationTopic]`, `[ApiController]`/`[Route]` and test-class attributes, valid on a class |
+| 84, an attribute's kind against its method | every attribute in the run of lines above a `Handle`, `HandleAsync`, `Execute` or `ExecuteAsync`, its `Async` suffix against the method's | 45 at `8c90dcc`, 44 on the tree | **a new defect**, ledger 95: `V10MigrationGuide.md` #8, `[TimeoutPolicy]` on `HandleAsync`. The rest are Darker's attributes, which carry no suffix and decorate either method, and `PipelineValidation.md`'s marked block |
+| 85, a generic base without its constraint | `class \w+<\w+>\s*:\s*(RequestHandler\|QueryHandler\|IHandleRequests\|IAmAMessageMapper)` | 2 | both constrained |
+| 86, `JsonSerialisationOptions` as a type | `JsonSerialisationOptions\b(\.\w+)?`; `ConfigureJsonSerialisation` | 34; 3 | 31 `.Options`, the live property; two prose names of the class; the file name; the two `ConfigureJsonSerialisation` calls take `JsonSerializerOptions` |
+| 87, `AddProducers` off the wrong receiver, an invented fluent transport | `(services\|serviceCollection\|builder\.Services\|Services)\s*\.\s*AddProducers\(`; `\.Use(RabbitMQ\|Rmq\|Kafka\|Sqs\|Sns\|AzureServiceBus\|Redis\|MsSql\|Postgres\|InMemory)\w*\(`; `\.(Publication\|Subscription)<\w+>\(` | 0; 3; 0 | Hangfire's `UseRedisStorage` and Quartz's `UsePostgres`, live in their packages and in BUILT blocks |
+| 88, a pump count misnamed | `(channel\|pump\|performer\|consumer\|thread)s?Count`, case-blind; `noOf\w+\|numberOf\w+` | 0; 32 | `noOfPerformers`/`NoOfPerformers`; the Control API's `numberOfPerformers`, `numberOfActivePerformers` (its route and JSON); `numberOfShards` |
+| 89, a V9 bus configuration type | `\w*BusConfiguration\b\|ExternalBus\(\|IAmExternalBus\w*` | 4 | `AzureServiceBusConfiguration`, the live class or its page's file name in a link |
+| 90, an exists query and its test | `GetExistsQuery\(`; `ExecuteScalar(Async)?\(` | 3; 4 | the two repaired; `MsSqlQueueBuilder.GetExistsQuery("QueueData", schemaName: "dbo")`, matching `(string queueTableName, string? schemaName = "dbo")` (`MsSqlQueueBuilder.cs:114`); the two repaired tests and two DDL executions |
+| 91, a host's environment | `Environment\.(Is\w+\|EnvironmentName)\b`, unqualified | 0 | |
+| 93, a TTL claim | `TimeToLive\|\bTTL\b\|ExpireAfter\|expireAfter` | 49 lines on 17 pages | the four Mongo and lock pages as repaired; the rest are other stores', transports' and schedulers' TTLs (Azure Service Bus, Redis, Firestore, the InMemory stores, RabbitMQ, DynamoDB), not this mechanism. `DynamoOutbox.md`'s `TimeToLive` row (*"before DynamoDB expires it"*) is a behavioural claim no task has run; read, not run |
+| 94, a DI-registered pipeline | `AddResiliencePipeline\|ResiliencePipelineProvider\|AddResiliencePipelines` | 1 | `FAQ.md`'s sentence saying Brighter does not read it |
+| Arguments given as a comment | `\(\s*/\*[^*]*\*/\s*\)\|\(\s*\.\.\.\s*\)\|=\s*/\*[^*]*\*/\s*[;,]` | 13 | prose, inline code and a code comment (`HangfireScheduler.md`), SKIPPED V9 forms (`V10MigrationGuide.md`, `MigratingToPollyV8.md`), and BUILT `UsingSweeperCircuitBreaking.md` #3 |
+| A package on no pin | every `dotnet add package`, `Install-Package` and `PackageReference Include` on the corpus, against both `refs` projects | 10 not on a pin | Hangfire, Quartz, TickerQ, the Analyzer and `Microsoft.Extensions.Hosting` are transitive or install steps; no FAILED block fails for want of one (each FAILED block on their pages is listed *same-page*). `Polly` and `Polly.Extensions` on `MigratingToPollyV8.md`: the observation below. `Paramore.Brighter.MessagingGateway.RMQ`: the next row |
+| A package that does not exist | every `Paramore.Brighter…` id the corpus tells a reader to install (`dotnet add package`, `PackageReference`, a bulleted package name), 61, each against NuGet's version index for a stable 10.x release | 2 with none | **a new defect**, ledger 96: `Paramore.Brighter.MessagingGateway.RMQ` stops at `10.0.0-preview.4`; V10 ships `…RMQ.Async` and `…RMQ.Sync` (10.0.0 through 10.8.1). Named on `V10MigrationGuide.md` (`dotnet add package … --version 10.0.0`) and `CommandProcessorConfigurationReference.md` (*Transports*), whose blocks import `…RMQ.Async`. Repaired. `RabbitMQConnectionStability.md` names it as a log-category prefix, which is right. The other, `Paramore.Brighter.Outbox.{DB}`, is a placeholder |
+
+**The recurrences, repaired (obligation 21).**
+- **Ledger 3, widened.** `DynamoInbox.md`'s two package names and `DynamoOutbox.md`'s one now read `…DynamoDB` (prose only; no block moves)
+- **Ledger 96.** `V10MigrationGuide.md`'s install step and `CommandProcessorConfigurationReference.md`'s *Transports* now name
+  `Paramore.Brighter.MessagingGateway.RMQ.Async`, the package each page's blocks import (prose and a `bash` fence; no C# block moves)
+- **Ledger 84 → 95.** `FAQ.md` #15 and `V10MigrationGuide.md` #8, each a V9 form SKIPPED beside its V10 replacement, are now `[TimeoutPolicy]` on a
+  synchronous `Handle`, with the `using`s a V9 reader needs (`Paramore.Brighter`, `Paramore.Brighter.Policies.Attributes`, both live at 9.33). The
+  sentence before each says the attribute has no async form, so in V9 it decorates a synchronous `Handle`. `probe/s5/timeout-policy-kind`, against
+  10.8.1, two-way:
+
+| Claim | Case | Control | Probe | Result |
+|---|---|---|---|---|
+| `V10MigrationGuide.md` #8 as it stood: `[TimeoutPolicy]` on an async handler's `HandleAsync` is the V9 form | the block, sent with `SendAsync` | the repaired form, `[TimeoutPolicy]` on `Handle`: a handler slower than the timeout, and one faster | `timeout-policy-kind` | `ConfigurationException`, *"All handlers in an async pipeline must derive from IHandleRequestsAsync"*, naming `TimeoutPolicyHandler<T>` / cut off with `OperationCanceledException`; handled once |
+| `FAQ.md` #15 as it stood: `[TimeoutPolicy]` on the class | `dotnet build -p:ClassLevel=true` | `dotnet build`, the repaired form | `timeout-policy-kind` | `CS0592` / 0 errors |
+
+  The cut-off surfaces as `OperationCanceledException`, not `TimeoutException`: `TimeoutPolicyHandler.Handle` waits on the token its timer
+  cancels. No page says which, so nothing else changes.
+
+**Ruling 3: D24 reverted.** The `Polly.Extensions` `PackageReference` and its comment left `refs.csproj` and `refs-v4.csproj` (**114 → 113**
+`PackageReference`s each). After the rebuild each pin resolves **579** reference assemblies, from **580**. `--report` before and after, the
+whole row file compared: **identical**, 994 / 889 / 76 / 29. `design.md` D24 is marked reverted, and its ruling-dates sentence says so.
+
+**Ruling 4, an observation, the page not changed.** `MigratingToPollyV8.md` Step 1 tells the reader to add `Polly.Extensions` 8.0.0 (as a
+`PackageReference`, beside `Polly` 8.0.0). Brighter reads only the `ResiliencePipelineRegistry<string>` given to `AddBrighter` (ledger 94,
+`probe/s5/faq-claims`), never the registry `Polly.Extensions` puts in DI, so for Brighter that package is probably unnecessary. Its blocks need
+it for nothing: none calls `AddResiliencePipeline`, and none is FAILED (#1, #3, #5 are SKIPPED V9 forms; the rest BUILT on a pin without it). A
+candidate for 8.5's friction ledger, or a later spec.
+
+**`symbolcheck` rows (7.3's recommendation; ledgers 87–89).** Each name resolved with `git -C ../Brighter grep -lw <name> <ref> -- 'src/*.cs'`
+at `8.1.1399`, `9.9.13` and `9.33` (V8 and V9), `10.8.1` and `origin/master`, the live replacement the second way:
+
+| Name | V8 · V9 (9.9.13, 9.33) | 10.8.1 · master | Replacement, live | Reading |
+|---|---|---|---|---|
+| `UseRabbitMQ` | 0 · 0, 0 | 0 · 0 | `AddConsumers` 6 files at each | **no row.** Never a released name, and the watchlist holds *"names known dead in a released product"*; 6.5's reading for `RabbitMQProducerRegistryFactory` and the rest. 0 sites, and the blocks that held it build, so `blockcheck` catches its return there |
+| `channelCount` | 0 · 0, 0 (and `ChannelCount` 0) | 0 · 0 | `noOfPerformers` 14 files at each | **no row**, the same reading; and an argument name, as 6.5 read `compressionType:` |
+| `ExternalBusConfiguration` | 0 · **5, 5** | 0 · 0 | `ProducersConfiguration` 3 files at each | **meets the watchlist's test**: V9's type for the external bus (`CommandProcessorBuilder.ExternalBus(ExternalBusConfiguration, …)` and the DI extensions at 9.33), gone at V10, and written as current prose on `CommandProcessorConfigurationReference.md` (ledger 89). A watchlist row is scope (D10), so it is **put to the maintainer, not added** |
+
+A trial with the row in place, reverted after: `symbolcheck` **25 entries, 161 pages, 14 silenced, 0 findings**; `--verify-list` all 25 DEAD at
+both refs, every replacement live. Two-way: a planted page naming `ExternalBusConfiguration` gave **1 site**, exit 1, with the row; **0**, exit 0,
+without it. `tools/symbolwatch.tsv` is unchanged.
+
+**Upstream, filed during the phase:** **#4716** and **#4717**, MongoDB `TimeToLive` (ledger 93; filed by the orchestrator, 2026-11-01).
+
+**Off-group term:** `DynamoInbox.md` and `DynamoOutbox.md`, 017 tranche pages, prose only (ledger 3). `FAQ.md`, `V10MigrationGuide.md` and
+`CommandProcessorConfigurationReference.md` are S5.
+
+**Measured after 7.6** (`8c90dcc` + this task's tree; `git add -A` first):
+
+| Gate | After 7.5 | After 7.6 | |
+|---|---|---|---|
+| `--report` | 994 / 889 / 76 / 29, 146 findings | **994 / 889 / 76 / 29**, 146 findings, exit 1 | the row files before and after, `diff` → identical. Two methods: the summary line, and `cut -f1 \| sort \| uniq -c` of the rows. The compiler's own line moved 861 / 105 → **862 / 104** built and failing: it compiles SKIPPED blocks too, and `FAQ.md` #15 no longer fails `CS0592`. The 146 are 7.7's |
+| reference assemblies | 580 on each pin | **579** on each pin; the V4 pin 28 of 28 | D24 reverted |
+| scaffold rule · pin rule | 97 units, 0 · 4 pages, 0 | **97** units, 0 violations, 0 compile errors · 4 pages, 0 violations | no unit changed |
+| `pagelint` | 0 errors / 91 | **0 errors / 89** | the two V9 blocks gained their `using`s; the five touched pages 0 errors / 7 warnings; `--changed origin/master` 0 errors; `--plant` 5 / 5 |
+| `linkcheck` · `symbolcheck` · `optioncheck` | 169 / 0 · 24 / 14 · — | 169 / 0 · 24 entries, 161 pages, 14 silenced, exit 0 · 0 mismatches, 7 tables, 56 rows on the five pages (no table touched) | |
+| `versioncheck` | 0 of 18 | **0 stale pins of 18**, 5 pages | |
+
+**Questions for the maintainer, from 7.6.** (1) Ledger 95 and 96 are new defects, found by widening ledger 84 and 7.1's package shape, each
+repaired at both its sites: confirm them.
+(2) Add `ExternalBusConfiguration` to `tools/symbolwatch.tsv` (replacement `ProducersConfiguration`, evidence ledger 89), as D10 added
+`UseExternalBus`? (3) Rule 8 cannot see ledger 95's shape, an attribute with no `…Async` twin on `HandleAsync`, because `PAIRED` holds only the
+attributes Brighter ships in both forms. Teaching it the sync-only attributes is a tool change: in 018, or a follow-up after it?
+
+**Ruled 2026-11-02:** (1) ledger 95 and 96 confirmed. (2) Added: `ExternalBusConfiguration` → `ProducersConfiguration` is
+`tools/symbolwatch.tsv`'s 25th row (evidence ledger 89). (3) A follow-up after 018, filed by the orchestrator as **BrighterCommand/Docs#211**;
+at 10.8.1 `[TimeoutPolicy]` is the only sync-only handler attribute. Carried out at 7.7.
+
+#### Phase 7 closed (7.7)
+
+**Baselined.** `baseline.tsv` lists every BUILT block on the twenty-two S5 pages, and on `Telemetry.md` and
+`PostgreSQLMessageBroker.md`, two tranche pages the phase's pins moved (D23, D25): **188** rows, replacing their **57** earlier ones
+(41 on S5, 4 on `Telemetry.md`, 12 on `PostgreSQLMessageBroker.md`; § the file's own header). No fence was split or retagged, so no ordinal
+moved. **19** keep their ref, their text, scaffold name and scaffold unit unchanged since `dc09559` (text read with `git show dc09559:<page>`
+through pagelint's fence parser; units with `git diff dc09559 HEAD`): `MongoDBInbox.md` #2, `SweeperCircuitBreaking.md` #2, #5–#9, and
+`PostgreSQLMessageBroker.md` #1–#7, #9–#13. The other **169** are at **`429635f`**, the phase's last page commit: **131** newly BUILT, and **38**
+re-measured, 15 whose page gained a unit (the 15 *"scaffold changed since admission"*) and 23 whose unit the phase extended (`FAQ.md` #18, #19;
+`MigratingToNullableReferenceTypes.md` #1–#3, #5, #6, #9–#20; `Telemetry.md` #2–#5). The rows were appended as phase 6's were, in `--report`'s
+order, so the diff is 57 out and 188 in. **Two methods agree:** `grep -v '^#' baseline.tsv | grep -vc '^$'` → **889**, and `--report`'s BUILT →
+**889**. `--report` exit **0**, **0 findings**, and its row file is identical before and after the baseline was written (`diff` of the sorted rows).
+
+**Rule 8.** `pagelint` → **0 errors**; the one `attr-mismatch-intended` marker stays on `PipelineValidation.md` #7, and `--plant` → 5 / 5.
+Ledger 95's shape, a sync-only attribute on `HandleAsync`, is outside it: **BrighterCommand/Docs#211**.
+
+**Readings (obligation 19).** `git diff -U0 dc09559 429635f -- contents`, the hunks against fence ranges, by `probe/readings.py` (new,
+obligation 18; two-way: `HEAD HEAD` → 0 blocks, and `ee54515 20a27ad` → the eight blocks § *The repairs (7.4)* changed, `TestDoubleOptions.md`
+#1, #5–#9, `OutboxArchiver.md` #4, `Logging.md` #5). **24** pages, **111** changed C# blocks on 20 of them. Two methods: the hunks, and blocks
+whose text is on no C# block of their page at `dc09559`, **111** on the same 20 pages. 108 are on 19 S5 pages and 3 off-group
+(`Telemetry.md` #6–#8, ruling 2). `DistributedLock.md` (S5; its #2 built on its unit), `DynamoInbox.md`, `DynamoOutbox.md` and
+`MongoDbDistributedLock.md` changed prose only. Of the 111, **106** are BUILT, **3** FAILED and listed (`Logging.md` #5,
+`NullableReferenceTypes.md` #4, `V10MigrationGuide.md` #16) and **2** SKIPPED, the V9 forms ledger 95 repaired (`FAQ.md` #15,
+`V10MigrationGuide.md` #8).
+- **AC9.** The hunks add `// ...` at **16** lines in **14** blocks: `BrighterInboxSupport.md` #2; `CausationTrackingStores.md` #2;
+  `CommandProcessorConfigurationReference.md` #1, #13, #14, #15, #17, #19, #21; `DispatcherConfigurationReference.md` #1;
+  `MigratingToNullableReferenceTypes.md` #7; `NullableReferenceTypes.md` #11; `OutboxArchiver.md` #3; `SweeperCircuitBreaking.md` #1. They
+  remove **13**, on 8 pages, as fragments and quotes were made whole; net **+3**, which a count of `// ...` lines in C# blocks at both refs
+  confirms. All 14 blocks are BUILT, so `--explain` has nothing to report for any of them: no added omission hides an error
+- **AC10.** § *The behavioural claims (7.5)*: **twenty-five** claims run with a control against the released 10.8.1 packages, in nine probes
+  (seven new at 7.5, and 7.3's `json-options` and `mysql-exists`), three of them against a disposable container (`mongo-ttl`,
+  `v10-migration`'s Kafka rows, `mysql-exists`). § *Second pass (7.6)*: **two** more, in
+  `timeout-policy-kind`. § *The repairs (7.4)*: `logger-message`, a compile run two-way. Six were overturned: two rows each for ledger 93, 94
+  and 95. Read and named, not run: 7.5's four (*"requires Apache Kafka 4.0 or later"*, § *The symptom*'s log and span names, `FAQ.md` #3 over a
+  live broker, 7.3's lapsed `[ClaimCheck]` claim) and 7.6's `DynamoOutbox.md` `TimeToLive` row. The 3 off-group blocks gained a value and their
+  `using`s and assert no behaviour. The off-group prose is ledger 3's package names, each read against its `.nuspec` (7.6), and ledger 93's
+  lock paragraph, which `mongo-ttl`'s lock rows ran
+
+**Gates against 7.1.**
+
+| Gate | Predicted (7.1) | Measured at the close | |
+|---|---|---|---|
+| corpus | 993–1,004 | **994** | in band, **not by the mechanism named** (below) |
+| BUILT | 866–899 | **889** | in band, **with an off-group term 7.1 put at 0** (below) |
+| FAILED | 76–90 | **76** | the floor: 207 − 134 + 9 − 6 |
+| SKIPPED | 29–37 | **29** | the floor (below) |
+| `pagelint` | 0 errors / 90–115 | **0 / 89** | **below the band by 1** (below) |
+| `symbolcheck` | 24–25 entries, 14 silenced | **25, 14**, exit 0; `--verify-list` all 25 DEAD | in band, by a different name (below) |
+| scaffold rule | 89–98 units | **97**, 0 violations, 0 compile errors | in band: 17 new units (14 at 7.2, 3 at 7.3), and 3 that existed at `dc09559` extended (`FAQContext`, `MigratingToNullableReferenceTypesContext`, `TelemetryContext`); 80 + 17 = 97 |
+| pin rule | unmoved; the V4 pin 28 blocks, 28 built | **4, 0**; **28 of 28** | as predicted: `DistributedLock.md` #2 and `DynamoDbDistributedLock.md` #1, #2 lacked only a value |
+| assemblies | 553, unless a ruling pins a package | **579** on each pin | the condition met (below) |
+| nothing BUILT | 2–3 | **2**, `ReplayOnSeenReference.md` and `ReturningResultsFromAHandler.md`, both tranche pages; **0** in the groups | in band, by ruling (below) |
+| stays | 9–17; 3–9 with all three families pinned | **9** | the ceiling of the pinned band (below) |
+| `optioncheck` | 0 / 59 / 533 | **0 / 59 / 533** | as predicted; no marked table gained a row |
+| `linkcheck` · `versioncheck` · shape · redirects · `--verify` · `--plant` | unmoved | 169 / 0 · 0 of 18, 5 pages · 161, 12 sections, deepest 4 of 4, widest 12 of 20 · 77, 7858 bytes · 161 = 161 · 5 / 5 | as predicted |
+| off-group | one page, no block (`DynamoInbox.md`), and the behavioural claims' recurrences | **4** pages, **3** changed blocks; **6** blocks BUILT | **wider than predicted** (below) |
+
+**Every number in band but `pagelint`, and five by a mechanism other than the one 7.1 gave.** One account:
+- **The corpus.** 7.1's mechanism was *"splits only, up to +10"*, and −1 for a retag. No fence was split and none retagged: each set of
+  alternatives and each mixed fence was made whole in its one fence, and `TestDoubleOptions.md` #2 was made whole rather than retagged (§ *The
+  repairs (7.3)*). The phase's movement is **0**, as phase 6's was
+- **BUILT, FAILED, SKIPPED.** S5's 134 FAILED ended **125 BUILT, 9 FAILED, 0 SKIPPED**: S5 now 166 / 9 / 7 of 182 blocks. Off-group, **6** more
+  built: `Telemetry.md` #1, #6–#9 (D23) and `PostgreSQLMessageBroker.md` #8 (D25), both pins ruled after 7.1 measured, where 7.1 said off-group
+  **0**. 758 + 125 + 6 = **889**; 207 − 134 + 9 − 6 = **76**; 29 + 0 = **29**. Without the six, BUILT 883 and FAILED 82, mid-band. SKIPPED sits at
+  its floor for phase 3's reason: no lone option was skipped under D3, each made whole inside its call, and D21 was used for neither candidate
+  (`CommandProcessorConfigurationReference.md` #20 was made whole, `Logging.md` #5 listed)
+- **The stays.** **9**, all listed (§ *Blocks that stay FAILED*): 4 *same-page* (`V10MigrationGuide.md` #3, #10, #16, #17), 4 the *page-type* rows
+  7.1 named as declared by another block (`NullableReferenceTypes.md` #4, #5, #7; `V10MigrationGuide.md` #25), and `Logging.md` #5, the source
+  generator. The rulings pinned all three families, so the band was 3–9; it came at the ceiling because `V10MigrationGuide.md` #16 cleared its
+  *parse* errors into *same-page* and `Logging.md` #5 stayed. The join, `--report`'s FAILED rows on the 67 group pages against the section's rows:
+  **43 = 43**, zero rows either side, and `groups.py`'s total, **43**
+- **`pagelint`.** S5's 123 warnings fell to **28** (`--per-page` on the twenty-two pages): 22 on BUILT blocks no repair touched, 5 on SKIPPED V9
+  forms on `V10MigrationGuide.md` (#1, #4, #6, #14, #18), and 1 on `MigratingToNullableReferenceTypes.md` #8, which built on its unit and keeps
+  its declared `// ...` (the band's *"declared `// ...` that keep their omission"* term). 7.1's floor, 184 − 94 = 90, held the 29 on untouched
+  blocks fixed. Ledger 95's repair at 7.6 touched two of them, `FAQ.md` #15 and `V10MigrationGuide.md` #8, and gave them their `using`s.
+  184 − 94 − 2 + 1 = **89**, and off-group 0
+- **`symbolcheck`.** 7.1 left the 25th row to 7.6 and had `UseRabbitMQ` in mind. 7.6 read that name as never released, so it gets no row. The
+  25th is `ExternalBusConfiguration` → `ProducersConfiguration`, ruled 2026-11-02 (ledger 89). Two-way at 7.7: a planted page naming it gives
+  **1 site** with the row, as 7.6's trial gave **0** without it
+- **Assemblies.** 553 → **579**: D22 and D23 added 25, D25 added 1, and D24 was pinned and then reverted (net 0). The condition was met. But
+  *"every other package S5 names is pinned"* was wrong four times, each found only by building: `OpenTelemetry.Instrumentation.AspNetCore` and
+  `.Http`, `Polly.Extensions` (`FAQ.md` #13) and `Npgsql.OpenTelemetry` (`PostgreSQLMessageBroker.md` #8, off-S5)
+- **Nothing BUILT.** 7.1 counted on `ConfiguringOpenTelemetry.md` staying all-FAILED under 017's pin limit. Ruling 2 lifted it, and the page is
+  whole. The two left are tranche pages outside every group
+- **Off-group.** **4** pages, where 7.1 named one. `DynamoInbox.md` (ledger 3, predicted); `DynamoOutbox.md` (ledger 3, found by widening its
+  grep at 7.6); `MongoDbDistributedLock.md` (ledger 93's recurrence, a claim 7.1 listed on the two MongoDB pages); and `Telemetry.md` #6–#8, made
+  reachable by ruling 2 and repaired in the phase that moved them (obligation 21). 7.1 predicted the behavioural recurrences by page and
+  claim, and ledger 93 recurred where a TTL claim stood beside the one it named
+
+**What 7.1 named, and what the phase found.** 7.1 read S5's 32 *defect* blocks and named 5 API defects, the mapper recurring and two
+carried rows. The phase wrote **thirteen** ledger rows (84–96), all repaired at every recurrence, and closed or widened rows 2 and 3. Of the
+thirteen, **5** were named (84–87, 92). **4** were hidden behind *parse* or *defect* (88–91, found at 7.3). **2** only a run could find (93, 94,
+7.5). **2** came from greps widened by shape (95, 96, 7.6). Phase 6's lesson held: the off-group term was predicted from the claims as well, and
+the one off-group recurrence of a claim (93) was beside a claim 7.1 listed. What it did not predict were the pins' off-group moves, ruled after
+it. None of the measured numbers is adopted. The lesson for phase 8: a prediction made before a pin ruling predicts the blocks of the pages
+it reads, so a ruling that moves a pin moves blocks on other pages too, and its task should re-predict them.
+
+**Said and measured.**
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| `8c90dcc`'s commit subject: *"26 rows"* in 7.5's *Claim / Case / Control* table | **25**: the rows between the table's header and the paragraph after it, and the *Probe* column's entries, each 25 | the table stands; a commit message is not this file's text |
+| § *Predicted (7.1)*, *Blocks expected to stay FAILED*: `V10MigrationGuide.md` #3, #10, #17, *"each to be listed in § Blocks that stay FAILED"* | at `429635f` the section held none of the three: the join read **43** FAILED on the 67 group pages and **40** listed | the three rows are written at 7.7; the join reads 43 = 43 |
+| § *The repairs (7.2)* and § *The repairs (7.3)*: assemblies, D3's lone options and the stays, *"reconciled at 7.7"* | reconciled above | the predictions stand |
+
+**Rulings, recorded.** Session 137, on 7.6's PAUSE (§ *Rulings (session 136)*, appended): ledger 95 and 96 **confirmed**; the
+`ExternalBusConfiguration` watchlist row **added** (`tools/symbolwatch.tsv`, 25 entries); rule 8's sync-only attributes and `blockcheck`'s
+source generators **filed as follow-ups after 018**, Docs **#211** and **#212**.
+
+**Upstream and follow-ups, filed during the phase:** **Brighter #4716** and **#4717**, MongoDB `TimeToLive` (ledger 93, 2026-11-01);
+**Docs #211**, rule 8 and the sync-only handler attributes (ledger 95, 2026-11-02); **Docs #212**, `blockcheck` and source generators
+(`Logging.md` #5, 2026-11-02); all filed by the orchestrator. For 8.5's friction ledger, unfiled: `MigratingToPollyV8.md`'s `Polly.Extensions`
+step (§ *Second pass (7.6)*, ruling 4).
+
+**Off the prediction.** The probes' containers were removed after their runs (`docker ps -a`: the repository's own `brighter-*` and earlier
+ones only). `tools/README.md` rows 2, 8 and 9 now give the close's figures, with phase 7's paragraph.
 
 ---
 
@@ -3044,6 +3972,15 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 | `Routing.md` | 3 | `CS0246` `MyRequest` | *same-page*: block 2 declares it, and the sentence before block 3 names "this request" | 6 |
 | `Routing.md` | 4 | `CS0246` `MyReply` | *same-page*: block 2 declares it, as the sentence before block 4 now says. Block 3 and block 4 build once block 2's classes are in scope; each was checked that way (0 diagnostics) before the stub was taken out again | 6 |
 | `DefaultMessageMappers.md` | 6, 10 | `CS0246` `Orders`, `OrderShipped`, `AvroMessageMapperAsync<>` | *same-page*: block 4 declares the mapper and block 5 `OrderShipped`, in the namespace `Orders`; the sentences before blocks 6 and 10 are about that mapper | 6 |
+| `NullableReferenceTypes.md` | 4 | `CS0246` `CreateOrderCommand`, `IOrderRepository`, `Order` | *same-page*: block 3 declares `CreateOrderCommand`, as the clause before block 4 now says. `IOrderRepository` and `Order` are the reader's, and no BUILT block names them (unit rule 1) | 7 |
+| `NullableReferenceTypes.md` | 5 | `CS0246` `CreateOrderCommand`, `CreateOrderDto` | *same-page*: block 3 declares the command, as the clause before block 5 now says; `CreateOrderDto` is the reader's | 7 |
+| `NullableReferenceTypes.md` | 7 | `CS0246` `CreateUserCommand`, `CreateUserDto` | *same-page*: block 6 declares the command, as the clause before block 7 now says; `CreateUserDto` is the reader's | 7 |
+| `V10MigrationGuide.md` | 25 | `CS0103` `BuildServiceProvider`; `CS0246` `PersonCreated` | *same-page*: block 19 declares `PersonCreated`, and the sentence before block 25 says so; `BuildServiceProvider` is the reader's own helper, named by no other block | 7 |
+| `V10MigrationGuide.md` | 16 | `CS0246` `PersonCreated` | *same-page*: block 19 declares it, and the clause before block 16 now says so. It was *parse* (a bare `new RmqPublication { … }` statement) until 7.3 made it `var publication = …` | 7 |
+| `V10MigrationGuide.md` | 3 | `CS0246` `PersonCreated` | *same-page*: block 19 declares it, so `V10MigrationGuideContext` may not stub it. Listed at 7.7: 7.1 named it among the stays, and no row was written | 7 |
+| `V10MigrationGuide.md` | 10 | `CS0246` `MyCommand` | *same-page*: blocks 14 and 15 declare it. Listed at 7.7, as block 3 | 7 |
+| `V10MigrationGuide.md` | 17 | `CS0246` `PersonCreated` | *same-page*: block 19 declares it. Listed at 7.7, as block 3 | 7 |
+| `Logging.md` | 5 | `CS8795` `BuildingSendPipelineForCommand` | *source generator*: a quote of `CommandProcessor.Log`'s `[LoggerMessage]` partial (`CommandProcessor.cs:1615–1618` at 10.8.1), whose implementation a generator writes and `blockcheck` does not run. Listed, not skipped: D21's reason names a private member or the pump's own state, which a logging partial is neither. The lead-in now cites the file **Ruled 2026-11-01: option (a).** At 7.4 the block is whole, a top-level `internal static partial class Log`, and the lead-in no longer calls it verbatim; it still fails `CS8795` because `blockcheck` compiles with no analyzers and so runs no generator. `probe/s5/logger-message`: with the generator, 0 errors; with every analyzer removed, `CS8795`; the former top-level `private` form, `CS1527`. **Ruled 2026-11-01: (c).** It stays listed on `CS8795`; `blockcheck` running source generators is a follow-up after spec 018. **Filed as BrighterCommand/Docs#212** (2026-11-02) | 7 |
 
 ## Splits
 
@@ -3068,8 +4005,8 @@ design, and their greps were run there.*
 | # | Defect | Page(s) | Recurrence grep | Before | After | Found by | Phase |
 |---:|---|---|---|---:|---:|---|---:|
 | 1 | `AddServiceActivator` called as current code; dead at `10.7.0` and `master` (doc comments only) | `AwsScheduler.md`, `AzureScheduler.md` | `grep -rn 'Services.AddServiceActivator(' contents/` | **2** | **0** | re-derivation (design E2); the watchlist missed it | 3 |
-| 2 | Shouldly assertions with the package never named and no `using` | `TestDoubleOptions.md` | `grep -c Shouldly contents/TestDoubleOptions.md` | **0** | | the second compile (design E2, *pin-gap*) | 7 |
-| 3 | Package spelt `Paramore.Brighter.Inbox.DynamoDb.V4`; the project is `…DynamoDB.V4` | `DynamoInbox.md` (a 017 tranche page; repaired under obligation 21) | `grep -rn 'Inbox.DynamoDb.V4' contents/` | **1** | | re-derivation (requirements, the V4 pin) | 7 |
+| 2 | Shouldly assertions with the package never named and no `using` | `TestDoubleOptions.md` | `grep -c Shouldly contents/TestDoubleOptions.md` | **0** | **7** (≥ 7: a `using Shouldly;` in each of the six blocks and one sentence naming the package) | the second compile (design E2, *pin-gap*); repaired at 7.4 | 7 |
+| 3 | Package spelt `Paramore.Brighter.Inbox.DynamoDb.V4`; the project is `…DynamoDB.V4`. Widened at 7.6 by shape, every DynamoDB Inbox and Outbox package spelt `…DynamoDb`: the v3 Inbox and Outbox packages too, whose ids are `Paramore.Brighter.Inbox.DynamoDB` and `Paramore.Brighter.Outbox.DynamoDB` (each package's `.nuspec` at 10.8.1) | `DynamoInbox.md`; `DynamoOutbox.md` (017 tranche pages; repaired under obligation 21) | `grep -rn 'Inbox.DynamoDb.V4' contents/`; `grep -rnE 'Paramore\.Brighter\.(Inbox\|Outbox)\.DynamoDb' contents/` | **1**; **3** | **0**; **0** | re-derivation (requirements, the V4 pin); repaired at 7.6 | 7 |
 | 4 | `UseExternalBus` called as current code; dead at `10.8.0` and `master` (one doc comment) | `AwsScheduler.md`, `AzureScheduler.md` | `grep -rn '^\.UseExternalBus(' contents/` | **2** | **0** | task 3.1, chained after defect 1 | 3 |
 | 5 | `AzureServiceBusSubscription<T>` given `deadLetterQueueHandling:` and `lockTimeout:`, parameters no overload has at 10.8.0; both settings live on `AzureServiceBusSubscriptionConfiguration` | `AzureScheduler.md` | `grep -rnE 'deadLetterQueueHandling\|lockTimeout: 60' contents/` | **2** | **0** | task 3.1, the second compile (`probe/second.py`) | 3 |
 | 6 | A scheduler class implementing `IAmA(Message\|Request)Scheduler(Async\|Sync)` with two of each interface's five members, and no `CancellationToken` | `CustomScheduler.md` | `grep -rnE 'class \w+ : IAmA(Message\|Request)SchedulerAsync' contents/` | **2** | **2**, both whole: each class implements all five members of each interface, and both blocks build | task 3.1, the second compile | 3 |
@@ -3150,6 +4087,19 @@ design, and their greps were run there.*
 | 81 | FIFO topic and queue names said to need a `.fifo` suffix; Brighter appends it when the name lacks it (`AWSNameExtensions.cs`, `Truncate`, at 10.8.1) | `AWSSQSConfiguration.md` | `grep -rnF 'must end with `.fifo`' contents/` | **2** | **0** | task 6.4, run on LocalStack 4.4 (`probe/s4/sqs-channels`) | 6 |
 | 82 | RabbitMQ's blocked and unblocked events said to be logged *"automatically"* once a provider is added, and the DI extensions said to leave *"nothing to do"*; each Brighter type logs through a `static readonly` logger from `ApplicationLogging.LoggerFactory` at its first log, which is the container's factory only once the command processor (`ServiceCollectionExtensions.cs:776`) or the Dispatcher (`:141`, ServiceActivator) is built, so a type that logs earlier never reaches the providers | `RabbitMQConnectionStability.md`; `Logging.md` | `grep -rnF 'Blocked events will be logged automatically' contents/`; `grep -rnF 'Brighter automatically logs blocked and unblocked events' contents/`; `grep -rnF 'If you use the DI extensions, there is nothing to do' contents/` | **1**; **1**; **1** | **0**; **0**; **0** | task 6.5's Serilog addendum, run against `rabbitmq:3.13-management` (`probe/s4/rmq-logging`); the `Logging.md` recurrence by `grep -rn 'ApplicationLogging\|ILoggerFactory' contents/` (obligation 21) | 6 |
 | 83 | The blocked and unblocked sample lines showing `amqp://localhost:5672`; the gateway logs the sanitised URI, credentials masked and a trailing slash (`RmqMessagingGatewayConnection.cs:137`) | `RabbitMQConnectionStability.md` | `grep -rnF 'Subscription to amqp://localhost:5672' contents/` | **2** | **0** | task 6.5's Serilog addendum, the probe's output (`probe/s4/rmq-logging`) | 6 |
+| 84 | `[UseResiliencePipeline(1, "…")]` with the step first, where `UseResiliencePipelineAttribute(string policy, int step)` takes the policy first (`UseResiliencePipelineAttribute.cs:68`), and on a handler class, where `[AttributeUsage(AttributeTargets.Method)]` (`:52`) allows only a method; the handlers are `RequestHandlerAsync`, so the attribute is `[UseResiliencePipelineAsync("…", 1)]` on `HandleAsync`, with `[RequestLoggingAsync]` moved beside it | `FAQ.md` | `grep -rnE '\[UseResiliencePipeline(Async)?\([0-9]' contents/`; `grep -rn -A2 -E '^\[(RequestLogging\|UseResiliencePipeline\|UsePolicy\|UseInbox\|FallbackPolicy\|FeatureSwitch\|Monitor\|ValidateRequest\|DeferMessageOnError\|RejectMessageOnError\|DontAckOnError\|Timeout)(Async)?\(' contents/ \| grep -E '^\S+-[0-9]+-\s*public (abstract \|sealed )?class '` | **3** (+1, `PipelineValidation.md`'s `text` log line, not a call); **3** | **0** (+ the same log line); **0** | task 7.1, the second compile (`CS1503`, `CS0592`); ruled 2026-10-31, repaired at 7.3. Widened at 7.6: the second grep's list named `Timeout(`, not `TimeoutPolicy(`; with `TimeoutPolicy` added it read **1** at `8c90dcc`, `FAQ.md` #15 (*Old (V9)*), and **0** after, repaired with ledger 95 | 7 |
+| 85 | `MyHandlerBase<T> : RequestHandlerAsync<T>` without the `where T : class, IRequest` the base requires (`RequestHandlerAsync.cs:54`) | `FAQ.md` | `grep -rn -A1 -E 'class \w+<T>\s*:\s*RequestHandler(Async)?<T>\s*$' contents/`, read for a `where` on the next line | **1** unconstrained | **0** (1 hit, constrained) | task 7.1, the second compile (`CS0452`); ruled 2026-10-31, repaired at 7.3 | 7 |
+| 86 | The `JsonSerialisationOptions` static-constructor listing showing 4 of the 12 converters 10.8.1 adds (`JsonSerialisationOptions.cs:33–44`), and `ConfigureJsonSerialisation` said to take an `Action<JsonSerialisationOptions>` (the class is static; it takes `Action<JsonSerializerOptions>`, `ServiceCollectionExtensions.cs:866–867`). Run: `probe/s5/json-options` reads 12 converters in the listed order, and the call keeps all 12 on a copy | `CommandProcessorConfigurationReference.md` | `grep -rnF 'Action\<JsonSerialisationOptions\>' contents/`; `grep -c SubscriptionNameConverter contents/CommandProcessorConfigurationReference.md` | **1**; **0** | **0**; **1** | task 7.1, the second compile (`CS1520`, `CS0118`); ruled 2026-10-31, repaired at 7.3 | 7 |
+| 87 | `services.AddProducers(o => o.UseRabbitMQ(…).Publication<T>(…))` and `.Subscription<T>(…)`: `AddProducers` extends `IBrighterBuilder`, not `IServiceCollection`, and `UseRabbitMQ` exists nowhere in `src` at 10.8.1 or `origin/master`. Rewritten to `services.AddConsumers(…)` with `RmqSubscription<T>`, then `.AddProducers(…)` with `RmqProducerRegistryFactory` and `RmqPublication<T>` | `FAQ.md` | `grep -rnE 'UseRabbitMQ\(' contents/`; `grep -rnE '[Ss]ervices\.AddProducers\(' contents/` | **3** lines in 2 blocks; **2** | **0**; **0** | task 7.1, hidden behind *parse*; ruled 2026-10-31, repaired at 7.3 | 7 |
+| 88 | `channelCount: 3`, a parameter no `Subscription` has; the count of message pumps is `noOfPerformers` (`Subscription.cs`, 10.8.1) | `FAQ.md` | `grep -rn 'channelCount' contents/` | **1** | **0** | task 7.3, hidden behind *parse* (#20); confirmed by the maintainer 2026-11-01 | 7 |
+| 89 | `ExternalBusConfiguration`, a type that exists nowhere in `src` at 10.8.1; the `AddProducers` delegate takes a `ProducersConfiguration` (`ServiceCollectionExtensions.cs:312`) | `CommandProcessorConfigurationReference.md` | `grep -rn 'ExternalBusConfiguration' contents/` | **2** | **0** | task 7.3, reading the prose beside #15 and #17; confirmed by the maintainer 2026-11-01. `symbolcheck` watches it from 7.7 (ruled 2026-11-02) | 7 |
+| 90 | `MySqlInboxBuilder.GetExistsQuery(INBOX_TABLE_NAME)` and `MySqlOutboxBuilder.GetExistsQuery(OUTBOX_TABLE_NAME)`, each one argument where both take `(tableSchema, tableName)`; and `ExecuteScalar() != null` as the exists test, where the query is `SELECT EXISTS (…) AS TableExists`, which returns a row either way, so the test is always true and the table is never created. Run: `probe/s5/mysql-exists`, against MySQL 8 and the released 10.8.1 packages. Case, table absent: `ExecuteScalar()` is `0` (Int64) and `Convert.ToInt32(…) == 1` is false; control, table present: `1` and true; the old test says true in both | `BrighterInboxSupport.md`; `BrighterOutboxSupport.md` | `grep -rnE 'ExistsQuery\((INBOX\|OUTBOX)_TABLE_NAME\)' contents/`; `grep -rnF 'ExecuteScalar() != null' contents/` | **2**; **2** | **0**; **0** | task 7.3, hidden behind *parse* (Inbox #2) and *defect* (Outbox #2, `CS1106`: an extension method outside a static class); run; confirmed by the maintainer 2026-11-01 | 7 |
+| 91 | `Environment.IsDevelopment()` in a `Startup` method, where `Environment` binds to `System.Environment`; the host's is `IWebHostEnvironment`, which a `Startup` takes by constructor | `CommandProcessorConfigurationReference.md` | `grep -rnE '(^\|[^.A-Za-z_])Environment\.IsDevelopment\(\)' contents/` | **1** | **0** | task 7.1, the second compile (`CS0117`); repaired at 7.3; confirmed by the maintainer 2026-11-01 | 7 |
+| 92 | An `IAmAMessageMapper<T>` shown with one of its two members, under a `// ...` that declares nothing about the other (017's recurring defect): `MapToMessage` missing from `OrderEventMessageMapper`, `MapToRequest` from `LargeMessageMapper` | `MigratingToNullableReferenceTypes.md`; `OutboxArchiver.md` | a scan of every C# fence declaring `class … : IAmAMessageMapper(Async)?<` for both `MapTo…` members, run at `HEAD` and on the tree | **2** | **0** | task 7.1, the second compile (`CS0535`); repaired at 7.3; `OutboxArchiver.md`'s mapper was later replaced by an `InMemoryArchiveProvider` example at 7.4 (ruled 2026-11-01) | 7 |
+| 93 | `TimeToLive` said to make MongoDB delete documents (*"Messages will be automatically deleted after 30 days"*, *"MongoDB will automatically create a TTL index on the `TimeStamp` field and remove expired documents"*, *"a TTL index expires stale lock documents automatically"*). At 10.8.1 it deletes nothing: Brighter creates its index only when it creates the collection (`MakeCollection = CreateIfNotExists`; the default, `Assume`, makes none, `BaseMongoDb.cs:83–118`), and that index, on `TimeStamp`, matches no date, because the driver stores the `DateTimeOffset` as an embedded `{ DateTime, Ticks, Offset }` document. Run: `probe/s5/mongo-ttl`, MongoDB 7 with the TTL monitor every second. The pages now say so, and show a TTL index on `TimeStamp.DateTime`, which the probe shows removing the message, the Inbox entry and an unreleased lock | `MongoDBOutbox.md`; `MongoDBInbox.md`; `MongoDbDistributedLock.md`; `DistributedLock.md` | `grep -rnE 'automatically deleted after\|Auto-expire messages\|remove expired documents\|expires them through a MongoDB TTL index\|a TTL index expires stale lock\|before the TTL index removes it\|Used for the TTL index' contents/`; `grep -rn 'MongoDb.*\| TTL document \|' contents/` | **10** (Outbox 5, Inbox 3, lock 2); **1** | **0**; **0** | task 7.5, run with a control (`MongoDBInbox.md` #4, `MongoDBOutbox.md` #4); an upstream candidate, not filed. **Filed as Brighter #4716 and #4717 (2026-11-01)**; confirmed by the maintainer 2026-11-01 | 7 |
+| 94 | `services.AddResiliencePipeline("MyRetryPolicy", …)` (and `"MyTimeout"`) shown as the registration `[UseResiliencePipelineAsync("…", 1)]` finds. Brighter looks pipelines up only in its own registry, `options.ResiliencePipelineRegistry` or a new one (`BrighterResiliencePipelineRegistry`, 10.8.1), and never reads the one `Polly.Extensions` puts in DI. Run: `probe/s5/faq-claims`, the handler never runs and the request fails `ConfigurationException`, inner `KeyNotFoundException`; the registry given to `AddBrighter` retries (control). #13 and #16 now build that registry | `FAQ.md` | `grep -rnF 'services.AddResiliencePipeline(' contents/` | **2** | **0** | task 7.5, run with a control (`FAQ.md` #13, #16) | 7 |
+| 95 | `[TimeoutPolicy]` shown on an async handler as the V9 form: on `HandleAsync` (`V10MigrationGuide.md` #8, *Before (V9)*), and on a `RequestHandlerAsync` class (`FAQ.md` #15, *Old (V9)*, ledger 84's shape). The attribute has no async form, and its handler is synchronous (`TimeoutPolicyHandler<T> : RequestHandler<T>` at 9.33 and 10.8.1), so building an async pipeline with it throws `ConfigurationException` (*"All handlers in an async pipeline must derive from IHandleRequestsAsync"*, `PipelineBuilder.cs:294`, `:350` at 9.33), and on a class it is `CS0592`. Run: `probe/s5/timeout-policy-kind`, against 10.8.1, where the attribute is `[Obsolete]` and unchanged in kind. Both blocks are now a synchronous `Handle`, and the sentence before each says why. Rule 8 cannot see it: `TimeoutPolicy` has no `…Async` twin, so it is not in `PAIRED` | `V10MigrationGuide.md`; `FAQ.md` | `grep -rn -A1 -E '\[TimeoutPolicy\(' contents/ \| grep -E 'HandleAsync\|class '` | **2** | **0** | task 7.6, ledger 84's grep widened by shape, then the attribute-kind scan over every attribute above a `Handle`/`HandleAsync`; run with a control; confirmed by the maintainer 2026-11-02. Rule 8's blind spot is a follow-up after 018, **BrighterCommand/Docs#211** | 7 |
+| 96 | `Paramore.Brighter.MessagingGateway.RMQ` named as the V10 RabbitMQ package (`dotnet add package … --version 10.0.0`; *"provided by the NuGet package"*). NuGet's index for that id stops at `10.0.0-preview.4`; V10 ships `Paramore.Brighter.MessagingGateway.RMQ.Async` and `….RMQ.Sync` (10.0.0 to 10.8.1; `src/` at 10.0.0 and 10.8.1 has only those two), and both pages' blocks import `….RMQ.Async` | `V10MigrationGuide.md`; `CommandProcessorConfigurationReference.md` | `grep -rnE 'MessagingGateway\.RMQ(\*\*\| \|$)' contents/` | **2** | **0** | task 7.6, 7.1's unpinned-package shape widened to every `Paramore.Brighter…` id against NuGet; confirmed by the maintainer 2026-11-02 | 7 |
 
 ## Friction ledger
 

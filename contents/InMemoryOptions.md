@@ -192,6 +192,7 @@ public class IntegrationTests : IDisposable
 Use InMemory components for development/testing, production components elsewhere:
 
 ```csharp
+using System;
 using Hangfire;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -199,8 +200,11 @@ using Microsoft.Extensions.Hosting;
 using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.Inbox;
+using Paramore.Brighter.Inbox.MsSql;
 using Paramore.Brighter.MessageScheduler.Hangfire;
+using Paramore.Brighter.MessagingGateway.RMQ.Async;
 using Paramore.Brighter.Observability;
+using Paramore.Brighter.Outbox.MsSql;
 using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
 
 public static class BrighterConfiguration
@@ -230,6 +234,15 @@ public static class BrighterConfiguration
         return services;
     }
 
+    private static Subscription[] GetSubscriptions()
+        =>
+        [
+            new InMemorySubscription<PersonCreated>(
+                new SubscriptionName("PersonAnalytics"),
+                new ChannelName("person.created"),
+                new RoutingKey("PersonCreated"))
+        ];
+
     private static IAmAProducerRegistry GetProducerRegistry(
         IHostEnvironment environment,
         IConfiguration configuration,
@@ -248,8 +261,18 @@ public static class BrighterConfiguration
         }
 
         // Production: RabbitMQ, Kafka, AWS SQS, etc.
-        return new RmqProducerRegistryFactory(/* production config */).Create();
+        return new RmqProducerRegistryFactory(
+            GetRabbitMqConnection(configuration),
+            [new RmqPublication<PersonCreated> { Topic = new RoutingKey("PersonCreated") }]
+        ).Create();
     }
+
+    private static RmqMessagingGatewayConnection GetRabbitMqConnection(IConfiguration configuration)
+        => new()
+        {
+            AmpqUri = new AmqpUriSpecification(new Uri(configuration.GetConnectionString("RabbitMQ")!)),
+            Exchange = new Exchange("paramore.brighter.exchange")
+        };
 
     // UseScheduler needs one type that is both a message and a request scheduler factory,
     // so this chooses the concrete factory itself rather than returning one of the two interfaces
@@ -281,7 +304,8 @@ public static class BrighterConfiguration
         }
 
         // Production: SQL Server, PostgreSQL, MySQL, DynamoDB, etc.
-        return new MsSqlOutbox(/* production config */);
+        return new MsSqlOutbox(new RelationalDatabaseConfiguration(
+            configuration.GetConnectionString("Outbox")!, outBoxTableName: "Outbox"));
     }
 
     private static InboxConfiguration GetInbox(
@@ -298,7 +322,8 @@ public static class BrighterConfiguration
 
         // Production: SQL Server, PostgreSQL, MySQL, DynamoDB, etc.
         return new InboxConfiguration(
-            new MsSqlInbox(/* production config */),
+            new MsSqlInbox(new RelationalDatabaseConfiguration(
+                configuration.GetConnectionString("Inbox")!, inboxTableName: "Inbox")),
             actionOnExists: OnceOnlyAction.Warn
         );
     }
@@ -314,7 +339,7 @@ public static class BrighterConfiguration
         }
 
         // Production: RabbitMQ, Kafka, AWS SQS, etc.
-        return new ChannelFactory(new RmqMessageConsumerFactory(/* config */));
+        return new ChannelFactory(new RmqMessageConsumerFactory(GetRabbitMqConnection(configuration)));
     }
 }
 ```

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 7.3: BrighterInboxSupport.md #2 and BrighterOutboxSupport.md #2, whether the exists check the page
+       showed (`ExecuteScalar() != null`) detects a missing table, run against the released 10.8.1 packages and
+       a throwaway MySQL 8 container. Case: the corrected check (`Convert.ToInt32(…) == 1`). Control: the check
+       the page showed. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter.Inbox.MySql" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MySql" Version="10.8.1" />
+  </ItemGroup>
+</Project>

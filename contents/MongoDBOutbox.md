@@ -81,7 +81,7 @@ Each of `Outbox`, `Inbox` and `Locking` takes a `MongoDbCollectionConfiguration`
 | `MakeCollection` | `OnResolvingACollection` | `Assume` | Sets what Brighter does when it resolves the collection — see [Collection Management](#mongodb-outbox-collection-management). |
 | `Settings` | `MongoCollectionSettings?` | `null` | Sets the collection-level settings used when the collection is opened. |
 | `CreateCollectionOptions` | `CreateCollectionOptions?` | `null` | Supplies the options used when Brighter creates the collection. |
-| `TimeToLive` | `TimeSpan?` | `null` | Sets how long a document survives before the TTL index removes it. |
+| `TimeToLive` | `TimeSpan?` | `null` | Sets the TTL index Brighter creates on `TimeStamp` when it creates the collection; that index removes nothing — see [TTL Support](#mongodb-outbox-time-to-live-ttl-support). |
 
 ## MongoDB Outbox Configuration
 
@@ -110,7 +110,7 @@ public void ConfigureServices(IServiceCollection services)
         {
             Name = "Outbox",
             MakeCollection = OnResolvingACollection.Validate,
-            TimeToLive = TimeSpan.FromDays(7) // Optional: Auto-expire messages after 7 days
+            TimeToLive = TimeSpan.FromDays(7) // Optional: see Time-To-Live (TTL) Support below
         }
     };
 
@@ -228,17 +228,29 @@ public void ConfigureServices(IServiceCollection services)
 
 ## MongoDB Outbox Time-To-Live (TTL) Support
 
-The MongoDB Outbox supports automatic message expiration using MongoDB's TTL feature. You can configure this through the `TimeToLive` property in the collection configuration:
+`TimeToLive` asks for a MongoDB TTL index on the `TimeStamp` field. At Brighter 10.8.1 that index expires nothing, so if you want MongoDB to remove old messages, create the index yourself:
+
+- Brighter creates its index only when it creates the collection, which it does only with `MakeCollection = OnResolvingACollection.CreateIfNotExists`. Under the default, `Assume`, there is no index.
+- The index it creates, `brighter_ttl_Outbox` on `TimeStamp`, removes no document. Brighter stores `TimeStamp` as an embedded document of `DateTime`, `Ticks` and `Offset`, and MongoDB expires a document only when the indexed field holds a date.
+
+A TTL index on `TimeStamp.DateTime` does expire them:
 
 ```csharp
-Outbox = new MongoDbCollectionConfiguration
-{
-    Name = "Outbox",
-    TimeToLive = TimeSpan.FromDays(30) // Messages will be automatically deleted after 30 days
-}
+using System;
+using MongoDB.Bson;
+using MongoDB.Driver;
+
+var outbox = new MongoClient("mongodb://localhost:27017")
+    .GetDatabase("BrighterDatabase")
+    .GetCollection<BsonDocument>("Outbox");
+
+// Remove each document 30 days after its TimeStamp
+outbox.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(
+    Builders<BsonDocument>.IndexKeys.Ascending("TimeStamp.DateTime"),
+    new CreateIndexOptions { ExpireAfter = TimeSpan.FromDays(30) }));
 ```
 
-When TTL is configured, MongoDB will automatically create a TTL index on the `TimeStamp` field and remove expired documents.
+MongoDB's TTL monitor runs once a minute, so a document can outlive its time-to-live by up to a minute.
 
 ## Using the Outbox in Handlers
 
@@ -323,7 +335,7 @@ The MongoDB Outbox stores messages as BSON documents with the following structur
 - **MessageId**: The unique identifier for the message
 - **Topic**: The topic/destination for the message
 - **MessageType**: The type of the message
-- **TimeStamp**: When the message was created (UTC). Used for the TTL index
+- **TimeStamp**: When the message was created (UTC), as an embedded document of `DateTime`, `Ticks` and `Offset`. A TTL index belongs on `TimeStamp.DateTime`
 - **CorrelationId**: Optional correlation identifier
 - **ReplyTo**: Optional reply-to address
 - **ContentType**: The content type of the message

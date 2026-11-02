@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 7.6: [TimeoutPolicy]'s kind. V10MigrationGuide.md's "Before (V9)" block put it on HandleAsync, and FAQ.md #15
+       ("Old (V9)") on a handler class. Run against the released 10.8.1 packages, where TimeoutPolicyAttribute and its
+       handler are [Obsolete] but unchanged in kind from 9.33 (TimeoutPolicyHandler<T> : RequestHandler<T>; the
+       PipelineBuilder's "mixed pipeline" check, 9.33 PipelineBuilder.cs:294, :350; 10.8.1 :537, :612).
+       dotnet run                          -> the runtime rows
+       dotnet build -p:ClassLevel=true     -> FAQ.md #15 as it stood, which must fail CS0592 -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable>
+    <NoWarn>CS0618</NoWarn>
+    <DefineConstants Condition="'$(ClassLevel)' == 'true'">$(DefineConstants);CLASSLEVEL</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.1" />
+  </ItemGroup>
+</Project>
