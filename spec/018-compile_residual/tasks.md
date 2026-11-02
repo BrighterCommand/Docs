@@ -3776,7 +3776,7 @@ ones only). `tools/README.md` rows 2, 8 and 9 now give the close's figures, with
   - Output: § *Friction ledger*, numbered from **81**, each entry with the repair it proposes for
     the next spec
 
-- [ ] **Task 8.6:** Close 018
+- [x] **Task 8.6:** Close 018
   - Input: § *Phase 8 as executed*; `--report` and `--classify` at the head
   - Output: § *What 018 shipped*, ending in **one sentence naming the residual**, with its figure
     re-derived by `--classify`; the README checklist ticked; `PROMPT.md` updated; the PR, asking for
@@ -4206,6 +4206,77 @@ cannot see it (Docs#211), and row 89 is watched by `symbolcheck` only from 7.7, 
 
 § *Friction ledger* holds **20** entries, **81–100**, read from every phase's *as executed* section,
 each with the repair it proposes for the next spec.
+
+#### Close (8.6)
+
+At `0c74b95`, after the three builds (`0 Error(s)` each): `blockcheck --report` 994 blocks, 889 BUILT,
+76 FAILED, 29 SKIPPED, 0 NOT_COMPILABLE, baseline 889, 579 assemblies per pin, V4 28 of 28, 97 scaffold
+units and 4 V4 pages with 0 violations, 0 findings, exit 0; `--classify` 76 rows, exit 0; `pagelint` 0
+errors / 89 warnings / 162 pages, `--plant` 5 of 5; `linkcheck` 169 / 0; `symbolcheck` 25 entries, 161
+pages, 14 silenced; `versioncheck` 0 of 18 across 5 pages; `optioncheck` 0 / 59 / 533; shape 161 / 12 /
+4 of 4 / 12 of 20; redirects 77 entries, 7858 bytes; `--verify` 161 = 161. Each unmoved from
+`b7e878c`, so no `tools/README.md` row changes. No page under `contents/` changed in phase 8.
+
+#### What 018 shipped *(task 8.6)*
+
+Measured at `0c74b95`, after building all three projects. `--report` → exit **0**, *"994 blocks: 889
+BUILT, 76 FAILED, 29 SKIPPED, 0 NOT_COMPILABLE"*, *"baseline: 889 blocks required to build"*,
+*"scaffold rule: 97 units checked, 0 violations, 0 compile errors"*, *"pin rule: 4 pages on the v4
+pin, 0 violations"*, *"0 findings, 29 skipped"*. `--classify` → exit **0**, **76** rows, the same
+blocks as `--report`'s FAILED rows (method 2: `awk -F'\t' '$1=="FAILED"'` → 76).
+
+| | `3a79b20` (017's close) | Now |
+|---|---:|---:|
+| **BUILT**, and the baseline that holds them | 299 | **889** |
+| FAILED / SKIPPED, of 990 → 994 blocks | 674 / 17 | **76 / 29** |
+| Pages with a FAILED block / with nothing BUILT | 88 / 39 | **30 / 2** |
+| `pagelint` `using` debt | 524 blocks, 66 pages | **89 blocks, 29 pages** |
+| Scaffold units / pages mapped in `scaffold/pages.tsv` | 45 / 67 | **97 / 120** |
+| Packages pinned in `refs.csproj` / `refs-v4.csproj` | 100 / — | **113 / 113** |
+| `symbolcheck` watchlist | 22 entries, 3 silenced | **25 entries, 14 silenced** |
+
+The *3a79b20* column is re-derived in a `git archive 3a79b20` copy, its projects built: `--report`
+→ *"990 blocks: 299 BUILT, 674 FAILED, 17 SKIPPED"*, and pages with a FAILED / no BUILT row over
+its report → 88 / 39, each as § 2 and 017 § *What 017 shipped* say; `pagelint` → 524 blocks across
+66 pages; `symbolcheck` → 22 entries, 3 silenced; the pins and scaffold by `git show
+3a79b20:<file>`. *Now* includes the four PRs outside 018 that merged between its
+phases (#195, #199, #201, #206), which moved the corpus and the pins to Brighter 10.8.1 (friction 85, 86).
+
+| | |
+|---|---|
+| **The instruments** | `pagelint` rule 8, `ATTRIBUTE KIND`, with `PAIRED` beside `APPLIES_TO`, the per-block `attr-mismatch-intended` marker and its three faults (`ATTRIBUTE KIND MARKER`), and `--plant`, 5 plants, in CI (AC1–AC3); the `CLAUDE.md` section and two ledger rows (AC4, repaired under ruling (a)); 017's probe retired (AC5). `--classify`'s second compile, with the *built-by-using* and *defect* classes, red-proofed two-way (AC6) and reconciled with 017's probe to **1** explained disagreement (AC7). The V4 pin, `refs-v4.csproj`, and its pin rule (AC11); the handler wrapper; Shouldly; `Program` in a `statements` block; a scaffold unit that does not compile as a finding; `pagelint --per-page`; the `net10.0` measurement |
+| **The pages** | **103** changed under `contents/` (`git diff --name-only 3a79b20 -- contents/`, 8.3): **64** of the 67 reached pages, **22** more each reached by a defect-ledger row, `RelationalDatabaseConfigurationReference.md` by D19, and **16** changed only by the bugfix PRs #201 and #206. PRs #198, #200, #202, #203, #204, #210, #213, and phase 8's |
+| **The runs** | **104** rows in 10 run tables, 103 with a case, a control and a probe (AC10); **56** `Program.cs` committed under `probe/s1`–`s5` and `s8`; 17 claims named, read against source and not run, accepted by ruling (c) |
+| **The ledgers** | **96** defect rows, each with its recurrence grep, *Before*, *After* and *Found by*: `--classify` 54, a run 28, re-derivation 14 (8.4). Friction entries **81–100** (8.5) |
+| **Upstream** | BrighterCommand/Brighter#4600, #4609, #4616, #4716 and #4717, each filed on the maintainer's word; Docs#211 (rule 8 and sync-only attributes) and Docs#212 (`blockcheck` and source generators) |
+| **Ruled during 018** | D8–D25, each in design § *Design Decisions*; rulings (a)–(d) of session 137 at acceptance |
+
+**The criteria** (§ *The reading criteria (8.1)*, § *The instrumented criteria (8.2)*): AC1–AC3,
+AC6–AC9 and AC11–AC13 **MET**; AC4 **MET** on the re-read against the ledger repaired under ruling
+(a); AC5 **MET**, its one hit, `tools/pagelint.py`'s provenance comment, accepted as not a run (ruling
+(b)); AC10 **MET** with its 17 read-not-run claims, accepted (ruling (c)); AC14 **MET** with one
+coincident hit named. AC12's targets: BUILT **889 ≥ 560**, pages with nothing BUILT **2 ≤ 14**.
+
+**Open at the close:** none of the maintainer's. Ruling (d)'s run held with qualification and changed
+no page; the rewording it proposes for `ReactorAndProactor.md` is friction 92, for the next spec.
+
+**Where the residual is**, by `--classify` joined to § *The groups* (`probe/stays.py`'s reached set)
+and to 017's tranche pages (`probe/tranche_pages.py spec/017-compile_repairs/tasks.md`). The 67
+reached pages hold **43** FAILED blocks on 14 pages, each a row of § *Blocks that stay FAILED* (AC13,
+zero rows either side); that section's reading puts 42 on a type or value another block of the page
+declares and one, `Logging.md` #5, on the instrument (Docs#212), where `--classify`, which reads names
+only, calls them 23 *same-page*, 15 *page-type*, 4 *defect* and 1 *values*. The other **33** are on
+**16** of 017's 75 tranche pages, and each is a row of 017's § *Blocks that stay FAILED* (the join
+`(page, ordinal)` against that section's rows: 0 unlisted). The two pages with nothing BUILT,
+`ReplayOnSeenReference.md` and `ReturningResultsFromAHandler.md`, are among those 16. No block is
+*built-by-using*: the second compile settles after **0** rounds of `using`s.
+
+**The residual, the line the next spec starts from:** **76 of 994 C# blocks still do not compile
+against the released packages, `--classify` finding 38 that need a type or value another block on
+their page declares, 29 a type their page never shows, 5 a defect, 3 an undeclared value and 1 that
+does not parse, with none fixed by a `using` alone, and every one is an accounted row: 43 on 14 of the
+67 pages 018 reached, in this file's § *Blocks that stay FAILED*, and 33 on 16 of 017's tranche
+pages, in 017's.**
 
 ---
 
