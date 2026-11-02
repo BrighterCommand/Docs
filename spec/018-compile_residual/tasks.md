@@ -3889,6 +3889,60 @@ qualification**; AC4 **NOT MET**, on findings 1 and 2. **PAUSE**, for the mainta
 - **(d)** Probe `ReactorAndProactor.md`'s carried claim now, with a control. No page change unless it
   is false; if it is false, pause again, since a repair would touch a page
 
+#### The carried claim (ruling d)
+
+**What the page asserts**, at `b7e878c`, in four places. `ReactorAndProactor.md:73`: *"Mixing sync
+and async handlers or middleware will cause runtime errors; a mapper of the wrong kind is skipped
+without an error"*. `:236`, § *What Happens If You Mix Them?*: *"Mixing sync and async
+implementations causes runtime errors"*, over a table whose two error rows are `:241`, Reactor with
+`IHandleRequestsAsync<T>`, *"**Runtime error**: Reactor pump cannot dispatch to async handlers"*, and
+`:243`, Proactor with `IHandleRequests<T>`, *"**Runtime error**: Proactor pump cannot dispatch to sync
+handlers"*. `:470`, § *Best Practices*: *"Mixing these will cause **runtime errors**"*. No exception
+type is named anywhere. The mapper half is 017's run and not re-run here; the middleware half
+(a sync attribute on `HandleAsync`) is rule 8's, run at 7.6 by `probe/s5/timeout-policy-kind`
+(*"All handlers in an async pipeline must derive from IHandleRequestsAsync"*). This run is the
+handler half, which no probe had reached.
+
+**Read against source**, 10.8.1 (`../Brighter`, tag `10.8.1`). The Reactor dispatches a command with
+`CommandProcessor.Send` (`Reactor.cs:429`), the Proactor with `SendAsync` (`Proactor.cs:120`). The
+subscriber registry returns every registered handler type for the request, sync or async
+(`SubscriberRegistry.cs:89`; `AddBrighter()`'s `ServiceCollectionSubscriberRegistry` too, as the run shows), and the pipeline builder casts each to its own kind:
+`(RequestHandler<TRequest>?)` in `Build` (`PipelineBuilder.cs:210`), `(RequestHandlerAsync<TRequest>?)`
+in `BuildAsync` (`:270`). The cast's failure is wrapped as `ConfigurationException` (`:226–228`,
+`:287–289`), and both pumps treat a `ConfigurationException` as fatal: reject the message, dispose
+the channel, `MP_ERROR`, leave the loop (`Reactor.cs:328–339`; `Proactor.cs:361–369`). Before any
+message, `ValidatePipelines()` carries the same check as `ConsumerValidationRules.PumpHandlerMatch`
+(`ConsumerValidationRules.cs:47–86`: *"Subscription uses Reactor (sync) pump but handler '…' is
+async — use Proactor for async handlers"*). That startup half is read, not run: the page's claim is
+about runtime.
+
+**Run:** `probe/s8/reactor-mixing`, against the released **10.8.1** packages (`refs.csproj`'s pin),
+`dotnet run`, exit **0**. Each row is a real `Reactor` or `Proactor` reading one `MT_COMMAND` from
+`InternalBus` through `InMemoryMessageConsumer`, dispatching through a command processor built by
+`AddBrighter()`. Case and control differ only in the handler's kind; the mapper is
+`JsonMessageMapper<T>`, registered both ways. The probe exits 1 if a control does not handle or a
+case does, so it could fail. Built with the 10.0.401 SDK on `PATH`, targeting `net9.0`.
+
+| | Claim | Case | Control | Result |
+|---|---|---|---|---|
+| **1** | `:241`, Reactor with `IHandleRequestsAsync<T>` → runtime error | `Reactor`, `AsyncHandlers(r => r.RegisterAsync<MyCommand, AsyncHandler>())` | `Reactor`, `Handlers(r => r.Register<MyCommand, SyncHandler>())` | Case: handled **0**; `ConfigurationException` *"Error when building pipeline, see inner Exception for details"*, inner `InvalidCastException` *"Unable to cast object of type 'AsyncHandler' to type 'Paramore.Brighter.IHandleRequests'"*; logged *Critical* *"Stopping receiving of messages"*; message rejected to the dead-letter topic (**1**); the pump stops by itself, `MP_ERROR`. Control: handled **1**, nothing dead-lettered, `MP_STOPPED` on the quit message |
+| **2** | `:243`, Proactor with `IHandleRequests<T>` → runtime error | `Proactor`, `Handlers(r => r.Register<MyCommand, SyncHandler>())` | `Proactor`, `AsyncHandlers(r => r.RegisterAsync<MyCommand, AsyncHandler>())` | Case: handled **0**; the same `ConfigurationException`, inner `InvalidCastException` *"… 'SyncHandler' to type 'Paramore.Brighter.IHandleRequestsAsync'"*; dead-lettered **1**; stops by itself, `MP_ERROR`. Control: handled **1**, nothing dead-lettered, `MP_STOPPED` |
+
+**Verdict: HOLDS-WITH-QUALIFICATION.** Each mix the page names fails at runtime, in the mode it
+names, and each matching configuration handles; *"cannot dispatch"* is what happens. The page is
+imprecise, not wrong, on three counts:
+
+- It names no error. The error is `ConfigurationException`, wrapping an `InvalidCastException`
+- It understates the consequence. The failure is not one message's: the pump rejects the message to
+  the dead-letter topic and **stops**, `MP_ERROR`, so that subscription consumes nothing more.
+  `ValidatePipelines()` reports the mismatch at startup (read, not run)
+- `:236` says *"implementations"*, wider than its handler-only table. Read with mappers, it would be
+  false for them, since a mapper of the wrong kind is skipped silently. The page says so itself at
+  `:73` and § *Proactor Message Mappers*, so the sentence is loose rather than contradicted
+
+No page changes (ruling (d)). The three imprecisions go to 8.5's friction ledger as one candidate
+for the next spec: name the exception and the stop at `:241`/`:243`, and narrow `:236` to handlers.
+
 ---
 
 ## The groups

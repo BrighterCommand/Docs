@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Phase 8, ruling (d): ReactorAndProactor.md § Handler and Mapper Requirements says mixing sync and async
+       handlers "will cause runtime errors", and its table names the two mixes: a Reactor pump with an
+       IHandleRequestsAsync<T> handler, and a Proactor pump with an IHandleRequests<T> handler. Run against the
+       released 10.8.1 packages (tools/blockcheck/refs/refs.csproj's pin), over the in-memory transport.
+       dotnet run   -> four rows: each mix (the case) and its matching configuration (the control) -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Extensions.DependencyInjection" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.ServiceActivator" Version="10.8.1" />
+  </ItemGroup>
+</Project>
