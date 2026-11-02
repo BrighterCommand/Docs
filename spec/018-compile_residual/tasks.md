@@ -3755,7 +3755,7 @@ ones only). `tools/README.md` rows 2, 8 and 9 now give the close's figures, with
   - Output: § *Phase 8 as executed*, one row per criterion: who reads it, what they read, the
     walker's finding, the verdict
 
-- [ ] **Task 8.2:** Walk the instrumented criteria: AC1–AC3, AC5–AC7, AC11–AC14
+- [x] **Task 8.2:** Walk the instrumented criteria: AC1–AC3, AC5–AC7, AC11–AC14
   - Input: each criterion's command, run at the phase's head
   - Output: one row per criterion: the command, its output, the verdict. AC12's BUILT is against
     design's **≥ 560**, and the nothing-BUILT figure against **≤ 14**. AC13's join command is written
@@ -3943,6 +3943,90 @@ imprecise, not wrong, on three counts:
 No page changes (ruling (d)). The three imprecisions go to 8.5's friction ledger as one candidate
 for the next spec: name the exception and the stop at `:241`/`:243`, and narrow `:236` to handlers.
 
+#### The instrumented criteria (8.2)
+
+*Run at `75c1b6b`, the phase's head, after the three builds `tools/README.md` row 9 names (each
+`0 Error(s)`), with the 10.0.401 SDK and `dotnet` at `/usr/local/share/dotnet`, no `PATH` workaround.
+`--report` and `--classify` were written once to scratch files, which AC12's and AC13's rows read;
+AC7's run writes its own and is compared with them. Scratch copies sit outside the repository, and
+none is committed.*
+
+**The criteria, word for word** (`requirements.md` § *Acceptance criteria*, the *Criterion* and
+*Instrument* cells):
+
+- **AC1.** *"Rule 8 exists, and fails when it should"* — *"`python3 tools/pagelint.py --plant` exits
+  **0** only if both mismatch plants hit and the matched pair is silent, and a red-proof run with a
+  plant **removed** exits non-zero, recorded in `tasks.md`. Two-way. **Built by P0-1; until it
+  exists, this criterion has no instrument** (`--plant` is not a `pagelint` mode at `3a79b20`)"*
+- **AC2.** *"Rule 8 is clean on the corpus, with the deliberate example marked"* — *"`python3
+  tools/pagelint.py` → `0 errors`, and `grep -c 'attr-mismatch-intended'
+  contents/PipelineValidation.md` → **1**. A red-proof run with the marker removed reports
+  `ATTRIBUTE KIND` on `PipelineValidation.md` block 7, recorded"*
+- **AC3.** *"The opt-out cannot be silent"* — *"A marker with no reason is one of `--plant`'s cases
+  and must be reported as an error, so AC1's command decides it. **Built by P0-1; no instrument
+  until then**"*
+- **AC5**, its instrumented half. *"The probe is retired"* — *"`git grep -l attr_mismatch --
+  .github tools contents` → no output (exit 1; it reads that today, because nothing outside `spec/`
+  has ever run the probe)"*
+- **AC6.** *"`--classify` compiles twice, and can be wrong in both directions"* — *"A red-proof with
+  at least one block of each class (built-by-`using`, stub, defect, parse) classifies each
+  correctly. A control block known to be defect-behind-`using` is **not** classified as built.
+  Recorded in `tasks.md`. **Built by P0-2; no instrument until then**"*
+- **AC7.** *"`--classify` agrees with 017's probe, or says why not"* — *"A block-by-block join of the
+  new `--classify` against 017's `probe/run.sh` + `pages.py` at the same ref, over the FAILED set.
+  Every disagreeing block is listed with its reason. Two methods, recorded. **The probe half runs
+  today; the join needs P0-2**"*
+- **AC11.** *"The V4 blocks are judged"* — *"Each of the six blocks in § *The V4 pin* is BUILT, or
+  FAILED with a diagnostic that is not `CS0234 … V4`: `--explain` on the six, then `grep -c
+  'CS0234.*V4'` → **0**"*
+- **AC12.** *"The residual falls, and the gate holds it"* — *"`--report` exits **0** with BUILT
+  above **299**, and every new BUILT block is in `baseline.tsv` (enforced by `--report` itself).
+  The target figure is set at design (open question 3)"*. Design § *The targets*: *"BUILT ≥ 560 at
+  the close"*, and *"Pages with nothing BUILT: 39 → ≤ 14"*
+- **AC13.** *"Every FAILED block on a reached page is accounted for"* — *"For each reached page,
+  `--report`'s FAILED rows equal 018 § *Blocks that stay FAILED*'s rows for that page: a join, zero
+  rows either side. **No instrument until that section exists in `tasks.md`**; the join command is
+  written beside it, as 017's AC4 was"*
+- **AC14.** *"`tools/README.md` owns every new figure"* — *"The corrected-form count from
+  `tools/README.md` (`grep -rn '<figure>' … | grep -vcE '^(\./)?spec/'`) → **1** for each new gate
+  figure 018 introduces. The form runs today (`'299 BUILT'` → **1**); its inputs are the figures the
+  phases produce"*
+
+| # | Command | Output | Verdict |
+|---|---|---|---|
+| **AC1** | `python3 tools/pagelint.py --plant; echo $?`. Red-proof: a scratch copy of `pagelint.py` whose first plant, *sync attribute on HandleAsync*, has its `[UsePolicy(…)]` line **removed**, so the plant's block holds only the `HandleAsync` signature | real: `5 of 5 plants behave.`, exit **0**: the two mismatch plants `ATTRIBUTE KIND x1, expected x1`, the matched pair `x0, expected x0`. Red-proof: `FAILED sync attribute on HandleAsync: ATTRIBUTE KIND x0, expected x1`, `4 of 5 plants behave.`, exit **1**. An unmodified scratch copy prints the real run's output byte for byte (`diff`, silent) | **MET**, two-way |
+| **AC2** | `python3 tools/pagelint.py`; `grep -c 'attr-mismatch-intended' contents/PipelineValidation.md`. Red-proof: a scratch copy of `contents/`, `README.md`, `SUMMARY.md` and `tools/{pagelint,linkcheck}.py`, with the marker line deleted from `PipelineValidation.md` and the page otherwise identical (`diff`, silent) | real: `1 block(s) marked attr-mismatch-intended` and `0 errors, 89 warnings (using-directive debt: 89 blocks across 29 pages) across 162 pages.`, exit 0; the grep → **1**. Red-proof: `contents/PipelineValidation.md:283: ATTRIBUTE KIND: [RejectMessageOnError] is the sync attribute, on HandleAsync. Use [RejectMessageOnErrorAsync], or mark the block <!-- pagelint: attr-mismatch-intended <reason> --> if the mismatch is the point` and `1 errors, 89 warnings …`, exit **1**. The error is on `PipelineValidation.md` **#8** of 17 (its fence opens the line after the marker; the criterion's *"block 7"* is the pre-phase-4 ordinal, § *The reading criteria (8.1)* finding 4) | **MET**, on #8 |
+| **AC3** | AC1's command, fifth plant. Red-proof: a scratch copy of `pagelint.py` whose marker check treats a marker with no reason as honoured | real: `OK     a marker with no reason: ATTRIBUTE KIND MARKER x1, expected x1`. Red-proof: `FAILED a marker with no reason: ATTRIBUTE KIND MARKER x0, expected x1`, `4 of 5 plants behave.`, exit **1** | **MET**, two-way |
+| **AC4** (re-read) | `CLAUDE.md` § *The ledger*, rule 8's two rows, against `check_attribute_kind` | the rule-8 row's *Repo-wide* cell now reads *"error, unless the block is marked `attr-mismatch-intended` with a reason"*, as `pagelint` behaves at both levels (0 errors with the marked block present, repo-wide and under `--changed origin/master`); the new row carries `8 (ATTRIBUTE KIND MARKER)`, *error* \| *error*, as `pagelint` reports it in both modes | **MET** against the repaired ledger (ruling (a)); the full row stays 8.1's |
+| **AC5** | `git grep -l attr_mismatch -- .github tools contents; echo $?`, then `git grep -n` | `tools/pagelint.py`, exit **0**: one line, `tools/pagelint.py:538: # scan() is spec 017's probe/attr_mismatch.py, moved unchanged, so its 25 runs`. Said: no output (exit 1) | **MET**, with that one hit named: a provenance comment, accepted as *not a run* by ruling (b). The reading half is 8.1's |
+| **AC6** | head's `tools/` (a scratch copy, pins as built) over `contents/` and `tools/blockcheck/scaffold/` at `71cb09b`, phase 2's head, where 2.3's blocks are FAILED (at `75c1b6b` no row is *built-by-using*): `python3 tools/blockcheck.py --classify contents/Routing.md contents/AWSSQSConfiguration.md contents/TestDoubleOptions.md contents/BuildingAPipeline.md contents/NullableReferenceTypes.md`. Then the same with the page-declared check removed (`resolvable`'s `name in declared or`), and with page evidence removed (`new = first_party or new`) | run 1, exit 0, **37** rows: `Routing.md` #2 `built-by-using` `Paramore.Brighter`; `AWSSQSConfiguration.md` #7 `defect` `CS1739`, the control behind its `using`s, **not** built; `TestDoubleOptions.md` #11 `page-type` `Mock,MyCommand,MyHandler,Times`; `TestDoubleOptions.md` #2 `parse`; control `BuildingAPipeline.md` #3 `same-page` `RequestLoggingHandler`; control `NullableReferenceTypes.md` #4 `page-type` `CreateOrderCommand,IOrderRepository,Order`. Each as 2.3 recorded it. Page-declared removed: **only** `BuildingAPipeline.md` #3 changes class, → `built-by-using` `Paramore.Brighter.Logging.Handlers`. Page evidence removed: `NullableReferenceTypes.md` #4 → `defect` `CS0117`, and six more (below) | **MET**, two-way: each class's block classifies as known, the defect-behind-`using` control is not built, and each check moves its own control |
+| **AC7** | `bash spec/018-compile_residual/probe/run.sh <W>` (exit 0), which runs 017's `probe/run.sh` and `pages.py` and `--classify` at one ref; then `python3 spec/018-compile_residual/probe/reconcile.py <W>`. Red-proof: a copy of `<W>` with `Routing.md` #3 planted as `defect` in `cls.tsv` | `1 disagreements, 0 unexplained`, exit **0**: `BuildingAPipeline.md` #3, probe `BUILT`, `--classify` `same-page`, *"page-declared: RequestLoggingHandler (Paramore.Brighter.Logging.Handlers)"*, the known cost 2.3 and 2.4 recorded. Fold: PARSE/parse 1, DEFECT/defect 5, STUB/STUB 69, BUILT/STUB 1. Two methods: `verdicts.tsv` and `cls.tsv` **76** rows each, the same blocks (the script refuses otherwise), and `<W>/cls.tsv` equals 8.2's own `--classify` (`cmp` of the sorted files, silent). Red-proof: `2 disagreements, 1 unexplained`, exit **1** | **MET**. 2.4's 14 disagreements are 1. Of the other 13, 11 are `BUILT` at the same page and ordinal; `QueriesAndQueryObjects.md` #22 and #23 name no block now, since the page has 18 C# blocks, all `BUILT` |
+| **AC11** | `python3 tools/blockcheck.py --explain AwsScheduler_2 AwsScheduler_3 DistributedLock_2 DynamoDbDistributedLock_1 DynamoDbDistributedLock_2 S3LuggageStore_1`, then `grep -c 'CS0234.*V4'` | `6 blocks explained, 0 diagnostics (v4 pin)`, exit 0; grep → **0**. `--report`: all six `BUILT`, and the V4 pin's `28 blocks, 28 built, 0 failing`. The ordinals are 2.6's: `AwsScheduler.md` #2 and #3 open at the same place as at `71cb09b` (`:223`/`:257` then, `:225`/`:263` now, #1 unchanged before them), and the other three pages' blocks are the ones that import a `.V4` namespace | **MET**: all six BUILT |
+| **AC12** | `python3 tools/blockcheck.py --report report.tsv; echo $?`; method 2, `grep -vc '^#' tools/blockcheck/baseline.tsv`; nothing BUILT by `awk` over `report.tsv` (pages with a FAILED row and no BUILT row), and by `groups.py` | `994 blocks: 889 BUILT, 76 FAILED, 29 SKIPPED, 0 NOT_COMPILABLE`, `baseline: 889 blocks required to build`, `0 findings, 29 skipped`, exit **0**; `579 reference assemblies` on each pin; `scaffold rule: 97 units checked, 0 violations, 0 compile errors`; `pin rule: 4 pages on the v4 pin, 0 violations`. `cut -f1 report.tsv \| sort \| uniq -c` → 889 / 76 / 29; the baseline → **889**. Nothing BUILT: `awk` → **2**, `ReplayOnSeenReference.md` and `ReturningResultsFromAHandler.md`, both tranche pages; `groups.py` → `0 with nothing BUILT` on the group pages | **MET**: BUILT **889 ≥ 560**, every BUILT block baselined (0 findings); nothing BUILT **2 ≤ 14** |
+| **AC13** | the join, written at § *Blocks that stay FAILED*: `python3 spec/018-compile_residual/probe/stays.py spec/018-compile_residual/tasks.md report.tsv` (obligation 18). Red-proof, two-way: a copy of this file with `Routing.md` #4's row deleted, and one with `Routing.md` #2 (BUILT) planted in it | `67 reached pages; --report FAILED on them 43; listed 43; 0 + 0 rows either side`, exit **0**. Method 2: `groups.py`'s `check: FAILED column 43, --report FAILED on the same pages 43`. Red-proofs: `FAILED, not listed  Routing.md  4`, `1 + 0 rows either side`, exit **1**; `listed, not FAILED  Routing.md  2`, `0 + 1 rows either side`, exit **1**. An unreadable input exits **2** | **MET**: zero rows either side. The reading half is 8.1's |
+| **AC14** | `grep -rn '<figure>' --include='*.md' --include='*.yml' --include='*.py' . \| grep -vcE '^(\./)?spec/'`, once for each figure in `tools/README.md` rows 2, 8 and 9 that an 018 phase moved | **1** each for `994 blocks: 889 BUILT`, `889 BUILT`, `76 FAILED`, `29 SKIPPED`, `579 reference assemblies`, `28 blocks on the v4 pin`, `97 scaffold units`, `4 pages on the v4 pin`, `89 warnings`, `1 block marked`, `25 entries`. **2** for `14 silenced`: row 8, and `tools/symbolcheck.py:878`, *"`"0 findings" and "0 findings, 14 silenced" are not the same`"*, a comment from spec 014 task 2.4 (`6ee3ac7`, 2026-09-13) illustrating the line's form, before 018 made 14 the figure. The whole figure, `25 entries, 161 pages, 14 silenced`, → **1** | **MET**, with the one coincident hit named, as 2.12 named `0 compile errors`'s template |
+
+**Said and measured** (obligation 2; nothing above this subsection is edited):
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| AC2: the red-proof reports `ATTRIBUTE KIND` on *"`PipelineValidation.md` block 7"* | on **#8** of 17, since phase 4's split of #3 (8.1 finding 4) | AC2's row names #8; the criterion is quoted as written |
+| AC5: *"→ no output (exit 1)"* | one line, `tools/pagelint.py:538`, exit 0 (8.1 finding 3) | accepted by ruling (b) |
+| § *Red-proof (2.3, AC6)*, run 3: *"Of the 37 rows, only the second control changes class"* | at `75c1b6b`'s tools, **7**: the control, and `TestDoubleOptions.md` #1, #5, #6, #7, #8, #9, `defect` → `page-type`. Each is the second control's mechanism: without page evidence the six are given `using Shouldly;` (a debug copy printing the supplied set: `Shouldly` is the one namespace run 3 adds, on all six), which clears the `CS1061` on `ShouldBe` and leaves only missing names. Shouldly was pinned at task 2.7, after 2.3; the page at `71cb09b` imports nothing from Shouldly. Run 3 also drops `Mock`/`Times` from #11's names and `Arg`/`Substitute` from #12's, as 2.3 saw for Moq | 2.3's record stands; the check decides its control at both refs |
+| § *Reconciled with the probe (2.4, AC7)*: **14** disagreements at `f6a9a7c` | **1** at `75c1b6b`, over 76 FAILED rows rather than 674 | — |
+| AC1: *"a plant **removed**"* | read as the mismatch removed from a plant's block. Deleting a plant's whole tuple instead leaves `4 of 4 plants behave.` by construction (`len(plants) - failed`), so it is not a red-proof of anything; `--plant` does not check its own plant count | — |
+
+**Gates at `75c1b6b`**, beside the criteria: `linkcheck` 169 files, 0 broken; `pagelint` 0 errors /
+89 warnings, and `--changed origin/master` the same (exit 0, with `probe/stays.py` intent-added);
+`--plant` 5 of 5; `symbolcheck` 25 entries, 161 pages, 14 silenced, 0 found; `versioncheck` 0 stale
+of 18 across 5 pages; `optioncheck` 0 mismatches across 59 tables and 533 rows; shape 161 pages, 12
+sections, deepest 4 of 4, widest 12 of 20; redirects 77 entries, 7858 bytes; `blockcheck --report`
+as AC12's row. Each unmoved from `b7e878c`. No page under `contents/` changed.
+
+**The verdicts:** AC1, AC2 (on #8), AC3, AC6, AC7, AC11, AC12, AC13 **MET**; AC5's instrumented
+half **MET** with its one hit named (ruling (b)); AC14 **MET** with one coincident hit named; AC4
+**MET** on the re-read against the repaired ledger.
+
 ---
 
 ## The groups
@@ -4105,6 +4189,18 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 ## Blocks that stay FAILED
 
 *One row per FAILED block on a reached page: page, block, diagnostic, why it stays, phase (AC13).*
+
+**The join** (AC13, written at task 8.2). The reached pages are the 67 rows of § *The groups*; the
+command prints every FAILED block on one of them with no row here, and every row here that is not a
+FAILED block, and exits 0 only when both are empty:
+
+```bash
+python3 tools/blockcheck.py --report report.tsv
+python3 spec/018-compile_residual/probe/stays.py spec/018-compile_residual/tasks.md report.tsv
+```
+
+At `75c1b6b`: *"67 reached pages; --report FAILED on them 43; listed 43; 0 + 0 rows either side"*,
+exit 0. Its red-proofs are in § *The instrumented criteria (8.2)*.
 
 | Page | # | Diagnostic | Why it stays | Phase |
 |---|---:|---|---|---:|
