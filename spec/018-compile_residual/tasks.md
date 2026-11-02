@@ -3875,6 +3875,20 @@ qualification**; AC4 **NOT MET**, on findings 1 and 2. **PAUSE**, for the mainta
   a control (no page change unless it is false), or carry it to 8.5's friction ledger for the next
   spec?
 
+#### Rulings (session 137)
+
+**Ruled 2026-11-02, by the maintainer:**
+
+- **(a)** Fix in this phase's PR. `CLAUDE.md`'s ledger: the rule-8 *Repo-wide* cell now reads *error,
+  unless the block is marked `attr-mismatch-intended` with a reason*, and a new row carries
+  `ATTRIBUTE KIND MARKER` (*error* | *error*). `CLAUDE.md` is not a page under `contents/`, so the
+  phase still touches none. AC4 is re-read at 8.2 against the repaired ledger
+- **(b)** `tools/pagelint.py:538`'s provenance comment is accepted as *not a run*. The comment stays;
+  AC5's instrumented half is met with that one hit named
+- **(c)** The 17 named, read-not-run claims are accepted as AC10's stated qualification
+- **(d)** Probe `ReactorAndProactor.md`'s carried claim now, with a control. No page change unless it
+  is false; if it is false, pause again, since a repair would touch a page
+
 ---
 
 ## The groups

@@ -569,7 +569,8 @@ failure the claim in this paragraph is meant to prevent:
 | Language tag on every fence | 4 | error | error |
 | "Dispatcher", not "ServiceActivator" or "Service Activator", in prose | 5 | error | error |
 | `using` directives in C# blocks | 6 | warning, counted | error, unless the block marks its omission `// ...` |
-| A handler attribute's kind matches its method's: sync on `Handle`, `…Async` on `HandleAsync` | 8 (`ATTRIBUTE KIND`) | error | error, unless the block is marked `attr-mismatch-intended` with a reason |
+| A handler attribute's kind matches its method's: sync on `Handle`, `…Async` on `HandleAsync` | 8 (`ATTRIBUTE KIND`) | error, unless the block is marked `attr-mismatch-intended` with a reason | error, unless the block is marked `attr-mismatch-intended` with a reason |
+| …and an `attr-mismatch-intended` marker binds a block: it has a reason, a C# block follows it, and it is that block's only marker | 8 (`ATTRIBUTE KIND MARKER`) | error | error |
 | An opening sentence exists | 7 (`SUMMARY MISSING`) | error | error |
 | It is ≤ 200 characters **rendered** | 7 (`SUMMARY TOO LONG`) | error | error |
 | It does not end in a colon | 7 (`SUMMARY ENDS IN COLON`) | error | error |
