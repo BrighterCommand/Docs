@@ -3761,7 +3761,7 @@ ones only). `tools/README.md` rows 2, 8 and 9 now give the close's figures, with
     design's **≥ 560**, and the nothing-BUILT figure against **≤ 14**. AC13's join command is written
     above § *Blocks that stay FAILED* and run there, zero rows either side
 
-- [ ] **Task 8.3:** Check backwards: what changed that should not have
+- [x] **Task 8.3:** Check backwards: what changed that should not have
   - Input: `git diff --name-only 3a79b20 -- contents/`
   - Output: every changed page in the 64 + 3, or justified by a defect-ledger row (a recurrence) or
     by P0-10 (`FAQ.md`, `V10MigrationGuide.md`). Any other page is listed and explained
@@ -4026,6 +4026,100 @@ as AC12's row. Each unmoved from `b7e878c`. No page under `contents/` changed.
 **The verdicts:** AC1, AC2 (on #8), AC3, AC6, AC7, AC11, AC12, AC13 **MET**; AC5's instrumented
 half **MET** with its one hit named (ruling (b)); AC14 **MET** with one coincident hit named; AC4
 **MET** on the re-read against the repaired ledger.
+
+#### Check backwards (8.3)
+
+*Run at `6947210`. The task's set, **the 64 + 3**, is the 67 rows of § *The groups* (task 2.14:
+the 64 off-tranche pages with a FAILED block, and the three (V4) tranche pages), the set
+`probe/stays.py` reads as *reached*. It is derived from that section by the same regex, not by hand.*
+
+```bash
+git diff --name-only 3a79b20 -- contents/
+python3 spec/018-compile_residual/probe/backwards.py spec/018-compile_residual/tasks.md 3a79b20
+```
+
+`probe/backwards.py` (obligation 18) puts each changed page in the first bucket that holds it:
+*group* (the 67), *ledger* (named in a § *Defect ledger* row's *Page(s)* cell), *P0-10* (`FAQ.md`,
+`V10MigrationGuide.md`), or *other*. It names the first-parent merges (or direct commits) on
+`HEAD`'s line that changed each page outside *group*, and exits 1 when a spec 018 PR or a direct
+commit changed an *other* page, which this prose must then explain.
+
+**Output:** `103 changed pages since 3a79b20: group 64, ledger 22, P0-10 0, other 17`; `67 group
+pages, 64 of them changed; unchanged: BrighterBasicConfiguration.md, DynamoDbDistributedLock.md,
+S3LuggageStore.md`; `PRs outside spec 018: #195 … 6 pages, #199 … 2 pages, #201 … 22 pages, #206 …
+21 pages`; `16 changed pages touched by no spec 018 PR: … other 16`; `1 other page(s) changed by a
+spec 018 PR or a direct commit`, exit **1**. Every change is a modification (`--name-status`: 103
+`M`): no page was added, deleted or renamed.
+
+**Method 2:** `comm` of the sorted `git diff --name-only` list against the sorted page names in
+§ *The groups*' table rows → **64** in both, **39** changed and outside, **3** in the groups and
+unchanged, the same three. 64 + 39 = 103.
+
+**P0-10's bucket is empty because both its pages are in the groups.** `FAQ.md` and
+`V10MigrationGuide.md` are S5 rows, so each is justified as one of the 67 before P0-10 is reached.
+
+**Each ledger page was changed in its row's phase.** The PRs that changed the 22 match the *Phase*
+column of the rows that name them (#202 phase 3, #203 phase 4, #210 phase 6, #213 phase 7), with
+two exceptions, each explained in the table: `Telemetry.md`'s phase 7 commit, and bugfix and docs
+PRs outside 018 on `DynamoOutbox.md` and `Telemetry.md`.
+
+**Red-proof, two-way.** A copy of this file with `ReactorAndProactor.md`'s group row deleted (a page
+#204 changed and no ledger row names): `ReactorAndProactor.md  other  -  #204 (spec/018-phase5)`,
+`group 63, … other 18`, `2 other page(s) …`, exit **1**. A copy with a ledger row planted naming
+`RelationalDatabaseConfigurationReference.md`: it moves to *ledger* and `0 other page(s) …`, exit
+**0**. `HEAD` as the base → `0 changed pages`, exit **0**. An unreadable `tasks.md` → exit **2**.
+
+**The 39 pages outside the 64 + 3** (the *Changed by* column is `git log --oneline 3a79b20..HEAD --
+contents/<page>`, each commit put under the PR that merged it):
+
+| Page | Changed by | Justification |
+|---|---|---|
+| `AgreementDispatcherRouting.md` | #203: `5347f53` | ledger 37 (phase 4), a recurrence |
+| `AzureBlobDistributedLock.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `BoxProvisioning.md` | #206: `35b0bc2` | outside 018: Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `Compression.md` | #203: `54954db` | ledger 44 (phase 4), a recurrence |
+| `DynamoInbox.md` | #203: `54954db`; #213: `429635f` | ledger 3 (phase 7), 41 (phase 4), a recurrence |
+| `DynamoOutbox.md` | #201: `5e0a63b`; #213: `429635f` | ledger 3 (phase 7), a recurrence; also #201, the Brighter 10.8.0 bugfix PR |
+| `ErrorHandlingOptions.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `FirestoreInbox.md` | #203: `54954db` | ledger 41 (phase 4), a recurrence |
+| `GcpPubSubConfiguration.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `GetStarted.md` | #201: `5e0a63b`; #206: `35b0bc2` | outside 018: Brighter 10.8.0 bugfix PR and Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `HandlingLargeMessages.md` | #210: `3671922` | ledger 77 (phase 6), a recurrence |
+| `HandlingPoisonMessages.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `HealthChecks.md` | #206: `35b0bc2` | outside 018: Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `InMemoryInbox.md` | #203: `54954db` | ledger 41 (phase 4), a recurrence |
+| `MSSQLInbox.md` | #203: `54954db` | ledger 41 (phase 4), a recurrence |
+| `MSSQLOutbox.md` | #203: `6ad8b0a` | ledger 51 (phase 4), a recurrence |
+| `MSSQLTransportInboxAndOutbox.md` | #206: `35b0bc2` | outside 018: Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `MongoDbDistributedLock.md` | #213: `8c90dcc` | ledger 93 (phase 7), a recurrence |
+| `Monitoring.md` | #203: `54954db` | ledger 46 (phase 4), 47 (phase 4), a recurrence |
+| `MySQLInbox.md` | #203: `54954db` | ledger 41 (phase 4), a recurrence |
+| `MySQLOutbox.md` | #203: `6ad8b0a` | ledger 51 (phase 4), a recurrence |
+| `PostgreSQLBrokerTradeOffs.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `PostgreSQLMessageBroker.md` | #203: `5347f53` | ledger 40 (phase 4), a recurrence |
+| `PostgresInbox.md` | #203: `54954db` | ledger 41 (phase 4), a recurrence |
+| `PostgresOutbox.md` | #203: `6ad8b0a` | ledger 51 (phase 4), a recurrence |
+| `RelationalDatabaseConfigurationReference.md` | #203: `54954db`; #206: `35b0bc2` | **none of the three: D19**, ruled 2026-10-18 (design § D19, task 4.5a). `54954db` relabels the page's *"measured at `10.7.0`"* to `10.8.0` after re-deriving the seventeen components at that tag, § *Sweep (4.5a, D19)*, *Measurements, re-derived*. A measurement re-dated, not a defect, so no ledger row names it; also #206, the Brighter 10.8.1 bugfix PR |
+| `ReplayOnSeen.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `ReplayOnSeenReference.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `SchedulingAMessage.md` | #202: `9aafd19`; #203: `5347f53`, `54954db` | ledger 20 (phase 3), 40 (phase 4), 42 (phase 4), a recurrence |
+| `SpannerInbox.md` | #203: `54954db`, `6ad8b0a` | ledger 41 (phase 4), 51 (phase 4), a recurrence |
+| `SpannerOutbox.md` | #203: `6ad8b0a` | ledger 51 (phase 4), a recurrence |
+| `SqliteInbox.md` | #203: `54954db` | ledger 41 (phase 4), a recurrence |
+| `SqliteOutbox.md` | #203: `6ad8b0a` | ledger 51 (phase 4), a recurrence |
+| `Telemetry.md` | #199: `9680277`, `2bc6bd8`, `6468dd9`; #203: `54954db`; #206: `35b0bc2`; #213: `3e8f0f3` | ledger 45 (phase 4), 48 (phase 4), 50 (phase 4), a recurrence; and `3e8f0f3` (#213, task 7.2): #6–#8 made reachable by ruling 2's pin (D23) and repaired in that phase (obligation 21), named in § *Phase 7 as executed*, *Off-group*; also #199, the outbox-sweeper-metrics docs PR and #206, the Brighter 10.8.1 bugfix PR |
+| `TransactionalMessagingWithTheOutbox.md` | #206: `35b0bc2` | outside 018: Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `TutorialDurableOutbox.md` | #201: `5e0a63b`; #206: `35b0bc2` | outside 018: Brighter 10.8.0 bugfix PR and Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `TutorialFirstCommand.md` | #201: `5e0a63b`; #206: `35b0bc2` | outside 018: Brighter 10.8.0 bugfix PR and Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `TutorialFirstMessage.md` | #201: `5e0a63b`; #206: `35b0bc2` | outside 018: Brighter 10.8.0 bugfix PR and Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `TutorialStreamingWithKafka.md` | #201: `5e0a63b`; #206: `35b0bc2` | outside 018: Brighter 10.8.0 bugfix PR and Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+
+**Every page is justified.** 22 by a defect-ledger row, each a recurrence repaired in its row's
+phase; 16 by PRs outside 018 alone (#201, the Brighter 10.8.0 bugfix; #206, the 10.8.1 bugfix, the
+one 8.1 found); and one, `RelationalDatabaseConfigurationReference.md`, by **D19**, a maintainer
+ruling that widened phase 4 to the prose dating a measurement or defect to 10.7.0. That page is the
+helper's exit 1, and it is neither a ledger row nor P0-10: the task's two named justifications do
+not cover it, and D19 does. No page changed in phase 8.
 
 ---
 
