@@ -3766,7 +3766,7 @@ ones only). `tools/README.md` rows 2, 8 and 9 now give the close's figures, with
   - Output: every changed page in the 64 + 3, or justified by a defect-ledger row (a recurrence) or
     by P0-10 (`FAQ.md`, `V10MigrationGuide.md`). Any other page is listed and explained
 
-- [ ] **Task 8.4:** Complete the defect ledger
+- [x] **Task 8.4:** Complete the defect ledger
   - Input: § *Defect ledger*
   - Output: every row with its recurrence grep, *Before*, *After* **0**, and *Found by*: the
     instrument (`--classify`, rule 8, `symbolcheck`), a run, or re-derivation
@@ -4120,6 +4120,87 @@ one 8.1 found); and one, `RelationalDatabaseConfigurationReference.md`, by **D19
 ruling that widened phase 4 to the prose dating a measurement or defect to 10.7.0. That page is the
 helper's exit 1, and it is neither a ledger row nor P0-10: the task's two named justifications do
 not cover it, and D19 does. No page changed in phase 8.
+
+#### The defect ledger completed (8.4)
+
+*Run at `16c039d`. Every row's recurrence grep is run as its cell writes it, by a committed helper
+(obligation 18), at three refs: **pre**, the first parent of the merge of the row's phase PR, the
+commit before the repair (phase 3 `f3f685f`, 4 `5f2294c`, 5 `0fc79a3`, 6 `e46f47e`, 7 `dc09559`);
+**base**, `3a79b20`; and **the tree**. No ledger cell was rewritten: what the run found that a cell
+does not say is recorded below as *said / measured* (obligation 2).*
+
+```bash
+python3 spec/018-compile_residual/probe/ledger.py spec/018-compile_residual/tasks.md -v
+# Found by, where a cell names only a task: each hit by page and block, with its class at that ref
+git archive f3f685f | tar -x -C "$W"        # and 5f2294c; then build refs, refs-v4 and blockcheck in "$W"
+(cd "$W" && python3 tools/blockcheck.py --classify <the rows' pages> > cls.tsv)
+python3 spec/018-compile_residual/probe/ledger.py spec/018-compile_residual/tasks.md \
+    --hits 4,10,11,12,13,14,15,16,17,18,19 --at "$W" --classify "$W/cls.tsv"
+```
+
+`probe/ledger.py` reads each row's commands from its *Recurrence grep* cell: the code spans that
+begin `grep` or `git grep`, `\|` rendered as `|` as GitHub shows it, each span ending at the first
+backtick outside single quotes, so a pattern quoting a code span is read whole. It runs them with
+`bash -c`, so `grep` is `/usr/bin/grep`, not the session's wrapper, in a `git archive` copy at each
+ref. Three rows carry an override, printed beside them: **48**, whose `\|` is a literal pipe in ERE;
+**51**, *"on the six pages"*, which are its *Page(s)* cell; and **92**, a scan, `probe/mapper_members.py`.
+Three rows are decided by a **shape check** by block, because their grep as written no longer reads
+the defect: **6**, classes declared; **8**, lambdas returning two factory types; and **85**,
+unconstrained bases. Row **84**'s first grep is read less the one log line its cell names.
+
+**Output:** `96 rows; commands read from 93, by override 3`; `BEFORE 4: 61 62 77 78`; `AFTER 0`;
+`NONZERO 9: 2 16 30 35 47 48 55 68 86`; `CELL 0`; `BASE 1: 43`; exit **0**. About 15 s.
+
+| Count | Method 1 | Method 2 | Agrees? |
+|---|---|---|---|
+| Rows | the helper, **96** | `sed -n '/^## Defect ledger/,/^## Friction/p' tasks.md \| grep -cE '^\| +[0-9]+ \|'` → **96** | **yes** |
+| **Rows complete**: a grep (92: its scan), *Before*, *After* and *Found by*, each present | `CELL 0` → **96** | every cell non-empty, and each *Before* and *After* has a figure per command | **yes** |
+| **Rows filled** | **0**: no cell was blank or a placeholder | — | — |
+| **Grep at the tree non-zero, as written** | the first run, before the shape checks: **12** (2, 8, 16, 30, 35, 47, 48, 55, 68, 84, 85, 86) | the *After* cells with a non-zero figure, **10** (2, 6, 16, 30, 35, 47, 48, 55, 68, 86), less 6 (grep 0, cell 2), plus 8, 84, 85 (grep non-zero, cell 0) → **12** | **yes** |
+| *After* reads the tree | **96**, 3 of them by shape and 1 by the named log line | `AFTER 0` | **yes** |
+| *Before* reads the commit before the repair | **92** at pre; **4** (61, 62, 77, 78) at a commit inside the phase, found by walking the phase branch | `BEFORE 4`, each walk naming that commit | **yes** |
+
+**None of the 12 is a recurrence**, so no new defect. Eight count text the repair put there. The
+other four are explained in the exceptions table: 8, 68, 84 and 85.
+
+**Found by, by mechanism** (the first one each cell names, and the 13 rows naming only a task as
+resolved below): **`--classify` 54**, the second compile or a class it hid (*parse*, *values*,
+*page-type*, *same-page*, *defect*); **a run 28**; **re-derivation 14**. **Rule 8 and
+`symbolcheck` found none of the 96**: row 1 records that the watchlist missed it, row 95 that rule 8
+cannot see it (Docs#211), and row 89 is watched by `symbolcheck` only from 7.7, after it was found.
+
+**Red-proof, two-way** (obligation 3):
+
+| Run | Exit | Output |
+|---|---:|---|
+| The tree | **0** | as above |
+| `--tree`, a `git archive HEAD` copy, unchanged | **0** | identical to the tree, line for line |
+| `--tree`, the copy with one block planted on `QuartzScheduler.md`: `services.UseScheduler(provider => { … })`, returning `QuartzSchedulerFactory` on one branch and `HangfireMessageSchedulerFactory` on the other | **1** | `AFTER 2: 8 9`; row 8's shape `MIXED HangfireMessageSchedulerFactory+QuartzSchedulerFactory QuartzScheduler.md #29` |
+| A copy of this file with rows 10 and 15's *After* blanked | **1** | `CELL 2: 10 15` |
+| An unreadable `tasks.md` | **2** | `No such file or directory` |
+| At pre, the known-present side | — | every row's pre count is its *Before* except the four walked; row 8's shape at pre reads **1** mixed lambda, row 85's **1** unconstrained base |
+
+**The exceptions:**
+
+| Row | Said | Measured | Reading |
+|---:|---|---|---|
+| 2, 16, 30, 35, 47, 48, 55, 86 | *After* non-zero | the tree equals each cell | each grep counts text the repair put there. 16 is one use and one declaration on `HangfireScheduler.md`. Not recurrences |
+| 6 | *After* **2** | **0** at the tree, and 0 since `06df408` (3.2/3.3), where the declarations wrap after a primary constructor. By shape, **2**: `CustomMessageScheduler` (`CustomScheduler.md` #1) and `CustomRequestScheduler` (#3), both BUILT, each with `Schedule`, `ScheduleAsync`, `ReScheduler`, `ReSchedulerAsync`, `Cancel`, `CancelAsync` | **said / measured**: the cell's 2 counts the classes, not the grep's lines. The defect is gone |
+| 8 | *After* **0** | **12** at the tree. It read 0 at `06df408` (3.3) and 12 from `9aafd19` (3.5), where ledger 20's repair put each Hangfire factory in a `UseScheduler(provider => …)` lambda, so every single-type lambda is a hit. By shape: **20** lambdas on 8 pages, each returning one factory type, **0** mixed. `SwitchingSchedulers.md` #7's two lambdas sit in the two arms of an `if` | **said / measured**: the grep as written stopped reading the defect at 3.5. No recurrence |
+| 61 | *Before* **1** | **0** at pre (`0fc79a3`) and at `3a79b20`. **1** from `40f9093` (5.3) to `dd572b9`, and **0** at `fcd6f7b` (5.4). 5.3 made `QueryPipeline.md`'s block whole and wrote the registry holding only `MyCircuitBreaker` passed to `AddPolicies` | **said / measured**: the defect was written in phase 5 by 5.3 and repaired by 5.4 in the same phase. The cell does not say so. *Before* holds at the commit before the repair |
+| 62 | *Before* **1** | 0 at pre; 1 from `40f9093` to `dd572b9`; 0 at `fcd6f7b` | holds: the cell says *"written at 5.3 with ledger 57"* |
+| 77 | *Before* **1** for the third grep | 0 at pre; 1 from `4a4396c` (6.3) to `254e8a7`; 0 at `2f68a96` (6.4). The fourth reads 1 until `3671922` (6.5) | holds: the cell says the step numbers were 6.3's, and the recurrence 6.5's |
+| 78 | *Before* **1** | 0 at pre; 1 from `254e8a7`; 0 at `2f68a96` (6.4) | holds: the cell says *"written at `254e8a7`"* |
+| 84 | *Before* **3** (+1), *After* **0** (+ the same line) | the first grep reads 4 at pre and 1 at the tree: `PipelineValidation.md`'s `text` fence, a log line | holds: that line is the cell's +1 |
+| 85 | *Before* **1** unconstrained, *After* **0** (1 hit, constrained) | 2 lines at pre and at the tree, since `-A1` prints the hit and its next line. By shape, `FAQ.md` #1: unconstrained at pre, `where T : class, IRequest` at the tree | holds: the cell counts hits |
+| 68 | *After* **1** | 1: `InMemoryOptions.md`'s `new Publication`, passed to `InMemoryProducerRegistryFactory`, which takes a `Publication`. The `RmqProducerRegistryFactory` below it is inside the `-B40` window | holds: the cell names it. Not a recurrence |
+| 43 | *Before* **1** | 1 at pre, but **2** at `3a79b20`: `BrighterOutboxSupport.md`'s hit was repaired by #201 (`f3f685f`, the 10.8.0 bugfix PR) before phase 4 | holds at pre |
+| 4 | *Found by* *"task 3.1, chained after defect 1"* | its hits are `AwsScheduler.md` #3 and `AzureScheduler.md` #6, *defect* at `f3f685f`, the blocks of row 1 | **re-derivation**, with row 1 |
+| 10–19 | *Found by* a task only (10–18), or *"task 3.3, with ledger 6"* (19) | at `f3f685f`: 10 *page-type* (`AzureScheduler.md` #4); 11 *values* (`QuartzScheduler.md` #2, #14, #18, #21, #26); 12 *values* (`QuartzScheduler.md` #2, #4, #5, #6, #14, #17, #20); 13 *values* (#3, #10); 14 *parse* (#8); 15 *values* (`HangfireScheduler.md` #6); 16 *page-type* (`HangfireScheduler.md` #29); 17 *page-type* (`InMemoryScheduler.md` #9); 18 *parse* (`AzureScheduler.md` #26); 19 *defect* and *page-type* (`CustomScheduler.md` #3, #4) and its prose | **`--classify`**, the class each block was in |
+| 29 | *Found by* *"task 4.2"* | at `5f2294c`: *page-type* (`FeatureSwitches.md` #5) | **`--classify`** |
+| 30 | *Found by* *"task 4.2"* | the listing, `UsingTheContextBag.md` #12, was BUILT at `5f2294c` (baselined since `280d1b7`). `RequestContextBagNames.cs` has `CausationId` at 10.8.0 and not at 10.7.0 | **re-derivation**: read against the source |
+| § *Phase 3 as executed*, *The repairs* | *"The *parse* and *values* rows hid 15 more falsehoods (ledger 8–19)"* | at `f3f685f`, 10, 16 and 17 sit in *page-type* blocks, 19 in a *defect* and a *page-type* block, and 9 in *parse* and *values* | **said / measured**: *parse* or *values* holds for 8, 9, 11–15 and 18 |
+| § *Phase 4 as executed*, *The repairs (4.2)* | *"Ten falsehoods sat in *page-type* and *values* rows, ledger 21–30"* | at `5f2294c`: 21 also sits in two *defect* blocks (`MongoDBOutbox.md` #5, `BrighterOutboxSupport.md` #1); 24 in a *same-page* and a *parse* block; 26 in prose; 27 in two *defect* blocks; 30 in a BUILT block | **said / measured**: *page-type* or *values* holds for 22, 23, 25 and 29, and for 21 in part |
 
 ---
 
