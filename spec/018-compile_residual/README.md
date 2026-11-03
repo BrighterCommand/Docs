@@ -1,7 +1,7 @@
 # Spec 018: Compile Residual
 
 **Created:** 2026-10-04
-**Status:** **CLOSED 2026-11-02 — 63 of 63.** Awaiting the maintainer's acceptance; the residual is `tasks.md` § *What 018 shipped*
+**Status:** **ACCEPTED 2026-11-03 — 63 of 63.** The residual is `tasks.md` § *What 018 shipped*
 
 > **Re-derive this README before executing it.** It was written before anyone looked — check every
 > count and every named gap against the tree, with the command beside the figure.
