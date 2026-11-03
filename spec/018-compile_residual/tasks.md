@@ -1,6 +1,6 @@
 # Spec 018: Compile Residual — Tasks
 
-**Status:** **APPROVED 2026-10-05** — `.tasks-approved`. Three review findings repaired (§ *What the tasks review found*).
+**Status:** **ACCEPTED 2026-11-03 — 63 of 63** (`.accepted`; #214 merged as `a38287b`). § *What 018 shipped* ends in the residual the next spec starts from. Tasks **APPROVED 2026-10-05** — `.tasks-approved`. Three review findings repaired (§ *What the tasks review found*).
 **Requirements:** approved 2026-10-04 · **Design:** approved 2026-10-05
 
 **Eight phases, 61 tasks, one pull request per phase.** Phases merge under `tools/README.md`
