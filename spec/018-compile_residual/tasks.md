@@ -3748,39 +3748,535 @@ ones only). `tools/README.md` rows 2, 8 and 9 now give the close's figures, with
 
 ## Phase 8 — Acceptance *(6 tasks, one PR, no page touched)*
 
-- [ ] **Task 8.1:** Walk the criteria that have no instrument first: AC4, AC8, AC9, AC10, and the
+- [x] **Task 8.1:** Walk the criteria that have no instrument first: AC4, AC8, AC9, AC10, and the
   reading halves of AC5 and AC13
   - Input: `requirements.md` § *Acceptance criteria*, word for word; every phase's readings
     (obligation 19)
   - Output: § *Phase 8 as executed*, one row per criterion: who reads it, what they read, the
     walker's finding, the verdict
 
-- [ ] **Task 8.2:** Walk the instrumented criteria: AC1–AC3, AC5–AC7, AC11–AC14
+- [x] **Task 8.2:** Walk the instrumented criteria: AC1–AC3, AC5–AC7, AC11–AC14
   - Input: each criterion's command, run at the phase's head
   - Output: one row per criterion: the command, its output, the verdict. AC12's BUILT is against
     design's **≥ 560**, and the nothing-BUILT figure against **≤ 14**. AC13's join command is written
     above § *Blocks that stay FAILED* and run there, zero rows either side
 
-- [ ] **Task 8.3:** Check backwards: what changed that should not have
+- [x] **Task 8.3:** Check backwards: what changed that should not have
   - Input: `git diff --name-only 3a79b20 -- contents/`
   - Output: every changed page in the 64 + 3, or justified by a defect-ledger row (a recurrence) or
     by P0-10 (`FAQ.md`, `V10MigrationGuide.md`). Any other page is listed and explained
 
-- [ ] **Task 8.4:** Complete the defect ledger
+- [x] **Task 8.4:** Complete the defect ledger
   - Input: § *Defect ledger*
   - Output: every row with its recurrence grep, *Before*, *After* **0**, and *Found by*: the
     instrument (`--classify`, rule 8, `symbolcheck`), a run, or re-derivation
 
-- [ ] **Task 8.5:** Write the friction ledger
+- [x] **Task 8.5:** Write the friction ledger
   - Input: every phase's *as executed* section
   - Output: § *Friction ledger*, numbered from **81**, each entry with the repair it proposes for
     the next spec
 
-- [ ] **Task 8.6:** Close 018
+- [x] **Task 8.6:** Close 018
   - Input: § *Phase 8 as executed*; `--report` and `--classify` at the head
   - Output: § *What 018 shipped*, ending in **one sentence naming the residual**, with its figure
     re-derived by `--classify`; the README checklist ticked; `PROMPT.md` updated; the PR, asking for
     the `.accepted` file and for deletion of its head ref by name
+
+### Phase 8 as executed
+
+*2026-11-02, at `b7e878c` (`master` after #213), on `spec/018-phase8`. No page under `contents/`
+changes in this phase. Line numbers below are this file's at `b7e878c`, before this section was
+inserted; every section cited sits above it except § *The groups* (`:3787`) and § *Blocks that stay
+FAILED* (`:3944`), which now sit lower by this section's length.*
+
+#### The reading criteria (8.1)
+
+**The criteria, word for word** (`requirements.md` § *Acceptance criteria*, the *Criterion* and
+*Instrument* cells):
+
+- **AC4.** *"`CLAUDE.md` and `pagelint` agree on rule 8, in both directions"* — *"**No instrument —
+  checked by reading**, by the reviewer: the ledger row, the convention section and the rule's
+  message are read against each other. `pagelint` has no self-check of its ledger, and that is the
+  reason this criterion is a reading"*
+- **AC5**, its reading half. *"The probe is retired"* — *"`git grep -l attr_mismatch -- .github
+  tools contents` → no output (exit 1; it reads that today, because nothing outside `spec/` has ever
+  run the probe). That **no 018 task runs it**: `grep -n 'attr_mismatch'
+  spec/018-compile_residual/tasks.md`, each hit **read** by the reviewer, because no grep can tell a
+  task's *Input* from a quotation of 017"*
+- **AC8.** *"The tranches are the instrument's"* — *"**No instrument — checked by reading**, by the
+  reviewer: every tranche table's columns derive from `--classify`'s output by a command shown beside
+  the table, and no column comes from a probe"*
+- **AC9.** *"Every repaired block's `// ...` is justified"* — *"**No instrument — checked by
+  reading**, by the reviewer, **at every phase's close** (#68): each `// ...` the phase adds, against
+  `--explain`, as 017 task 6.1 did. 017's AC8 second half was unmet at acceptance because this ran
+  only once"*
+- **AC10.** *"Behavioural claims in changed blocks are run with a control"* — *"**No instrument —
+  checked by reading**, by the reviewer, **at every phase's close** (#68): the phase's changed blocks
+  (`git diff -U0` hunks against fence ranges), each claim mapped to a run whose `Program.cs` is
+  committed under `probe/` (#69) with its case and control. 017's AC11 was unmet at acceptance on 30
+  blocks"*
+- **AC13**, its reading half. *"Every FAILED block on a reached page is accounted for"* — *"For each
+  reached page, `--report`'s FAILED rows equal 018 § *Blocks that stay FAILED*'s rows for that page:
+  a join, zero rows either side. **No instrument until that section exists in `tasks.md`**; the join
+  command is written beside it, as 017's AC4 was"*. The join is 8.2's; the reading is whether each
+  row's *Why it stays* holds
+
+| # | Who reads it | What they read | The walker's finding | Verdict |
+|---|---|---|---|---|
+| **AC4** | the reviewer | `CLAUDE.md` § *Handler attributes match their handler* (`:376–400`) and § *The ledger*'s rule-8 row (`:572`); `tools/pagelint.py`'s docstring (`:20–23`), `PAIRED` (`:176–184`), `scan`, `check_attribute_kind` and `plant` (`:555–649`) and the marker print (`:1457–1461`); design § *Rule 8*, *`CLAUDE.md`* | **Convention → rule holds on every sentence**: sync on `Handle`, `…Async` on `HandleAsync`; every C# block read (`CSHARP_TAGS`); `PAIRED` beside `APPLIES_TO` with its re-derivation command; the marker per block, each honoured one printed with its reason (`1 block(s) marked attr-mismatch-intended`); no reason, no C# block after it, or a block's second marker each an error (`ATTRIBUTE KIND MARKER`, each red-proven in § *Phase 1 as executed*, *The marker's three faults*); `--plant` proves the rule fires (5 of 5 at `b7e878c`). The marker text in `CLAUDE.md` is `PipelineValidation.md`'s, character for character. **Rule → ledger fails twice** (findings 1, 2): the row's *Repo-wide* cell says `error` with no exception, where `pagelint` honours the marker repo-wide (`0 errors` with the one marked mismatch present); and `ATTRIBUTE KIND MARKER` is a rule message with no row | **NOT MET**, on one ledger cell and one missing row. PAUSE |
+| **AC5** (reading) | the reviewer | `grep -n 'attr_mismatch' spec/018-compile_residual/tasks.md` at `b7e878c` → **3** hits, each read | `:39`, obligations: a quotation of 017's obligation 15, which it says rule 8 **replaces**. `:75`, § 2 *Measured at tasks*: the probe's count, **1**, taken when the tasks were written, before rule 8 existed; § 2 is a measurement table, not a task, and no task's *Input* or *Output* reproduces it. `:115`, task 1.1's *Input*: the probe's `scan()` is the source *moved* into `pagelint`, read, not run. No task runs the probe. This section adds **5** hit lines (3 → 8), each a quotation of AC5, a citation of the three above, or finding 3 | **MET**. Its instrumented half, 8.2's, reads **1** line at `b7e878c` rather than none (finding 3) |
+| **AC8** | the reviewer | § *The groups* (`:3787–3812`) and its five tables; `probe/groups.py`; each repair phase's *Predicted (N.1)*, which re-draws its group (§ *Phase 3 as executed* `:1086–1090`, § 4 `:1368–1372`, § 5 `:1820–1823`, § 6 `:2206–2209`, § 7 `:2831–2835`) | The four commands are written above the tables, and `groups.py`'s columns read only its inputs: **FAILED** and the six classes count `--classify`'s third column; **BUILT** counts `--report`'s rows; **Section** is the first `SUMMARY.md` heading linking the page. 017's tranche list (`tranche_pages.py`) chooses **rows** and fills no column, and the pin column of `pages.tsv` marks **(V4)**. The design's probe-derived *Reachable* and *Hard* columns are named as replaced (`:3941–3942`). Each phase's N.1 re-draws its group with `groups.py` at the phase's base and cross-checks the FAILED column against `--report`, two methods. `groups.py` sits under `probe/` as obligation 18's committed helper; it aggregates the gate's output and computes no verdict | **MET** |
+| **AC9** | the reviewer, at each close | each close's *Readings (obligation 19)*: § *Phase 1 as executed* `:224–225`; § 2 `:1011–1013`; § 3 `:1291–1298`; § 4 `:1739–1744`; § 5 `:2123–2129`; § 6 `:2697–2707`; § 7 `:3646–3658`. Then the programme whole: `python3 spec/018-compile_residual/probe/readings.py 3a79b20 b7e878c`, each block with an added `// ...` against `tools/blockcheck/baseline.tsv` and `blockcheck --list-skips` | Phases 1 and 2 changed no block. Phases 3–7 add **14 + 8 + 17 + 23 + 16 = 78** lines in **14 + 7 + 9 + 17 + 14 = 61** blocks, each close reading every one: BUILT, so `--explain` has nothing to report, or one of `HowServiceActivatorWorks.md` #1–#6, D21's SKIPPED source quotes, whose `// ...` marks the elided source and whose markers cite the line. The whole-programme run gives **+79 in 62 blocks** (−51 on 25 pages, net +28 by hunks and by count at both refs): the 61, plus `HealthChecks.md` #1, whose one `// ...` bugfix 0003 (#206, `f4d965f..e46f47e`) added between phases 5 and 6, so no close read it. It is BUILT, in `baseline.tsv`. Of the 62, **56** are in `baseline.tsv` and **6** are the D21 skips; none is FAILED | **MET**, with one qualification: one of the 62, `HealthChecks.md` #1, arrived by a bugfix PR and was read here, not at a close |
+| **AC10** | the reviewer, at each close | each close's AC10 bullet: § 3 `:1299`; § 4 `:1745–1751`; § 5 `:2130–2133`; § 6 `:2708–2715`; § 7 `:3659–3666`; every run table with *Case*, *Control* and *Probe* columns; `git ls-files spec/018-compile_residual/probe` | **104** rows in **10** run tables. **103** name a case, a control and a probe; the one with neither, § *Phase 5 as executed*, *Behaviour (5.4)* (`HowServiceActivatorWorks.md` § 3's release ordering), says *"read, not run"* and cites `Reactor.cs:213–217`. The tables name **50** probes, and **55** `Program.cs` files are committed under `probe/s1`–`s5`; the five no table names (`scheduler-injection`, `type-pipeline`, `ddl-refresh`, `mongo-outbox`, `logger-message`) are cited by their closes' prose. Every table probe is committed. **17** claims in changed blocks are **named, read against source and not run**, each with the reason it cannot be: § 3's three (`:1261–1268`), § 4's `Telemetry.md` `CircuitBreaker` row (ledger 48), § 5's one, § 6's six and the addendum's Dispatcher half (`:2517–2527`, `:2657`), § 7's four (one lapsed at 7.4) and 7.6's `DynamoOutbox.md` `TimeToLive` row (`:3493–3497`, `:3664`). Read against 017's AC11 — 30 blocks *unread* — none of 018's is unread: each is named at its close | **MET**, with a stated qualification: **17** named claims are read against source and not run, each with the service or ownership that kept it from a probe. The maintainer signed off each phase with them named; confirming the qualification is question (c) |
+| **AC13** (reading) | the reviewer | § *Blocks that stay FAILED* (`:3944–3983`), each row's *Why it stays* against the page at `b7e878c`: the declaring block's text, and the prose before the staying block | **43** blocks on **14** pages; none in `baseline.tsv`. **42** are *same-page*, **1** *source generator* (`Logging.md` #5, ruled at § *Rulings (session 136)*). Every declaration a row names was checked in the block it names, by `pagelint`'s fence parser: **26 of 26** hold (block 11 of `HangfireScheduler.md` declares `HangfireAuthorizationFilter`, block 19 of `V10MigrationGuide.md` declares `PersonCreated`, and so on). Every row that says *"the sentence before block N says so"* was read at that block: each lead-in names the type or the block it comes from, with one looser than its row: `DefaultMessageMappers.md` #10's row says *"the sentences before blocks 6 and 10 are about that mapper"*, and #10 follows a heading, *Custom Default Mapper (e.g., Avro)*, with no sentence between | **MET**, its reading half. The join is 8.2's |
+
+**Found by the walk** (obligation 2: said, measured; nothing edited above this section):
+
+1. **AC4, the ledger's *Repo-wide* cell.** `CLAUDE.md` § *The ledger*, rule 8's row: *Repo-wide*
+   `error`, *`--changed`* `error, unless the block is marked attr-mismatch-intended with a reason`.
+   **Measured:** `check_attribute_kind` reads no mode, and `python3 tools/pagelint.py` repo-wide
+   reports **0 errors** with `PipelineValidation.md`'s marked mismatch present. The exception holds
+   at both levels. The row reads, beside rule 6's (`warning, counted` | `error, unless … // ...`),
+   as though the marker mattered only under `--changed`. The row is design § *Rule 8*'s, verbatim
+2. **AC4, no row for `ATTRIBUTE KIND MARKER`.** The convention says a marker with no reason, with no
+   C# block after it, or a block's second *"is itself an error"*, and `pagelint` reports it as
+   `ATTRIBUTE KIND MARKER`. The ledger has no row for it, where rule 1's `NO H1` and `EXTRA H1` each
+   have one and § *The ledger* says *"every rule maps back"*
+3. **AC5's instrumented half reads one line.** Said (`requirements.md` AC5): *"→ no output (exit
+   1)"*. Measured at `b7e878c`: `git grep -n attr_mismatch -- .github tools contents` →
+   `tools/pagelint.py:538: # scan() is spec 017's probe/attr_mismatch.py, moved unchanged, so its 25
+   runs`, exit **0**. At `3a79b20` it exits 1; the line arrived with phase 1 (`211a3c1`, at
+   `f6a9a7c`'s `:532`). It cites the probe as the rule's provenance and runs nothing. Recorded here
+   because the reading met it; the verdict is 8.2's
+4. **The marked block is `PipelineValidation.md` #8, not #7, since phase 4.** The marker binds C#
+   block 7 of 16 at `f6a9a7c` and `5f2294c`, and block 8 of 17 at `0fc79a3` and `b7e878c`: phase 4
+   split #3 into #3, #4 (§ *Splits*). The *Rule 8* paragraphs of § *Phase 4 as executed* (`:1737`),
+   § 5 (`:2121`), § 6 (`:2694`) and § 7 (`:3643`) say it *"stays on `PipelineValidation.md` #7"*.
+   AC2's red-proof names *"block 7"*; 8.2 runs it against #8. A hit named by a stale ordinal is
+   obligation 23's failure; the earlier outputs are left as written
+5. **One carried claim has no home.** § *Phase 5 as executed*, *Second pass (5.5)* (`:2099–2101`)
+   carried `ReactorAndProactor.md` § *Handler and Mapper Requirements*, *"will cause runtime
+   errors"* when sync and async handlers are mixed, to *"Phase 8's reading criteria, or a later
+   spec"*. It is prose no 018 block changed, so AC10 does not reach it, and phase 8 changes no page.
+   It is unrun
+
+**The verdicts:** AC5's and AC13's reading halves, AC8 and AC9 **MET**; AC10 **MET with a stated
+qualification**; AC4 **NOT MET**, on findings 1 and 2. **PAUSE**, for the maintainer:
+
+- **(a) AC4.** Both repairs are one line each in `CLAUDE.md`, which is not a page under
+  `contents/` but is the conventions file: the *Repo-wide* cell becoming `error, unless the block is
+  marked attr-mismatch-intended with a reason`, and a row for `ATTRIBUTE KIND MARKER` (*error* |
+  *error*). In this phase's PR, or recorded as a defect and left to the next spec?
+- **(b) AC5's instrumented half.** Is `tools/pagelint.py:538`'s provenance comment accepted as
+  *"not a run"*, with AC5 met as qualified at 8.2, or is the comment reworded so the grep reads
+  nothing?
+- **(c) AC10.** Are the 17 named, read-not-run claims accepted as the stated qualification?
+- **(d) `ReactorAndProactor.md`'s carried claim** (finding 5): run it in this phase as a probe with
+  a control (no page change unless it is false), or carry it to 8.5's friction ledger for the next
+  spec?
+
+#### Rulings (session 137)
+
+**Ruled 2026-11-02, by the maintainer:**
+
+- **(a)** Fix in this phase's PR. `CLAUDE.md`'s ledger: the rule-8 *Repo-wide* cell now reads *error,
+  unless the block is marked `attr-mismatch-intended` with a reason*, and a new row carries
+  `ATTRIBUTE KIND MARKER` (*error* | *error*). `CLAUDE.md` is not a page under `contents/`, so the
+  phase still touches none. AC4 is re-read at 8.2 against the repaired ledger
+- **(b)** `tools/pagelint.py:538`'s provenance comment is accepted as *not a run*. The comment stays;
+  AC5's instrumented half is met with that one hit named
+- **(c)** The 17 named, read-not-run claims are accepted as AC10's stated qualification
+- **(d)** Probe `ReactorAndProactor.md`'s carried claim now, with a control. No page change unless it
+  is false; if it is false, pause again, since a repair would touch a page
+
+#### The carried claim (ruling d)
+
+**What the page asserts**, at `b7e878c`, in four places. `ReactorAndProactor.md:73`: *"Mixing sync
+and async handlers or middleware will cause runtime errors; a mapper of the wrong kind is skipped
+without an error"*. `:236`, § *What Happens If You Mix Them?*: *"Mixing sync and async
+implementations causes runtime errors"*, over a table whose two error rows are `:241`, Reactor with
+`IHandleRequestsAsync<T>`, *"**Runtime error**: Reactor pump cannot dispatch to async handlers"*, and
+`:243`, Proactor with `IHandleRequests<T>`, *"**Runtime error**: Proactor pump cannot dispatch to sync
+handlers"*. `:470`, § *Best Practices*: *"Mixing these will cause **runtime errors**"*. No exception
+type is named anywhere. The mapper half is 017's run and not re-run here; the middleware half
+(a sync attribute on `HandleAsync`) is rule 8's, run at 7.6 by `probe/s5/timeout-policy-kind`
+(*"All handlers in an async pipeline must derive from IHandleRequestsAsync"*). This run is the
+handler half, which no probe had reached.
+
+**Read against source**, 10.8.1 (`../Brighter`, tag `10.8.1`). The Reactor dispatches a command with
+`CommandProcessor.Send` (`Reactor.cs:429`), the Proactor with `SendAsync` (`Proactor.cs:120`). The
+subscriber registry returns every registered handler type for the request, sync or async
+(`SubscriberRegistry.cs:89`; `AddBrighter()`'s `ServiceCollectionSubscriberRegistry` too, as the run shows), and the pipeline builder casts each to its own kind:
+`(RequestHandler<TRequest>?)` in `Build` (`PipelineBuilder.cs:210`), `(RequestHandlerAsync<TRequest>?)`
+in `BuildAsync` (`:270`). The cast's failure is wrapped as `ConfigurationException` (`:226–228`,
+`:287–289`), and both pumps treat a `ConfigurationException` as fatal: reject the message, dispose
+the channel, `MP_ERROR`, leave the loop (`Reactor.cs:328–339`; `Proactor.cs:361–369`). Before any
+message, `ValidatePipelines()` carries the same check as `ConsumerValidationRules.PumpHandlerMatch`
+(`ConsumerValidationRules.cs:47–86`: *"Subscription uses Reactor (sync) pump but handler '…' is
+async — use Proactor for async handlers"*). That startup half is read, not run: the page's claim is
+about runtime.
+
+**Run:** `probe/s8/reactor-mixing`, against the released **10.8.1** packages (`refs.csproj`'s pin),
+`dotnet run`, exit **0**. Each row is a real `Reactor` or `Proactor` reading one `MT_COMMAND` from
+`InternalBus` through `InMemoryMessageConsumer`, dispatching through a command processor built by
+`AddBrighter()`. Case and control differ only in the handler's kind; the mapper is
+`JsonMessageMapper<T>`, registered both ways. The probe exits 1 if a control does not handle or a
+case does, so it could fail. Built with the 10.0.401 SDK on `PATH`, targeting `net9.0`.
+
+| | Claim | Case | Control | Result |
+|---|---|---|---|---|
+| **1** | `:241`, Reactor with `IHandleRequestsAsync<T>` → runtime error | `Reactor`, `AsyncHandlers(r => r.RegisterAsync<MyCommand, AsyncHandler>())` | `Reactor`, `Handlers(r => r.Register<MyCommand, SyncHandler>())` | Case: handled **0**; `ConfigurationException` *"Error when building pipeline, see inner Exception for details"*, inner `InvalidCastException` *"Unable to cast object of type 'AsyncHandler' to type 'Paramore.Brighter.IHandleRequests'"*; logged *Critical* *"Stopping receiving of messages"*; message rejected to the dead-letter topic (**1**); the pump stops by itself, `MP_ERROR`. Control: handled **1**, nothing dead-lettered, `MP_STOPPED` on the quit message |
+| **2** | `:243`, Proactor with `IHandleRequests<T>` → runtime error | `Proactor`, `Handlers(r => r.Register<MyCommand, SyncHandler>())` | `Proactor`, `AsyncHandlers(r => r.RegisterAsync<MyCommand, AsyncHandler>())` | Case: handled **0**; the same `ConfigurationException`, inner `InvalidCastException` *"… 'SyncHandler' to type 'Paramore.Brighter.IHandleRequestsAsync'"*; dead-lettered **1**; stops by itself, `MP_ERROR`. Control: handled **1**, nothing dead-lettered, `MP_STOPPED` |
+
+**Verdict: HOLDS-WITH-QUALIFICATION.** Each mix the page names fails at runtime, in the mode it
+names, and each matching configuration handles; *"cannot dispatch"* is what happens. The page is
+imprecise, not wrong, on three counts:
+
+- It names no error. The error is `ConfigurationException`, wrapping an `InvalidCastException`
+- It understates the consequence. The failure is not one message's: the pump rejects the message to
+  the dead-letter topic and **stops**, `MP_ERROR`, so that subscription consumes nothing more.
+  `ValidatePipelines()` reports the mismatch at startup (read, not run)
+- `:236` says *"implementations"*, wider than its handler-only table. Read with mappers, it would be
+  false for them, since a mapper of the wrong kind is skipped silently. The page says so itself at
+  `:73` and § *Proactor Message Mappers*, so the sentence is loose rather than contradicted
+
+No page changes (ruling (d)). The three imprecisions go to 8.5's friction ledger as one candidate
+for the next spec: name the exception and the stop at `:241`/`:243`, and narrow `:236` to handlers.
+
+#### The instrumented criteria (8.2)
+
+*Run at `75c1b6b`, the phase's head, after the three builds `tools/README.md` row 9 names (each
+`0 Error(s)`), with the 10.0.401 SDK and `dotnet` at `/usr/local/share/dotnet`, no `PATH` workaround.
+`--report` and `--classify` were written once to scratch files, which AC12's and AC13's rows read;
+AC7's run writes its own and is compared with them. Scratch copies sit outside the repository, and
+none is committed.*
+
+**The criteria, word for word** (`requirements.md` § *Acceptance criteria*, the *Criterion* and
+*Instrument* cells):
+
+- **AC1.** *"Rule 8 exists, and fails when it should"* — *"`python3 tools/pagelint.py --plant` exits
+  **0** only if both mismatch plants hit and the matched pair is silent, and a red-proof run with a
+  plant **removed** exits non-zero, recorded in `tasks.md`. Two-way. **Built by P0-1; until it
+  exists, this criterion has no instrument** (`--plant` is not a `pagelint` mode at `3a79b20`)"*
+- **AC2.** *"Rule 8 is clean on the corpus, with the deliberate example marked"* — *"`python3
+  tools/pagelint.py` → `0 errors`, and `grep -c 'attr-mismatch-intended'
+  contents/PipelineValidation.md` → **1**. A red-proof run with the marker removed reports
+  `ATTRIBUTE KIND` on `PipelineValidation.md` block 7, recorded"*
+- **AC3.** *"The opt-out cannot be silent"* — *"A marker with no reason is one of `--plant`'s cases
+  and must be reported as an error, so AC1's command decides it. **Built by P0-1; no instrument
+  until then**"*
+- **AC5**, its instrumented half. *"The probe is retired"* — *"`git grep -l attr_mismatch --
+  .github tools contents` → no output (exit 1; it reads that today, because nothing outside `spec/`
+  has ever run the probe)"*
+- **AC6.** *"`--classify` compiles twice, and can be wrong in both directions"* — *"A red-proof with
+  at least one block of each class (built-by-`using`, stub, defect, parse) classifies each
+  correctly. A control block known to be defect-behind-`using` is **not** classified as built.
+  Recorded in `tasks.md`. **Built by P0-2; no instrument until then**"*
+- **AC7.** *"`--classify` agrees with 017's probe, or says why not"* — *"A block-by-block join of the
+  new `--classify` against 017's `probe/run.sh` + `pages.py` at the same ref, over the FAILED set.
+  Every disagreeing block is listed with its reason. Two methods, recorded. **The probe half runs
+  today; the join needs P0-2**"*
+- **AC11.** *"The V4 blocks are judged"* — *"Each of the six blocks in § *The V4 pin* is BUILT, or
+  FAILED with a diagnostic that is not `CS0234 … V4`: `--explain` on the six, then `grep -c
+  'CS0234.*V4'` → **0**"*
+- **AC12.** *"The residual falls, and the gate holds it"* — *"`--report` exits **0** with BUILT
+  above **299**, and every new BUILT block is in `baseline.tsv` (enforced by `--report` itself).
+  The target figure is set at design (open question 3)"*. Design § *The targets*: *"BUILT ≥ 560 at
+  the close"*, and *"Pages with nothing BUILT: 39 → ≤ 14"*
+- **AC13.** *"Every FAILED block on a reached page is accounted for"* — *"For each reached page,
+  `--report`'s FAILED rows equal 018 § *Blocks that stay FAILED*'s rows for that page: a join, zero
+  rows either side. **No instrument until that section exists in `tasks.md`**; the join command is
+  written beside it, as 017's AC4 was"*
+- **AC14.** *"`tools/README.md` owns every new figure"* — *"The corrected-form count from
+  `tools/README.md` (`grep -rn '<figure>' … | grep -vcE '^(\./)?spec/'`) → **1** for each new gate
+  figure 018 introduces. The form runs today (`'299 BUILT'` → **1**); its inputs are the figures the
+  phases produce"*
+
+| # | Command | Output | Verdict |
+|---|---|---|---|
+| **AC1** | `python3 tools/pagelint.py --plant; echo $?`. Red-proof: a scratch copy of `pagelint.py` whose first plant, *sync attribute on HandleAsync*, has its `[UsePolicy(…)]` line **removed**, so the plant's block holds only the `HandleAsync` signature | real: `5 of 5 plants behave.`, exit **0**: the two mismatch plants `ATTRIBUTE KIND x1, expected x1`, the matched pair `x0, expected x0`. Red-proof: `FAILED sync attribute on HandleAsync: ATTRIBUTE KIND x0, expected x1`, `4 of 5 plants behave.`, exit **1**. An unmodified scratch copy prints the real run's output byte for byte (`diff`, silent) | **MET**, two-way |
+| **AC2** | `python3 tools/pagelint.py`; `grep -c 'attr-mismatch-intended' contents/PipelineValidation.md`. Red-proof: a scratch copy of `contents/`, `README.md`, `SUMMARY.md` and `tools/{pagelint,linkcheck}.py`, with the marker line deleted from `PipelineValidation.md` and the page otherwise identical (`diff`, silent) | real: `1 block(s) marked attr-mismatch-intended` and `0 errors, 89 warnings (using-directive debt: 89 blocks across 29 pages) across 162 pages.`, exit 0; the grep → **1**. Red-proof: `contents/PipelineValidation.md:283: ATTRIBUTE KIND: [RejectMessageOnError] is the sync attribute, on HandleAsync. Use [RejectMessageOnErrorAsync], or mark the block <!-- pagelint: attr-mismatch-intended <reason> --> if the mismatch is the point` and `1 errors, 89 warnings …`, exit **1**. The error is on `PipelineValidation.md` **#8** of 17 (its fence opens the line after the marker; the criterion's *"block 7"* is the pre-phase-4 ordinal, § *The reading criteria (8.1)* finding 4) | **MET**, on #8 |
+| **AC3** | AC1's command, fifth plant. Red-proof: a scratch copy of `pagelint.py` whose marker check treats a marker with no reason as honoured | real: `OK     a marker with no reason: ATTRIBUTE KIND MARKER x1, expected x1`. Red-proof: `FAILED a marker with no reason: ATTRIBUTE KIND MARKER x0, expected x1`, `4 of 5 plants behave.`, exit **1** | **MET**, two-way |
+| **AC4** (re-read) | `CLAUDE.md` § *The ledger*, rule 8's two rows, against `check_attribute_kind` | the rule-8 row's *Repo-wide* cell now reads *"error, unless the block is marked `attr-mismatch-intended` with a reason"*, as `pagelint` behaves at both levels (0 errors with the marked block present, repo-wide and under `--changed origin/master`); the new row carries `8 (ATTRIBUTE KIND MARKER)`, *error* \| *error*, as `pagelint` reports it in both modes | **MET** against the repaired ledger (ruling (a)); the full row stays 8.1's |
+| **AC5** | `git grep -l attr_mismatch -- .github tools contents; echo $?`, then `git grep -n` | `tools/pagelint.py`, exit **0**: one line, `tools/pagelint.py:538: # scan() is spec 017's probe/attr_mismatch.py, moved unchanged, so its 25 runs`. Said: no output (exit 1) | **MET**, with that one hit named: a provenance comment, accepted as *not a run* by ruling (b). The reading half is 8.1's |
+| **AC6** | head's `tools/` (a scratch copy, pins as built) over `contents/` and `tools/blockcheck/scaffold/` at `71cb09b`, phase 2's head, where 2.3's blocks are FAILED (at `75c1b6b` no row is *built-by-using*): `python3 tools/blockcheck.py --classify contents/Routing.md contents/AWSSQSConfiguration.md contents/TestDoubleOptions.md contents/BuildingAPipeline.md contents/NullableReferenceTypes.md`. Then the same with the page-declared check removed (`resolvable`'s `name in declared or`), and with page evidence removed (`new = first_party or new`) | run 1, exit 0, **37** rows: `Routing.md` #2 `built-by-using` `Paramore.Brighter`; `AWSSQSConfiguration.md` #7 `defect` `CS1739`, the control behind its `using`s, **not** built; `TestDoubleOptions.md` #11 `page-type` `Mock,MyCommand,MyHandler,Times`; `TestDoubleOptions.md` #2 `parse`; control `BuildingAPipeline.md` #3 `same-page` `RequestLoggingHandler`; control `NullableReferenceTypes.md` #4 `page-type` `CreateOrderCommand,IOrderRepository,Order`. Each as 2.3 recorded it. Page-declared removed: **only** `BuildingAPipeline.md` #3 changes class, → `built-by-using` `Paramore.Brighter.Logging.Handlers`. Page evidence removed: `NullableReferenceTypes.md` #4 → `defect` `CS0117`, and six more (below) | **MET**, two-way: each class's block classifies as known, the defect-behind-`using` control is not built, and each check moves its own control |
+| **AC7** | `bash spec/018-compile_residual/probe/run.sh <W>` (exit 0), which runs 017's `probe/run.sh` and `pages.py` and `--classify` at one ref; then `python3 spec/018-compile_residual/probe/reconcile.py <W>`. Red-proof: a copy of `<W>` with `Routing.md` #3 planted as `defect` in `cls.tsv` | `1 disagreements, 0 unexplained`, exit **0**: `BuildingAPipeline.md` #3, probe `BUILT`, `--classify` `same-page`, *"page-declared: RequestLoggingHandler (Paramore.Brighter.Logging.Handlers)"*, the known cost 2.3 and 2.4 recorded. Fold: PARSE/parse 1, DEFECT/defect 5, STUB/STUB 69, BUILT/STUB 1. Two methods: `verdicts.tsv` and `cls.tsv` **76** rows each, the same blocks (the script refuses otherwise), and `<W>/cls.tsv` equals 8.2's own `--classify` (`cmp` of the sorted files, silent). Red-proof: `2 disagreements, 1 unexplained`, exit **1** | **MET**. 2.4's 14 disagreements are 1. Of the other 13, 11 are `BUILT` at the same page and ordinal; `QueriesAndQueryObjects.md` #22 and #23 name no block now, since the page has 18 C# blocks, all `BUILT` |
+| **AC11** | `python3 tools/blockcheck.py --explain AwsScheduler_2 AwsScheduler_3 DistributedLock_2 DynamoDbDistributedLock_1 DynamoDbDistributedLock_2 S3LuggageStore_1`, then `grep -c 'CS0234.*V4'` | `6 blocks explained, 0 diagnostics (v4 pin)`, exit 0; grep → **0**. `--report`: all six `BUILT`, and the V4 pin's `28 blocks, 28 built, 0 failing`. The ordinals are 2.6's: `AwsScheduler.md` #2 and #3 open at the same place as at `71cb09b` (`:223`/`:257` then, `:225`/`:263` now, #1 unchanged before them), and the other three pages' blocks are the ones that import a `.V4` namespace | **MET**: all six BUILT |
+| **AC12** | `python3 tools/blockcheck.py --report report.tsv; echo $?`; method 2, `grep -vc '^#' tools/blockcheck/baseline.tsv`; nothing BUILT by `awk` over `report.tsv` (pages with a FAILED row and no BUILT row), and by `groups.py` | `994 blocks: 889 BUILT, 76 FAILED, 29 SKIPPED, 0 NOT_COMPILABLE`, `baseline: 889 blocks required to build`, `0 findings, 29 skipped`, exit **0**; `579 reference assemblies` on each pin; `scaffold rule: 97 units checked, 0 violations, 0 compile errors`; `pin rule: 4 pages on the v4 pin, 0 violations`. `cut -f1 report.tsv \| sort \| uniq -c` → 889 / 76 / 29; the baseline → **889**. Nothing BUILT: `awk` → **2**, `ReplayOnSeenReference.md` and `ReturningResultsFromAHandler.md`, both tranche pages; `groups.py` → `0 with nothing BUILT` on the group pages | **MET**: BUILT **889 ≥ 560**, every BUILT block baselined (0 findings); nothing BUILT **2 ≤ 14** |
+| **AC13** | the join, written at § *Blocks that stay FAILED*: `python3 spec/018-compile_residual/probe/stays.py spec/018-compile_residual/tasks.md report.tsv` (obligation 18). Red-proof, two-way: a copy of this file with `Routing.md` #4's row deleted, and one with `Routing.md` #2 (BUILT) planted in it | `67 reached pages; --report FAILED on them 43; listed 43; 0 + 0 rows either side`, exit **0**. Method 2: `groups.py`'s `check: FAILED column 43, --report FAILED on the same pages 43`. Red-proofs: `FAILED, not listed  Routing.md  4`, `1 + 0 rows either side`, exit **1**; `listed, not FAILED  Routing.md  2`, `0 + 1 rows either side`, exit **1**. An unreadable input exits **2** | **MET**: zero rows either side. The reading half is 8.1's |
+| **AC14** | `grep -rn '<figure>' --include='*.md' --include='*.yml' --include='*.py' . \| grep -vcE '^(\./)?spec/'`, once for each figure in `tools/README.md` rows 2, 8 and 9 that an 018 phase moved | **1** each for `994 blocks: 889 BUILT`, `889 BUILT`, `76 FAILED`, `29 SKIPPED`, `579 reference assemblies`, `28 blocks on the v4 pin`, `97 scaffold units`, `4 pages on the v4 pin`, `89 warnings`, `1 block marked`, `25 entries`. **2** for `14 silenced`: row 8, and `tools/symbolcheck.py:878`, *"`"0 findings" and "0 findings, 14 silenced" are not the same`"*, a comment from spec 014 task 2.4 (`6ee3ac7`, 2026-09-13) illustrating the line's form, before 018 made 14 the figure. The whole figure, `25 entries, 161 pages, 14 silenced`, → **1** | **MET**, with the one coincident hit named, as 2.12 named `0 compile errors`'s template |
+
+**Said and measured** (obligation 2; nothing above this subsection is edited):
+
+| Said | Measured | Where the text now stands |
+|---|---|---|
+| AC2: the red-proof reports `ATTRIBUTE KIND` on *"`PipelineValidation.md` block 7"* | on **#8** of 17, since phase 4's split of #3 (8.1 finding 4) | AC2's row names #8; the criterion is quoted as written |
+| AC5: *"→ no output (exit 1)"* | one line, `tools/pagelint.py:538`, exit 0 (8.1 finding 3) | accepted by ruling (b) |
+| § *Red-proof (2.3, AC6)*, run 3: *"Of the 37 rows, only the second control changes class"* | at `75c1b6b`'s tools, **7**: the control, and `TestDoubleOptions.md` #1, #5, #6, #7, #8, #9, `defect` → `page-type`. Each is the second control's mechanism: without page evidence the six are given `using Shouldly;` (a debug copy printing the supplied set: `Shouldly` is the one namespace run 3 adds, on all six), which clears the `CS1061` on `ShouldBe` and leaves only missing names. Shouldly was pinned at task 2.7, after 2.3; the page at `71cb09b` imports nothing from Shouldly. Run 3 also drops `Mock`/`Times` from #11's names and `Arg`/`Substitute` from #12's, as 2.3 saw for Moq | 2.3's record stands; the check decides its control at both refs |
+| § *Reconciled with the probe (2.4, AC7)*: **14** disagreements at `f6a9a7c` | **1** at `75c1b6b`, over 76 FAILED rows rather than 674 | — |
+| AC1: *"a plant **removed**"* | read as the mismatch removed from a plant's block. Deleting a plant's whole tuple instead leaves `4 of 4 plants behave.` by construction (`len(plants) - failed`), so it is not a red-proof of anything; `--plant` does not check its own plant count | — |
+
+**Gates at `75c1b6b`**, beside the criteria: `linkcheck` 169 files, 0 broken; `pagelint` 0 errors /
+89 warnings, and `--changed origin/master` the same (exit 0, with `probe/stays.py` intent-added);
+`--plant` 5 of 5; `symbolcheck` 25 entries, 161 pages, 14 silenced, 0 found; `versioncheck` 0 stale
+of 18 across 5 pages; `optioncheck` 0 mismatches across 59 tables and 533 rows; shape 161 pages, 12
+sections, deepest 4 of 4, widest 12 of 20; redirects 77 entries, 7858 bytes; `blockcheck --report`
+as AC12's row. Each unmoved from `b7e878c`. No page under `contents/` changed.
+
+**The verdicts:** AC1, AC2 (on #8), AC3, AC6, AC7, AC11, AC12, AC13 **MET**; AC5's instrumented
+half **MET** with its one hit named (ruling (b)); AC14 **MET** with one coincident hit named; AC4
+**MET** on the re-read against the repaired ledger.
+
+#### Check backwards (8.3)
+
+*Run at `6947210`. The task's set, **the 64 + 3**, is the 67 rows of § *The groups* (task 2.14:
+the 64 off-tranche pages with a FAILED block, and the three (V4) tranche pages), the set
+`probe/stays.py` reads as *reached*. It is derived from that section by the same regex, not by hand.*
+
+```bash
+git diff --name-only 3a79b20 -- contents/
+python3 spec/018-compile_residual/probe/backwards.py spec/018-compile_residual/tasks.md 3a79b20
+```
+
+`probe/backwards.py` (obligation 18) puts each changed page in the first bucket that holds it:
+*group* (the 67), *ledger* (named in a § *Defect ledger* row's *Page(s)* cell), *P0-10* (`FAQ.md`,
+`V10MigrationGuide.md`), or *other*. It names the first-parent merges (or direct commits) on
+`HEAD`'s line that changed each page outside *group*, and exits 1 when a spec 018 PR or a direct
+commit changed an *other* page, which this prose must then explain.
+
+**Output:** `103 changed pages since 3a79b20: group 64, ledger 22, P0-10 0, other 17`; `67 group
+pages, 64 of them changed; unchanged: BrighterBasicConfiguration.md, DynamoDbDistributedLock.md,
+S3LuggageStore.md`; `PRs outside spec 018: #195 … 6 pages, #199 … 2 pages, #201 … 22 pages, #206 …
+21 pages`; `16 changed pages touched by no spec 018 PR: … other 16`; `1 other page(s) changed by a
+spec 018 PR or a direct commit`, exit **1**. Every change is a modification (`--name-status`: 103
+`M`): no page was added, deleted or renamed.
+
+**Method 2:** `comm` of the sorted `git diff --name-only` list against the sorted page names in
+§ *The groups*' table rows → **64** in both, **39** changed and outside, **3** in the groups and
+unchanged, the same three. 64 + 39 = 103.
+
+**P0-10's bucket is empty because both its pages are in the groups.** `FAQ.md` and
+`V10MigrationGuide.md` are S5 rows, so each is justified as one of the 67 before P0-10 is reached.
+
+**Each ledger page was changed in its row's phase.** The PRs that changed the 22 match the *Phase*
+column of the rows that name them (#202 phase 3, #203 phase 4, #210 phase 6, #213 phase 7), with
+two exceptions, each explained in the table: `Telemetry.md`'s phase 7 commit, and bugfix and docs
+PRs outside 018 on `DynamoOutbox.md` and `Telemetry.md`.
+
+**Red-proof, two-way.** A copy of this file with `ReactorAndProactor.md`'s group row deleted (a page
+#204 changed and no ledger row names): `ReactorAndProactor.md  other  -  #204 (spec/018-phase5)`,
+`group 63, … other 18`, `2 other page(s) …`, exit **1**. A copy with a ledger row planted naming
+`RelationalDatabaseConfigurationReference.md`: it moves to *ledger* and `0 other page(s) …`, exit
+**0**. `HEAD` as the base → `0 changed pages`, exit **0**. An unreadable `tasks.md` → exit **2**.
+
+**The 39 pages outside the 64 + 3** (the *Changed by* column is `git log --oneline 3a79b20..HEAD --
+contents/<page>`, each commit put under the PR that merged it):
+
+| Page | Changed by | Justification |
+|---|---|---|
+| `AgreementDispatcherRouting.md` | #203: `5347f53` | ledger 37 (phase 4), a recurrence |
+| `AzureBlobDistributedLock.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `BoxProvisioning.md` | #206: `35b0bc2` | outside 018: Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `Compression.md` | #203: `54954db` | ledger 44 (phase 4), a recurrence |
+| `DynamoInbox.md` | #203: `54954db`; #213: `429635f` | ledger 3 (phase 7), 41 (phase 4), a recurrence |
+| `DynamoOutbox.md` | #201: `5e0a63b`; #213: `429635f` | ledger 3 (phase 7), a recurrence; also #201, the Brighter 10.8.0 bugfix PR |
+| `ErrorHandlingOptions.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `FirestoreInbox.md` | #203: `54954db` | ledger 41 (phase 4), a recurrence |
+| `GcpPubSubConfiguration.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `GetStarted.md` | #201: `5e0a63b`; #206: `35b0bc2` | outside 018: Brighter 10.8.0 bugfix PR and Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `HandlingLargeMessages.md` | #210: `3671922` | ledger 77 (phase 6), a recurrence |
+| `HandlingPoisonMessages.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `HealthChecks.md` | #206: `35b0bc2` | outside 018: Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `InMemoryInbox.md` | #203: `54954db` | ledger 41 (phase 4), a recurrence |
+| `MSSQLInbox.md` | #203: `54954db` | ledger 41 (phase 4), a recurrence |
+| `MSSQLOutbox.md` | #203: `6ad8b0a` | ledger 51 (phase 4), a recurrence |
+| `MSSQLTransportInboxAndOutbox.md` | #206: `35b0bc2` | outside 018: Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `MongoDbDistributedLock.md` | #213: `8c90dcc` | ledger 93 (phase 7), a recurrence |
+| `Monitoring.md` | #203: `54954db` | ledger 46 (phase 4), 47 (phase 4), a recurrence |
+| `MySQLInbox.md` | #203: `54954db` | ledger 41 (phase 4), a recurrence |
+| `MySQLOutbox.md` | #203: `6ad8b0a` | ledger 51 (phase 4), a recurrence |
+| `PostgreSQLBrokerTradeOffs.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `PostgreSQLMessageBroker.md` | #203: `5347f53` | ledger 40 (phase 4), a recurrence |
+| `PostgresInbox.md` | #203: `54954db` | ledger 41 (phase 4), a recurrence |
+| `PostgresOutbox.md` | #203: `6ad8b0a` | ledger 51 (phase 4), a recurrence |
+| `RelationalDatabaseConfigurationReference.md` | #203: `54954db`; #206: `35b0bc2` | **none of the three: D19**, ruled 2026-10-18 (design § D19, task 4.5a). `54954db` relabels the page's *"measured at `10.7.0`"* to `10.8.0` after re-deriving the seventeen components at that tag, § *Sweep (4.5a, D19)*, *Measurements, re-derived*. A measurement re-dated, not a defect, so no ledger row names it; also #206, the Brighter 10.8.1 bugfix PR |
+| `ReplayOnSeen.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `ReplayOnSeenReference.md` | #201: `5e0a63b` | outside 018: Brighter 10.8.0 bugfix PR, landed on `master` between phases |
+| `SchedulingAMessage.md` | #202: `9aafd19`; #203: `5347f53`, `54954db` | ledger 20 (phase 3), 40 (phase 4), 42 (phase 4), a recurrence |
+| `SpannerInbox.md` | #203: `54954db`, `6ad8b0a` | ledger 41 (phase 4), 51 (phase 4), a recurrence |
+| `SpannerOutbox.md` | #203: `6ad8b0a` | ledger 51 (phase 4), a recurrence |
+| `SqliteInbox.md` | #203: `54954db` | ledger 41 (phase 4), a recurrence |
+| `SqliteOutbox.md` | #203: `6ad8b0a` | ledger 51 (phase 4), a recurrence |
+| `Telemetry.md` | #199: `9680277`, `2bc6bd8`, `6468dd9`; #203: `54954db`; #206: `35b0bc2`; #213: `3e8f0f3` | ledger 45 (phase 4), 48 (phase 4), 50 (phase 4), a recurrence; and `3e8f0f3` (#213, task 7.2): #6–#8 made reachable by ruling 2's pin (D23) and repaired in that phase (obligation 21), named in § *Phase 7 as executed*, *Off-group*; also #199, the outbox-sweeper-metrics docs PR and #206, the Brighter 10.8.1 bugfix PR |
+| `TransactionalMessagingWithTheOutbox.md` | #206: `35b0bc2` | outside 018: Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `TutorialDurableOutbox.md` | #201: `5e0a63b`; #206: `35b0bc2` | outside 018: Brighter 10.8.0 bugfix PR and Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `TutorialFirstCommand.md` | #201: `5e0a63b`; #206: `35b0bc2` | outside 018: Brighter 10.8.0 bugfix PR and Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `TutorialFirstMessage.md` | #201: `5e0a63b`; #206: `35b0bc2` | outside 018: Brighter 10.8.0 bugfix PR and Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+| `TutorialStreamingWithKafka.md` | #201: `5e0a63b`; #206: `35b0bc2` | outside 018: Brighter 10.8.0 bugfix PR and Brighter 10.8.1 bugfix PR, landed on `master` between phases |
+
+**Every page is justified.** 22 by a defect-ledger row, each a recurrence repaired in its row's
+phase; 16 by PRs outside 018 alone (#201, the Brighter 10.8.0 bugfix; #206, the 10.8.1 bugfix, the
+one 8.1 found); and one, `RelationalDatabaseConfigurationReference.md`, by **D19**, a maintainer
+ruling that widened phase 4 to the prose dating a measurement or defect to 10.7.0. That page is the
+helper's exit 1, and it is neither a ledger row nor P0-10: the task's two named justifications do
+not cover it, and D19 does. No page changed in phase 8.
+
+#### The defect ledger completed (8.4)
+
+*Run at `16c039d`. Every row's recurrence grep is run as its cell writes it, by a committed helper
+(obligation 18), at three refs: **pre**, the first parent of the merge of the row's phase PR, the
+commit before the repair (phase 3 `f3f685f`, 4 `5f2294c`, 5 `0fc79a3`, 6 `e46f47e`, 7 `dc09559`);
+**base**, `3a79b20`; and **the tree**. No ledger cell was rewritten: what the run found that a cell
+does not say is recorded below as *said / measured* (obligation 2).*
+
+```bash
+python3 spec/018-compile_residual/probe/ledger.py spec/018-compile_residual/tasks.md -v
+# Found by, where a cell names only a task: each hit by page and block, with its class at that ref
+git archive f3f685f | tar -x -C "$W"        # and 5f2294c; then build refs, refs-v4 and blockcheck in "$W"
+(cd "$W" && python3 tools/blockcheck.py --classify <the rows' pages> > cls.tsv)
+python3 spec/018-compile_residual/probe/ledger.py spec/018-compile_residual/tasks.md \
+    --hits 4,10,11,12,13,14,15,16,17,18,19 --at "$W" --classify "$W/cls.tsv"
+```
+
+`probe/ledger.py` reads each row's commands from its *Recurrence grep* cell: the code spans that
+begin `grep` or `git grep`, `\|` rendered as `|` as GitHub shows it, each span ending at the first
+backtick outside single quotes, so a pattern quoting a code span is read whole. It runs them with
+`bash -c`, so `grep` is `/usr/bin/grep`, not the session's wrapper, in a `git archive` copy at each
+ref. Three rows carry an override, printed beside them: **48**, whose `\|` is a literal pipe in ERE;
+**51**, *"on the six pages"*, which are its *Page(s)* cell; and **92**, a scan, `probe/mapper_members.py`.
+Three rows are decided by a **shape check** by block, because their grep as written no longer reads
+the defect: **6**, classes declared; **8**, lambdas returning two factory types; and **85**,
+unconstrained bases. Row **84**'s first grep is read less the one log line its cell names.
+
+**Output:** `96 rows; commands read from 93, by override 3`; `BEFORE 4: 61 62 77 78`; `AFTER 0`;
+`NONZERO 9: 2 16 30 35 47 48 55 68 86`; `CELL 0`; `BASE 1: 43`; exit **0**. About 15 s.
+
+| Count | Method 1 | Method 2 | Agrees? |
+|---|---|---|---|
+| Rows | the helper, **96** | `sed -n '/^## Defect ledger/,/^## Friction/p' tasks.md \| grep -cE '^\| +[0-9]+ \|'` → **96** | **yes** |
+| **Rows complete**: a grep (92: its scan), *Before*, *After* and *Found by*, each present | `CELL 0` → **96** | every cell non-empty, and each *Before* and *After* has a figure per command | **yes** |
+| **Rows filled** | **0**: no cell was blank or a placeholder | — | — |
+| **Grep at the tree non-zero, as written** | the first run, before the shape checks: **12** (2, 8, 16, 30, 35, 47, 48, 55, 68, 84, 85, 86) | the *After* cells with a non-zero figure, **10** (2, 6, 16, 30, 35, 47, 48, 55, 68, 86), less 6 (grep 0, cell 2), plus 8, 84, 85 (grep non-zero, cell 0) → **12** | **yes** |
+| *After* reads the tree | **96**, 3 of them by shape and 1 by the named log line | `AFTER 0` | **yes** |
+| *Before* reads the commit before the repair | **92** at pre; **4** (61, 62, 77, 78) at a commit inside the phase, found by walking the phase branch | `BEFORE 4`, each walk naming that commit | **yes** |
+
+**None of the 12 is a recurrence**, so no new defect. Eight count text the repair put there. The
+other four are explained in the exceptions table: 8, 68, 84 and 85.
+
+**Found by, by mechanism** (the first one each cell names, and the 13 rows naming only a task as
+resolved below): **`--classify` 54**, the second compile or a class it hid (*parse*, *values*,
+*page-type*, *same-page*, *defect*); **a run 28**; **re-derivation 14**. **Rule 8 and
+`symbolcheck` found none of the 96**: row 1 records that the watchlist missed it, row 95 that rule 8
+cannot see it (Docs#211), and row 89 is watched by `symbolcheck` only from 7.7, after it was found.
+
+**Red-proof, two-way** (obligation 3):
+
+| Run | Exit | Output |
+|---|---:|---|
+| The tree | **0** | as above |
+| `--tree`, a `git archive HEAD` copy, unchanged | **0** | identical to the tree, line for line |
+| `--tree`, the copy with one block planted on `QuartzScheduler.md`: `services.UseScheduler(provider => { … })`, returning `QuartzSchedulerFactory` on one branch and `HangfireMessageSchedulerFactory` on the other | **1** | `AFTER 2: 8 9`; row 8's shape `MIXED HangfireMessageSchedulerFactory+QuartzSchedulerFactory QuartzScheduler.md #29` |
+| A copy of this file with rows 10 and 15's *After* blanked | **1** | `CELL 2: 10 15` |
+| An unreadable `tasks.md` | **2** | `No such file or directory` |
+| At pre, the known-present side | — | every row's pre count is its *Before* except the four walked; row 8's shape at pre reads **1** mixed lambda, row 85's **1** unconstrained base |
+
+**The exceptions:**
+
+| Row | Said | Measured | Reading |
+|---:|---|---|---|
+| 2, 16, 30, 35, 47, 48, 55, 86 | *After* non-zero | the tree equals each cell | each grep counts text the repair put there. 16 is one use and one declaration on `HangfireScheduler.md`. Not recurrences |
+| 6 | *After* **2** | **0** at the tree, and 0 since `06df408` (3.2/3.3), where the declarations wrap after a primary constructor. By shape, **2**: `CustomMessageScheduler` (`CustomScheduler.md` #1) and `CustomRequestScheduler` (#3), both BUILT, each with `Schedule`, `ScheduleAsync`, `ReScheduler`, `ReSchedulerAsync`, `Cancel`, `CancelAsync` | **said / measured**: the cell's 2 counts the classes, not the grep's lines. The defect is gone |
+| 8 | *After* **0** | **12** at the tree. It read 0 at `06df408` (3.3) and 12 from `9aafd19` (3.5), where ledger 20's repair put each Hangfire factory in a `UseScheduler(provider => …)` lambda, so every single-type lambda is a hit. By shape: **20** lambdas on 8 pages, each returning one factory type, **0** mixed. `SwitchingSchedulers.md` #7's two lambdas sit in the two arms of an `if` | **said / measured**: the grep as written stopped reading the defect at 3.5. No recurrence |
+| 61 | *Before* **1** | **0** at pre (`0fc79a3`) and at `3a79b20`. **1** from `40f9093` (5.3) to `dd572b9`, and **0** at `fcd6f7b` (5.4). 5.3 made `QueryPipeline.md`'s block whole and wrote the registry holding only `MyCircuitBreaker` passed to `AddPolicies` | **said / measured**: the defect was written in phase 5 by 5.3 and repaired by 5.4 in the same phase. The cell does not say so. *Before* holds at the commit before the repair |
+| 62 | *Before* **1** | 0 at pre; 1 from `40f9093` to `dd572b9`; 0 at `fcd6f7b` | holds: the cell says *"written at 5.3 with ledger 57"* |
+| 77 | *Before* **1** for the third grep | 0 at pre; 1 from `4a4396c` (6.3) to `254e8a7`; 0 at `2f68a96` (6.4). The fourth reads 1 until `3671922` (6.5) | holds: the cell says the step numbers were 6.3's, and the recurrence 6.5's |
+| 78 | *Before* **1** | 0 at pre; 1 from `254e8a7`; 0 at `2f68a96` (6.4) | holds: the cell says *"written at `254e8a7`"* |
+| 84 | *Before* **3** (+1), *After* **0** (+ the same line) | the first grep reads 4 at pre and 1 at the tree: `PipelineValidation.md`'s `text` fence, a log line | holds: that line is the cell's +1 |
+| 85 | *Before* **1** unconstrained, *After* **0** (1 hit, constrained) | 2 lines at pre and at the tree, since `-A1` prints the hit and its next line. By shape, `FAQ.md` #1: unconstrained at pre, `where T : class, IRequest` at the tree | holds: the cell counts hits |
+| 68 | *After* **1** | 1: `InMemoryOptions.md`'s `new Publication`, passed to `InMemoryProducerRegistryFactory`, which takes a `Publication`. The `RmqProducerRegistryFactory` below it is inside the `-B40` window | holds: the cell names it. Not a recurrence |
+| 43 | *Before* **1** | 1 at pre, but **2** at `3a79b20`: `BrighterOutboxSupport.md`'s hit was repaired by #201 (`f3f685f`, the 10.8.0 bugfix PR) before phase 4 | holds at pre |
+| 4 | *Found by* *"task 3.1, chained after defect 1"* | its hits are `AwsScheduler.md` #3 and `AzureScheduler.md` #6, *defect* at `f3f685f`, the blocks of row 1 | **re-derivation**, with row 1 |
+| 10–19 | *Found by* a task only (10–18), or *"task 3.3, with ledger 6"* (19) | at `f3f685f`: 10 *page-type* (`AzureScheduler.md` #4); 11 *values* (`QuartzScheduler.md` #2, #14, #18, #21, #26); 12 *values* (`QuartzScheduler.md` #2, #4, #5, #6, #14, #17, #20); 13 *values* (#3, #10); 14 *parse* (#8); 15 *values* (`HangfireScheduler.md` #6); 16 *page-type* (`HangfireScheduler.md` #29); 17 *page-type* (`InMemoryScheduler.md` #9); 18 *parse* (`AzureScheduler.md` #26); 19 *defect* and *page-type* (`CustomScheduler.md` #3, #4) and its prose | **`--classify`**, the class each block was in |
+| 29 | *Found by* *"task 4.2"* | at `5f2294c`: *page-type* (`FeatureSwitches.md` #5) | **`--classify`** |
+| 30 | *Found by* *"task 4.2"* | the listing, `UsingTheContextBag.md` #12, was BUILT at `5f2294c` (baselined since `280d1b7`). `RequestContextBagNames.cs` has `CausationId` at 10.8.0 and not at 10.7.0 | **re-derivation**: read against the source |
+| § *Phase 3 as executed*, *The repairs* | *"The *parse* and *values* rows hid 15 more falsehoods (ledger 8–19)"* | at `f3f685f`, 10, 16 and 17 sit in *page-type* blocks, 19 in a *defect* and a *page-type* block, and 9 in *parse* and *values* | **said / measured**: *parse* or *values* holds for 8, 9, 11–15 and 18 |
+| § *Phase 4 as executed*, *The repairs (4.2)* | *"Ten falsehoods sat in *page-type* and *values* rows, ledger 21–30"* | at `5f2294c`: 21 also sits in two *defect* blocks (`MongoDBOutbox.md` #5, `BrighterOutboxSupport.md` #1); 24 in a *same-page* and a *parse* block; 26 in prose; 27 in two *defect* blocks; 30 in a BUILT block | **said / measured**: *page-type* or *values* holds for 22, 23, 25 and 29, and for 21 in part |
+
+#### The friction ledger (8.5)
+
+§ *Friction ledger* holds **20** entries, **81–100**, read from every phase's *as executed* section,
+each with the repair it proposes for the next spec.
+
+#### Close (8.6)
+
+At `0c74b95`, after the three builds (`0 Error(s)` each): `blockcheck --report` 994 blocks, 889 BUILT,
+76 FAILED, 29 SKIPPED, 0 NOT_COMPILABLE, baseline 889, 579 assemblies per pin, V4 28 of 28, 97 scaffold
+units and 4 V4 pages with 0 violations, 0 findings, exit 0; `--classify` 76 rows, exit 0; `pagelint` 0
+errors / 89 warnings / 162 pages, `--plant` 5 of 5; `linkcheck` 169 / 0; `symbolcheck` 25 entries, 161
+pages, 14 silenced; `versioncheck` 0 of 18 across 5 pages; `optioncheck` 0 / 59 / 533; shape 161 / 12 /
+4 of 4 / 12 of 20; redirects 77 entries, 7858 bytes; `--verify` 161 = 161. Each unmoved from
+`b7e878c`, so no `tools/README.md` row changes. No page under `contents/` changed in phase 8.
+
+#### What 018 shipped *(task 8.6)*
+
+Measured at `0c74b95`, after building all three projects. `--report` → exit **0**, *"994 blocks: 889
+BUILT, 76 FAILED, 29 SKIPPED, 0 NOT_COMPILABLE"*, *"baseline: 889 blocks required to build"*,
+*"scaffold rule: 97 units checked, 0 violations, 0 compile errors"*, *"pin rule: 4 pages on the v4
+pin, 0 violations"*, *"0 findings, 29 skipped"*. `--classify` → exit **0**, **76** rows, the same
+blocks as `--report`'s FAILED rows (method 2: `awk -F'\t' '$1=="FAILED"'` → 76).
+
+| | `3a79b20` (017's close) | Now |
+|---|---:|---:|
+| **BUILT**, and the baseline that holds them | 299 | **889** |
+| FAILED / SKIPPED, of 990 → 994 blocks | 674 / 17 | **76 / 29** |
+| Pages with a FAILED block / with nothing BUILT | 88 / 39 | **30 / 2** |
+| `pagelint` `using` debt | 524 blocks, 66 pages | **89 blocks, 29 pages** |
+| Scaffold units / pages mapped in `scaffold/pages.tsv` | 45 / 67 | **97 / 120** |
+| Packages pinned in `refs.csproj` / `refs-v4.csproj` | 100 / — | **113 / 113** |
+| `symbolcheck` watchlist | 22 entries, 3 silenced | **25 entries, 14 silenced** |
+
+The *3a79b20* column is re-derived in a `git archive 3a79b20` copy, its projects built: `--report`
+→ *"990 blocks: 299 BUILT, 674 FAILED, 17 SKIPPED"*, and pages with a FAILED / no BUILT row over
+its report → 88 / 39, each as § 2 and 017 § *What 017 shipped* say; `pagelint` → 524 blocks across
+66 pages; `symbolcheck` → 22 entries, 3 silenced; the pins and scaffold by `git show
+3a79b20:<file>`. *Now* includes the four PRs outside 018 that merged between its
+phases (#195, #199, #201, #206), which moved the corpus and the pins to Brighter 10.8.1 (friction 85, 86).
+
+| | |
+|---|---|
+| **The instruments** | `pagelint` rule 8, `ATTRIBUTE KIND`, with `PAIRED` beside `APPLIES_TO`, the per-block `attr-mismatch-intended` marker and its three faults (`ATTRIBUTE KIND MARKER`), and `--plant`, 5 plants, in CI (AC1–AC3); the `CLAUDE.md` section and two ledger rows (AC4, repaired under ruling (a)); 017's probe retired (AC5). `--classify`'s second compile, with the *built-by-using* and *defect* classes, red-proofed two-way (AC6) and reconciled with 017's probe to **1** explained disagreement (AC7). The V4 pin, `refs-v4.csproj`, and its pin rule (AC11); the handler wrapper; Shouldly; `Program` in a `statements` block; a scaffold unit that does not compile as a finding; `pagelint --per-page`; the `net10.0` measurement |
+| **The pages** | **103** changed under `contents/` (`git diff --name-only 3a79b20 -- contents/`, 8.3): **64** of the 67 reached pages, **22** more each reached by a defect-ledger row, `RelationalDatabaseConfigurationReference.md` by D19, and **16** changed only by the bugfix PRs #201 and #206. PRs #198, #200, #202, #203, #204, #210, #213, and phase 8's |
+| **The runs** | **104** rows in 10 run tables, 103 with a case, a control and a probe (AC10); **56** `Program.cs` committed under `probe/s1`–`s5` and `s8`; 17 claims named, read against source and not run, accepted by ruling (c) |
+| **The ledgers** | **96** defect rows, each with its recurrence grep, *Before*, *After* and *Found by*: `--classify` 54, a run 28, re-derivation 14 (8.4). Friction entries **81–100** (8.5) |
+| **Upstream** | BrighterCommand/Brighter#4600, #4609, #4616, #4716 and #4717, each filed on the maintainer's word; Docs#211 (rule 8 and sync-only attributes) and Docs#212 (`blockcheck` and source generators) |
+| **Ruled during 018** | D8–D25, each in design § *Design Decisions*; rulings (a)–(d) of session 137 at acceptance |
+
+**The criteria** (§ *The reading criteria (8.1)*, § *The instrumented criteria (8.2)*): AC1–AC3,
+AC6–AC9 and AC11–AC13 **MET**; AC4 **MET** on the re-read against the ledger repaired under ruling
+(a); AC5 **MET**, its one hit, `tools/pagelint.py`'s provenance comment, accepted as not a run (ruling
+(b)); AC10 **MET** with its 17 read-not-run claims, accepted (ruling (c)); AC14 **MET** with one
+coincident hit named. AC12's targets: BUILT **889 ≥ 560**, pages with nothing BUILT **2 ≤ 14**.
+
+**Open at the close:** none of the maintainer's. Ruling (d)'s run held with qualification and changed
+no page; the rewording it proposes for `ReactorAndProactor.md` is friction 92, for the next spec.
+
+**Where the residual is**, by `--classify` joined to § *The groups* (`probe/stays.py`'s reached set)
+and to 017's tranche pages (`probe/tranche_pages.py spec/017-compile_repairs/tasks.md`). The 67
+reached pages hold **43** FAILED blocks on 14 pages, each a row of § *Blocks that stay FAILED* (AC13,
+zero rows either side); that section's reading puts 42 on a type or value another block of the page
+declares and one, `Logging.md` #5, on the instrument (Docs#212), where `--classify`, which reads names
+only, calls them 23 *same-page*, 15 *page-type*, 4 *defect* and 1 *values*. The other **33** are on
+**16** of 017's 75 tranche pages, and each is a row of 017's § *Blocks that stay FAILED* (the join
+`(page, ordinal)` against that section's rows: 0 unlisted). The two pages with nothing BUILT,
+`ReplayOnSeenReference.md` and `ReturningResultsFromAHandler.md`, are among those 16. No block is
+*built-by-using*: the second compile settles after **0** rounds of `using`s.
+
+**The residual, the line the next spec starts from:** **76 of 994 C# blocks still do not compile
+against the released packages, `--classify` finding 38 that need a type or value another block on
+their page declares, 29 a type their page never shows, 5 a defect, 3 an undeclared value and 1 that
+does not parse, with none fixed by a `using` alone, and every one is an accounted row: 43 on 14 of the
+67 pages 018 reached, in this file's § *Blocks that stay FAILED*, and 33 on 16 of 017's tranche
+pages, in 017's.**
 
 ---
 
@@ -3945,6 +4441,18 @@ S5: 22 pages, 134 FAILED, **10 with nothing BUILT**.
 
 *One row per FAILED block on a reached page: page, block, diagnostic, why it stays, phase (AC13).*
 
+**The join** (AC13, written at task 8.2). The reached pages are the 67 rows of § *The groups*; the
+command prints every FAILED block on one of them with no row here, and every row here that is not a
+FAILED block, and exits 0 only when both are empty:
+
+```bash
+python3 tools/blockcheck.py --report report.tsv
+python3 spec/018-compile_residual/probe/stays.py spec/018-compile_residual/tasks.md report.tsv
+```
+
+At `75c1b6b`: *"67 reached pages; --report FAILED on them 43; listed 43; 0 + 0 rows either side"*,
+exit 0. Its red-proofs are in § *The instrumented criteria (8.2)*.
+
 | Page | # | Diagnostic | Why it stays | Phase |
 |---|---:|---|---|---:|
 | `HangfireScheduler.md` | 12 | `CS0246` `HangfireAuthorizationFilter` | *same-page*: block 11 declares it, and the sentence before block 12 says so | 3 |
@@ -4103,7 +4611,42 @@ design, and their greps were run there.*
 
 ## Friction ledger
 
-*Numbered from 81, continuing 017's 67–80. Written at task 8.5.*
+The ledger stood at **80** when 018 opened (`spec/017-compile_repairs/tasks.md` § *Friction ledger*, 67–80).
+018 wrote none as it went. Every entry below is read from phases 1–8's *as executed* sections, and each names
+the sections and commits where it was met. An entry is here because it cost a task, a ruling or a re-run, or
+because it let a defect through; frictions with one cause are merged. Written at `9f59f05`.
+
+| # | What got in the way | Where it was met | What the next spec should do |
+|---:|---|---|---|
+| **81** | **Rule 8 cannot see a sync-only handler attribute.** `PAIRED` holds the 13 attributes Brighter ships in both forms, so `[TimeoutPolicy]` on `HandleAsync` (`V10MigrationGuide.md` #8) was green under rule 8, and found only when 7.6 widened ledger 84's grep by shape (ledger 95). At 10.8.1 `[TimeoutPolicy]` (`[Obsolete]`) is the only sync-only handler attribute; the transform attributes without twins decorate mappers. Rule 8 also reads methods only, so the same attribute on a `RequestHandlerAsync` class (`FAQ.md` #15, a SKIPPED V9 form) reached no check at all | § *Phase 7 as executed*, *Second pass (7.6)*; *Rulings (session 136)*, on 7.6's PAUSE; `429635f`, `18fcbd0`; **Docs#211** | Docs#211: a `SYNC_ONLY` set beside `PAIRED`, derived by the same command, reported as `ATTRIBUTE KIND` when it decorates `HandleAsync`, with a `--plant` case of its own; and rule 8 reading a handler attribute on the class, ledger 84's shape |
+| **82** | **`blockcheck` runs no source generators.** `Logging.md` #5, a `[LoggerMessage]` partial made whole by ruling, stays FAILED on `CS8795` though a reader's project builds it: `probe/s5/logger-message` gives 0 errors with the generator running and `CS8795` with the analyzers dropped, as `blockcheck` compiles. It cost two PAUSEs (7.3, 7.4), and it is the one row in § *Blocks that stay FAILED* that is the instrument's, not the page's | § *Phase 7 as executed*, *The repairs (7.3)*, *The repairs (7.4)*, *Rulings (session 136)*; `ee54515`, `20a27ad`; **Docs#212** | Docs#212: the Roslyn tool runs the analyzers and generators the pinned packages ship (the `refs` restore's analyzer assets) before it judges a block. Red-proof two-way from `logger-message`: `Logging.md` #5 BUILT with them, `CS8795` without; the row then leaves the section |
+| **83** | **Packages on no pin were found only by building, and each became a ruling.** 6.1's *"every package S4 names is pinned"* missed Serilog (`RabbitMQConnectionStability.md` #3, the Serilog ruling). 7.1 read its list from *page-type* names and missed four: `OpenTelemetry.Instrumentation.AspNetCore` and `.Http`, `Polly.Extensions` (`FAQ.md` #13) and `Npgsql.OpenTelemetry` (`PostgreSQLMessageBroker.md` #8, D25). `Polly.Extensions` was pinned on a reading (D24), ratified, then reverted when 7.5's run showed Brighter reads only the registry given to `AddBrighter` (ledger 94): three rulings for no net change. The same run leaves `MigratingToPollyV8.md` § *Step 1* telling the reader to add `Polly.Extensions` 8.0.0, which Brighter probably never uses; 7.6's ruling 4 recorded it and changed nothing | § *Phase 6 as executed*, *The repairs (6.2)*, *Addendum*; § *Phase 7 as executed*, *The repairs (7.2)*, *(7.3)*, *Second pass (7.6)*, ruling 4; `2c1a149`, `b6a23f8`, `3e8f0f3`, `ee54515`, `429635f` | Commit 7.6's package scan (every `dotnet add package`, `Install-Package` and `PackageReference` on the corpus, against both `refs` projects) as a probe, and run it at N.1 beside the second compile's unresolved extension calls (`FAQ.md` #13's `CS1061`, `PostgreSQLMessageBroker.md` #8's `CS7036`), so the prediction names every package a ruling will be asked for. For `MigratingToPollyV8.md` § *Step 1*: run the page's migration without `Polly.Extensions`, the control with it, and drop the step if Brighter finds its pipeline either way |
+| **84** | **A pin ruled after the prediction moved blocks on pages the prediction never read.** D23 and D25 were ruled after 7.1 measured, and built `Telemetry.md` #1, #6–#9 and `PostgreSQLMessageBroker.md` #8, tranche pages, where 7.1 put the off-group BUILT term at 0. 7.2 found the moves by diffing `--report` by page and ordinal by hand, and 7.7 reconciled the six after the fact | § *Phase 7 as executed*, *The repairs (7.2)*, *The repairs (7.3)*, *Phase 7 closed (7.7)*, its lesson for phase 8; `3e8f0f3`, `ee54515`, `18fcbd0` | The task that carries out a pin ruling predicts again before it pins: `--report` with the pin change in scratch against `--report` at its base, diffed by page and ordinal over the whole corpus, each moved block named with its group or tranche. That is the task's prediction, and the close reconciles against it |
+| **85** | **The pins moved under the programme, and the text kept the old release.** Bugfix PRs moved Brighter 10.7.0 → **10.8.0** (#201, `5e0a63b`, between phases 2 and 3) and → **10.8.1** (#206, `35b0bc2`, inside phase 6). The release in task text was *said / measured* at 3.1, 4.1, 5.1, 6.1, 6.3 and 7.1. § *The groups* was re-drawn at 3.1, and design E2's forthcoming `OnceOnlyAction.Replay` had shipped. 29 lines on 22 pages dated a defect or a measurement to 10.7.0, which took R6 and a task (D19, 4.5a), and the Outbox DDL took R7 and another (D20, 4.5b). Phase 6 was rebased onto 10.8.1, and `versioncheck` read 18 stale of 18 at 2.15 and at 6.2 | § *Phase 2 as executed*, *Phase 2 closed (2.15)*; § *Phase 3 as executed*, *Predicted (3.1)*; § *Phase 4 as executed*, *Sweep (4.5a)*, *The relational DDL (4.5b)*; § *Phase 6 as executed*, *The repairs (6.2)*, *The hard blocks (6.3)*; `02794af`, `54954db`, `6ad8b0a` | Tasks name *the pinned release*, read from `refs.csproj`, never a version. A pin bump is one task with its own steps: re-draw the groups, re-run `versioncheck`, and run D19's sweep (`grep -rnE '10\.[0-9]+\.[0-9]+' contents/`, each line a measurement to re-derive or a defect to re-run at both versions). A release met mid-spec then costs one task, not a ruling per phase |
+| **86** | **A bugfix PR between phases falls outside every reading.** Obligation 19 reads a phase's diff from its own base. #206 merged between phases 5 and 6 (`f4d965f..e46f47e`) and added `HealthChecks.md` #1's `// ...` and #2, #3, so no close read them: 8.1 met the `// ...` on AC9's whole-programme run. 8.3 justified **16** changed pages only by #201 and #206. #195 and #199 had already moved `pagelint`, `linkcheck` and the corpus under phases 1 and 2's predictions | § *Phase 1 as executed*; § *Phase 2 closed (2.15)*; § *Phase 8 as executed*, *The reading criteria (8.1)*, AC9's row; *Check backwards (8.3)*; `c434136`, `16c039d` | Each phase's start measures `git diff --name-only <last close> <phase base> -- contents` and reads every block a non-programme PR changed against AC9 and AC10 as its own (`probe/readings.py <last close> <phase base>`). The whole-programme run at acceptance then re-reads what has been read |
+| **87** | **The `CLAUDE.md` ledger fell out of step with rule 8, and only acceptance saw it.** Phase 1 wrote rule 8's row from design § *Rule 8* verbatim: *Repo-wide* `error` with no exception, though `pagelint` honours the marker at both levels, and no row for `ATTRIBUTE KIND MARKER`, a message the rule emits. AC4 is a reading, and phase 1's close read only AC9 and AC10. 8.1 found both, returned AC4 NOT MET and PAUSE, and the ledger was repaired in `3110a67` | § *Phase 1 as executed*; § *Phase 8 as executed*, *The reading criteria (8.1)*, findings 1 and 2; *Rulings (session 137)* (a); `211a3c1`, `c434136`, `3110a67` | A ledger check in `pagelint`, in CI beside `--plant`: every message label it can emit (`NO H1`, `ATTRIBUTE KIND MARKER`, …) has a row in `CLAUDE.md` § *The ledger*, and every label there is one it emits, two-way. The mode cells stay a reading, done by the phase that adds the rule at its close, as obligation 19 reads blocks |
+| **88** | **An ordinal named a block that had moved.** `PipelineValidation.md`'s marked block has been #8 since phase 4 split #3 (§ *Splits*), but every close from 4.6 to 7.7 and AC2's red-proof said #7; 8.2 ran AC2 against #8. Obligation 23 names a hit by page and block, and an ordinal drifts as a line does, one level up. The same renumbering made `CQRSWithBrighterAndDarker.md` #6 read *"stopped building"* at 5.3, and made 3.7, 5.6 and 6.6 match baseline rows by text against a worktree. This is 017's **#67**, not repaired in 018 | § *Phase 4 as executed*, *The repairs (4.3)*; § *Phase 5 as executed*, *The repairs (5.3)*, *Phase 5 closed (5.6)*; § *Phase 8 as executed*, *The reading criteria (8.1)*, finding 4; *The instrumented criteria (8.2)*, AC2's row; `8f4ab96`, `40f9093`, `c434136`, `6947210` | Name a marked block by its marker (*the block `attr-mismatch-intended` binds*), resolved by `pagelint`'s own binding, in criteria and closes. Build 017 #67's content-aligned diff, so a split prints *renumbered* and an ordinal in the text can be checked against it |
+| **89** | **`--plant` does not check its own plant count.** It prints `len(plants) - failed` of `len(plants)`, so deleting a plant from the table leaves *"4 of 4 plants behave."*, exit 0: a red-proof of nothing. 8.2 met it reading AC1's *"a plant **removed**"*, and red-proved the rule by removing a plant's mismatch instead | § *Phase 8 as executed*, *The instrumented criteria (8.2)*, *Said and measured*; `6947210` | `--plant` asserts its count against a constant beside the plant table (**5**) and exits 1 when they differ. Red-proof: a scratch copy with one plant deleted → exit 1 |
+| **90** | **A red-proof measured before a pin change was never re-measured.** 2.3 recorded AC6's run 3 (page evidence removed) moving only its control. Shouldly joined the pin at 2.7, after it. At 8.2 run 3 moves **7** rows: the control, and `TestDoubleOptions.md` #1, #5–#9, each given `using Shouldly;` once page evidence is gone. The check still decides its control, but for five phases the record described a pin that no longer existed | § *Phase 2 as executed*, *Red-proof (2.3, AC6)*, *Shouldly in the pin (2.7)*; § *Phase 8 as executed*, *The instrumented criteria (8.2)*, *Said and measured*; `937db00`, `6947210` | Commit each red-proof as a probe with its expected output, as `handler_plants.py` and `unit_plants.py` are. A pin change's task re-runs every red-proof that compiles against the pin, and records any row that moves as *said / measured* |
+| **91** | **AC14 counts a string, so a figure can coincide with a comment.** `14 silenced` reads 2: `tools/README.md` row 8, and a spec-014 comment at `tools/symbolcheck.py:878` illustrating the line's format. `0 compile errors` read 2 at 2.12, for § *Reading a number*'s template, and 2.12's first draft repeated a figure. Each needed a reading to tell a copy from a coincidence | § *Phase 2 as executed*, *CI and `tools/README.md` (2.12)*; § *Phase 8 as executed*, *The instrumented criteria (8.2)*, AC14's row; `38a18f2`, `6947210` | AC14's form greps the whole scope line as the gate prints it: `25 entries, 161 pages, 14 silenced` reads 1, as 8.2 found. Templates in `tools/README.md` and tool comments write `N`, never a live figure |
+| **92** | **A carried claim had no owner, and the page still says less than the run shows.** 5.5 carried `ReactorAndProactor.md` § *Handler and Mapper Requirements*' *"will cause runtime errors"* to *"Phase 8's reading criteria, or a later spec"*. No phase-8 task reads prose no block changed, so 8.1 found it homeless (finding 5), and it took ruling (d) and a probe. `probe/s8/reactor-mixing`, at 10.8.1: **holds, with qualification**. Each mix the page names fails and each match handles, but the error is `ConfigurationException` wrapping `InvalidCastException`, and the pump rejects the message (the probe's went to its dead-letter topic) and **stops**, `MP_ERROR`. § *What Happens If You Mix Them?* says *"sync and async implementations"*, wider than its handler-only table: a mapper of the wrong kind is skipped silently | § *Phase 5 as executed*, *Second pass (5.5)*; § *Phase 8 as executed*, *The reading criteria (8.1)*, finding 5; *Rulings (session 137)* (d); *The carried claim (ruling d)*; `b9183b0`, `75c1b6b` | **The page**, reworded: in § *What Happens If You Mix Them?*, the lead sentence says *handlers*, not *implementations*, and the two *Runtime error* rows name the exception (`ConfigurationException`, inner `InvalidCastException`) and the effect (the message rejected, to a dead-letter channel where one is set, and the pump stopped with `MP_ERROR`, so the subscription consumes nothing more). The startup report by `ValidatePipelines()` (`ConsumerValidationRules.PumpHandlerMatch`) is read, not run: run it before the page says so. § *Handler and Mapper Requirements* and § *Best Practices* then link to that section. **The process**: a claim carried out of a phase becomes a task in the phase it is carried to, with its probe named |
+| **93** | **The name-level instruments found none of the 96 defects, and *Found by* had to be rebuilt.** 8.4's tally: `--classify` **54**, a run **28**, re-derivation **14**; rule 8 and `symbolcheck` **0** (row 1, the watchlist missed it; row 95, rule 8 cannot see it; row 89, watched only after it was found). 13 rows named only a task, so 8.4 rebuilt `f3f685f` and `5f2294c` to classify their blocks. The prose had misplaced them too: 3.2's *"the parse and values rows hid 15"* and 4.2's *"page-type and values rows, ledger 21–30"* each hold in part | § *Phase 3 as executed*, *The repairs (3.2, 3.3)*; § *Phase 4 as executed*, *The repairs (4.2)*; § *Phase 8 as executed*, *The defect ledger completed (8.4)*, *Found by* and *The exceptions*; `9f59f05` | *Found by* is written with the row, from a closed vocabulary (`--classify <class> at <ref>`, `run <probe>`, `re-derivation`, `rule 8`, `symbolcheck`), so the tally is a `cut` and nothing is rebuilt. Plan the next spec's instrument work where the 54 and the 28 came from, the second compile and the runs. A watchlist row protects a repair; it has not found a defect |
+| **94** | **A recurrence grep written for the words finds the instance, and stops reading the defect once the repair reshapes the text.** Every second pass (4.5, 5.5, 6.5, 7.6) widened its greps by shape and found what the greps as written could not: ledger 37's recurrence on `AgreementDispatcherRouting.md`, 77's on `HandlingLargeMessages.md`, 3's on `DynamoOutbox.md`, and two new defects (95, `[TimeoutPolicy]`, which 7.1's list spelt `Timeout(`; 96, a package id). At 8.4, rows **6**, **8** and **85** needed a shape check by block, because the grep as written no longer read the defect at *After*: row 8's matched every single-type lambda once ledger 20 put each factory in one (0 → 12), and row 6's lost its class once the declaration wrapped after a primary constructor | § *Phase 4 as executed*, *Second pass (4.5)*; § 5, *Second pass (5.5)*; § 6, *Second pass (6.5)*; § 7, *Second pass (7.6)*, *Widened*; § *Phase 8 as executed*, *The defect ledger completed (8.4)*, *The exceptions*; `5347f53`, `b9183b0`, `3671922`, `429635f`, `9f59f05` | A recurrence check is written as a shape check over blocks (fences through `pagelint.Page`, as `probe/mapper_members.py` reads them), committed, and red-proven three ways before its row is written: it reads the defect at *Before*, reads 0 at *After*, and reads a planted recurrence in the repaired shape. The grep as written and the widened one become one check, written once |
+| **95** | **`--explain` shows only the first compile, and the second compile's misreads repeat.** Every N.1 needed `probe/second.py` to read its *defect* blocks with the `using`s supplied, and each found the class mixed: of 12, 11, 16, 15 and 32 *defect* blocks, **5, 3, 5, 8 and 5** were API defects. The same misreads came back: EF Core's `GetConnectionString()` bound in place of `IConfiguration`'s (`HangfireScheduler.md` #1, `CQRSWithBrighterAndDarker.md` #4, `DarkerBasicConfiguration.md` #10); `System.Data`'s `IsolationLevel` for `System.Transactions`' (`HangfireScheduler.md` #7); a generic `ConfigurationManager<T>` for .NET Framework's (`FeatureSwitches.md` #6); and `CS0104` where two pinned packages declare the name (`PolicyFallback.md` #5, `RabbitMQConfiguration.md` #5). This is 017's **#70** in another form | § *Phase 3 as executed*, *Predicted (3.1)*; § 4, *Predicted (4.1)*; § 5, *Predicted (5.1)*; § 6, *Predicted (6.1)*; § 7, *Predicted (7.1)*; `02794af`, `71b742b`, `c72fa8d`, `5a9f793`, `a5ade3e` | Promote `second.py` into `blockcheck --explain`, as a second-compile mode. When a supplied namespace leaves `CS1501`, `CS0266` or `CS0104` on the very name it was supplied for, try the next candidate before classing the block *defect*. Red-proof on the three `GetConnectionString` blocks at their pre-repair refs (`f3f685f`, `0fc79a3`) |
+| **96** | **A sentence written from a reading of source was wrong until it was run, the recommendations put to the maintainer among them.** R5's recommended `IAmAMongoDbTransactionProvider` threw (case B), and D17 was amended. D24 was pinned for a claim 7.5 overturned (ledger 94). The first Hangfire repair failed, because the property default runs first. 3.5's reading of the `UseScheduler` registrations, 5.2's base-class `Fallback` sentence, R8's premise that `Channel.Receive` is private, and 6.4's reading of Brighter's ADR 0053 were each corrected by a run or a later read. Four defects were the programme's own, written by a repair and caught by the phase's runs (ledger 61 and 62 at 5.3, 77's step numbers at 6.3, 78 at `254e8a7`), so their *Before* reads 0 at the pre-phase ref and 8.4 had to walk each branch to find it | § *Phase 3 as executed*, *Behaviour (3.5)*; § *Phase 4 as executed*, *The repairs (4.3)*, *D17, carried out*; § *Phase 5 as executed*, *The repairs (5.2)*, *(5.3)*; § *Phase 6 as executed*, *The behavioural claims (6.4)*, *Second pass (6.5)*; § *Phase 7 as executed*, *The behavioural claims (7.5)*; § *Phase 8 as executed*, *The defect ledger completed (8.4)*; `9aafd19`, `0204aae`, `40f9093`, `dd572b9`, `2f68a96`, `3671922`, `8c90dcc`, `9f59f05` | No ruling goes to the maintainer with a recommended form that has not been run, with its case and control. A repair that writes a behavioural sentence runs it before its commit, not at N.4. A row for a defect the programme wrote carries *written at `<commit>`*, so its *Before* is checked where it was true |
+| **97** | **The prediction bands missed in every phase, each time by a mechanism the repairs created.** 3.7: BUILT above by 5, the D3 skip allowance unused. 4.6: `pagelint` above by 1, the band assuming every block edited. 5.6: four gates outside, a running example turning *page-type* into *same-page* (19 stays against 3–8), five retags and D21's skips unpredicted. 6.6 and 7.7: in band, but four and five gates by another mechanism, with no split and no D3 skip. Splits predicted up to +8 and +10 came to 0 in phases 6 and 7, and D3 skipped 0 blocks in each phase that allowed for it (3, 6, 7). Each close wrote a lesson the next prediction absorbed, and the next missed on a new one | § *Phase 3 closed (3.7)*; § *Phase 4 closed (4.6)*; § *Phase 5 closed (5.6)*; § *Phase 6 closed (6.6)*; § *Phase 7 closed (7.7)*; `b9f2fb1`, `abb5c61`, `826eecf`, `74dd33d`, `18fcbd0` | Predict from the repair rules as practised: a fragment is made whole, not split or skipped, so the default band holds 0 splits and 0 D3 skips, and the stays are counted from the declarations a running example will span. Make *in band by its mechanism* a verdict in each close's gate table, so a band that holds by another mechanism reads as a miss |
+| **98** | **Every task of phase 7 stopped for a ruling, and most rulings confirmed work already done.** 7.1 and 7.2 asked questions, and 7.3, 7.4, 7.5 and 7.6 each returned PAUSE. Ledger 88–91, 93, 94, 95 and 96 had each been repaired at every recurrence (obligation 21) before it was *"confirmed"* as recommended. The rulings that changed anything were of scope: pins (D22–D25, and D24's revert), a page's example replaced (`OutboxArchiver.md`), tool changes (Docs#211, #212), a watchlist row, upstream filings. This is 017's **#73**, carried one step short | § *Phase 7 as executed*, *Rulings (session 136)*, and the questions closing 7.2–7.6; `3e8f0f3`, `ee54515`, `20a27ad`, `8c90dcc`, `429635f` | A new defect verified by a run and repaired at every recurrence is confirmed at the phase close's sign-off, beside the others. A task pauses only for scope: a pin, a page rewritten, a tool or watchlist change, an issue to file |
+| **99** | **The instruments acceptance needed arrived late.** AC13's join became a command only at 8.2 (`probe/stays.py`, `6947210`). 7.7 did it by hand and found **40** rows listed against **43** FAILED (`V10MigrationGuide.md` #3, #10, #17, which 7.1 said would be listed), and 5.5 found `ImplementAQueryHandler.md` #23's row giving one diagnostic of four. `probe/readings.py`, obligation 19's hunks against fences, was committed at 7.7 (`18fcbd0`), after four closes had done it by other means. `probe/mapper_members.py` was committed at 7.6 (`429635f`), at its third use | § *Phase 5 as executed*, *Second pass (5.5)*; § *Phase 7 as executed*, *Second pass (7.6)*, *Phase 7 closed (7.7)*; § *Phase 8 as executed*, *The instrumented criteria (8.2)*, AC13's row | The instruments phase builds every helper an obligation or a criterion names, here `readings.py` (obligation 19) and `stays.py` (AC13), and every close runs both, so § *Blocks that stay FAILED* is checked when its rows are written. A helper is committed at its first use (obligation 18 says *"used by more than one task"*, so the second use is already late) |
+| **100** | **A figure outside this file's ledgers was never re-derived.** Two commit subjects said *"26 rows"* for tables of 25 (`2f68a96`, 6.4; `8c90dcc`, 7.5). 4.2's interim `--report` figure was off by two, task 2.10's *524* was stale by #195, and design E3's *546* counted the stamp line (`wc -l`). Each became a *said / measured* row at a later task | § *Phase 2 as executed*, *The V4 pin (2.6)*, *`pagelint --per-page` (2.10)*; § *Phase 4 as executed*, *The repairs (4.3)*; § *Phase 6 closed (6.6)*; § *Phase 7 closed (7.7)*, *Said and measured* | Obligation 1 reaches commit subjects and design figures: a commit subject quotes only figures copied from the text it commits, and a count of rows is taken by the command the text gives beside the table |
+
+**Recurrences of 017's ledger** are folded into the entries above rather than numbered again: **#67** (an
+ordinal key, 88), **#70** (a name resolved to the wrong receiver or namespace, 95) and **#73** (rulings that
+converge, 98).
+
+```bash
+# 80 + 20 (81–100) = 100
+grep -cE '^\| \*\*(8[1-9]|9[0-9]|100)\*\* \|' spec/018-compile_residual/tasks.md     # 20
+```
 
 ## What the tasks review found — 2026-10-05
 
