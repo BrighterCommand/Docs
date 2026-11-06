@@ -18,6 +18,11 @@ Some concerns are orthogonal to how you map a **IRequest** into a **Message** or
 A *Transform* is a middleware that runs as part of the pipeline we use to map a **IRequest** into a **Message** or how you map a **Message** into an **IRequest**. A transform implements an **IMessageTransformAsync**. (All transforms are async).
 
 ``` csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+
 // ...
 public interface IAmAMessageTransformAsync : IDisposable
 {
@@ -35,6 +40,11 @@ When we *wrap* the source is the *Message Mapper* and the transform is applied t
 You indicate that you wish to *wrap* a *Message Mapper* with the **WrapWithAttribute** associated with the **IMessageTransformAsync** you want to apply to the **Message** you have created from the **IRequest**. In the example below we use a **ClaimCheck** to move large message payloads (those over the threshold) into a *luggage store* (for example an S3 bucket).
 
 ``` csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+
 // ...
 [ClaimCheck(step:0, thresholdInKb: 256)]
 public Message MapToMessage(GreetingEvent request, Publication publication)
@@ -53,6 +63,11 @@ When we *unwrap* the sink is the *Message Mapper* and the transform is applied t
 You indicate that you wish to *unwrap* a *Message Mapper* with the **UnwrapWithAttribute** associated with the **IMessageTransformAsync** you want to apply to the **Message** before you create your **IRequest**. In the example below we use a **RetrieveClaim** to retrieve a large message payload (most likely stored by a Claim Check in a *luggage store*) that will provide the body of our **Message** before we deserialize it to the **IRequest**. 
 
 ``` csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+
 // ...
 [RetrieveClaim(step:0)]
 public GreetingEvent MapToRequest(Message message)
@@ -61,7 +76,6 @@ public GreetingEvent MapToRequest(Message message)
     
     return greetingCommand;
 }
-
 ```
 
 ### Transform, Wrap and Unwrap
@@ -71,24 +85,25 @@ Usually your **WrapWithAttribute** and **UnwrapWithAttribute** are paired and op
 Both the **WrapWithAttribute** and the **UnwrapWithAttribute** are a type of **TransformAttribute**
 
 ``` csharp
-// ...
+using System;
 
+// Brighter's own declaration, in Paramore.Brighter (TransformAttributeBase.cs:5 at 10.8.1)
 public abstract class TransformAttribute : Attribute
+{
+    public int Step { get; set; }
+    public abstract Type GetHandlerType();
+    public virtual object?[] InitializerParams()
     {
-        public int Step { get; set; }
-        public abstract Type GetHandlerType();
-        public virtual object[] InitializerParams()
-        {
-            return new object[0];
-        }
-
+        return [];
+    }
+}
 ```
 
 To implement a **TransformAttribute** you need to create a derived type that overrides the **GetHandlerType** to return the type of your **IMessageTransformAsync**. 
 
 #### Step
 
-Step specifies the order in which a transform runs (attributes are not guaranteed to be made available in top-down order by reflection). This can be important in transforms. Imagine that you want to compress any message over 256Kb, but because a large enough message might still not be small enough after compression,  a message that is *still* over 256Kb to distributed storage. In this case you would want to make sure that the step value for compression was lower than the step value to offload to distributed storage.
+Step specifies the order in which a transform runs (attributes are not guaranteed to be made available in top-down order by reflection). This can be important in transforms. Imagine that you want to compress any message over 256Kb, but because a large enough message might still not be small enough after compression,  a message that is *still* over 256Kb to distributed storage. Brighter runs the transforms on a method from the highest step to the lowest, so in this case you would want to make sure that the step value for compression was higher than the step value to offload to distributed storage.
 
 #### Passing Parameters to a Transform
 
@@ -97,6 +112,10 @@ If you want to pass parameters to your transform, they must be available at comp
 So in this example, the **ClaimCheck** takes a parameter for the *threshold* at which point we move the body of the message into distributed storage as opposed to serializing it in the message body.
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Transforms.Transformers;
+
 // ...
 public class ClaimCheck : WrapWithAttribute
 {
@@ -141,6 +160,11 @@ The [Claim Check pattern](ClaimCheck.md) stores large message payloads externall
 Here's a real example from the Brighter samples:
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+
 // ...
 public class GreetingEventMessageMapper : IAmAMessageMapper<GreetingEvent>
 {
@@ -198,12 +222,18 @@ public class GreetingEventMessageMapper : IAmAMessageMapper<GreetingEvent>
 Similarly, you can compress messages:
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+using Paramore.Brighter.Transforms.Transformers;
+
 // ...
 public class CompressedOrderMapper : IAmAMessageMapper<LargeOrder>
 {
     public IRequestContext? Context { get; set; }
 
-    [Compress(step: 0, compressionType: CompressionType.Gzip)]
+    [Compress(step: 0, compressionMethod: CompressionMethod.GZip)]
     public Message MapToMessage(LargeOrder request, Publication publication)
     {
         var header = new MessageHeader(
@@ -234,18 +264,23 @@ public class CompressedOrderMapper : IAmAMessageMapper<LargeOrder>
 
 ### Chaining Multiple Transforms
 
-You can chain transforms by using different step numbers:
+You can chain transforms by using different step numbers. Brighter runs them from the highest step to the lowest, so the transform you want to run first takes the highest step:
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.JsonConverters;
+using Paramore.Brighter.Transforms.Attributes;
+using Paramore.Brighter.Transforms.Transformers;
+
 // ...
-public class SecureLargeOrderMapper : IAmAMessageMapper<SensitiveOrder>
+public class CompressedClaimCheckMapper : IAmAMessageMapper<LargeOrder>
 {
     public IRequestContext? Context { get; set; }
 
-    [RemovePII(step: 0)]                          // First: Remove PII
-    [Compress(step: 1, compressionType: CompressionType.Gzip)]  // Second: Compress
-    [ClaimCheck(step: 2, thresholdInKb: 512)]     // Third: Claim check if still large
-    public Message MapToMessage(SensitiveOrder request, Publication publication)
+    [Compress(step: 1, compressionMethod: CompressionMethod.GZip)]  // First: Compress
+    [ClaimCheck(step: 0, thresholdInKb: 512)]                       // Second: Claim check if still large
+    public Message MapToMessage(LargeOrder request, Publication publication)
     {
         // Standard serialization
         var header = new MessageHeader(
@@ -261,12 +296,11 @@ public class SecureLargeOrderMapper : IAmAMessageMapper<SensitiveOrder>
         return new Message(header, body);
     }
 
-    [RetrieveClaim(step: 0)]                      // First: Retrieve if claim checked
-    [Decompress(step: 1)]                         // Second: Decompress
-    [RestorePII(step: 2)]                         // Third: Restore PII
-    public SensitiveOrder MapToRequest(Message message)
+    [RetrieveClaim(step: 1)]                      // First: Retrieve if claim checked
+    [Decompress(step: 0)]                         // Second: Decompress
+    public LargeOrder MapToRequest(Message message)
     {
-        var order = JsonSerializer.Deserialize<SensitiveOrder>(
+        var order = JsonSerializer.Deserialize<LargeOrder>(
             message.Body.Value,
             JsonSerialisationOptions.Options
         );
@@ -276,7 +310,7 @@ public class SecureLargeOrderMapper : IAmAMessageMapper<SensitiveOrder>
 }
 ```
 
-The transforms execute in order based on the `step` parameter. On receive, they execute in reverse order.
+The transforms execute in order based on the `step` parameter, from the highest to the lowest, on receive as on send. So on send `Compress` (step 1) runs before `ClaimCheck` (step 0), and a message that is still over the threshold once compressed goes to the luggage store compressed; on receive `RetrieveClaim` (step 1) fetches it before `Decompress` (step 0) restores the body.
 
 ## Further Reading
 

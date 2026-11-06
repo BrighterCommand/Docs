@@ -69,46 +69,67 @@ and the Kerberos option is `SaslKerberosPrincipal`.
 The following code connects to a local Kafka instance (for development):
 
 ``` csharp
-	services.AddBrighter(...)
-	.AddProducers((configure) =>
-	{
-	    configure.ProducerRegistry = new KafkaProducerRegistryFactory(
-		new KafkaMessagingGatewayConfiguration()
-		{
-		 	Name = "paramore.brighter.greetingsender",
-			BootStrapServers = new[] {"localhost:9092"}
-		},
-		...//publication, see below
-		)
-	    .Create();
-	})
-	...
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.Kafka;
 
+services.AddBrighter(options =>
+    {
+        // ... other configuration
+    })
+    .AddProducers((configure) =>
+    {
+        configure.ProducerRegistry = new KafkaProducerRegistryFactory(
+            new KafkaMessagingGatewayConfiguration()
+            {
+                Name = "paramore.brighter.greetingsender",
+                BootStrapServers = new[] {"localhost:9092"}
+            },
+            new KafkaPublication[]
+            {
+                // ... the publications, see below
+            }
+        )
+        .Create();
+    });
 ```
 
 The following code connects to a remote Kafka instance. The settings here will depend on how your production broker is configured for access. We show getting secrets from environment variables for simplicity, again you will need to adjust this for your approach to secrets management:
 
 ``` csharp
-	services.AddBrighter(...)
-	.AddProducers((configure) =>
-        {
-            configure.ProducerRegistry = new KafkaProducerRegistryFactory(
-		new KafkaMessagingGatewayConfiguration()
-		{
-			Name = "paramore.brighter.greetingsender",
-			BootStrapServers = new[] { Environment.GetEnvironmentVariable("BOOSTRAP_SERVER")},
-			SecurityProtocol = Paramore.Brighter.MessagingGateway.Kafka.SecurityProtocol.SaslSsl,
-			SaslMechanisms = Paramore.Brighter.MessagingGateway.Kafka.SaslMechanism.Plain,
-			SaslUsername = Environment.GetEnvironmentVariable("SASL_USERNAME"),
-			SaslPassword = Environment.GetEnvironmentVariable("SASL_PASSWORD"),
-			SslCaLocation = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "/usr/local/etc/openssl@1.1/cert.pem" : null;
-		},
-		...//publication, see below
-		)
-	    .Create();
-	})
-	...
+using System;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyInjection;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.Kafka;
 
+services.AddBrighter(options =>
+    {
+        // ... other configuration
+    })
+    .AddProducers((configure) =>
+    {
+        configure.ProducerRegistry = new KafkaProducerRegistryFactory(
+            new KafkaMessagingGatewayConfiguration()
+            {
+                Name = "paramore.brighter.greetingsender",
+                BootStrapServers = new[] { Environment.GetEnvironmentVariable("BOOSTRAP_SERVER")},
+                SecurityProtocol = Paramore.Brighter.MessagingGateway.Kafka.SecurityProtocol.SaslSsl,
+                SaslMechanisms = Paramore.Brighter.MessagingGateway.Kafka.SaslMechanism.Plain,
+                SaslUsername = Environment.GetEnvironmentVariable("SASL_USERNAME"),
+                SaslPassword = Environment.GetEnvironmentVariable("SASL_PASSWORD"),
+                SslCaLocation = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "/usr/local/etc/openssl@1.1/cert.pem" : null
+            },
+            new KafkaPublication[]
+            {
+                // ... the publications, see below
+            }
+        )
+        .Create();
+    });
 ```
 
 ## Kafka Publication
@@ -172,28 +193,37 @@ headers and Kafka's.
 The following example shows how a *Publication* might be configured:
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessagingGateway.Kafka;
 
-	services.AddBrighter(...)
-	.AddProducers((configure) =>
-        {
-            configure.ProducerRegistry = new KafkaProducerRegistryFactory(
-		...,//connection see above
-		new KafkaPublication[] {new KafkaPublication()
-                {
-                    Topic = new RoutingKey("MyTopicName"),
-                    RequestType = typeof(GreetingEvent),
-                    NumPartitions = 3,
-                    ReplicationFactor = 3,
-                    MessageTimeoutMs = 1000,
-                    RequestTimeoutMs = 1000,
-                    MakeChannels = OnMissingChannel.Create 
-                }}
-		).Create();
-	})
-
+services.AddBrighter(options =>
+    {
+        // ... other configuration
+    })
+    .AddProducers((configure) =>
+    {
+        configure.ProducerRegistry = new KafkaProducerRegistryFactory(
+            new KafkaMessagingGatewayConfiguration()
+            {
+                Name = "paramore.brighter.greetingsender",
+                BootStrapServers = new[] {"localhost:9092"}
+                // ... other connection settings, see above
+            },
+            new KafkaPublication[] {new KafkaPublication()
+            {
+                Topic = new RoutingKey("MyTopicName"),
+                RequestType = typeof(GreetingEvent),
+                NumPartitions = 3,
+                ReplicationFactor = 3,
+                MessageTimeoutMs = 1000,
+                RequestTimeoutMs = 1000,
+                MakeChannels = OnMissingChannel.Create
+            }}
+        ).Create();
+    });
 ```
 
 ### Kafka Hash Partitioning
@@ -203,6 +233,7 @@ A Kafka **topic** is split into **partitions**, and the producer decides which *
 How the partitioner behaves depends on whether the message has a **partition key**. You set the partition key on the message header in your message mapper:
 
 ``` csharp
+using System.Text.Json;
 using Paramore.Brighter;
 
 public Message MapToMessage(GreetingEvent request, Publication publication)
@@ -212,7 +243,8 @@ public Message MapToMessage(GreetingEvent request, Publication publication)
 		//Messages with the same partition key go to the same partition
 		PartitionKey = request.CustomerId.ToString()
 	};
-	...
+	var body = new MessageBody(JsonSerializer.Serialize(request));
+	return new Message(header, body);
 }
 ```
 
@@ -243,17 +275,17 @@ We recommend setting **Partitioner** to **Partitioner.Murmur2Random** because of
 using Paramore.Brighter;
 using Paramore.Brighter.MessagingGateway.Kafka;
 
-	new KafkaPublication[]
+var publications = new KafkaPublication[]
+{
+	new KafkaPublication()
 	{
-		new KafkaPublication()
-		{
-			Topic = new RoutingKey("MyTopicName"),
-			RequestType = typeof(GreetingEvent),
-			NumPartitions = 3,
-			Partitioner = Partitioner.Murmur2Random,
-			MakeChannels = OnMissingChannel.Create
-		}
+		Topic = new RoutingKey("MyTopicName"),
+		RequestType = typeof(GreetingEvent),
+		NumPartitions = 3,
+		Partitioner = Partitioner.Murmur2Random,
+		MakeChannels = OnMissingChannel.Create
 	}
+};
 ```
 
 Note that changing the partitioner on an existing topic changes where keys land: messages with the same key may be written to different partitions before and after the change, which can break per-key ordering during the transition. Plan such a change for a deployment window where this is acceptable, or apply it when you create a new topic.
@@ -265,32 +297,41 @@ The Confluent .NET client has a range of configuration options. Some of those ca
 You can use it as follows:
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.MessagingGateway.Kafka;
 
-	var publication = new KafkaPublication()
+var publication = new KafkaPublication()
+{
+	Topic = new RoutingKey("MyTopicName"),
+	RequestType = typeof(GreetingEvent),
+	NumPartitions = 3,
+	ReplicationFactor = 3,
+	MessageTimeoutMs = 1000,
+	RequestTimeoutMs = 1000,
+	MakeChannels = OnMissingChannel.Create
+};
+
+var producerRegistryFactory = new KafkaProducerRegistryFactory(
+	new KafkaMessagingGatewayConfiguration()
 	{
-		Topic = new RoutingKey("MyTopicName"),
-		RequestType = typeof(GreetingEvent),
-		NumPartitions = 3,
-		ReplicationFactor = 3,
-		MessageTimeoutMs = 1000,
-		RequestTimeoutMs = 1000,
-		MakeChannels = OnMissingChannel.Create 
-	};
+		Name = "paramore.brighter.greetingsender",
+		BootStrapServers = new[] {"localhost:9092"}
+		// ... other connection settings, see above
+	},
+	new[] { publication });
+producerRegistryFactory.SetConfigHook(config => config.EnableGaplessGuarantee = true);
 
-	var producerRegistryFactory = new KafkaProducerRegistryFactory(
-		...,//connection see above
-		new[] { publication });
-	producerRegistryFactory.SetConfigHook(config => config.EnableGaplessGuarantee = true);
-
-	services.AddBrighter(...)
-	.AddProducers((configure) =>
-        {
-            configure.ProducerRegistry = producerRegistryFactory.Create();
-	});
-
+services.AddBrighter(options =>
+    {
+        // ... other configuration
+    })
+    .AddProducers((configure) =>
+    {
+        configure.ProducerRegistry = producerRegistryFactory.Create();
+    });
 ```
 	
 ### Kafka Topic Auto Create
@@ -389,6 +430,15 @@ Reactor rather than the Proactor.
 The following example shows how a subscription might be configured:
 
 ``` csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.Kafka;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+using Paramore.Brighter.ServiceActivator.Extensions.Hosting;
+
 // ...
  private static void ConfigureBrighter(HostBuilderContext hostContext, IServiceCollection services)
 {
@@ -408,7 +458,12 @@ The following example shows how a subscription might be configured:
 
 	//create the gateway
 	var consumerFactory = new KafkaMessageConsumerFactory(
-	new KafkaMessagingGatewayConfiguration {...} // see connection information above
+	new KafkaMessagingGatewayConfiguration
+	{
+		Name = "paramore.brighter.greetingsender",
+		BootStrapServers = new[] {"localhost:9092"}
+		// ... other connection settings, see above
+	}
 	);
 
 	services.AddConsumers(options =>
@@ -431,6 +486,12 @@ The **configHook** takes a *delegate* (you can pass a lambda). Your delegate wil
 You can use it as follows:
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.Kafka;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 // ...
 var subscription = new KafkaSubscription<GreetingEvent>(
 	subscriptionName: new SubscriptionName("paramore.example.greeting"),
@@ -454,7 +515,12 @@ var subscriptions = new KafkaSubscription[] { subscription };
 
 //create the gateway
 var consumerFactory = new KafkaMessageConsumerFactory(
-	new KafkaMessagingGatewayConfiguration {...} // see connection information above
+	new KafkaMessagingGatewayConfiguration
+	{
+		Name = "paramore.brighter.greetingsender",
+		BootStrapServers = new[] {"localhost:9092"}
+		// ... other connection settings, see above
+	}
 );
 
 services.AddConsumers(options =>
@@ -471,52 +537,103 @@ The **configHook** is useful for:
 **1. Fine-tuning fetch behavior**:
 
 ``` csharp
-configHook: config =>
-{
-	config.FetchMinBytes = 1024;        // Minimum data per fetch request
-	config.FetchWaitMaxMs = 100;        // Max time to wait for fetch.min.bytes
-	config.FetchMaxBytes = 52428800;    // Maximum data for all partitions
-}
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
+var subscription = new KafkaSubscription<GreetingEvent>(
+	subscriptionName: new SubscriptionName("paramore.example.greeting"),
+	channelName: new ChannelName("greeting.event"),
+	routingKey: new RoutingKey("greeting.event"),
+	groupId: Environment.GetEnvironmentVariable("KAFKA_GROUPID"),
+	configHook: config =>
+	{
+		config.FetchMinBytes = 1024;        // Minimum data per fetch request
+		config.FetchWaitMaxMs = 100;        // Max time to wait for fetch.min.bytes
+		config.FetchMaxBytes = 52428800;    // Maximum data for all partitions
+	}
+);
 ```
 
 **2. Enabling consumer statistics**:
 
 ``` csharp
-configHook: config =>
-{
-	config.StatisticsIntervalMs = 30000; // Emit stats every 30 seconds
-}
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
+var subscription = new KafkaSubscription<GreetingEvent>(
+	subscriptionName: new SubscriptionName("paramore.example.greeting"),
+	channelName: new ChannelName("greeting.event"),
+	routingKey: new RoutingKey("greeting.event"),
+	groupId: Environment.GetEnvironmentVariable("KAFKA_GROUPID"),
+	configHook: config =>
+	{
+		config.StatisticsIntervalMs = 30000; // Emit stats every 30 seconds
+	}
+);
 ```
 
 **3. Customizing security settings**:
 
 ``` csharp
-configHook: config =>
-{
-	config.EnableSslCertificateVerification = true;
-	config.SslEndpointIdentificationAlgorithm = SslEndpointIdentificationAlgorithm.Https;
-}
+using System;
+using Confluent.Kafka;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
+var subscription = new KafkaSubscription<GreetingEvent>(
+	subscriptionName: new SubscriptionName("paramore.example.greeting"),
+	channelName: new ChannelName("greeting.event"),
+	routingKey: new RoutingKey("greeting.event"),
+	groupId: Environment.GetEnvironmentVariable("KAFKA_GROUPID"),
+	configHook: config =>
+	{
+		config.EnableSslCertificateVerification = true;
+		config.SslEndpointIdentificationAlgorithm = SslEndpointIdentificationAlgorithm.Https;
+	}
+);
 ```
 
 **4. Adjusting partition assignment**:
 
 ``` csharp
-configHook: config =>
-{
-	// Note: PartitionAssignmentStrategy should typically be set via the subscription parameter
-	// But you can override it here if needed
-	config.SessionTimeoutMs = 45000;  // Increase for slow rebalances
-}
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
+var subscription = new KafkaSubscription<GreetingEvent>(
+	subscriptionName: new SubscriptionName("paramore.example.greeting"),
+	channelName: new ChannelName("greeting.event"),
+	routingKey: new RoutingKey("greeting.event"),
+	groupId: Environment.GetEnvironmentVariable("KAFKA_GROUPID"),
+	configHook: config =>
+	{
+		// Note: PartitionAssignmentStrategy should typically be set via the subscription parameter
+		// But you can override it here if needed
+		config.SessionTimeoutMs = 45000;  // Increase for slow rebalances
+	}
+);
 ```
 
 **5. Debugging and monitoring**:
 
 ``` csharp
-configHook: config =>
-{
-	config.Debug = "consumer,cgrp,topic,fetch"; // Enable debug logging
-	config.StatisticsIntervalMs = 10000;        // Frequent statistics for debugging
-}
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
+var subscription = new KafkaSubscription<GreetingEvent>(
+	subscriptionName: new SubscriptionName("paramore.example.greeting"),
+	channelName: new ChannelName("greeting.event"),
+	routingKey: new RoutingKey("greeting.event"),
+	groupId: Environment.GetEnvironmentVariable("KAFKA_GROUPID"),
+	configHook: config =>
+	{
+		config.Debug = "consumer,cgrp,topic,fetch"; // Enable debug logging
+		config.StatisticsIntervalMs = 10000;        // Frequent statistics for debugging
+	}
+);
 ```
 
 ### Partition Assignment Strategy
@@ -529,7 +646,7 @@ Kafka distributes partitions across consumers in a consumer group using a partit
 
 - **RoundRobin** (default): Distributes partitions evenly across consumers in a round-robin fashion. This is the most balanced distribution but may cause all partitions to be reassigned during rebalances.
 - **Range**: Assigns contiguous partition ranges to consumers. Useful for co-locating related partitions on the same consumer.
-- **CooperativeSticky**: Not supported with Brighter's manual offset commits (will throw an exception).
+- **CooperativeSticky**: Rebalances incrementally. A consumer keeps the partitions it already owns, and only the partitions moving to another consumer are revoked.
 
 **Why RoundRobin is the Default**:
 
@@ -543,6 +660,11 @@ Brighter uses **RoundRobin** as the default strategy because:
 The **Range** strategy is useful when you want to co-locate partitions on the same consumer:
 
 ``` csharp
+using System;
+using Confluent.Kafka;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription<GreetingEvent>(
 	subscriptionName: new SubscriptionName("paramore.example.greeting"),
 	channelName: new ChannelName("greeting.event"),
@@ -557,24 +679,26 @@ var subscription = new KafkaSubscription<GreetingEvent>(
 };
 ```
 
-**CooperativeSticky Limitation**:
+**Using CooperativeSticky Strategy**:
 
-The **CooperativeSticky** strategy is not supported when using manual offset commits (which Brighter requires for its at-least-once delivery guarantees). Attempting to use it will throw an `ArgumentOutOfRangeException`:
+The **CooperativeSticky** strategy is useful when you want a consumer joining or leaving the group to move as few partitions as possible. Set it on a `ClassicGroupProtocol`:
 
 ``` csharp
-// This will throw an exception:
+using System;
+using Confluent.Kafka;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription<GreetingEvent>(
 	// ...
 )
 {
 	GroupProtocol = new ClassicGroupProtocol
 	{
-		PartitionAssignmentStrategy = PartitionAssignmentStrategy.CooperativeSticky // ❌ Not supported
+		PartitionAssignmentStrategy = PartitionAssignmentStrategy.CooperativeSticky
 	}
 };
 ```
-
-This is due to a [known issue in librdkafka](https://github.com/confluentinc/librdkafka/issues/4059) where CooperativeSticky doesn't work correctly with manual offset management.
 
 ### Consumer Group Protocol (KIP-848)
 
@@ -588,6 +712,11 @@ Brighter supports both protocols through the **GroupProtocol** property on `Kafk
 **Using the classic protocol explicitly**:
 
 ``` csharp
+using System;
+using Confluent.Kafka;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription<GreetingEvent>(
 	subscriptionName: new SubscriptionName("paramore.example.greeting"),
 	channelName: new ChannelName("greeting.event"),
@@ -611,6 +740,10 @@ When you don't supply a **GroupProtocol**, Brighter uses a `ClassicGroupProtocol
 **Using the KIP-848 consumer protocol**:
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 var subscription = new KafkaSubscription<GreetingEvent>(
 	subscriptionName: new SubscriptionName("paramore.example.greeting"),
 	channelName: new ChannelName("greeting.event"),
@@ -631,7 +764,17 @@ var subscription = new KafkaSubscription<GreetingEvent>(
 `ConsumerGroupProtocol.GroupInstanceId` enables Kafka static membership (`group.instance.id`). Static membership requires a **unique** id per consumer instance. Because the subscription's `GroupProtocol` instance is applied to every consumer created from that subscription (one per performer), all of those consumers would register the same static id and collide on group join. Only set `GroupInstanceId` when the subscription has a single performer; to use static membership with multiple performers, assign a unique `group.instance.id` per consumer via the **configHook** instead:
 
 ``` csharp
-configHook: config => config.GroupInstanceId = $"greeter-{Guid.NewGuid()}"
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
+var subscription = new KafkaSubscription<GreetingEvent>(
+	subscriptionName: new SubscriptionName("paramore.example.greeting"),
+	channelName: new ChannelName("greeting.event"),
+	routingKey: new RoutingKey("greeting.event"),
+	groupId: Environment.GetEnvironmentVariable("KAFKA_GROUPID"),
+	configHook: config => config.GroupInstanceId = $"greeter-{Guid.NewGuid()}"
+);
 ```
 
 **Infrastructure validation caveat**:
@@ -679,6 +822,9 @@ and a package for the serialization of your choice. Here we are using JSON, so w
 When working with Brighter, to use Confluent Schema Registry you will need to take a dependency on ISchemaRegistry in the constructor of your message mapper. To fulfill this constructor, in your application setup you will need to register an instance of schema registry. You should configure the schema registry config url to be the url of you schema registry. (Here we just use localhost for a development instance running in docker as an example).
 
 ``` csharp
+using Confluent.SchemaRegistry;
+using Microsoft.Extensions.DependencyInjection;
+
 var schemaRegistryConfig = new SchemaRegistryConfig { Url = "http://localhost:8081"};
 var cachedSchemaRegistryClient = new CachedSchemaRegistryClient(schemaRegistryConfig);
 services.AddSingleton<ISchemaRegistryClient>(cachedSchemaRegistryClient);

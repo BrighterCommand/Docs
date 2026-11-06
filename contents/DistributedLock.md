@@ -154,7 +154,7 @@ Outbox. Each provider page covers its package, configuration, and provisioning.
 | [MS SQL](/contents/MsSqlDistributedLock.md) | SQL Server | `Paramore.Brighter.Locking.MsSql` | Session application lock |
 | [MySQL](/contents/MySqlDistributedLock.md) | MySQL | `Paramore.Brighter.Locking.MySql` | Session `GET_LOCK` |
 | [Azure Blob](/contents/AzureBlobDistributedLock.md) | Azure Blob Storage | `Paramore.Brighter.Locking.Azure` | Blob lease |
-| [MongoDB](/contents/MongoDbDistributedLock.md) | MongoDB | `Paramore.Brighter.Locking.MongoDb` | TTL document |
+| [MongoDB](/contents/MongoDbDistributedLock.md) | MongoDB | `Paramore.Brighter.Locking.MongoDb` | Document; it expires only under a TTL index you create (see the provider page) |
 | [Firestore](/contents/FirestoreDistributedLock.md) | Google Cloud Firestore | `Paramore.Brighter.Locking.Firestore` | TTL document |
 
 For AWS, prefer the **V4** package (built on AWS SDK v4). Earlier AWS SDK major versions

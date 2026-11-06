@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 7.5: MongoDBInbox.md #4 and MongoDBOutbox.md #4, "Messages will be automatically deleted after 30 days", and
+       the sentence after each, "MongoDB will automatically create a TTL index on the TimeStamp field and remove expired
+       documents", run against the released 10.8.1 packages and a throwaway MongoDB whose TTL monitor wakes every second:
+         docker run -d - -rm - -name probe-s5-mongo -p 27019:27017 mongo:7 - -setParameter ttlMonitorSleepSecs=1
+       (each "- -" is two hyphens), then docker rm -f probe-s5-mongo. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.MongoDb" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Inbox.MongoDb" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Outbox.MongoDb" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Locking.MongoDb" Version="10.8.1" />
+  </ItemGroup>
+</Project>

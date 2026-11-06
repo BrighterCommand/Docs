@@ -63,24 +63,29 @@ For an unsupported type, throw `InvalidMessageAction` to request rejection as `U
 On the producer side, set the CloudEvents `type` in your Publication:
 
 ```csharp
+using System;
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.MessagingGateway.Kafka;
+
 // ...
 var publications = new[]
 {
-    new Publication
+    new KafkaPublication
     {
         Topic = new RoutingKey("task.update"),
         RequestType = typeof(TaskCreated),
         Source = new Uri("https://example.com/tasks"),
         Type = new CloudEventsType("io.goparamore.task.created")
     },
-    new Publication
+    new KafkaPublication
     {
         Topic = new RoutingKey("task.update"),
         RequestType = typeof(TaskUpdated),
         Source = new Uri("https://example.com/tasks"),
         Type = new CloudEventsType("io.goparamore.task.updated")
     },
-    new Publication
+    new KafkaPublication
     {
         Topic = new RoutingKey("task.update"),
         RequestType = typeof(TaskCompleted),
@@ -93,7 +98,11 @@ services.AddBrighter(options => { })
     .AddProducers(configure =>
     {
         configure.ProducerRegistry = new KafkaProducerRegistryFactory(
-            new KafkaMessagingGatewayConfiguration { /* ... */ },
+            new KafkaMessagingGatewayConfiguration
+            {
+                BootStrapServers = new[] { "localhost:9092" }
+                // ...
+            },
             publications
         ).Create();
     });
@@ -193,6 +202,10 @@ Once the request type is resolved, Brighter routes the message to the appropriat
 ### Standard 1-to-1 Handler Mapping
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.ServiceActivator.Extensions.DependencyInjection;
+
 // ...
 services.AddConsumers(options =>
     {

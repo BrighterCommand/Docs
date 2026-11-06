@@ -292,9 +292,10 @@ service collection and not the consumer's. Both ends need it: one to check the l
 other to claim it.
 
 **The consumer gets a body of `Claim Check <guid>`** — the mapper's `MapToRequest` has no
-`[RetrieveClaim]`, or its step ordering puts it after something that already tried to
-deserialize. The claim check unwraps at `step: 0` by convention because it has to run before
-anything that reads the body.
+`[RetrieveClaim]`. When it shares `MapToRequest` with another transform, give it the highest
+step: Brighter runs a mapper's transforms from the highest step to the lowest, on receive as on
+send, and the claim has to be retrieved before anything reads the body. Alone, `step: 0` is the
+convention.
 
 **The second consumer of the same message finds nothing** — `retain` defaulted to `false` and
 the first consumer deleted the luggage. Set `retain: true`, and take on the deletion yourself.

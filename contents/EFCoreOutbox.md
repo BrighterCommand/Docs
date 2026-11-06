@@ -89,6 +89,7 @@ public class AddGreetingHandlerAsync(
         await provider.GetTransactionAsync(cancellationToken);
         try
         {
+            // uow.People is the DbSet<Person> on your context
             var person = await uow.People
                 .Where(p => p.Name == addGreeting.Name)
                 .SingleAsync(cancellationToken);

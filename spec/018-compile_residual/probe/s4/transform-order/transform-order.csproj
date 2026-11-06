@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 6.4: MessageTransforms.md #8 and the sentence after it, the order a chain of transforms runs in on send and
+       on receive, run against the released Paramore.Brighter 10.8.1 package. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.8.1" />
+  </ItemGroup>
+</Project>

@@ -101,6 +101,9 @@ The simplest way to requeue on error is to add `[DeferMessageOnError]` to your h
 The `delayMilliseconds` parameter overrides the `RequeueDelay` configured on the Subscription. If omitted or set to `0`, the Subscription default is used.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Defer.Attributes;
+
 public class OrderHandler : RequestHandler<PlaceOrder>
 {
     // Any unhandled exception → requeue with a 5-second delay
@@ -122,6 +125,10 @@ For async handlers, use `[DeferMessageOnErrorAsync]` instead. The behavior is id
 A common pattern is to combine in-process retry with deferred requeue. The resilience pipeline retries immediately a few times; if all retries fail, `[DeferMessageOnError]` catches the final exception and requeues the message on the External Bus. As a `[UseResiliencePipeline]` blocks the message pump, keep retries quick, as you won't process other messages whilst you block on processing the current one. For a longer delay, use `[DeferMessageOnError]`
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Defer.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 public class OrderHandler : RequestHandler<PlaceOrder>
 {
     // Outermost: catch any unhandled exception and requeue with delay
@@ -150,6 +157,9 @@ See [Backstop Attributes](#backstop-attributes) for pipeline ordering guidance a
 If you need fine-grained control over which exceptions trigger a requeue — for example, only requeuing on a specific exception type while letting others propagate — you can throw `DeferMessageAction` directly in your handler.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+
 public class OrderHandler : RequestHandler<PlaceOrder>
 {
     private readonly IOrderService _orderService;
@@ -191,6 +201,9 @@ Use `RejectMessageAction` for non-transient errors where the message should be p
 ### Throwing RejectMessageAction Directly
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+
 public class OrderHandler : RequestHandler<PlaceOrder>
 {
     private readonly IOrderRepository _repository;
@@ -221,6 +234,10 @@ public class OrderHandler : RequestHandler<PlaceOrder>
 Instead of catching every possible exception in your handler, you can add `[RejectMessageOnError]` to your pipeline. It wraps the handler invocation in a try/catch and converts any unhandled exception into a `RejectMessageAction`, ensuring the message goes to the DLQ rather than being silently discarded.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+using Paramore.Brighter.Reject.Attributes;
+
 public class OrderHandler : RequestHandler<PlaceOrder>
 {
     // Backstop: any unhandled exception → reject to DLQ
@@ -282,6 +299,10 @@ The no-ops are not equivalent. On GCP Pub/Sub, PostgreSQL and RocketMQ the messa
 If you are using [Feature Switches](/contents/FeatureSwitches.md), the `[FeatureSwitch]` has built-in support for `DontAckAction`. Set the `dontAck` parameter to `true`, and the attribute throws `DontAckAction` when the feature is off — instead of silently acknowledging the message.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.FeatureSwitch;
+using Paramore.Brighter.FeatureSwitch.Attributes;
+
 public class OrderHandler : RequestHandler<PlaceOrder>
 {
     [FeatureSwitch(typeof(OrderHandler), FeatureSwitchStatus.Config, step: 1, dontAck: true)]
@@ -303,6 +324,9 @@ Without `dontAck: true`, the feature switch silently consumes the message when t
 You can also throw `DontAckAction` directly in your handler for custom scenarios that don't use the feature switch attribute:
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+
 public class OrderHandler : RequestHandler<PlaceOrder>
 {
     private readonly IFeatureFlags _features;
@@ -333,6 +357,10 @@ public class OrderHandler : RequestHandler<PlaceOrder>
 Like `[RejectMessageOnError]`, you can use `[DontAckOnError]` to convert any unhandled exception into a `DontAckAction`. The message stays on the channel instead of being discarded.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.DontAck.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 public class OrderHandler : RequestHandler<PlaceOrder>
 {
     // Backstop: any unhandled exception → don't ack, leave on channel
@@ -369,6 +397,10 @@ Throw `InvalidMessageAction` from a message mapper when deserialization fails du
 ### Throwing InvalidMessageAction in a Message Mapper
 
 ```csharp
+using System.Text.Json;
+using Paramore.Brighter;
+using Paramore.Brighter.Actions;
+
 public class OrderMessageMapper : IAmAMessageMapper<PlaceOrder>
 {
     public IRequestContext? Context { get; set; }
@@ -390,7 +422,15 @@ public class OrderMessageMapper : IAmAMessageMapper<PlaceOrder>
 
     public Message MapToMessage(PlaceOrder request, Publication publication)
     {
-        // ... serialization logic
+        var header = new MessageHeader(
+            messageId: request.Id,
+            topic: publication.Topic,
+            messageType: MessageType.MT_COMMAND
+        );
+
+        var body = new MessageBody(JsonSerializer.Serialize(request));
+
+        return new Message(header, body);
     }
 }
 ```
@@ -427,6 +467,10 @@ Catches any exception thrown by the inner pipeline and throws `DeferMessageActio
 Backstop attributes should be at the **outermost** position in the pipeline (lowest step number, typically `step: 0`). Retry and circuit breaker middleware should be **inside** (higher step numbers). This ensures the backstop only fires after all retry attempts are exhausted. Any backstop attribute (`RejectMessageOnError`, `DontAckOnError`, or `DeferMessageOnError`) can be used at step 0 — choose the one that matches your desired failure behavior.
 
 ```csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+using Paramore.Brighter.Reject.Attributes;
+
 public class OrderHandler : RequestHandler<PlaceOrder>
 {
     [RejectMessageOnError(step: 0)]                                // Outermost: backstop
@@ -449,6 +493,12 @@ A handler method takes one `[UseResiliencePipeline]`, so the circuit breaker and
 The async equivalent uses the async variants of each attribute:
 
 ```csharp
+using System.Threading;
+using System.Threading.Tasks;
+using Paramore.Brighter;
+using Paramore.Brighter.Policies.Attributes;
+using Paramore.Brighter.Reject.Attributes;
+
 public class OrderHandler : RequestHandlerAsync<PlaceOrder>
 {
     [RejectMessageOnErrorAsync(step: 0)]

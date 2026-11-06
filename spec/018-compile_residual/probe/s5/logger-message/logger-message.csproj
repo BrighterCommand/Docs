@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 7.4: Logging.md #5, the [LoggerMessage] partial, compiled as a reader's project would compile it.
+       Case: `dotnet build` - the Microsoft.Extensions.Logging generator writes the implementation; 0 errors.
+       Control: `dotnet build -p:DropGen=true` removes every analyzer before CoreCompile, as blockcheck compiles;
+       CS8795, the diagnostic blockcheck reports. Second control: the block's former `private static partial class Log`
+       at top level fails CS1527 even with the generator, which is why the block is now `internal`. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>disable</ImplicitUsings></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+  </ItemGroup>
+  <Target Name="DropGen" BeforeTargets="CoreCompile" Condition="'$(DropGen)' == 'true'">
+    <ItemGroup><Analyzer Remove="@(Analyzer)" /></ItemGroup>
+  </Target>
+</Project>

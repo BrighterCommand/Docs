@@ -56,7 +56,10 @@ When a topic fails to publish:
 To enable Sweeper Circuit Breaking, register an `IAmAnOutboxCircuitBreaker` implementation with your IoC container:
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.CircuitBreaker;
+using Paramore.Brighter.Extensions.DependencyInjection;
+using Paramore.Brighter.Outbox.Hosting;
 
 public void ConfigureServices(IServiceCollection services)
 {
@@ -72,7 +75,10 @@ public void ConfigureServices(IServiceCollection services)
     {
         // Configure Brighter as normal
     })
-    .AddProducers(/* producer configuration */)
+    .AddProducers(producers =>
+    {
+        // ... your producer registry and Outbox
+    })
     .UseOutboxSweeper();  // Enable the Outbox Sweeper
 }
 ```
@@ -131,6 +137,10 @@ services.AddSingleton<IAmAnOutboxCircuitBreaker>(
 You can query the circuit breaker to see which topics are currently tripped:
 
 ```csharp
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Paramore.Brighter.CircuitBreaker;
+
 public class OutboxMonitorService
 {
     private readonly IAmAnOutboxCircuitBreaker _circuitBreaker;
@@ -169,6 +179,18 @@ public class OutboxMonitorService
 Set up monitoring to track circuit breaker events:
 
 ```csharp
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Paramore.Brighter.CircuitBreaker;
+
+// Register health check
+services.AddHealthChecks()
+    .AddCheck<CircuitBreakerHealthCheck>("outbox_circuit_breaker");
+
 public class CircuitBreakerHealthCheck : IHealthCheck
 {
     private readonly IAmAnOutboxCircuitBreaker _circuitBreaker;
@@ -203,10 +225,6 @@ public class CircuitBreakerHealthCheck : IHealthCheck
         );
     }
 }
-
-// Register health check
-services.AddHealthChecks()
-    .AddCheck<CircuitBreakerHealthCheck>("outbox_circuit_breaker");
 ```
 
 ## Sweeper Circuit Breaking Outbox Support

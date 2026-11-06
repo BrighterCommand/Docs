@@ -22,7 +22,7 @@ For this we will need the *Outbox* package for DynamoDb:
 **AWS SDK v4** (recommended for new projects):
 * **Paramore.Brighter.Outbox.DynamoDB.V4**
 
-**Paramore.Brighter.Outbox.DynamoDb** (or **.V4**) will pull in another package:
+**Paramore.Brighter.Outbox.DynamoDB** (or **.V4**) will pull in another package:
 
 * **Paramore.Brighter.DynamoDb** (or **Paramore.Brighter.DynamoDb.V4**)
 

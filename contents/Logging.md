@@ -56,9 +56,10 @@ therefore catches all of it.
 
 ## Logging with Dependency Injection
 
-If you use the DI extensions, there is nothing to do. Both `AddBrighter` and `AddConsumers`
-resolve `ILoggerFactory` from the container as they build, and hand it to
-`ApplicationLogging`:
+If you use the DI extensions, Brighter installs your container's factory for you. The
+command processor `AddBrighter` registers, and the Dispatcher `AddConsumers` registers, each
+resolve `ILoggerFactory` from the container when they are built — the first time the container
+resolves them — and hand it to `ApplicationLogging`:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -78,6 +79,10 @@ The resolution is `GetService<ILoggerFactory>()`, not `GetRequiredService`, so a
 with no factory registered is not an error — Brighter keeps the empty default and writes
 nothing.
 
+**Until then, Brighter's types log to the empty default.** A type that logs before the command
+processor or the Dispatcher is first resolved — a producer you send through at startup, say —
+keeps that logger for the life of the process, and none of its lines reach your providers.
+
 ## Logging Without Dependency Injection
 
 If you build a Command Processor by hand, assign the factory yourself:
@@ -93,8 +98,14 @@ ApplicationLogging.LoggerFactory = LoggerFactory.Create(logging =>
     logging.SetMinimumLevel(LogLevel.Information);
 });
 
+// subscriberRegistry and handlerFactory are yours: they register and create your handlers
 var commandProcessor = CommandProcessorBuilder.StartNew()
-    // ... handler configuration, policies, request context factory
+    .Handlers(new HandlerConfiguration(subscriberRegistry, handlerFactory))
+    .DefaultResilience()
+    .NoExternalBus()
+    .NoInstrumentation()
+    .RequestContextFactory(new InMemoryRequestContextFactory())
+    .RequestSchedulerFactory(new InMemorySchedulerFactory())
     .Build();
 ```
 
@@ -105,12 +116,13 @@ the types that have already initialised.
 ## What Brighter Logs
 
 Log methods are source-generated with `[LoggerMessage]`, so the messages are structured
-rather than interpolated:
+rather than interpolated. The Command Processor declares its own in a `Log` class nested inside it (`src/Paramore.Brighter/CommandProcessor.cs`, in the 10.8.1 release). Here is one of them, with `Log` written as a top-level `internal` class, the form it takes in your own code; the generator writes the method's body:
 
 ```csharp
+using System;
 using Microsoft.Extensions.Logging;
 
-private static partial class Log
+internal static partial class Log
 {
     [LoggerMessage(LogLevel.Information, "Building send pipeline for command: {CommandType} {Id}")]
     public static partial void BuildingSendPipelineForCommand(ILogger logger, Type commandType, string id);
@@ -135,7 +147,8 @@ because a pipeline logs as it is built for every request.
 ## Logging Common Pitfalls
 
 - **Nothing appears.** No provider is registered, or the factory was assigned after a
-  Brighter type had already initialised its static logger. Check the order.
+  Brighter type had already initialised its static logger. Check the order: under DI, resolve
+  the command processor before you use a producer directly.
 - **Logs stop when you move off DI.** The DI extensions were doing the assignment for you;
   the manual path does not.
 - **Setting `ApplicationLogging.LoggerFactory` in a test affects the whole process.** It is

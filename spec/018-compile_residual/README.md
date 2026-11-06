@@ -1,7 +1,7 @@
 # Spec 018: Compile Residual
 
 **Created:** 2026-10-04
-**Status:** Writing Phase — tasks approved 2026-10-05; phase 1 next
+**Status:** **ACCEPTED 2026-11-03 — 63 of 63.** The residual is `tasks.md` § *What 018 shipped*
 
 > **Re-derive this README before executing it.** It was written before anyone looked — check every
 > count and every named gap against the tree, with the command beside the figure.
@@ -98,9 +98,16 @@ Provisional. `/spec:requirements` settles them.
 - [x] Documentation outline created — `design.md`, 2026-10-04
 - [x] Outline reviewed and approved — 2026-10-05
 - [x] Writing tasks identified — `tasks.md`, 61 tasks, 2026-10-05
-- [ ] Writing complete
-- [ ] Documentation reviewed
-- [ ] Spec closed
+- [x] Writing complete — **63 of 63** (the 61 approved, and 4.5a and 4.5b under D19 and D20),
+      2026-11-02, re-derived: `grep -c '^- \[x\] \*\*Task' spec/018-compile_residual/tasks.md`.
+      PRs #198, #200, #202, #203, #204, #210, #213, and phase 8's
+- [x] Documentation reviewed — `tasks.md` § *Phase 8 as executed*, the acceptance walk. AC1–AC3,
+      AC6–AC9 and AC11–AC13 met; AC4 met on the re-read after ruling (a) repaired the `CLAUDE.md`
+      ledger; AC5 met with its one hit named (ruling (b)); AC10 met with 17 named read-not-run claims
+      (ruling (c)); AC14 met with one coincident hit named. Rulings (a)–(d) by the maintainer,
+      2026-11-02
+- [x] Spec closed — 2026-11-02. § *What 018 shipped* and the residual, 76 of 994 by `--classify`,
+      each an accounted row, are the line the next spec starts from; friction 81–100 its inputs
 
 ## Next Steps
 

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Task 7.5: TestDoubleOptions.md #2, #8, #9, #11, #12, run against Paramore.Brighter.Testing 10.8.1 and the pinned
+       Moq 4.21.0, NSubstitute 6.2.0 and Shouldly 4.3.0. -->
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Paramore.Brighter" Version="10.8.1" />
+    <PackageReference Include="Paramore.Brighter.Testing" Version="10.8.1" />
+    <PackageReference Include="Moq" Version="4.21.0" />
+    <PackageReference Include="NSubstitute" Version="6.2.0" />
+    <PackageReference Include="Shouldly" Version="4.3.0" />
+  </ItemGroup>
+</Project>

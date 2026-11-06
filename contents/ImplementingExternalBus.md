@@ -49,6 +49,9 @@ in addition, we can support a [Competing Consumers](http://www.enterpriseintegra
 Instead of using **CommandProcessor.Send()** you use **CommandProcessor.Post()** or **CommandProcessor.DepositPost** and **CommandProcessor.ClearOutbox** to send the message
 
 ``` csharp
+using System;
+using Paramore.Brighter;
+
 var reminderCommand = new TaskReminderCommand(
      taskName: reminder.TaskName,
      dueDate: DateTime.Parse(reminder.DueDate),
@@ -90,16 +93,16 @@ The use of that pattern means the complexity of the distributed task queue is hi
 that your command is handled reliably, asynchronously, and in parallel with little cognitive overhead. It just works!
 
 ``` csharp
+using Paramore.Brighter;
+using Paramore.Brighter.Logging.Attributes;
+using Paramore.Brighter.Policies.Attributes;
+
 // ...
 public class MailTaskReminderHandler : RequestHandler<TaskReminderCommand>
 {
     private readonly IAmAMailGateway _mailGateway;
 
-    public MailTaskReminderHandler(IAmAMailGateway mailGateway, IAmACommandProcessor commandProcessor)
-        : this(mailGateway, commandProcessor, LogProvider.GetCurrentClassLogger())
-        {}
-
-    public MailTaskReminderHandler(IAmAMailGateway mailGateway, ILog logger) : base(logger)
+    public MailTaskReminderHandler(IAmAMailGateway mailGateway)
     {
         _mailGateway = mailGateway;
     }
