@@ -73,7 +73,7 @@ You control requeue behavior through two `Subscription` properties:
 
 How the delay is implemented depends on the transport. Some transports support native delay; others rely on a configured `IAmARequestScheduler`. See [Error Handling Options](/contents/ErrorHandlingOptions.md) for configuration details.
 
-The delay mechanism depends on a configured scheduler (`IAmARequestScheduler`). By default, Brighter supplies an `InMemoryScheduler` that holds deferred messages in memory. If the host shuts down before a deferred message fires, it is lost. For production systems that require durability, configure an external scheduler such as Quartz, Hangfire, TickerQ, or AWS Scheduler.
+On the [transports that use a scheduler](#blocking-retry-and-non-blocking-retry), the delay depends on that scheduler (`IAmARequestScheduler`). By default, Brighter supplies an `InMemoryScheduler` that holds deferred messages in memory. If the host shuts down before a deferred message fires, it is lost. For production systems that require durability, configure an external scheduler such as Quartz, Hangfire, TickerQ, or AWS Scheduler.
 
 ### When to Use Requeue with Delay
 
@@ -85,7 +85,26 @@ Because a Performer in Brighter, is a single-threaded message pump, using Polly 
 
 However, if you don't want to block the thread throwing `DeferMessageAction` will create a **Non-Blocking Retry** by moving the message into Brighter's scheduler (or use native delay support on the transport), which will deliver it after a delay, freeing up the Performer to process the next message in the channel.
 
-`DeferMessageAction` will de-order the message. This means you cannot rely on the order of messages in the channel. Either, your message must be able to processed independently of the others, or you must use a strategy to process out-of-order. For example you may add a version stamp to the message and only applying it if you have not already processed a later message.
+What a defer does to the message, and so to its order, depends on the transport:
+
+| Broker | Defer Message Uses | Ordering |
+|--------|--------------------|----------|
+| AWS SQS | `ChangeMessageVisibility` on the same message, no scheduler | FIFO queue: preserved within the message group when `BufferSize` is 1, the default. Standard queue: no order to preserve |
+| RabbitMQ | A new message, through the delayed message exchange if the exchange has `SupportDelay` set, otherwise through the scheduler | De-orders |
+| Azure Service Bus, topic subscription | Abandons the message. The delay is ignored and a warning is logged | Not guaranteed |
+| Azure Service Bus, `UseServiceBusQueue` or `ForwardTo` | A new message scheduled on the broker, or through the scheduler with `RequeueSchedulerMode.Global` | De-orders |
+| PostgreSQL | Updates `visible_timeout` on the same row, no scheduler | De-orders: later rows are read while this one waits |
+| RocketMQ | `ChangeInvisibleDuration` on the same message, no scheduler. A delay above 12 hours is cut to 12 hours | Not guaranteed |
+| GCP Pub/Sub | Returns the message to Pub/Sub at once, no scheduler. The subscription's retry policy decides when it comes back | Not guaranteed |
+| All others (Kafka, Redis, MQTT, MSSQL) | The scheduler | De-orders |
+
+On an SQS FIFO queue with a `BufferSize` above 1, messages of the group that were already fetched still run while the deferred one waits.
+
+On GCP Pub/Sub, Brighter sets the retry policy from `RequeueDelay` and `MaxRequeueDelay` when it creates or updates the subscription. A delay on the defer itself is ignored.
+
+With a delay of zero, RabbitMQ and the transports in the last row skip the scheduler and put the message straight back on the channel, which still de-orders it.
+
+Unless the table says the order is preserved, you cannot rely on the order of messages in the channel after a `DeferMessageAction`. Either, your message must be able to processed independently of the others, or you must use a strategy to process out-of-order. For example you may add a version stamp to the message and only applying it if you have not already processed a later message.
 
 **Exception: AWS SQS.** On SQS, a deferred message is not re-published. Brighter calls `ChangeMessageVisibility` on the same in-flight message, so the message ID, message group ID and deduplication ID do not change. On an SQS FIFO queue, SQS does not deliver later messages from the same message group while the deferred message is invisible, so order within the group is preserved when `BufferSize` is 1, the default, and the group is blocked until the delay ends; other message groups keep flowing. With a `BufferSize` above 1, messages of the group that were already fetched still run while the deferred one waits. On a standard SQS queue there is no ordering to preserve. See [Ack and Nack](/contents/AWSSQSConfiguration.md#ack-and-nack) for how requeue is implemented.
 

@@ -24,16 +24,20 @@ The **DepositPost** and **ClearOutbox** methods allow you to use the **Outbox** 
 
 ## Post
 
-In this approach you choose to **CommandProcessor.Post** a message after your Db transaction writes entity state to the Db. You intend to rely on the *retrying* the call to the broker if it fails. You should make sure that you have setup your **CommandProcessor.RETRYPOLICY** policy with this in mind.
+In this approach you choose to **CommandProcessor.Post** a message after your Db transaction writes entity state to the Db. **Post** writes the message to the **Outbox** and then tries to send it to the broker. Both steps run in the **CommandProcessor.OutboxProducer** resilience pipeline, which by default retries three times, with a linear back-off that starts at 50 ms. See [Registering Pipelines with CommandProcessor](/contents/PolicyRetryAndCircuitBreaker.md#registering-pipelines-with-commandprocessor) for how pipelines are registered.
 
-One caveat here is to look at the interaction of the retry on Post and any **UsePolicy** attribute for the handler. If your **CommandProcessor.RETRYPOLICY** policy bubbles up an exception following the last Retry attempt, and your **UsePolicy** attribute for the handler then catches that exception for your handler and forces a Retry, you will end up re-running the database transaction, which may result in duplicate entries. Your **UsePolicy** attribute for the handler needs to explicitly catch the Db errors you wish to retry, and not errors Posting to the message queue in this case.
+What happens when the pipeline gives up depends on the step. If the write to the **Outbox** fails, **Post** throws a **ChannelFailureException**. If the send to the broker fails, no exception leaves **Post**: Brighter logs the failure, **Post** returns normally and the message stays in the **Outbox** as outstanding. The retries in the pipeline are the only attempts **Post** makes, so make sure that your **CommandProcessor.OutboxProducer** pipeline is set up with this in mind.
+
+One caveat here is to look at the interaction of the **ChannelFailureException** and any **UseResiliencePipeline** or **UsePolicy** attribute for the handler. If that attribute catches the exception thrown when the write to the **Outbox** fails, and forces a Retry, you will end up re-running the database transaction, which may result in duplicate entries. That attribute needs to explicitly catch the Db errors you wish to retry, and not errors writing to the **Outbox**.
 
 (As an aside, you should generally write Retry policies to catch specific errors that you know you can retry, not all errors anyway).
 
-In this case, you might also need to consider using a **Fallback** method via the FallbackPolicy attribute to catch **CommandProcessor.Post** exceptions that bubble out and issue a reversing transaction to kill any Db entries made
-in error, or raise a log to ensure that there will be manual compensation.
+In this case, you might also need to consider using a **Fallback** method via the FallbackPolicy attribute to catch the **ChannelFailureException** that **CommandProcessor.Post** throws when it cannot write to the **Outbox**, and issue a reversing transaction to kill any Db entries made
+in error, or raise a log to ensure that there will be manual compensation. A **Fallback** method does not see a failed send to the broker, because that does not bubble out of **Post**.
 
 **CommandProcessor.Post** still uses the **Outbox** to store messages you send, but you are not including them in the Db transaction scope, so you have no **guarantees**.
+
+If the send fails, the message stays in the **Outbox** until a **Sweeper** or your own code sends it again, as described in [You always need a Sweeper](#you-always-need-a-sweeper). Without a **Sweeper** or a resend from your own code, nothing sends it, and with the `InMemoryOutbox` it is lost if the application stops.
 
 If the failure was on the call to the transport, and not the write to the **Outbox**, you will still have a **Outbox** entry that you can resend via manual compensation later. If the message is posted to the
 broker, it **must** have already been written to the **Outbox**.
@@ -49,8 +53,8 @@ Metaphorically, you can think of this as a post box. You deposit a letter in a p
 Within your database transaction you write the message to the Outbox with **CommandProcessor.DepositPost**. This means that if the entity write succeeds, the corresponding write to the **Outbox** will have
 taken place. This method returns the Id for that message.
 
-(Note that we use **CommandProcessor.RETRYPOLICY** on the write, but this will only impact the attempt to write within the transaction, not the success or failure of the overall Db transaction, which is under
-your control. You can safely ignore Db errors on this policy within this approach for this reason.)
+(Note that the write runs in the **CommandProcessor.OutboxProducer** resilience pipeline, but this will only impact the attempt to write within the transaction, not the success or failure of the overall Db transaction, which is under
+your control. You can safely ignore Db errors in this pipeline within this approach for this reason.)
 
 You can then call **CommandProcessor.ClearOutbox** to flush one or more messages from the **Outbox** to the broker. We support multiple messages as your entity write might possibly involve sending multiple downstream messages, which you want to include in the transaction. 
 
@@ -173,7 +177,7 @@ There are two approaches to dispatching messages from Brighter's **Outbox**
   
 To explicitly clear a message you can call **CommandProcessor.ClearOutbox** directly in your handler, after the Db transaction completes. This has the lowest latency. You are responsible for tracking the ids of messages that you wish to send in **CommandProcessor.ClearOutbox**, we do not maintain this state for you. 
 
-Note that you cannnot guarantee that this will succeed, although you can Retry. We use **CommandProcessor.RETRYPOLICY** on the write to the Broker, and you should retry errors writing to the Broker in that policy. However, as the message is now in the **Outbox** you can compensate for eventual failure to write to the Broker by replaying the message from the **Outbox** at a later time.
+Note that you cannnot guarantee that this will succeed, although you can Retry. We use the **CommandProcessor.OutboxProducer** resilience pipeline on the write to the Broker, and you should retry errors writing to the Broker in that pipeline. When the send still fails after the retries, Brighter logs it and **ClearOutbox** returns without throwing. However, as the message is now in the **Outbox** you can compensate for eventual failure to write to the Broker by replaying the message from the **Outbox** at a later time.
 
 ### Implicit Clear
 
@@ -204,6 +208,8 @@ arguments a particular flavour of Outbox needs. It is read-only, so add to the d
 rather than assigning a new one.
 
 To monitor whether the sweeper is running and keeping to its schedule, see [Outbox Sweeper Metrics](/contents/Telemetry.md#outbox-sweeper-metrics).
+
+To monitor how many messages in the outbox have gone stale, overall and per topic, see [Outbox Stale Message Metrics](/contents/Telemetry.md#outbox-stale-message-metrics).
 
 It is important to note that the lower the Minimum Message age is the more likely it is that your message will be dispatches more than once (as if you are explicitly clearing messages your application may have instructed the clearing of a message at the same time as the **Outbox Sweeper**)
 
