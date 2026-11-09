@@ -89,7 +89,7 @@ What a defer does to the message, and so to its order, depends on the transport:
 
 | Broker | Defer Message Uses | Ordering |
 |--------|--------------------|----------|
-| AWS SQS | `ChangeMessageVisibility` on the same message, no scheduler | FIFO queue: preserved within the message group when `BufferSize` is 1, the default. Standard queue: no order to preserve |
+| AWS SQS | `ChangeMessageVisibility` on the same message, no scheduler | FIFO queue: the message is not re-published, so its message ID, message group ID and deduplication ID do not change. Order within the group is preserved when `BufferSize` is 1, the default, and the group is blocked until the delay ends; other message groups keep flowing. Standard queue: no order to preserve |
 | RabbitMQ | A new message, through the delayed message exchange if the exchange has `SupportDelay` set, otherwise through the scheduler | De-orders |
 | Azure Service Bus, topic subscription | Abandons the message. The delay is ignored and a warning is logged | Not guaranteed |
 | Azure Service Bus, `UseServiceBusQueue` or `ForwardTo` | A new message scheduled on the broker, or through the scheduler with `RequeueSchedulerMode.Global` | De-orders |
