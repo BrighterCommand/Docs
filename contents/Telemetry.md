@@ -553,14 +553,18 @@ A `dotnet.thread_pool.queue.length` that keeps growing, together with a `dotnet.
 
 ## Outbox Stale Message Metrics
 
-> **Not in a released package yet.** The stale message monitor ships after Brighter 10.8.1, which is the current release. `UseOutboxStaleMessageMonitor`, `Publication.StaleMessageAge` and the three instruments below are on Brighter's development branch and are in no version you can install today, so treat this section as the feature as it will ship.
+> **Available from Brighter 10.8.2.** `UseOutboxStaleMessageMonitor`, `Publication.StaleMessageAge` and the three instruments below are not in 10.8.1 or earlier, so upgrade to 10.8.2 or later to use the stale message monitor.
 
 A message that stays undispatched in the outbox is invisible until someone queries the store. The stale message monitor counts those messages on a timer and reports the counts as metrics, so you can alert when messages get stuck. It is opt-in.
 
+<!-- blockcheck: skip available from Brighter 10.8.2, after the pins' 10.8.1; remove this skip when the pins move to 10.8.2 -->
 ```csharp
 using System;
+using Microsoft.Extensions.DependencyInjection;
 using Paramore.Brighter.Extensions.DependencyInjection;
 using Paramore.Brighter.Outbox.Hosting;
+
+var services = new ServiceCollection();
 
 services.AddBrighter()
     .AddProducers(options =>
