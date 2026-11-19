@@ -198,9 +198,9 @@ Some message transports have **native support for message delay**, eliminating t
 
 | Transport | Native Delay Support | Max Delay | Notes |
 |-----------|---------------------|-----------|-------|
-| **RabbitMQ** | Yes | Unlimited | Uses [RabbitMQ Delayed Message Plugin](https://github.com/rabbitmq/rabbitmq-delayed-message-exchange) or TTL + DLX |
+| **RabbitMQ** | Yes, when the exchange has `SupportDelay` set | Unlimited | Uses the [RabbitMQ Delayed Message Plugin](https://github.com/rabbitmq/rabbitmq-delayed-message-exchange); without `SupportDelay`, a delay goes through the scheduler |
 | **Azure Service Bus** | Yes | Unlimited | Uses `ScheduledEnqueueTimeUtc` property |
-| **AWS SQS** | Limited | 15 minutes | Native delay only up to 15 minutes |
+| **AWS SQS** | Limited | 15 minutes on send; 12 hours on defer | On send, a Standard queue delays natively up to 15 minutes; a longer delay, or any delay on a FIFO queue, goes through the scheduler. A defer changes the visibility of the message already in flight, which AWS allows up to [12 hours from its first receive](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ChangeMessageVisibility.html) |
 | **AWS SNS** | No | N/A | Requires scheduler |
 | **Kafka** | No | N/A | Requires scheduler |
 | **Redis** | No | N/A | Requires scheduler |
@@ -210,14 +210,14 @@ Some message transports have **native support for message delay**, eliminating t
 Use native transport delay when:
 
 - Your transport supports it (RabbitMQ, Azure Service Bus)
-- Delays are within transport limits (e.g., <15 min for SQS)
+- Delays are within transport limits (e.g., up to 15 minutes when sending to an SQS Standard queue)
 - You don't need to cancel/reschedule messages
 - You want to minimize infrastructure dependencies
 
 Use an external scheduler when:
 
 - Your transport doesn't support native delay
-- You need delays beyond transport limits (e.g., >15 min on SQS)
+- You need delays beyond transport limits (e.g., over 15 minutes when sending to SQS)
 - You need to cancel or reschedule messages
 - You need centralized scheduling management
 
@@ -276,11 +276,20 @@ var subscription = new Subscription<ProcessOrderCommand>(
 
 ### Transport-Specific Behavior
 
-**Transports with Native Delay (RabbitMQ, Azure Service Bus):**
+Not every transport requeues a deferred message the same way. Some hold back the message they already have, some send a new message with a native delay, and the rest use the scheduler. What each one does to message order is in [Handler Failure](/contents/HandlerFailure.md#blocking-retry-and-non-blocking-retry).
+
+**The same message, held on the broker (AWS SQS, PostgreSQL, RocketMQ, GCP Pub/Sub):**
+
+- No scheduler is involved, and no new message is sent
+- AWS SQS changes the visibility of the message in flight. AWS allows up to [12 hours from the message's first receive](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ChangeMessageVisibility.html), so the delay you can use is 12 hours less the time the message has already been in flight. The 15-minute limit applies only to a delay on send
+- PostgreSQL updates the row's `visible_timeout`
+- RocketMQ changes the message's invisible duration, and cuts a delay above 12 hours to 12 hours
+- GCP Pub/Sub returns the message at once, and the subscription's retry policy decides when it comes back
+
+**A new message, with a native delay (RabbitMQ with `SupportDelay`, Azure Service Bus queues):**
 
 - Uses native transport delay mechanism
 - No external scheduler required
-- Message requeued directly on the broker
 - On Azure Service Bus, from Brighter 10.8.1, only a consumer that reads a queue — with
   `UseServiceBusQueue` or `ForwardTo` — can delay a requeue. One that reads a topic subscription
   directly requeues at once and logs a warning that the delay was not applied. A queue consumer can
@@ -288,7 +297,7 @@ var subscription = new Subscription<ProcessOrderCommand>(
   `RequeueScheduler = RequeueSchedulerMode.Global` on the publication it is created with. See
   [Azure Service Bus Configuration](/contents/AzureServiceBusConfiguration.md#azure-service-bus-entity-options)
 
-**Transports without Native Delay (Kafka, AWS SNS, etc.):**
+**Through the scheduler (Kafka, Redis, MQTT, MSSQL, and RabbitMQ without `SupportDelay`):**
 
 - Message is scheduled via the configured scheduler
 - If you configure none, Brighter's registration uses the in-memory scheduler, which does not survive a restart; configure a durable scheduler (Quartz, Hangfire, etc.) for production
