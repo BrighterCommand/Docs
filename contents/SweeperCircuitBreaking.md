@@ -174,58 +174,21 @@ public class OutboxMonitorService
 }
 ```
 
-### Logging and Alerts
+### Health Checks for Tripped Topics
 
-Set up monitoring to track circuit breaker events:
+From Brighter 10.8.1, you don't need to write a health check that reads `TrippedTopics`. The outbox sweeper's investigate check reports Degraded, with a `tripped_topics` condition naming each tripped topic, while the active sweeper is skipping any:
 
 ```csharp
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Paramore.Brighter.CircuitBreaker;
+using Paramore.Brighter.Outbox.Hosting;
 
-// Register health check
 services.AddHealthChecks()
-    .AddCheck<CircuitBreakerHealthCheck>("outbox_circuit_breaker");
-
-public class CircuitBreakerHealthCheck : IHealthCheck
-{
-    private readonly IAmAnOutboxCircuitBreaker _circuitBreaker;
-
-    public CircuitBreakerHealthCheck(IAmAnOutboxCircuitBreaker circuitBreaker)
-    {
-        _circuitBreaker = circuitBreaker;
-    }
-
-    public Task<HealthCheckResult> CheckHealthAsync(
-        HealthCheckContext context,
-        CancellationToken cancellationToken = default)
-    {
-        var trippedTopics = _circuitBreaker.TrippedTopics.ToList();
-
-        if (!trippedTopics.Any())
-        {
-            return Task.FromResult(HealthCheckResult.Healthy("No tripped topics"));
-        }
-
-        var data = new Dictionary<string, object>
-        {
-            { "tripped_topics", trippedTopics.Select(t => t.Value).ToArray() },
-            { "count", trippedTopics.Count }
-        };
-
-        return Task.FromResult(
-            HealthCheckResult.Degraded(
-                $"{trippedTopics.Count} topic(s) are currently tripped",
-                data: data
-            )
-        );
-    }
-}
+    .AddBrighterOutboxSweeperHealthChecks();
 ```
+
+It carries the `brighter-investigate` tag, so route it to monitoring rather than to a liveness or readiness probe. It reads the tripped topics only on the instance that holds the sweeper's [distributed lock](/contents/DistributedLock.md), which a check that reads `TrippedTopics` directly on every instance cannot do. [Health Checks](/contents/HealthChecks.md#outbox-sweeper-health-checks) covers its conditions, its `Data`, and the endpoint and response writer that expose them.
+
+To alert on tripped topics, use the `paramore.brighter.outbox_sweeper.tripped_topics` gauge in [Telemetry](/contents/Telemetry.md#suggested-alerts).
 
 ## Sweeper Circuit Breaking Outbox Support
 
@@ -335,7 +298,7 @@ services.AddSingleton<IAmAnOutboxCircuitBreaker>(
 
 Set up monitoring and alerting:
 
-- **Health checks**: Use ASP.NET Core health checks to expose tripped topics
+- **Health checks**: Register the outbox sweeper's [health checks](/contents/HealthChecks.md#outbox-sweeper-health-checks), which report tripped topics
 - **Metrics**: Export circuit breaker metrics to Prometheus, DataDog, etc.
 - **Logging**: Log when topics trip and recover
 - **Alerts**: Alert when topics remain tripped for extended periods

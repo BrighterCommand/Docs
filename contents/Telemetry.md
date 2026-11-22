@@ -431,6 +431,8 @@ The two gauges carry no attributes. They read the sweeper's state each time your
 
 `tripped_topics` reads the `IAmAnOutboxCircuitBreaker` registered in your service provider, and reports 0 when none is registered. Register the circuit breaker as a singleton shared with the outbox producer mediator, or the gauge may not match the topics the sweeper skips. It counts only while this instance is the active sweeper — the one that obtained the distributed lock — so it reads 0 on an instance that does not hold the lock, and while a sweep is waiting for the lock. `InMemoryOutboxCircuitBreaker` is per instance, so the count is one instance's view.
 
+The outbox sweeper's [health checks](/contents/HealthChecks.md#outbox-sweeper-health-checks) read the same state, and report a hung sweep, failing sweeps and tripped topics as conditions that an orchestrator or an operator can act on.
+
 These metrics describe the sweeper, not the messages it sends. They do not count how many messages a sweep found or dispatched.
 
 ### How the Sweeper Keeps Time
